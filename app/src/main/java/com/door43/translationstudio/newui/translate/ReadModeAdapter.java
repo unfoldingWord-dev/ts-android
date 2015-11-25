@@ -389,13 +389,31 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     }
 
     /**
+     * Toggle the target translation card between front and back
+     * @param holder
+     * @param position
+     * @param swipeLeft
+     * @return true if action was taken, else false
+     */
+    public void toggleTargetTranslationCard(final ViewHolder holder, final int position, final boolean swipeLeft) {
+        if (mTargetStateOpen[position]) {
+            closeTargetTranslationCard( holder, position, !swipeLeft);
+            return;
+        }
+
+        openTargetTranslationCard( holder, position, !swipeLeft);
+        return;
+    }
+
+    /**
      * Moves the target translation card to the back
      * @param holder
      * @param position
+     * @param leftToRight
      */
-    public void closeTargetTranslationCard(ViewHolder holder, final int position) {
+    public void closeTargetTranslationCard(final ViewHolder holder, final int position, final boolean leftToRight) {
         if (mTargetStateOpen[position]) {
-            ViewUtil.animateSwapCards(holder.mTargetCard, holder.mSourceCard, TOP_ELEVATION, BOTTOM_ELEVATION, true, new Animation.AnimationListener() {
+            ViewUtil.animateSwapCards(holder.mTargetCard, holder.mSourceCard, TOP_ELEVATION, BOTTOM_ELEVATION, leftToRight, new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {
 
@@ -417,14 +435,26 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         }
     }
 
+
     /**
-     * Moves the target translation card to the top
+     * Moves the target translation card to the back - left to right
      * @param holder
      * @param position
+     * @return true if action was taken, else false
      */
-    public void openTargetTranslationCard(ViewHolder holder, final int position) {
+    public void closeTargetTranslationCard(final ViewHolder holder, final int position) {
+        closeTargetTranslationCard ( holder, position, true);
+    }
+
+    /**
+     * Moves the target translation to the top
+     * @param holder
+     * @param position
+     * @param leftToRight
+     */
+    public void openTargetTranslationCard(final ViewHolder holder, final int position, final boolean leftToRight) {
         if (!mTargetStateOpen[position]) {
-            ViewUtil.animateSwapCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, false, new Animation.AnimationListener() {
+            ViewUtil.animateSwapCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, leftToRight, new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {
 
@@ -444,6 +474,16 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
             // disable new tab button so we don't accidently open it
             holder.mNewTabButton.setEnabled(false);
         }
+    }
+
+    /**
+     * Moves the target translation to the top
+     * @param holder
+     * @param position
+     * @return true if action was taken, else false
+     */
+    public void openTargetTranslationCard(final ViewHolder holder, final int position) {
+        openTargetTranslationCard( holder, position, false);
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
