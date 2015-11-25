@@ -301,7 +301,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
             broadcastIntent.putExtra(BroadcastService.PARAM_BROADCAST_PORT, PORT_CLIENT_UDP);
             broadcastIntent.putExtra(BroadcastService.PARAM_SERVICE_PORT, port);
             broadcastIntent.putExtra(BroadcastService.PARAM_FREQUENCY, 2000);
-            broadcastIntent.putExtra(BroadcastService.PARAM_SERVICE_NAME, SERVICE_NAME);
+//            broadcastIntent.putExtra(BroadcastService.PARAM_SERVICE_NAME, SERVICE_NAME);
             getActivity().startService(broadcastIntent);
         }
         getActivity().bindService(broadcastIntent, broadcastConnection, Context.BIND_AUTO_CREATE);
@@ -393,7 +393,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
         // begin listening for servers
         if(!BroadcastListenerService.isRunning()) {
             listenerIntent.putExtra(BroadcastListenerService.PARAM_BROADCAST_PORT, PORT_CLIENT_UDP);
-            listenerIntent.putExtra(BroadcastListenerService.PARAM_SERVICE_NAME, SERVICE_NAME);
+//            listenerIntent.putExtra(BroadcastListenerService.PARAM_SERVICE_NAME, SERVICE_NAME);
             listenerIntent.putExtra(BroadcastListenerService.PARAM_REFRESH_FREQUENCY, REFRESH_FREQUENCY);
             listenerIntent.putExtra(BroadcastListenerService.PARAM_SERVER_TTL, SERVER_TTL);
             getActivity().startService(listenerIntent);

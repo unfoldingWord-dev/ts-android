@@ -9,6 +9,9 @@ import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.network.BroadcastListenerRunnable;
 import com.door43.translationstudio.network.Peer;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -21,7 +24,6 @@ public class BroadcastListenerService extends NetworkService {
     public static final String PARAM_SERVER_TTL = "param_server_ttl";
     public static final String PARAM_REFRESH_FREQUENCY = "param_refresh_frequency";
     public static final String PARAM_BROADCAST_PORT = "param_broadcast_udp_port";
-    public static final String PARAM_SERVICE_NAME = "param_service_name";
     private final IBinder mBinder = new LocalBinder();
     private Thread mBroadcastListenerThread;
     private BroadcastListenerRunnable mBroadcastListenerRunnable;
@@ -64,9 +66,8 @@ public class BroadcastListenerService extends NetworkService {
     public int onStartCommand(Intent intent, int flags, int startid) {
         if(intent != null) {
             Bundle args = intent.getExtras();
-            if (args != null && args.containsKey(PARAM_BROADCAST_PORT) && args.containsKey(PARAM_SERVICE_NAME)) {
+            if (args != null && args.containsKey(PARAM_BROADCAST_PORT)) {
                 final int UDPport = args.getInt(PARAM_BROADCAST_PORT);
-                final String serviceName = args.getString(PARAM_SERVICE_NAME);
                 final int serverTTL = args.getInt(PARAM_SERVER_TTL, 10000);
                 final int refreshFrequency = args.getInt(PARAM_REFRESH_FREQUENCY, 5000);
                 // listener thread
@@ -78,19 +79,25 @@ public class BroadcastListenerService extends NetworkService {
 
                     @Override
                     public void onMessageReceived(String message, String senderIP) {
-                        String[] parts = message.split(":");
-                        if (parts != null && parts.length == 3) {
-                            String service = parts[0];
-                            if (service.equals(serviceName)) {
-                                int version = Integer.parseInt(parts[1]);
-                                int port = Integer.parseInt(parts[2]);
-                                Peer p = new Peer(senderIP, port, service, version);
-                                if(addPeer(p) && mListener != null) {
-                                    mListener.onFoundServer(p);
-                                }
+                        int version = -1;
+                        int port;
+                        try {
+                            JSONObject json = new JSONObject(message);
+                            version = json.getInt("version");
+                            port = json.getInt("port");
+                        } catch (JSONException e) {
+                            Logger.w(BroadcastListenerService.class.getName(), "Invalid message format " + message, e);
+                            return;
+                        }
+
+                        // validate protocol version
+                        if(version == BroadcastService.TS_PROTOCAL_VERSION) {
+                            Peer p = new Peer(senderIP, port, "tS", version);
+                            if(addPeer(p) && mListener != null) {
+                                mListener.onFoundServer(p);
                             }
                         } else {
-                            Logger.w(BroadcastListenerService.class.getName(), "Expected three pieces of data from the server but rceived " + message);
+                            Logger.w(BroadcastListenerService.class.getName(), "Unsupported tS protocal version " + version);
                         }
                     }
                 });

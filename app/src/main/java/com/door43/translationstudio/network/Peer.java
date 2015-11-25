@@ -31,7 +31,7 @@ public class Peer {
      * Specifies a new peer (likely a server)
      * @param ipAddress
      * @param port
-     * @param serviceName
+     * @param serviceName the name of the service. This is deprecated
      * @param version
      */
     public Peer(String ipAddress, int port, String serviceName, int version) {

@@ -11,6 +11,9 @@ import android.os.IBinder;
 
 import com.door43.tools.reporting.Logger;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -27,7 +30,7 @@ public class BroadcastService extends NetworkService {
     public static final String PARAM_BROADCAST_PORT = "param_broadcast_udp_port";
     public static final String PARAM_SERVICE_PORT = "param_service_tcp_port";
     public static final String PARAM_FREQUENCY = "param_broadcast_frequency";
-    public static final String PARAM_SERVICE_NAME = "param_service_name";
+    public static final int TS_PROTOCAL_VERSION = 2;
     private final IBinder mBinder = new LocalBinder();
     private DatagramSocket mSocket;
     private Timer mTimer;
@@ -77,17 +80,19 @@ public class BroadcastService extends NetworkService {
                 final int udpPort = args.getInt(PARAM_BROADCAST_PORT);
                 final int serviceTCPPort = args.getInt(PARAM_SERVICE_PORT);
                 final int broadcastFrequency = args.getInt(PARAM_FREQUENCY);
-                final String serviceName = args.getString(PARAM_SERVICE_NAME);
-                PackageInfo pInfo;
+
+                JSONObject json = new JSONObject();
                 try {
-                    pInfo = getApplication().getPackageManager().getPackageInfo(getApplication().getPackageName(), 0);
-                } catch (PackageManager.NameNotFoundException e) {
-                    // TODO: notify app
-                    Logger.e(this.getClass().getName(), "Failed to load the app version", e);
+                    json.put("version", TS_PROTOCAL_VERSION);
+                    json.put("port", serviceTCPPort);
+                } catch (JSONException e) {
+                    // TODO: 11/24/2015 notify app
+                    Logger.e(this.getClass().getName(), "Failed to prepare the broadcast payload", e);
                     stopService();
                     return START_NOT_STICKY;
                 }
-                String data = serviceName + ":" + pInfo.versionCode + ":" + serviceTCPPort;
+
+                String data = json.toString();
 
                 // prepare packet
                 if (data.length() > 1024) {
@@ -96,8 +101,8 @@ public class BroadcastService extends NetworkService {
                     stopService();
                     return START_NOT_STICKY;
                 }
-                WifiManager wifi = (WifiManager) getApplication().getSystemService(Context.WIFI_SERVICE);
-                final InetAddress ipAddress;
+
+                InetAddress ipAddress;
                 try {
                     ipAddress = getBroadcastAddress();
                 } catch (UnknownHostException e) {

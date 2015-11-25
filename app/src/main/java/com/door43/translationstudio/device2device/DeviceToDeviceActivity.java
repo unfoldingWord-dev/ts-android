@@ -457,7 +457,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ServerServic
             broadcastServiceIntent.putExtra(BroadcastService.PARAM_BROADCAST_PORT, PORT_CLIENT_UDP);
             broadcastServiceIntent.putExtra(BroadcastService.PARAM_SERVICE_PORT, port);
             broadcastServiceIntent.putExtra(BroadcastService.PARAM_FREQUENCY, 2000);
-            broadcastServiceIntent.putExtra(BroadcastService.PARAM_SERVICE_NAME, SERVICE_NAME);
+//            broadcastServiceIntent.putExtra(BroadcastService.PARAM_SERVICE_NAME, SERVICE_NAME);
             startService(broadcastServiceIntent);
         }
         bindService(broadcastServiceIntent, mBroadcastConnection, Context.BIND_AUTO_CREATE);
@@ -513,7 +513,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ServerServic
         // begin listening for service broadcasts
         if(!BroadcastListenerService.isRunning()) {
             broadcastListenerServiceIntent.putExtra(BroadcastListenerService.PARAM_BROADCAST_PORT, PORT_CLIENT_UDP);
-            broadcastListenerServiceIntent.putExtra(BroadcastListenerService.PARAM_SERVICE_NAME, SERVICE_NAME);
+//            broadcastListenerServiceIntent.putExtra(BroadcastListenerService.PARAM_SERVICE_NAME, SERVICE_NAME);
             broadcastListenerServiceIntent.putExtra(BroadcastListenerService.PARAM_REFRESH_FREQUENCY, REFRESH_FREQUENCY);
             broadcastListenerServiceIntent.putExtra(BroadcastListenerService.PARAM_SERVER_TTL, SERVER_TTL);
             startService(broadcastListenerServiceIntent);
