@@ -55,6 +55,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     public static final String EXTRA_VIEW_MODE = "extra_view_mode_id";
     private Fragment mFragment;
     private SeekBar mSeekBar;
+    private View mGraduations;
     private Translator mTranslator;
     private TargetTranslation mTargetTranslation;
     private Timer mCommitTimer = new Timer();
@@ -114,6 +115,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         }
 
         // set up menu items
+        mGraduations = findViewById(R.id.action_seek_graduations);
         mSeekBar = (SeekBar)findViewById(R.id.action_seek);
         mSeekBar.setMax(100);
         mSeekBar.setProgress(computePositionFromProgress(0));
@@ -143,12 +145,12 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
+                mGraduations.animate().alpha(1.f);
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
+                mGraduations.animate().alpha(0.f);
             }
         });
         ImageButton moreButton = (ImageButton)findViewById(R.id.action_more);
