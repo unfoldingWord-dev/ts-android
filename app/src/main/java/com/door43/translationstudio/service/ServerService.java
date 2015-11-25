@@ -25,8 +25,10 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.MessageDigest;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Arrays;
@@ -42,11 +44,11 @@ public class ServerService extends NetworkService {
     public static final String PARAM_PUBLIC_KEY = "param_public_key";
     private static Boolean mIsRunning = false;
     private final IBinder mBinder = new LocalBinder();
-    private Callbacks mListener;
+    private Callbacks listener;
     private int mPort = 0;
     private Thread mServerThread;
     private Map<String, Connection> mClientConnections = new HashMap<>();
-    private PrivateKey mPrivateKey;
+    private PrivateKey privateKey;
     private String mPublicKey;
     private ServerSocket mServerSocket;
 
@@ -72,9 +74,9 @@ public class ServerService extends NetworkService {
     }
 
     public void registerCallback(Callbacks callback) {
-        mListener = callback;
-        if(isRunning() && mListener != null) {
-            mListener.onServerServiceReady(mPort);
+        listener = callback;
+        if(isRunning() && listener != null) {
+            listener.onServerServiceReady(mPort);
         }
     }
 
@@ -83,7 +85,7 @@ public class ServerService extends NetworkService {
         if(intent != null) {
             Bundle args = intent.getExtras();
             if (args != null && args.containsKey(PARAM_PRIVATE_KEY) && args.containsKey(PARAM_PUBLIC_KEY)) {
-                mPrivateKey = (PrivateKey) args.get(PARAM_PRIVATE_KEY);
+                privateKey = (PrivateKey) args.get(PARAM_PRIVATE_KEY);
                 mPublicKey = args.getString(PARAM_PUBLIC_KEY);
                 mServerThread = new Thread(new ServerRunnable());
                 mServerThread.start();
@@ -147,7 +149,23 @@ public class ServerService extends NetworkService {
     public void acceptConnection(Peer peer) {
         peer.setIsAuthorized(true);
         // let the client know it's connection has been authorized.
-        sendMessage(peer, SocketMessages.MSG_OK);
+//        sendMessage(peer, SocketMessages.MSG_OK);
+
+        // send public key
+        // send our public key
+        try {
+            JSONObject json = new JSONObject();
+            json.put("key", mPublicKey);
+            // TRICKY: we manually write to peer so we don't encrypt it
+            if(mClientConnections.containsKey(peer.getIpAddress())) {
+                mClientConnections.get(peer.getIpAddress()).write(json.toString());
+            }
+        } catch (JSONException e) {
+            Logger.w(this.getClass().getName(), "Failed to prepare response ", e);
+            if(listener != null) {
+                listener.onServerServiceError(e);
+            }
+        }
     }
 
     /**
@@ -157,34 +175,64 @@ public class ServerService extends NetworkService {
      */
     private void onMessageReceived(Peer client, String message) {
         if(client.isAuthorized()) {
-            if(client.isSecure()) {
-                message = decryptMessage(mPrivateKey, message);
+            if(client.isSecure() && client.hasIdentity()) {
+                message = decryptMessage(privateKey, message);
                 if(message != null) {
                     String[] data = StringUtilities.chunk(message, ":");
                     onCommandReceived(client, PeerCommand.get(data[0]), Arrays.copyOfRange(data, 1, data.length));
-                } else if(mListener != null) {
-                    mListener.onServerServiceError(new Exception("Message descryption failed"));
+                } else if(listener != null) {
+                    listener.onServerServiceError(new Exception("Message descryption failed"));
                 }
-            } else {
-                String[] data = StringUtilities.chunk(message, ":");
-                switch(data[0]) {
-                    case SocketMessages.MSG_PUBLIC_KEY:
-                        Logger.i(this.getClass().getName(), "connected to client "+client.getIpAddress());
-                        // receive the client's public key
-                        client.keyStore.add(PeerStatusKeys.PUBLIC_KEY, data[1]);
+            } else if(!client.isSecure()){
+                // receive the key
+                try {
+                    JSONObject json = new JSONObject(message);
+                    client.keyStore.add(PeerStatusKeys.PUBLIC_KEY, json.getString("key"));
+                    client.setIsSecure(true);
+                } catch (JSONException e) {
+                    Logger.w(this.getClass().getName(), "Invalid request: " + message, e);
+//                    sendMessage(client, SocketMessages.MSG_INVALID_REQUEST);
+                }
 
-                        // send the client our public key
-                        sendMessage(client, SocketMessages.MSG_PUBLIC_KEY + ":" + mPublicKey);
-                        client.setIsSecure(true);
-
-                        // reload the list
-                        if(mListener != null) {
-                            mListener.onClientChanged(client);
+                // send identity
+                if(client.isSecure()) {
+                    try {
+                        JSONObject json = new JSONObject();
+                        json.put("name", "Jon Doe Server");
+                        if(AppContext.isTablet()) {
+                            json.put("device", "tablet");
+                        } else {
+                            json.put("device", "phone");
                         }
-                        break;
-                    default:
-                        Logger.w(this.getClass().getName(), "Invalid request: " + message);
-                        sendMessage(client, SocketMessages.MSG_INVALID_REQUEST);
+                        MessageDigest md = MessageDigest.getInstance("SHA-256");
+                        md.update(AppContext.udid().getBytes("UTF-8"));
+                        byte[] digest = md.digest();
+                        BigInteger bigInt = new BigInteger(1, digest);
+                        String hash = bigInt.toString();
+                        json.put("id", hash);
+                        sendMessage(client, json.toString());
+                    } catch (Exception e){
+                        Logger.w(this.getClass().getName(), "Failed to prepare response ", e);
+                        if(listener != null) {
+                            listener.onServerServiceError(e);
+                        }
+                    }
+                }
+            } else if(!client.hasIdentity()) {
+                // receive identity
+                message = decryptMessage(privateKey, message);
+                try {
+                    JSONObject json = new JSONObject(message);
+                    client.setName(json.getString("name"));
+                    client.setDevice(json.getString("device"));
+                    client.setId(json.getString("id"));
+                    client.setHasIdentity(true);
+                    if(listener != null) {
+                        listener.onClientChanged(client);
+                    }
+                } catch (JSONException e) {
+                    Logger.w(this.getClass().getName(), "Invalid request: " + message, e);
+//                    sendMessage(client, SocketMessages.MSG_INVALID_REQUEST);
                 }
             }
         } else {
@@ -377,8 +425,8 @@ public class ServerService extends NetworkService {
                 break;
             case InvalidRequest:
                 // TODO: do something about this.
-                if(mListener != null) {
-                    mListener.onServerServiceError(new Throwable("Invalid request"));
+                if(listener != null) {
+                    listener.onServerServiceError(new Throwable("Invalid request"));
                 }
                 break;
             default:
@@ -466,15 +514,15 @@ public class ServerService extends NetworkService {
             try {
                 mServerSocket = new ServerSocket(0);
             } catch (Exception e) {
-                if(mListener != null) {
-                    mListener.onServerServiceError(e);
+                if(listener != null) {
+                    listener.onServerServiceError(e);
                 }
                 return;
             }
             mPort = mServerSocket.getLocalPort();
 
-            if(mListener != null) {
-                mListener.onServerServiceReady(mPort);
+            if(listener != null) {
+                listener.onServerServiceReady(mPort);
             }
 
             setRunning(true);
@@ -507,13 +555,6 @@ public class ServerService extends NetworkService {
         private Peer mClient;
 
         public ClientRunnable(Socket clientSocket) {
-            // create a new peer
-            mClient = new Peer(clientSocket.getInetAddress().toString().replace("/", ""), clientSocket.getPort());
-            if(addPeer(mClient)) {
-                if(mListener != null) {
-                    mListener.onClientConnected(mClient);
-                }
-            }
             // set up socket
             try {
                 mConnection = new Connection(clientSocket);
@@ -526,10 +567,17 @@ public class ServerService extends NetworkService {
                 // we store a reference to all connections so we can access them later
                 mClientConnections.put(mConnection.getIpAddress(), mConnection);
             } catch (Exception e) {
-                if(mListener != null) {
-                    mListener.onServerServiceError(e);
+                if(listener != null) {
+                    listener.onServerServiceError(e);
                 }
                 Thread.currentThread().interrupt();
+            }
+            // create a new peer
+            mClient = new Peer(clientSocket.getInetAddress().toString().replace("/", ""), clientSocket.getPort());
+            if(addPeer(mClient)) {
+                if(listener != null) {
+                    listener.onClientConnected(mClient);
+                }
             }
         }
 
@@ -549,8 +597,8 @@ public class ServerService extends NetworkService {
                 mClientConnections.remove(mConnection.getIpAddress());
             }
             removePeer(mClient);
-            if(mListener != null) {
-                mListener.onClientLost(mClient);
+            if(listener != null) {
+                listener.onClientLost(mClient);
             }
         }
     }

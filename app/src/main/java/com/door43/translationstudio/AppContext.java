@@ -2,6 +2,7 @@ package com.door43.translationstudio;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -57,6 +58,16 @@ public class AppContext {
             Logger.e(AppContext.class.getName(), "Failed to create the library", e);
         }
         return null;
+    }
+
+    /**
+     * Checks if the device is a tablet
+     * @return
+     */
+    public static boolean isTablet() {
+        return (mContext.getResources().getConfiguration().screenLayout
+                & Configuration.SCREENLAYOUT_SIZE_MASK)
+                >= Configuration.SCREENLAYOUT_SIZE_LARGE;
     }
 
     /**

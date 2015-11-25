@@ -316,17 +316,12 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
 
     @Override
     public void onClientConnected(Peer peer) {
-        Handler hand = new Handler(Looper.getMainLooper());
-        hand.post(new Runnable() {
-            @Override
-            public void run() {
-                updatePeerList(serverService.getPeers());
-            }
-        });
+        serverService.acceptConnection(peer);
     }
 
     @Override
     public void onClientLost(Peer peer) {
+
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
@@ -354,17 +349,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
 
     @Override
     public void onFoundServer(Peer server) {
-        switch(server.getVersion()) {
-            default:
-                // TODO: initialize the api that will be used to handle this version of the server
-        }
-        Handler hand = new Handler(Looper.getMainLooper());
-        hand.post(new Runnable() {
-            @Override
-            public void run() {
-                updatePeerList(listenerService.getPeers());
-            }
-        });
+        clientService.connectToServer(server);
     }
 
     @Override

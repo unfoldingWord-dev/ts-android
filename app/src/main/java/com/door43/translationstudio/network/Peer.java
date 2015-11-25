@@ -15,6 +15,10 @@ public class Peer {
     private boolean isSecure = false;
     public final KeyValueStore keyStore = new KeyValueStore();
     private boolean mIsAuthorized = false;
+    private boolean hasIdentity = false;
+    private String name = "unknown";
+    private String device = "unknown";
+    private String id = "unknown";
 
     /**
      * Specifies a new peer (likely a client)
@@ -100,6 +104,14 @@ public class Peer {
     }
 
     /**
+     * Checks if this peer has shared it's identity
+     * @return
+     */
+    public boolean hasIdentity() {
+        return hasIdentity;
+    }
+
+    /**
      * Checks if the peer has permission to connect
      * @return
      */
@@ -122,5 +134,37 @@ public class Peer {
      */
     public void setIsSecure(Boolean secure) {
         isSecure = secure;
+    }
+
+    /**
+     * Indicates if this connection has shared it's identity
+     * @param hasIdentity
+     */
+    public void setHasIdentity(boolean hasIdentity) {
+        this.hasIdentity = hasIdentity;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDevice(String device) {
+        this.device = device;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDevice() {
+        return device;
+    }
+
+    public String getId() {
+        return id;
     }
 }

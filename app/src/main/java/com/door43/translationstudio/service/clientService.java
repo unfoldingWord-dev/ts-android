@@ -25,8 +25,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.security.MessageDigest;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Arrays;
@@ -172,7 +174,7 @@ public class ClientService extends NetworkService {
      * @param message
      */
     private void onMessageReceived(Peer server, String message) {
-        if(server.isSecure()) {
+        if(server.isSecure() && server.hasIdentity()) {
             message = decryptMessage(privateKey, message);
             if(message != null) {
                 String[] data = StringUtilities.chunk(message, ":");
@@ -180,41 +182,104 @@ public class ClientService extends NetworkService {
             } else if(listener != null) {
                 listener.onClientServiceError(new Exception("Message descryption failed"));
             }
-        } else {
-            handshake(server, message);
-        }
-    }
-
-    /**
-     * Performs the handshake with the server
-     * @param server
-     * @param message
-     */
-    private void handshake(Peer server, String message) {
-        String[] data = StringUtilities.chunk(message, ":");
-        switch(data[0]) {
-            case SocketMessages.MSG_PUBLIC_KEY:
-                Logger.i(this.getClass().getName(), "connected to server " + server.getIpAddress());
-                // receive the server's public key
-                server.keyStore.add(PeerStatusKeys.PUBLIC_KEY, data[1]);
-                server.keyStore.add(PeerStatusKeys.WAITING, false);
-                server.keyStore.add(PeerStatusKeys.CONTROL_TEXT, getResources().getString(R.string.browse));
+        } else if(!server.isSecure()){
+            // receive the key
+            try {
+                JSONObject json = new JSONObject(message);
+                server.keyStore.add(PeerStatusKeys.PUBLIC_KEY, json.getString("key"));
                 server.setIsSecure(true);
+            } catch (JSONException e) {
+                Logger.w(this.getClass().getName(), "Invalid request: " + message, e);
+//                sendMessage(server, SocketMessages.MSG_INVALID_REQUEST);
+            }
+
+            // send public key
+            try {
+                JSONObject json = new JSONObject();
+                json.put("key", publicKey);
+                // TRICKY: manually write to server so we don't encrypt it
+                if(serverConnections.containsKey(server.getIpAddress())) {
+                    serverConnections.get(server.getIpAddress()).write(json.toString());
+                }
+            } catch (JSONException e) {
+                if(listener != null) {
+                    listener.onClientServiceError(e);
+                }
+            }
+
+            // send identity
+            if(server.isSecure()) {
+                try {
+                    JSONObject json = new JSONObject();
+                    json.put("name", "Jon Doe Client");
+                    if(AppContext.isTablet()) {
+                        json.put("device", "tablet");
+                    } else {
+                        json.put("device", "phone");
+                    }
+                    MessageDigest md = MessageDigest.getInstance("SHA-256");
+                    md.update(AppContext.udid().getBytes("UTF-8"));
+                    byte[] digest = md.digest();
+                    BigInteger bigInt = new BigInteger(1, digest);
+                    String hash = bigInt.toString();
+                    json.put("id", hash);
+                    sendMessage(server, json.toString());
+                } catch (Exception e){
+                    Logger.w(this.getClass().getName(), "Failed to prepare response ", e);
+                    if(listener != null) {
+                        listener.onClientServiceError(e);
+                    }
+                }
+            }
+        } else if(!server.hasIdentity()) {
+            // receive identity
+            message = decryptMessage(privateKey, message);
+            try {
+                JSONObject json = new JSONObject(message);
+                server.setName(json.getString("name"));
+                server.setDevice(json.getString("device"));
+                server.setId(json.getString("id"));
+                server.setHasIdentity(true);
                 if(listener != null) {
                     listener.onServerConnectionChanged(server);
                 }
-                break;
-            case SocketMessages.MSG_OK:
-                Logger.i(this.getClass().getName(), "accepted by server " + server.getIpAddress());
-                // we are authorized to access the server
-                // send public key to server
-                sendMessage(server, SocketMessages.MSG_PUBLIC_KEY + ":" + publicKey);
-                break;
-            default:
-                Logger.w(this.getClass().getName(), "Invalid request: " + message);
-                sendMessage(server, SocketMessages.MSG_INVALID_REQUEST);
+            } catch (JSONException e) {
+                Logger.w(this.getClass().getName(), "Invalid request: " + message, e);
+//                sendMessage(server, SocketMessages.MSG_INVALID_REQUEST);
+            }
         }
     }
+
+//    /**
+//     * Performs the handshake with the server
+//     * @param server
+//     * @param message
+//     */
+//    private void handshake(Peer server, String message) {
+//        String[] data = StringUtilities.chunk(message, ":");
+//        switch(data[0]) {
+//            case SocketMessages.MSG_PUBLIC_KEY:
+//                Logger.i(this.getClass().getName(), "connected to server " + server.getIpAddress());
+//                // receive the server's public key
+//                server.keyStore.add(PeerStatusKeys.PUBLIC_KEY, data[1]);
+//                server.keyStore.add(PeerStatusKeys.WAITING, false);
+//                server.keyStore.add(PeerStatusKeys.CONTROL_TEXT, getResources().getString(R.string.browse));
+//                server.setIsSecure(true);
+//                if(listener != null) {
+//                    listener.onServerConnectionChanged(server);
+//                }
+//                break;
+////            case SocketMessages.MSG_OK:
+////                Logger.i(this.getClass().getName(), "accepted by server " + server.getIpAddress());
+////                // we are authorized to access the server
+////                // send public key to server
+////                sendMessage(server, SocketMessages.MSG_PUBLIC_KEY + ":" + publicKey);
+////                break;
+//            default:
+//                Logger.w(this.getClass().getName(), "Invalid request: " + message);
+//                sendMessage(server, SocketMessages.MSG_INVALID_REQUEST);
+//        }
+//    }
 
     /**
      * Handles commands sent from the server

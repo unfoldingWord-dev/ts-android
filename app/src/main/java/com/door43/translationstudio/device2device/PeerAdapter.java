@@ -94,21 +94,23 @@ public class PeerAdapter extends BaseAdapter {
 
         // instructions
 
-        if(p.isSecure()) {
-            instructionsText.setText(R.string.connected);
-            if(mIsServer) {
-                peerIcon.setBackgroundResource(R.drawable.icon_update_nearby_blue);
+//        if(p.isSecure()) {
+//            instructionsText.setText(R.string.connected);
+            if(p.getDevice().equals("tablet")) {
+                peerIcon.setBackgroundResource(R.drawable.ic_tablet_android_black_24dp);
+            } else if(p.getDevice().equals("phone")) {
+                peerIcon.setBackgroundResource(R.drawable.ic_phone_android_black_24dp);
             } else {
-                peerIcon.setBackgroundResource(R.drawable.icon_library_blue);
+                peerIcon.setBackgroundResource(R.drawable.ic_devices_other_black_24dp);
             }
-        } else {
-            if(mIsServer) {
-                peerIcon.setBackgroundResource(R.drawable.icon_update_nearby_dark);
-            } else {
-                peerIcon.setBackgroundResource(R.drawable.icon_library_dark);
-            }
-            instructionsText.setText(R.string.click_to_connect);
-        }
+//        } else {
+//            if(mIsServer) {
+//                peerIcon.setBackgroundResource(R.drawable.icon_update_nearby_dark);
+//            } else {
+//                peerIcon.setBackgroundResource(R.drawable.icon_library_dark);
+//            }
+//            instructionsText.setText(R.string.click_to_connect);
+//        }
 
         browseButton.setVisibility(View.GONE);
 
