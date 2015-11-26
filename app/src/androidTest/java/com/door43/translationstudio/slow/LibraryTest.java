@@ -78,6 +78,11 @@ public class LibraryTest extends InstrumentationTestCase {
     }
 
     public void test06DownloadEverything() throws Exception {
+        mLibrary.delete();
+        mLibrary = AppContext.getLibrary();
+        assertFalse(mLibrary.exists());
+        mLibrary.checkServerForUpdates(null);
+        assertTrue(mLibrary.downloadTargetLanguages());
         assertTrue(mLibrary.downloadAllProjects(null, null));
     }
 

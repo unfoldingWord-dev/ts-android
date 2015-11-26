@@ -139,7 +139,7 @@ public class Indexer {
         try {
             items = new JSONArray(catalog);
         } catch (JSONException e) {
-            e.printStackTrace();
+            Logger.e(this.getClass().getName(), "Failed to the projects catalog", e);
             return false;
         }
 
@@ -157,7 +157,7 @@ public class Indexer {
                     mDatabase.yieldIfContendedSafely();
                 }
             } catch (JSONException e) {
-                e.printStackTrace();
+                Logger.w(this.getClass().getName(), "Failed to parse a project", e);
             }
         }
         return true;
@@ -234,7 +234,7 @@ public class Indexer {
         try {
             items = new JSONArray(catalog);
         } catch (JSONException e) {
-            e.printStackTrace();
+            Logger.e(this.getClass().getName(), "Failed to parse the resources catalog for " + projectSlug + "-" + sourceLanguageSlug, e);
             return false;
         }
 
@@ -256,7 +256,7 @@ public class Indexer {
                     mDatabase.yieldIfContendedSafely();
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                Logger.w(this.getClass().getName(), "Failed to parse a resource for " + projectSlug + "-" + sourceLanguageSlug, e);
             }
         }
 
@@ -382,7 +382,7 @@ public class Indexer {
         try {
             items = new JSONArray(catalog);
         } catch (JSONException e) {
-            e.printStackTrace();
+            Logger.e(this.getClass().getName(), "Failed to parse translation notes catalog for " + sourceTranslation.getId(), e);
             return false;
         }
         JSONObject formattedCatalog = new JSONObject();
@@ -414,7 +414,7 @@ public class Indexer {
                 newFrameJson.put("items", notesJson);
                 framesJson.put(newFrameJson);
             } catch (JSONException e) {
-                e.printStackTrace();
+                Logger.w(this.getClass().getName(), "Failed to parse a translation note for " + sourceTranslation.getId(), e);
             }
         }
         // repackage as json array
@@ -460,17 +460,17 @@ public class Indexer {
                                             }
                                             mDatabase.yieldIfContendedSafely();
                                         } catch (JSONException e) {
-                                            e.printStackTrace();
+                                            Logger.w(this.getClass().getName(), "Failed to parse a translation note in frame " + chapterSlug + "-" + frameSlug + " for " + sourceTranslation.getId(), e);
                                         }
                                     }
                                 }
                             } catch (JSONException e) {
-                                e.printStackTrace();
+                                Logger.w(this.getClass().getName(), "Failed to parse a translation note in chapter " + chapterSlug + " for " + sourceTranslation.getId(), e);
                             }
                         }
                     }
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    Logger.w(this.getClass().getName(), "Failed to parse a translation note for " + sourceTranslation.getId(), e);
                 }
             }
         }
@@ -504,7 +504,7 @@ public class Indexer {
                     }
                     mDatabase.yieldIfContendedSafely();
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    Logger.w(this.getClass().getName(), "Failed to parse a translation word for " + sourceTranslation.getId(), e);
                 }
             }
         }
@@ -525,7 +525,7 @@ public class Indexer {
             JSONObject catJson = new JSONObject(catalog);
             items = catJson.getJSONArray("chapters");
         } catch (JSONException e) {
-            e.printStackTrace();
+            Logger.e(this.getClass().getName(), "Failed to parse word assignments for " + sourceTranslation.getId(), e);
             return false;
         }
         //KLUDGE: end modify v2\
@@ -557,17 +557,17 @@ public class Indexer {
                                                 mDatabaseHelper.addTranslationWordToFrame(mDatabase, item.getString("id"), resourceId, frameId, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug, chapterSlug, frameSlug);
                                             }
                                         } catch (JSONException e) {
-                                            e.printStackTrace();
+                                            Logger.w(this.getClass().getName(), "Failed to parse a word assignment in frame " + chapterSlug + "-" + frameSlug + " for " + sourceTranslation.getId(), e);
                                         }
                                     }
                                 }
                             } catch (JSONException e) {
-                                e.printStackTrace();
+                                Logger.w(this.getClass().getName(), "Failed to parse a word assignment in chpater " + chapterSlug + " for " + sourceTranslation.getId(), e);
                             }
                         }
                     }
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    Logger.w(this.getClass().getName(), "Failed to parse a word assignment for " + sourceTranslation.getId(), e);
                 }
             }
         }
@@ -587,7 +587,7 @@ public class Indexer {
         try {
             items = new JSONArray(catalog);
         } catch (JSONException e) {
-            e.printStackTrace();
+            Logger.e(this.getClass().getName(), "Failed to parse the questions catalog for " + sourceTranslation.getId(), e);
             return false;
         }
         JSONObject formattedCatalog = new JSONObject();
@@ -630,11 +630,11 @@ public class Indexer {
                             framesJson.getJSONObject(frameId).getJSONArray("items").put(question);
                         }
                     } catch (JSONException e) {
-                        e.printStackTrace();
+                        Logger.w(this.getClass().getName(), "Failed to parse question in chapter " + chapterId + " for " + sourceTranslation.getId(), e);
                     }
                 }
             } catch (JSONException e) {
-                e.printStackTrace();
+                Logger.w(this.getClass().getName(), "Failed to parse a question for " + sourceTranslation.getId(), e);
             }
         }
         // repackage as json array
