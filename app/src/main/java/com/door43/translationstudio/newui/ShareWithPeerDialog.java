@@ -20,6 +20,7 @@ import android.widget.Button;
 import android.widget.ListView;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.device2device.PeerAdapter;
 import com.door43.translationstudio.service.PeerStatusKeys;
@@ -44,7 +45,6 @@ import java.util.Locale;
 public class ShareWithPeerDialog extends DialogFragment implements ServerService.Callbacks, BroadcastListenerService.Callbacks, ClientService.OnClientEventListener {
 
     private static final int PORT_CLIENT_UDP = 9939;
-    private static final String SERVICE_NAME = "tS";
     private static final int REFRESH_FREQUENCY = 2000;
     private static final int SERVER_TTL = 2000;
     public static final int MODE_CLIENT = 0;
@@ -147,6 +147,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
     private String targetTranslationSlug;
     private boolean shutDownServices = true;
 
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         View v = inflater.inflate(R.layout.dialog_share_with_peer, container, false);
@@ -160,6 +161,11 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
             }
         } else {
             throw new InvalidParameterException("Missing intent arguments");
+        }
+
+        // get device name
+        if(AppContext.getDeviceNetworkAlias() == null) {
+            // TODO: 11/25/2015 get the device name
         }
 
         publicKeyFile = new File(getActivity().getFilesDir(), getResources().getString(R.string.p2p_keys_dir) + "/id_rsa.pub");
@@ -253,15 +259,10 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
         }
     }
 
+    @Override
     public void onSaveInstanceState(Bundle out) {
         shutDownServices = false;
         super.onSaveInstanceState(out);
-    }
-
-    @Override
-    public void onStop() {
-
-        super.onStop();
     }
 
     @Override
@@ -270,22 +271,22 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
         try {
             getActivity().unbindService(broadcastConnection);
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
         try {
             getActivity().unbindService(listenerConnection);
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
         try {
             getActivity().unbindService(serverConnection);
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
         try {
             getActivity().unbindService(clientConnection);
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
 
         // shut down services
@@ -321,7 +322,6 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
             broadcastIntent.putExtra(BroadcastService.PARAM_BROADCAST_PORT, PORT_CLIENT_UDP);
             broadcastIntent.putExtra(BroadcastService.PARAM_SERVICE_PORT, port);
             broadcastIntent.putExtra(BroadcastService.PARAM_FREQUENCY, 2000);
-//            broadcastIntent.putExtra(BroadcastService.PARAM_SERVICE_NAME, SERVICE_NAME);
             getActivity().startService(broadcastIntent);
         }
         getActivity().bindService(broadcastIntent, broadcastConnection, Context.BIND_AUTO_CREATE);
@@ -374,23 +374,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
 
     @Override
     public void onLostServer(Peer server) {
-// close dialogs
-//        if(mPeerDialogs.containsKey(server.getIpAddress())) {
-//            DialogFragment dialog = mPeerDialogs.get(server.getIpAddress());
-//            if(dialog.getActivity() != null) {
-//                dialog.dismiss();
-//            }
-//            mPeerDialogs.remove(server.getIpAddress());
-//        }
 
-        // reload the list
-//        Handler hand = new Handler(Looper.getMainLooper());
-//        hand.post(new Runnable() {
-//            @Override
-//            public void run() {
-//                updatePeerList(listenerService.getPeers());
-//            }
-//        });
     }
 
     @Override
@@ -398,7 +382,6 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
         // begin listening for servers
         if(!BroadcastListenerService.isRunning()) {
             listenerIntent.putExtra(BroadcastListenerService.PARAM_BROADCAST_PORT, PORT_CLIENT_UDP);
-//            listenerIntent.putExtra(BroadcastListenerService.PARAM_SERVICE_NAME, SERVICE_NAME);
             listenerIntent.putExtra(BroadcastListenerService.PARAM_REFRESH_FREQUENCY, REFRESH_FREQUENCY);
             listenerIntent.putExtra(BroadcastListenerService.PARAM_SERVER_TTL, SERVER_TTL);
             getActivity().startService(listenerIntent);

@@ -417,6 +417,30 @@ public class AppContext {
     }
 
     /**
+     * Sets the alias to be displayed when others see this device on the network
+     * @param alias
+     */
+    public static void setDeviceNetworkAlias(String alias) {
+        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        if(alias.trim().isEmpty()) {
+            editor.remove("device_network_alias");
+        } else {
+            editor.putString("device_network_alias", alias);
+        }
+        editor.apply();
+    }
+
+    /**
+     * Returns the alias to be displayed when others see this device on the network
+     * @return
+     */
+    public static String getDeviceNetworkAlias() {
+        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        return prefs.getString("device_network_alias", null);
+    }
+
+    /**
      * Returns the string value of a user preference or the default value
      * @param preferenceKey
      * @param defaultResource

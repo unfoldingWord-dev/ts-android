@@ -565,4 +565,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <string name="include_images">Include images</string>
     <string name="include_incomplete_frames">Include incomplete chunks</string>
     <string name="backup_to_friend">Send to Friend</string>
+    <string name="device_network_alias_description">Choose a name or pseudonym others will see when sharing with your device</string>
+    <string name="device_name">Device Name</string>
 </resources>
