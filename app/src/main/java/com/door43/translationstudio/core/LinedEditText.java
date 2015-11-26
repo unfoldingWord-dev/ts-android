@@ -15,7 +15,7 @@ import android.widget.EditText;
 public class LinedEditText extends EditText {
     private Rect mRect;
     private Paint mPaint;
-    public boolean mEnableLines;
+    private boolean mEnableLines;
 
     // we need this constructor for LayoutInflater
     public LinedEditText(Context context, AttributeSet attrs) {
@@ -32,18 +32,37 @@ public class LinedEditText extends EditText {
     protected void onDraw(Canvas canvas) {
 
         if(mEnableLines) {
-            int count = getLineCount();
             Rect r = mRect;
             Paint paint = mPaint;
+
+            Rect bounds = canvas.getClipBounds();
+            int bottom = bounds.bottom;
+
             int lineHeight = (int) getLineHeight();
             int offset = lineHeight / 8; // offset so that text is above line
 
-            for (int i = 0; i < count; i++) {
-                int baseline = getLineBounds(i, r) + offset;
-                canvas.drawLine(r.left, baseline, r.right, baseline, paint);
+            int position = getLineBounds(0, r) + offset;
+
+            for (int i = 0; i < 100; i++) {
+
+                if(position > bottom) {
+                    break;
+                }
+
+                canvas.drawLine(bounds.left, position, bounds.right, position, paint);
+                position += lineHeight;
             }
         }
 
         super.onDraw(canvas);
     }
+
+    public boolean isEnableLines() {
+        return mEnableLines;
+    }
+
+    public void setEnableLines(boolean mEnableLines) {
+        this.mEnableLines = mEnableLines;
+    }
+
 }

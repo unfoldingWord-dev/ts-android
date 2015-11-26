@@ -529,7 +529,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                         holder.mTargetBody.setEnabled(true);
                         holder.mTargetBody.setFocusable(true);
                         holder.mTargetBody.setFocusableInTouchMode(true);
-                        holder.mTargetBody.mEnableLines = true;
+                        holder.mTargetBody.setEnableLines(true);
                         editTarget(holder.mTargetBody, item);
                     }
                 })
@@ -760,11 +760,11 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     private void indicateCardCompleted(boolean finished, ViewHolder holder) {
         if(finished) {
             holder.mTargetBody.setEnabled(false);
-            holder.mTargetBody.mEnableLines = false;
+            holder.mTargetBody.setEnableLines(false);
             holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         } else {
             holder.mTargetBody.setEnabled(true);
-            holder.mTargetBody.mEnableLines = true;
+            holder.mTargetBody.setEnableLines(true);
             holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         }
     }
