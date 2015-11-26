@@ -248,7 +248,16 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
             RenderingGroup sourceRendering = new RenderingGroup();
             if (bodyFormat == TranslationFormat.USX) {
                 // TODO: add click listeners
-                sourceRendering.addEngine(new USXRenderer(null, null));
+                USXRenderer renderer = new USXRenderer(null, null);
+                sourceRendering.addEngine(renderer);
+
+                // In read mode (and only in read mode), pull leading major section headings out for
+                // display above chapter headings.
+                renderer.setSuppressLeadingMajorSectionHeadings(true);
+                CharSequence heading = renderer.getLeadingMajorScetionHeading(chapterBody);
+                holder.mSourceHeading.setText(heading);
+                holder.mSourceHeading.setVisibility(
+                        heading.length() > 0 ? View.VISIBLE : View.GONE);
             } else {
                 sourceRendering.addEngine(new DefaultRenderer());
             }
@@ -371,6 +380,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         // set up fonts
         if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
             holder.mLayoutBuildNumber = mLayoutBuildNumber;
+            Typography.formatTitle(mContext, holder.mSourceHeading, mSourceLanguage.getId(), mSourceLanguage.getDirection());
             Typography.formatTitle(mContext, holder.mSourceTitle, mSourceLanguage.getId(), mSourceLanguage.getDirection());
             Typography.format(mContext, holder.mSourceBody, mSourceLanguage.getId(), mSourceLanguage.getDirection());
             Typography.formatTitle(mContext, holder.mTargetTitle, mTargetLanguage.getId(), mTargetLanguage.getDirection());
@@ -493,6 +503,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         private final CardView mTargetCard;
         private final CardView mSourceCard;
         private final ImageButton mNewTabButton;
+        public TextView mSourceHeading;
         public TextView mSourceTitle;
         public TextView mSourceBody;
         public TabLayout mTabLayout;
@@ -501,6 +512,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         public ViewHolder(View v) {
             super(v);
             mSourceCard = (CardView)v.findViewById(R.id.source_translation_card);
+            mSourceHeading = (TextView)v.findViewById(R.id.source_translation_heading);
             mSourceTitle = (TextView)v.findViewById(R.id.source_translation_title);
             mSourceBody = (TextView)v.findViewById(R.id.source_translation_body);
             mTargetCard = (CardView)v.findViewById(R.id.target_translation_card);
