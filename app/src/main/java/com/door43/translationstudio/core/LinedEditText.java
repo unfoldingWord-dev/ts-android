@@ -32,6 +32,8 @@ public class LinedEditText extends EditText {
     protected void onDraw(Canvas canvas) {
 
         if(mEnableLines) {
+            int count = getLineCount();
+
             Rect r = mRect;
             Paint paint = mPaint;
 
@@ -41,16 +43,22 @@ public class LinedEditText extends EditText {
             int lineHeight = (int) getLineHeight();
             int offset = lineHeight / 8; // offset so that text is above line
 
-            int position = getLineBounds(0, r) + offset;
+            int position = 0;
 
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < 100; i++) {  // 100 is just here for a sanity limit to max number of lines
 
-                if(position > bottom) {
+                if( i < count ) {
+                    position = getLineBounds(i, r) + offset;
+                }
+                else { // keep drawing below last text line
+                    position += lineHeight;
+                }
+
+                if(position > bottom) { // done when we have filled the view
                     break;
                 }
 
-                canvas.drawLine(bounds.left, position, bounds.right, position, paint);
-                position += lineHeight;
+                canvas.drawLine(r.left, position, r.right, position, paint);
             }
         }
 
