@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Chapter;
+import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.ProjectTranslation;
 import com.door43.translationstudio.core.SourceLanguage;
@@ -316,18 +317,34 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
 //        }
 
         holder.mTargetBody.setText(mRenderedTargetBody[position]);
-        ProjectTranslation projTrans = mTargetTranslation.getProjectTranslation();
-        String targetChapterTitle = projTrans.getTitle();
 
-        if (targetChapterTitle.isEmpty()) { // if no target translation, fall back to source title
-            targetChapterTitle = chapter.title;
+//        ChapterTranslation getChapterTranslation(String chapterSlug);
 
-            if (targetChapterTitle.isEmpty()) {
-                targetChapterTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
+        String targetChapterTitle = "";
+
+        final ChapterTranslation chapterTranslation = mTargetTranslation.getChapterTranslation(chapter);
+        if(null != chapterTranslation) {
+            targetChapterTitle = chapterTranslation.title;
+        }
+
+        if (targetChapterTitle.isEmpty() && !chapterTitle.isEmpty()) { // if no target translation, fall back to source title
+            targetChapterTitle = chapterTitle;
+        }
+
+        if (targetChapterTitle.isEmpty()) { // if no chapter titles, fall back to project title
+            ProjectTranslation projTrans = mTargetTranslation.getProjectTranslation();
+            if(!projTrans.getTitle().isEmpty()) {
+                targetChapterTitle = projTrans.getTitle() + " " + Integer.parseInt(chapter.getId());
             }
         }
 
-        targetChapterTitle += " " + Integer.parseInt(chapter.getId());
+        if (targetChapterTitle.isEmpty() && !chapterTitle.isEmpty()) { // if no chapter title translation, fall back to source project title
+            targetChapterTitle = chapterTitle + " " + Integer.parseInt(chapter.getId());
+        }
+
+        if (targetChapterTitle.isEmpty()) {
+            targetChapterTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
+        }
 
         holder.mTargetTitle.setText(targetChapterTitle + " - " + mTargetLanguage.name);
 
