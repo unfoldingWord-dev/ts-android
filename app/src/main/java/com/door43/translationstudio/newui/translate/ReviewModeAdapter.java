@@ -3,11 +3,9 @@ package com.door43.translationstudio.newui.translate;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Looper;
@@ -50,6 +48,7 @@ import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.USXRenderer;
@@ -57,8 +56,6 @@ import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.VersePinSpan;
 import com.door43.widget.ViewUtil;
-
-import org.sufficientlysecure.htmltextview.HtmlTextView;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -597,40 +594,55 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mDoneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                View layout = inflater.inflate(R.layout.dialog_html_alert, null);
-                HtmlTextView text = (HtmlTextView)layout.findViewById(R.id.text);
-                text.setHtmlFromString(mContext.getResources().getString(R.string.chunk_checklist_body), true);
+//                LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//                View layout = inflater.inflate(R.layout.dialog_html_alert, null);
+//                HtmlTextView text = (HtmlTextView)layout.findViewById(R.id.text);
+//                text.setHtmlFromString(mContext.getResources().getString(R.string.chunk_checklist_body), true);
 
-                new AlertDialog.Builder(mContext)
-                        .setTitle(R.string.chunk_checklist_title)
-                        .setView(layout)
-                            .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+//                new tsAlertDialogBuilder(mContext)
+//                        .setTitle(R.string.chunk_checklist_title)
+//                        .setView(layout)
+//                            .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+//                                @Override
+//                                public void onClick(DialogInterface dialog, int which) {
+//                                    boolean finished;
+//                                    if (item.isChapterReference) {
+//                                        finished = mTargetTranslation.finishChapterReference(chapter);
+//                                    } else if (item.isChapterTitle) {
+//                                        finished = mTargetTranslation.finishChapterTitle(chapter);
+//                                    } else if(item.isProjectTitle) {
+//                                        finished = mTargetTranslation.finishProjectTitle();
+//                                    } else {
+//                                        finished = mTargetTranslation.finishFrame(frame);
+//                                    }
+//                                    if (finished) {
+//                                        item.isEditing = false;
+//                                        item.renderedTargetBody = null;
+//                                        notifyDataSetChanged();
+//                                    } else {
+//                                        Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.translate_first, Snackbar.LENGTH_LONG);
+//                                        ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
+//                                        snack.show();
+//                                    }
+//                                }
+//                            })
+//                            .setNegativeButton(R.string.title_cancel, null)
+//                            .show();
+
+                final CustomAlertDialog dlg = new CustomAlertDialog();
+                dlg.setContext(mContext)
+                    .setTitle(R.string.chunk_checklist_title)
+                    .setMessageHtml(R.string.chunk_checklist_body)
+                    .setPositiveButton(R.string.confirm, new View.OnClickListener() {
                                 @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    boolean finished;
-                                    if (item.isChapterReference) {
-                                        finished = mTargetTranslation.finishChapterReference(chapter);
-                                    } else if (item.isChapterTitle) {
-                                        finished = mTargetTranslation.finishChapterTitle(chapter);
-                                    } else if(item.isProjectTitle) {
-                                        finished = mTargetTranslation.finishProjectTitle();
-                                    } else {
-                                        finished = mTargetTranslation.finishFrame(frame);
-                                    }
-                                    if (finished) {
-                                        item.isEditing = false;
-                                        item.renderedTargetBody = null;
-                                        notifyDataSetChanged();
-                                    } else {
-                                        Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.translate_first, Snackbar.LENGTH_LONG);
-                                        ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
-                                        snack.show();
-                                    }
+                                public void onClick(View v) {
+                                    //TODO blm: add code
+                                    dlg.dismiss();
                                 }
-                            })
-                            .setNegativeButton(R.string.title_cancel, null)
-                            .show();
+                            }
+                    )
+                    .setNegativeButton(R.string.title_cancel, null)
+                    .show("Example2");
             }
         });
         holder.mDoneFlag.setOnClickListener(new View.OnClickListener() {

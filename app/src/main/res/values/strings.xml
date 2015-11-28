@@ -41,7 +41,7 @@
     <string name="title_activity_sharing">Share</string>
     <string name="missing_external_storage">External storage not available</string>
     <!-- Notifies the user that the project was successfully saved to a location on the phone -->
-    <string name="project_exported_to">Project saved to <xliff:g id="file_path" example="/storage/sdcard1/">%1$s</xliff:g></string>
+    <string name="project_exported_to">Project saved to <xliff:g example="/storage/sdcard1/" id="file_path">%1$s</xliff:g></string>
     <string name="project_share_exception" translatable="false">The project cannot be shared</string>
     <!-- The file browser -->
     <string name="title_activity_file_explorer">File Explorer</string>
@@ -63,25 +63,25 @@
     <string name="upload_wizard_overview">Upload Review</string>
     <string name="label_project_details">Project details</string>
     <!-- Indicates how the project is being translated. e.g. Open Bible Stories is being translated from the English language into the Deutsch language -->
-    <string name="project_details"><xliff:g id="project" example="Open Bible Stories">\"%1$s\"</xliff:g> is being translated from the <xliff:g id="source_language" example="English">\"%2$s\"</xliff:g> language into the <xliff:g id="target_language" example="Deutsch">\"%3$s\"</xliff:g> language.</string>
+    <string name="project_details"><xliff:g example="Open Bible Stories" id="project">\"%1$s\"</xliff:g> is being translated from the <xliff:g example="English" id="source_language">\"%2$s\"</xliff:g> language into the <xliff:g example="Deutsch" id="target_language">\"%3$s\"</xliff:g> language.</string>
     <string name="click_for_details">Click for details</string>
     <string name="title_project_settings">Project Languages</string>
     <string name="error_target_and_source_are_same">Source and target languages must not match</string>
     <string name="error_chapter_title_missing">Chapter title missing</string>
     <string name="error_chapter_reference_missing">Chapter reference missing</string>
-    <string name="label_chapter_title_detailed">Chapter <xliff:g id="chapter" example="1. The Creation">%1$s</xliff:g></string>
-    <string name="label_frame_title_detailed">Frame: <xliff:g id="frame" example="1">%1$s</xliff:g></string>
+    <string name="label_chapter_title_detailed">Chapter <xliff:g example="1. The Creation" id="chapter">%1$s</xliff:g></string>
+    <string name="label_frame_title_detailed">Frame: <xliff:g example="1" id="frame">%1$s</xliff:g></string>
     <!-- Errors were encountered while validating the translation -->
     <string name="dialog_validation_errors">Validation Errors</string>
     <string name="validation_errors">Unresolved errors. Please correct them and try again</string>
     <!-- Indicates that a number of frames have not been translated. e.g. 3 frames have not been translated -->
-    <string name="error_frames_not_translated"><xliff:g id="number" example="5">%1$s</xliff:g> frames have not been translated.</string>
+    <string name="error_frames_not_translated"><xliff:g example="5" id="number">%1$s</xliff:g> frames have not been translated.</string>
     <string name="dialog_validation_warnings">Validation Warnings</string>
     <string name="validation_warnings">There are unresolved warnings. Continue?</string>
     <string name="no_translated_chapters">Nothing has been translated</string>
     <string name="title_chapters">Chapter</string>
     <!-- Notifies the user that they are viewing a frame within a chapter. e.g. Viewing frame 01 in chapter 1. The Creation -->
-    <string name="now_viewing_frame">Viewing frame <xliff:g id="number" example="1">%1$s</xliff:g> in chapter <xliff:g id="chapter" example="1. The Creation">%2$s</xliff:g>.</string>
+    <string name="now_viewing_frame">Viewing frame <xliff:g example="1" id="number">%1$s</xliff:g> in chapter <xliff:g example="1. The Creation" id="chapter">%2$s</xliff:g>.</string>
     <string name="missing_chapter" translatable="false">Missing chapter</string>
     <string name="label_translation_notes">Notes</string>
     <string name="label_passage_note">Passage note:</string>
@@ -92,25 +92,25 @@
     <string name="target_language_instructions">Not started or in-progress translations</string>
     <string name="notes_cannot_overlap">Notes cannot overlap</string>
     <!-- Indicates the current frame (page) being viewed e.g. Frame 2 of 10 -->
-    <string name="currently_viewed_frame_index">Frame <xliff:g id="current_frame" example="2">%1$s</xliff:g> of <xliff:g id="total_frames" example="10">%2$s</xliff:g></string>
-    <string name="git_awaiting_report" translatable="false">[<xliff:g id="remote" example="refs/heads/master">%1$s</xliff:g>] Push process is awaiting update report from remote repository.</string>
-    <string name="git_non_existing" translatable="false">[<xliff:g id="remote" example="refs/heads/master">%1$s</xliff:g>] Remote ref didn\'t exist.</string>
-    <string name="git_not_attempted" translatable="false">[<xliff:g id="remote" example="refs/heads/master">%s</xliff:g>] Push process hasn\'t yet attempted to update this ref.</string>
-    <string name="git_ok" translatable="false">[<xliff:g id="remote" example="refs/heads/master">%1$s</xliff:g>] Success push to remote ref.</string>
-    <string name="git_rejected_nondelete" translatable="false">[<xliff:g id="remote" example="refs/heads/master">%1$s</xliff:g>] Remote ref update was rejected, because remote side doesn\'t support/allow deleting refs.</string>
-    <string name="git_rejected_nonfastforward" translatable="false">[<xliff:g id="remote" example="refs/heads/master">%1$s</xliff:g>] Remote ref update was rejected, as it would cause non fast-forward update.</string>
-    <string name="git_rejected_other_reason" translatable="false">[<xliff:g id="remote" example="refs/heads/master">%1$s</xliff:g>] Remote ref update was rejected.</string>
-    <string name="git_rejected_other_reason_detailed" translatable="false">[<xliff:g id="remote" example="refs/heads/master">%1$s</xliff:g>] Remote ref update was rejected, because <xliff:g id="error" example="error message">%2$s.</xliff:g></string>
-    <string name="git_rejected_remote_changed" translatable="false">[<xliff:g id="remote" example="refs/heads/master">%1$s</xliff:g>] Remote ref update was rejected,  because old object id on remote repository wasn\'t the same as defined expected old object.</string>
-    <string name="git_uptodate" translatable="false">[<xliff:g id="remote" example="refs/heads/master">%1$s</xliff:g>] remote ref is up to date</string>
-    <string name="git_server_details" translatable="false">Server: <xliff:g id="server" example="gitolite3@ts.door43.org:tS/46983314849sd54s6d/uw-obs-de">%1$s</xliff:g></string>
+    <string name="currently_viewed_frame_index">Frame <xliff:g example="2" id="current_frame">%1$s</xliff:g> of <xliff:g example="10" id="total_frames">%2$s</xliff:g></string>
+    <string name="git_awaiting_report" translatable="false">[<xliff:g example="refs/heads/master" id="remote">%1$s</xliff:g>] Push process is awaiting update report from remote repository.</string>
+    <string name="git_non_existing" translatable="false">[<xliff:g example="refs/heads/master" id="remote">%1$s</xliff:g>] Remote ref didn\'t exist.</string>
+    <string name="git_not_attempted" translatable="false">[<xliff:g example="refs/heads/master" id="remote">%s</xliff:g>] Push process hasn\'t yet attempted to update this ref.</string>
+    <string name="git_ok" translatable="false">[<xliff:g example="refs/heads/master" id="remote">%1$s</xliff:g>] Success push to remote ref.</string>
+    <string name="git_rejected_nondelete" translatable="false">[<xliff:g example="refs/heads/master" id="remote">%1$s</xliff:g>] Remote ref update was rejected, because remote side doesn\'t support/allow deleting refs.</string>
+    <string name="git_rejected_nonfastforward" translatable="false">[<xliff:g example="refs/heads/master" id="remote">%1$s</xliff:g>] Remote ref update was rejected, as it would cause non fast-forward update.</string>
+    <string name="git_rejected_other_reason" translatable="false">[<xliff:g example="refs/heads/master" id="remote">%1$s</xliff:g>] Remote ref update was rejected.</string>
+    <string name="git_rejected_other_reason_detailed" translatable="false">[<xliff:g example="refs/heads/master" id="remote">%1$s</xliff:g>] Remote ref update was rejected, because <xliff:g example="error message" id="error">%2$s.</xliff:g></string>
+    <string name="git_rejected_remote_changed" translatable="false">[<xliff:g example="refs/heads/master" id="remote">%1$s</xliff:g>] Remote ref update was rejected,  because old object id on remote repository wasn\'t the same as defined expected old object.</string>
+    <string name="git_uptodate" translatable="false">[<xliff:g example="refs/heads/master" id="remote">%1$s</xliff:g>] remote ref is up to date</string>
+    <string name="git_server_details" translatable="false">Server: <xliff:g example="gitolite3@ts.door43.org:tS/46983314849sd54s6d/uw-obs-de" id="server">%1$s</xliff:g></string>
     <string name="opening_project">Opening project</string>
     <string name="loading_key_terms" translatable="false">@string/loading</string>
     <string name="loading_translation_notes" translatable="false">@string/loading</string>
     <!-- Indicates the target language that is being loaded. e.g. Loading target language: Deutsch -->
-    <string name="loading_target_language">Loading target language: <xliff:g id="language" example="Deutsch">%1$s</xliff:g></string>
+    <string name="loading_target_language">Loading target language: <xliff:g example="Deutsch" id="language">%1$s</xliff:g></string>
     <!-- Indicates the project that is being loaded. e.g. Loading project: Open Bible Stories -->
-    <string name="loading_project">Loading project: <xliff:g id="project" example="Open Bible Stories">%1$s</xliff:g></string>
+    <string name="loading_project">Loading project: <xliff:g example="Open Bible Stories" id="project">%1$s</xliff:g></string>
     <string name="error_git_stage" translatable="false">Changes could not be staged</string>
     <!-- Uploading the device public ssh key to the server -->
     <string name="submitting_security_keys">Transferring security keys</string>
@@ -241,23 +241,23 @@
     <string name="label_email">Email</string>
     <string name="label_phone">Phone</string>
     <string name="contact_form_description">Please provide your contact information. This will be securely transferred to the server when you publish</string>
-    <string name="verse_out_of_bounds">Choose a verse between <xliff:g id="number" example="1">%1$s</xliff:g> and <xliff:g id="number" example="100">%2$s</xliff:g></string>
+    <string name="verse_out_of_bounds">Choose a verse between <xliff:g example="1" id="number">%1$s</xliff:g> and <xliff:g example="100" id="number">%2$s</xliff:g></string>
     <string name="no_key_terms">There are no Words</string>
     <string name="title_activity_developer">Developer Tools</string>
     <string name="action_settings">Settings</string>
     <!-- displays the application build or version code -->
-    <string name="app_version_code" translatable="false">BUILD <xliff:g id="verion_code" example="61">%1$s</xliff:g></string>
+    <string name="app_version_code" translatable="false">BUILD <xliff:g example="61" id="verion_code">%1$s</xliff:g></string>
     <!-- displays the application version name -->
-    <string name="app_version_name" translatable="false">VERSION <xliff:g id="verion_name" example="2.1.2">%1$s</xliff:g></string>
+    <string name="app_version_name" translatable="false">VERSION <xliff:g example="2.1.2" id="verion_name">%1$s</xliff:g></string>
     <!-- displays the unique device id -->
-    <string name="app_udid" translatable="false">UDID <xliff:g id="unique_device_id" example="4c3lk3id9392kkdnw983">%1$s</xliff:g></string>
+    <string name="app_udid" translatable="false">UDID <xliff:g example="4c3lk3id9392kkdnw983" id="unique_device_id">%1$s</xliff:g></string>
     <string name="copied_to_clipboard" translatable="false">Copied to clipboard</string>
     <string name="force_update_projects" translatable="false">Force update projects</string>
     <string name="force_update_projects_description" translatable="false">Re-downloads all the source for projects on the device without regard to the cache</string>
     <string name="regenerate_keys_description" translatable="false">Discards and regenerates the ssh keys used for git</string>
     <string name="read_debugging_log" translatable="false">Read debugging log</string>
     <string name="read_debugging_log_description" translatable="false">View the error logs that have been generated on this device.</string>
-    <string name="downloading_project">Downloading project <xliff:g id="project_id" example="obs">%1$s</xliff:g></string>
+    <string name="downloading_project">Downloading project <xliff:g example="obs" id="project_id">%1$s</xliff:g></string>
     <!-- This is the direction up. The opposite of down. -->
     <string name="up">Up</string>
     <!-- indicates the directory/folder on the device does not contain any files -->
@@ -324,7 +324,7 @@
     <string name="translations_welcome"><![CDATA[Welcome!\nThis is your Home Screen. When you have translation projects on this device they will appear here.\n\nYou can start a new translation any time by tapping the blue button in the top right.]]></string>
     <string name="title_activity_target_translation_detail">Translation Project</string>
 
-    <string name="duplicate_target_translation">You are already translating <xliff:g id="project" example="Genesis">%1$s</xliff:g> into <xliff:g id="target_language" example="English">%2$s</xliff:g></string>
+    <string name="duplicate_target_translation">You are already translating <xliff:g example="Genesis" id="project">%1$s</xliff:g> into <xliff:g example="English" id="target_language">%2$s</xliff:g></string>
     <string name="Project">Project</string>
     <string name="language">Language</string>
     <string name="progress">Progress</string>
@@ -364,7 +364,7 @@
     <string name="your_email">Your Email Address</string>
     <string name="your_phone">Your Phone Number</string>
     <string name="profile">Profile</string>
-    <string name="project_title_complex">Project: <xliff:g id="project" example="Genesis">%1$s</xliff:g></string>
+    <string name="project_title_complex">Project: <xliff:g example="Genesis" id="project">%1$s</xliff:g></string>
     <!-- A warning shown, when publishing, indicating that names/pseudonyms (but not email or phone number) are published in the catealog -->
     <string name="publishing_privacy_notice">Your name or pseudonym will be published along with your translation in the unfoldingWord catalog. We do not publish your email address or phone number.</string>
     <string name="publish_to_unfoldingword">Publish your project directly to unfoldingWord</string>
@@ -562,4 +562,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <string name="include_images">Include images</string>
     <string name="include_incomplete_frames">Include incomplete chunks</string>
     <string name="backup_to_friend">Send to Friend</string>
+    <string name="title_activity_custom_alert_dialog">CustomAlertDialog</string>
 </resources>
