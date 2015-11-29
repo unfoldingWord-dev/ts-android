@@ -81,18 +81,6 @@
         <item name="android:textColor">@color/light_primary_text</item>
     </style>
 
-    <style name="CustomDialog">
-        <item name="android:padding">8dp</item>
-    </style>
-
-    <style name="CustomDialog.Content">
-        <item name="android:padding">24dp</item>
-    </style>
-
-    <style name="CustomDialog.Buttons">
-        <item name="android:padding">8dp</item>
-    </style>
-
     <style name="Widget.CardContent" parent="android:Widget">
         <item name="android:background">@color/white</item>
         <item name="android:paddingLeft">16dp</item>
@@ -179,9 +167,7 @@
         <item name="android:background">@drawable/btn_red</item>
         <item name="android:textColor">@color/white</item>
     </style>
-
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
-
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
 </resources>
