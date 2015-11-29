@@ -2,12 +2,12 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true">
 
     <TextView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Title"
         android:textSize="@dimen/headline"
@@ -20,18 +20,18 @@
 
     <LinearLayout
         android:orientation="horizontal"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:layout_marginBottom="@dimen/dialog_controls_margin">
 
         <org.sufficientlysecure.htmltextview.HtmlTextView
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="@dimen/body"
             android:layout_gravity="left|center_vertical"
             android:textColor="@color/dark_secondary_text"
-            android:text="Content"
+            android:text="Here is an example content that is wider."
             android:id="@+id/dialog_content"
             android:gravity="left|center"
             android:layout_marginLeft="@dimen/dialog_content_margin"
@@ -49,7 +49,7 @@
             android:layout_height="wrap_content"
             android:gravity="right|end"
             android:id="@+id/controlsLayout"
-            android:layout_marginBottom="@dimen/dialog_content_margin">
+            android:layout_marginBottom="@dimen/dialog_controls_margin">
             <Button
                 android:id="@+id/cancelButton"
                 android:layout_width="wrap_content"
@@ -59,7 +59,7 @@
                 android:textSize="@dimen/button"
                 android:background="?attr/selectableItemBackground"
                 android:layout_marginLeft="@dimen/dialog_controls_margin"
-                android:layout_marginRight="@dimen/dialog_controls_margin" />
+                android:capitalize="words" />
 
             <Button
                 android:id="@+id/confirmButton"
@@ -70,7 +70,8 @@
                 android:textSize="@dimen/button"
                 android:background="?attr/selectableItemBackground"
                 android:layout_marginLeft="@dimen/dialog_controls_margin"
-                android:layout_marginRight="@dimen/dialog_content_margin" />
+                android:layout_marginRight="@dimen/dialog_content_margin"
+                android:capitalize="words" />
         </LinearLayout>
 
     </RelativeLayout>

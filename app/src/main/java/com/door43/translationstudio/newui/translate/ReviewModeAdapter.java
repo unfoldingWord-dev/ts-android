@@ -56,6 +56,7 @@ import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.VersePinSpan;
 import com.door43.widget.ViewUtil;
+import org.sufficientlysecure.htmltextview.HtmlTextView;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -594,55 +595,20 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mDoneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//                View layout = inflater.inflate(R.layout.dialog_html_alert, null);
-//                HtmlTextView text = (HtmlTextView)layout.findViewById(R.id.text);
-//                text.setHtmlFromString(mContext.getResources().getString(R.string.chunk_checklist_body), true);
 
-//                new tsAlertDialogBuilder(mContext)
-//                        .setTitle(R.string.chunk_checklist_title)
-//                        .setView(layout)
-//                            .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
-//                                @Override
-//                                public void onClick(DialogInterface dialog, int which) {
-//                                    boolean finished;
-//                                    if (item.isChapterReference) {
-//                                        finished = mTargetTranslation.finishChapterReference(chapter);
-//                                    } else if (item.isChapterTitle) {
-//                                        finished = mTargetTranslation.finishChapterTitle(chapter);
-//                                    } else if(item.isProjectTitle) {
-//                                        finished = mTargetTranslation.finishProjectTitle();
-//                                    } else {
-//                                        finished = mTargetTranslation.finishFrame(frame);
-//                                    }
-//                                    if (finished) {
-//                                        item.isEditing = false;
-//                                        item.renderedTargetBody = null;
-//                                        notifyDataSetChanged();
-//                                    } else {
-//                                        Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.translate_first, Snackbar.LENGTH_LONG);
-//                                        ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
-//                                        snack.show();
-//                                    }
-//                                }
-//                            })
-//                            .setNegativeButton(R.string.title_cancel, null)
-//                            .show();
-
-                final CustomAlertDialog dlg = new CustomAlertDialog();
-                dlg.setContext(mContext)
-                    .setTitle(R.string.chunk_checklist_title)
+                final CustomAlertDialog dlg = CustomAlertDialog.Create(mContext);
+                dlg.setTitle(R.string.chunk_checklist_title)
                     .setMessageHtml(R.string.chunk_checklist_body)
                     .setPositiveButton(R.string.confirm, new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    //TODO blm: add code
+                                    onConfirmChunk( item, chapter, frame);
                                     dlg.dismiss();
                                 }
                             }
                     )
                     .setNegativeButton(R.string.title_cancel, null)
-                    .show("Example2");
+                    .show("Chunk2");
             }
         });
         holder.mDoneFlag.setOnClickListener(new View.OnClickListener() {
@@ -653,7 +619,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     opened = mTargetTranslation.reopenChapterReference(chapter);
                 } else if (item.isChapterTitle) {
                     opened = mTargetTranslation.reopenChapterTitle(chapter);
-                } else if(item.isProjectTitle) {
+                } else if (item.isProjectTitle) {
                     opened = mTargetTranslation.reopenProjectTitle();
                 } else {
                     opened = mTargetTranslation.reopenFrame(frame);
@@ -667,6 +633,30 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         });
     }
+
+    private void onConfirmChunk(final ListItem item, final Chapter chapter, final Frame frame) {
+
+        boolean finished;
+        if (item.isChapterReference) {
+            finished = mTargetTranslation.finishChapterReference(chapter);
+        } else if (item.isChapterTitle) {
+            finished = mTargetTranslation.finishChapterTitle(chapter);
+        } else if (item.isProjectTitle) {
+            finished = mTargetTranslation.finishProjectTitle();
+        } else {
+            finished = mTargetTranslation.finishFrame(frame);
+        }
+        if (finished) {
+            item.isEditing = false;
+            item.renderedTargetBody = null;
+            notifyDataSetChanged();
+        } else {
+            Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.translate_first, Snackbar.LENGTH_LONG);
+            ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
+            snack.show();
+        }
+    }
+
 
     /**
      * Renders the source language tabs on the target card

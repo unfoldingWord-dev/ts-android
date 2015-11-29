@@ -16,6 +16,8 @@ import org.sufficientlysecure.htmltextview.HtmlTextView;
 
 /**
  * Created by blm on 11/28/15.
+ * The intent of this is to create an AlertDialog replacement that has a modern UI appearance even
+ *     on older devices.
  */
 public class CustomAlertDialog extends DialogFragment {
 
@@ -51,7 +53,10 @@ public class CustomAlertDialog extends DialogFragment {
         }
         mPositiveButton = (Button) rootView.findViewById(R.id.confirmButton);
         if(0 != mPositiveTextID) {
-            mPositiveButton.setText(mPositiveTextID);
+            // convert string to upper case manually, because on older devices uppercase attribute
+            // in UI
+            String label = getResources().getText(mPositiveTextID).toString().toUpperCase();
+            mPositiveButton.setText(label);
         } else {
             mPositiveButton.setVisibility(View.GONE);
         }
@@ -70,7 +75,10 @@ public class CustomAlertDialog extends DialogFragment {
 
         mNegativeButton = (Button) rootView.findViewById(R.id.cancelButton);
         if(0 != mNegativeTextID) {
-            mNegativeButton.setText(mNegativeTextID);
+            // convert string to upper case manually, because on older devices uppercase attribute
+            // in UI
+            String label = getResources().getText(mNegativeTextID).toString().toUpperCase();
+            mNegativeButton.setText(label);
         } else {
             mNegativeButton.setVisibility(View.GONE);
         }
@@ -134,4 +142,11 @@ public class CustomAlertDialog extends DialogFragment {
         mNegativeTextID = textResId;
         return this;
     }
+
+    static public CustomAlertDialog Create(final Activity context) {
+        CustomAlertDialog dlg = new CustomAlertDialog();
+        dlg.setContext(context);
+        return dlg;
+    }
+
 }
