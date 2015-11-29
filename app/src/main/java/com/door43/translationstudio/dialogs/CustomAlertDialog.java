@@ -17,7 +17,7 @@ import org.sufficientlysecure.htmltextview.HtmlTextView;
 /**
  * Created by blm on 11/28/15.
  * The intent of this is to create an AlertDialog replacement that has a modern UI appearance even
- *     on older devices.
+ *     on older devices.  It also has support for HTML content.
  */
 public class CustomAlertDialog extends DialogFragment {
 
