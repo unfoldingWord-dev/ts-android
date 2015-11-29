@@ -13,7 +13,7 @@
         android:padding="16dp"
         android:textSize="@dimen/headline"
         android:gravity="center"
-        android:id="@+id/dialog_title" />
+        android:id="@+id/textView13" />
 
     <LinearLayout
         android:orientation="horizontal"
