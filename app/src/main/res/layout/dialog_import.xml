@@ -49,7 +49,7 @@
                 android:id="@+id/import_from_friend"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/import_from_device"
+                android:text="@string/import_from_friend"
                 android:drawableLeft="@drawable/ic_phone_android_secondary_24dp"
                 android:drawableStart="@drawable/ic_phone_android_secondary_24dp"
                 android:gravity="left|center_vertical"

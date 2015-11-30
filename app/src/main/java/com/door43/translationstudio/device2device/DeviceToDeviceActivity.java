@@ -218,7 +218,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ServerServic
             }
             bindService(exportServiceIntent, mExportConnection, Context.BIND_AUTO_CREATE);
         } else {
-            setTitle(R.string.import_from_device);
+            setTitle(R.string.import_from_friend);
             importServiceIntent = new Intent(this, ClientService.class);
             broadcastListenerServiceIntent = new Intent(this, BroadcastListenerService.class);
 

@@ -3,7 +3,6 @@ package com.door43.translationstudio.newui;
 import android.app.DialogFragment;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
@@ -18,12 +17,14 @@ import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.SourceTranslation;
+import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.device2device.PeerAdapter;
-import com.door43.translationstudio.service.PeerStatusKeys;
 import com.door43.translationstudio.network.Peer;
 import com.door43.translationstudio.service.BroadcastListenerService;
 import com.door43.translationstudio.service.BroadcastService;
@@ -31,8 +32,6 @@ import com.door43.translationstudio.service.ClientService;
 import com.door43.translationstudio.service.ServerService;
 import com.door43.util.RSAEncryption;
 import com.door43.widget.ViewUtil;
-
-import org.json.JSONObject;
 
 import java.io.File;
 import java.security.InvalidParameterException;
@@ -44,6 +43,7 @@ import java.util.Locale;
  */
 public class ShareWithPeerDialog extends DialogFragment implements ServerService.Callbacks, BroadcastListenerService.Callbacks, ClientService.OnClientEventListener {
 
+    // TODO: 11/30/2015 get port from settings
     private static final int PORT_CLIENT_UDP = 9939;
     private static final int REFRESH_FREQUENCY = 2000;
     private static final int SERVER_TTL = 2000;
@@ -148,6 +148,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
     private String targetTranslationSlug;
     private boolean shutDownServices = true;
     private String deviceAlias;
+    private TargetTranslation targetTranslation = null;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
@@ -159,8 +160,9 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
             operationMode = args.getInt(ARG_OPERATION_MODE, MODE_CLIENT);
             targetTranslationSlug = args.getString(ARG_TARGET_TRANSLATION, null);
             deviceAlias = args.getString(ARG_DEVICE_ALIAS, null);
-            if(operationMode == MODE_SERVER && targetTranslationSlug == null) {
-                throw new InvalidParameterException("Server mode requires a target translation slug");
+            targetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationSlug);
+            if (operationMode == MODE_SERVER && targetTranslation == null) {
+                throw new InvalidParameterException("Server mode requires a valid target translation");
             }
             if(deviceAlias == null) {
                 throw new InvalidParameterException("The device alias cannot be null");
@@ -173,9 +175,17 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
         privateKeyFile = new File(getActivity().getFilesDir(), getResources().getString(R.string.p2p_keys_dir) + "/id_rsa");
         publicKeyFile.getParentFile().mkdirs();
 
-        // TODO: 11/19/2015 determine what title should be
-        // TODO: 11/19/2015 set target translation title
-        // TODO: 11/19/2015 set up ui
+        TextView title = (TextView)v.findViewById(R.id.title);
+        TextView subTitle = (TextView)v.findViewById(R.id.target_translation_title);
+
+        if(operationMode == MODE_SERVER) {
+            title.setText(getResources().getString(R.string.backup_to_friend));
+            SourceTranslation sourceTranslatiohn = AppContext.getLibrary().getDefaultSourceTranslation(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+            subTitle.setText(sourceTranslatiohn.getProjectTitle() + " - " + targetTranslation.getTargetLanguageName());
+        } else {
+            title.setText(getResources().getString(R.string.import_from_friend));
+            subTitle.setText("");
+        }
 
         ListView list = (ListView)v.findViewById(R.id.list);
         adapter = new PeerAdapter(operationMode == MODE_SERVER, getActivity());

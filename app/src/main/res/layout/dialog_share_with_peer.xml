@@ -16,7 +16,7 @@
             android:id="@+id/title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Backup/Import to Friend"
+            android:text="@string/backup_to_friend"
             android:textColor="@color/dark_primary_text"
             android:textSize="@dimen/headline" />
 

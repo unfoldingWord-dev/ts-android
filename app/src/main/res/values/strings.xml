@@ -215,7 +215,7 @@
     </string>
     <string name="view_statement_of_faith">Statement of Faith</string>
     <string name="view_translation_guidelines">Translation Guidelines</string>
-    <string name="import_from_device" translatable="false">Import from nearby device</string>
+    <string name="import_from_friend" translatable="false">Import from friend</string>
     <!-- Indicates the user should click on the item in order to connect to the server -->
     <string name="click_to_connect" translatable="false">Click to connect</string>
     <!-- Indicates the peer has connected to the server -->
