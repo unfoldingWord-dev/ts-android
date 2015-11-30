@@ -6,6 +6,12 @@
         android:summary="@string/pref_description_remember_position"
         android:defaultValue="@string/pref_default_remember_position" />
 
+
+    <EditTextPreference
+        android:key="device_name"
+        android:title="@string/device_name"
+        android:defaultValue=""/>
+
     <!--<CheckBoxPreference-->
         <!--android:key="highlight_key_terms"-->
         <!--android:title="@string/pref_title_highlight_key_terms"-->

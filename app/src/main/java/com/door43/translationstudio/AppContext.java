@@ -421,14 +421,10 @@ public class AppContext {
      * @param alias
      */
     public static void setDeviceNetworkAlias(String alias) {
-        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
         if(alias.trim().isEmpty()) {
-            editor.remove("device_network_alias");
-        } else {
-            editor.putString("device_network_alias", alias);
+            alias = null;
         }
-        editor.apply();
+        setUserString(SettingsActivity.KEY_PREF_DEVICE_ALIAS, alias);
     }
 
     /**
@@ -436,8 +432,12 @@ public class AppContext {
      * @return
      */
     public static String getDeviceNetworkAlias() {
-        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
-        return prefs.getString("device_network_alias", null);
+        String name = getUserString(SettingsActivity.KEY_PREF_DEVICE_ALIAS, "");
+        if(name.isEmpty()) {
+            return null;
+        } else {
+            return name;
+        }
     }
 
     /**
@@ -447,6 +447,31 @@ public class AppContext {
      * @return
      */
     public static String getUserString(String preferenceKey, int defaultResource) {
-        return mContext.getUserPreferences().getString(preferenceKey, mContext.getResources().getString(defaultResource));
+        return getUserString(preferenceKey, mContext.getResources().getString(defaultResource));
+    }
+
+    /**
+     * Returns the string value of a user preference or the default value
+     * @param preferenceKey
+     * @param defaultValue
+     * @return
+     */
+    public static String getUserString(String preferenceKey, String defaultValue) {
+        return mContext.getUserPreferences().getString(preferenceKey, defaultValue);
+    }
+
+    /**
+     * Sets the value of a user string.
+     * @param preferenceKey
+     * @param value if null the string will be removed
+     */
+    public static void setUserString(String preferenceKey, String value) {
+        SharedPreferences.Editor editor = mContext.getUserPreferences().edit();
+        if(value == null) {
+            editor.remove(preferenceKey);
+        } else {
+            editor.putString(preferenceKey, value);
+        }
+        editor.apply();
     }
 }
