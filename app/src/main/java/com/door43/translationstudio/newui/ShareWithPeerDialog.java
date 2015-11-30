@@ -49,6 +49,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
     private static final int SERVER_TTL = 2000;
     public static final int MODE_CLIENT = 0;
     public static final int MODE_SERVER = 1;
+    public static final String ARG_DEVICE_ALIAS = "arg_device_alias";
     private PeerAdapter adapter;
     public static final String ARG_OPERATION_MODE = "arg_operation_mode";
     public static final String ARG_TARGET_TRANSLATION = "arg_target_translation";
@@ -146,6 +147,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
     private int operationMode;
     private String targetTranslationSlug;
     private boolean shutDownServices = true;
+    private String deviceAlias;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
@@ -153,19 +155,18 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
         View v = inflater.inflate(R.layout.dialog_share_with_peer, container, false);
 
         Bundle args = getArguments();
-        if(args != null && args.containsKey(ARG_OPERATION_MODE)) {
+        if(args != null && args.containsKey(ARG_OPERATION_MODE) && args.containsKey(ARG_DEVICE_ALIAS)) {
             operationMode = args.getInt(ARG_OPERATION_MODE, MODE_CLIENT);
             targetTranslationSlug = args.getString(ARG_TARGET_TRANSLATION, null);
+            deviceAlias = args.getString(ARG_DEVICE_ALIAS, null);
             if(operationMode == MODE_SERVER && targetTranslationSlug == null) {
                 throw new InvalidParameterException("Server mode requires a target translation slug");
             }
+            if(deviceAlias == null) {
+                throw new InvalidParameterException("The device alias cannot be null");
+            }
         } else {
             throw new InvalidParameterException("Missing intent arguments");
-        }
-
-        // get device name
-        if(AppContext.getDeviceNetworkAlias() == null) {
-            // TODO: 11/25/2015 get the device name
         }
 
         publicKeyFile = new File(getActivity().getFilesDir(), getResources().getString(R.string.p2p_keys_dir) + "/id_rsa.pub");
@@ -243,8 +244,10 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
         if(!privateKeyFile.exists() || !publicKeyFile.exists()) {
             RSAEncryption.generateKeys(privateKeyFile, publicKeyFile);
         }
+        // TODO: 11/30/2015 we should use a shared interface for setting parameters so we don't have to manage two sets
         intent.putExtra(ServerService.PARAM_PRIVATE_KEY, RSAEncryption.readPrivateKeyFromFile(privateKeyFile));
         intent.putExtra(ServerService.PARAM_PUBLIC_KEY, RSAEncryption.getPublicKeyAsString(RSAEncryption.readPublicKeyFromFile(publicKeyFile)));
+        intent.putExtra(ServerService.PARAM_DEVICE_ALIAS, AppContext.getDeviceNetworkAlias());
         Logger.i(this.getClass().getName(), "Starting service " + intent.getComponent().getClassName());
         getActivity().startService(intent);
     }

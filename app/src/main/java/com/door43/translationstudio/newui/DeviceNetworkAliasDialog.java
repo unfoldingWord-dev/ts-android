@@ -1,6 +1,7 @@
 package com.door43.translationstudio.newui;
 
 import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +17,8 @@ import com.door43.translationstudio.R;
  * Created by joel on 11/25/2015.
  */
 public class DeviceNetworkAliasDialog extends DialogFragment {
+
+    private OnDismissListener listener = null;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
@@ -42,5 +45,26 @@ public class DeviceNetworkAliasDialog extends DialogFragment {
         });
 
         return v;
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialogInterface) {
+        if(listener != null) {
+            listener.onDismiss();
+        }
+        super.onDismiss(dialogInterface);
+    }
+
+    public void setOnDismissListener(OnDismissListener listener) {
+        this.listener = listener;
+    }
+
+    public interface OnDismissListener {
+        void onDismiss();
+    }
+
+    public void onDestroy() {
+        listener = null;
+        super.onDestroy();
     }
 }

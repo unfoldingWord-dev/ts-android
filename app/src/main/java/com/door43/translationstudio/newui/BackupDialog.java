@@ -41,8 +41,10 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
 
     public static final String ARG_TARGET_TRANSLATION_ID = "target_translation_id";
     public static final String TAG = "backup-dialog";
+    private static final String STATE_SETTING_DEVICE_ALIAS = "state_setting_device_alias";
     private TargetTranslation mTargetTranslation;
     private GenericTaskWatcher mTaskWatcher;
+    private boolean settingDeviceAlias = false;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -86,6 +88,11 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
             mTaskWatcher.watch(task);
         }
 
+        if(savedInstanceState != null) {
+            // check if returning from device alias dialog
+            settingDeviceAlias = savedInstanceState.getBoolean(STATE_SETTING_DEVICE_ALIAS, false);
+        }
+
         Button dismissButton = (Button)v.findViewById(R.id.dismiss_button);
         dismissButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -99,19 +106,21 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
             public void onClick(View v) {
                 // TODO: 11/18/2015 eventually we need to support bluetooth as well as an adhoc network
                 if(AppContext.context().isNetworkAvailable()) {
-                    FragmentTransaction ft = getFragmentManager().beginTransaction();
-                    Fragment prev = getFragmentManager().findFragmentByTag(BackupDialog.TAG);
-                    if (prev != null) {
-                        ft.remove(prev);
-                    }
-                    ft.addToBackStack(null);
+                    if(AppContext.getDeviceNetworkAlias() == null) {
+                        // get device alias
+                        FragmentTransaction ft = getFragmentManager().beginTransaction();
+                        Fragment prev = getFragmentManager().findFragmentByTag(BackupDialog.TAG);
+                        if (prev != null) {
+                            ft.remove(prev);
+                        }
+                        ft.addToBackStack(null);
 
-                    ShareWithPeerDialog dialog = new ShareWithPeerDialog();
-                    Bundle args = new Bundle();
-                    args.putInt(ShareWithPeerDialog.ARG_OPERATION_MODE, ShareWithPeerDialog.MODE_SERVER);
-                    args.putString(ShareWithPeerDialog.ARG_TARGET_TRANSLATION, mTargetTranslation.getId());
-                    dialog.setArguments(args);
-                    dialog.show(ft, BackupDialog.TAG);
+                        settingDeviceAlias = true;
+                        DeviceNetworkAliasDialog dialog = new DeviceNetworkAliasDialog();
+                        dialog.show(ft, BackupDialog.TAG);
+                    } else {
+                        showP2PDialog();
+                    }
                 } else {
                     Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.internet_not_available, Snackbar.LENGTH_LONG);
                     ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
@@ -208,6 +217,35 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
         return v;
     }
 
+    @Override
+    public void onResume() {
+        if(settingDeviceAlias && AppContext.getDeviceNetworkAlias() != null) {
+            settingDeviceAlias = false;
+            showP2PDialog();
+        }
+        super.onResume();
+    }
+
+    /**
+     * Displays the dialog for p2p sharing
+     */
+    private void showP2PDialog() {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag(BackupDialog.TAG);
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        ShareWithPeerDialog dialog = new ShareWithPeerDialog();
+        Bundle args = new Bundle();
+        args.putInt(ShareWithPeerDialog.ARG_OPERATION_MODE, ShareWithPeerDialog.MODE_SERVER);
+        args.putString(ShareWithPeerDialog.ARG_TARGET_TRANSLATION, mTargetTranslation.getId());
+        args.putString(ShareWithPeerDialog.ARG_DEVICE_ALIAS, AppContext.getDeviceNetworkAlias());
+        dialog.setArguments(args);
+        dialog.show(ft, BackupDialog.TAG);
+    }
+
     /**
      * Displays a dialog to the user indicating the publish failed.
      * Includes an option to submit a bug report
@@ -273,10 +311,18 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
     }
 
     @Override
+    public void onSaveInstanceState(Bundle out) {
+        // remember if the device alias dialog is open
+        out.putBoolean(STATE_SETTING_DEVICE_ALIAS, settingDeviceAlias);
+        super.onSaveInstanceState(out);
+    }
+
+    @Override
     public void onDestroy() {
         if(mTaskWatcher != null) {
             mTaskWatcher.stop();
         }
+
         super.onDestroy();
     }
 }

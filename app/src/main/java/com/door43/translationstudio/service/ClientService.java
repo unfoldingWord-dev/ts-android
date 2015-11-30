@@ -43,12 +43,14 @@ import java.util.Map;
 public class ClientService extends NetworkService {
     private static final String PARAM_PUBLIC_KEY = "param_public_key";
     private static final String PARAM_PRIVATE_KEY = "param_private_key";
+    private static final String PARAM_DEVICE_ALIAS = "param_device_alias";
     private final IBinder binder = new LocalBinder();
     private OnClientEventListener listener;
     private Map<String, Connection> serverConnections = new HashMap<>();
     private PrivateKey privateKey;
     private String publicKey;
     private static Boolean isRunning = false;
+    private String deviceAlias;
 
     /**
      * Sets whether or not the service is running
@@ -82,9 +84,10 @@ public class ClientService extends NetworkService {
     public int onStartCommand(Intent intent, int flags, int startid) {
         if(intent != null) {
             Bundle args = intent.getExtras();
-            if (args != null && args.containsKey(PARAM_PRIVATE_KEY) && args.containsKey(PARAM_PUBLIC_KEY)) {
+            if (args != null && args.containsKey(PARAM_PRIVATE_KEY) && args.containsKey(PARAM_PUBLIC_KEY) && args.containsKey(PARAM_DEVICE_ALIAS)) {
                 privateKey = (PrivateKey) args.get(PARAM_PRIVATE_KEY);
                 publicKey = args.getString(PARAM_PUBLIC_KEY);
+                deviceAlias = args.getString(PARAM_DEVICE_ALIAS);
                 if (listener != null) {
                     listener.onClientServiceReady();
                 }
@@ -211,7 +214,7 @@ public class ClientService extends NetworkService {
             if(server.isSecure()) {
                 try {
                     JSONObject json = new JSONObject();
-                    json.put("name", "Jon Doe Client");
+                    json.put("name", deviceAlias);
                     if(AppContext.isTablet()) {
                         json.put("device", "tablet");
                     } else {

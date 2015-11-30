@@ -42,6 +42,7 @@ import java.util.Map;
 public class ServerService extends NetworkService {
     public static final String PARAM_PRIVATE_KEY = "param_private_key";
     public static final String PARAM_PUBLIC_KEY = "param_public_key";
+    public static final String PARAM_DEVICE_ALIAS = "param_device_alias";
     private static Boolean mIsRunning = false;
     private final IBinder mBinder = new LocalBinder();
     private Callbacks listener;
@@ -51,6 +52,7 @@ public class ServerService extends NetworkService {
     private PrivateKey privateKey;
     private String mPublicKey;
     private ServerSocket mServerSocket;
+    private String deviceAlias;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -84,9 +86,10 @@ public class ServerService extends NetworkService {
     public int onStartCommand(Intent intent, int flags, int startid) {
         if(intent != null) {
             Bundle args = intent.getExtras();
-            if (args != null && args.containsKey(PARAM_PRIVATE_KEY) && args.containsKey(PARAM_PUBLIC_KEY)) {
+            if (args != null && args.containsKey(PARAM_PRIVATE_KEY) && args.containsKey(PARAM_PUBLIC_KEY) && args.containsKey(PARAM_DEVICE_ALIAS)) {
                 privateKey = (PrivateKey) args.get(PARAM_PRIVATE_KEY);
                 mPublicKey = args.getString(PARAM_PUBLIC_KEY);
+                deviceAlias = args.getString(PARAM_DEVICE_ALIAS);
                 mServerThread = new Thread(new ServerRunnable());
                 mServerThread.start();
                 return START_STICKY;
@@ -198,7 +201,7 @@ public class ServerService extends NetworkService {
                 if(client.isSecure()) {
                     try {
                         JSONObject json = new JSONObject();
-                        json.put("name", "Jon Doe Server");
+                        json.put("name", deviceAlias);
                         if(AppContext.isTablet()) {
                             json.put("device", "tablet");
                         } else {
