@@ -22,6 +22,7 @@ import com.door43.translationstudio.service.BroadcastListenerService;
 import com.door43.translationstudio.service.BroadcastService;
 import com.door43.translationstudio.service.PeerNotice;
 import com.door43.translationstudio.service.PeerStatusKeys;
+import com.door43.translationstudio.service.Request;
 import com.door43.translationstudio.service.ServerService;
 import com.door43.translationstudio.service.ClientService;
 import com.door43.util.RSAEncryption;
@@ -141,7 +142,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ServerServic
         final Handler handler = new Handler(getMainLooper());
         mLoadingLayout = (LinearLayout)findViewById(R.id.loadingLayout);
         ListView peerListView = (ListView)findViewById(R.id.peerListView);
-        mAdapter = new PeerAdapter(mStartAsServer, this);
+        mAdapter = new PeerAdapter(this);
         peerListView.setAdapter(mAdapter);
         peerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -555,7 +556,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ServerServic
     }
 
     @Override
-    public void onReceivedPeerNotice(PeerNotice notice) {
+    public void onReceivedRequest(Peer peer, Request request) {
 
     }
 

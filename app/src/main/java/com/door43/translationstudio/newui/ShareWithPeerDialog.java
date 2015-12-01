@@ -30,6 +30,7 @@ import com.door43.translationstudio.service.BroadcastListenerService;
 import com.door43.translationstudio.service.BroadcastService;
 import com.door43.translationstudio.service.ClientService;
 import com.door43.translationstudio.service.PeerNotice;
+import com.door43.translationstudio.service.Request;
 import com.door43.translationstudio.service.ServerService;
 import com.door43.util.RSAEncryption;
 import com.door43.widget.ViewUtil;
@@ -67,7 +68,6 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
             hand.post(new Runnable() {
                 @Override
                 public void run() {
-                    updateNotices(clientService.getNotices());
                     updatePeerList(clientService.getPeers());
                 }
             });
@@ -190,7 +190,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
         }
 
         ListView list = (ListView)v.findViewById(R.id.list);
-        adapter = new PeerAdapter(operationMode == MODE_SERVER, getActivity());
+        adapter = new PeerAdapter(getActivity());
         list.setAdapter(adapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -272,16 +272,6 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
     public void updatePeerList(ArrayList<Peer> peers) {
         if(adapter != null) {
             adapter.setPeers(peers);
-        }
-    }
-
-    /**
-     * Updates the notices for peers on the screen
-     * @param noticies
-     */
-    public void updateNotices(PeerNotice[] noticies) {
-        if(adapter != null) {
-            adapter.setNoticies(noticies);
         }
     }
 
@@ -451,13 +441,13 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
     }
 
     @Override
-    public void onReceivedPeerNotice(final PeerNotice notice) {
+    public void onReceivedRequest(final Peer peer, final Request request) {
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
             public void run() {
                 if(adapter != null) {
-                    adapter.addNotice(notice);
+                    adapter.newRequestAlert(peer, request);
                 }
             }
         });

@@ -1,6 +1,10 @@
 package com.door43.translationstudio.network;
 
+import com.door43.translationstudio.service.Request;
 import com.door43.util.KeyValueStore;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A peer is any device that is connected to another device.
@@ -19,6 +23,7 @@ public class Peer {
     private String name = "unknown";
     private String deviceType = "unknown";
     private String id = "unknown";
+    private List<Request> requests = new ArrayList<>();
 
     /**
      * Specifies a new peer (likely a client)
@@ -166,5 +171,29 @@ public class Peer {
 
     public String getId() {
         return id;
+    }
+
+    /**
+     * Queues a request to be approved by the user
+     * @param request
+     */
+    public void queueRequest(Request request) {
+        this.requests.add(request);
+    }
+
+    /**
+     * Removes a request from the approval queue
+     * @param request
+     */
+    public void dismissRequest(Request request) {
+        this.requests.remove(request);
+    }
+
+    /**
+     * Returns an array of requests that are pending approval
+     * @return
+     */
+    public Request[] getRequests() {
+        return this.requests.toArray(new Request[this.requests.size()]);
     }
 }

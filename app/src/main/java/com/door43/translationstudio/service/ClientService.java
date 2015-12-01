@@ -52,7 +52,6 @@ public class ClientService extends NetworkService {
     private static Boolean isRunning = false;
     private String deviceAlias;
     private Map<UUID, Request> requests = new HashMap<>();
-    private List<PeerNotice> notices = new ArrayList<>();
 
     /**
      * Sets whether or not the service is running
@@ -387,27 +386,10 @@ public class ClientService extends NetworkService {
      * @param request
      */
     private void queueRequest(Peer server, Request request) {
-        PeerNotice notice = new PeerNotice(server, request);
-        this.notices.add(notice);
+        server.queueRequest(request);
         if(this.listener != null) {
-            this.listener.onReceivedPeerNotice(notice);
+            this.listener.onReceivedRequest(server, request);
         }
-    }
-
-    /**
-     * Returns an array of pending notices
-     * @return
-     */
-    public PeerNotice[] getNotices() {
-        return this.notices.toArray(new PeerNotice[this.notices.size()]);
-    }
-
-    /**
-     * Clears a notice from the queue
-     * @param notice
-     */
-    public void clearNotice(PeerNotice notice) {
-        this.notices.remove(notice);
     }
 
     /**
@@ -421,7 +403,7 @@ public class ClientService extends NetworkService {
 //        void onReceivedProjectList(Peer server, Model[] models);
 //        void onReceivedProject(Peer server, ProjectImport[] importStatuses);
         void onReceivedTargetTranslations(Peer server, String[] targetTranslations);
-        void onReceivedPeerNotice(PeerNotice notice);
+        void onReceivedRequest(Peer peer, Request request);
     }
 
     /**

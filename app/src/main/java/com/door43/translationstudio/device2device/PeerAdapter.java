@@ -4,11 +4,6 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
-import android.view.animation.AnimationUtils;
-import android.view.animation.AnticipateOvershootInterpolator;
-import android.view.animation.ScaleAnimation;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -17,39 +12,26 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.network.Peer;
-import com.door43.translationstudio.service.PeerNotice;
 import com.door43.translationstudio.service.PeerStatusKeys;
+import com.door43.translationstudio.service.Request;
 import com.facebook.rebound.SimpleSpringListener;
 import com.facebook.rebound.Spring;
 import com.facebook.rebound.SpringConfig;
 import com.facebook.rebound.SpringSystem;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by joel on 12/11/2014.
  */
 public class PeerAdapter extends BaseAdapter {
-    private final boolean mIsServer;
-    private ArrayList<Peer> mPeerList;
+    private ArrayList<Peer> peers;
     private final Context mContext;
-    private PeerNotice[] noticies;
-    private Map<String, List<PeerNotice>> peerNoticeMap = new HashMap<>();
     private boolean[] animateNotification;
 
-    public PeerAdapter(boolean isServer, Context context) {
-        mPeerList = new ArrayList<>();
+    public PeerAdapter(Context context) {
+        peers = new ArrayList<>();
         mContext = context;
-        mIsServer = isServer;
-    }
-
-    public PeerAdapter(ArrayList<Peer> peerList, boolean isServer, Context context) {
-        mPeerList = peerList;
-        mContext = context;
-        mIsServer = isServer;
     }
 
     /**
@@ -57,19 +39,19 @@ public class PeerAdapter extends BaseAdapter {
      * @param peerList
      */
     public void setPeers(ArrayList<Peer> peerList) {
-        mPeerList = peerList;
+        peers = peerList;
         animateNotification = new boolean[peerList.size()];
         notifyDataSetChanged();
     }
 
     @Override
     public int getCount() {
-        return mPeerList.size();
+        return peers.size();
     }
 
     @Override
     public Peer getItem(int i) {
-        return mPeerList.get(i);
+        return peers.get(i);
     }
 
     @Override
@@ -80,7 +62,7 @@ public class PeerAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View view, ViewGroup viewGroup) {
         LinearLayout v;
-        Peer p = getItem(position);
+        Peer peer = getItem(position);
 
         if(view == null) {
             LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -95,23 +77,22 @@ public class PeerAdapter extends BaseAdapter {
         ProgressBar progressBar = (ProgressBar)v.findViewById(R.id.progressBar);
         ImageView deviceIcon = (ImageView)v.findViewById(R.id.peerIcon);
 
-        // ip address
-        deviceNameView.setText(p.getName());
-        ipAddressView.setText(p.getIpAddress());
+        // name
+        deviceNameView.setText(peer.getName());
+        ipAddressView.setText(peer.getIpAddress());
 
-
-        if(p.getDevice().equals("tablet")) {
+        // device type
+        if(peer.getDevice().equals("tablet")) {
             deviceIcon.setBackgroundResource(R.drawable.ic_tablet_android_black_24dp);
-        } else if(p.getDevice().equals("phone")) {
+        } else if(peer.getDevice().equals("phone")) {
             deviceIcon.setBackgroundResource(R.drawable.ic_phone_android_black_24dp);
         } else {
             deviceIcon.setBackgroundResource(R.drawable.ic_devices_other_black_24dp);
         }
 
         // progress bar
-
-        boolean isWaiting = p.keyStore.getBool(PeerStatusKeys.WAITING);
-        int progress = p.keyStore.getInt(PeerStatusKeys.PROGRESS);
+        boolean isWaiting = peer.keyStore.getBool(PeerStatusKeys.WAITING);
+        int progress = peer.keyStore.getInt(PeerStatusKeys.PROGRESS);
         progressBar.setIndeterminate(isWaiting);
         progressBar.setProgress(progress);
         if(!isWaiting && progress == 0) {
@@ -121,15 +102,10 @@ public class PeerAdapter extends BaseAdapter {
             progressBar.setVisibility(View.VISIBLE);
             deviceIcon.setVisibility(View.GONE);
         }
-        if(isWaiting) {
-            ipAddressView.setText(R.string.waiting_for_device);
-        } else if(progress > 0) {
-            ipAddressView.setText(R.string.downloading);
-        }
 
-        // noticies
+        // requests
         favoriteIcon.setVisibility(View.GONE);
-        if(peerNoticeMap.containsKey(p.getId())) {
+        if(peer.getRequests().length > 0) {
             notificationIcon.setVisibility(View.VISIBLE);
         } else {
             notificationIcon.setVisibility(View.GONE);
@@ -154,48 +130,21 @@ public class PeerAdapter extends BaseAdapter {
             });
             spring.setCurrentValue(-1, true);
             spring.setEndValue(0);
-////            Animation pulse = AnimationUtils.loadAnimation(mContext, R.anim.pulse);
-//            AnimationSet pulse = new AnimationSet(true);
-//            pulse.setInterpolator(new AnticipateOvershootInterpolator(2.0f));
-//            pulse.setDuration(500);
-//            pulse.addAnimation(new ScaleAnimation(.5f, 1f, .5f, 1f, Animation.RELATIVE_TO_SELF, .5f, Animation.RELATIVE_TO_SELF, .5f));
-//            notificationIcon.startAnimation(pulse);
         }
 
         return v;
     }
 
     /**
-     * Adds a single peer notice
-     * @param notice
+     * Indicates that a request from the peer is awaiting approval
+     * @param peer
+     * @param request
      */
-    public void addNotice(PeerNotice notice) {
-        // TODO: 12/1/2015 we need to animate the view item
-        if(!peerNoticeMap.containsKey(notice.peer.getId())) {
-            peerNoticeMap.put(notice.peer.getId(), new ArrayList<PeerNotice>());
-        }
-        peerNoticeMap.get(notice.peer.getId()).add(notice);
-
-        // schedual an animation for the notification icon
-        int index = mPeerList.indexOf(notice.peer);
+    public void newRequestAlert(Peer peer, Request request) {
+        // schedule an animation for the notification icon
+        int index = peers.indexOf(peer);
         if(index >= 0 && index < animateNotification.length) {
-            animateNotification[index]=true;
-        }
-        notifyDataSetChanged();
-    }
-
-    /**
-     * Sets the noticies to be displayed
-     * @param noticies
-     */
-    public void setNoticies(PeerNotice[] noticies) {
-        // build map of notices for each peer
-        peerNoticeMap.clear();
-        for(PeerNotice notice:noticies) {
-            if(!peerNoticeMap.containsKey(notice.peer.getId())) {
-                peerNoticeMap.put(notice.peer.getId(), new ArrayList<PeerNotice>());
-            }
-            peerNoticeMap.get(notice.peer.getId()).add(notice);
+            animateNotification[index] = true;
         }
         notifyDataSetChanged();
     }
