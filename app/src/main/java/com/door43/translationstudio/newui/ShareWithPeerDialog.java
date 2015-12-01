@@ -29,6 +29,7 @@ import com.door43.translationstudio.network.Peer;
 import com.door43.translationstudio.service.BroadcastListenerService;
 import com.door43.translationstudio.service.BroadcastService;
 import com.door43.translationstudio.service.ClientService;
+import com.door43.translationstudio.service.PeerNotice;
 import com.door43.translationstudio.service.ServerService;
 import com.door43.util.RSAEncryption;
 import com.door43.widget.ViewUtil;
@@ -195,7 +196,8 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Peer peer = adapter.getItem(position);
                 if(operationMode == MODE_SERVER) {
-                    // TODO: 11/25/2015 do something
+                    // offer target translation to the client
+                    serverService.offerTargetTranslation(peer, targetTranslationSlug);
                 } else if(operationMode == MODE_CLIENT) {
                     // TODO: 11/25/2015 do something
                 }
@@ -433,6 +435,16 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
     public void onReceivedTargetTranslations(Peer server, String[] targetTranslations) {
         // TODO: 11/23/2015 notify user that download is complete.
         Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), "Target translation successfully imported", Snackbar.LENGTH_LONG);
+        ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+        snack.show();
+    }
+
+    @Override
+    public void onReceivedPeerNotice(PeerNotice notice) {
+        // TODO: 12/1/2015 do something else to update the ui to indicate the peer wants to send a target translation
+        // we can display an icon (with a count) on the device and when they click on it they can see the pending notices.
+        // clicking on a notice will allow them to react to it.
+        Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), notice.peer.getName() + " wants to share a target translation", Snackbar.LENGTH_LONG);
         ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
         snack.show();
     }

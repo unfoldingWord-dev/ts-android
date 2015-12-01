@@ -223,13 +223,39 @@ public class Translator {
             tempCache.mkdirs();
             Zip.unzip(file, tempCache);
             File[] targetTranslationDirs = ArchiveImporter.importArchive(tempCache);
-            for(File dir:targetTranslationDirs) {
-                File newDir = new File(mRootDir, dir.getName());
-                // delete existing translation
-                FileUtils.deleteQuietly(newDir);
-                // import new translation
-                FileUtils.moveDirectory(dir, newDir);
-                importedTargetTranslationSlugs.add(dir.getName());
+            for(File newDir:targetTranslationDirs) {
+                File localDir = new File(mRootDir, newDir.getName());
+                if(localDir.exists()) {
+                    // clean out local translation (retaining history)
+                    File[] oldFiles = localDir.listFiles(new FilenameFilter() {
+                        @Override
+                        public boolean accept(File dir, String filename) {
+                            return !filename.equals(".git");
+                        }
+                    });
+                    for(File f:oldFiles) {
+                        FileUtils.deleteQuietly(f);
+                    }
+
+                    // copy files into existing translation
+                    File[] newFiles = newDir.listFiles(new FilenameFilter() {
+                        @Override
+                        public boolean accept(File dir, String filename) {
+                            return !filename.equals(".git");
+                        }
+                    });
+                    for(File f:newFiles) {
+                        if(f.isDirectory()) {
+                            FileUtils.moveDirectory(f, new File(localDir, f.getName()));
+                        } else {
+                            FileUtils.moveFile(f, new File(localDir, f.getName()));
+                        }
+                    }
+                } else {
+                    // import new translation
+                    FileUtils.moveDirectory(newDir, localDir);
+                }
+                importedTargetTranslationSlugs.add(newDir.getName());
             }
             if(targetTranslationDirs.length == 0) {
                 throw new Exception("The archive does not contain any valid target translations");

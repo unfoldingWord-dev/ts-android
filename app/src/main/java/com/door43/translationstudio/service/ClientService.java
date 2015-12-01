@@ -7,8 +7,6 @@ import android.os.IBinder;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
-import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.device2device.SocketMessages;
 import com.door43.translationstudio.network.Connection;
@@ -31,10 +29,12 @@ import java.net.Socket;
 import java.security.MessageDigest;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * This class provides an importing service (effectively a client) that can
@@ -51,6 +51,8 @@ public class ClientService extends NetworkService {
     private String publicKey;
     private static Boolean isRunning = false;
     private String deviceAlias;
+    private Map<UUID, Request> requests = new HashMap<>();
+    private List<PeerNotice> notices = new ArrayList<>();
 
     /**
      * Sets whether or not the service is running
@@ -180,8 +182,16 @@ public class ClientService extends NetworkService {
         if(server.isSecure() && server.hasIdentity()) {
             message = decryptMessage(privateKey, message);
             if(message != null) {
-                String[] data = StringUtilities.chunk(message, ":");
-                onCommandReceived(server, PeerCommand.get(data[0]), Arrays.copyOfRange(data, 1, data.length));
+                try {
+                    Request request = Request.parse(message);
+                    onRequestReceived(server, request);
+                } catch (JSONException e) {
+                    if(listener != null) {
+                        listener.onClientServiceError(e);
+                    } else {
+                        Logger.e(this.getClass().getName(), "Failed to parse request", e);
+                    }
+                }
             } else if(listener != null) {
                 listener.onClientServiceError(new Exception("Message descryption failed"));
             }
@@ -253,42 +263,51 @@ public class ClientService extends NetworkService {
     }
 
     /**
+     * Sends a request to a peer.
+     * Requests are stored for reference when the client responds to the request
+     * @param client
+     * @param request
+     */
+    private void sendRequest(Peer client, Request request) {
+        if(serverConnections.containsKey(client.getIpAddress()) && client.isSecure()) {
+            // remember request
+            this.requests.put(request.uuid, request);
+            // send request
+            sendMessage(client, request.toString());
+        }
+    }
+
+    /**
      * Handles commands sent from the server
      * @param server
-     * @param command
-     * @param data
+     * @param request
      */
-    private void onCommandReceived(final Peer server, PeerCommand command, String[] data) {
-        switch(command) {
+    private void onRequestReceived(final Peer server, Request request) {
+        JSONObject contextJson = request.context;
+
+        switch(request.type) {
+            case AlertTargetTranslation:
+                queueRequest(server, request);
+                break;
             case TargetTranslation:
-                Logger.i(this.getClass().getName(), "Received target translation archive from " + server.getIpAddress());
-
-                // receive project archive from server
-                JSONObject importJson;
-                try {
-                    importJson = new JSONObject(data[0]);
-                } catch (JSONException e) {
-                    if(listener != null) {
-                        listener.onClientServiceError(e);
-                    }
-                    break;
-                }
-
-                if(importJson.has("port") && importJson.has("size") && importJson.has("name")) {
+                if(requests.containsKey(request.uuid)) {
+                    // receive file download details
                     int port;
                     final long size;
                     final String name;
                     try {
-                        port = importJson.getInt("port");
-                        size = importJson.getLong("size");
-                        name = importJson.getString("name");
+                        port = contextJson.getInt("port");
+                        size = contextJson.getLong("size");
+                        name = contextJson.getString("name");
                     } catch (JSONException e) {
                         if(listener != null) {
                             listener.onClientServiceError(e);
+                        } else {
+                            Logger.e(this.getClass().getName(), "Invalid context", e);
                         }
                         break;
                     }
-                    // the server is sending a project archive
+                    // open download socket
                     openReadSocket(server, port, new OnSocketEventListener() {
                         @Override
                         public void onOpen(Connection connection) {
@@ -351,22 +370,44 @@ public class ClientService extends NetworkService {
                         }
                     });
                 } else {
-                    Logger.w(this.getClass().getName(), "Invalid response from server: " + data.toString());
-                    if(listener != null) {
-                        listener.onClientServiceError(new Exception("Invalid response from server"));
-                    }
-                }
-                break;
-            case InvalidRequest:
-                // TODO: do something about this.
-                if(listener != null) {
-                    listener.onClientServiceError(new Throwable("Invalid request"));
+                    // the server is trying to send the target translation without asking
+                    // TODO: 12/1/2015 accept according to user configuration
                 }
                 break;
             default:
-                Logger.i(this.getClass().getName(), "received invalid request from " + server.getIpAddress() + ": " + command);
-                sendMessage(server, SocketMessages.MSG_INVALID_REQUEST);
+                Logger.i(this.getClass().getName(), "received invalid request from " + server.getIpAddress() + ": " + request.toString());
+//                sendMessage(server, SocketMessages.MSG_INVALID_REQUEST);
         }
+    }
+
+    /**
+     * Queues a request to be reviewed by the user
+     *
+     * @param server
+     * @param request
+     */
+    private void queueRequest(Peer server, Request request) {
+        PeerNotice notice = new PeerNotice(server, request);
+        this.notices.add(notice);
+        if(this.listener != null) {
+            this.listener.onReceivedPeerNotice(notice);
+        }
+    }
+
+    /**
+     * Returns an array of pending notices
+     * @return
+     */
+    public PeerNotice[] getNotices() {
+        return this.notices.toArray(new PeerNotice[this.notices.size()]);
+    }
+
+    /**
+     * Clears a notice from the queue
+     * @param notice
+     */
+    public void clearNotice(PeerNotice notice) {
+        this.notices.remove(notice);
     }
 
     /**
@@ -380,6 +421,7 @@ public class ClientService extends NetworkService {
 //        void onReceivedProjectList(Peer server, Model[] models);
 //        void onReceivedProject(Peer server, ProjectImport[] importStatuses);
         void onReceivedTargetTranslations(Peer server, String[] targetTranslations);
+        void onReceivedPeerNotice(PeerNotice notice);
     }
 
     /**
