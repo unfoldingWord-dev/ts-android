@@ -200,7 +200,13 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
                     // offer target translation to the client
                     serverService.offerTargetTranslation(peer, targetTranslationSlug);
                 } else if(operationMode == MODE_CLIENT) {
-                    // TODO: 11/25/2015 do something
+                    // TODO: 12/1/2015 eventually provide a ui for viewing multiple different requests from this peer
+                    // display request user
+                    Request[] requests = peer.getRequests();
+                    if(requests.length > 0) {
+                        // TRICKY: for now we are just looking at one request at a time.
+
+                    }
                 }
             }
         });
