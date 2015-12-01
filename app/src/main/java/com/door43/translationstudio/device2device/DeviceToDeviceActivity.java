@@ -32,7 +32,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class DeviceToDeviceActivity extends BaseActivity implements ServerService.Callbacks, ClientService.OnClientEventListener, BroadcastListenerService.Callbacks {
+public class DeviceToDeviceActivity extends BaseActivity implements ServerService.OnServerEventListener, ClientService.OnClientEventListener, BroadcastListenerService.Callbacks {
     private static final int REFRESH_FREQUENCY = 5000;
     private static final int SERVER_TTL = 5000; // time before a slient server is considered lost
     private boolean mStartAsServer = false;
@@ -52,13 +52,13 @@ public class DeviceToDeviceActivity extends BaseActivity implements ServerServic
         public void onServiceConnected(ComponentName name, IBinder service) {
             ServerService.LocalBinder binder = (ServerService.LocalBinder) service;
             mExportService = binder.getServiceInstance();
-            mExportService.registerCallback(DeviceToDeviceActivity.this);
+            mExportService.setOnServerEventListener(DeviceToDeviceActivity.this);
             Logger.i(DeviceToDeviceActivity.class.getName(), "Connected to export service");
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            mExportService.registerCallback(null);
+            mExportService.setOnServerEventListener(null);
             Logger.i(DeviceToDeviceActivity.class.getName(), "Disconnected from export service");
             // TODO: notify activity that service was dropped.
         }
@@ -249,7 +249,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ServerServic
     public void onStop() {
         // disconnect from services
         if(mExportService != null) {
-            mExportService.registerCallback(null);
+            mExportService.setOnServerEventListener(null);
             try {
                 unbindService(mExportConnection);
                 Logger.i(this.getClass().getName(), "Disconnected from export service");
@@ -333,7 +333,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ServerServic
 
         // update the adapter
         if(mAdapter != null) {
-            mAdapter.setPeerList(peers);
+            mAdapter.setPeers(peers);
         }
     }
 

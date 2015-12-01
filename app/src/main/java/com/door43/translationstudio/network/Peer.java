@@ -17,7 +17,7 @@ public class Peer {
     private boolean mIsAuthorized = false;
     private boolean hasIdentity = false;
     private String name = "unknown";
-    private String device = "unknown";
+    private String deviceType = "unknown";
     private String id = "unknown";
 
     /**
@@ -149,7 +149,7 @@ public class Peer {
     }
 
     public void setDevice(String device) {
-        this.device = device;
+        this.deviceType = device;
     }
 
     public void setId(String id) {
@@ -161,7 +161,7 @@ public class Peer {
     }
 
     public String getDevice() {
-        return device;
+        return deviceType;
     }
 
     public String getId() {

@@ -42,7 +42,7 @@ import java.util.Locale;
 /**
  * Created by joel on 11/19/2015.
  */
-public class ShareWithPeerDialog extends DialogFragment implements ServerService.Callbacks, BroadcastListenerService.Callbacks, ClientService.OnClientEventListener {
+public class ShareWithPeerDialog extends DialogFragment implements ServerService.OnServerEventListener, BroadcastListenerService.Callbacks, ClientService.OnClientEventListener {
 
     // TODO: 11/30/2015 get port from settings
     private static final int PORT_CLIENT_UDP = 9939;
@@ -67,6 +67,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
             hand.post(new Runnable() {
                 @Override
                 public void run() {
+                    updateNotices(clientService.getNotices());
                     updatePeerList(clientService.getPeers());
                 }
             });
@@ -86,7 +87,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
         public void onServiceConnected(ComponentName name, IBinder service) {
             ServerService.LocalBinder binder = (ServerService.LocalBinder) service;
             serverService = binder.getServiceInstance();
-            serverService.registerCallback(ShareWithPeerDialog.this);
+            serverService.setOnServerEventListener(ShareWithPeerDialog.this);
             Logger.i(ShareWithPeerDialog.class.getName(), "Connected to export service");
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {
@@ -99,7 +100,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            serverService.registerCallback(null);
+            serverService.setOnServerEventListener(null);
             Logger.i(ShareWithPeerDialog.class.getName(), "Disconnected from export service");
             // TODO: notify fragment that service was dropped.
         }
@@ -270,7 +271,17 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
      */
     public void updatePeerList(ArrayList<Peer> peers) {
         if(adapter != null) {
-            adapter.setPeerList(peers);
+            adapter.setPeers(peers);
+        }
+    }
+
+    /**
+     * Updates the notices for peers on the screen
+     * @param noticies
+     */
+    public void updateNotices(PeerNotice[] noticies) {
+        if(adapter != null) {
+            adapter.setNoticies(noticies);
         }
     }
 
@@ -440,12 +451,15 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
     }
 
     @Override
-    public void onReceivedPeerNotice(PeerNotice notice) {
-        // TODO: 12/1/2015 do something else to update the ui to indicate the peer wants to send a target translation
-        // we can display an icon (with a count) on the device and when they click on it they can see the pending notices.
-        // clicking on a notice will allow them to react to it.
-        Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), notice.peer.getName() + " wants to share a target translation", Snackbar.LENGTH_LONG);
-        ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-        snack.show();
+    public void onReceivedPeerNotice(final PeerNotice notice) {
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                if(adapter != null) {
+                    adapter.addNotice(notice);
+                }
+            }
+        });
     }
 }

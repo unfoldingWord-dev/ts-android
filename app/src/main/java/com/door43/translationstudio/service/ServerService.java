@@ -47,7 +47,7 @@ public class ServerService extends NetworkService {
     public static final String PARAM_DEVICE_ALIAS = "param_device_alias";
     private static Boolean mIsRunning = false;
     private final IBinder mBinder = new LocalBinder();
-    private Callbacks listener;
+    private OnServerEventListener listener;
     private int mPort = 0;
     private Thread mServerThread;
     private Map<String, Connection> mClientConnections = new HashMap<>();
@@ -78,7 +78,7 @@ public class ServerService extends NetworkService {
         return mIsRunning;
     }
 
-    public void registerCallback(Callbacks callback) {
+    public void setOnServerEventListener(OnServerEventListener callback) {
         listener = callback;
         if(isRunning() && listener != null) {
             listener.onServerServiceReady(mPort);
@@ -569,7 +569,7 @@ public class ServerService extends NetworkService {
     /**
      * Interface for communication with service clients.
      */
-    public interface Callbacks {
+    public interface OnServerEventListener {
         void onServerServiceReady(int port);
         void onClientConnected(Peer peer);
         void onClientLost(Peer peer);
