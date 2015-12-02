@@ -293,7 +293,7 @@ public class ServerService extends NetworkService {
                     Logger.e(this.getClass().getName(), "Could not create a temp file", e);
                     break;
                 }
-                
+
                 Translator translator = AppContext.getTranslator();
                 TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationSlug);
                 if(targetTranslation != null) {

@@ -22,18 +22,22 @@ import android.widget.TextView;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.device2device.PeerAdapter;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.dialogs.NoteMarkerDialog;
 import com.door43.translationstudio.network.Peer;
+import com.door43.translationstudio.newui.home.HomeActivity;
 import com.door43.translationstudio.service.BroadcastListenerService;
 import com.door43.translationstudio.service.BroadcastService;
 import com.door43.translationstudio.service.ClientService;
 import com.door43.translationstudio.service.Request;
 import com.door43.translationstudio.service.ServerService;
 import com.door43.util.RSAEncryption;
+import com.door43.util.StringUtilities;
 import com.door43.widget.ViewUtil;
 
 import org.json.JSONException;
@@ -479,10 +483,31 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
 
     @Override
     public void onReceivedTargetTranslations(Peer server, String[] targetTranslations) {
-        // TODO: 11/23/2015 notify user that download is complete.
-        Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), "Target translation successfully imported", Snackbar.LENGTH_LONG);
-        ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-        snack.show();
+        // build name list
+        Translator translator = AppContext.getTranslator();
+        Library library = AppContext.getLibrary();
+        String targetTranslationNames = "";
+        for(String targetTranslationSlug:targetTranslations) {
+            TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationSlug);
+            SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+            targetTranslationNames += sourceTranslation.getProjectTitle() + " - " + targetTranslation.getTargetLanguageName() + ", ";
+        }
+        final String names = targetTranslationNames.trim().replaceAll(",$", "");
+
+        // notify user
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                final CustomAlertDialog dialog = CustomAlertDialog.Create(getActivity());
+                dialog.setTitle(R.string.success)
+                        .setMessage(String.format(getResources().getString(R.string.success_import_target_translation), names))
+                        .setPositiveButton(R.string.dismiss, null)
+                        .show("import-success");
+                // TODO: 12/1/2015 this is a bad hack
+                ((HomeActivity) getActivity()).notifyDatasetChanged();
+            }
+        });
     }
 
     @Override
