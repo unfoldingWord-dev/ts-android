@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
@@ -17,22 +18,33 @@ import org.sufficientlysecure.htmltextview.HtmlTextView;
 /**
  * Created by blm on 11/28/15.
  * The intent of this is to create an AlertDialog replacement that has a modern UI appearance even
- *     on older devices.  It also has support for HTML content.
+ *     on older devices.
+ *
+ * Limitations:
+ *      not all features of AlertDialog supported
+ *      Dialog buttons are modal and will dismiss dialog.  No support for modeless buttons.
  */
 public class CustomAlertDialog extends DialogFragment {
+
+    static int testCntr = 0;
+    static String TAG = CustomAlertDialog.class.getSimpleName();
 
     private int mMessageID = 0;
     private int mMessageHtmlID = 0;
     private int mTitleID = 0;
+
     private Button mPositiveButton;
-    private Button mNegativeButton;
-    private Activity mContext;
     private View.OnClickListener mPositiveListener;
     private int mPositiveTextID = 0;
+
+    private Button mNegativeButton;
     private View.OnClickListener mNegativeListener;
     private int mNegativeTextID = 0;
+
     private CharSequence mTitle = null;
     private CharSequence mMessage = null;
+
+    private Activity mContext;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -57,7 +69,8 @@ public class CustomAlertDialog extends DialogFragment {
             final HtmlTextView message = (HtmlTextView) rootView.findViewById(R.id.dialog_content);
             message.setText(mMessage);
         }
-        mPositiveButton = (Button) rootView.findViewById(R.id.confirmButton);
+
+        mPositiveButton = (Button) rootView.findViewById(R.id.positiveButton);
         if(0 != mPositiveTextID) {
             // convert string to upper case manually, because on older devices uppercase attribute
             // in UI
@@ -79,7 +92,7 @@ public class CustomAlertDialog extends DialogFragment {
             });
         }
 
-        mNegativeButton = (Button) rootView.findViewById(R.id.cancelButton);
+        mNegativeButton = (Button) rootView.findViewById(R.id.negativeButton);
         if(0 != mNegativeTextID) {
             // convert string to upper case manually, because on older devices uppercase attribute
             // in UI
@@ -100,6 +113,28 @@ public class CustomAlertDialog extends DialogFragment {
                 }
             });
         }
+
+//        mNeutralButton = (Button) rootView.findViewById(R.id.neutralButton);
+//        if(0 != mNeutralTextID) {
+//            // convert string to upper case manually, because on older devices uppercase attribute
+//            // in UI
+//            String label = getResources().getText(mNeutralTextID).toString().toUpperCase();
+//            mNeutralButton.setText(label);
+//        } else {
+//            mNeutralButton.setVisibility(View.GONE);
+//        }
+//
+//        if(null != mNeutralListener) {
+//            mNeutralButton.setOnClickListener(mNeutralListener);
+//        }
+//        else {
+//            mNeutralButton.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    dismiss();
+//                }
+//            });
+//        }
 
         if (0 != mTitleID) {
             final TextView title = (TextView) rootView.findViewById(R.id.dialog_title);
