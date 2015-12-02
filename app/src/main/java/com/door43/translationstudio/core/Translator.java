@@ -226,16 +226,23 @@ public class Translator {
             for(File newDir:targetTranslationDirs) {
                 File localDir = new File(mRootDir, newDir.getName());
                 if(localDir.exists()) {
-                    // clean out local translation (retaining history)
-                    File[] oldFiles = localDir.listFiles(new FilenameFilter() {
-                        @Override
-                        public boolean accept(File dir, String filename) {
-                            return !filename.equals(".git");
-                        }
-                    });
-                    for(File f:oldFiles) {
-                        FileUtils.deleteQuietly(f);
+                    // commit local changes to history
+                    TargetTranslation targetTranslation = getTargetTranslation(localDir.getName());
+                    if(targetTranslation != null) {
+                        targetTranslation.commit();
                     }
+
+                    // clean out local translation (retaining history)
+                    // TODO: 12/1/2015 there should be an option to discard local changes (though not it's history)
+//                    File[] oldFiles = localDir.listFiles(new FilenameFilter() {
+//                        @Override
+//                        public boolean accept(File dir, String filename) {
+//                            return !filename.equals(".git");
+//                        }
+//                    });
+//                    for(File f:oldFiles) {
+//                        FileUtils.deleteQuietly(f);
+//                    }
 
                     // copy files into existing translation
                     File[] newFiles = newDir.listFiles(new FilenameFilter() {
@@ -244,11 +251,18 @@ public class Translator {
                             return !filename.equals(".git");
                         }
                     });
-                    for(File f:newFiles) {
-                        if(f.isDirectory()) {
-                            FileUtils.moveDirectory(f, new File(localDir, f.getName()));
+                    for(File importedFile:newFiles) {
+                        File localFile = new File(localDir, importedFile.getName());
+                        if(importedFile.getName().equals("manifest.json")) {
+                            JSONObject localManifest = new JSONObject(FileUtils.readFileToString(localFile));
+                            JSONObject importedManifest = new JSONObject(FileUtils.readFileToString(importedFile));
+                            // TODO: merge the manifest files instead of doing a blind copy.
+                            // we need to merge the translators, finished_frames, finished_titles, and finished_references.
+                            FileUtils.deleteQuietly(localFile);
+                            FileUtils.moveFile(importedFile, localFile);
                         } else {
-                            FileUtils.moveFile(f, new File(localDir, f.getName()));
+                            // merge the files
+                            mergeRecursively(importedFile, localFile);
                         }
                     }
                 } else {
@@ -273,6 +287,24 @@ public class Translator {
         // clean
         FileUtils.deleteQuietly(tempCache);
         return importedTargetTranslationSlugs.toArray(new String[importedTargetTranslationSlugs.size()]);
+    }
+
+    /**
+     * Recursively merges a file into another
+     * @param src
+     * @param dest
+     * @throws IOException
+     */
+    private void mergeRecursively(File src, File dest) throws IOException {
+        if(src.isDirectory()) {
+            File[] children = src.listFiles();
+            for(File child:children) {
+                mergeRecursively(child, new File(dest, child.getName()));
+            }
+        } else {
+            FileUtils.deleteQuietly(dest);
+            FileUtils.moveFile(src, dest);
+        }
     }
 
     /**

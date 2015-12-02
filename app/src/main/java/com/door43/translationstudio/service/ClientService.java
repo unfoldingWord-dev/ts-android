@@ -300,6 +300,7 @@ public class ClientService extends NetworkService {
                 break;
             case TargetTranslation:
                 if(requests.containsKey(request.uuid)) {
+                    requests.remove(request.uuid);
                     // receive file download details
                     int port;
                     final long size;
@@ -385,7 +386,6 @@ public class ClientService extends NetworkService {
                 break;
             default:
                 Logger.i(this.getClass().getName(), "received invalid request from " + server.getIpAddress() + ": " + request.toString());
-//                sendMessage(server, SocketMessages.MSG_INVALID_REQUEST);
         }
     }
 
