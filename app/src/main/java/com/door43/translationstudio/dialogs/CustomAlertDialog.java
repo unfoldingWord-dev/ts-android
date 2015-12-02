@@ -31,6 +31,8 @@ public class CustomAlertDialog extends DialogFragment {
     private int mPositiveTextID = 0;
     private View.OnClickListener mNegativeListener;
     private int mNegativeTextID = 0;
+    private CharSequence mTitle = null;
+    private CharSequence mMessage = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -50,6 +52,10 @@ public class CustomAlertDialog extends DialogFragment {
             final HtmlTextView message = (HtmlTextView) rootView.findViewById(R.id.dialog_content);
             String mMessageHtml = getResources().getText(mMessageHtmlID).toString();
             message.setHtmlFromString(mMessageHtml, true);
+        }
+        if (mMessage != null) {
+            final HtmlTextView message = (HtmlTextView) rootView.findViewById(R.id.dialog_content);
+            message.setText(mMessage);
         }
         mPositiveButton = (Button) rootView.findViewById(R.id.confirmButton);
         if(0 != mPositiveTextID) {
@@ -99,6 +105,11 @@ public class CustomAlertDialog extends DialogFragment {
             final TextView title = (TextView) rootView.findViewById(R.id.dialog_title);
             title.setText(mTitleID);
         }
+        if(mTitle != null) {
+            TextView title = (TextView) rootView.findViewById(R.id.dialog_title);
+            title.setText(mTitle);
+        }
+
         return rootView;
     }
 
@@ -109,20 +120,32 @@ public class CustomAlertDialog extends DialogFragment {
 
     public CustomAlertDialog setTitle(int textResId) {
         mTitleID = textResId;
+        mTitle = null;
         return this;
     }
-//    public CustomAlertDialog setTitle(CharSequence text) {
-//        mTitle = text.toString();
-//        return this;
-//    }
+
+    public CustomAlertDialog setTitle(CharSequence text) {
+        mTitle = text;
+        mTitleID = 0;
+        return this;
+    }
 
     public CustomAlertDialog setMessage(int textResId) {
         mMessageID = textResId;
+        mMessage = null;
+        return this;
+    }
+
+    public CustomAlertDialog setMessage(CharSequence text) {
+        mMessage = text;
+        mMessageID = 0;
+        mMessageHtmlID = 0;
         return this;
     }
 
     public CustomAlertDialog setMessageHtml(int textResId) {
         mMessageHtmlID = textResId;
+        mMessage = null;
         return this;
     }
 

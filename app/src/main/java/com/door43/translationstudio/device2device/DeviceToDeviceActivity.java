@@ -20,7 +20,6 @@ import com.door43.translationstudio.network.Peer;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.service.BroadcastListenerService;
 import com.door43.translationstudio.service.BroadcastService;
-import com.door43.translationstudio.service.PeerNotice;
 import com.door43.translationstudio.service.PeerStatusKeys;
 import com.door43.translationstudio.service.Request;
 import com.door43.translationstudio.service.ServerService;

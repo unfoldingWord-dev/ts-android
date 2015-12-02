@@ -25,15 +25,18 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.device2device.PeerAdapter;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
+import com.door43.translationstudio.dialogs.NoteMarkerDialog;
 import com.door43.translationstudio.network.Peer;
 import com.door43.translationstudio.service.BroadcastListenerService;
 import com.door43.translationstudio.service.BroadcastService;
 import com.door43.translationstudio.service.ClientService;
-import com.door43.translationstudio.service.PeerNotice;
 import com.door43.translationstudio.service.Request;
 import com.door43.translationstudio.service.ServerService;
 import com.door43.util.RSAEncryption;
 import com.door43.widget.ViewUtil;
+
+import org.json.JSONException;
 
 import java.io.File;
 import java.security.InvalidParameterException;
@@ -195,7 +198,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Peer peer = adapter.getItem(position);
+                final Peer peer = adapter.getItem(position);
                 if(operationMode == MODE_SERVER) {
                     // offer target translation to the client
                     serverService.offerTargetTranslation(peer, targetTranslationSlug);
@@ -204,8 +207,44 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
                     // display request user
                     Request[] requests = peer.getRequests();
                     if(requests.length > 0) {
-                        // TRICKY: for now we are just looking at one request at a time.
-
+                        final Request request = requests[0];
+                        if(request.type == Request.Type.AlertTargetTranslation) {
+                            // TRICKY: for now we are just looking at one request at a time.
+                            try {
+                                final String targetTranslationSlug = request.context.getString("target_translation_id");
+                                String projectName = request.context.getString("project_name");
+                                String targetLanguageName = request.context.getString("target_language_name");
+                                final CustomAlertDialog dialog = CustomAlertDialog.Create(getActivity());
+                                dialog.setTitle(peer.getName())
+                                        .setMessage(String.format(getResources().getString(R.string.confirm_import_target_translation), projectName + " - " + targetLanguageName))
+                                        .setPositiveButton(R.string.label_import, new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                peer.dismissRequest(request);
+                                                if(adapter != null) {
+                                                    adapter.notifyDataSetChanged();
+                                                }
+                                                clientService.requestTargetTranslation(peer, targetTranslationSlug);
+                                                dialog.dismiss();
+                                            }
+                                        })
+                                        .setNegativeButton(R.string.dismiss, new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                peer.dismissRequest(request);
+                                                if(adapter != null) {
+                                                    adapter.notifyDataSetChanged();
+                                                }
+                                                dialog.dismiss();
+                                            }
+                                        })
+                                        .show("approve-request");
+                            } catch (JSONException e) {
+                                Logger.e(ShareWithPeerDialog.class.getName(), "Invalid request context", e);
+                            }
+                        } else {
+                            // we do not currently support other requests
+                        }
                     }
                 }
             }

@@ -221,7 +221,6 @@ public class ServerService extends NetworkService {
                     client.setIsSecure(true);
                 } catch (JSONException e) {
                     Logger.w(this.getClass().getName(), "Invalid request: " + message, e);
-//                    sendMessage(client, SocketMessages.MSG_INVALID_REQUEST);
                 }
 
                 // send identity
@@ -262,7 +261,6 @@ public class ServerService extends NetworkService {
                     }
                 } catch (JSONException e) {
                     Logger.w(this.getClass().getName(), "Invalid request: " + message, e);
-//                    sendMessage(client, SocketMessages.MSG_INVALID_REQUEST);
                 }
             }
         } else {
@@ -283,19 +281,19 @@ public class ServerService extends NetworkService {
             case TargetTranslation:
                 String targetTranslationSlug = null;
                 try {
-                    targetTranslationSlug = contextJson.getString("target_language_id");
+                    targetTranslationSlug = contextJson.getString("target_translation_id");
                 } catch (JSONException e) {
                     Logger.e(this.getClass().getName(), "invalid context", e);
                     break;
                 }
                 final File exportFile;
                 try {
-                    exportFile = File.createTempFile(targetTranslationSlug, Translator.ARCHIVE_EXTENSION);
+                    exportFile = File.createTempFile(targetTranslationSlug, "." + Translator.ARCHIVE_EXTENSION);
                 } catch (IOException e) {
                     Logger.e(this.getClass().getName(), "Could not create a temp file", e);
                     break;
                 }
-//                final File exportFile = new File(AppContext.getPublicDownloadsDirectory(), System.currentTimeMillis() / 1000L + "_" + targetTranslationSlug + Translator.ARCHIVE_EXTENSION);
+                
                 Translator translator = AppContext.getTranslator();
                 TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationSlug);
                 if(targetTranslation != null) {
@@ -332,11 +330,9 @@ public class ServerService extends NetworkService {
                     } catch (Exception e) {
                         // export failed
                         Logger.e(this.getClass().getName(), "Failed to export the archive", e);
-//                        sendMessage(client, SocketMessages.MSG_SERVER_ERROR);
                     }
                 } else {
                     // we don't have it
-//                    sendMessage(client, SocketMessages.MSG_INVALID_REQUEST);
                 }
                 break;
             case TargetTranslationList:
@@ -364,115 +360,6 @@ public class ServerService extends NetworkService {
 
                 sendMessage(client, SocketMessages.MSG_PROJECT_LIST + ":" + library);
                 break;
-//            case ProjectArchive:
-//                Logger.i(this.getClass().getName(), "received project archive request from " + client.getIpAddress());
-//                // TODO: we shouldn't use the project manager here because this may be running in the background (eventually)
-//                // send the project archive to the client
-//                JSONObject json;
-//                try {
-//                    json = new JSONObject(data[0]);
-//                } catch (final JSONException e) {
-//                    Logger.e(this.getClass().getName(), "failed to parse project archive response", e);
-//                    sendMessage(client, SocketMessages.MSG_INVALID_REQUEST);
-//                    break;
-//                }
-//
-//                // load data
-//                if(json.has("id") && json.has("target_languages")) {
-//                    try {
-//                        String projectId = json.getString("id");
-
-//                        final Project p =  null;//AppContext.projectManager().getProject(projectSlug);
-//                        // validate project
-//                        if(p != null) {
-//                            // validate requested source languages
-//                            List<SourceLanguage> requestedSourceLanguages = new ArrayList<>();
-//                            if(json.has("source_languages")) {
-//                                JSONArray sourceLanguagesJson = json.getJSONArray("source_languages");
-//                                for(int i = 0; i < sourceLanguagesJson.length(); i ++) {
-//                                    String languageId = sourceLanguagesJson.getString(i);
-//                                    SourceLanguage s = p.getSourceLanguage(languageId);
-//                                    if(s != null) {
-//                                        requestedSourceLanguages.add(s);
-//                                    }
-//                                }
-//                            }
-//
-//                            // validate requested target languages
-//                            Language[] activeLanguages = p.getActiveTargetLanguages();
-//                            JSONArray targetLanguagesJson = json.getJSONArray("target_languages");
-//                            List<Language> requestedTranslations = new ArrayList<>();
-//                            for (int i = 0; i < targetLanguagesJson.length(); i++) {
-//                                String languageId = (String) targetLanguagesJson.get(i);
-//                                for(Language l:activeLanguages) {
-//                                    if(l.getId().equals(languageId)) {
-//                                        requestedTranslations.add(l);
-//                                        break;
-//                                    }
-//                                }
-//                            }
-//                            if(requestedTranslations.size() > 0) {
-//                                String path = Sharing.export(p, requestedSourceLanguages.toArray(new SourceLanguage[requestedSourceLanguages.size()]), requestedTranslations.toArray(new Language[requestedTranslations.size()]));
-//                                final File archive = new File(path);
-//                                if(archive.exists()) {
-//                                    // open a socket to send the project
-//                                    ServerSocket fileSocket = openWriteSocket(new OnSocketEventListener() {
-//                                        @Override
-//                                        public void onOpen(Connection connection) {
-//                                            // send an archive of the current project to the connection
-//                                            try {
-//                                                // send the file to the connection
-//                                                // TODO: display a progress bar when the files are being transferred (on each client list item)
-//                                                DataOutputStream out = new DataOutputStream(connection.getSocket().getOutputStream());
-//                                                DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(archive)));
-//                                                byte[] buffer = new byte[8 * 1024];
-//                                                int count;
-//                                                while ((count = in.read(buffer)) > 0) {
-//                                                    out.write(buffer, 0, count);
-//                                                }
-//                                                out.close();
-//                                                in.close();
-//                                            } catch (final IOException e) {
-//                                                Logger.e(ServerService.class.getName(), "Failed to send project archive to client", e);
-//                                            }
-//                                        }
-//                                    });
-//                                    // send details to the client so they can download
-//                                    JSONObject infoJson = new JSONObject();
-//                                    infoJson.put("port", fileSocket.getLocalPort());
-//                                    infoJson.put("name", archive.getName());
-//                                    infoJson.put("size", archive.length());
-//                                    sendMessage(client, SocketMessages.MSG_PROJECT_ARCHIVE + ":" + infoJson.toString());
-//                                } else {
-//                                    // the archive could not be created
-//                                    sendMessage(client, SocketMessages.MSG_SERVER_ERROR);
-//                                }
-//                            } else {
-//                                // the client should have known better
-//                                sendMessage(client, SocketMessages.MSG_INVALID_REQUEST);
-//                            }
-//                        } else {
-//                            // the client should have known better
-//                            sendMessage(client, SocketMessages.MSG_INVALID_REQUEST);
-//                        }
-//                    } catch (JSONException e) {
-//                        Logger.e(this.getClass().getName(), "malformed or corrupt project archive response", e);
-//                        sendMessage(client, SocketMessages.MSG_INVALID_REQUEST);
-//                    }
-////                    catch (IOException e) {
-////                        Logger.e(this.getClass().getName(), "unable to read project archive response", e);
-////                        sendMessage(client, SocketMessages.MSG_SERVER_ERROR);
-////                    }
-//                } else {
-//                    sendMessage(client, SocketMessages.MSG_INVALID_REQUEST);
-//                }
-//                break;
-//            case InvalidRequest:
-//                // TODO: do something about this.
-//                if(listener != null) {
-//                    listener.onServerServiceError(new Throwable("Invalid request"));
-//                }
-//                break;
             default:
                 Logger.i(this.getClass().getName(), "received invalid request from " + client.getIpAddress() + ": " + request.toString());
         }
@@ -507,53 +394,6 @@ public class ServerService extends NetworkService {
             }
         } else {
             // invalid target translation
-        }
-    }
-
-    /**
-     * Sends a target translation to the peer
-     * @param client
-     * @param targetTranslationSlug
-     */
-    private void sendTargetTranslation(Peer client, String targetTranslationSlug) {
-        final File exportFile = new File(AppContext.getPublicDownloadsDirectory(), System.currentTimeMillis() / 1000L + "_" + targetTranslationSlug + "." + Translator.ARCHIVE_EXTENSION);
-        Translator translator = AppContext.getTranslator();
-        TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationSlug);
-        if(targetTranslation != null) {
-            try {
-                translator.exportArchive(targetTranslation, exportFile);
-                if(exportFile.exists()) {
-                    ServerSocket fileSocket = openWriteSocket(new OnSocketEventListener() {
-                        @Override
-                        public void onOpen(Connection connection) {
-                            try {
-                                DataOutputStream out = new DataOutputStream(connection.getSocket().getOutputStream());
-                                DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(exportFile)));
-                                byte[] buffer = new byte[8*1024];
-                                int count;
-                                while((count = in.read(buffer)) > 0) {
-                                    out.write(buffer, 0, count);
-                                }
-                                out.close();
-                                in.close();
-                            } catch (IOException e) {
-                                Logger.e(ServerService.class.getName(), "Failed to send the target translation", e);
-                            }
-                        }
-                    });
-                    // send file details
-                    JSONObject json = new JSONObject();
-                    json.put("port", fileSocket.getLocalPort());
-                    json.put("name", exportFile.getName());
-                    json.put("size", exportFile.length());
-                    sendMessage(client, PeerCommand.TargetTranslation + ":" + json.toString());
-                }
-            } catch (Exception e) {
-                // TODO: 11/23/2015 we could not export the target translation
-                e.printStackTrace();
-            }
-        } else {
-            // TODO: 11/23/2015 we don't have this target translation
         }
     }
 

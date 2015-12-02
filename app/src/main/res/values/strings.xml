@@ -578,4 +578,5 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="backup_to_friend">Send to Friend</string>
     <string name="device_network_alias_description">Choose a name or pseudonym others will see when sharing with your device</string>
     <string name="device_name">Device Name</string>
+    <string name="confirm_import_target_translation">Do you want to import <xliff:g id="target_translation_name" example="Open Bible Stories - Afaraf">%1$s</xliff:g>?</string>
 </resources>

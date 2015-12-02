@@ -164,12 +164,22 @@ public class ClientService extends NetworkService {
         sendMessage(server, SocketMessages.MSG_PROJECT_LIST + ":" + languagesJson);
     }
 
-    public void requestProjectArchive(Peer server, JSONObject languagesJson) {
-        sendMessage(server, SocketMessages.MSG_PROJECT_ARCHIVE + ":" + languagesJson);
-    }
-
+    /**
+     * Requests a target translation from the server
+     * @param server
+     * @param targetTranslationSlug
+     */
     public void requestTargetTranslation(Peer server, String targetTranslationSlug) {
-        sendMessage(server, PeerCommand.TargetTranslation + ":" + targetTranslationSlug);
+        JSONObject json = new JSONObject();
+        try {
+            json.put("target_translation_id", targetTranslationSlug);
+            Request request = new Request(Request.Type.TargetTranslation, json);
+            sendRequest(server, request);
+        } catch (JSONException e) {
+            if(listener != null) {
+                listener.onClientServiceError(e);
+            }
+        }
     }
 
     /**
