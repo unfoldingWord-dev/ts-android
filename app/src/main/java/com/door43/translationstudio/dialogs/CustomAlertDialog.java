@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.FragmentManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,8 +13,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-
-import org.sufficientlysecure.htmltextview.HtmlTextView;
 
 /**
  * Created by blm on 11/28/15.
@@ -30,8 +29,8 @@ public class CustomAlertDialog extends DialogFragment {
     static String TAG = CustomAlertDialog.class.getSimpleName();
 
     private int mMessageID = 0;
-    private int mMessageHtmlID = 0;
     private int mTitleID = 0;
+    private int mIconID = 0;
 
     private Button mPositiveButton;
     private View.OnClickListener mPositiveListener;
@@ -41,8 +40,14 @@ public class CustomAlertDialog extends DialogFragment {
     private View.OnClickListener mNegativeListener;
     private int mNegativeTextID = 0;
 
+    private Button mNeutralButton;
+    private View.OnClickListener mNeutralListener;
+    private int mNeutralTextID = 0;
+
     private CharSequence mTitle = null;
     private CharSequence mMessage = null;
+
+    private View mContentView = null;
 
     private Activity mContext;
 
@@ -55,19 +60,32 @@ public class CustomAlertDialog extends DialogFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.dialog_custom_alert, container, false);
+        View rootView = null;
+        try {
+            rootView = inflater.inflate(R.layout.dialog_custom_alert, container, false);
+        } catch (Exception e) {
+            Log.d(TAG,"Exception: " + e);
+        }
+
         if (0 != mMessageID) {
-            final HtmlTextView message = (HtmlTextView) rootView.findViewById(R.id.dialog_content);
+            final TextView message = (TextView) rootView.findViewById(R.id.dialog_content);
             message.setText(mMessageID);
         }
-        if (0 != mMessageHtmlID) {
-            final HtmlTextView message = (HtmlTextView) rootView.findViewById(R.id.dialog_content);
-            String mMessageHtml = getResources().getText(mMessageHtmlID).toString();
-            message.setHtmlFromString(mMessageHtml, true);
+
+        final ImageView icon = (ImageView) rootView.findViewById(R.id.dialog_icon);
+        if (0 != mIconID) {
+            icon.setImageResource(mIconID);
+        } else {
+            icon.setVisibility(View.GONE);
         }
-        if (mMessage != null) {
-            final HtmlTextView message = (HtmlTextView) rootView.findViewById(R.id.dialog_content);
-            message.setText(mMessage);
+
+        if (null != mContentView) {
+            final TextView content = (TextView) rootView.findViewById(R.id.dialog_content);
+
+            ViewGroup parent = (ViewGroup) content.getParent();
+            int index = parent.indexOfChild(content);
+            parent.removeView(content);
+            parent.addView(mContentView, index);
         }
 
         mPositiveButton = (Button) rootView.findViewById(R.id.positiveButton);
@@ -114,27 +132,27 @@ public class CustomAlertDialog extends DialogFragment {
             });
         }
 
-//        mNeutralButton = (Button) rootView.findViewById(R.id.neutralButton);
-//        if(0 != mNeutralTextID) {
-//            // convert string to upper case manually, because on older devices uppercase attribute
-//            // in UI
-//            String label = getResources().getText(mNeutralTextID).toString().toUpperCase();
-//            mNeutralButton.setText(label);
-//        } else {
-//            mNeutralButton.setVisibility(View.GONE);
-//        }
-//
-//        if(null != mNeutralListener) {
-//            mNeutralButton.setOnClickListener(mNeutralListener);
-//        }
-//        else {
-//            mNeutralButton.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    dismiss();
-//                }
-//            });
-//        }
+        mNeutralButton = (Button) rootView.findViewById(R.id.neutralButton);
+        if(0 != mNeutralTextID) {
+            // convert string to upper case manually, because on older devices uppercase attribute
+            // in UI
+            String label = getResources().getText(mNeutralTextID).toString().toUpperCase();
+            mNeutralButton.setText(label);
+        } else {
+            mNeutralButton.setVisibility(View.GONE);
+        }
+
+        if(null != mNeutralListener) {
+            mNeutralButton.setOnClickListener(mNeutralListener);
+        }
+        else {
+            mNeutralButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dismiss();
+                }
+            });
+        }
 
         if (0 != mTitleID) {
             final TextView title = (TextView) rootView.findViewById(R.id.dialog_title);
@@ -174,13 +192,6 @@ public class CustomAlertDialog extends DialogFragment {
     public CustomAlertDialog setMessage(CharSequence text) {
         mMessage = text;
         mMessageID = 0;
-        mMessageHtmlID = 0;
-        return this;
-    }
-
-    public CustomAlertDialog setMessageHtml(int textResId) {
-        mMessageHtmlID = textResId;
-        mMessage = null;
         return this;
     }
 
@@ -201,10 +212,29 @@ public class CustomAlertDialog extends DialogFragment {
         return this;
     }
 
+    public CustomAlertDialog setView(View v) {
+        mContentView = v;
+        return this;
+    }
+
     static public CustomAlertDialog Create(final Activity context) {
         CustomAlertDialog dlg = new CustomAlertDialog();
         dlg.setContext(context);
         return dlg;
     }
+
+//    public Button setBtnState(final View rootView, int buttonID, int buttonTextID) {
+//        Button button = (Button) rootView.findViewById(buttonID);
+//        if(0 != buttonTextID) {
+//            // convert string to upper case manually, because on older devices uppercase attribute
+//            // in UI
+//            String label = getResources().getText(buttonTextID).toString().toUpperCase();
+//            button.setText(label);
+//        } else {
+//            button.setVisibility(View.GONE);
+//        }
+//
+//        return button;
+//    }
 
 }

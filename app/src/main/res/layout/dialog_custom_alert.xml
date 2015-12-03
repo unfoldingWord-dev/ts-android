@@ -43,7 +43,7 @@
         android:gravity="center"
         android:layout_marginBottom="@dimen/dialog_controls_margin">
 
-        <org.sufficientlysecure.htmltextview.HtmlTextView
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="@dimen/body"
