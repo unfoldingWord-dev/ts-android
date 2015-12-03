@@ -1,5 +1,6 @@
 package com.door43.translationstudio.spannables;
 
+import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -16,11 +17,13 @@ public abstract class Span {
     private CharSequence mHumanReadable;
     private CharSequence mMachineReadable;
     private OnClickListener mClickListener;
+    private Bundle extras;
 
     /**
      * Creates a new empty span.
      * This is useful for classes that extends this class because they may need to perform
      * some proccesing before fully initializing.
+     * You should manualy call init() if using this constructor
      */
     public Span() {
         init("", "");
@@ -33,6 +36,14 @@ public abstract class Span {
      */
     Span(CharSequence humanReadable, CharSequence machineReadable) {
         init(humanReadable, machineReadable);
+    }
+
+    public Bundle getExtras() {
+        return this.extras;
+    }
+
+    public void setExtras(Bundle extras) {
+        this.extras = extras;
     }
 
     /**

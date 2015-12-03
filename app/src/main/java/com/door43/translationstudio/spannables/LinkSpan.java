@@ -1,5 +1,6 @@
 package com.door43.translationstudio.spannables;
 
+import android.os.Bundle;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -14,12 +15,14 @@ public class LinkSpan extends Span {
 
     private final String title;
     private final String address;
+    private final String type;
     private SpannableStringBuilder spannable;
 
-    public LinkSpan(String title, String address) {
+    public LinkSpan(String title, String address, String type) {
         super(title, address);
         this.title = title;
         this.address = address;
+        this.type = type;
     }
 
     /**
@@ -54,5 +57,13 @@ public class LinkSpan extends Span {
      */
     public String getAddress() {
         return this.address;
+    }
+
+    /**
+     * Returns the link type
+     * @return
+     */
+    public String getType() {
+        return this.type;
     }
 }

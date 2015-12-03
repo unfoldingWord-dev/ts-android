@@ -186,7 +186,7 @@ public class HtmlTagHandler implements Html.TagHandler {
         output.removeSpan(obj);
 
         CharSequence title = output.subSequence(where, len);
-        LinkSpan span = new LinkSpan(title.toString(), attributes.get("href"));
+        LinkSpan span = new LinkSpan(title.toString(), attributes.get("href"), attributes.get("type"));
         span.setOnClickListener(this.clickListener);
 
         if(where != len) {

@@ -1,7 +1,6 @@
 package com.door43.translationstudio.core;
 
 import android.content.Context;
-import android.os.Environment;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.util.Zip;
@@ -692,11 +691,11 @@ public class Library {
     /**
      * Returns a translation academy entry from the source translation
      * @param sourceTranslation
-     * @param translationAcademyId
-     * @return
+     * @param volume
+     *@param manual @return
      */
-    public TranslationAcademy getTranslationAcademy(SourceTranslation sourceTranslation, String translationAcademyId) {
-        return getActiveIndex().getTranslationAcademy(sourceTranslation, translationAcademyId);
+    public TranslationArticle getTranslationArticle(SourceTranslation sourceTranslation, String volume, String manual, String articleId) {
+        return getActiveIndex().getTranslationAcademy(sourceTranslation, volume, manual, articleId);
     }
 
     /**

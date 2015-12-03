@@ -1,15 +1,11 @@
 package com.door43.translationstudio.rendering;
 
-import android.text.Editable;
 import android.text.Html;
 import android.text.TextUtils;
 
+import com.door43.translationstudio.spannables.ArticleLinkSpan;
 import com.door43.translationstudio.spannables.Span;
-import com.door43.translationstudio.spannables.TranslationAcademyLinkSpan;
 
-import org.xml.sax.XMLReader;
-
-import java.nio.charset.Charset;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,10 +36,10 @@ public class HtmlRenderer extends RenderingEngine {
      * @return
      */
     private CharSequence renderTranslationAcademyLink(CharSequence in) {
-        return renderLink(in, TranslationAcademyLinkSpan.PATTERN, new OnCreateLink() {
+        return renderLink(in, ArticleLinkSpan.class, ArticleLinkSpan.PATTERN, "ta", new OnCreateLink() {
             @Override
             public Span onCreate(Matcher matcher) {
-                return new TranslationAcademyLinkSpan(matcher.group(3), matcher.group(2));
+                return ArticleLinkSpan.parse(matcher.group(3), matcher.group(2));
             }
         });
     }
@@ -52,11 +48,11 @@ public class HtmlRenderer extends RenderingEngine {
      * A generic rendering method for rendering content links as html
      *
      * @param in
-     * @param pattern
-     * @param callback
-     * @return
+     * @param spanClass
+     *@param pattern
+     * @param callback   @return
      */
-    private CharSequence renderLink(CharSequence in, Pattern pattern, OnCreateLink callback) {
+    private CharSequence renderLink(CharSequence in, Class spanClass, Pattern pattern, String linkType, OnCreateLink callback) {
         CharSequence out = "";
         Matcher matcher = pattern.matcher(in);
         int lastIndex = 0;
@@ -65,13 +61,13 @@ public class HtmlRenderer extends RenderingEngine {
             Span link = callback.onCreate(matcher);
             if(link != null) {
                 link.setOnClickListener(mLinkListener);
-                if (preprocessCallback == null || preprocessCallback.onPreprocess(link)) {
+                if (preprocessCallback == null || preprocessCallback.onPreprocess(spanClass, link)) {
                     // render clickable link
                     CharSequence title = link.getHumanReadable();
                     if(title == null || title.toString().isEmpty()) {
                         title = link.getMachineReadable();
                     }
-                    String htmlLink = "<app-link href=\"" + link.getMachineReadable() + "\">" + title + "</app-link>";
+                    String htmlLink = "<app-link href=\"" + link.getMachineReadable() + "\" type=\"" + linkType + "\" >" + title + "</app-link>";
                     out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), htmlLink);
                 } else {
                     // render as plain text
@@ -95,6 +91,6 @@ public class HtmlRenderer extends RenderingEngine {
      * Used to identify which links to render
      */
     public interface OnPreprocessLink {
-        boolean onPreprocess(Span span);
+        boolean onPreprocess(Class spanClass, Span span);
     }
 }

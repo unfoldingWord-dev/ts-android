@@ -4,10 +4,7 @@ import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
-import android.text.Editable;
 import android.text.Html;
-import android.text.SpannableStringBuilder;
-import android.text.style.URLSpan;
 import android.view.ContextThemeWrapper;
 import android.view.MotionEvent;
 import android.view.View;
@@ -27,22 +24,22 @@ import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
+import com.door43.translationstudio.core.TranslationArticle;
 import com.door43.translationstudio.core.TranslationNote;
 import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.rendering.HtmlRenderer;
 import com.door43.translationstudio.rendering.LinkRenderer;
+import com.door43.translationstudio.spannables.ArticleLinkSpan;
+import com.door43.translationstudio.spannables.LinkSpan;
 import com.door43.translationstudio.spannables.PassageLinkSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.AppContext;
-import com.door43.translationstudio.spannables.TranslationAcademyLinkSpan;
 import com.door43.widget.ViewUtil;
 
 import org.apmem.tools.layouts.FlowLayout;
 import org.sufficientlysecure.htmltextview.HtmlTextView;
 import org.sufficientlysecure.htmltextview.LocalLinkMovementMethod;
-
-import java.nio.charset.Charset;
 
 /**
  * Created by joel on 9/8/2015.
@@ -209,8 +206,8 @@ public class ReviewModeFragment extends ViewModeFragment {
         mTranslationWordId = translationWordId;
         mTranslationNoteId = null;
 
-        Library library = AppContext.getLibrary();
-        SourceTranslation sourceTranslation = getSourceTranslation();
+        final Library library = AppContext.getLibrary();
+        final SourceTranslation sourceTranslation = getSourceTranslation();
         SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug);
         TranslationWord word = getPreferredWord(sourceTranslation, translationWordId);
         if(mResourcesDrawerContent != null) {
@@ -242,15 +239,29 @@ public class ReviewModeFragment extends ViewModeFragment {
             Typography.formatTitle(getActivity(), descriptionTitle, sourceLanguage.getId(), sourceLanguage.getDirection());
             HtmlRenderer linkRenderer = new HtmlRenderer(new HtmlRenderer.OnPreprocessLink() {
                 @Override
-                public boolean onPreprocess(Span span) {
-                    ((TranslationAcademyLinkSpan) span).setTitle("Test TranslationAcademy Link");
-                    // TODO: 12/2/2015 look up the translation academy item to verify it exists and set the title of the span
+                public boolean onPreprocess(Class spanClass, Span span) {
+                    if(spanClass == ArticleLinkSpan.class) {
+                        ArticleLinkSpan link = ((ArticleLinkSpan)span);
+                        TranslationArticle article = getPreferredTranslationArticle(sourceTranslation, link.getVolume(), link.getManual(), link.getId());
+                        if(article != null) {
+                            link.setTitle(article.getTitle());
+                        } else {
+                            return false;
+                        }
+                    }
                     return true;
                 }
             }, new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
-                    // TODO: 12/2/2015 handle clicks
+                    if(((LinkSpan)span).getType().equals("ta")) {
+                        // ta link
+                        String url = span.getMachineReadable().toString();
+                        ArticleLinkSpan link = ArticleLinkSpan.parse(url);
+                        if(link != null) {
+                            // TODO: 12/2/2015 navigate to the correct ta article
+                        }
+                    }
                 }
 
                 @Override
@@ -267,7 +278,7 @@ public class ReviewModeFragment extends ViewModeFragment {
 //            for(URLSpan span:linkSpans) {
 //                // convert spans
 //                String url = span.getURL();
-//                TranslationAcademyLinkSpan linkSpan = new TranslationAcademyLinkSpan("Test Link", url);
+//                ArticleLinkSpan linkSpan = new ArticleLinkSpan("Test Link", url);
 //                linkSpan.setOnClickListener(new Span.OnClickListener() {
 //                    @Override
 //                    public void onClick(View view, Span span, int start, int end) {
@@ -555,5 +566,23 @@ public class ReviewModeFragment extends ViewModeFragment {
             question = library.getCheckingQuestion(defaultSourceTranslation, chapterId, frameId, questionId);
         }
         return question;
+    }
+
+    /**
+     * Returns the preferred translation academy
+     * if none exist in the source language it will return the english version.
+     * @param sourceTranslation
+     * @param volume
+     *@param manual
+     * @param articleId  @return
+     */
+    private static TranslationArticle getPreferredTranslationArticle(SourceTranslation sourceTranslation, String volume, String manual, String articleId) {
+        Library library = AppContext.getLibrary();
+        TranslationArticle article = library.getTranslationArticle(sourceTranslation, volume, manual, articleId);
+        if(article == null && !sourceTranslation.sourceLanguageSlug.equals("en")) {
+            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
+            article = library.getTranslationArticle(defaultSourceTranslation, volume, manual, articleId);
+        }
+        return article;
     }
 }
