@@ -4,7 +4,10 @@ import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
+import android.text.Editable;
 import android.text.Html;
+import android.text.SpannableStringBuilder;
+import android.text.style.URLSpan;
 import android.view.ContextThemeWrapper;
 import android.view.MotionEvent;
 import android.view.View;
@@ -27,14 +30,19 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TranslationNote;
 import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.core.Typography;
+import com.door43.translationstudio.rendering.HtmlRenderer;
 import com.door43.translationstudio.rendering.LinkRenderer;
 import com.door43.translationstudio.spannables.PassageLinkSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.spannables.TranslationAcademyLinkSpan;
 import com.door43.widget.ViewUtil;
 
 import org.apmem.tools.layouts.FlowLayout;
 import org.sufficientlysecure.htmltextview.HtmlTextView;
+import org.sufficientlysecure.htmltextview.LocalLinkMovementMethod;
+
+import java.nio.charset.Charset;
 
 /**
  * Created by joel on 9/8/2015.
@@ -232,7 +240,50 @@ public class ReviewModeFragment extends ViewModeFragment {
 
             descriptionTitle.setText(word.getDefinitionTitle());
             Typography.formatTitle(getActivity(), descriptionTitle, sourceLanguage.getId(), sourceLanguage.getDirection());
-            descriptionView.setHtmlFromString(word.getDefinition(), true);
+            HtmlRenderer linkRenderer = new HtmlRenderer(new HtmlRenderer.OnPreprocessLink() {
+                @Override
+                public boolean onPreprocess(Span span) {
+                    ((TranslationAcademyLinkSpan) span).setTitle("Test TranslationAcademy Link");
+                    // TODO: 12/2/2015 look up the translation academy item to verify it exists and set the title of the span
+                    return true;
+                }
+            }, new Span.OnClickListener() {
+                @Override
+                public void onClick(View view, Span span, int start, int end) {
+                    // TODO: 12/2/2015 handle clicks
+                }
+
+                @Override
+                public void onLongClick(View view, Span span, int start, int end) {
+
+                }
+            });
+            CharSequence out = linkRenderer.render(word.getDefinition());
+            descriptionView.setText(out);
+            descriptionView.setMovementMethod(LocalLinkMovementMethod.getInstance());
+//            descriptionView.setHtmlFromString(out, true);
+//            SpannableStringBuilder spannableStringBuilder = SpannableStringBuilder.valueOf(descriptionView.getText());
+//            URLSpan[] linkSpans = spannableStringBuilder.getSpans(0, descriptionView.getText().length(), URLSpan.class);
+//            for(URLSpan span:linkSpans) {
+//                // convert spans
+//                String url = span.getURL();
+//                TranslationAcademyLinkSpan linkSpan = new TranslationAcademyLinkSpan("Test Link", url);
+//                linkSpan.setOnClickListener(new Span.OnClickListener() {
+//                    @Override
+//                    public void onClick(View view, Span span, int start, int end) {
+//
+//                    }
+//
+//                    @Override
+//                    public void onLongClick(View view, Span span, int start, int end) {
+//
+//                    }
+//                });
+//                int start = spannableStringBuilder.getSpanStart(span);
+//                int end = spannableStringBuilder.getSpanEnd(span);
+//                spannableStringBuilder.replace(start, end, linkSpan.toCharSequence());
+//            }
+//            descriptionView.setText(spannableStringBuilder);
             Typography.formatSub(getActivity(), descriptionView, sourceLanguage.getId(), sourceLanguage.getDirection());
 
             seeAlsoView.removeAllViews();
@@ -316,11 +367,12 @@ public class ReviewModeFragment extends ViewModeFragment {
 
             LinkRenderer renderer = new LinkRenderer(new LinkRenderer.OnPreprocessLink() {
                 @Override
-                public boolean onPreprocess(PassageLinkSpan span) {
-                    Frame frame = library.getFrame(sourceTranslation, span.getChapterId(), span.getFrameId());
-                    String title = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(span.getChapterId()) + ":" + frame.getTitle();
-                    span.setTitle(title);
-                    return library.getFrame(sourceTranslation, span.getChapterId(), span.getFrameId()) != null;
+                public boolean onPreprocess(Span span) {
+                    PassageLinkSpan link = (PassageLinkSpan)span;
+                    Frame frame = library.getFrame(sourceTranslation, link.getChapterId(), link.getFrameId());
+                    String title = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(link.getChapterId()) + ":" + frame.getTitle();
+                    link.setTitle(title);
+                    return library.getFrame(sourceTranslation, link.getChapterId(), link.getFrameId()) != null;
                 }
             }, new Span.OnClickListener() {
                 @Override

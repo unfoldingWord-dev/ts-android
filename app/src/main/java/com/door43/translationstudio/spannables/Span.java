@@ -31,7 +31,7 @@ public abstract class Span {
      * @param humanReadable the human readable title of the span
      * @param machineReadable the machine readable definition of the span
      */
-    public Span(CharSequence humanReadable, CharSequence machineReadable) {
+    Span(CharSequence humanReadable, CharSequence machineReadable) {
         init(humanReadable, machineReadable);
     }
 
@@ -62,36 +62,38 @@ public abstract class Span {
      * @return
      */
     public SpannableStringBuilder render() {
-        SpannableStringBuilder spannable = new SpannableStringBuilder(mHumanReadable);
+        SpannableStringBuilder spannable;
+        if(mHumanReadable != null && !mHumanReadable.toString().isEmpty()) {
+            spannable = new SpannableStringBuilder(mHumanReadable);
+        } else {
+            spannable = new SpannableStringBuilder(mMachineReadable);
+        }
         if (spannable.length() > 0) {
             spannable.setSpan(new SpannedString(mMachineReadable), 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-//            if (mClickListener != null) {
-                LongClickableSpan clickSpan = new LongClickableSpan() {
-
-                    @Override
-                    public void onLongClick(View view) {
-                        if(mClickListener != null) {
-                            TextView tv = (TextView)view;
-                            Spanned s = (Spanned)tv.getText();
-                            int start = s.getSpanStart(this);
-                            int end = s.getSpanEnd(this);
-                            mClickListener.onLongClick(view, Span.this, start, end);
-                        }
+            LongClickableSpan clickSpan = new LongClickableSpan() {
+                @Override
+                public void onLongClick(View view) {
+                    if(mClickListener != null) {
+                        TextView tv = (TextView)view;
+                        Spanned s = (Spanned)tv.getText();
+                        int start = s.getSpanStart(this);
+                        int end = s.getSpanEnd(this);
+                        mClickListener.onLongClick(view, Span.this, start, end);
                     }
+                }
 
-                    @Override
-                    public void onClick(View view) {
-                        if (mClickListener != null) {
-                            TextView tv = (TextView)view;
-                            Spanned s = (Spanned)tv.getText();
-                            int start = s.getSpanStart(this);
-                            int end = s.getSpanEnd(this);
-                            mClickListener.onClick(view, Span.this, start, end);
-                        }
+                @Override
+                public void onClick(View view) {
+                    if (mClickListener != null) {
+                        TextView tv = (TextView)view;
+                        Spanned s = (Spanned)tv.getText();
+                        int start = s.getSpanStart(this);
+                        int end = s.getSpanEnd(this);
+                        mClickListener.onClick(view, Span.this, start, end);
                     }
-                };
-                spannable.setSpan(clickSpan, 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-//            }
+                }
+            };
+            spannable.setSpan(clickSpan, 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         return spannable;
     }

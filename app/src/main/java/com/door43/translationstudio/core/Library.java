@@ -690,6 +690,16 @@ public class Library {
     }
 
     /**
+     * Returns a translation academy entry from the source translation
+     * @param sourceTranslation
+     * @param translationAcademyId
+     * @return
+     */
+    public TranslationAcademy getTranslationAcademy(SourceTranslation sourceTranslation, String translationAcademyId) {
+        return getActiveIndex().getTranslationAcademy(sourceTranslation, translationAcademyId);
+    }
+
+    /**
      * Returns an array of checking questions in the frame
      * @param sourceTranslation
      * @param chapterId

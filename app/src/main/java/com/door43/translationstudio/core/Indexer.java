@@ -15,6 +15,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
+import javax.xml.transform.Source;
+
 
 /**
  * Created by joel on 8/26/2015.
@@ -912,6 +914,17 @@ public class Indexer {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Returns a translation academy item
+     * @param sourceTranslation
+     * @param translationAcademySlug
+     * @return
+     */
+    public TranslationAcademy getTranslationAcademy(SourceTranslation sourceTranslation, String translationAcademySlug) {
+        // TODO: 12/2/2015 finish implementing this
+        return null;
     }
 
     /**

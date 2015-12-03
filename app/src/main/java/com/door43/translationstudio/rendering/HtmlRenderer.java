@@ -1,70 +1,41 @@
 package com.door43.translationstudio.rendering;
 
+import android.text.Editable;
+import android.text.Html;
 import android.text.TextUtils;
 
-import com.door43.translationstudio.spannables.PassageLinkSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.TranslationAcademyLinkSpan;
 
+import org.xml.sax.XMLReader;
+
+import java.nio.charset.Charset;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * This is the link rendering engine.
+ * Created by joel on 12/2/2015.
  */
-public class LinkRenderer extends RenderingEngine {
+public class HtmlRenderer extends RenderingEngine {
 
     private final Span.OnClickListener mLinkListener;
     private final OnPreprocessLink preprocessCallback;
-    private boolean renderHtml = false;
 
-    /**
-     * Creates a new link rendering engine with some custom click listeners
-     * @param linkListener
-     */
-    public LinkRenderer(OnPreprocessLink preprocessor, Span.OnClickListener linkListener) {
+    public HtmlRenderer(OnPreprocessLink preprocessor, Span.OnClickListener linkListener) {
         mLinkListener = linkListener;
         preprocessCallback = preprocessor;
     }
 
     @Override
     public CharSequence render(CharSequence in) {
-        this.renderHtml = false;
         CharSequence out = in;
-
-        out = renderPassageLink(out);
         out = renderTranslationAcademyLink(out);
-
+        out = Html.fromHtml(out.toString(), null, new HtmlTagHandler(mLinkListener));
         return out;
     }
 
-    public String renderHtml(CharSequence in) {
-        this.renderHtml = true;
-
-        CharSequence out = in;
-
-        out = renderPassageLink(out);
-        out = renderTranslationAcademyLink(out);
-
-        return out.toString();
-    }
-
     /**
-     * Renders links to other passages
-     * @param in
-     * @return
-     */
-    private CharSequence renderPassageLink(CharSequence in) {
-        return renderLink(in, PassageLinkSpan.PATTERN, new OnCreateLink() {
-            @Override
-            public Span onCreate(Matcher matcher) {
-                return new PassageLinkSpan(matcher.group(3), matcher.group(2));
-            }
-        });
-    }
-
-    /**
-     * Renders links to translation academy pages
+     * Renders links to translation academy pages as html
      * @param in
      * @return
      */
@@ -78,7 +49,7 @@ public class LinkRenderer extends RenderingEngine {
     }
 
     /**
-     * A generic rendering method for rendering span links
+     * A generic rendering method for rendering content links as html
      *
      * @param in
      * @param pattern
@@ -96,14 +67,14 @@ public class LinkRenderer extends RenderingEngine {
                 link.setOnClickListener(mLinkListener);
                 if (preprocessCallback == null || preprocessCallback.onPreprocess(link)) {
                     // render clickable link
-                    if(this.renderHtml) {
-                        String htmlLink = "<app-link href=\"" + link.getMachineReadable() + "\">" + link.getHumanReadable() + "</app-link>";
-                        out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), htmlLink);
-                    } else {
-                        out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), link.toCharSequence());
+                    CharSequence title = link.getHumanReadable();
+                    if(title == null || title.toString().isEmpty()) {
+                        title = link.getMachineReadable();
                     }
+                    String htmlLink = "<app-link href=\"" + link.getMachineReadable() + "\">" + title + "</app-link>";
+                    out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), htmlLink);
                 } else {
-                    // render non-clickable link
+                    // render as plain text
                     out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), link.getHumanReadable());
                 }
             } else {
