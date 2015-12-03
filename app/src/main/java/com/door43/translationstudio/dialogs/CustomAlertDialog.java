@@ -98,17 +98,16 @@ public class CustomAlertDialog extends DialogFragment {
             mPositiveButton.setVisibility(View.GONE);
         }
 
-        if(null != mPositiveListener) {
-            mPositiveButton.setOnClickListener(mPositiveListener);
-        }
-        else {
-            mPositiveButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dismiss();
+        mPositiveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(null != mPositiveListener) {
+                    mPositiveListener.onClick(v);
                 }
-            });
-        }
+
+                dismiss();
+            }
+        });
 
         mNegativeButton = (Button) rootView.findViewById(R.id.negativeButton);
         if(0 != mNegativeTextID) {
@@ -120,17 +119,16 @@ public class CustomAlertDialog extends DialogFragment {
             mNegativeButton.setVisibility(View.GONE);
         }
 
-        if(null != mNegativeListener) {
-            mNegativeButton.setOnClickListener(mNegativeListener);
-        }
-        else {
-            mNegativeButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dismiss();
+        mNegativeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(null != mNegativeListener) {
+                    mNegativeListener.onClick(v);
                 }
-            });
-        }
+
+                dismiss();
+            }
+        });
 
         mNeutralButton = (Button) rootView.findViewById(R.id.neutralButton);
         if(0 != mNeutralTextID) {
@@ -142,17 +140,16 @@ public class CustomAlertDialog extends DialogFragment {
             mNeutralButton.setVisibility(View.GONE);
         }
 
-        if(null != mNeutralListener) {
-            mNeutralButton.setOnClickListener(mNeutralListener);
-        }
-        else {
-            mNeutralButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dismiss();
+        mNeutralButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(null != mNeutralListener) {
+                    mNeutralListener.onClick(v);
                 }
-            });
-        }
+
+                dismiss();
+            }
+        });
 
         if (0 != mTitleID) {
             final TextView title = (TextView) rootView.findViewById(R.id.dialog_title);
