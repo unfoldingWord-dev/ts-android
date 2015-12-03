@@ -233,118 +233,118 @@ public class CustomAlertDialog extends DialogFragment {
         return dlg;
     }
 
-    static public void test(final Activity context) {
-
-        Log.d(TAG, "Test pass: " + testCntr);
-
-        switch (testCntr++) {
-
-            default:
-                testCntr = 1;
-
-            case 0:
-                LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                View layout = inflater.inflate(R.layout.dialog_html_alert, null);
-                HtmlTextView text = (HtmlTextView)layout.findViewById(R.id.text);
-                text.setHtmlFromString(context.getResources().getString(R.string.chunk_checklist_body), true);
-
-                CustomAlertDialog.Create(context)
-                        .setTitle(R.string.chunk_checklist_title)
-                        .setView(layout)
-                        .setPositiveButton(R.string.confirm, new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        Log.d(TAG, "Positive");
-                                    }
-                                }
-                        )
-                        .setNegativeButton(R.string.title_cancel, null)
-                        .show("Chunk2");
-                break;
-
-            case 5:
-                CustomAlertDialog.Create(context)
-                        .setTitle(R.string.success)
-                        .setIcon(R.drawable.ic_done_black_24dp)
-                        .setMessage(R.string.download_complete)
-                        .setCancelableChainable(true)
-                        .setPositiveButton(R.string.label_ok, null)
-                        .show("Success");
-
-                break;
-
-            case 4:
-                CustomAlertDialog.Create(context)
-                        .setTitle("Chunk Checklist")
-                        .setMessage("Are you sure you are done with this chunk?\n" +
-                                        "  * I have placed the verses correctly\n" +
-                                        "  * I have reviewed the words and meaning\n" +
-                                        "  * I have reviewed the translation questions"
-                        )
-                        .setPositiveButton(R.string.confirm, new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        Log.d(TAG, "Positive");
-                                    }
-                                    }
-                        )
-                        .setNegativeButton(R.string.title_cancel, null)
-                        .show("Chunk2");
-            break;
-
-            case 3:
-                CustomAlertDialog.Create(context)
-                        .setTitle(R.string.apk_update_available)
-                        .setMessage(R.string.upload_report_or_download_latest_apk)
-                        .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                Log.d(TAG, "Negative");
-                                }
-                        })
-                        .setNeutralButton(R.string.download_update, new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                Log.d(TAG, "Neutral");
-                                }
-                        })
-                        .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                Log.d(TAG, "Positive");
-                                }
-                        })
-                        .show("ReleaseNotify");
-                break;
-
-            case 1:
-                CustomAlertDialog.Create(context)
-                        .setTitle(R.string.update_projects)
-                        .setIcon(R.drawable.ic_local_library_black_24dp)
-                        .setMessage(R.string.use_internet_confirmation)
-                        .setPositiveButton(R.string.yes, new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                            Log.d(TAG, "Positive");
-                            }
-                        })
-                        .setNegativeButton(R.string.no, null)
-                        .show("Update");
-                break;
-
-            case 2:
-                    CustomAlertDialog.Create(context)
-                        .setTitle(R.string.publish)
-                            .setMessage(R.string.upload_failed)
-                        .setPositiveButton(R.string.dismiss, null)
-                            .setNeutralButton(R.string.menu_bug, new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    Log.d(TAG, "Neutral");
-                                }
-                        }).show("PublishFail");
-                break;
-
-        }
-    }
+//    static public void test(final Activity context) {
+//
+//        Log.d(TAG, "Test pass: " + testCntr);
+//
+//        switch (testCntr++) {
+//
+//            default:
+//                testCntr = 1;
+//
+//            case 0:
+//                LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//                View layout = inflater.inflate(R.layout.dialog_html_alert, null);
+//                HtmlTextView text = (HtmlTextView)layout.findViewById(R.id.text);
+//                text.setHtmlFromString(context.getResources().getString(R.string.chunk_checklist_body), true);
+//
+//                CustomAlertDialog.Create(context)
+//                        .setTitle(R.string.chunk_checklist_title)
+//                        .setView(layout)
+//                        .setPositiveButton(R.string.confirm, new View.OnClickListener() {
+//                                    @Override
+//                                    public void onClick(View v) {
+//                                        Log.d(TAG, "Positive");
+//                                    }
+//                                }
+//                        )
+//                        .setNegativeButton(R.string.title_cancel, null)
+//                        .show("Chunk2");
+//                break;
+//
+//            case 5:
+//                CustomAlertDialog.Create(context)
+//                        .setTitle(R.string.success)
+//                        .setIcon(R.drawable.ic_done_black_24dp)
+//                        .setMessage(R.string.download_complete)
+//                        .setCancelableChainable(true)
+//                        .setPositiveButton(R.string.label_ok, null)
+//                        .show("Success");
+//
+//                break;
+//
+//            case 4:
+//                CustomAlertDialog.Create(context)
+//                        .setTitle("Chunk Checklist")
+//                        .setMessage("Are you sure you are done with this chunk?\n" +
+//                                        "  * I have placed the verses correctly\n" +
+//                                        "  * I have reviewed the words and meaning\n" +
+//                                        "  * I have reviewed the translation questions"
+//                        )
+//                        .setPositiveButton(R.string.confirm, new View.OnClickListener() {
+//                                    @Override
+//                                    public void onClick(View v) {
+//                                        Log.d(TAG, "Positive");
+//                                    }
+//                                    }
+//                        )
+//                        .setNegativeButton(R.string.title_cancel, null)
+//                        .show("Chunk2");
+//            break;
+//
+//            case 3:
+//                CustomAlertDialog.Create(context)
+//                        .setTitle(R.string.apk_update_available)
+//                        .setMessage(R.string.upload_report_or_download_latest_apk)
+//                        .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
+//                            @Override
+//                            public void onClick(View v) {
+//                                Log.d(TAG, "Negative");
+//                                }
+//                        })
+//                        .setNeutralButton(R.string.download_update, new View.OnClickListener() {
+//                            @Override
+//                            public void onClick(View v) {
+//                                Log.d(TAG, "Neutral");
+//                                }
+//                        })
+//                        .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
+//                            @Override
+//                            public void onClick(View v) {
+//                                Log.d(TAG, "Positive");
+//                                }
+//                        })
+//                        .show("ReleaseNotify");
+//                break;
+//
+//            case 1:
+//                CustomAlertDialog.Create(context)
+//                        .setTitle(R.string.update_projects)
+//                        .setIcon(R.drawable.ic_local_library_black_24dp)
+//                        .setMessage(R.string.use_internet_confirmation)
+//                        .setPositiveButton(R.string.yes, new View.OnClickListener() {
+//                            @Override
+//                            public void onClick(View v) {
+//                            Log.d(TAG, "Positive");
+//                            }
+//                        })
+//                        .setNegativeButton(R.string.no, null)
+//                        .show("Update");
+//                break;
+//
+//            case 2:
+//                    CustomAlertDialog.Create(context)
+//                        .setTitle(R.string.publish)
+//                            .setMessage(R.string.upload_failed)
+//                        .setPositiveButton(R.string.dismiss, null)
+//                            .setNeutralButton(R.string.menu_bug, new View.OnClickListener() {
+//                                @Override
+//                                public void onClick(View v) {
+//                                    Log.d(TAG, "Neutral");
+//                                }
+//                        }).show("PublishFail");
+//                break;
+//
+//        }
+//    }
 }
