@@ -45,13 +45,32 @@
                 android:paddingTop="10dp"
                 android:paddingBottom="10dp">
 
+                <ImageView
+                    android:layout_gravity="center_horizontal"
+                    android:layout_height="3dp"
+                    android:layout_width="fill_parent"
+                    android:src="@android:drawable/divider_horizontal_bright"
+                    android:scaleType="fitXY"
+                    android:layout_marginTop="@dimen/dialog_controls_margin"
+                    android:layout_marginBottom="@dimen/dialog_controls_margin"/>
+
                 <Button
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/view_license_agreement"
                     android:id="@+id/license_btn"
                     style="@style/Widget.Button.Blue"
-                    android:layout_marginTop="16dp"/>
+                    android:layout_marginTop="@dimen/dialog_controls_margin"
+                    android:layout_marginBottom="@dimen/dialog_controls_margin" />
+
+                <ImageView
+                    android:layout_gravity="center_horizontal"
+                    android:layout_height="3dp"
+                    android:layout_width="fill_parent"
+                    android:src="@android:drawable/divider_horizontal_bright"
+                    android:scaleType="fitXY"
+                    android:layout_marginTop="@dimen/dialog_controls_margin"
+                    android:layout_marginBottom="@dimen/dialog_controls_margin"/>
 
                 <Button
                     android:layout_width="fill_parent"
@@ -59,7 +78,17 @@
                     android:text="@string/view_translation_guidelines"
                     android:id="@+id/translation_guidelines_btn"
                     style="@style/Widget.Button.Blue"
-                    android:layout_marginTop="16dp" />
+                    android:layout_marginTop="@dimen/dialog_controls_margin"
+                    android:layout_marginBottom="@dimen/dialog_controls_margin"/>
+
+                <ImageView
+                    android:layout_gravity="center_horizontal"
+                    android:layout_height="3dp"
+                    android:layout_width="fill_parent"
+                    android:src="@android:drawable/divider_horizontal_bright"
+                    android:scaleType="fitXY"
+                    android:layout_marginTop="@dimen/dialog_controls_margin"
+                    android:layout_marginBottom="@dimen/dialog_controls_margin"/>
 
                 <Button
                     android:layout_width="fill_parent"
@@ -67,7 +96,8 @@
                     android:text="@string/view_statement_of_faith"
                     android:id="@+id/statement_of_faith_btn"
                     style="@style/Widget.Button.Blue"
-                    android:layout_marginTop="16dp" />
+                    android:layout_marginTop="@dimen/dialog_controls_margin"
+                    android:layout_marginBottom="@dimen/dialog_controls_margin"/>
             </LinearLayout>
 
         </LinearLayout>
