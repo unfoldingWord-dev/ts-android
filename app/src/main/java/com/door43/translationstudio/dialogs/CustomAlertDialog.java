@@ -3,6 +3,7 @@ package com.door43.translationstudio.dialogs;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.FragmentManager;
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,6 +14,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
+
+import org.sufficientlysecure.htmltextview.HtmlTextView;
 
 /**
  * Created by blm on 11/28/15.
@@ -240,6 +243,26 @@ public class CustomAlertDialog extends DialogFragment {
                 testCntr = 1;
 
             case 0:
+                LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                View layout = inflater.inflate(R.layout.dialog_html_alert, null);
+                HtmlTextView text = (HtmlTextView)layout.findViewById(R.id.text);
+                text.setHtmlFromString(context.getResources().getString(R.string.chunk_checklist_body), true);
+
+                CustomAlertDialog.Create(context)
+                        .setTitle(R.string.chunk_checklist_title)
+                        .setView(layout)
+                        .setPositiveButton(R.string.confirm, new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        Log.d(TAG, "Positive");
+                                    }
+                                }
+                        )
+                        .setNegativeButton(R.string.title_cancel, null)
+                        .show("Chunk2");
+                break;
+
+            case 5:
                 CustomAlertDialog.Create(context)
                         .setTitle(R.string.success)
                         .setIcon(R.drawable.ic_done_black_24dp)

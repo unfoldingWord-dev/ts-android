@@ -40,6 +40,7 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
 import com.door43.translationstudio.rendering.DefaultRenderer;
@@ -518,13 +519,13 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
      * @param holder
      */
     public void promptToEditDoneChunk(final ViewHolder holder, final ListItem item) {
-        new AlertDialog.Builder(mContext)
+        CustomAlertDialog.Create(mContext)
                 .setTitle(R.string.chunk_done_title)
 //                                .setIcon(R.drawable.ic_local_library_black_24dp)
                 .setMessage(R.string.chunk_done_prompt)
-                .setPositiveButton(R.string.edit, new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.edit, new View.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
+                    public void onClick(View v) {
                         holder.mTargetBody.setEnabled(true);
                         holder.mTargetBody.setFocusable(true);
                         holder.mTargetBody.setFocusableInTouchMode(true);
@@ -533,7 +534,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                     }
                 })
                 .setNegativeButton(R.string.dismiss, null)
-                .show();
+                .show("ChunkDone");
     }
 
     /**

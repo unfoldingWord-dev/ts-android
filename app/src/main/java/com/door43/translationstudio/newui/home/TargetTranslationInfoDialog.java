@@ -26,6 +26,7 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.core.Typography;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.PrintDialog;
 import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.newui.BackupDialog;
@@ -120,13 +121,13 @@ public class TargetTranslationInfoDialog extends DialogFragment {
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new android.support.v7.app.AlertDialog.Builder(getActivity())
+                CustomAlertDialog.Create(getActivity())
                         .setTitle(R.string.label_delete)
                         .setIcon(R.drawable.ic_delete_black_24dp)
                         .setMessage(R.string.confirm_delete_target_translation)
-                        .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+                        .setPositiveButton(R.string.confirm, new View.OnClickListener() {
                             @Override
-                            public void onClick(DialogInterface dialog, int which) {
+                            public void onClick(View v) {
                                 task.stop();
                                 if(mTargetTranslation != null) {
                                     mTranslator.deleteTargetTranslation(mTargetTranslation.getId());
@@ -139,7 +140,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
                             }
                         })
                         .setNegativeButton(R.string.no, null)
-                        .show();
+                        .show("DeleteTrans");
             }
         });
 

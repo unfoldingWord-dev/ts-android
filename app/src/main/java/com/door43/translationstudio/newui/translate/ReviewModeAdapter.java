@@ -17,7 +17,6 @@ import android.text.Editable;
 import android.text.Selection;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.DragEvent;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -68,8 +67,6 @@ import java.util.List;
  * Created by joel on 9/18/2015.
  */
 public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHolder> {
-
-    static String TAG = ReviewModeAdapter.class.getSimpleName();
 
     private static final int TAB_NOTES = 0;
     private static final int TAB_WORDS = 1;

@@ -19,6 +19,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.CloneTargetTranslationTask;
 import com.door43.translationstudio.tasks.GetCloudBackupsTask;
 import com.door43.util.tasks.GenericTaskWatcher;
@@ -146,11 +147,11 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
                     if (targetTranslationSlugs.length > 0) {
                         adapter.setTargetTranslations(targetTranslationSlugs);
                     } else {
-                        new AlertDialog.Builder(getActivity())
+                        CustomAlertDialog.Create(getActivity())
                                 .setTitle(R.string.import_from_online)
                                 .setMessage(R.string.no_backups_online)
                                 .setNeutralButton(R.string.dismiss, null)
-                                .show();
+                                .show("NoBackups");
                         dismiss();
                     }
                 }
