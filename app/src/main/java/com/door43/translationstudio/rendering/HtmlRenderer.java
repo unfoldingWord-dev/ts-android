@@ -39,7 +39,11 @@ public class HtmlRenderer extends RenderingEngine {
         return renderLink(in, ArticleLinkSpan.class, ArticleLinkSpan.PATTERN, "ta", new OnCreateLink() {
             @Override
             public Span onCreate(Matcher matcher) {
-                return ArticleLinkSpan.parse(matcher.group(3), matcher.group(2));
+                String title = matcher.group(3);
+                if(title == null) {
+                    title = matcher.group(0);
+                }
+                return ArticleLinkSpan.parse(title, matcher.group(2));
             }
         });
     }
