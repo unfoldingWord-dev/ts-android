@@ -320,33 +320,32 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
 
 //        ChapterTranslation getChapterTranslation(String chapterSlug);
 
-        String targetChapterTitle = "";
+        String targetCardTitle = "";
 
+        // look for translated chapter title first
         final ChapterTranslation chapterTranslation = mTargetTranslation.getChapterTranslation(chapter);
         if(null != chapterTranslation) {
-            targetChapterTitle = chapterTranslation.title;
+            targetCardTitle = chapterTranslation.title;
         }
 
-        if (targetChapterTitle.isEmpty() && !chapterTitle.isEmpty()) { // if no target translation, fall back to source title
-            targetChapterTitle = chapterTitle;
-        }
-
-        if (targetChapterTitle.isEmpty()) { // if no chapter titles, fall back to project title
-            ProjectTranslation projTrans = mTargetTranslation.getProjectTranslation();
-            if(!projTrans.getTitle().isEmpty()) {
-                targetChapterTitle = projTrans.getTitle() + " " + Integer.parseInt(chapter.getId());
+        if (targetCardTitle.isEmpty() && !chapterTitle.isEmpty()) { // if no target chapter title translation, fall back to source chapter title
+            if(!chapter.title.isEmpty()) {
+                targetCardTitle = chapterTitle;
             }
         }
 
-        if (targetChapterTitle.isEmpty() && !chapterTitle.isEmpty()) { // if no chapter title translation, fall back to source project title
-            targetChapterTitle = chapterTitle + " " + Integer.parseInt(chapter.getId());
+        if (targetCardTitle.isEmpty()) { // if no chapter titles, fall back to project title, try translated title first
+            ProjectTranslation projTrans = mTargetTranslation.getProjectTranslation();
+            if(!projTrans.getTitle().isEmpty()) {
+                targetCardTitle = projTrans.getTitle() + " " + Integer.parseInt(chapter.getId());
+            }
         }
 
-        if (targetChapterTitle.isEmpty()) {
-            targetChapterTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
+        if (targetCardTitle.isEmpty()) { // fall back to project source title
+            targetCardTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
         }
 
-        holder.mTargetTitle.setText(targetChapterTitle + " - " + mTargetLanguage.name);
+        holder.mTargetTitle.setText(targetCardTitle + " - " + mTargetLanguage.name);
 
         // load tabs
         holder.mTabLayout.setOnTabSelectedListener(null);
