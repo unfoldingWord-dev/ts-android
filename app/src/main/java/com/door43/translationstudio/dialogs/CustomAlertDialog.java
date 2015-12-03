@@ -60,12 +60,7 @@ public class CustomAlertDialog extends DialogFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = null;
-        try {
-            rootView = inflater.inflate(R.layout.dialog_custom_alert, container, false);
-        } catch (Exception e) {
-            Log.d(TAG,"Exception: " + e);
-        }
+        View rootView = inflater.inflate(R.layout.dialog_custom_alert, container, false);
 
         if (0 != mMessageID) {
             final TextView message = (TextView) rootView.findViewById(R.id.dialog_content);
@@ -88,16 +83,7 @@ public class CustomAlertDialog extends DialogFragment {
             parent.addView(mContentView, index);
         }
 
-        mPositiveButton = (Button) rootView.findViewById(R.id.positiveButton);
-        if(0 != mPositiveTextID) {
-            // convert string to upper case manually, because on older devices uppercase attribute
-            // in UI
-            String label = getResources().getText(mPositiveTextID).toString().toUpperCase();
-            mPositiveButton.setText(label);
-        } else {
-            mPositiveButton.setVisibility(View.GONE);
-        }
-
+        mPositiveButton = setupButton( rootView, R.id.positiveButton, mPositiveTextID);
         mPositiveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -109,16 +95,7 @@ public class CustomAlertDialog extends DialogFragment {
             }
         });
 
-        mNegativeButton = (Button) rootView.findViewById(R.id.negativeButton);
-        if(0 != mNegativeTextID) {
-            // convert string to upper case manually, because on older devices uppercase attribute
-            // in UI
-            String label = getResources().getText(mNegativeTextID).toString().toUpperCase();
-            mNegativeButton.setText(label);
-        } else {
-            mNegativeButton.setVisibility(View.GONE);
-        }
-
+        mNegativeButton = setupButton( rootView, R.id.negativeButton, mNegativeTextID);
         mNegativeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -130,16 +107,7 @@ public class CustomAlertDialog extends DialogFragment {
             }
         });
 
-        mNeutralButton = (Button) rootView.findViewById(R.id.neutralButton);
-        if(0 != mNeutralTextID) {
-            // convert string to upper case manually, because on older devices uppercase attribute
-            // in UI
-            String label = getResources().getText(mNeutralTextID).toString().toUpperCase();
-            mNeutralButton.setText(label);
-        } else {
-            mNeutralButton.setVisibility(View.GONE);
-        }
-
+        mNeutralButton = setupButton( rootView, R.id.neutralButton, mNeutralTextID);
         mNeutralButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -213,6 +181,26 @@ public class CustomAlertDialog extends DialogFragment {
         mContentView = v;
         return this;
     }
+
+    private Button setupButton(View rootView, int buttonResID, int buttonTextID) {
+        Button button = (Button) rootView.findViewById(buttonResID);
+        if(null != button) {
+            String label = "";
+            if(0 != buttonTextID) {
+                label = getResources().getText(buttonTextID).toString().toUpperCase();
+            }
+            if (!label.isEmpty()) {
+                // convert string to upper case manually, because on older devices uppercase attribute
+                // in UI
+                button.setText(label);
+            } else {
+                button.setVisibility(View.GONE);
+            }
+        }
+
+        return button;
+    }
+
 
     static public CustomAlertDialog Create(final Activity context) {
         CustomAlertDialog dlg = new CustomAlertDialog();

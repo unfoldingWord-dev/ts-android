@@ -17,6 +17,7 @@ import android.text.Editable;
 import android.text.Selection;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.DragEvent;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -67,6 +68,8 @@ import java.util.List;
  * Created by joel on 9/18/2015.
  */
 public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHolder> {
+
+    static String TAG = ReviewModeAdapter.class.getSimpleName();
 
     private static final int TAB_NOTES = 0;
     private static final int TAB_WORDS = 1;
@@ -596,7 +599,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             @Override
             public void onClick(View v) {
                 LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                View layout = inflater.inflate(R.layout.dialog_html_alert, null);
+                View layout = null;
+                try {
+                    layout = inflater.inflate(R.layout.dialog_html_alert, null);
+                } catch (Exception e) {
+                    Log.d(TAG, "Exception: " + e);
+                }
                 HtmlTextView text = (HtmlTextView)layout.findViewById(R.id.text);
                 text.setHtmlFromString(mContext.getResources().getString(R.string.chunk_checklist_body), true);
 
@@ -607,7 +615,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     .setPositiveButton(R.string.confirm, new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    onConfirmChunk( item, chapter, frame);
+                                    onConfirmChunk(item, chapter, frame);
                                     dlg.dismiss();
                                 }
                             }
