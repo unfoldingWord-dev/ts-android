@@ -222,19 +222,4 @@ public class CustomAlertDialog extends DialogFragment {
         dlg.setContext(context);
         return dlg;
     }
-
-//    public Button setBtnState(final View rootView, int buttonID, int buttonTextID) {
-//        Button button = (Button) rootView.findViewById(buttonID);
-//        if(0 != buttonTextID) {
-//            // convert string to upper case manually, because on older devices uppercase attribute
-//            // in UI
-//            String label = getResources().getText(buttonTextID).toString().toUpperCase();
-//            button.setText(label);
-//        } else {
-//            button.setVisibility(View.GONE);
-//        }
-//
-//        return button;
-//    }
-
 }
