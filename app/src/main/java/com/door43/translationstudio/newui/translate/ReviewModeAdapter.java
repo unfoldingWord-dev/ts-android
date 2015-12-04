@@ -385,26 +385,26 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     private void renderTargetCard(int position, final ListItem item, final ViewHolder holder) {
         final Frame frame;
-        if (item.isFrame()) {
-            frame = loadFrame(item.chapterSlug, item.frameSlug);
+        if(item.isFrame()) {
+            frame  = loadFrame(item.chapterSlug, item.frameSlug);
         } else {
             frame = null;
         }
         final Chapter chapter;
-        if (item.isFrame() || item.isChapter()) {
+        if(item.isFrame() || item.isChapter()) {
             chapter = mChapters.get(item.chapterSlug);
         } else {
             chapter = null;
         }
 
         // disable text watcher
-        if (holder.mEditableTextWatcher != null) {
+        if(holder.mEditableTextWatcher != null) {
             holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
         }
 
         // render body
-        if (item.renderedTargetBody == null) {
-            if (item.isTranslationFinished || item.isEditing) {
+        if(item.renderedTargetBody == null) {
+            if(item.isTranslationFinished || item.isEditing) {
                 item.renderedTargetBody = renderSourceText(item.bodyTranslation, item.translationFormat);
             } else {
                 item.renderedTargetBody = renderTargetText(item.bodyTranslation, item.translationFormat, frame, item.frameTranslation, holder, item);
@@ -412,13 +412,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
 
         // insert rendered text
-        if (item.isEditing) {
+        if(item.isEditing) {
             // editing mode
-            if (holder.mEditableTextWatcher != null) {
+            if(holder.mEditableTextWatcher != null) {
                 holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
             }
             holder.mTargetEditableBody.setText(item.renderedTargetBody);
-            if (holder.mEditableTextWatcher != null) {
+            if(holder.mEditableTextWatcher != null) {
                 holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
             }
         } else {
@@ -437,14 +437,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         // render title
         String targetTitle = "";
-        if (item.isChapter()) {
+        if(item.isChapter()) {
             targetTitle = mSourceTranslation.getProjectTitle()
                     + " " + Integer.parseInt(chapter.getId())
                     + " - " + mTargetLanguage.name;
-        } else if (item.isFrame()) {
+        } else if(item.isFrame()) {
             ChapterTranslation chapterTranslation = mTargetTranslation.getChapterTranslation(mChapters.get(item.chapterSlug));
             targetTitle = chapterTranslation.title;
-            if (targetTitle.isEmpty()) {
+            if(targetTitle.isEmpty()) {
                 targetTitle = chapter.title;
                 if (targetTitle.isEmpty()) {
                     targetTitle = mSourceTranslation.getProjectTitle()
@@ -453,7 +453,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             }
             targetTitle += ":" + frame.getTitle() + " - " + mTargetLanguage.name;
-        } else if (item.isProjectTitle) {
+        } else if(item.isProjectTitle) {
             targetTitle = mTargetTranslation.getTargetLanguageName();
         }
         holder.mTargetTitle.setText(targetTitle);
@@ -468,18 +468,18 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 // save
-                String translation = Translator.compileTranslation((Editable) s);
-                if (item.isChapterReference) {
+                String translation = Translator.compileTranslation((Editable)s);
+                if(item.isChapterReference) {
                     mTargetTranslation.applyChapterReferenceTranslation(item.chapterTranslation, translation);
-                } else if (item.isChapterTitle) {
+                } else if(item.isChapterTitle) {
                     mTargetTranslation.applyChapterTitleTranslation(item.chapterTranslation, translation);
-                } else if (item.isProjectTitle) {
+                } else if(item.isProjectTitle) {
                     try {
                         mTargetTranslation.applyProjectTitleTranslation(s.toString());
                     } catch (IOException e) {
                         Logger.e(ReviewModeAdapter.class.getName(), "Failed to save the project title translation", e);
                     }
-                } else if (item.isFrame()) {
+                } else if(item.isFrame()) {
                     mTargetTranslation.applyFrameTranslation(item.frameTranslation, translation);
                 }
                 item.renderedTargetBody = renderSourceText(translation, item.translationFormat);
@@ -489,7 +489,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 // TRICKY: anything worth rendering will need to change by at least 7 characters
                 // <a></a> <-- at least 7 characters are required to create a tag for rendering.
                 int minDeviation = 7;
-                if (count - before > minDeviation) {
+                if(count - before > minDeviation) {
                     int scrollX = holder.mTargetEditableBody.getScrollX();
                     int scrollY = holder.mTargetEditableBody.getScrollX();
                     int selection = holder.mTargetEditableBody.getSelectionStart();
@@ -512,7 +512,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             }
         };
-        if (item.isEditing) {
+        if(item.isEditing) {
             holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
         }
 
@@ -521,14 +521,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             @Override
             public boolean onSingleTapUp(MotionEvent e) {
                 item.isEditing = !item.isEditing;
-                if (item.isEditing) {
+                if(item.isEditing) {
                     // open editing mode
                     holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
                     holder.mTargetBody.setVisibility(View.GONE);
                     holder.mTargetEditableBody.setVisibility(View.VISIBLE);
                     holder.mTargetEditableBody.requestFocus();
                     holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
-                    InputMethodManager mgr = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    InputMethodManager mgr = (InputMethodManager)mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
                     mgr.showSoftInput(holder.mTargetEditableBody, InputMethodManager.SHOW_IMPLICIT);
 
                     // TRICKY: there may be changes to translation
@@ -543,7 +543,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     holder.mTargetBody.setVisibility(View.VISIBLE);
                     holder.mTargetEditableBody.setVisibility(View.GONE);
                     holder.mTargetInnerCard.setBackgroundResource(R.color.white);
-                    if (holder.mEditableTextWatcher != null) {
+                    if(holder.mEditableTextWatcher != null) {
                         holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
                     }
                     holder.mTargetBody.requestFocus();
@@ -566,7 +566,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         });
 
         // display verse/editing mode
-        if (item.isEditing) {
+        if(item.isEditing) {
             holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
             holder.mTargetBody.setVisibility(View.GONE);
             holder.mTargetEditableBody.setVisibility(View.VISIBLE);
@@ -579,7 +579,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
 
         // display as finished
-        if (item.isTranslationFinished) {
+        if(item.isTranslationFinished) {
             holder.mEditButton.setVisibility(View.GONE);
             holder.mDoneSwitch.setChecked(true);
             holder.mTargetInnerCard.setBackgroundResource(R.color.white);
@@ -639,7 +639,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         });
     }
-
 
     private void onConfirmChunk(final ListItem item, final Chapter chapter, final Frame frame) {
 
