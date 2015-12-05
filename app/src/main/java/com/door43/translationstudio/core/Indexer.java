@@ -289,7 +289,7 @@ public class Indexer {
                     // index volume
                     String volSlug = volume.getString("vol1");
                     String volTitle = volume.getString("title");
-                    long volumeId = 0;
+                    long volumeId = 0; // mDatabaseHelper.addTranslationAcademyVolume(mDatabase, ...);
                     // TODO: 12/4/2015 index the volume
 
                     for(int j  = 0; j < manuals.length(); j ++) {
@@ -300,7 +300,7 @@ public class Indexer {
                             // index manual
                             String manSlug = manual.getString("id");
                             String manTitle = manual.getString("title");
-                            long manualId = 0;
+                            long manualId = 0; // mDatabaseHelper.addTranslationAcademyManual(mDatabase, ...);
                             // TODO: 12/4/2015 index the manual
 
                             for(int k = 0; k < articles.length(); k ++) {
@@ -311,6 +311,7 @@ public class Indexer {
                                     String artSlug = article.getString("id");
                                     String artTitle = article.getString("title");
                                     String artText = article.getString("text");
+                                    // mDatabaseHelper.addTranslationAcademyArticle(mDatabase, ...);
                                     // TODO: 12/4/2015 index the article
 
                                 } catch (JSONException e) {
