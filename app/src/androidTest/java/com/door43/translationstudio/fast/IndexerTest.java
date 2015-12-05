@@ -116,7 +116,7 @@ public class IndexerTest extends InstrumentationTestCase {
         SourceTranslation translation = SourceTranslation.simple("obs", "en", "obs");
         String catalog = Util.readStream(mContext.getAssets().open("indexer/obs/en/obs/terms.json"));
         mIndex.beginTransaction();
-        assertTrue(mIndex.indexWords(translation, catalog));
+        assertTrue(mIndex.indexTranslationWords(translation, catalog));
         mIndex.endTransaction(true);
         String[] allTermIds = mIndex.getWordSlugs(translation);
         assertTrue(allTermIds.length > 0);
@@ -138,5 +138,10 @@ public class IndexerTest extends InstrumentationTestCase {
         CheckingQuestion[] questions = mIndex.getCheckingQuestions(translation, "01", "01");
         assertTrue(questions.length > 0);
         assertNotNull(mIndex.getCheckingQuestion(translation, "01", "01", questions[0].getId()));
+    }
+
+    public void test08IndexTranslationAcademy() throws Exception {
+        String catalog = Util.readStream(mContext.getAssets().open("indexer/ta.json"));
+        // TODO: 12/4/2015 need to index
     }
 }
