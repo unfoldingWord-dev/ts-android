@@ -2,6 +2,7 @@ package com.door43.translationstudio;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -57,6 +58,16 @@ public class AppContext {
             Logger.e(AppContext.class.getName(), "Failed to create the library", e);
         }
         return null;
+    }
+
+    /**
+     * Checks if the device is a tablet
+     * @return
+     */
+    public static boolean isTablet() {
+        return (mContext.getResources().getConfiguration().screenLayout
+                & Configuration.SCREENLAYOUT_SIZE_MASK)
+                >= Configuration.SCREENLAYOUT_SIZE_LARGE;
     }
 
     /**
@@ -406,12 +417,61 @@ public class AppContext {
     }
 
     /**
+     * Sets the alias to be displayed when others see this device on the network
+     * @param alias
+     */
+    public static void setDeviceNetworkAlias(String alias) {
+        if(alias.trim().isEmpty()) {
+            alias = null;
+        }
+        setUserString(SettingsActivity.KEY_PREF_DEVICE_ALIAS, alias);
+    }
+
+    /**
+     * Returns the alias to be displayed when others see this device on the network
+     * @return
+     */
+    public static String getDeviceNetworkAlias() {
+        String name = getUserString(SettingsActivity.KEY_PREF_DEVICE_ALIAS, "");
+        if(name.isEmpty()) {
+            return null;
+        } else {
+            return name;
+        }
+    }
+
+    /**
      * Returns the string value of a user preference or the default value
      * @param preferenceKey
      * @param defaultResource
      * @return
      */
     public static String getUserString(String preferenceKey, int defaultResource) {
-        return mContext.getUserPreferences().getString(preferenceKey, mContext.getResources().getString(defaultResource));
+        return getUserString(preferenceKey, mContext.getResources().getString(defaultResource));
+    }
+
+    /**
+     * Returns the string value of a user preference or the default value
+     * @param preferenceKey
+     * @param defaultValue
+     * @return
+     */
+    public static String getUserString(String preferenceKey, String defaultValue) {
+        return mContext.getUserPreferences().getString(preferenceKey, defaultValue);
+    }
+
+    /**
+     * Sets the value of a user string.
+     * @param preferenceKey
+     * @param value if null the string will be removed
+     */
+    public static void setUserString(String preferenceKey, String value) {
+        SharedPreferences.Editor editor = mContext.getUserPreferences().edit();
+        if(value == null) {
+            editor.remove(preferenceKey);
+        } else {
+            editor.putString(preferenceKey, value);
+        }
+        editor.apply();
     }
 }

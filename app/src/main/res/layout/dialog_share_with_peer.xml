@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:background="@color/white"
+    android:minWidth="@dimen/dialog_min_width"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="@dimen/dialog_content_margin"
+        android:layout_above="@+id/linearLayout2">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/backup_to_friend"
+            android:textColor="@color/dark_primary_text"
+            android:textSize="@dimen/headline" />
+
+        <TextView
+            android:id="@+id/target_translation_title"
+            android:text="Open Bible Stories - Afaraf"
+            android:textSize="@dimen/title"
+            android:textColor="@color/dark_secondary_text"
+            android:layout_marginBottom="@dimen/dialog_content_margin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <ListView
+            android:id="@id/list"
+            android:dividerHeight="1px"
+            android:divider="@color/list_separator"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:padding="@dimen/dialog_controls_margin"
+        android:gravity="right|end"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/linearLayout2">
+
+        <Button
+            android:id="@+id/dismiss_button"
+            android:layout_marginLeft="@dimen/dialog_controls_margin"
+            android:text="@string/dismiss"
+            style="@style/Widget.Alert.Button"/>
+    </LinearLayout>
+</RelativeLayout>

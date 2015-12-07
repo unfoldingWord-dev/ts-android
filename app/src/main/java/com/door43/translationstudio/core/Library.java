@@ -143,6 +143,7 @@ public class Library {
     /**
      * Generates the available library updates from the server and app index.
      * The network is not used durring this operation.
+     * Only project with downloaded source are considered eligible for updates.
      * @return
      */
     public LibraryUpdates getAvailableUpdates() {

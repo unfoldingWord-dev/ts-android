@@ -25,7 +25,7 @@ import com.door43.widget.ViewUtil;
 public class ProfileFragment extends PublishStepFragment {
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_publish_profile, container, false);
+        final View rootView = inflater.inflate(R.layout.fragment_publish_profile, container, false);
 
         final EditText nameText = (EditText)rootView.findViewById(R.id.name_edittext);
         final EditText emailText = (EditText)rootView.findViewById(R.id.email_edittext);
@@ -42,19 +42,19 @@ public class ProfileFragment extends PublishStepFragment {
         nameInfoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: display info
+                showPrivacyNotice(rootView, true);
             }
         });
         emailInfoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: display info
+                showPrivacyNotice(rootView, true);
             }
         });
         phoneInfoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: display info
+                showPrivacyNotice(rootView, true);
             }
         });
 
@@ -67,19 +67,7 @@ public class ProfileFragment extends PublishStepFragment {
                     ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                     snack.show();
                 } else {
-                    new android.support.v7.app.AlertDialog.Builder(getActivity())
-                            .setTitle("Privacy Notice")
-                            .setIcon(R.drawable.ic_security_black_24dp)
-                            .setMessage(R.string.publishing_privacy_notice)
-                            .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    ProfileManager.setProfile(new Profile(nameText.getText().toString(), emailText.getText().toString(), phoneText.getText().toString()));
-                                    getListener().nextStep();
-                                }
-                            })
-                            .setNegativeButton(R.string.title_cancel, null)
-                            .show();
+                    showPrivacyNotice(rootView, false);
                 }
             }
         });
@@ -97,5 +85,39 @@ public class ProfileFragment extends PublishStepFragment {
         }
 
         return rootView;
+    }
+
+    /***
+     * display the privacy notice
+     * @param rootView
+     * @param infoOnly
+     */
+
+    public void showPrivacyNotice(final View rootView, boolean infoOnly) {
+        android.support.v7.app.AlertDialog.Builder privacy;
+
+        final EditText nameText = (EditText)rootView.findViewById(R.id.name_edittext);
+        final EditText emailText = (EditText)rootView.findViewById(R.id.email_edittext);
+        final EditText phoneText = (EditText)rootView.findViewById(R.id.phone_edittext);
+
+        privacy = new android.support.v7.app.AlertDialog.Builder(getActivity())
+                            .setTitle("Privacy Notice")
+                            .setIcon(R.drawable.ic_security_black_24dp)
+                            .setMessage(R.string.publishing_privacy_notice);
+
+        if(infoOnly) {
+            privacy.setPositiveButton(R.string.label_ok,null);
+        } else {
+            privacy.setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    ProfileManager.setProfile(new Profile(nameText.getText().toString(), emailText.getText().toString(), phoneText.getText().toString()));
+                    getListener().nextStep();
+                }
+            })
+            .setNegativeButton(R.string.title_cancel, null);
+        }
+
+        privacy.show();
     }
 }

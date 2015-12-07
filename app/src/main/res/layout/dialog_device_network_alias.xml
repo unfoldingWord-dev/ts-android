@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:minWidth="@dimen/dialog_min_width"
+    android:layout_height="wrap_content"
+    android:background="@color/white"
+    android:animateLayoutChanges="true">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/dialog_content_margin">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/device_name"
+            android:textColor="@color/dark_primary_text"
+            android:layout_marginBottom="@dimen/dialog_content_margin"
+            android:textSize="@dimen/headline" />
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/device_network_alias_description"
+                android:layout_marginBottom="@dimen/dialog_content_margin"
+                android:textSize="@dimen/body"/>
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="top|center"
+                android:maxLines="1"
+                android:text="hello world"
+                android:inputType="text"
+                android:textSize="@dimen/title"
+                android:background="@drawable/edit_text"
+                android:id="@+id/device_name" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:padding="@dimen/dialog_controls_margin"
+        android:gravity="right|end"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
+
+        <Button
+            android:id="@+id/cancel_button"
+            android:layout_marginLeft="@dimen/dialog_controls_margin"
+            android:text="@string/title_cancel"
+            style="@style/Widget.Alert.Button.Secondary"/>
+
+        <Button
+            android:id="@+id/confirm_button"
+            android:layout_marginLeft="@dimen/dialog_controls_margin"
+            android:text="@string/confirm"
+            style="@style/Widget.Alert.Button"/>
+    </LinearLayout>
+
+</LinearLayout>

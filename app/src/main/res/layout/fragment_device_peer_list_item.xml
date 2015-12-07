@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal" android:layout_width="fill_parent"
     android:layout_height="wrap_content"
+    android:clipChildren="false"
     android:padding="16dp"
     android:gravity="center_vertical">
 
@@ -37,32 +38,33 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:id="@+id/ipAddressText"
-            android:text="127.0.0.1"
+            android:text="Jon Doe"
             android:textColor="@color/dark_gray"
             android:textSize="@dimen/h4" />
 
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/instructionsText"
-            android:text="@string/click_to_connect"
+            android:id="@+id/ip_address"
+            android:text="192.168.1.1"
             android:textColor="@color/gray"
             android:textSize="@dimen/h5" />
     </LinearLayout>
 
-
-    <Button
+    <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/browse"
-        android:background="?attr/colorAccent"
-        android:elevation="2dp"
-        style="@style/Base.Widget.AppCompat.ActionButton"
-        android:textSize="@dimen/title"
-        android:focusable="false"
-        android:clickable="false"
-        android:focusableInTouchMode="false"
-        android:textColor="@color/light_primary_text"
-        android:id="@+id/browseButton" />
+        android:clipChildren="false"
+        android:layout_height="match_parent">
+        <ImageView
+            android:id="@+id/notification"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_notifications_black_24dp"/>
+        <ImageView
+            android:id="@+id/favorite"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_star_black_24dp"/>
+    </LinearLayout>
 
 </LinearLayout>
