@@ -15,12 +15,14 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.SeekBar;
+import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
@@ -55,7 +57,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     public static final String EXTRA_VIEW_MODE = "extra_view_mode_id";
     private Fragment mFragment;
     private SeekBar mSeekBar;
-    private View mGraduations;
+    private ViewGroup mGraduations;
     private Translator mTranslator;
     private TargetTranslation mTargetTranslation;
     private Timer mCommitTimer = new Timer();
@@ -115,7 +117,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         }
 
         // set up menu items
-        mGraduations = findViewById(R.id.action_seek_graduations);
+        mGraduations = (ViewGroup)findViewById(R.id.action_seek_graduations);
         mSeekBar = (SeekBar)findViewById(R.id.action_seek);
         mSeekBar.setMax(100);
         mSeekBar.setProgress(computePositionFromProgress(0));
@@ -346,6 +348,32 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mSeekBar.setMax(itemCount);
         mSeekBar.setProgress(itemCount - progress);
         closeKeyboard();
+        setupGraduations();
+    }
+
+    private void setupGraduations() {
+        final int numChapters = mSeekBar.getMax();
+
+        // Set up visibility of the graduation bar.
+        // Display graduations evenly spaced by number of chapters (but not more than the number
+        // of chapters that exist). As a special case, display nothing if there's only one chapter.
+        int numVisibleGraduations = numChapters < 2
+                ? 0
+                : Math.min(numChapters, mGraduations.getChildCount());
+
+        // Set up the visible chapters.
+        for (int i = 0; i < numVisibleGraduations; ++i) {
+            ViewGroup container = (ViewGroup)mGraduations.getChildAt(i);
+            container.setVisibility(View.VISIBLE);
+            TextView text = (TextView)container.getChildAt(1);
+            int label = 1 + i * numChapters / numVisibleGraduations;
+            text.setText(Integer.toString(label));
+        }
+
+        // Undisplay the invisible chapters.
+        for(int i = numVisibleGraduations; i < mGraduations.getChildCount(); ++i) {
+            mGraduations.getChildAt(i).setVisibility(View.GONE);
+        }
     }
 
     private boolean displaySeekBarAsInverted() {
