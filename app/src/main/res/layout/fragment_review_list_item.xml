@@ -102,7 +102,7 @@
             android:padding="0dp"
             android:gravity="top">
 
-            <LinearLayout
+            <com.door43.translationstudio.newui.newtranslation.LinedLinearLayout
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -167,7 +167,7 @@
                     android:layout_marginLeft="@dimen/card_margin"
                     android:layout_marginRight="@dimen/card_margin"
                     android:textColor="@color/dark_primary_text" />
-            </LinearLayout>
+            </com.door43.translationstudio.newui.newtranslation.LinedLinearLayout>
 
             <LinearLayout
                 android:orientation="vertical"
