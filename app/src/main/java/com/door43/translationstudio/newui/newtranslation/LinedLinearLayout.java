@@ -35,33 +35,39 @@ public class LinedLinearLayout extends LinearLayout {
     @Override
     protected void onDraw(Canvas canvas) {
 
-        if (mEnableLines && (null != mEditText)) {
+        boolean var = true;
 
-            // get view position on screen
-            int[] l = new int[2];
-            this.getLocationOnScreen(l);
+        if (mEnableLines) {
+            if (null != mEditText) {
+
+                // get view position on screen
+                int[] l = new int[2];
+                this.getLocationOnScreen(l);
 //            int viewX = l[0];
-            int viewY = l[1];
+                int viewY = l[1];
 
-            Rect bounds = canvas.getClipBounds();
-            int bottom = bounds.bottom;
+                Rect bounds = canvas.getClipBounds();
+                int bottom = bounds.bottom;
 
-            int relativeY = mEditText.getYlocation() - viewY;
-            int lineHeight = mEditText.getLineHeight();
-            int offset = lineHeight / LinedEditText.mRelativeOffset; // offset so that text is above line
-            int position = mEditText.getLinePosition() + relativeY;
+                int relativeY = mEditText.getYlocation() - viewY;
+                int lineHeight = mEditText.getLineHeight();
+                int offset = lineHeight / LinedEditText.mRelativeOffset; // offset so that text is above line
+                int position = mEditText.getLinePosition() + relativeY;
 
-            for(int i = 0; i < 100; i++) {
+                for (int i = 0; i < 100; i++) {
 
-                if(position > bottom) {
-                    break;
+                    if (position > bottom) {
+                        break;
+                    }
+
+                    canvas.drawLine(bounds.left, position, bounds.right, position, mPaint);
+
+                    position += lineHeight;
                 }
-
-                canvas.drawLine(bounds.left, position, bounds.right, position, mPaint);
-
-                position += lineHeight;
             }
         }
+
+        super.onDraw(canvas);
     }
 
     public boolean isEnableLines() {
