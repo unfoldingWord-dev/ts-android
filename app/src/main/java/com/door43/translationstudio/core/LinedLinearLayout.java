@@ -1,4 +1,4 @@
-package com.door43.translationstudio.newui.newtranslation;
+package com.door43.translationstudio.core;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -50,9 +50,9 @@ public class LinedLinearLayout extends LinearLayout {
                 int bottom = bounds.bottom;
 
                 int relativeY = mEditText.getYlocation() - viewY;
-                int lineHeight = mEditText.getLineHeight();
+                int lineHeight = mEditText.getDistanceBetweenLines();
                 int offset = lineHeight / LinedEditText.mRelativeOffset; // offset so that text is above line
-                int position = mEditText.getLinePosition() + relativeY;
+                int position = mEditText.getLinePosition() + relativeY + offset;
 
                 for (int i = 0; i < 100; i++) {
 

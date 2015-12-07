@@ -9,8 +9,6 @@ import android.util.AttributeSet;
 import android.view.ViewParent;
 import android.widget.EditText;
 
-import com.door43.translationstudio.newui.newtranslation.LinedLinearLayout;
-
 /**
  * Created by blm on 11/25/15.
  */
@@ -66,7 +64,7 @@ public class LinedEditText extends EditText {
                     break;
                 }
 
-//                canvas.drawLine(r.left, position, r.right, position, mPaint);
+                canvas.drawLine(r.left, position, r.right, position, mPaint);
             }
         }
 
@@ -83,7 +81,7 @@ public class LinedEditText extends EditText {
         return viewY;
     }
 
-    public int getLineHeight() {
+    public int getDistanceBetweenLines() {
 
         int lineHeight = (int) getLineHeight();
         return lineHeight;
@@ -108,23 +106,31 @@ public class LinedEditText extends EditText {
     }
 
     public void setEnableLines(boolean mEnableLines) {
-
-        this.invalidate();
-
         LinedLinearLayout parent = getLinedParent();
         if(null != parent) {
             parent.setEnableLines(mEnableLines);
-        } else {
-            this.mEnableLines = mEnableLines;
         }
+
+        this.mEnableLines = mEnableLines;
+        this.invalidate();
     }
 
     private LinedLinearLayout getLinedParent() {
         ViewParent parent = this.getParent();
-        boolean paired = (parent instanceof LinedLinearLayout);
 
-        if(paired) {
-            return (LinedLinearLayout) parent;
+        for(int i = 0; i < 2; i++) { // maximum levels
+
+            if(null == parent) {
+                break;
+            }
+
+            boolean paired = (parent instanceof LinedLinearLayout);
+
+            if (paired) {
+                return (LinedLinearLayout) parent;
+            }
+
+            parent = parent.getParent(); // try moving up
         }
         return null;
     }
