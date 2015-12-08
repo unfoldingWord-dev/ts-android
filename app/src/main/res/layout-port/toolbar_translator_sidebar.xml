@@ -49,7 +49,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:layout_gravity="center_horizontal">
+        android:layout_gravity="center">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -59,7 +59,7 @@
                 android:id="@+id/action_seek"
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
-                android:padding="16dp"
+                android:padding="10dp"
                 android:thumbTint="@color/white"
                 android:progressTint="@color/white"
                 android:layout_marginLeft="16dp"
