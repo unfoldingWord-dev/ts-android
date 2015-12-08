@@ -74,12 +74,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:alpha="0">
+                android:alpha="1">
 
                 <RelativeLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.125">
+                    android:layout_weight="0.125"
+                    android:gravity="center_vertical">
                     <ImageView
                         style="@style/WidgetSeekBarGraduation"
                         android:layout_alignLeft="@+id/graduation1"
@@ -95,7 +96,8 @@
                 <RelativeLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.125">
+                    android:layout_weight="0.125"
+                    android:gravity="center_vertical">
                     <ImageView
                         style="@style/WidgetSeekBarGraduation"
                         android:layout_alignLeft="@+id/graduation2"
@@ -111,7 +113,8 @@
                 <RelativeLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.125">
+                    android:layout_weight="0.125"
+                    android:gravity="center_vertical">
                     <ImageView
                         style="@style/WidgetSeekBarGraduation"
                         android:layout_alignLeft="@+id/graduation3"
@@ -127,7 +130,8 @@
                 <RelativeLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.125">
+                    android:layout_weight="0.125"
+                    android:gravity="center_vertical">
                     <ImageView
                         style="@style/WidgetSeekBarGraduation"
                         android:layout_alignLeft="@+id/graduation4"
@@ -143,7 +147,8 @@
                 <RelativeLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.125">
+                    android:layout_weight="0.125"
+                    android:gravity="center_vertical">
                     <ImageView
                         style="@style/WidgetSeekBarGraduation"
                         android:layout_alignLeft="@+id/graduation5"
@@ -159,7 +164,8 @@
                 <RelativeLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.125">
+                    android:layout_weight="0.125"
+                    android:gravity="center_vertical">
                     <ImageView
                         style="@style/WidgetSeekBarGraduation"
                         android:layout_alignLeft="@+id/graduation6"
@@ -175,7 +181,8 @@
                 <RelativeLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.125">
+                    android:layout_weight="0.125"
+                    android:gravity="center_vertical">
                     <ImageView
                         style="@style/WidgetSeekBarGraduation"
                         android:layout_alignLeft="@+id/graduation7"
@@ -191,7 +198,8 @@
                 <RelativeLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.125">
+                    android:layout_weight="0.125"
+                    android:gravity="center_vertical">
                     <ImageView
                         style="@style/WidgetSeekBarGraduation"
                         android:layout_alignLeft="@+id/graduation8"

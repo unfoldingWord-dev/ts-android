@@ -366,7 +366,13 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             ViewGroup container = (ViewGroup)mGraduations.getChildAt(i);
             container.setVisibility(View.VISIBLE);
             TextView text = (TextView)container.getChildAt(1);
-            int label = 1 + i * numChapters / numVisibleGraduations;
+
+            // This calculation, full of fudge factors, has the following properties:
+            //   - It starts at 1.
+            //   - It ends with the last chapter.
+            //   - It's evenly spaced in between.
+            int label = 1 + i * (numChapters - 1) / (numVisibleGraduations - 1);
+
             text.setText(Integer.toString(label));
         }
 
