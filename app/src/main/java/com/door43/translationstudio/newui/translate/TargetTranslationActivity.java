@@ -353,13 +353,21 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     private void setupGraduations() {
         final int numChapters = mSeekBar.getMax();
+        TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
 
         // Set up visibility of the graduation bar.
         // Display graduations evenly spaced by number of chapters (but not more than the number
         // of chapters that exist). As a special case, display nothing if there's only one chapter.
-        int numVisibleGraduations = numChapters < 2
-                ? 0
-                : Math.min(numChapters, mGraduations.getChildCount());
+        // Also, show nothing unless we're in read mode, since the other modes are indexed by
+        // frame, not by chapter, so displaying either frame numbers or chapter numbers would be
+        // nonsensical.
+        int numVisibleGraduations = Math.min(numChapters, mGraduations.getChildCount());
+        if (numChapters < 2) {
+            numVisibleGraduations = 0;
+        }
+        if (viewMode != TranslationViewMode.READ) {
+            numVisibleGraduations = 0;
+        }
 
         // Set up the visible chapters.
         for (int i = 0; i < numVisibleGraduations; ++i) {
