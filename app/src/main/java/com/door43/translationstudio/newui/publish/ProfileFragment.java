@@ -43,12 +43,12 @@ public class ProfileFragment extends PublishStepFragment {
         View contributor = (View) rootView.findViewById(R.id.contributor_button);
         TextView contributorToggle = (TextView) rootView.findViewById(R.id.toggle_contributor);
 
-        contributor.setVisibility(View.GONE); //TODO blm: add logic to dispaly button if more than one contributor
+        contributor.setVisibility(View.GONE); //TODO blm: 12/8/2015 add logic to dispaly button if more than one contributor
 
         contributorToggle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showPrivacyNotice(rootView, true); //TODO blm: change to cycle between contributors
+                showPrivacyNotice(rootView, true); //TODO blm: 12/8/2015 change to cycle between contributors
             }
         });
 
@@ -75,7 +75,7 @@ public class ProfileFragment extends PublishStepFragment {
         addContributorButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showPrivacyNotice(rootView, true); // TODO change to add a new contributor
+                showPrivacyNotice(rootView, true); // TODO blm: 12/8/2015 change to add a new contributor
             }
         });
 
@@ -94,7 +94,7 @@ public class ProfileFragment extends PublishStepFragment {
         });
 
         // pre-populate fields
-        Profile profile = ProfileManager.getProfile();
+        Profile profile = ProfileManager.getEntry(0); //TODO blm: 12/8/2015 add support for multiple translators
         if(profile != null) {
             nameText.setText(profile.getName());
             emailText.setText(profile.getEmail());
@@ -132,7 +132,7 @@ public class ProfileFragment extends PublishStepFragment {
             privacy.setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    ProfileManager.setProfile(new Profile(nameText.getText().toString(), emailText.getText().toString(), phoneText.getText().toString()));
+                    ProfileManager.applyProfile(new Profile(nameText.getText().toString(), emailText.getText().toString(), phoneText.getText().toString()));
                     getListener().nextStep();
                 }
             })

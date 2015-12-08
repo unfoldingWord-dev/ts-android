@@ -35,7 +35,11 @@ import com.door43.util.tasks.ThreadableUI;
 import com.door43.widget.ViewUtil;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Displays detailed information about a target translation
@@ -110,9 +114,9 @@ public class TargetTranslationInfoDialog extends DialogFragment {
 
         TextView translatorsView = (TextView)v.findViewById(R.id.translators);
         translatorsView.setText("");
-        Profile profile = ProfileManager.getProfile();
-        if(profile != null) {
-            translatorsView.setText(profile.getName());
+        String translators = ProfileManager.getConcatenatedNames("\n");
+        if(translators != null) {
+            translatorsView.setText(translators);
         }
         // TODO: 10/1/2015 support displaying multiple translators
 

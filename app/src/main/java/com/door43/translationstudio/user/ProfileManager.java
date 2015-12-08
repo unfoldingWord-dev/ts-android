@@ -11,32 +11,65 @@ import com.door43.translationstudio.AppContext;
 import com.door43.util.FileUtilities;
 
 import org.apache.commons.io.FileUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by joel on 2/9/2015.
  * // TODO: 9/29/2015 this should be changed the a User class in the core
  */
 public class ProfileManager {
-    private static Profile mProfile = null;
+    private static HashMap<String, Profile> mProfiles = null;
+    public static final String NAME = "name";
+    public static final String PHONE = "phone";
+    public static final String EMAIL = "email";
+    public static final String PROFILES = "profiles";
 
     /**
      * Returns the profile
      * @return
      */
-    public static Profile getProfile() {
-        if(mProfile == null) {
+    public static HashMap<String, Profile> getProfiles() {
+        if(mProfiles == null) {
             File profileDir = new File(getRepositoryPath());
             if (profileDir.exists() && profileDir.isDirectory()) {
                 File contactFile = new File(profileDir, "contact.json");
+
+                mProfiles = new HashMap<String, Profile>();
+
                 if(contactFile.exists()) {
                     try {
                         JSONObject contactJson = new JSONObject(FileUtils.readFileToString(contactFile));
-                        mProfile = new Profile(contactJson.getString("name"), contactJson.getString("email"));
-                        if (contactJson.has("phone")) {
-                            mProfile.setPhone(contactJson.getString("phone"));
+                        if(contactJson.has(NAME)) {
+                            Profile profile = new Profile( contactJson.getString(NAME), contactJson.getString(EMAIL));
+                            if (contactJson.has(PHONE)) {
+                                profile.setPhone(contactJson.getString(PHONE));
+                            }
+                            mProfiles.put(profile.getName(), profile);
+
+                        } else { // try looking for a map
+
+                            if(contactJson.has(PROFILES)) {
+                                JSONArray profiles = contactJson.getJSONArray(PROFILES);
+
+                                for(int i = 0; i < profiles.length(); i++) {
+                                    JSONObject contact = profiles.getJSONObject(i);
+                                    if(contact.has(NAME)) {
+                                        Profile profile = new Profile( contact.getString(NAME), contact.getString(EMAIL));
+                                        if (contact.has(PHONE)) {
+                                            profile.setPhone(contact.getString(PHONE));
+                                        }
+                                        mProfiles.put(profile.getName(), profile);
+                                    }
+                                }
+                            }
                         }
                     } catch (Exception e) {
                         Logger.e(ProfileManager.class.getName(), "failed to load the profile details", e);
@@ -44,14 +77,30 @@ public class ProfileManager {
                 }
             }
         }
-        return mProfile;
+        return mProfiles;
     }
 
     /**
-     * Specifies the user profile details
+     * updates the user profile details
      * @param profile
      */
-    public static void setProfile(Profile profile) {
+    public static boolean applyProfile(Profile profile) {
+
+        HashMap<String, Profile> profiles = getProfiles();
+
+        if(null != profiles) {
+
+            mProfiles.put(profile.getName(), profile);
+            return saveProfiles();
+        }
+
+        return false;
+    }
+
+    /**
+     * Saves the profiles
+     */
+    public static boolean saveProfiles() {
         // TODO: the profile needs to be a git repo that gets pushed to the server
         File profileDir = new File(getRepositoryPath());
         if(profileDir.exists()) {
@@ -63,23 +112,120 @@ public class ProfileManager {
         File avatarFile = new File(profileDir, "avatar.png");
 
         // write contact details
-        JSONObject contactJson = new JSONObject();
+        JSONArray contactArrayJson = new JSONArray();
         try {
-            contactJson.put("name", profile.getName());
-            contactJson.put("email", profile.getEmail());
-            contactJson.put("phone", profile.getPhone());
+            Set<Map.Entry<String, Profile>> setMap = mProfiles.entrySet();
+            Iterator<Map.Entry<String,  Profile>> iteratorMap = setMap.iterator();
+            while(iteratorMap.hasNext()) {
+                Map.Entry<String, Profile> entry =
+                        (Map.Entry<String, Profile>) iteratorMap.next();
 
-            FileUtils.write(contactFile, contactJson.toString());
+                Profile profile = entry.getValue();
+
+                JSONObject contactJson = new JSONObject();
+                contactJson.put("name", profile.getName());
+                contactJson.put("email", profile.getEmail());
+                contactJson.put("phone", profile.getPhone());
+
+                contactArrayJson.put(contactJson);
+            }
+
+            JSONObject contactsJson = new JSONObject();
+            contactsJson.put(PROFILES, contactArrayJson);
+
+            FileUtils.write(contactFile, contactsJson.toString());
         } catch (Exception e) {
             Logger.e(ProfileManager.class.getName(), "failed to write the profile contact details", e);
-            return;
+            return false;
         }
 
         // TODO: write avatar
 
         // TODO: write signature, certificate
 
-        mProfile = profile;
+        return true;
+    }
+
+    /**
+     * gets profile entry at pos.  If not found returns null
+     * @param pos
+     */
+    public static Profile getEntry(final int pos) {
+        HashMap<String, Profile> profiles = getProfiles();
+        if(profiles != null) {
+            try {
+                Set<Map.Entry<String, Profile>> setMap = profiles.entrySet();
+                Iterator<Map.Entry<String, Profile>> iteratorMap = setMap.iterator();
+                int i = 0;
+                while (iteratorMap.hasNext()) {
+                    Map.Entry<String, Profile> entry =
+                            (Map.Entry<String, Profile>) iteratorMap.next();
+
+                    if (pos == i) {
+                        Profile profile = entry.getValue();
+                        return profile;
+                    }
+                }
+
+            } catch (Exception e) {
+                Logger.e(ProfileManager.class.getName(), "failed to get entry", e);
+                return null;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * returns a concatenated list of names or null if error
+     */
+    public static String getConcatenatedNames(String between) {
+
+        ArrayList<String> nameList = getNames();
+
+        if(null != nameList) {
+            String listString = "";
+
+            for (String s : nameList) {
+                if(!listString.isEmpty()) {
+                    listString += between;
+                }
+                listString += s;
+            }
+
+            return listString;
+        }
+        return null;
+    }
+
+    /**
+     * returns a list of names or null if error
+    */
+    public static ArrayList<String> getNames() {
+        HashMap<String, Profile> profiles = getProfiles();
+        if(profiles != null) {
+            try {
+                ArrayList<String> names = new ArrayList<String>();
+
+                Set<Map.Entry<String, Profile>> setMap = profiles.entrySet();
+                Iterator<Map.Entry<String, Profile>> iteratorMap = setMap.iterator();
+
+                while (iteratorMap.hasNext()) {
+                    Map.Entry<String, Profile> entry =
+                            (Map.Entry<String, Profile>) iteratorMap.next();
+
+                    Profile profile = entry.getValue();
+                    names.add(profile.getName());
+                }
+
+                return names;
+
+            } catch (Exception e) {
+                Logger.e(ProfileManager.class.getName(), "failed to get entry", e);
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -104,7 +250,7 @@ public class ProfileManager {
      */
     @Deprecated
     public static void pushAsync() {
-        if(getProfile() != null) {
+        if(getProfiles() != null) {
 
             final String remotePath = getRemotePath();
             final Repo repo = new Repo(getRepositoryPath());
