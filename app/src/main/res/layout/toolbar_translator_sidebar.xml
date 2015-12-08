@@ -90,6 +90,7 @@
                         android:src="@android:drawable/toast_frame" />
                     <TextView
                         android:id="@+id/graduation1"
+                        android:textSize="@dimen/abc_text_size_small_material"
                         style="@style/WidgetSeekBarGraduation" />
                 </RelativeLayout>
 
@@ -107,6 +108,7 @@
                         android:src="@android:drawable/toast_frame" />
                     <TextView
                         android:id="@+id/graduation2"
+                        android:textSize="@dimen/abc_text_size_small_material"
                         style="@style/WidgetSeekBarGraduation" />
                 </RelativeLayout>
 
@@ -124,6 +126,7 @@
                         android:src="@android:drawable/toast_frame" />
                     <TextView
                         android:id="@+id/graduation3"
+                        android:textSize="@dimen/abc_text_size_small_material"
                         style="@style/WidgetSeekBarGraduation" />
                 </RelativeLayout>
 
@@ -141,74 +144,7 @@
                         android:src="@android:drawable/toast_frame" />
                     <TextView
                         android:id="@+id/graduation4"
-                        style="@style/WidgetSeekBarGraduation" />
-                </RelativeLayout>
-
-                <RelativeLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.125"
-                    android:gravity="center_vertical">
-                    <ImageView
-                        style="@style/WidgetSeekBarGraduation"
-                        android:layout_alignLeft="@+id/graduation5"
-                        android:layout_alignRight="@+id/graduation5"
-                        android:layout_alignBottom="@+id/graduation5"
-                        android:layout_alignTop="@+id/graduation5"
-                        android:src="@android:drawable/toast_frame" />
-                    <TextView
-                        android:id="@+id/graduation5"
-                        style="@style/WidgetSeekBarGraduation" />
-                </RelativeLayout>
-
-                <RelativeLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.125"
-                    android:gravity="center_vertical">
-                    <ImageView
-                        style="@style/WidgetSeekBarGraduation"
-                        android:layout_alignLeft="@+id/graduation6"
-                        android:layout_alignRight="@+id/graduation6"
-                        android:layout_alignBottom="@+id/graduation6"
-                        android:layout_alignTop="@+id/graduation6"
-                        android:src="@android:drawable/toast_frame" />
-                    <TextView
-                        android:id="@+id/graduation6"
-                        style="@style/WidgetSeekBarGraduation" />
-                </RelativeLayout>
-
-                <RelativeLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.125"
-                    android:gravity="center_vertical">
-                    <ImageView
-                        style="@style/WidgetSeekBarGraduation"
-                        android:layout_alignLeft="@+id/graduation7"
-                        android:layout_alignRight="@+id/graduation7"
-                        android:layout_alignBottom="@+id/graduation7"
-                        android:layout_alignTop="@+id/graduation7"
-                        android:src="@android:drawable/toast_frame" />
-                    <TextView
-                        android:id="@+id/graduation7"
-                        style="@style/WidgetSeekBarGraduation" />
-                </RelativeLayout>
-
-                <RelativeLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.125"
-                    android:gravity="center_vertical">
-                    <ImageView
-                        style="@style/WidgetSeekBarGraduation"
-                        android:layout_alignLeft="@+id/graduation8"
-                        android:layout_alignRight="@+id/graduation8"
-                        android:layout_alignBottom="@+id/graduation8"
-                        android:layout_alignTop="@+id/graduation8"
-                        android:src="@android:drawable/toast_frame" />
-                    <TextView
-                        android:id="@+id/graduation8"
+                        android:textSize="@dimen/abc_text_size_small_material"
                         style="@style/WidgetSeekBarGraduation" />
                 </RelativeLayout>
 
