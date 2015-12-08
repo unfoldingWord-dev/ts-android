@@ -1,7 +1,6 @@
 package com.door43.translationstudio.newui.publish;
 
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
@@ -12,10 +11,12 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.newui.library.ServerLibraryActivity;
+import com.door43.translationstudio.core.NativeSpeaker;
+import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.user.Profile;
-import com.door43.translationstudio.user.ProfileManager;
 import com.door43.widget.ViewUtil;
 
 //import java.security.InvalidParameterException;
@@ -25,8 +26,15 @@ import com.door43.widget.ViewUtil;
  */
 public class ProfileFragment extends PublishStepFragment {
 
+    TargetTranslation mTargetTranslation;
+
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View rootView = inflater.inflate(R.layout.fragment_publish_profile, container, false);
+
+        Bundle args = getArguments();
+        String targetTranslationId = args.getString(PublishActivity.EXTRA_TARGET_TRANSLATION_ID);
+        Translator translator = AppContext.getTranslator();
+        mTargetTranslation = translator.getTargetTranslation(targetTranslationId);
 
         final EditText nameText = (EditText)rootView.findViewById(R.id.name_edittext);
         final EditText emailText = (EditText)rootView.findViewById(R.id.email_edittext);
@@ -94,11 +102,14 @@ public class ProfileFragment extends PublishStepFragment {
         });
 
         // pre-populate fields
-        Profile profile = ProfileManager.getEntry(0); //TODO blm: 12/8/2015 add support for multiple translators
-        if(profile != null) {
-            nameText.setText(profile.getName());
-            emailText.setText(profile.getEmail());
-            phoneText.setText(profile.getPhone());
+        NativeSpeaker[] translators = mTargetTranslation.getTranslators();
+
+        //TODO blm: 12/8/2015 add support for multiple translators
+        if((translators != null) && (translators.length > 0)) {
+            NativeSpeaker trans = translators[0];
+            nameText.setText(trans.name);
+            emailText.setText(trans.email);
+            phoneText.setText(trans.phone);
         } else {
             nameText.setText("");
             emailText.setText("");
@@ -132,7 +143,7 @@ public class ProfileFragment extends PublishStepFragment {
             privacy.setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    ProfileManager.applyProfile(new Profile(nameText.getText().toString(), emailText.getText().toString(), phoneText.getText().toString()));
+                    mTargetTranslation.addTranslator(new NativeSpeaker(nameText.getText().toString(), emailText.getText().toString(), phoneText.getText().toString()));
                     getListener().nextStep();
                 }
             })

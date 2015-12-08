@@ -5,41 +5,27 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.FileProvider;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.NativeSpeaker;
 import com.door43.translationstudio.core.SourceLanguage;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.AppContext;
-import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.newui.PrintDialog;
 import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.newui.BackupDialog;
-import com.door43.translationstudio.user.Profile;
-import com.door43.translationstudio.user.ProfileManager;
 import com.door43.util.tasks.ThreadableUI;
-import com.door43.widget.ViewUtil;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Displays detailed information about a target translation
@@ -114,7 +100,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
 
         TextView translatorsView = (TextView)v.findViewById(R.id.translators);
         translatorsView.setText("");
-        String translators = ProfileManager.getConcatenatedNames("\n");
+        String translators = getTranslaterNames("\n");
         if(translators != null) {
             translatorsView.setText(translators);
         }
@@ -209,4 +195,28 @@ public class TargetTranslationInfoDialog extends DialogFragment {
     public interface OnDeleteListener {
         void onDeleteTargetTranslation(String targetTranslationId);
     }
+
+    /**
+     * returns a concatenated list of names or null if error
+     */
+    public String getTranslaterNames(String between) {
+
+        final NativeSpeaker[] nameList = mTargetTranslation.getTranslators();
+
+        if(null != nameList) {
+            String listString = "";
+
+            for (int i = 0; i < nameList.length; i++) {
+                if(!listString.isEmpty()) {
+                    listString += between;
+                }
+                listString += nameList[i].name;
+            }
+
+            return listString;
+        }
+        return null;
+    }
+
+
 }

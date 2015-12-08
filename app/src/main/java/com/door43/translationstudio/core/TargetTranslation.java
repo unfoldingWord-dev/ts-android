@@ -41,6 +41,10 @@ public class TargetTranslation {
     private final String mTargetLanguageId;
     private final String mProjectId;
     private static final String GLOBAL_PROJECT_ID = "uw";
+    public static final String TRANSLATORS = "translators";
+    public static final String NAME = "name";
+    public static final String PHONE = "phone";
+    public static final String EMAIL = "email";
     private final File mTargetTranslationDirectory;
     private final Manifest mManifest;
     private final String mTargetTranslationName;
@@ -230,7 +234,33 @@ public class TargetTranslation {
      * @param translator
      */
     public void addTranslator(NativeSpeaker translator) {
+        ArrayList<NativeSpeaker> translators = getTranslatorsArrayList();
 
+        int foundAt = find(translator);
+        if(foundAt >= 0) { // if found, update data
+            translators.set(foundAt, translator);
+        } else { // if new translator then add
+            translators.add(translator);
+        }
+
+        mManifest.put(TRANSLATORS,new JSONArray(translators));
+    }
+
+    /**
+     * Finds index of translator with name match
+     * @param translator
+     */
+    public int find(NativeSpeaker translator) {
+        ArrayList<NativeSpeaker> translators = getTranslatorsArrayList();
+
+        for(int i = 0; i < translators.size(); i++) {
+            NativeSpeaker speaker = translators.get(i);
+            if(speaker.name.equals(translator.name)) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     /**
@@ -238,7 +268,35 @@ public class TargetTranslation {
      * @return
      */
     public NativeSpeaker[] getTranslators() {
-        return new NativeSpeaker[0];
+
+        ArrayList<NativeSpeaker> translators = getTranslatorsArrayList();
+        return (NativeSpeaker[]) translators.toArray();
+    }
+
+    /**
+     * Returns an array of native speakers who have worked on this translation
+     * @return
+     */
+    public ArrayList<NativeSpeaker> getTranslatorsArrayList() {
+        JSONArray translatorsJson = mManifest.getJSONArray(TRANSLATORS);
+
+        ArrayList<NativeSpeaker> translators = new ArrayList<NativeSpeaker>();
+
+        try {
+            for (int i = 0; i < translatorsJson.length(); i++) {
+                JSONObject contact = translatorsJson.getJSONObject(i);
+                if (contact.has(NAME)) {
+                    NativeSpeaker profile = new NativeSpeaker(contact.getString(NAME),
+                            contact.getString(EMAIL), contact.getString(PHONE));
+
+                    translators.add(profile);
+                }
+            }
+        } catch (Exception e) {
+            Logger.e(TargetTranslation.class.getName(), "failed to fetch translators", e);
+        }
+
+        return translators;
     }
 
     /**

@@ -9,7 +9,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * This class handles the managment of a manifest file.
+ * This class handles the management of a manifest file.
  *
  */
 public class Manifest {

@@ -6,8 +6,6 @@ import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.TransportCallback;
-import com.door43.translationstudio.git.tasks.StopTaskException;
-import com.door43.translationstudio.user.ProfileManager;
 import com.door43.translationstudio.AppContext;
 import com.door43.util.FileUtilities;
 import com.door43.util.tasks.ManagedTask;
