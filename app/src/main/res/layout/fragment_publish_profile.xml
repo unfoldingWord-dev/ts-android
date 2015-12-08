@@ -2,7 +2,8 @@
 <android.support.v4.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:elevation="@dimen/appbar_elevation">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -106,13 +107,32 @@
 
         </android.support.v7.widget.CardView>
 
-        <Button
-            android:id="@+id/next_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            style="@style/Widget.Button.Blue"
-            android:text="@string/next_step"/>
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical|right">
+
+            <Button
+                android:id="@+id/add_contributor_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                style="@style/Widget.Button.White"
+                android:text="@string/add_contributor"
+                android:layout_marginRight="@dimen/dialog_controls_margin"
+                android:elevation="@dimen/appbar_elevation" />
+
+            <Button
+                android:id="@+id/next_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                style="@style/Widget.Button.Blue"
+                android:text="@string/next_step"
+                android:layout_marginRight="@dimen/card_margin"
+                android:layout_marginLeft="@dimen/dialog_controls_margin" />
+        </LinearLayout>
 
     </LinearLayout>
 

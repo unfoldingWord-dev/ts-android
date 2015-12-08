@@ -580,4 +580,5 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="device_name">Device Name</string>
     <string name="confirm_import_target_translation">Do you want to import <xliff:g id="target_translation_name" example="Open Bible Stories - Afaraf">%1$s</xliff:g>?</string>
     <string name="success_import_target_translation"><xliff:g id="target_translation_name" example="Open Bible Stories - Afaraf">%1$s</xliff:g> was successfully imported.</string>
+    <string name="add_contributor">ADD CONTRIBUTER</string>
 </resources>
