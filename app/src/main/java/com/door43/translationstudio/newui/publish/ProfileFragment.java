@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
@@ -39,6 +40,18 @@ public class ProfileFragment extends PublishStepFragment {
         ImageButton phoneInfoButton = (ImageButton)rootView.findViewById(R.id.phone_info_button);
         ViewUtil.tintViewDrawable(phoneInfoButton, getResources().getColor(R.color.dark_secondary_text));
 
+        View contributor = (View) rootView.findViewById(R.id.contributor_button);
+        TextView contributorToggle = (TextView) rootView.findViewById(R.id.toggle_contributor);
+
+        contributor.setVisibility(View.GONE); //TODO blm: add logic to dispaly button if more than one contributor
+
+        contributorToggle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showPrivacyNotice(rootView, true); //TODO blm: change to cycle between contributors
+            }
+        });
+
         nameInfoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -55,6 +68,14 @@ public class ProfileFragment extends PublishStepFragment {
             @Override
             public void onClick(View v) {
                 showPrivacyNotice(rootView, true);
+            }
+        });
+
+        Button addContributorButton = (Button)rootView.findViewById(R.id.add_contributor_button);
+        addContributorButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showPrivacyNotice(rootView, true); // TODO change to add a new contributor
             }
         });
 

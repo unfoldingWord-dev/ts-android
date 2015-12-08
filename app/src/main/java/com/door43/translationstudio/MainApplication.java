@@ -11,6 +11,7 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
+import android.support.multidex.MultiDex;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.widget.Toast;
@@ -49,6 +50,12 @@ public class MainApplication extends Application {
     private boolean mShowImportantTerms;
     public static final String STACKTRACE_DIR = "stacktrace";
     private boolean mClosingProgressDialog = false;
+
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        MultiDex.install(this);
+    }
 
     public void onCreate() {
         super.onCreate();
