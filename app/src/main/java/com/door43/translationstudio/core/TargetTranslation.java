@@ -233,17 +233,38 @@ public class TargetTranslation {
      * Adds a native speaker as a translator
      * @param translator
      */
-    public void addTranslator(NativeSpeaker translator) {
-        ArrayList<NativeSpeaker> translators = getTranslatorsArrayList();
+    public boolean addTranslator(NativeSpeaker translator) {
+        ArrayList<NativeSpeaker> translators = getTranslators();
 
-        int foundAt = find(translator);
-        if(foundAt >= 0) { // if found, update data
-            translators.set(foundAt, translator);
-        } else { // if new translator then add
-            translators.add(translator);
+        try {
+
+            int foundAt = find(translator);
+            if(foundAt >= 0) { // if found, update data
+                translators.set(foundAt, translator);
+            } else { // if new translator then add
+                translators.add(translator);
+            }
+
+            JSONArray translatorsJson = new JSONArray();
+
+            for(int i = 0; i < translators.size(); i++) {
+                JSONObject translatorJSON = new JSONObject();
+                NativeSpeaker currentTranslator = translators.get(i);
+                translatorJSON.put(NAME,currentTranslator.name);
+                translatorJSON.put(EMAIL,currentTranslator.email);
+                translatorJSON.put(PHONE,currentTranslator.phone);
+
+                translatorsJson.put(translatorJSON);
+            }
+
+            mManifest.put(TRANSLATORS,translatorsJson);
+
+        } catch (Exception e) {
+            Logger.e(TargetTranslation.class.getName(), "failed to fetch translators", e);
+            return false;
         }
 
-        mManifest.put(TRANSLATORS,new JSONArray(translators));
+        return true;
     }
 
     /**
@@ -251,11 +272,11 @@ public class TargetTranslation {
      * @param translator
      */
     public int find(NativeSpeaker translator) {
-        ArrayList<NativeSpeaker> translators = getTranslatorsArrayList();
+        ArrayList<NativeSpeaker> translators = getTranslators();
 
-        for(int i = 0; i < translators.size(); i++) {
+        for (int i = 0; i < translators.size(); i++) {
             NativeSpeaker speaker = translators.get(i);
-            if(speaker.name.equals(translator.name)) {
+            if (speaker.name.equals(translator.name)) {
                 return i;
             }
         }
@@ -267,33 +288,27 @@ public class TargetTranslation {
      * Returns an array of native speakers who have worked on this translation
      * @return
      */
-    public NativeSpeaker[] getTranslators() {
+    public ArrayList<NativeSpeaker> getTranslators() {
 
-        ArrayList<NativeSpeaker> translators = getTranslatorsArrayList();
-        return (NativeSpeaker[]) translators.toArray();
-    }
-
-    /**
-     * Returns an array of native speakers who have worked on this translation
-     * @return
-     */
-    public ArrayList<NativeSpeaker> getTranslatorsArrayList() {
         JSONArray translatorsJson = mManifest.getJSONArray(TRANSLATORS);
 
-        ArrayList<NativeSpeaker> translators = new ArrayList<NativeSpeaker>();
+        ArrayList<NativeSpeaker> translators = new  ArrayList<NativeSpeaker>();
 
-        try {
-            for (int i = 0; i < translatorsJson.length(); i++) {
-                JSONObject contact = translatorsJson.getJSONObject(i);
-                if (contact.has(NAME)) {
-                    NativeSpeaker profile = new NativeSpeaker(contact.getString(NAME),
-                            contact.getString(EMAIL), contact.getString(PHONE));
+        if(translatorsJson.length() > 0) {
 
-                    translators.add(profile);
+            try {
+                for (int i = 0; i < translatorsJson.length(); i++) {
+                    JSONObject contact = translatorsJson.getJSONObject(i);
+                    if (contact.has(NAME)) {
+                        NativeSpeaker profile = new NativeSpeaker(contact.getString(NAME),
+                                contact.getString(EMAIL), contact.getString(PHONE));
+
+                        translators.add(profile);
+                    }
                 }
+            } catch (Exception e) {
+                Logger.e(TargetTranslation.class.getName(), "failed to fetch translators", e);
             }
-        } catch (Exception e) {
-            Logger.e(TargetTranslation.class.getName(), "failed to fetch translators", e);
         }
 
         return translators;

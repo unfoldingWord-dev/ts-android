@@ -19,6 +19,8 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.user.Profile;
 import com.door43.widget.ViewUtil;
 
+import java.util.ArrayList;
+
 //import java.security.InvalidParameterException;
 
 /**
@@ -102,11 +104,11 @@ public class ProfileFragment extends PublishStepFragment {
         });
 
         // pre-populate fields
-        NativeSpeaker[] translators = mTargetTranslation.getTranslators();
+        ArrayList<NativeSpeaker> translators = mTargetTranslation.getTranslators();
 
         //TODO blm: 12/8/2015 add support for multiple translators
-        if((translators != null) && (translators.length > 0)) {
-            NativeSpeaker trans = translators[0];
+        if(translators.size() > 0) {
+            NativeSpeaker trans = translators.get(0);
             nameText.setText(trans.name);
             emailText.setText(trans.email);
             phoneText.setText(trans.phone);

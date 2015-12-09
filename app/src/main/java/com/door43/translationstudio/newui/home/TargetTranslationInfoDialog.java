@@ -25,6 +25,7 @@ import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.newui.BackupDialog;
 import com.door43.util.tasks.ThreadableUI;
 
+import java.util.ArrayList;
 import java.util.Locale;
 
 /**
@@ -201,16 +202,16 @@ public class TargetTranslationInfoDialog extends DialogFragment {
      */
     public String getTranslaterNames(String between) {
 
-        final NativeSpeaker[] nameList = mTargetTranslation.getTranslators();
+        ArrayList<NativeSpeaker> nameList = mTargetTranslation.getTranslators();
 
         if(null != nameList) {
             String listString = "";
 
-            for (int i = 0; i < nameList.length; i++) {
+            for (int i = 0; i < nameList.size(); i++) {
                 if(!listString.isEmpty()) {
                     listString += between;
                 }
-                listString += nameList[i].name;
+                listString += nameList.get(i).name;
             }
 
             return listString;
