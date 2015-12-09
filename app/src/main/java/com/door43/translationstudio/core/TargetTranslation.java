@@ -236,14 +236,40 @@ public class TargetTranslation {
     public boolean addTranslator(NativeSpeaker translator) {
         ArrayList<NativeSpeaker> translators = getTranslators();
 
-        try {
+        int foundAt = find(translator.name);
+        if(foundAt >= 0) { // if found, update data
+            translators.set(foundAt, translator);
+        } else { // if new translator then add
+            translators.add(translator);
+        }
 
-            int foundAt = find(translator);
-            if(foundAt >= 0) { // if found, update data
-                translators.set(foundAt, translator);
+        return saveTranslators(translators);
+    }
+
+    /**
+     * remove a translator
+     * @param name
+     */
+    public boolean removeTranslator(String name) {
+        ArrayList<NativeSpeaker> translators = getTranslators();
+
+            int foundAt = find(name);
+            if(foundAt < 0) { // if not found, skip
+                return false;
             } else { // if new translator then add
-                translators.add(translator);
+                translators.remove(foundAt);
             }
+
+            return saveTranslators(translators);
+    }
+
+    /**
+     * save updated list of translators
+     * @param translators
+     */
+    public boolean saveTranslators(ArrayList<NativeSpeaker> translators) {
+
+        try {
 
             JSONArray translatorsJson = new JSONArray();
 
@@ -260,7 +286,7 @@ public class TargetTranslation {
             mManifest.put(TRANSLATORS,translatorsJson);
 
         } catch (Exception e) {
-            Logger.e(TargetTranslation.class.getName(), "failed to fetch translators", e);
+            Logger.e(TargetTranslation.class.getName(), "failed save translators", e);
             return false;
         }
 
@@ -269,14 +295,14 @@ public class TargetTranslation {
 
     /**
      * Finds index of translator with name match
-     * @param translator
+     * @param name
      */
-    public int find(NativeSpeaker translator) {
+    public int find(String name) {
         ArrayList<NativeSpeaker> translators = getTranslators();
 
         for (int i = 0; i < translators.size(); i++) {
             NativeSpeaker speaker = translators.get(i);
-            if (speaker.name.equals(translator.name)) {
+            if (speaker.name.equals(name)) {
                 return i;
             }
         }

@@ -18,7 +18,7 @@
             android:layout_marginRight="@dimen/card_margin"
             android:layout_marginBottom="@dimen/card_margin"
             android:id="@+id/contributor_button"
-            android:visibility="gone">
+            android:visibility="visible">
 
             <LinearLayout
                 style="@style/Widget.CardContent"
@@ -34,6 +34,14 @@
                     android:layout_weight="1"
                     android:hint="@string/your_name"
                     android:textSize="@dimen/title" />
+
+
+                <ImageButton
+                    android:id="@+id/delete_contributor_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:background="@drawable/ic_delete_dark_secondary_24dp" />
 
             </LinearLayout>
 

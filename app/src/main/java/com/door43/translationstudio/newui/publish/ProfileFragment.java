@@ -16,7 +16,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NativeSpeaker;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.user.Profile;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.widget.ViewUtil;
 
 import java.util.ArrayList;
@@ -28,7 +28,13 @@ import java.util.ArrayList;
  */
 public class ProfileFragment extends PublishStepFragment {
 
-    TargetTranslation mTargetTranslation;
+    private TargetTranslation mTargetTranslation;
+    private int mCurrentTranslator = 0;
+    private EditText mNameText;
+    private EditText mEmailText;
+    private EditText mPhoneText;
+    private View mContributor;
+    private TextView mContributorToggle;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View rootView = inflater.inflate(R.layout.fragment_publish_profile, container, false);
@@ -38,9 +44,9 @@ public class ProfileFragment extends PublishStepFragment {
         Translator translator = AppContext.getTranslator();
         mTargetTranslation = translator.getTargetTranslation(targetTranslationId);
 
-        final EditText nameText = (EditText)rootView.findViewById(R.id.name_edittext);
-        final EditText emailText = (EditText)rootView.findViewById(R.id.email_edittext);
-        final EditText phoneText = (EditText)rootView.findViewById(R.id.phone_edittext);
+        mNameText = (EditText)rootView.findViewById(R.id.name_edittext);
+        mEmailText = (EditText)rootView.findViewById(R.id.email_edittext);
+        mPhoneText = (EditText)rootView.findViewById(R.id.phone_edittext);
 
         // buttons
         ImageButton nameInfoButton = (ImageButton)rootView.findViewById(R.id.name_info_button);
@@ -50,15 +56,13 @@ public class ProfileFragment extends PublishStepFragment {
         ImageButton phoneInfoButton = (ImageButton)rootView.findViewById(R.id.phone_info_button);
         ViewUtil.tintViewDrawable(phoneInfoButton, getResources().getColor(R.color.dark_secondary_text));
 
-        View contributor = (View) rootView.findViewById(R.id.contributor_button);
-        TextView contributorToggle = (TextView) rootView.findViewById(R.id.toggle_contributor);
+        mContributor = (View) rootView.findViewById(R.id.contributor_button);
+        mContributorToggle = (TextView) rootView.findViewById(R.id.toggle_contributor);
 
-        contributor.setVisibility(View.GONE); //TODO blm: 12/8/2015 add logic to dispaly button if more than one contributor
-
-        contributorToggle.setOnClickListener(new View.OnClickListener() {
+        mContributorToggle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showPrivacyNotice(rootView, true); //TODO blm: 12/8/2015 change to cycle between contributors
+                getNextTranslator();
             }
         });
 
@@ -85,7 +89,33 @@ public class ProfileFragment extends PublishStepFragment {
         addContributorButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showPrivacyNotice(rootView, true); // TODO blm: 12/8/2015 change to add a new contributor
+                NativeSpeaker translator = saveCurrentTranslator();
+                showTranslator(translator.name);
+            }
+        });
+
+        ImageButton deleteContributorButton = (ImageButton)rootView.findViewById(R.id.delete_contributor_button);
+        deleteContributorButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                final CustomAlertDialog dlg = CustomAlertDialog.Create(getActivity());
+                dlg.setTitle(R.string.delete_translator_title)
+                        .setMessageHtml(R.string.confirm_delete_translator)
+                        .setPositiveButton(R.string.confirm, new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+
+                                        String name = mContributorToggle.getText().toString();
+                                        mTargetTranslation.removeTranslator(name);
+                                        updateTranslator();
+
+                                        dlg.dismiss();
+                                    }
+                                }
+                        )
+                        .setNegativeButton(R.string.title_cancel, null)
+                        .show("DeleteTrans");
             }
         });
 
@@ -93,7 +123,7 @@ public class ProfileFragment extends PublishStepFragment {
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(nameText.getText().toString().isEmpty() || emailText.getText().toString().isEmpty()) {
+                if(mNameText.getText().toString().isEmpty() || mEmailText.getText().toString().isEmpty()) {
                     Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.complete_required_fields, Snackbar.LENGTH_SHORT);
                     ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                     snack.show();
@@ -103,22 +133,81 @@ public class ProfileFragment extends PublishStepFragment {
             }
         });
 
-        // pre-populate fields
-        ArrayList<NativeSpeaker> translators = mTargetTranslation.getTranslators();
-
-        //TODO blm: 12/8/2015 add support for multiple translators
-        if(translators.size() > 0) {
-            NativeSpeaker trans = translators.get(0);
-            nameText.setText(trans.name);
-            emailText.setText(trans.email);
-            phoneText.setText(trans.phone);
-        } else {
-            nameText.setText("");
-            emailText.setText("");
-            phoneText.setText("");
-        }
+        updateTranslator();
 
         return rootView;
+    }
+
+    /***
+     * show specific translator
+     * @param name
+     */
+    private void showTranslator(String name) {
+
+        int pos = mTargetTranslation.find(name);
+
+        if(pos < 0) {
+            pos = 0;
+        }
+
+        mCurrentTranslator = pos;
+        updateTranslator();
+    }
+
+    /***
+     * move to next translator in list
+     */
+    private void getNextTranslator() {
+
+        mCurrentTranslator++;
+        updateTranslator();
+    }
+
+    /***
+     * put info on screen for current translator
+     */
+    private void updateTranslator() {
+        ArrayList<NativeSpeaker> translators = mTargetTranslation.getTranslators();
+
+        if(mCurrentTranslator >= translators.size()) {
+            mCurrentTranslator = 0;
+        }
+
+        boolean moreThanOne = (translators.size() > 1);
+        mContributor.setVisibility(moreThanOne ? View.VISIBLE : View.GONE);
+
+        if(translators.size() > 0) {
+            NativeSpeaker trans = translators.get(mCurrentTranslator);
+            mNameText.setText(trans.name);
+            mEmailText.setText(trans.email);
+            mPhoneText.setText(trans.phone);
+
+            if(moreThanOne) {
+                mContributorToggle.setText(trans.name);
+            }
+        } else { // if empty
+            mNameText.setText("");
+            mEmailText.setText("");
+            mPhoneText.setText("");
+        }
+    }
+
+    /***
+     * get the current translator data in
+     * @return
+     */
+    private NativeSpeaker getNewTranslatorData() {
+        return new NativeSpeaker(mNameText.getText().toString(), mEmailText.getText().toString(), mPhoneText.getText().toString());
+    }
+
+    /***
+     * get info about current translator and save it
+     * @return
+     */
+    private NativeSpeaker saveCurrentTranslator() {
+        NativeSpeaker translator = getNewTranslatorData();
+        mTargetTranslation.addTranslator(translator);
+        return translator;
     }
 
     /***
@@ -145,7 +234,7 @@ public class ProfileFragment extends PublishStepFragment {
             privacy.setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    mTargetTranslation.addTranslator(new NativeSpeaker(nameText.getText().toString(), emailText.getText().toString(), phoneText.getText().toString()));
+                    saveCurrentTranslator();
                     getListener().nextStep();
                 }
             })
