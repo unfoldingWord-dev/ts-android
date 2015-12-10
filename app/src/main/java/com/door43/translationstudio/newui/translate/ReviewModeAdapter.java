@@ -24,6 +24,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -596,9 +597,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
 
-                    LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                     View layout = inflater.inflate(R.layout.dialog_html_alert, null);
-                    HtmlTextView text = (HtmlTextView)layout.findViewById(R.id.text);
+                    HtmlTextView text = (HtmlTextView) layout.findViewById(R.id.text);
                     text.setHtmlFromString(mContext.getResources().getString(R.string.chunk_checklist_body), true);
 
                     CustomAlertDialog.Create(mContext)
@@ -611,25 +612,32 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                         }
                                     }
                             )
-                            .setNegativeButton(R.string.title_cancel, null)
-                            .show("Chunk2");            }
-            } else { // done button checked off
+                            .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    holder.mDoneSwitch.setChecked(false); // force back off if not accepted
+                                }
+                            })
+                            .show("Chunk2");
 
-                boolean opened;
-                if (item.isChapterReference) {
-                    opened = mTargetTranslation.reopenChapterReference(chapter);
-                } else if (item.isChapterTitle) {
-                    opened = mTargetTranslation.reopenChapterTitle(chapter);
-                } else if (item.isProjectTitle) {
-                    opened = mTargetTranslation.reopenProjectTitle();
-                } else {
-                    opened = mTargetTranslation.reopenFrame(frame);
-                }
-                if (opened) {
-                    item.renderedTargetBody = null;
-                    notifyDataSetChanged();
-                } else {
-                    // TODO: 10/27/2015 notify user the frame could not be completed.
+                } else { // done button checked off
+
+                    boolean opened;
+                    if (item.isChapterReference) {
+                        opened = mTargetTranslation.reopenChapterReference(chapter);
+                    } else if (item.isChapterTitle) {
+                        opened = mTargetTranslation.reopenChapterTitle(chapter);
+                    } else if (item.isProjectTitle) {
+                        opened = mTargetTranslation.reopenProjectTitle();
+                    } else {
+                        opened = mTargetTranslation.reopenFrame(frame);
+                    }
+                    if (opened) {
+                        item.renderedTargetBody = null;
+                        notifyDataSetChanged();
+                    } else {
+                        // TODO: 10/27/2015 notify user the frame could not be completed.
+                    }
                 }
             }
         });
