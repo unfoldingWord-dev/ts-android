@@ -20,6 +20,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.dialogs.ErrorLogDialog;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.library.ServerLibraryCache;
@@ -169,13 +170,13 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
         mDeveloperTools.add(new ToolItem(getResources().getString(R.string.force_update_projects), getResources().getString(R.string.force_update_projects_description), 0, new ToolItem.ToolAction() {
             @Override
             public void run() {
-                new AlertDialog.Builder(DeveloperToolsActivity.this)
+                CustomAlertDialog.Create(DeveloperToolsActivity.this)
                         .setTitle(R.string.action_download_all)
                         .setMessage(R.string.download_confirmation)
                         .setIcon(R.drawable.icon_update_cloud_dark)
-                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                        .setPositiveButton(R.string.yes, new View.OnClickListener() {
                             @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
+                            public void onClick(View v) {
                                 // create new prep task
                                 GetLibraryUpdatesTask task = new GetLibraryUpdatesTask(true);
                                 task.addOnProgressListener(DeveloperToolsActivity.this);
@@ -184,7 +185,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                             }
                         })
                         .setNegativeButton(R.string.no, null)
-                        .show();
+                        .show("DownldAll");
             }
         }));
         mDeveloperTools.add(new ToolItem(getResources().getString(R.string.export_source), getResources().getString(R.string.export_source_description), 0, new ToolItem.ToolAction() {
@@ -304,13 +305,13 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
 
                     if (!task.isCanceled()) {
                         // the download is complete
-                        new AlertDialog.Builder(DeveloperToolsActivity.this)
+                        CustomAlertDialog.Create(DeveloperToolsActivity.this)
                                 .setTitle(R.string.success)
                                 .setIcon(R.drawable.ic_done_black_24dp)
                                 .setMessage(R.string.download_complete)
-                                .setCancelable(false)
+                                .setCancelableChainable(false)
                                 .setPositiveButton(R.string.label_ok, null)
-                                .show();
+                                .show("Success");
                     }
                 }
             });

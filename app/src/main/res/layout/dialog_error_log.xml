@@ -22,7 +22,7 @@
             android:text="Empty Log"
             android:id="@+id/emptyLogButton"
             android:layout_weight="1"
-            style="@style/Widget.Button.Secondary" />
+            style="@style/Widget.Button" />
 
         <Button
             android:layout_width="wrap_content"

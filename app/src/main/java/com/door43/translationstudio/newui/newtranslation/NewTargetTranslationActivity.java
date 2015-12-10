@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.support.v7.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
@@ -18,6 +19,7 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.BaseActivity;
@@ -141,20 +143,20 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             case R.id.action_search:
                 return true;
             case R.id.action_update:
-                new AlertDialog.Builder(this)
+                CustomAlertDialog.Create(this)
                         .setTitle(R.string.update_projects)
                         .setIcon(R.drawable.ic_local_library_black_24dp)
                         .setMessage(R.string.use_internet_confirmation)
-                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                        .setPositiveButton(R.string.yes, new View.OnClickListener() {
                             @Override
-                            public void onClick(DialogInterface dialog, int which) {
+                            public void onClick(View v) {
                                 Intent intent = new Intent(NewTargetTranslationActivity.this, ServerLibraryActivity.class);
 //                                intent.putExtra(ServerLibraryActivity.ARG_SHOW_UPDATES, true);
                                 startActivity(intent);
                             }
                         })
                         .setNegativeButton(R.string.no, null)
-                        .show();
+                        .show("Update");
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
