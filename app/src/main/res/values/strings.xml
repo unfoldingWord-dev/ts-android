@@ -582,3 +582,5 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="success_import_target_translation"><xliff:g id="target_translation_name" example="Open Bible Stories - Afaraf">%1$s</xliff:g> was successfully imported.</string>
     <string name="title_activity_custom_alert_dialog">CustomAlertDialog</string>
     <string name="neutral">Neutral</string></resources>
+    <string name="mark_done">Mark chunk as done</string>
+</resources>

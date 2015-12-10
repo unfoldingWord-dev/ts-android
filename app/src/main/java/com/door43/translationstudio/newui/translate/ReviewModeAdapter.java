@@ -28,6 +28,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
@@ -579,44 +580,41 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // display as finished
         if(item.isTranslationFinished) {
             holder.mEditButton.setVisibility(View.GONE);
-            holder.mDoneButton.setVisibility(View.GONE);
-            holder.mDoneFlag.setVisibility(View.VISIBLE);
+            holder.mDoneSwitch.setChecked(true);
             holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         } else {
             holder.mEditButton.setVisibility(View.VISIBLE);
-            holder.mDoneButton.setVisibility(View.VISIBLE);
-            holder.mDoneFlag.setVisibility(View.GONE);
+            holder.mDoneSwitch.setChecked(false);
         }
 
         // display source language tabs
         renderTabs(holder);
 
         // done buttons
-        holder.mDoneButton.setOnClickListener(new View.OnClickListener() {
+        holder.mDoneSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View v) {
-                LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                View layout = inflater.inflate(R.layout.dialog_html_alert, null);
-                HtmlTextView text = (HtmlTextView)layout.findViewById(R.id.text);
-                text.setHtmlFromString(mContext.getResources().getString(R.string.chunk_checklist_body), true);
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
 
-                CustomAlertDialog.Create(mContext)
-                    .setTitle(R.string.chunk_checklist_title)
-                    .setView(layout)
-                    .setPositiveButton(R.string.confirm, new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    onConfirmChunk(item, chapter, frame);
-                                }
-                            }
-                    )
-                    .setNegativeButton(R.string.title_cancel, null)
-                    .show("Chunk2");
-            }
-        });
-        holder.mDoneFlag.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+                    LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    View layout = inflater.inflate(R.layout.dialog_html_alert, null);
+                    HtmlTextView text = (HtmlTextView)layout.findViewById(R.id.text);
+                    text.setHtmlFromString(mContext.getResources().getString(R.string.chunk_checklist_body), true);
+
+                    CustomAlertDialog.Create(mContext)
+                            .setTitle(R.string.chunk_checklist_title)
+                            .setView(layout)
+                            .setPositiveButton(R.string.confirm, new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            onConfirmChunk(item, chapter, frame);
+                                        }
+                                    }
+                            )
+                            .setNegativeButton(R.string.title_cancel, null)
+                            .show("Chunk2");            }
+            } else { // done button checked off
+
                 boolean opened;
                 if (item.isChapterReference) {
                     opened = mTargetTranslation.reopenChapterReference(chapter);
@@ -1054,8 +1052,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public final CardView mResourceCard;
         public final LinearLayout mMainContent;
         public final LinearLayout mResourceLayout;
-        public final LinearLayout mDoneButton;
-        private final LinearLayout mDoneFlag;
+        public final Switch mDoneSwitch;
         private final LinearLayout mTargetInnerCard;
         private final TabLayout mResourceTabs;
         private final LinearLayout mResourceList;
@@ -1086,8 +1083,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             mTargetEditableBody = (EditText)v.findViewById(R.id.target_translation_editable_body);
             mTranslationTabs = (TabLayout)v.findViewById(R.id.source_translation_tabs);
             mEditButton = (ImageButton)v.findViewById(R.id.edit_translation_button);
-            mDoneButton = (LinearLayout)v.findViewById(R.id.done_button);
-            mDoneFlag = (LinearLayout)v.findViewById(R.id.done_flag);
+            mDoneSwitch = (Switch)v.findViewById(R.id.done_button);
             mTranslationTabs.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
             mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);
         }
