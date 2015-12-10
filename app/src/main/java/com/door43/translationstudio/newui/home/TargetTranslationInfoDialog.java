@@ -148,7 +148,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
             @Override
             public void onClick(View v) {
                 FragmentTransaction backupFt = getFragmentManager().beginTransaction();
-                Fragment backupPrev = getFragmentManager().findFragmentByTag("backupDialog");
+                Fragment backupPrev = getFragmentManager().findFragmentByTag(BackupDialog.TAG);
                 if (backupPrev != null) {
                     backupFt.remove(backupPrev);
                 }
@@ -158,7 +158,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
                 Bundle args = new Bundle();
                 args.putString(BackupDialog.ARG_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
                 backupDialog.setArguments(args);
-                backupDialog.show(backupFt, "backupDialog");
+                backupDialog.show(backupFt, BackupDialog.TAG);
             }
         });
 

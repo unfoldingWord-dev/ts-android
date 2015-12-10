@@ -215,7 +215,7 @@
     </string>
     <string name="view_statement_of_faith">Statement of Faith</string>
     <string name="view_translation_guidelines">Translation Guidelines</string>
-    <string name="import_from_device" translatable="false">Import from nearby device</string>
+    <string name="import_from_friend" translatable="false">Import from friend</string>
     <!-- Indicates the user should click on the item in order to connect to the server -->
     <string name="click_to_connect" translatable="false">Click to connect</string>
     <!-- Indicates the peer has connected to the server -->
@@ -527,8 +527,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 </p>
 
 <h3>iText</h3>
-<p>Copyright (c) 2010-2015, iText Group NV, iText Software Corp., iText Software BVBA
-</p>
+<p>Copyright (c) 2010-2015, iText Group NV, iText Software Corp., iText Software BVBA</p>
 <p>
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -544,6 +543,18 @@ GNU Affero General Public License for more details.
 <p>
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
+</p>
+
+<h3>Rebound</h3>
+<p>BSD License</p>
+<p>Copyright (c) 2013, Facebook, Inc. All rights reserved.</p>
+<p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
+<ul>
+<li>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</li>
+<li>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.</li>
+</ul>
+<p>
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 </p>
 ]]>
     </string>
@@ -565,4 +576,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <string name="include_images">Include images</string>
     <string name="include_incomplete_frames">Include incomplete chunks</string>
     <string name="backup_to_friend">Send to Friend</string>
+    <string name="device_network_alias_description">Choose a name or pseudonym others will see when sharing with your device</string>
+    <string name="device_name">Device Name</string>
+    <string name="confirm_import_target_translation">Do you want to import <xliff:g id="target_translation_name" example="Open Bible Stories - Afaraf">%1$s</xliff:g>?</string>
+    <string name="success_import_target_translation"><xliff:g id="target_translation_name" example="Open Bible Stories - Afaraf">%1$s</xliff:g> was successfully imported.</string>
 </resources>

@@ -37,12 +37,12 @@
             android:label="Services Listener" >
         </service>
         <service
-            android:name=".service.ExportingService"
-            android:label="Exporting Service" >
+            android:name=".service.ServerService"
+            android:label="Server Service" >
         </service>
         <service
-            android:name=".service.ImportingService"
-            android:label="Importing Service" >
+            android:name=".service.ClientService"
+            android:label="Client Service" >
         </service>
 
         <activity

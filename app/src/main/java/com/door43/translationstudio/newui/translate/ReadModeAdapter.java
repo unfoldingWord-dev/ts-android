@@ -21,7 +21,9 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Chapter;
+import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.FrameTranslation;
+import com.door43.translationstudio.core.ProjectTranslation;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TranslationFormat;
@@ -248,7 +250,16 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
             RenderingGroup sourceRendering = new RenderingGroup();
             if (bodyFormat == TranslationFormat.USX) {
                 // TODO: add click listeners
-                sourceRendering.addEngine(new USXRenderer(null, null));
+                USXRenderer renderer = new USXRenderer(null, null);
+                sourceRendering.addEngine(renderer);
+
+                // In read mode (and only in read mode), pull leading major section headings out for
+                // display above chapter headings.
+                renderer.setSuppressLeadingMajorSectionHeadings(true);
+                CharSequence heading = renderer.getLeadingMajorScetionHeading(chapterBody);
+                holder.mSourceHeading.setText(heading);
+                holder.mSourceHeading.setVisibility(
+                        heading.length() > 0 ? View.VISIBLE : View.GONE);
             } else {
                 sourceRendering.addEngine(new DefaultRenderer());
             }
@@ -314,13 +325,36 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
 //            holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
 //        }
 
-        // TODO: get the translations of the title
         holder.mTargetBody.setText(mRenderedTargetBody[position]);
-        String targetChapterTitle = chapter.title;
-        if(chapter.title.isEmpty()) {
-            targetChapterTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
+
+//        ChapterTranslation getChapterTranslation(String chapterSlug);
+
+        String targetCardTitle = "";
+
+        // look for translated chapter title first
+        final ChapterTranslation chapterTranslation = mTargetTranslation.getChapterTranslation(chapter);
+        if(null != chapterTranslation) {
+            targetCardTitle = chapterTranslation.title;
         }
-        holder.mTargetTitle.setText(targetChapterTitle + " - " + mTargetLanguage.name);
+
+        if (targetCardTitle.isEmpty() && !chapterTitle.isEmpty()) { // if no target chapter title translation, fall back to source chapter title
+            if(!chapter.title.isEmpty()) {
+                targetCardTitle = chapterTitle;
+            }
+        }
+
+        if (targetCardTitle.isEmpty()) { // if no chapter titles, fall back to project title, try translated title first
+            ProjectTranslation projTrans = mTargetTranslation.getProjectTranslation();
+            if(!projTrans.getTitle().isEmpty()) {
+                targetCardTitle = projTrans.getTitle() + " " + Integer.parseInt(chapter.getId());
+            }
+        }
+
+        if (targetCardTitle.isEmpty()) { // fall back to project source title
+            targetCardTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
+        }
+
+        holder.mTargetTitle.setText(targetCardTitle + " - " + mTargetLanguage.name);
 
         // load tabs
         holder.mTabLayout.setOnTabSelectedListener(null);
@@ -371,6 +405,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         // set up fonts
         if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
             holder.mLayoutBuildNumber = mLayoutBuildNumber;
+            Typography.formatTitle(mContext, holder.mSourceHeading, mSourceLanguage.getId(), mSourceLanguage.getDirection());
             Typography.formatTitle(mContext, holder.mSourceTitle, mSourceLanguage.getId(), mSourceLanguage.getDirection());
             Typography.format(mContext, holder.mSourceBody, mSourceLanguage.getId(), mSourceLanguage.getDirection());
             Typography.formatTitle(mContext, holder.mTargetTitle, mTargetLanguage.getId(), mTargetLanguage.getDirection());
@@ -389,13 +424,31 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     }
 
     /**
+     * Toggle the target translation card between front and back
+     * @param holder
+     * @param position
+     * @param swipeLeft
+     * @return true if action was taken, else false
+     */
+    public void toggleTargetTranslationCard(final ViewHolder holder, final int position, final boolean swipeLeft) {
+        if (mTargetStateOpen[position]) {
+            closeTargetTranslationCard( holder, position, !swipeLeft);
+            return;
+        }
+
+        openTargetTranslationCard( holder, position, !swipeLeft);
+        return;
+    }
+
+    /**
      * Moves the target translation card to the back
      * @param holder
      * @param position
+     * @param leftToRight
      */
-    public void closeTargetTranslationCard(ViewHolder holder, final int position) {
+    public void closeTargetTranslationCard(final ViewHolder holder, final int position, final boolean leftToRight) {
         if (mTargetStateOpen[position]) {
-            ViewUtil.animateSwapCards(holder.mTargetCard, holder.mSourceCard, TOP_ELEVATION, BOTTOM_ELEVATION, true, new Animation.AnimationListener() {
+            ViewUtil.animateSwapCards(holder.mTargetCard, holder.mSourceCard, TOP_ELEVATION, BOTTOM_ELEVATION, leftToRight, new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {
 
@@ -417,14 +470,26 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         }
     }
 
+
     /**
-     * Moves the target translation card to the top
+     * Moves the target translation card to the back - left to right
      * @param holder
      * @param position
+     * @return true if action was taken, else false
      */
-    public void openTargetTranslationCard(ViewHolder holder, final int position) {
+    public void closeTargetTranslationCard(final ViewHolder holder, final int position) {
+        closeTargetTranslationCard ( holder, position, true);
+    }
+
+    /**
+     * Moves the target translation to the top
+     * @param holder
+     * @param position
+     * @param leftToRight
+     */
+    public void openTargetTranslationCard(final ViewHolder holder, final int position, final boolean leftToRight) {
         if (!mTargetStateOpen[position]) {
-            ViewUtil.animateSwapCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, false, new Animation.AnimationListener() {
+            ViewUtil.animateSwapCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, leftToRight, new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {
 
@@ -446,6 +511,16 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         }
     }
 
+    /**
+     * Moves the target translation to the top
+     * @param holder
+     * @param position
+     * @return true if action was taken, else false
+     */
+    public void openTargetTranslationCard(final ViewHolder holder, final int position) {
+        openTargetTranslationCard( holder, position, false);
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private final Button mBeginButton;
         private final TextView mTargetTitle;
@@ -453,6 +528,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         private final CardView mTargetCard;
         private final CardView mSourceCard;
         private final ImageButton mNewTabButton;
+        public TextView mSourceHeading;
         public TextView mSourceTitle;
         public TextView mSourceBody;
         public TabLayout mTabLayout;
@@ -461,6 +537,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         public ViewHolder(View v) {
             super(v);
             mSourceCard = (CardView)v.findViewById(R.id.source_translation_card);
+            mSourceHeading = (TextView)v.findViewById(R.id.source_translation_heading);
             mSourceTitle = (TextView)v.findViewById(R.id.source_translation_title);
             mSourceBody = (TextView)v.findViewById(R.id.source_translation_body);
             mTargetCard = (CardView)v.findViewById(R.id.target_translation_card);

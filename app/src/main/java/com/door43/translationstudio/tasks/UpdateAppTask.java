@@ -77,6 +77,16 @@ public class UpdateAppTask extends ManagedTask {
         if(lastVersion < 107) {
             upgradePre107();
         }
+        if(lastVersion < 108) {
+            upgradePre108();
+        }
+    }
+
+    /**
+     * Updated the source content
+     */
+    private void upgradePre108() {
+        AppContext.context().deleteDatabase(Library.DATABASE_NAME);
     }
 
     /**

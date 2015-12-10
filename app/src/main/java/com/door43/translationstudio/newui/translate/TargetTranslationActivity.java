@@ -178,7 +178,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                                 return true;
                             case R.id.action_backup:
                                 FragmentTransaction backupFt = getFragmentManager().beginTransaction();
-                                Fragment backupPrev = getFragmentManager().findFragmentByTag("backupDialog");
+                                Fragment backupPrev = getFragmentManager().findFragmentByTag(BackupDialog.TAG);
                                 if (backupPrev != null) {
                                     backupFt.remove(backupPrev);
                                 }
@@ -188,7 +188,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                                 Bundle args = new Bundle();
                                 args.putString(BackupDialog.ARG_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
                                 backupDialog.setArguments(args);
-                                backupDialog.show(backupFt, "backupDialog");
+                                backupDialog.show(backupFt, BackupDialog.TAG);
                                 return true;
                             case R.id.action_print:
                                 FragmentTransaction printFt = getFragmentManager().beginTransaction();

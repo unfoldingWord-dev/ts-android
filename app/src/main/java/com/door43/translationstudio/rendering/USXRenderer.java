@@ -31,6 +31,7 @@ public class USXRenderer extends RenderingEngine {
     private Span.OnClickListener mVerseListener;
     private boolean mRenderVerses = true;
     private int[] mExpectedVerseRange = new int[0];
+    private boolean mSuppressLeadingMajorSectionHeadings = false;
 
     /**
      * Creates a new usx rendering engine without any listeners
@@ -67,6 +68,18 @@ public class USXRenderer extends RenderingEngine {
     }
 
     /**
+     * Set whether to suppress display of major section headers.
+     *
+     * <p>The intent behind this is that major section headers prior to chapter markers will be
+     * displayed above chapter markers, but only in read mode.</p>
+     *
+     * @param suppressLeadingMajorSectionHeadings The value to set
+     */
+    public void setSuppressLeadingMajorSectionHeadings(boolean suppressLeadingMajorSectionHeadings) {
+        mSuppressLeadingMajorSectionHeadings = suppressLeadingMajorSectionHeadings;
+    }
+
+    /**
      * Renders the usx input into a readable form
      * @param in the raw input string
      * @return
@@ -76,10 +89,11 @@ public class USXRenderer extends RenderingEngine {
         CharSequence out = in;
 
         out = trimWhitespace(out);
-        out = renderSectionHeading(out);
         out = renderLineBreaks(out);
         // TODO: this will strip out new lines. Eventually we may want to convert these to paragraphs.
         out = renderWhiteSpace(out);
+        out = renderMajorSectionHeading(out);
+        out = renderSectionHeading(out);
         out = renderParagraph(out);
         out = renderBlankLine(out);
         out = renderPoeticLine(out);
@@ -135,7 +149,6 @@ public class USXRenderer extends RenderingEngine {
 
     /**
      * Renders section headings.
-     * For now these are just ignored (hidden)
      * @param in
      * @return
      */
@@ -144,12 +157,44 @@ public class USXRenderer extends RenderingEngine {
         Pattern pattern = paraPattern("s");
         Matcher matcher = pattern.matcher(in);
         int lastIndex = 0;
+
         while(matcher.find()) {
             if(isStopped()) return in;
-            // strip out section heading
-            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()));
+            SpannableStringBuilder span = new SpannableStringBuilder(matcher.group(1));
+            span.setSpan(new StyleSpan(Typeface.BOLD), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            span.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), span, "\n");
             lastIndex = matcher.end();
         }
+
+        out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
+        return out;
+    }
+    /**
+     * Renders major section headings.
+     * @param in
+     * @return
+     */
+    public CharSequence renderMajorSectionHeading(CharSequence in) {
+        CharSequence out = "";
+        Pattern pattern = paraPattern("ms");
+        Matcher matcher = pattern.matcher(in);
+        int lastIndex = 0;
+
+        while(matcher.find()) {
+            if(isStopped()) return in;
+
+            if (mSuppressLeadingMajorSectionHeadings && 0 == matcher.start()) {
+                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()));
+            } else {
+                SpannableStringBuilder span = new SpannableStringBuilder(matcher.group(1).toUpperCase());
+                span.setSpan(new StyleSpan(Typeface.BOLD), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                span.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), span, "\n");
+            }
+            lastIndex = matcher.end();
+        }
+
         out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
         return out;
     }
@@ -473,6 +518,28 @@ public class USXRenderer extends RenderingEngine {
 
         out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
         return out;
+    }
+
+    /**
+     * Return the leading section heading, if any. Non-leading major section headings, and leading
+     * headings of other types, are not included.
+     *
+     * <p>As this is a static helper method, behavior is unaffected by the value of
+     * {@link mSuppressLeadingMajorSectionHeadings}.</p>
+     *
+     * @see http://digitalbiblelibrary.org/static/docs/usx/parastyles.html
+     * @param in The string to examine for a leading major section heading.
+     * @return The leading major section heading; or the empty string if there is none.
+     */
+    public static CharSequence getLeadingMajorScetionHeading(CharSequence in) {
+        Pattern pattern = paraPattern("ms");
+        Matcher matcher = pattern.matcher(in);
+
+        if(matcher.find() && 0 == matcher.start()) {
+            return matcher.group(1);
+        } else {
+            return "";
+        }
     }
 
     /**

@@ -27,6 +27,9 @@ public class Downloader {
      * @return
      */
     private String request(String apiUrl) {
+        if(apiUrl.trim().isEmpty()) {
+            return null;
+        }
         URL url;
         try {
             url = new URL(apiUrl);

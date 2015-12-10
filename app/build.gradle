@@ -19,8 +19,8 @@ android {
         applicationId "com.translationstudio.androidapp"
         minSdkVersion 15
         targetSdkVersion 22
-        versionCode 107
-        versionName "3.0.2"
+        versionCode 108
+        versionName "3.1.0"
         multiDexEnabled = true
     }
     dexOptions {
@@ -66,6 +66,7 @@ dependencies {
     compile 'com.github.filippudak.progresspieview:library:1.0.4'
     compile 'org.apmem.tools:layouts:1.10'
     compile 'com.itextpdf:itextpdf:5.5.7'
+    compile 'com.facebook.rebound:rebound:0.3.8'
     compile project(':html-textview')
     compile project(':com.door43.tools.reporting')
     compile project(':com.door43.tools.security')
