@@ -24,12 +24,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
@@ -581,60 +579,56 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // display as finished
         if(item.isTranslationFinished) {
             holder.mEditButton.setVisibility(View.GONE);
-            holder.mDoneSwitch.setChecked(true);
+            holder.mDoneButton.setVisibility(View.GONE);
+            holder.mDoneFlag.setVisibility(View.VISIBLE);
             holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         } else {
             holder.mEditButton.setVisibility(View.VISIBLE);
-            holder.mDoneSwitch.setChecked(false);
+            holder.mDoneButton.setVisibility(View.VISIBLE);
+            holder.mDoneFlag.setVisibility(View.GONE);
         }
 
         // display source language tabs
         renderTabs(holder);
 
         // done buttons
-        holder.mDoneSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        holder.mDoneButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
+            public void onClick(View v) {
 
-                    final CustomAlertDialog dlg = CustomAlertDialog.Create(mContext);
-                    dlg.setTitle(R.string.chunk_checklist_title)
-                            .setMessageHtml(R.string.chunk_checklist_body)
-                            .setPositiveButton(R.string.confirm, new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            onConfirmChunk(item, chapter, frame);
-                                            dlg.dismiss();
-                                        }
-                                    }
-                            )
-                            .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
+                final CustomAlertDialog dlg = CustomAlertDialog.Create(mContext);
+                dlg.setTitle(R.string.chunk_checklist_title)
+                    .setMessageHtml(R.string.chunk_checklist_body)
+                    .setPositiveButton(R.string.confirm, new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    holder.mDoneSwitch.setChecked(false); // force back off if not accepted
+                                    onConfirmChunk( item, chapter, frame);
                                     dlg.dismiss();
                                 }
-                            })
-                            .show("Chunk2");
-
-                } else { // done button checked off
-
-                    boolean opened;
-                    if (item.isChapterReference) {
-                        opened = mTargetTranslation.reopenChapterReference(chapter);
-                    } else if (item.isChapterTitle) {
-                        opened = mTargetTranslation.reopenChapterTitle(chapter);
-                    } else if (item.isProjectTitle) {
-                        opened = mTargetTranslation.reopenProjectTitle();
-                    } else {
-                        opened = mTargetTranslation.reopenFrame(frame);
-                    }
-                    if (opened) {
-                        item.renderedTargetBody = null;
-                        notifyDataSetChanged();
-                    } else {
-                        // TODO: 10/27/2015 notify user the frame could not be completed.
-                    }
+                            }
+                    )
+                    .setNegativeButton(R.string.title_cancel, null)
+                    .show("Chunk2");
+            }
+        });
+        holder.mDoneFlag.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean opened;
+                if (item.isChapterReference) {
+                    opened = mTargetTranslation.reopenChapterReference(chapter);
+                } else if (item.isChapterTitle) {
+                    opened = mTargetTranslation.reopenChapterTitle(chapter);
+                } else if (item.isProjectTitle) {
+                    opened = mTargetTranslation.reopenProjectTitle();
+                } else {
+                    opened = mTargetTranslation.reopenFrame(frame);
+                }
+                if (opened) {
+                    item.renderedTargetBody = null;
+                    notifyDataSetChanged();
+                } else {
+                    // TODO: 10/27/2015 notify user the frame could not be completed.
                 }
             }
         });
@@ -1057,7 +1051,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public final CardView mResourceCard;
         public final LinearLayout mMainContent;
         public final LinearLayout mResourceLayout;
-        public final Switch mDoneSwitch;
+        public final LinearLayout mDoneButton;
+        private final LinearLayout mDoneFlag;
         private final LinearLayout mTargetInnerCard;
         private final TabLayout mResourceTabs;
         private final LinearLayout mResourceList;
@@ -1088,7 +1083,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             mTargetEditableBody = (EditText)v.findViewById(R.id.target_translation_editable_body);
             mTranslationTabs = (TabLayout)v.findViewById(R.id.source_translation_tabs);
             mEditButton = (ImageButton)v.findViewById(R.id.edit_translation_button);
-            mDoneSwitch = (Switch)v.findViewById(R.id.done_button);
+            mDoneButton = (LinearLayout)v.findViewById(R.id.done_button);
+            mDoneFlag = (LinearLayout)v.findViewById(R.id.done_flag);
             mTranslationTabs.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
             mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);
         }
