@@ -597,18 +597,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
 
-                    LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                    View layout = inflater.inflate(R.layout.dialog_html_alert, null);
-                    HtmlTextView text = (HtmlTextView) layout.findViewById(R.id.text);
-                    text.setHtmlFromString(mContext.getResources().getString(R.string.chunk_checklist_body), true);
-
-                    CustomAlertDialog.Create(mContext)
-                            .setTitle(R.string.chunk_checklist_title)
-                            .setView(layout)
+                    final CustomAlertDialog dlg = CustomAlertDialog.Create(mContext);
+                    dlg.setTitle(R.string.chunk_checklist_title)
+                            .setMessageHtml(R.string.chunk_checklist_body)
                             .setPositiveButton(R.string.confirm, new View.OnClickListener() {
                                         @Override
                                         public void onClick(View v) {
                                             onConfirmChunk(item, chapter, frame);
+                                            dlg.dismiss();
                                         }
                                     }
                             )
@@ -616,6 +612,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                 @Override
                                 public void onClick(View v) {
                                     holder.mDoneSwitch.setChecked(false); // force back off if not accepted
+                                    dlg.dismiss();
                                 }
                             })
                             .show("Chunk2");
