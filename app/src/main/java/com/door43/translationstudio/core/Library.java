@@ -452,11 +452,16 @@ public class Library {
     public float getTranslationProgress(TargetTranslation targetTranslation) {
         int numFinishedItems = targetTranslation.numFinished();
         SourceLanguage sourceLanguage = getPreferredSourceLanguage(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
-        SourceTranslation sourceTranslation = getDefaultSourceTranslation(targetTranslation.getProjectId(), sourceLanguage.getId());
-        int numAvailableTranslations = mAppIndex.numTranslatable(sourceTranslation);
-        if(numAvailableTranslations > 0) {
-            return (float) numFinishedItems / (float) numAvailableTranslations;
+        if(sourceLanguage != null) {
+            SourceTranslation sourceTranslation = getDefaultSourceTranslation(targetTranslation.getProjectId(), sourceLanguage.getId());
+            int numAvailableTranslations = mAppIndex.numTranslatable(sourceTranslation);
+            if (numAvailableTranslations > 0) {
+                return (float) numFinishedItems / (float) numAvailableTranslations;
+            } else {
+                return 0;
+            }
         } else {
+            Logger.w(this.getClass().getName(), "Cannot get progress of " + targetTranslation.getId() + " because a source language does not exist");
             return 0;
         }
     }

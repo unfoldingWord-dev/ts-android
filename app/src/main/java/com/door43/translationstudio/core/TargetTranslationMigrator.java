@@ -18,7 +18,7 @@ public class TargetTranslationMigrator {
     }
 
     /**
-     * Performs nessesary migration operations on a target translation
+     * Performs necessary migration operations on a target translation
      * @param targetTranslationDir
      * @return
      */

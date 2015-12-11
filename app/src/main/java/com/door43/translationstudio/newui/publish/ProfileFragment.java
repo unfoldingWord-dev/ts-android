@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.user.Profile;
 import com.door43.translationstudio.user.ProfileManager;
@@ -94,13 +95,13 @@ public class ProfileFragment extends PublishStepFragment {
      */
 
     public void showPrivacyNotice(final View rootView, boolean infoOnly) {
-        android.support.v7.app.AlertDialog.Builder privacy;
+        CustomAlertDialog privacy;
 
         final EditText nameText = (EditText)rootView.findViewById(R.id.name_edittext);
         final EditText emailText = (EditText)rootView.findViewById(R.id.email_edittext);
         final EditText phoneText = (EditText)rootView.findViewById(R.id.phone_edittext);
 
-        privacy = new android.support.v7.app.AlertDialog.Builder(getActivity())
+        privacy = CustomAlertDialog.Create(getActivity())
                             .setTitle("Privacy Notice")
                             .setIcon(R.drawable.ic_security_black_24dp)
                             .setMessage(R.string.publishing_privacy_notice);
@@ -108,9 +109,9 @@ public class ProfileFragment extends PublishStepFragment {
         if(infoOnly) {
             privacy.setPositiveButton(R.string.label_ok,null);
         } else {
-            privacy.setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+            privacy.setPositiveButton(R.string.label_ok, new View.OnClickListener() {
                 @Override
-                public void onClick(DialogInterface dialog, int which) {
+                public void onClick(View v) {
                     ProfileManager.setProfile(new Profile(nameText.getText().toString(), emailText.getText().toString(), phoneText.getText().toString()));
                     getListener().nextStep();
                 }
@@ -118,6 +119,6 @@ public class ProfileFragment extends PublishStepFragment {
             .setNegativeButton(R.string.title_cancel, null);
         }
 
-        privacy.show();
+        privacy.show("PrivacyWarn");
     }
 }

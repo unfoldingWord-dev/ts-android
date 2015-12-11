@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.tasks.ArchiveCrashReportTask;
 import com.door43.translationstudio.tasks.CheckForLatestReleaseTask;
@@ -114,16 +115,14 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
      * @param release
      */
     private void notifyLatestRelease(final CheckForLatestReleaseTask.Release release) {
-        new AlertDialog.Builder(this)
+        CustomAlertDialog.Create(this)
                 .setTitle(R.string.apk_update_available)
                 .setMessage(R.string.upload_report_or_download_latest_apk)
-                .setNegativeButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
+                .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
+                    public void onClick(View v) {
                         mLatestRelease = null;
 
-                        dialog.dismiss();
-
                         // archive crash report
                         mLoadingDialog.setMessage(getResources().getString(R.string.loading));
                         mLoadingDialog.show();
@@ -133,11 +132,10 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
                         TaskManager.addTask(task, ArchiveCrashReportTask.TASK_ID);
                     }
                 })
-                .setNeutralButton(R.string.download_update, new DialogInterface.OnClickListener() {
+                .setNeutralButton(R.string.download_update, new View.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
+                    public void onClick(View v) {
                         mDownloadAfterArchive = true;
-                        dialog.dismiss();
 
                         // archive crash report
                         mLoadingDialog.setMessage(getResources().getString(R.string.loading));
@@ -148,20 +146,18 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
                         TaskManager.addTask(task, ArchiveCrashReportTask.TASK_ID);
                     }
                 })
-                .setPositiveButton(R.string.label_continue, new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
+                    public void onClick(View v) {
                         mLoadingDialog.setMessage(getResources().getString(R.string.uploading));
                         mLoadingDialog.show();
 
                         UploadCrashReportTask newTask = new UploadCrashReportTask(mNotes);
                         newTask.addOnFinishedListener(CrashReporterActivity.this);
                         TaskManager.addTask(newTask, UploadCrashReportTask.TASK_ID);
-                        dialog.dismiss();
                     }
                 })
-                .create()
-                .show();
+                .show("NotifyLatest");
     }
 
     private void openSplash() {
