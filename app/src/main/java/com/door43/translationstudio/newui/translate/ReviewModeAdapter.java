@@ -87,6 +87,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private boolean mResourcesOpened = false;
     private ContentValues[] mTabs;
     private int[] mOpenResourceTab;
+//    private boolean onBind = false;
 
     public ReviewModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String startingChapterSlug, String startingFrameSlug, boolean resourcesOpened) {
 
@@ -297,6 +298,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
+//        this.onBind = true;
         final ListItem item = mListItems[position];
 
         // open/close resources
@@ -322,6 +324,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             Typography.format(mContext, holder.mTargetBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
             Typography.format(mContext, holder.mTargetEditableBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
         }
+//        this.onBind = false;
     }
 
     /**
@@ -577,6 +580,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             holder.mTargetEditableBody.setVisibility(View.GONE);
             holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         }
+
+        // disable listener
+        holder.mDoneSwitch.setOnCheckedChangeListener(null);
 
         // display as finished
         if(item.isTranslationFinished) {

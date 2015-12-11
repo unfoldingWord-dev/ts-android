@@ -175,64 +175,19 @@
                 android:layout_height="wrap_content"
                 android:gravity="bottom">
 
-                <LinearLayout
+                <Switch
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/mark_done"
                     android:id="@+id/done_button"
-                    android:orientation="horizontal"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:padding="@dimen/dialog_controls_margin"
-                    android:layout_gravity="right"
-                    android:gravity="center"
-                    android:background="@color/accent">
+                    android:layout_gravity="left|center_vertical"
+                    android:checked="true"
+                    android:layout_marginLeft="@dimen/dialog_content_margin"
+                    android:layout_marginRight="@dimen/dialog_content_margin"
+                    android:layout_marginBottom="@dimen/dialog_content_margin"
+                    android:textSize="@dimen/body" />
 
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="@dimen/dialog_controls_margin"
-                        android:layout_gravity="center"
-                        android:background="@drawable/ic_check_box_outline_blank_white_24dp"/>
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="@dimen/dialog_controls_margin"
-                        android:layout_marginRight="@dimen/dialog_controls_margin"
-                        android:layout_gravity="center"
-                        android:textAllCaps="true"
-                        android:textSize="@dimen/title"
-                        android:textColor="@color/white"
-                        android:text="@string/done"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:visibility="gone"
-                    android:id="@+id/done_flag"
-                    android:orientation="horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="@dimen/dialog_controls_margin"
-                    android:gravity="right"
-                    android:background="@color/green">
-
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="@dimen/dialog_controls_margin"
-                        android:layout_gravity="center"
-                        android:background="@drawable/ic_check_box_white_24dp"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="@dimen/dialog_controls_margin"
-                        android:layout_marginRight="@dimen/dialog_controls_margin"
-                        android:layout_gravity="top"
-                        android:textAllCaps="true"
-                        android:textSize="@dimen/title"
-                        android:textColor="@color/white"
-                        android:text="@string/done"/>
-
-                </LinearLayout>
             </LinearLayout>
 
         </LinearLayout>
