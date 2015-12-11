@@ -40,6 +40,7 @@ import com.door43.translationstudio.core.CheckingQuestion;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.LinedEditText;
 import com.door43.translationstudio.core.ProjectTranslation;
 import com.door43.translationstudio.core.TranslationNote;
 import com.door43.translationstudio.core.SourceLanguage;
@@ -530,7 +531,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     holder.mTargetBody.setVisibility(View.GONE);
                     holder.mTargetEditableBody.setVisibility(View.VISIBLE);
                     holder.mTargetEditableBody.requestFocus();
-                    holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
+                    holder.mTargetInnerCard.setBackgroundResource(R.color.white);
+                    holder.mTargetEditableBody.setEnableLines(true);
                     InputMethodManager mgr = (InputMethodManager)mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
                     mgr.showSoftInput(holder.mTargetEditableBody, InputMethodManager.SHOW_IMPLICIT);
 
@@ -546,6 +548,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     holder.mTargetBody.setVisibility(View.VISIBLE);
                     holder.mTargetEditableBody.setVisibility(View.GONE);
                     holder.mTargetInnerCard.setBackgroundResource(R.color.white);
+                    holder.mTargetEditableBody.setEnableLines(false);
                     if(holder.mEditableTextWatcher != null) {
                         holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
                     }
@@ -573,11 +576,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
             holder.mTargetBody.setVisibility(View.GONE);
             holder.mTargetEditableBody.setVisibility(View.VISIBLE);
-            holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
+            holder.mTargetEditableBody.setEnableLines(true);
+            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         } else {
             holder.mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
             holder.mTargetBody.setVisibility(View.VISIBLE);
             holder.mTargetEditableBody.setVisibility(View.GONE);
+            holder.mTargetEditableBody.setEnableLines(false);
             holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         }
 
@@ -1070,7 +1075,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         private final LinearLayout mTargetInnerCard;
         private final TabLayout mResourceTabs;
         private final LinearLayout mResourceList;
-        public final EditText mTargetEditableBody;
+        public final LinedEditText mTargetEditableBody;
         public int mLayoutBuildNumber = -1;
         public TextWatcher mEditableTextWatcher;
         public final TextView mTargetTitle;
@@ -1094,7 +1099,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             mTargetInnerCard = (LinearLayout)v.findViewById(R.id.target_translation_inner_card);
             mTargetTitle = (TextView)v.findViewById(R.id.target_translation_title);
             mTargetBody = (EditText)v.findViewById(R.id.target_translation_body);
-            mTargetEditableBody = (EditText)v.findViewById(R.id.target_translation_editable_body);
+            mTargetEditableBody = (LinedEditText)v.findViewById(R.id.target_translation_editable_body);
             mTranslationTabs = (TabLayout)v.findViewById(R.id.source_translation_tabs);
             mEditButton = (ImageButton)v.findViewById(R.id.edit_translation_button);
             mDoneSwitch = (Switch)v.findViewById(R.id.done_button);

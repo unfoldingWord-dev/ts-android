@@ -30,6 +30,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.FrameTranslation;
+import com.door43.translationstudio.core.LinedEditText;
 import com.door43.translationstudio.core.ProjectTranslation;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.TargetLanguage;
@@ -529,7 +530,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                         holder.mTargetBody.setEnabled(true);
                         holder.mTargetBody.setFocusable(true);
                         holder.mTargetBody.setFocusableInTouchMode(true);
-                        holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
+                        holder.mTargetBody.setEnableLines(true);
                         editTarget(holder.mTargetBody, item);
                     }
                 })
@@ -760,10 +761,12 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     private void indicateCardCompleted(boolean finished, ViewHolder holder) {
         if(finished) {
             holder.mTargetBody.setEnabled(false);
+            holder.mTargetBody.setEnableLines(false);
             holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         } else {
             holder.mTargetBody.setEnabled(true);
-            holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
+            holder.mTargetBody.setEnableLines(true);
+            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         }
     }
 
@@ -932,7 +935,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         public int mLayoutBuildNumber = -1;
         public TextWatcher mTextWatcher;
         public final TextView mTargetTitle;
-        public final EditText mTargetBody;
+        public final LinedEditText mTargetBody;
         public final CardView mTargetCard;
         public final CardView mSourceCard;
         public final TabLayout mTabLayout;
@@ -949,7 +952,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             mTargetCard = (CardView)v.findViewById(R.id.target_translation_card);
             mTargetInnerCard = (LinearLayout)v.findViewById(R.id.target_translation_inner_card);
             mTargetTitle = (TextView)v.findViewById(R.id.target_translation_title);
-            mTargetBody = (EditText)v.findViewById(R.id.target_translation_body);
+            mTargetBody = (LinedEditText)v.findViewById(R.id.target_translation_body);
             mTabLayout = (TabLayout)v.findViewById(R.id.source_translation_tabs);
             mTabLayout.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
             mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);
