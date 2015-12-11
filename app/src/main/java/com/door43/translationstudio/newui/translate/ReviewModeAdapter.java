@@ -401,7 +401,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             chapter = null;
         }
 
-        // disable text watcher
+        // remove old text watcher
         if(holder.mEditableTextWatcher != null) {
             holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
         }
@@ -418,13 +418,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // insert rendered text
         if(item.isEditing) {
             // editing mode
-            if(holder.mEditableTextWatcher != null) {
-                holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
-            }
             holder.mTargetEditableBody.setText(item.renderedTargetBody);
-            if(holder.mEditableTextWatcher != null) {
-                holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
-            }
         } else {
             // verse marker mode
             holder.mTargetBody.setText(item.renderedTargetBody);
