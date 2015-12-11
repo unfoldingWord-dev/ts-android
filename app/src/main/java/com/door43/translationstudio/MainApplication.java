@@ -11,12 +11,15 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
+import android.support.multidex.MultiDex;
 import android.text.TextUtils;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.Toast;
 
 import com.door43.tools.reporting.GlobalExceptionHandler;
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.service.BackupService;
 import com.door43.util.DummyDialogListener;
 import com.jcraft.jsch.JSch;
@@ -49,6 +52,12 @@ public class MainApplication extends Application {
     private boolean mShowImportantTerms;
     public static final String STACKTRACE_DIR = "stacktrace";
     private boolean mClosingProgressDialog = false;
+
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        MultiDex.install(this);
+    }
 
     public void onCreate() {
         super.onCreate();
@@ -301,8 +310,8 @@ public class MainApplication extends Application {
     }
 
     public void showMessageDialog(String title, String msg) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this.getCurrentActivity());
-        builder.setTitle(title).setMessage(msg).setPositiveButton(R.string.label_ok, new DummyDialogListener()).show();
+        CustomAlertDialog.Create(this.getCurrentActivity())
+            .setTitle(title).setMessage(msg).setPositiveButton(R.string.label_ok, null).show("ShowMsg");
     }
 
 //    public void showMessageDialog(int title, int msg) {
@@ -317,13 +326,14 @@ public class MainApplication extends Application {
      */
     @Deprecated
     public void showMessageDialogDetails(final int title, int msg, final String details) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this.getCurrentActivity());
-        builder.setTitle(title).setMessage(msg).setPositiveButton(R.string.label_ok, new DummyDialogListener()).setNeutralButton(R.string.label_details, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                showMessageDialog(title, details);
-            }
-        }).show();
+        CustomAlertDialog.Create(this.getCurrentActivity())
+            .setTitle(title).setMessage(msg).setPositiveButton(R.string.label_ok, null)
+                .setNeutralButton(R.string.label_details, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        showMessageDialog(title, details);
+                    }
+                }).show("ShowMsgDetail");
     }
 
     public void showException(Throwable t) {

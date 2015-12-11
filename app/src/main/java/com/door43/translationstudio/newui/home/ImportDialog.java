@@ -23,6 +23,7 @@ import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Util;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.filebrowser.FileBrowserActivity;
 import com.door43.translationstudio.git.SSHSession;
 import com.door43.translationstudio.newui.DeviceNetworkAliasDialog;
@@ -170,11 +171,11 @@ public class ImportDialog extends DialogFragment {
                 if(FilenameUtils.getExtension(file.getName()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
                     try {
                         AppContext.getTranslator().importArchive(file);
-                        new AlertDialog.Builder(getActivity())
+                        CustomAlertDialog.Create(getActivity())
                                 .setTitle(R.string.import_from_sd)
                                 .setMessage(R.string.success)
                                 .setNeutralButton(R.string.dismiss, null)
-                                .show();
+                                .show("ImportSuccess");
                     } catch (Exception e) {
                         Logger.e(this.getClass().getName(), "Failed to import the archive", e);
                         Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_import_failed, Snackbar.LENGTH_LONG);

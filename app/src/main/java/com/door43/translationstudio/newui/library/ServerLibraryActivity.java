@@ -16,11 +16,13 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ListView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
 import com.door43.translationstudio.tasks.DownloadUpdatesTask;
@@ -37,7 +39,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
 
     public static final String ARG_SHOW_UPDATES = "only_show_updates";
     public static final String ARG_SHOW_NEW = "only_show_new";
-    private AlertDialog mConfirmDialog;
+    private CustomAlertDialog mConfirmDialog;
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -208,13 +210,13 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_download_all:
-                mConfirmDialog = new AlertDialog.Builder(this)
-                        .setTitle(R.string.action_download_all)
+                mConfirmDialog =  CustomAlertDialog.Create(this);
+                mConfirmDialog.setTitle(R.string.action_download_all)
                         .setMessage(R.string.download_confirmation)
                         .setIcon(R.drawable.ic_cloud_download_black_24dp)
-                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                        .setPositiveButton(R.string.yes, new View.OnClickListener() {
                             @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
+                            public void onClick(View v) {
                                 DownloadAllProjectsTask task = (DownloadAllProjectsTask)TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
                                 if(task == null) {
                                     // start new task
@@ -228,16 +230,16 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                             }
                         })
                         .setNegativeButton(R.string.no, null)
-                        .show();
+                    .show("DlAllConfirm");
                 return true;
             case R.id.action_download_updates:
-                mConfirmDialog = new AlertDialog.Builder(this)
-                        .setTitle(R.string.action_download_updates)
+                mConfirmDialog = CustomAlertDialog.Create(this);
+                mConfirmDialog.setTitle(R.string.action_download_updates)
                         .setMessage(R.string.download_confirmation)
                         .setIcon(R.drawable.ic_cloud_download_black_24dp)
-                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                        .setPositiveButton(R.string.yes, new View.OnClickListener() {
                             @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
+                            public void onClick(View v) {
                                 DownloadUpdatesTask task = (DownloadUpdatesTask)TaskManager.getTask(DownloadUpdatesTask.TASK_ID);
                                 if(task == null) {
                                     // start new task
@@ -251,7 +253,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                             }
                         })
                         .setNegativeButton(R.string.no, null)
-                        .show();
+                        .show("DlUpdateConfirm");
                 return true;
             case R.id.action_search:
                 return true;
@@ -348,13 +350,13 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
 
                 if(task instanceof DownloadAllProjectsTask || task instanceof DownloadUpdatesTask) {
                     if (!task.isCanceled()) {
-                        new AlertDialog.Builder(ServerLibraryActivity.this)
+                        CustomAlertDialog.Create(ServerLibraryActivity.this)
                                 .setTitle(R.string.success)
                                 .setIcon(R.drawable.ic_done_black_24dp)
                                 .setMessage(R.string.download_complete)
-                                .setCancelable(false)
+                                .setCancelableChainable(false)
                                 .setPositiveButton(R.string.label_ok, null)
-                                .show();
+                                .show("DlComplete");
                     }
                 }
             }

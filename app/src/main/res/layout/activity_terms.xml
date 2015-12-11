@@ -87,7 +87,7 @@
             android:text="@string/license_deny"
             android:id="@+id/reject_terms_btn"
             android:layout_weight="1"
-            style="@style/Widget.Button.Secondary"/>
+            style="@style/Widget.Button"/>
 
         <Button
             android:layout_width="match_parent"

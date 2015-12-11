@@ -34,6 +34,7 @@ public class ExportTest extends InstrumentationTestCase {
         // load content for exporting
         File file = new File(this.testsDir, "3.0.1_uw-obs-aa.tstudio");
         file.getParentFile().mkdirs();
+        this.translator.deleteTargetTranslation("uw-obs-aa");
         Util.copyStreamToCache(this.context, this.context.getAssets().open("exports/3.0.1_uw-obs-aa.tstudio"), file);
         this.translator.importArchive(file);
         TargetTranslation targetTranslation = this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs"));
@@ -47,7 +48,7 @@ public class ExportTest extends InstrumentationTestCase {
         this.translator.exportArchive(targetTranslation, output);
         assertTrue(output.exists());
 
-        // test importability
+        // test ability to export
         this.translator.deleteTargetTranslation(targetTranslation.getId());
         assertNull(this.translator.getTargetTranslation(targetTranslation.getId()));
         this.translator.importArchive(output);
@@ -73,7 +74,7 @@ public class ExportTest extends InstrumentationTestCase {
         this.translator.exportDokuWiki(targetTranslation, output);
         assertTrue(output.exists());
 
-        // test importability
+        // test ability to import
         this.translator.deleteTargetTranslation(targetTranslation.getId());
         assertNull(this.translator.getTargetTranslation(targetTranslation.getId()));
         this.translator.importDokuWikiArchive(this.library, output);
