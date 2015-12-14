@@ -275,8 +275,8 @@ public class USXRenderer extends RenderingEngine {
 
         CharSequence insert = "";
         if (Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN) {
-            insert = "\n"; // this is a hack to avoid difficulty of JellyBean in rendering multiple
-                            // verses on a long line.  This messes up the paragraph formatting,
+            insert = "\n"; // this is a hack to get around bug in JellyBean in rendering multiple
+                            // verses on a long line.  This hack messes up the paragraph formatting,
                             // but at least JellyBean becomes usable and doesn't crash.
         }
 
