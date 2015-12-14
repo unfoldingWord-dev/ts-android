@@ -36,7 +36,7 @@ public class HtmlRenderer extends RenderingEngine {
      * @return
      */
     private CharSequence renderTranslationAcademyLink(CharSequence in) {
-        return renderLink(in, ArticleLinkSpan.class, ArticleLinkSpan.PATTERN, "ta", new OnCreateLink() {
+        return renderLink(in, ArticleLinkSpan.PATTERN, "ta", new OnCreateLink() {
             @Override
             public Span onCreate(Matcher matcher) {
                 String title = matcher.group(3);
@@ -52,11 +52,10 @@ public class HtmlRenderer extends RenderingEngine {
      * A generic rendering method for rendering content links as html
      *
      * @param in
-     * @param spanClass
      *@param pattern
      * @param callback   @return
      */
-    private CharSequence renderLink(CharSequence in, Class spanClass, Pattern pattern, String linkType, OnCreateLink callback) {
+    private CharSequence renderLink(CharSequence in, Pattern pattern, String linkType, OnCreateLink callback) {
         CharSequence out = "";
         Matcher matcher = pattern.matcher(in);
         int lastIndex = 0;
@@ -65,7 +64,7 @@ public class HtmlRenderer extends RenderingEngine {
             Span link = callback.onCreate(matcher);
             if(link != null) {
                 link.setOnClickListener(mLinkListener);
-                if (preprocessCallback == null || preprocessCallback.onPreprocess(spanClass, link)) {
+                if (preprocessCallback == null || preprocessCallback.onPreprocess(link)) {
                     // render clickable link
                     CharSequence title = link.getHumanReadable();
                     if(title == null || title.toString().isEmpty()) {
@@ -95,6 +94,6 @@ public class HtmlRenderer extends RenderingEngine {
      * Used to identify which links to render
      */
     public interface OnPreprocessLink {
-        boolean onPreprocess(Class spanClass, Span span);
+        boolean onPreprocess(Span span);
     }
 }
