@@ -155,6 +155,20 @@ public class TargetTranslation {
     }
 
     /**
+     * Updates the recorded information about the generator of the target translation
+     * @param context
+     * @param targetTranslation
+     * @throws Exception
+     */
+    public static void updateGenerator(Context context, TargetTranslation targetTranslation) throws Exception{
+        JSONObject generatorJson = new JSONObject();
+        generatorJson.put("name", "ts-android");
+        PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+        generatorJson.put("build", pInfo.versionCode);
+        targetTranslation.mManifest.put("generator", generatorJson);
+    }
+
+    /**
      * Returns a properly formatted target translation id
      * @param targetLanguageId
      * @param projectId
