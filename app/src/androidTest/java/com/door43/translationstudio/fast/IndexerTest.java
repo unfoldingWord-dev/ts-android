@@ -148,8 +148,8 @@ public class IndexerTest extends InstrumentationTestCase {
     }
 
     public void test08IndexTranslationAcademy() throws Exception {
-        SourceTranslation translation = SourceTranslation.simple("mrk", "en", "ulb");
-        String catalog = Util.readStream(AppContext.context().getAssets().open("ta.json"));
+        SourceTranslation translation = SourceTranslation.simple("gen", "en", "ulb");
+        String catalog = Util.readStream(mApp.getAssets().open("ta.json"));
         mIndex.beginTransaction();
         assertTrue(mIndex.indexTranslationAcademy(translation, catalog));
         mIndex.endTransaction(true);
@@ -162,6 +162,6 @@ public class IndexerTest extends InstrumentationTestCase {
         File destFile = new File(destDir, "library_" + date + ".zip");
         destDir.mkdirs();
         destFile.createNewFile();
-        Zip.zip(mContext.getDatabasePath(mIndex.getIndexId()).getPath(), destFile.getPath());
+        Zip.zip(mApp.getDatabasePath(mIndex.getIndexId()).getPath(), destFile.getPath());
     }
 }

@@ -287,7 +287,7 @@ public class Indexer {
                     JSONArray manuals = volume.getJSONArray("manuals");
 
                     // index volume
-                    String volSlug = volume.getString("vol1");
+                    String volSlug = volume.getString("id");
                     String volTitle = volume.getString("title");
                     long volumeId = mDatabaseHelper.addTranslationAcademyVolume(mDatabase, volSlug, resource.getDBId(), Security.md5(resource.getAcademyCatalogUrl()), volTitle);
 

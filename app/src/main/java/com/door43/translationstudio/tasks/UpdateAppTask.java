@@ -86,6 +86,9 @@ public class UpdateAppTask extends ManagedTask {
         if(lastVersion < 108) {
             upgradePre108();
         }
+        if(lastVersion < 109) {
+            upgradePre109();
+        }
 
         updateBuildNumbers();
     }
@@ -102,6 +105,13 @@ public class UpdateAppTask extends ManagedTask {
                 Logger.e(this.getClass().getName(), "Failed to update the generator in the target translation " + tt.getId());
             }
         }
+    }
+
+    /**
+     * Updated db schema
+     */
+    private void upgradePre109() {
+        AppContext.context().deleteDatabase(Library.DATABASE_NAME);
     }
 
     /**
