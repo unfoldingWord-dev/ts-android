@@ -700,7 +700,7 @@ public class Library {
      *@param manual @return
      */
     public TranslationArticle getTranslationArticle(SourceTranslation sourceTranslation, String volume, String manual, String articleId) {
-        return getActiveIndex().getTranslationAcademy(sourceTranslation, volume, manual, articleId);
+        return getActiveIndex().getTranslationArticle(sourceTranslation, volume, manual, articleId);
     }
 
     /**

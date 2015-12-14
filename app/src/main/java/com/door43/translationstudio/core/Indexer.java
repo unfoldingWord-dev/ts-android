@@ -289,8 +289,7 @@ public class Indexer {
                     // index volume
                     String volSlug = volume.getString("vol1");
                     String volTitle = volume.getString("title");
-                    long volumeId = 0; // mDatabaseHelper.addTranslationAcademyVolume(mDatabase, ...);
-                    // TODO: 12/4/2015 index the volume
+                    long volumeId = mDatabaseHelper.addTranslationAcademyVolume(mDatabase, volSlug, resource.getDBId(), Security.md5(resource.getAcademyCatalogUrl()), volTitle);
 
                     for(int j  = 0; j < manuals.length(); j ++) {
                         try {
@@ -300,8 +299,7 @@ public class Indexer {
                             // index manual
                             String manSlug = manual.getString("id");
                             String manTitle = manual.getString("title");
-                            long manualId = 0; // mDatabaseHelper.addTranslationAcademyManual(mDatabase, ...);
-                            // TODO: 12/4/2015 index the manual
+                            long manualId = mDatabaseHelper.addTranslationAcademyManual(mDatabase, manSlug, volumeId, manTitle);
 
                             for(int k = 0; k < articles.length(); k ++) {
                                 try {
@@ -311,9 +309,7 @@ public class Indexer {
                                     String artSlug = article.getString("id");
                                     String artTitle = article.getString("title");
                                     String artText = article.getString("text");
-                                    // mDatabaseHelper.addTranslationAcademyArticle(mDatabase, ...);
-                                    // TODO: 12/4/2015 index the article
-
+                                    mDatabaseHelper.addTranslationAcademyArticle(mDatabase, artSlug, manualId, artTitle, artText);
                                 } catch (JSONException e) {
                                     Logger.w(this.getClass().getName(), "Failed to parse a translation academy article for " + sourceTranslation.getId(), e);
                                 }
@@ -990,7 +986,7 @@ public class Indexer {
      *@param manual
      * @param translationArticleSlug  @return
      */
-    public TranslationArticle getTranslationAcademy(SourceTranslation sourceTranslation, String volume, String manual, String translationArticleSlug) {
+    public TranslationArticle getTranslationArticle(SourceTranslation sourceTranslation, String volume, String manual, String translationArticleSlug) {
         // TODO: 12/2/2015 finish implementing this
         return null;
     }

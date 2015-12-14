@@ -1870,4 +1870,98 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
                 + "   WHERE `p`.`slug`=? AND `sl`.`slug`=?"
                 + " ) AND `slug`=?", new String[]{projectSlug, sourceLanguageSlug, resourceSlug});
     }
+
+    /**
+     *
+     * @param db
+     * @param volSlug
+     * @param resourceDBId
+     * @param cataloghash
+     * @param volTitle
+     * @return the database id of the volume
+     */
+    public long addTranslationAcademyVolume(SQLiteDatabase db, String volSlug, long resourceDBId, String cataloghash, String volTitle) {
+        ContentValues values = new ContentValues();
+        values.put("slug", volSlug);
+        values.put("catalog_hash", cataloghash);
+        values.put("title", volTitle);
+
+        Cursor cursor = db.rawQuery("SELECT `id` from `translation_academy_volume` WHERE `slug`=? AND `catalog_hash`=?", new String[]{volSlug, cataloghash});
+        long volumeId;
+        if(cursor.moveToFirst()) {
+            // update
+            volumeId = cursor.getLong(0);
+            db.update("translation_academy_volume", values, "`id`=" + volumeId, null);
+        } else {
+            // insert
+            volumeId = db.insert("translation_academy_volume", null, values);
+        }
+        cursor.close();
+
+        // link volume to resource
+        ContentValues linkValues = new ContentValues();
+        linkValues.put("resource_id", resourceDBId);
+        linkValues.put("translation_academy_volume_id", volumeId);
+        db.insertWithOnConflict("resource__translation_academy_volume", null, linkValues, SQLiteDatabase.CONFLICT_IGNORE);
+
+        return volumeId;
+    }
+
+    /**
+     *
+     * @param db
+     * @param manualSlug
+     * @param volumeDBId
+     * @param manualTitle
+     * @return the database id of the manual
+     */
+    public long addTranslationAcademyManual(SQLiteDatabase db, String manualSlug, long volumeDBId, String manualTitle) {
+        ContentValues values = new ContentValues();
+        values.put("slug", manualSlug);
+        values.put("translation_academy_volume_id", volumeDBId);
+        values.put("title", manualTitle);
+
+        Cursor cursor = db.rawQuery("SELECT `id` FROM `translation_academy_manual` WHERE `slug`=? AND `translation_academy_volume_id`=" + volumeDBId, new String[]{manualSlug});
+        long manualId;
+        if(cursor.moveToFirst()) {
+            // update
+            manualId = cursor.getLong(0);
+            db.update("translation_academy_manual", values, "`id`=" + manualId, null);
+        } else {
+            // insert
+            manualId = db.insert("translation_academy_manual", null, values);
+        }
+        cursor.close();
+        return manualId;
+    }
+
+    /**
+     *
+     * @param db
+     * @param articleSlug
+     * @param manualDBId
+     * @param articleTitle
+     * @param articleText
+     * @return the database id of the article
+     */
+    public long addTranslationAcademyArticle(SQLiteDatabase db, String articleSlug, long manualDBId, String articleTitle, String articleText) {
+        ContentValues values = new ContentValues();
+        values.put("slug", articleSlug);
+        values.put("translation_academy_manual_id", manualDBId);
+        values.put("title", articleTitle);
+        values.put("text", articleText);
+
+        Cursor cursor = db.rawQuery("SELECT `id` FROM `translation_academy_article` WHERE `slug`=? AND `translation_academy_manual_id`=" + manualDBId, new String[]{articleSlug});
+        long articleId;
+        if(cursor.moveToFirst()) {
+            // update
+            articleId = cursor.getLong(0);
+            db.update("translation_academy_article", values, "`id`=" + articleId, null);
+        } else {
+            // insert
+            articleId = db.insert("translation_academy_article", null, values);
+        }
+        cursor.close();
+        return articleId;
+    }
 }

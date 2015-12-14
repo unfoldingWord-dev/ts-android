@@ -141,7 +141,11 @@ public class IndexerTest extends InstrumentationTestCase {
     }
 
     public void test08IndexTranslationAcademy() throws Exception {
+        SourceTranslation translation = SourceTranslation.simple("mrk", "en", "ulb");
         String catalog = Util.readStream(mContext.getAssets().open("indexer/ta.json"));
-        // TODO: 12/4/2015 need to index
+        mIndex.beginTransaction();
+        assertTrue(mIndex.indexTranslationAcademy(translation, catalog));
+        mIndex.endTransaction(true);
+        // TODO: 12/4/2015 test retrieving an article
     }
 }

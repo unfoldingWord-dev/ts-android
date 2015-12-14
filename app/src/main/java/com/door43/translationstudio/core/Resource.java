@@ -16,19 +16,23 @@ public class Resource {
     private final int sourceDateModified;
     private final String notesCatalogUrl;
     private final int notesDateModified;
-    private final String termsCatalogUrl;
-    private final int termsDateModified;
-    private final String termAssignmentsCatalogUrl;
-    private final int termAssignmentsDateModified;
+    private final String wordsCatalogUrl;
+    private final int wordsDateModified;
+    private final String wordAssignmentsCatalogUrl;
+    private final int wordAssignmentsDateModified;
     private final String questionsCatalogUrl;
     private final int questionsDateModified;
     private final int sourceServerDateModified;
     private final int notesServerDateModified;
-    private final int termsServerDateModified;
-    private final int termAssignmentsServerDateModified;
+    private final int wordsServerDateModified;
+    private final int wordAssignmentsServerDateModified;
     private final int questionsServerDateModified;
     private long DBId = -1;
     private boolean isDownloaded;
+    // TODO: 12/14/2015 hook these up
+    private final String academyCatalogUrl = "";
+    private final int academyDateModified = 0;
+    private final int academyServerDateModified = 0;
 
     public Resource(String name, String slug, int checkingLevel, String version, boolean isDownloaded, int dateModified,
                     String sourceCatalogUrl, int sourceDateModified, int sourceServerDateModified,
@@ -51,13 +55,13 @@ public class Resource {
         this.notesDateModified = notesDateModified;
         this.notesServerDateModified = notesServerDateModified;
 
-        this.termsCatalogUrl = termsCatalogUrl;
-        this.termsDateModified = termsDateModified;
-        this.termsServerDateModified = termsServerDateModified;
+        this.wordsCatalogUrl = termsCatalogUrl;
+        this.wordsDateModified = termsDateModified;
+        this.wordsServerDateModified = termsServerDateModified;
 
-        this.termAssignmentsCatalogUrl = termAssignmentsCatalogUrl;
-        this.termAssignmentsDateModified = termAssignmentsDateModified;
-        this.termAssignmentsServerDateModified = termAssignmentsServerDateModified;
+        this.wordAssignmentsCatalogUrl = termAssignmentsCatalogUrl;
+        this.wordAssignmentsDateModified = termAssignmentsDateModified;
+        this.wordAssignmentsServerDateModified = termAssignmentsServerDateModified;
 
         this.questionsCatalogUrl = questionsCatalogUrl;
         this.questionsDateModified = questionsDateModified;
@@ -189,19 +193,19 @@ public class Resource {
     }
 
     public String getWordsCatalogUrl() {
-        return termsCatalogUrl;
+        return wordsCatalogUrl;
     }
 
     public int getWordsDateModified() {
-        return termsDateModified;
+        return wordsDateModified;
     }
 
     public String getWordAssignmentsCatalogUrl() {
-        return termAssignmentsCatalogUrl;
+        return wordAssignmentsCatalogUrl;
     }
 
     public int getWordAssignmentsDateModified() {
-        return termAssignmentsDateModified;
+        return wordAssignmentsDateModified;
     }
 
     public String getQuestionsCatalogUrl() {
@@ -221,11 +225,11 @@ public class Resource {
     }
 
     public int getWordsServerDateModified() {
-        return termsServerDateModified;
+        return wordsServerDateModified;
     }
 
     public int getWordAssignmentsServerDateModified() {
-        return termAssignmentsServerDateModified;
+        return wordAssignmentsServerDateModified;
     }
 
     public int getQuestionsServerDateModified() {
@@ -245,11 +249,11 @@ public class Resource {
         if(questionsCatalogUrl != null && !questionsCatalogUrl.isEmpty()) {
             hasUpdates = questionsDateModified < questionsServerDateModified ? true : hasUpdates;
         }
-        if(termsCatalogUrl != null && !termsCatalogUrl.isEmpty()) {
-            hasUpdates = termsDateModified < termsServerDateModified ? true : hasUpdates;
+        if(wordsCatalogUrl != null && !wordsCatalogUrl.isEmpty()) {
+            hasUpdates = wordsDateModified < wordsServerDateModified ? true : hasUpdates;
         }
-        if(termAssignmentsCatalogUrl != null && !termAssignmentsCatalogUrl.isEmpty()) {
-            hasUpdates = termAssignmentsDateModified < termAssignmentsServerDateModified ? true : hasUpdates;
+        if(wordAssignmentsCatalogUrl != null && !wordAssignmentsCatalogUrl.isEmpty()) {
+            hasUpdates = wordAssignmentsDateModified < wordAssignmentsServerDateModified ? true : hasUpdates;
         }
         return hasUpdates;
     }
@@ -268,5 +272,17 @@ public class Resource {
 
     public long getDBId() {
         return this.DBId;
+    }
+
+    public String getAcademyCatalogUrl() {
+        return academyCatalogUrl;
+    }
+
+    public int getAcademyDateModified() {
+        return academyDateModified;
+    }
+
+    public int getAcademyServerDateModified() {
+        return academyServerDateModified;
     }
 }

@@ -26,8 +26,19 @@ public class HtmlRenderer extends RenderingEngine {
     public CharSequence render(CharSequence in) {
         CharSequence out = in;
         out = renderTranslationAcademyLink(out);
+        out = renderPassageLink(out);
         out = Html.fromHtml(out.toString(), null, new HtmlTagHandler(mLinkListener));
         return out;
+    }
+
+    /**
+     * Renders links to other passages in the project
+     * @param in
+     * @return
+     */
+    private CharSequence renderPassageLink(CharSequence in) {
+        // TODO: 12/14/2015 impliment
+        return in;
     }
 
     /**
