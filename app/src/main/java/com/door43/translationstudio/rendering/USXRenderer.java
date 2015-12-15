@@ -312,7 +312,7 @@ public class USXRenderer extends RenderingEngine {
                         boolean invalidVerse = false;
                         if(mExpectedVerseRange.length > 0) {
                             int minVerse = mExpectedVerseRange[0];
-                            int maxVerse = mExpectedVerseRange[1];
+                            int maxVerse = (mExpectedVerseRange.length > 1) ? mExpectedVerseRange[1] : 0;
                             if(maxVerse == 0) maxVerse = minVerse;
 
                             int verseNumStart = ((VerseSpan) verse).getStartVerseNumber();
