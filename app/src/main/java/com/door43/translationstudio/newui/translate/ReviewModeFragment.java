@@ -24,10 +24,14 @@ import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
+import com.door43.translationstudio.core.TranslationArticle;
 import com.door43.translationstudio.core.TranslationNote;
 import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.core.Typography;
+import com.door43.translationstudio.rendering.HtmlRenderer;
 import com.door43.translationstudio.rendering.LinkRenderer;
+import com.door43.translationstudio.spannables.ArticleLinkSpan;
+import com.door43.translationstudio.spannables.LinkSpan;
 import com.door43.translationstudio.spannables.PassageLinkSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.AppContext;
@@ -35,6 +39,7 @@ import com.door43.widget.ViewUtil;
 
 import org.apmem.tools.layouts.FlowLayout;
 import org.sufficientlysecure.htmltextview.HtmlTextView;
+import org.sufficientlysecure.htmltextview.LocalLinkMovementMethod;
 
 /**
  * Created by joel on 9/8/2015.
@@ -201,8 +206,8 @@ public class ReviewModeFragment extends ViewModeFragment {
         mTranslationWordId = translationWordId;
         mTranslationNoteId = null;
 
-        Library library = AppContext.getLibrary();
-        SourceTranslation sourceTranslation = getSourceTranslation();
+        final Library library = AppContext.getLibrary();
+        final SourceTranslation sourceTranslation = getSourceTranslation();
         SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug);
         TranslationWord word = getPreferredWord(sourceTranslation, translationWordId);
         if(mResourcesDrawerContent != null) {
@@ -232,7 +237,73 @@ public class ReviewModeFragment extends ViewModeFragment {
 
             descriptionTitle.setText(word.getDefinitionTitle());
             Typography.formatTitle(getActivity(), descriptionTitle, sourceLanguage.getId(), sourceLanguage.getDirection());
-            descriptionView.setHtmlFromString(word.getDefinition(), true);
+            HtmlRenderer renderer = new HtmlRenderer(new HtmlRenderer.OnPreprocessLink() {
+                @Override
+                public boolean onPreprocess(Span span) {
+                    if(span instanceof ArticleLinkSpan) {
+                        ArticleLinkSpan link = ((ArticleLinkSpan)span);
+                        TranslationArticle article = getPreferredTranslationArticle(sourceTranslation, link.getVolume(), link.getManual(), link.getId());
+                        if(article != null) {
+                            link.setTitle(article.getTitle());
+                        } else {
+                            return false;
+                        }
+                    } else if(span instanceof PassageLinkSpan) {
+                        PassageLinkSpan link = (PassageLinkSpan)span;
+                        Frame frame = library.getFrame(sourceTranslation, link.getChapterId(), link.getFrameId());
+                        String title = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(link.getChapterId()) + ":" + frame.getTitle();
+                        link.setTitle(title);
+                        return library.getFrame(sourceTranslation, link.getChapterId(), link.getFrameId()) != null;
+                    }
+                    return true;
+                }
+            }, new Span.OnClickListener() {
+                @Override
+                public void onClick(View view, Span span, int start, int end) {
+                    if(span instanceof ArticleLinkSpan) { //((LinkSpan)span).getType().equals("ta")) {
+                        // ta link
+                        String url = span.getMachineReadable().toString();
+                        ArticleLinkSpan link = ArticleLinkSpan.parse(url);
+                        if(link != null) {
+                            // TODO: 12/2/2015 navigate to the correct ta article
+                        }
+                    } else if(span instanceof PassageLinkSpan) {
+                        PassageLinkSpan link = (PassageLinkSpan) span;
+                        scrollToFrame(link.getChapterId(), link.getFrameId());
+                    }
+                }
+
+                @Override
+                public void onLongClick(View view, Span span, int start, int end) {
+
+                }
+            });
+            CharSequence out = renderer.render(word.getDefinition());
+            descriptionView.setText(out);
+            descriptionView.setMovementMethod(LocalLinkMovementMethod.getInstance());
+//            descriptionView.setHtmlFromString(out, true);
+//            SpannableStringBuilder spannableStringBuilder = SpannableStringBuilder.valueOf(descriptionView.getText());
+//            URLSpan[] linkSpans = spannableStringBuilder.getSpans(0, descriptionView.getText().length(), URLSpan.class);
+//            for(URLSpan span:linkSpans) {
+//                // convert spans
+//                String url = span.getURL();
+//                ArticleLinkSpan linkSpan = new ArticleLinkSpan("Test Link", url);
+//                linkSpan.setOnClickListener(new Span.OnClickListener() {
+//                    @Override
+//                    public void onClick(View view, Span span, int start, int end) {
+//
+//                    }
+//
+//                    @Override
+//                    public void onLongClick(View view, Span span, int start, int end) {
+//
+//                    }
+//                });
+//                int start = spannableStringBuilder.getSpanStart(span);
+//                int end = spannableStringBuilder.getSpanEnd(span);
+//                spannableStringBuilder.replace(start, end, linkSpan.toCharSequence());
+//            }
+//            descriptionView.setText(spannableStringBuilder);
             Typography.formatSub(getActivity(), descriptionView, sourceLanguage.getId(), sourceLanguage.getDirection());
 
             seeAlsoView.removeAllViews();
@@ -314,19 +385,39 @@ public class ReviewModeFragment extends ViewModeFragment {
             TextView title = (TextView)view.findViewById(R.id.title);
             TextView description = (TextView)view.findViewById(R.id.description);
 
-            LinkRenderer renderer = new LinkRenderer(new LinkRenderer.OnPreprocessLink() {
+            HtmlRenderer renderer = new HtmlRenderer(new HtmlRenderer.OnPreprocessLink() {
                 @Override
-                public boolean onPreprocess(PassageLinkSpan span) {
-                    Frame frame = library.getFrame(sourceTranslation, span.getChapterId(), span.getFrameId());
-                    String title = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(span.getChapterId()) + ":" + frame.getTitle();
-                    span.setTitle(title);
-                    return library.getFrame(sourceTranslation, span.getChapterId(), span.getFrameId()) != null;
+                public boolean onPreprocess(Span span) {
+                    if(span instanceof ArticleLinkSpan) {
+                        ArticleLinkSpan link = ((ArticleLinkSpan)span);
+                        TranslationArticle article = getPreferredTranslationArticle(sourceTranslation, link.getVolume(), link.getManual(), link.getId());
+                        if(article != null) {
+                            link.setTitle(article.getTitle());
+                        } else {
+                            return false;
+                        }
+                    } else if(span instanceof PassageLinkSpan) {
+                        PassageLinkSpan link = (PassageLinkSpan)span;
+                        Frame frame = library.getFrame(sourceTranslation, link.getChapterId(), link.getFrameId());
+                        String title = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(link.getChapterId()) + ":" + frame.getTitle();
+                        link.setTitle(title);
+                        return library.getFrame(sourceTranslation, link.getChapterId(), link.getFrameId()) != null;
+                    }
+                    return true;
                 }
             }, new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
-                    PassageLinkSpan link = (PassageLinkSpan)span;
-                    scrollToFrame(link.getChapterId(), link.getFrameId());
+                    if(span instanceof ArticleLinkSpan) {
+                        String url = span.getMachineReadable().toString();
+                        ArticleLinkSpan link = ArticleLinkSpan.parse(url);
+                        if(link != null) {
+                            // TODO: 12/2/2015 navigate to the correct ta article
+                        }
+                    } else if(span instanceof PassageLinkSpan) {
+                        PassageLinkSpan link = (PassageLinkSpan) span;
+                        scrollToFrame(link.getChapterId(), link.getFrameId());
+                    }
                 }
 
                 @Override
@@ -334,6 +425,28 @@ public class ReviewModeFragment extends ViewModeFragment {
 
                 }
             });
+
+//            LinkRenderer renderer = new LinkRenderer(new LinkRenderer.OnPreprocessLink() {
+//                @Override
+//                public boolean onPreprocess(Span span) {
+//                    PassageLinkSpan link = (PassageLinkSpan)span;
+//                    Frame frame = library.getFrame(sourceTranslation, link.getChapterId(), link.getFrameId());
+//                    String title = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(link.getChapterId()) + ":" + frame.getTitle();
+//                    link.setTitle(title);
+//                    return library.getFrame(sourceTranslation, link.getChapterId(), link.getFrameId()) != null;
+//                }
+//            }, new Span.OnClickListener() {
+//                @Override
+//                public void onClick(View view, Span span, int start, int end) {
+//                    PassageLinkSpan link = (PassageLinkSpan)span;
+//                    scrollToFrame(link.getChapterId(), link.getFrameId());
+//                }
+//
+//                @Override
+//                public void onLongClick(View view, Span span, int start, int end) {
+//
+//                }
+//            });
 
             title.setText(note.getTitle());
             SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug);
@@ -503,5 +616,23 @@ public class ReviewModeFragment extends ViewModeFragment {
             question = library.getCheckingQuestion(defaultSourceTranslation, chapterId, frameId, questionId);
         }
         return question;
+    }
+
+    /**
+     * Returns the preferred translation academy
+     * if none exist in the source language it will return the english version.
+     * @param sourceTranslation
+     * @param volume
+     *@param manual
+     * @param articleId  @return
+     */
+    private static TranslationArticle getPreferredTranslationArticle(SourceTranslation sourceTranslation, String volume, String manual, String articleId) {
+        Library library = AppContext.getLibrary();
+        TranslationArticle article = library.getTranslationArticle(sourceTranslation, volume, manual, articleId);
+        if(article == null && !sourceTranslation.sourceLanguageSlug.equals("en")) {
+            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
+            article = library.getTranslationArticle(defaultSourceTranslation, volume, manual, articleId);
+        }
+        return article;
     }
 }

@@ -217,7 +217,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     public int getItemPosition(String chapterSlug, String frameSlug) {
         for(int i = 0; i < mListItems.length; i ++) {
             ListItem item = mListItems[i];
-            if(item.chapterSlug.equals(chapterSlug) && item.frameSlug.equals(frameSlug)) {
+            if(item.isFrame() && item.chapterSlug.equals(chapterSlug) && item.frameSlug.equals(frameSlug)) {
                 return i;
             }
         }

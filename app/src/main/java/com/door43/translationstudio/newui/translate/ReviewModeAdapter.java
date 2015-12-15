@@ -260,7 +260,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     public int getItemPosition(String chapterId, String frameId) {
         for(int i = 0; i < mListItems.length; i ++) {
             ListItem item = mListItems[i];
-            if(item.chapterSlug.equals(chapterId) && item.frameSlug != null && item.frameSlug.equals(frameId)) {
+            if(item.isFrame() && item.chapterSlug.equals(chapterId) && item.frameSlug.equals(frameId)) {
                 return i;
             }
         }

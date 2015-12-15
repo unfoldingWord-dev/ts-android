@@ -2,6 +2,7 @@ package com.door43.translationstudio.rendering;
 
 import android.text.TextUtils;
 
+import com.door43.translationstudio.spannables.ArticleLinkSpan;
 import com.door43.translationstudio.spannables.PassageLinkSpan;
 import com.door43.translationstudio.spannables.Span;
 
@@ -14,7 +15,8 @@ import java.util.regex.Pattern;
 public class LinkRenderer extends RenderingEngine {
 
     private final Span.OnClickListener mLinkListener;
-    private final OnPreprocessLink mPreprocessor;
+    private final OnPreprocessLink preprocessCallback;
+    private boolean renderHtml = false;
 
     /**
      * Creates a new link rendering engine with some custom click listeners
@@ -22,16 +24,29 @@ public class LinkRenderer extends RenderingEngine {
      */
     public LinkRenderer(OnPreprocessLink preprocessor, Span.OnClickListener linkListener) {
         mLinkListener = linkListener;
-        mPreprocessor = preprocessor;
+        preprocessCallback = preprocessor;
     }
 
     @Override
     public CharSequence render(CharSequence in) {
+        this.renderHtml = false;
         CharSequence out = in;
 
         out = renderPassageLink(out);
+        out = renderTranslationAcademyLink(out);
 
         return out;
+    }
+
+    public String renderHtml(CharSequence in) {
+        this.renderHtml = true;
+
+        CharSequence out = in;
+
+        out = renderPassageLink(out);
+        out = renderTranslationAcademyLink(out);
+
+        return out.toString();
     }
 
     /**
@@ -40,26 +55,60 @@ public class LinkRenderer extends RenderingEngine {
      * @return
      */
     private CharSequence renderPassageLink(CharSequence in) {
+        return renderLink(in, PassageLinkSpan.PATTERN, new OnCreateLink() {
+            @Override
+            public Span onCreate(Matcher matcher) {
+                return new PassageLinkSpan(matcher.group(3), matcher.group(2));
+            }
+        });
+    }
+
+    /**
+     * Renders links to translation academy pages
+     * @param in
+     * @return
+     */
+    private CharSequence renderTranslationAcademyLink(CharSequence in) {
+        return renderLink(in, ArticleLinkSpan.PATTERN, new OnCreateLink() {
+            @Override
+            public Span onCreate(Matcher matcher) {
+                return ArticleLinkSpan.parse(matcher.group(3), matcher.group(2));
+            }
+        });
+    }
+
+    /**
+     * A generic rendering method for rendering span links
+     *
+     * @param in
+     * @param pattern
+     * @param callback
+     * @return
+     */
+    private CharSequence renderLink(CharSequence in, Pattern pattern, OnCreateLink callback) {
         CharSequence out = "";
-        Pattern pattern = PassageLinkSpan.PATTERN;
         Matcher matcher = pattern.matcher(in);
         int lastIndex = 0;
         while(matcher.find()) {
             if(isStopped()) return in;
-            // TODO: 10/5/2015 the passage link should be created with a generated that returns null if the link is invalid
-            PassageLinkSpan link = new PassageLinkSpan(matcher.group(3), matcher.group(2));
-            // make sure the link chapter and frame id's are valid
-            if(link.getChapterId() != null && link.getFrameId() != null) {
+            Span link = callback.onCreate(matcher);
+            if(link != null) {
                 link.setOnClickListener(mLinkListener);
-
-                // check if the link should be rendered
-                if (mPreprocessor.onPreprocess(link)) {
-                    out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), link.toCharSequence());
+                if (preprocessCallback == null || preprocessCallback.onPreprocess(link)) {
+                    // render clickable link
+                    if(this.renderHtml) {
+                        String htmlLink = "<app-link href=\"" + link.getMachineReadable() + "\">" + link.getHumanReadable() + "</app-link>";
+                        out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), htmlLink);
+                    } else {
+                        out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), link.toCharSequence());
+                    }
                 } else {
-                    out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), link.getTitle());
+                    // render non-clickable link
+                    out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), link.getHumanReadable());
                 }
             } else {
-                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), link.getTitle());
+                // ignore link
+                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.end()));
             }
             lastIndex = matcher.end();
         }
@@ -67,10 +116,14 @@ public class LinkRenderer extends RenderingEngine {
         return out;
     }
 
+    private interface OnCreateLink {
+        Span onCreate(Matcher matcher);
+    }
+
     /**
      * Used to identify which links to render
      */
     public interface OnPreprocessLink {
-        boolean onPreprocess(PassageLinkSpan span);
+        boolean onPreprocess(Span span);
     }
 }
