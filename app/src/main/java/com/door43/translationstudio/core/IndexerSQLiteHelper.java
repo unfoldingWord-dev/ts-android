@@ -1938,30 +1938,62 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
     /**
      *
      * @param db
-     * @param articleSlug
+     * @param articleId
      * @param manualDBId
      * @param articleTitle
      * @param articleText
      * @return the database id of the article
      */
-    public long addTranslationAcademyArticle(SQLiteDatabase db, String articleSlug, long manualDBId, String articleTitle, String articleText) {
+    public long addTranslationAcademyArticle(SQLiteDatabase db, String articleId, long manualDBId, String articleTitle, String articleText, String articleReference) {
         ContentValues values = new ContentValues();
-        values.put("slug", articleSlug);
+        values.put("slug", articleId);
         values.put("translation_academy_manual_id", manualDBId);
         values.put("title", articleTitle);
+        values.put("reference", articleReference);
         values.put("text", articleText);
 
-        Cursor cursor = db.rawQuery("SELECT `id` FROM `translation_academy_article` WHERE `slug`=? AND `translation_academy_manual_id`=" + manualDBId, new String[]{articleSlug});
-        long articleId;
+        Cursor cursor = db.rawQuery("SELECT `id` FROM `translation_academy_article` WHERE `slug`=? AND `translation_academy_manual_id`=" + manualDBId, new String[]{articleId});
+        long articleDBId;
         if(cursor.moveToFirst()) {
             // update
-            articleId = cursor.getLong(0);
-            db.update("translation_academy_article", values, "`id`=" + articleId, null);
+            articleDBId = cursor.getLong(0);
+            db.update("translation_academy_article", values, "`id`=" + articleDBId, null);
         } else {
             // insert
-            articleId = db.insert("translation_academy_article", null, values);
+            articleDBId = db.insert("translation_academy_article", null, values);
         }
         cursor.close();
-        return articleId;
+        return articleDBId;
+    }
+
+    /**
+     * Returns a translation article
+     * @param db
+     * @param resourceId
+     * @param volume
+     * @param manual
+     * @param referenceSlug
+     * @return
+     */
+    public TranslationArticle getTranslationArticle(SQLiteDatabase db, long resourceId, String volume, String manual, String referenceSlug) {
+        Cursor cursor = db.rawQuery("SELECT `taa`.`id`, `taa`.`slug`, `taa`.`translation_academy_manual_id`, `taa`.`title`, `taa`.`text`, `taa`.`reference` FROM `translation_academy_article` AS `taa`"
+                + " LEFT JOIN `translation_academy_manual` AS `tam` ON `tam`.`id`=`taa`.`translation_academy_manual_id`"
+                + " LEFT JOIN `translation_academy_volume` AS `tav` ON `tav`.`id`=`tam`.`translation_academy_volume_id`"
+                + " LEFT JOIN `resource__translation_academy_volume` AS `rtav` ON `rtav`.`translation_academy_volume_id`=`tav`.`id`"
+                + " WHERE `taa`.`reference` LIKE ? AND `tam`.`slug`=? AND `tav`.`slug`=? AND `rtav`.`resource_id`=" + resourceId, new String[]{"%/" + referenceSlug, manual, volume});
+        TranslationArticle article = null;
+        if(cursor.moveToFirst()) {
+            long articleId = cursor.getLong(0);
+            String slug = cursor.getString(1);
+            long manualDBId = cursor.getLong(2);
+            String title = cursor.getString(3);
+            String text = cursor.getString(4);
+            String reference = cursor.getString(5);
+
+            article = new TranslationArticle(volume, manual, slug, title, text, reference);
+            article.setDBId(articleId);
+        }
+        cursor.close();
+        return article;
     }
 }

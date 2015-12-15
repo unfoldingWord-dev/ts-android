@@ -369,6 +369,7 @@ CREATE TABLE `translation_academy_article` (
   `translation_academy_manual_id` INTEGER NOT NULL,
   `title` TEXT NOT NULL,
   `text` TEXT NOT NULL,
+  `reference` TEXT NOT NULL,
   UNIQUE (`slug`, `translation_academy_manual_id`),
   FOREIGN KEY (translation_academy_manual_id) REFERENCES `translation_academy_manual` (`id`)
 );

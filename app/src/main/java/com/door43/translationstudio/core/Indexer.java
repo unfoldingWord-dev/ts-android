@@ -308,8 +308,9 @@ public class Indexer {
                                     // index article
                                     String artSlug = article.getString("id");
                                     String artTitle = article.getString("title");
+                                    String artRef = article.getString("reference");
                                     String artText = article.getString("text");
-                                    mDatabaseHelper.addTranslationAcademyArticle(mDatabase, artSlug, manualId, artTitle, artText);
+                                    mDatabaseHelper.addTranslationAcademyArticle(mDatabase, artSlug, manualId, artTitle, artText, artRef);
                                 } catch (JSONException e) {
                                     Logger.w(this.getClass().getName(), "Failed to parse a translation academy article for " + sourceTranslation.getId(), e);
                                 }
@@ -987,8 +988,15 @@ public class Indexer {
      * @param translationArticleSlug  @return
      */
     public TranslationArticle getTranslationArticle(SourceTranslation sourceTranslation, String volume, String manual, String translationArticleSlug) {
-        // TODO: 12/2/2015 finish implementing this
-        return null;
+        long projectId = mDatabaseHelper.getProjectDBId(mDatabase, sourceTranslation.projectSlug);
+        long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceTranslation.sourceLanguageSlug, projectId);
+        long resourceId = mDatabaseHelper.getResourceDBId(mDatabase, sourceTranslation.resourceSlug, sourceLanguageId);
+
+        if(resourceId > 0) {
+            return mDatabaseHelper.getTranslationArticle(mDatabase, resourceId, volume, manual, translationArticleSlug);
+        } else {
+            return null;
+        }
     }
 
     /**

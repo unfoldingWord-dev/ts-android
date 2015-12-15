@@ -159,7 +159,7 @@ public class IndexerTest extends InstrumentationTestCase {
         File destDir = AppContext.getPublicDownloadsDirectory();
         SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
         String date = s.format(new Date());
-        File destFile = new File(destDir, "library_" + date + ".zip");
+        File destFile = new File(destDir, "ta_library_" + date + ".zip");
         destDir.mkdirs();
         destFile.createNewFile();
         Zip.zip(mApp.getDatabasePath(mIndex.getIndexId()).getPath(), destFile.getPath());
