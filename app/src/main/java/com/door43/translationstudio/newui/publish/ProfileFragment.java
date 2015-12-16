@@ -102,15 +102,9 @@ public class ProfileFragment extends PublishStepFragment {
             @Override
             public void onClick(View v) {
 
-                Activity context = getActivity();
-                LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                View layout = inflater.inflate(R.layout.dialog_html_alert, null);
-                HtmlTextView text = (HtmlTextView) layout.findViewById(R.id.text);
-                text.setHtmlFromString(context.getResources().getString(R.string.confirm_delete_translator), true);
-
                 final CustomAlertDialog dlg = CustomAlertDialog.Create(getActivity());
                 dlg.setTitle(R.string.delete_translator_title)
-                        .setView(layout)
+                        .setMessageHtml(R.string.confirm_delete_translator)
                         .setPositiveButton(R.string.confirm, new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {

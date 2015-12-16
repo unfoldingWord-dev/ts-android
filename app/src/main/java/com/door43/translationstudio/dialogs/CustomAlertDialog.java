@@ -32,6 +32,7 @@ public class CustomAlertDialog extends DialogFragment {
     static String TAG = CustomAlertDialog.class.getSimpleName();
 
     private int mMessageID = 0;
+    private int mMessageHtmlID = 0;
     private int mTitleID = 0;
     private int mIconID = 0;
 
@@ -49,6 +50,7 @@ public class CustomAlertDialog extends DialogFragment {
 
     private CharSequence mTitle = null;
     private CharSequence mMessage = null;
+    private String mMessageHtml = "";
 
     private View mContentView = null;
 
@@ -66,12 +68,22 @@ public class CustomAlertDialog extends DialogFragment {
         View rootView = inflater.inflate(R.layout.dialog_custom_alert, container, false);
 
         final TextView message = (TextView) rootView.findViewById(R.id.dialog_content);
-        if (0 != mMessageID) {
-            message.setText(mMessageID);
+
+        if(mMessageHtmlID != 0) {
+            mMessageHtml = mContext.getResources().getString(mMessageHtmlID);
         }
 
-        if (null != mMessage) {
-            message.setText(mMessage);
+        if(!mMessageHtml.isEmpty()) {
+            mContentView = inflater.inflate(R.layout.dialog_html_alert, null);
+            HtmlTextView text = (HtmlTextView) mContentView.findViewById(R.id.text);
+            text.setHtmlFromString(mMessageHtml, true);
+        } else {
+            if (0 != mMessageID) {
+                message.setText(mMessageID);
+            }
+            else if (null != mMessage) {
+                message.setText(mMessage);
+            }
         }
 
         final ImageView icon = (ImageView) rootView.findViewById(R.id.dialog_icon);
@@ -165,6 +177,18 @@ public class CustomAlertDialog extends DialogFragment {
     public CustomAlertDialog setMessage(CharSequence text) {
         mMessage = text;
         mMessageID = 0;
+        return this;
+    }
+
+    public CustomAlertDialog setMessageHtml(String textHtml) {
+        mMessageHtml = textHtml;
+        mMessageHtmlID = 0;
+        return this;
+    }
+
+    public CustomAlertDialog setMessageHtml(int textResId) {
+        mMessageHtmlID = textResId;
+        mMessageHtml = "";
         return this;
     }
 
