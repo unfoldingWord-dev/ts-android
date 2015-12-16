@@ -48,6 +48,8 @@ import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.spannables.NoteSpan;
+import com.door43.translationstudio.spannables.Span;
 import com.door43.widget.ViewUtil;
 
 import java.io.IOException;
@@ -394,6 +396,8 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             Typography.format(mContext, holder.mTargetBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
         }
 
+        ViewUtil.makeLinksClickable(holder.mSourceBody);
+        
         // render the content
         if(item.isChapterReference) {
             renderChapterReference(holder, position, item.chapterSlug);
@@ -782,7 +786,23 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         RenderingGroup renderingGroup = new RenderingGroup();
         if (format == TranslationFormat.USX) {
             // TODO: add click listeners for verses and notes
-            USXRenderer usxRenderer = new USXRenderer();
+            USXRenderer usxRenderer = new USXRenderer(null, new Span.OnClickListener() {
+                @Override
+                public void onClick(View view, Span span, int start, int end) {
+                    if(span instanceof NoteSpan) {
+                        CustomAlertDialog.Create(mContext)
+                                .setTitle(R.string.title_note)
+                                .setMessage(((NoteSpan)span).getNotes())
+                                .setPositiveButton(R.string.dismiss, null)
+                                .show("note");
+                    }
+                }
+
+                @Override
+                public void onLongClick(View view, Span span, int start, int end) {
+
+                }
+            });
             usxRenderer.setVersesEnabled(false);
             renderingGroup.addEngine(usxRenderer);
         } else {

@@ -56,6 +56,7 @@ import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.VersePinSpan;
 import com.door43.widget.ViewUtil;
@@ -311,6 +312,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         // fetch translation from disk
         item.loadTranslations(mSourceTranslation, mTargetTranslation, mChapters.get(item.chapterSlug), loadFrame(item.chapterSlug, item.frameSlug));
+
+        ViewUtil.makeLinksClickable(holder.mSourceBody);
 
         // render the cards
         renderSourceCard(position, item, holder);
@@ -1018,7 +1021,23 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         RenderingGroup renderingGroup = new RenderingGroup();
         if (format == TranslationFormat.USX) {
             // TODO: add click listeners for verses and notes
-            renderingGroup.addEngine(new USXRenderer());
+            renderingGroup.addEngine(new USXRenderer(null, new Span.OnClickListener() {
+                @Override
+                public void onClick(View view, Span span, int start, int end) {
+                    if(span instanceof NoteSpan) {
+                        CustomAlertDialog.Create(mContext)
+                                .setTitle(R.string.title_note)
+                                .setMessage(((NoteSpan)span).getNotes())
+                                .setPositiveButton(R.string.dismiss, null)
+                                .show("note");
+                    }
+                }
+
+                @Override
+                public void onLongClick(View view, Span span, int start, int end) {
+
+                }
+            }));
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
