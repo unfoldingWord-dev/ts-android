@@ -211,9 +211,17 @@ public class ReviewModeFragment extends ViewModeFragment {
      * @param slug
      */
     private void renderTranslationArticle(String volume, String manual, String slug) {
-        // TODO: 12/15/2015 render the article
-        mScrollingResourcesDrawerContent.removeAllViews();
+        TranslationArticle article = getPreferredTranslationArticle(getSourceTranslation(), volume, manual, slug);
+        if(mResourcesDrawerContent != null) {
+            mResourcesDrawerContent.setVisibility(View.GONE);
+        }
+        if(mScrollingResourcesDrawerContent != null && article != null) {
+            mCloseResourcesDrawerButton.setText(article.getTitle());
+            // TODO: 12/15/2015 render the article
+            mScrollingResourcesDrawerContent.removeAllViews();
 //        mScrollingResourcesDrawerContent.addView(view);
+        }
+
     }
 
     /**
