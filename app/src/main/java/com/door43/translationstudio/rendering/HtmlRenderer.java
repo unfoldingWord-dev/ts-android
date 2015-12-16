@@ -4,6 +4,7 @@ import android.text.Html;
 import android.text.TextUtils;
 
 import com.door43.translationstudio.spannables.ArticleLinkSpan;
+import com.door43.translationstudio.spannables.PassageLinkSpan;
 import com.door43.translationstudio.spannables.Span;
 
 import java.util.regex.Matcher;
@@ -27,6 +28,8 @@ public class HtmlRenderer extends RenderingEngine {
         CharSequence out = in;
         out = renderTranslationAcademyLink(out);
         out = renderPassageLink(out);
+        // TODO: 12/15/2015 it would be nice if we could pass in a private click listener and interpret the link types before calling the supplied listener.
+        // this will allow calling code to use instance of rather than comparing strings.
         out = Html.fromHtml(out.toString(), null, new HtmlTagHandler(mLinkListener));
         return out;
     }
@@ -37,8 +40,12 @@ public class HtmlRenderer extends RenderingEngine {
      * @return
      */
     private CharSequence renderPassageLink(CharSequence in) {
-        // TODO: 12/14/2015 impliment
-        return in;
+        return renderLink(in, PassageLinkSpan.PATTERN, "p", new OnCreateLink() {
+            @Override
+            public Span onCreate(Matcher matcher) {
+                return new PassageLinkSpan(matcher.group(3), matcher.group(2));
+            }
+        });
     }
 
     /**

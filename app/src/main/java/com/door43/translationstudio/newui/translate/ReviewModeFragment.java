@@ -212,7 +212,8 @@ public class ReviewModeFragment extends ViewModeFragment {
      */
     private void renderTranslationArticle(String volume, String manual, String slug) {
         // TODO: 12/15/2015 render the article
-
+        mScrollingResourcesDrawerContent.removeAllViews();
+//        mScrollingResourcesDrawerContent.addView(view);
     }
 
     /**
