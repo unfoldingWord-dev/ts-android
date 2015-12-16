@@ -50,7 +50,7 @@ public class HtmlRenderer extends RenderingEngine {
         return renderLink(in, ArticleLinkSpan.PATTERN, "ta", new OnCreateLink() {
             @Override
             public Span onCreate(Matcher matcher) {
-                String title = matcher.group(3);
+                String title = matcher.group(4);
                 if(title == null) {
                     title = matcher.group(0);
                 }

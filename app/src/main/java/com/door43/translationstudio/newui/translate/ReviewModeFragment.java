@@ -260,14 +260,13 @@ public class ReviewModeFragment extends ViewModeFragment {
             }, new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
-                    if(span instanceof ArticleLinkSpan) { //((LinkSpan)span).getType().equals("ta")) {
-                        // ta link
+                    if(((LinkSpan)span).getType().equals("ta")) {
                         String url = span.getMachineReadable().toString();
                         ArticleLinkSpan link = ArticleLinkSpan.parse(url);
                         if(link != null) {
                             // TODO: 12/2/2015 navigate to the correct ta article
                         }
-                    } else if(span instanceof PassageLinkSpan) {
+                    } else if(((LinkSpan)span).getType().equals("p")) {
                         PassageLinkSpan link = (PassageLinkSpan) span;
                         scrollToFrame(link.getChapterId(), link.getFrameId());
                     }
@@ -278,8 +277,7 @@ public class ReviewModeFragment extends ViewModeFragment {
 
                 }
             });
-            CharSequence out = renderer.render(word.getDefinition());
-            descriptionView.setText(out);
+            descriptionView.setText(renderer.render(word.getDefinition()));
             descriptionView.setMovementMethod(LocalLinkMovementMethod.getInstance());
 //            descriptionView.setHtmlFromString(out, true);
 //            SpannableStringBuilder spannableStringBuilder = SpannableStringBuilder.valueOf(descriptionView.getText());
@@ -383,7 +381,7 @@ public class ReviewModeFragment extends ViewModeFragment {
             mCloseResourcesDrawerButton.setText(note.getTitle());
 
             TextView title = (TextView)view.findViewById(R.id.title);
-            TextView description = (TextView)view.findViewById(R.id.description);
+            TextView descriptionView = (TextView)view.findViewById(R.id.description);
 
             HtmlRenderer renderer = new HtmlRenderer(new HtmlRenderer.OnPreprocessLink() {
                 @Override
@@ -408,13 +406,13 @@ public class ReviewModeFragment extends ViewModeFragment {
             }, new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
-                    if(span instanceof ArticleLinkSpan) {
+                    if(((LinkSpan)span).getType().equals("ta")) {
                         String url = span.getMachineReadable().toString();
                         ArticleLinkSpan link = ArticleLinkSpan.parse(url);
                         if(link != null) {
                             // TODO: 12/2/2015 navigate to the correct ta article
                         }
-                    } else if(span instanceof PassageLinkSpan) {
+                    } else if(((LinkSpan)span).getType().equals("p")) {
                         PassageLinkSpan link = (PassageLinkSpan) span;
                         scrollToFrame(link.getChapterId(), link.getFrameId());
                     }
@@ -451,9 +449,10 @@ public class ReviewModeFragment extends ViewModeFragment {
             title.setText(note.getTitle());
             SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug);
             Typography.format(getActivity(), title, sourceLanguage.getId(), sourceLanguage.getDirection());
-            description.setText(renderer.render(Html.fromHtml(note.getBody())));
-            Typography.formatSub(getActivity(), description, sourceLanguage.getId(), sourceLanguage.getDirection());
-            ViewUtil.makeLinksClickable(description);
+
+            descriptionView.setText(renderer.render(note.getBody()));
+            Typography.formatSub(getActivity(), descriptionView, sourceLanguage.getId(), sourceLanguage.getDirection());
+            descriptionView.setMovementMethod(LocalLinkMovementMethod.getInstance());
 
             mScrollingResourcesDrawerContent.removeAllViews();
             mScrollingResourcesDrawerContent.addView(view);
