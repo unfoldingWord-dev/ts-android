@@ -130,9 +130,11 @@ public class CustomAlertDialog extends DialogFragment {
             final TextView title = (TextView) rootView.findViewById(R.id.dialog_title);
             title.setText(mTitleID);
         }
+        TextView title = (TextView) rootView.findViewById(R.id.dialog_title);
         if(mTitle != null) {
-            TextView title = (TextView) rootView.findViewById(R.id.dialog_title);
             title.setText(mTitle);
+        } else { // if not set then hide
+            title.setVisibility(View.GONE);
         }
 
         return rootView;
