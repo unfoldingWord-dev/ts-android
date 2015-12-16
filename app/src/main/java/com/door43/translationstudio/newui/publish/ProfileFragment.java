@@ -1,7 +1,7 @@
 package com.door43.translationstudio.newui.publish;
 
-import android.content.DialogInterface;
-import android.content.Intent;
+import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
@@ -19,6 +19,8 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.widget.ViewUtil;
+
+import org.sufficientlysecure.htmltextview.HtmlTextView;
 
 import java.util.ArrayList;
 
@@ -100,9 +102,15 @@ public class ProfileFragment extends PublishStepFragment {
             @Override
             public void onClick(View v) {
 
+                Activity context = getActivity();
+                LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                View layout = inflater.inflate(R.layout.dialog_html_alert, null);
+                HtmlTextView text = (HtmlTextView) layout.findViewById(R.id.text);
+                text.setHtmlFromString(context.getResources().getString(R.string.confirm_delete_translator), true);
+
                 final CustomAlertDialog dlg = CustomAlertDialog.Create(getActivity());
                 dlg.setTitle(R.string.delete_translator_title)
-                        .setMessageHtml(R.string.confirm_delete_translator)
+                        .setView(layout)
                         .setPositiveButton(R.string.confirm, new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
@@ -235,7 +243,7 @@ public class ProfileFragment extends PublishStepFragment {
             privacy.setPositiveButton(R.string.label_ok, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    ProfileManager.setProfile(new Profile(nameText.getText().toString(), emailText.getText().toString(), phoneText.getText().toString()));
+                    saveCurrentTranslator();
                     getListener().nextStep();
                 }
             })
