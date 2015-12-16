@@ -397,7 +397,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         }
 
         ViewUtil.makeLinksClickable(holder.mSourceBody);
-        
+
         // render the content
         if(item.isChapterReference) {
             renderChapterReference(holder, position, item.chapterSlug);
