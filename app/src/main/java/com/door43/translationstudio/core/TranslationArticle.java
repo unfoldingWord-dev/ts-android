@@ -57,7 +57,7 @@ public class TranslationArticle {
      * Returns the body of the article
      * @return
      */
-    public String getText() {
+    public String getBody() {
         return text;
     }
 

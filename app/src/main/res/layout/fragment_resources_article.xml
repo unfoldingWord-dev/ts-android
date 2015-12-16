@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+    <!--android:orientation="vertical"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent">-->
+
+    <!--<TextView-->
+        <!--android:id="@+id/title"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:textSize="@dimen/title"-->
+        <!--android:textColor="@color/dark_primary_text"-->
+        <!--android:text="Facts"/>-->
+
+    <!--<TextView-->
+        <!--android:id="@+id/description"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="term description etc. tec.lask df;l akjsd;flkajs dfl;aks jfd ;laksjdf;laksjdfl;k"-->
+        <!--android:textColor="@color/dark_primary_text"-->
+        <!--android:layout_marginBottom="@dimen/card_margin"-->
+        <!--android:textSize="@dimen/body" />-->
+
+    <!-- -->
+
+<!--</LinearLayout>-->
+
+<WebView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginBottom="@dimen/card_margin"
+    android:id="@+id/webView" />

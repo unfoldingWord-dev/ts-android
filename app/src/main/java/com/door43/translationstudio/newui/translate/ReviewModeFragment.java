@@ -1,15 +1,18 @@
 package com.door43.translationstudio.newui.translate;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
-import android.text.Html;
 import android.view.ContextThemeWrapper;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -29,13 +32,12 @@ import com.door43.translationstudio.core.TranslationNote;
 import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.rendering.HtmlRenderer;
-import com.door43.translationstudio.rendering.LinkRenderer;
+import com.door43.translationstudio.rendering.LinkToHtmlRenderer;
 import com.door43.translationstudio.spannables.ArticleLinkSpan;
 import com.door43.translationstudio.spannables.LinkSpan;
 import com.door43.translationstudio.spannables.PassageLinkSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.AppContext;
-import com.door43.widget.ViewUtil;
 
 import org.apmem.tools.layouts.FlowLayout;
 import org.sufficientlysecure.htmltextview.HtmlTextView;
@@ -153,6 +155,12 @@ public class ReviewModeFragment extends ViewModeFragment {
     }
 
     @Override
+    public void onTranslationArticleClick(String volume, String manual, String slug, int width) {
+        renderTranslationArticle(volume, manual, slug);
+        openResourcesDrawer(width);
+    }
+
+    @Override
     public void onTranslationNoteClick(String chapterId, String frameId, String translatioNoteId, int width) {
         renderTranslationNote(chapterId, frameId, translatioNoteId);
         openResourcesDrawer(width);
@@ -196,6 +204,104 @@ public class ReviewModeFragment extends ViewModeFragment {
                 }
             });
         }
+    }
+
+    /**
+     * Prepares the resources drawer with the translation article
+     * @param volume
+     * @param manual
+     * @param slug
+     */
+    private void renderTranslationArticle(String volume, String manual, String slug) {
+        TranslationArticle article = getPreferredTranslationArticle(getSourceTranslation(), volume, manual, slug);
+        if(mResourcesDrawerContent != null) {
+            mResourcesDrawerContent.setVisibility(View.GONE);
+        }
+        if(mScrollingResourcesDrawerContent != null && article != null) {
+            mCloseResourcesDrawerButton.setText(article.getTitle());
+            mScrollingResourcesDrawerContent.setVisibility(View.VISIBLE);
+            mScrollingResourcesDrawerContent.scrollTo(0, 0);
+            WebView view = (WebView) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_article, null);
+
+//            TextView title = (TextView)view.findViewById(R.id.title);
+//            TextView descriptionView = (TextView)view.findViewById(R.id.description);
+
+            final Library library = AppContext.getLibrary();
+            final SourceTranslation sourceTranslation = getSourceTranslation();
+            LinkToHtmlRenderer renderer = new LinkToHtmlRenderer(new LinkToHtmlRenderer.OnPreprocessLink() {
+                @Override
+                public boolean onPreprocess(Span span) {
+                    if(span instanceof ArticleLinkSpan) {
+                        ArticleLinkSpan link = ((ArticleLinkSpan)span);
+                        TranslationArticle article = getPreferredTranslationArticle(sourceTranslation, link.getVolume(), link.getManual(), link.getId());
+                        if(article != null) {
+                            link.setTitle(article.getTitle());
+                        } else {
+                            return false;
+                        }
+                    } else if(span instanceof PassageLinkSpan) {
+                        PassageLinkSpan link = (PassageLinkSpan)span;
+                        Frame frame = library.getFrame(sourceTranslation, link.getChapterId(), link.getFrameId());
+                        String title = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(link.getChapterId()) + ":" + frame.getTitle();
+                        link.setTitle(title);
+                        return library.getFrame(sourceTranslation, link.getChapterId(), link.getFrameId()) != null;
+                    }
+                    return true;
+                }
+            });
+//            , new Span.OnClickListener() {
+//                @Override
+//                public void onClick(View view, Span span, int start, int end) {
+//                    if(((LinkSpan)span).getType().equals("ta")) {
+//                        String url = span.getMachineReadable().toString();
+//                        ArticleLinkSpan link = ArticleLinkSpan.parse(url);
+//                        if(link != null) {
+//                            onTranslationArticleClick(link.getVolume(), link.getManual(), link.getId(), mResourcesDrawer.getLayoutParams().width);
+//                        }
+//                    } else if(((LinkSpan)span).getType().equals("p")) {
+//                        PassageLinkSpan link = (PassageLinkSpan) span;
+//                        scrollToFrame(link.getChapterId(), link.getFrameId());
+//                    }
+//                }
+//
+//                @Override
+//                public void onLongClick(View view, Span span, int start, int end) {
+//
+//                }
+//            });
+
+//            title.setText(article.getTitle());
+//            SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug);
+//            Typography.format(getActivity(), title, sourceLanguage.getId(), sourceLanguage.getDirection());
+
+//            descriptionView.setText(renderer.render(article.getBody()));
+//            Typography.formatSub(getActivity(), descriptionView, sourceLanguage.getId(), sourceLanguage.getDirection());
+//            descriptionView.setMovementMethod(LocalLinkMovementMethod.getInstance());
+
+            view.setWebViewClient(new LinkToHtmlRenderer.CustomWebViewClient() {
+                @Override
+                public void onOverriddenLinkClick(WebView view, String url, Span span) {
+                    if (span instanceof ArticleLinkSpan) {
+                        ArticleLinkSpan link = (ArticleLinkSpan) span;
+                        onTranslationArticleClick(link.getVolume(), link.getManual(), link.getId(), mResourcesDrawer.getLayoutParams().width);
+                    } else if (span instanceof PassageLinkSpan) {
+                        PassageLinkSpan link = (PassageLinkSpan) span;
+                        scrollToFrame(link.getChapterId(), link.getFrameId());
+                    }
+                }
+
+                @Override
+                public void onLinkClick(WebView view, String url) {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    startActivity(intent);
+                }
+            });
+            view.loadData(renderer.render(article.getBody()).toString(), "text/html", "utf-8");
+
+            mScrollingResourcesDrawerContent.removeAllViews();
+            mScrollingResourcesDrawerContent.addView(view);
+        }
+
     }
 
     /**
@@ -260,14 +366,14 @@ public class ReviewModeFragment extends ViewModeFragment {
             }, new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
-                    if(span instanceof ArticleLinkSpan) { //((LinkSpan)span).getType().equals("ta")) {
-                        // ta link
+                    if(((LinkSpan)span).getType().equals("ta")) {
                         String url = span.getMachineReadable().toString();
                         ArticleLinkSpan link = ArticleLinkSpan.parse(url);
                         if(link != null) {
                             // TODO: 12/2/2015 navigate to the correct ta article
+                            onTranslationArticleClick(link.getVolume(), link.getManual(), link.getId(), mResourcesDrawer.getLayoutParams().width);
                         }
-                    } else if(span instanceof PassageLinkSpan) {
+                    } else if(((LinkSpan)span).getType().equals("p")) {
                         PassageLinkSpan link = (PassageLinkSpan) span;
                         scrollToFrame(link.getChapterId(), link.getFrameId());
                     }
@@ -278,32 +384,8 @@ public class ReviewModeFragment extends ViewModeFragment {
 
                 }
             });
-            CharSequence out = renderer.render(word.getDefinition());
-            descriptionView.setText(out);
+            descriptionView.setText(renderer.render(word.getDefinition()));
             descriptionView.setMovementMethod(LocalLinkMovementMethod.getInstance());
-//            descriptionView.setHtmlFromString(out, true);
-//            SpannableStringBuilder spannableStringBuilder = SpannableStringBuilder.valueOf(descriptionView.getText());
-//            URLSpan[] linkSpans = spannableStringBuilder.getSpans(0, descriptionView.getText().length(), URLSpan.class);
-//            for(URLSpan span:linkSpans) {
-//                // convert spans
-//                String url = span.getURL();
-//                ArticleLinkSpan linkSpan = new ArticleLinkSpan("Test Link", url);
-//                linkSpan.setOnClickListener(new Span.OnClickListener() {
-//                    @Override
-//                    public void onClick(View view, Span span, int start, int end) {
-//
-//                    }
-//
-//                    @Override
-//                    public void onLongClick(View view, Span span, int start, int end) {
-//
-//                    }
-//                });
-//                int start = spannableStringBuilder.getSpanStart(span);
-//                int end = spannableStringBuilder.getSpanEnd(span);
-//                spannableStringBuilder.replace(start, end, linkSpan.toCharSequence());
-//            }
-//            descriptionView.setText(spannableStringBuilder);
             Typography.formatSub(getActivity(), descriptionView, sourceLanguage.getId(), sourceLanguage.getDirection());
 
             seeAlsoView.removeAllViews();
@@ -383,7 +465,7 @@ public class ReviewModeFragment extends ViewModeFragment {
             mCloseResourcesDrawerButton.setText(note.getTitle());
 
             TextView title = (TextView)view.findViewById(R.id.title);
-            TextView description = (TextView)view.findViewById(R.id.description);
+            TextView descriptionView = (TextView)view.findViewById(R.id.description);
 
             HtmlRenderer renderer = new HtmlRenderer(new HtmlRenderer.OnPreprocessLink() {
                 @Override
@@ -408,13 +490,13 @@ public class ReviewModeFragment extends ViewModeFragment {
             }, new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
-                    if(span instanceof ArticleLinkSpan) {
+                    if(((LinkSpan)span).getType().equals("ta")) {
                         String url = span.getMachineReadable().toString();
                         ArticleLinkSpan link = ArticleLinkSpan.parse(url);
                         if(link != null) {
-                            // TODO: 12/2/2015 navigate to the correct ta article
+                            onTranslationArticleClick(link.getVolume(), link.getManual(), link.getId(), mResourcesDrawer.getLayoutParams().width);
                         }
-                    } else if(span instanceof PassageLinkSpan) {
+                    } else if(((LinkSpan)span).getType().equals("p")) {
                         PassageLinkSpan link = (PassageLinkSpan) span;
                         scrollToFrame(link.getChapterId(), link.getFrameId());
                     }
@@ -426,34 +508,13 @@ public class ReviewModeFragment extends ViewModeFragment {
                 }
             });
 
-//            LinkRenderer renderer = new LinkRenderer(new LinkRenderer.OnPreprocessLink() {
-//                @Override
-//                public boolean onPreprocess(Span span) {
-//                    PassageLinkSpan link = (PassageLinkSpan)span;
-//                    Frame frame = library.getFrame(sourceTranslation, link.getChapterId(), link.getFrameId());
-//                    String title = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(link.getChapterId()) + ":" + frame.getTitle();
-//                    link.setTitle(title);
-//                    return library.getFrame(sourceTranslation, link.getChapterId(), link.getFrameId()) != null;
-//                }
-//            }, new Span.OnClickListener() {
-//                @Override
-//                public void onClick(View view, Span span, int start, int end) {
-//                    PassageLinkSpan link = (PassageLinkSpan)span;
-//                    scrollToFrame(link.getChapterId(), link.getFrameId());
-//                }
-//
-//                @Override
-//                public void onLongClick(View view, Span span, int start, int end) {
-//
-//                }
-//            });
-
             title.setText(note.getTitle());
             SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug);
             Typography.format(getActivity(), title, sourceLanguage.getId(), sourceLanguage.getDirection());
-            description.setText(renderer.render(Html.fromHtml(note.getBody())));
-            Typography.formatSub(getActivity(), description, sourceLanguage.getId(), sourceLanguage.getDirection());
-            ViewUtil.makeLinksClickable(description);
+
+            descriptionView.setText(renderer.render(note.getBody()));
+            Typography.formatSub(getActivity(), descriptionView, sourceLanguage.getId(), sourceLanguage.getDirection());
+            descriptionView.setMovementMethod(LocalLinkMovementMethod.getInstance());
 
             mScrollingResourcesDrawerContent.removeAllViews();
             mScrollingResourcesDrawerContent.addView(view);

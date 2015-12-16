@@ -69,7 +69,7 @@ public class LinkRenderer extends RenderingEngine {
      * @return
      */
     private CharSequence renderTranslationAcademyLink(CharSequence in) {
-        return renderLink(in, ArticleLinkSpan.PATTERN, new OnCreateLink() {
+        return renderLink(in, ArticleLinkSpan.ADDRESS_PATTERN, new OnCreateLink() {
             @Override
             public Span onCreate(Matcher matcher) {
                 return ArticleLinkSpan.parse(matcher.group(3), matcher.group(2));
