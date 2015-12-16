@@ -583,4 +583,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="title_activity_custom_alert_dialog">CustomAlertDialog</string>
     <string name="neutral">Neutral</string>
     <string name="mark_done">Mark chunk as done</string>
+    <string name="add_contributor">ADD CONTRIBUTER</string>
+    <string name="confirm_delete_translator">This will permanently remove the translator. Continue?</string>
+    <string name="delete_translator_title">Delete Translator</string>
 </resources>

@@ -41,6 +41,10 @@ public class TargetTranslation {
     private final String mTargetLanguageId;
     private final String mProjectId;
     private static final String GLOBAL_PROJECT_ID = "uw";
+    public static final String TRANSLATORS = "translators";
+    public static final String NAME = "name";
+    public static final String PHONE = "phone";
+    public static final String EMAIL = "email";
     private final File mTargetTranslationDirectory;
     private final Manifest mManifest;
     private final String mTargetTranslationName;
@@ -243,16 +247,111 @@ public class TargetTranslation {
      * Adds a native speaker as a translator
      * @param translator
      */
-    public void addTranslator(NativeSpeaker translator) {
+    public boolean addTranslator(NativeSpeaker translator) {
+        ArrayList<NativeSpeaker> translators = getTranslators();
 
+        int foundAt = find(translator.name);
+        if(foundAt >= 0) { // if found, update data
+            translators.set(foundAt, translator);
+        } else { // if new translator then add
+            translators.add(translator);
+        }
+
+        return saveTranslators(translators);
+    }
+
+    /**
+     * remove a translator
+     * @param name
+     */
+    public boolean removeTranslator(String name) {
+        ArrayList<NativeSpeaker> translators = getTranslators();
+
+            int foundAt = find(name);
+            if(foundAt < 0) { // if not found, skip
+                return false;
+            } else { // if new translator then add
+                translators.remove(foundAt);
+            }
+
+            return saveTranslators(translators);
+    }
+
+    /**
+     * save updated list of translators
+     * @param translators
+     */
+    public boolean saveTranslators(ArrayList<NativeSpeaker> translators) {
+
+        try {
+
+            JSONArray translatorsJson = new JSONArray();
+
+            for(int i = 0; i < translators.size(); i++) {
+                JSONObject translatorJSON = new JSONObject();
+                NativeSpeaker currentTranslator = translators.get(i);
+                translatorJSON.put(NAME,currentTranslator.name);
+                translatorJSON.put(EMAIL,currentTranslator.email);
+                translatorJSON.put(PHONE,currentTranslator.phone);
+
+                translatorsJson.put(translatorJSON);
+            }
+
+            mManifest.put(TRANSLATORS,translatorsJson);
+
+        } catch (Exception e) {
+            Logger.e(TargetTranslation.class.getName(), "failed save translators", e);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Finds index of translator with name match
+     * @param name
+     */
+    public int find(String name) {
+        ArrayList<NativeSpeaker> translators = getTranslators();
+
+        for (int i = 0; i < translators.size(); i++) {
+            NativeSpeaker speaker = translators.get(i);
+            if (speaker.name.equals(name)) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     /**
      * Returns an array of native speakers who have worked on this translation
      * @return
      */
-    public NativeSpeaker[] getTranslators() {
-        return new NativeSpeaker[0];
+    public ArrayList<NativeSpeaker> getTranslators() {
+
+        JSONArray translatorsJson = mManifest.getJSONArray(TRANSLATORS);
+
+        ArrayList<NativeSpeaker> translators = new  ArrayList<NativeSpeaker>();
+
+        if(translatorsJson.length() > 0) {
+
+            try {
+                for (int i = 0; i < translatorsJson.length(); i++) {
+                    JSONObject contact = translatorsJson.getJSONObject(i);
+                    if (contact.has(NAME)) {
+                        NativeSpeaker profile = new NativeSpeaker(contact.getString(NAME),
+                                contact.getString(EMAIL), contact.getString(PHONE));
+
+                        translators.add(profile);
+                    }
+                }
+            } catch (Exception e) {
+                Logger.e(TargetTranslation.class.getName(), "failed to fetch translators", e);
+            }
+        }
+
+        return translators;
     }
 
     /**
