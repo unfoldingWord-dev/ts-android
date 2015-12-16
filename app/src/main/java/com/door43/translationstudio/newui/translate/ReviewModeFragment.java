@@ -1,15 +1,18 @@
 package com.door43.translationstudio.newui.translate;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
-import android.text.Html;
 import android.view.ContextThemeWrapper;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -29,13 +32,12 @@ import com.door43.translationstudio.core.TranslationNote;
 import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.rendering.HtmlRenderer;
-import com.door43.translationstudio.rendering.LinkRenderer;
+import com.door43.translationstudio.rendering.LinkToHtmlRenderer;
 import com.door43.translationstudio.spannables.ArticleLinkSpan;
 import com.door43.translationstudio.spannables.LinkSpan;
 import com.door43.translationstudio.spannables.PassageLinkSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.AppContext;
-import com.door43.widget.ViewUtil;
 
 import org.apmem.tools.layouts.FlowLayout;
 import org.sufficientlysecure.htmltextview.HtmlTextView;
@@ -217,9 +219,87 @@ public class ReviewModeFragment extends ViewModeFragment {
         }
         if(mScrollingResourcesDrawerContent != null && article != null) {
             mCloseResourcesDrawerButton.setText(article.getTitle());
-            // TODO: 12/15/2015 render the article
+            mScrollingResourcesDrawerContent.setVisibility(View.VISIBLE);
+            mScrollingResourcesDrawerContent.scrollTo(0, 0);
+            WebView view = (WebView) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_article, null);
+
+//            TextView title = (TextView)view.findViewById(R.id.title);
+//            TextView descriptionView = (TextView)view.findViewById(R.id.description);
+
+            final Library library = AppContext.getLibrary();
+            final SourceTranslation sourceTranslation = getSourceTranslation();
+            LinkToHtmlRenderer renderer = new LinkToHtmlRenderer(new LinkToHtmlRenderer.OnPreprocessLink() {
+                @Override
+                public boolean onPreprocess(Span span) {
+                    if(span instanceof ArticleLinkSpan) {
+                        ArticleLinkSpan link = ((ArticleLinkSpan)span);
+                        TranslationArticle article = getPreferredTranslationArticle(sourceTranslation, link.getVolume(), link.getManual(), link.getId());
+                        if(article != null) {
+                            link.setTitle(article.getTitle());
+                        } else {
+                            return false;
+                        }
+                    } else if(span instanceof PassageLinkSpan) {
+                        PassageLinkSpan link = (PassageLinkSpan)span;
+                        Frame frame = library.getFrame(sourceTranslation, link.getChapterId(), link.getFrameId());
+                        String title = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(link.getChapterId()) + ":" + frame.getTitle();
+                        link.setTitle(title);
+                        return library.getFrame(sourceTranslation, link.getChapterId(), link.getFrameId()) != null;
+                    }
+                    return true;
+                }
+            });
+//            , new Span.OnClickListener() {
+//                @Override
+//                public void onClick(View view, Span span, int start, int end) {
+//                    if(((LinkSpan)span).getType().equals("ta")) {
+//                        String url = span.getMachineReadable().toString();
+//                        ArticleLinkSpan link = ArticleLinkSpan.parse(url);
+//                        if(link != null) {
+//                            onTranslationArticleClick(link.getVolume(), link.getManual(), link.getId(), mResourcesDrawer.getLayoutParams().width);
+//                        }
+//                    } else if(((LinkSpan)span).getType().equals("p")) {
+//                        PassageLinkSpan link = (PassageLinkSpan) span;
+//                        scrollToFrame(link.getChapterId(), link.getFrameId());
+//                    }
+//                }
+//
+//                @Override
+//                public void onLongClick(View view, Span span, int start, int end) {
+//
+//                }
+//            });
+
+//            title.setText(article.getTitle());
+//            SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug);
+//            Typography.format(getActivity(), title, sourceLanguage.getId(), sourceLanguage.getDirection());
+
+//            descriptionView.setText(renderer.render(article.getBody()));
+//            Typography.formatSub(getActivity(), descriptionView, sourceLanguage.getId(), sourceLanguage.getDirection());
+//            descriptionView.setMovementMethod(LocalLinkMovementMethod.getInstance());
+
+            view.setWebViewClient(new LinkToHtmlRenderer.CustomWebViewClient() {
+                @Override
+                public void onOverriddenLinkClick(WebView view, String url, Span span) {
+                    if (span instanceof ArticleLinkSpan) {
+                        ArticleLinkSpan link = (ArticleLinkSpan) span;
+                        onTranslationArticleClick(link.getVolume(), link.getManual(), link.getId(), mResourcesDrawer.getLayoutParams().width);
+                    } else if (span instanceof PassageLinkSpan) {
+                        PassageLinkSpan link = (PassageLinkSpan) span;
+                        scrollToFrame(link.getChapterId(), link.getFrameId());
+                    }
+                }
+
+                @Override
+                public void onLinkClick(WebView view, String url) {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    startActivity(intent);
+                }
+            });
+            view.loadData(renderer.render(article.getBody()).toString(), "text/html", "utf-8");
+
             mScrollingResourcesDrawerContent.removeAllViews();
-//        mScrollingResourcesDrawerContent.addView(view);
+            mScrollingResourcesDrawerContent.addView(view);
         }
 
     }

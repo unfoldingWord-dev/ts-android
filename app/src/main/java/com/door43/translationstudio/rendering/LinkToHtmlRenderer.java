@@ -1,7 +1,8 @@
 package com.door43.translationstudio.rendering;
 
-import android.text.Html;
 import android.text.TextUtils;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import com.door43.translationstudio.spannables.ArticleLinkSpan;
 import com.door43.translationstudio.spannables.PassageLinkSpan;
@@ -11,15 +12,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by joel on 12/2/2015.
+ * Handles rendering of internal links to html anchors
  */
-public class HtmlRenderer extends RenderingEngine {
-
-    private final Span.OnClickListener mLinkListener;
+public class LinkToHtmlRenderer extends RenderingEngine {
+    public static final String SCHEME_TA = "ta";
+    public static final String SCHEME_CHUNK = "chunk";
     private final OnPreprocessLink preprocessCallback;
 
-    public HtmlRenderer(OnPreprocessLink preprocessor, Span.OnClickListener linkListener) {
-        mLinkListener = linkListener;
+    /**
+     *
+     * @param preprocessor called to determine if link should be rendered
+     */
+    public LinkToHtmlRenderer(OnPreprocessLink preprocessor) {
         preprocessCallback = preprocessor;
     }
 
@@ -27,20 +31,19 @@ public class HtmlRenderer extends RenderingEngine {
     public CharSequence render(CharSequence in) {
         CharSequence out = in;
         out = renderTranslationAcademyAddress(out);
+        out = renderTranslationAcademyLink(out);
         out = renderPassageLink(out);
-        // TODO: 12/15/2015 it would be nice if we could pass in a private click listener and interpret the link types before calling the supplied listener.
-        // this will allow calling code to use instance of rather than comparing strings.
-        out = Html.fromHtml(out.toString(), null, new HtmlTagHandler(mLinkListener));
         return out;
     }
 
     /**
      * Renders links to other passages in the project
+     * Example [[:en:bible:notes:gen:01:03|1:5]]
      * @param in
      * @return
      */
     private CharSequence renderPassageLink(CharSequence in) {
-        return renderLink(in, PassageLinkSpan.PATTERN, "p", new OnCreateLink() {
+        return renderLink(in, SCHEME_CHUNK, PassageLinkSpan.PATTERN, new OnCreateLink() {
             @Override
             public Span onCreate(Matcher matcher) {
                 return new PassageLinkSpan(matcher.group(3), matcher.group(2));
@@ -55,7 +58,7 @@ public class HtmlRenderer extends RenderingEngine {
      * @return
      */
     public CharSequence renderTranslationAcademyAddress(CharSequence in) {
-        return renderLink(in, ArticleLinkSpan.ADDRESS_PATTERN, "ta", new OnCreateLink() {
+        return renderLink(in, SCHEME_TA, ArticleLinkSpan.ADDRESS_PATTERN, new OnCreateLink() {
             @Override
             public Span onCreate(Matcher matcher) {
                 String title = matcher.group(4);
@@ -74,7 +77,7 @@ public class HtmlRenderer extends RenderingEngine {
      * @return
      */
     public CharSequence renderTranslationAcademyLink(CharSequence in) {
-        return renderLink(in, ArticleLinkSpan.LINK_PATTERN, "ta", new OnCreateLink() {
+        return renderLink(in, SCHEME_TA, ArticleLinkSpan.LINK_PATTERN, new OnCreateLink() {
             @Override
             public Span onCreate(Matcher matcher) {
                 String title = matcher.group(6);
@@ -90,10 +93,11 @@ public class HtmlRenderer extends RenderingEngine {
      * A generic rendering method for rendering content links as html
      *
      * @param in
-     *@param pattern
+     * @param scheme
+     * @param pattern
      * @param callback   @return
      */
-    private CharSequence renderLink(CharSequence in, Pattern pattern, String linkType, OnCreateLink callback) {
+    private CharSequence renderLink(CharSequence in, String scheme, Pattern pattern, OnCreateLink callback) {
         CharSequence out = "";
         Matcher matcher = pattern.matcher(in);
         int lastIndex = 0;
@@ -101,14 +105,13 @@ public class HtmlRenderer extends RenderingEngine {
             if(isStopped()) return in;
             Span link = callback.onCreate(matcher);
             if(link != null) {
-                link.setOnClickListener(mLinkListener);
                 if (preprocessCallback == null || preprocessCallback.onPreprocess(link)) {
                     // render clickable link
                     CharSequence title = link.getHumanReadable();
                     if(title == null || title.toString().isEmpty()) {
                         title = link.getMachineReadable();
                     }
-                    String htmlLink = "<app-link href=\"" + link.getMachineReadable() + "\" type=\"" + linkType + "\" >" + title + "</app-link>";
+                    String htmlLink = "<a href=\"" + scheme + "://" + link.getMachineReadable() + "\">" + title + "</a>";
                     out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), htmlLink);
                 } else {
                     // render as plain text
@@ -133,5 +136,41 @@ public class HtmlRenderer extends RenderingEngine {
      */
     public interface OnPreprocessLink {
         boolean onPreprocess(Span span);
+    }
+
+    /**
+     * Provides custom link handling for webviews
+     */
+    public static abstract class CustomWebViewClient extends WebViewClient {
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            String postfix = "://";
+            if(url != null) {
+                if (url.startsWith(SCHEME_CHUNK + postfix)) {
+                    onOverriddenLinkClick(view, url, new PassageLinkSpan("", url.substring((SCHEME_CHUNK + postfix).length())));
+                    return true;
+                } else if (url.startsWith(SCHEME_TA + postfix)) {
+                    onOverriddenLinkClick(view, url, ArticleLinkSpan.parse(url.substring((SCHEME_TA + postfix).length())));
+                    return true;
+                }
+            }
+            onLinkClick(view, url);
+            return true;
+        }
+
+        /**
+         * Called when a url was successfully overridden
+         * @param view
+         * @param url
+         * @param span
+         */
+        public abstract void onOverriddenLinkClick(WebView view, String url, Span span);
+
+        /**
+         * Called when a normal link is clicked
+         * @param view
+         * @param url
+         */
+        public abstract void onLinkClick(WebView view, String url);
     }
 }
