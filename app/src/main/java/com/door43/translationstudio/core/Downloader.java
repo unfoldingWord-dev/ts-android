@@ -145,7 +145,7 @@ public class Downloader {
                 || resource.getWordsServerDateModified() == 0)) {
             String catalog = request(resource.getWordsCatalogUrl());
             if(catalog != null) {
-                return targetIndex.indexWords(translation, catalog);
+                return targetIndex.indexTranslationWords(translation, catalog);
             } else {
                 Logger.w(this.getClass().getName(), "Failed to fetch the catalog from " + resource.getWordsCatalogUrl());
             }

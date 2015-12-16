@@ -62,7 +62,7 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
 
             // start new task
             if (!isWorking) {
-                UpdateAppTask updateTask = new UpdateAppTask();
+                UpdateAppTask updateTask = new UpdateAppTask(AppContext.context());
                 updateTask.addOnFinishedListener(this);
                 updateTask.addOnStartListener(this);
                 TaskManager.addTask(updateTask, UpdateAppTask.TASK_ID);

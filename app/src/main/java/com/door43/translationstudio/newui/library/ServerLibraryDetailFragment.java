@@ -22,6 +22,7 @@ import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Typography;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.tasks.DownloadProjectImageTask;
 import com.door43.translationstudio.tasks.DownloadSourceLanguageTask;
@@ -107,27 +108,27 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
                             }
                         }
                         if(projectHasTargetTranslations) {
-                            new android.support.v7.app.AlertDialog.Builder(getActivity())
+                            CustomAlertDialog.Create(getActivity())
                                     .setTitle(R.string.label_delete)
                                     .setIcon(R.drawable.ic_info_black_24dp)
                                     .setMessage(R.string.cannot_delete_project_with_translations)
                                     .setPositiveButton(R.string.dismiss, null)
-                                    .show();
+                                    .show("DelWarn");
                         } else {
-                            new android.support.v7.app.AlertDialog.Builder(getActivity())
+                            CustomAlertDialog.Create(getActivity())
                                     .setTitle(R.string.label_delete)
                                     .setIcon(R.drawable.ic_delete_black_24dp)
                                     .setMessage(R.string.confirm_delete_project)
-                                    .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+                                    .setPositiveButton(R.string.confirm, new View.OnClickListener() {
                                         @Override
-                                        public void onClick(DialogInterface dialog, int which) {
+                                        public void onClick(View v) {
                                             AppContext.getLibrary().deleteProject(mProject.getId());
                                             mListener.onProjectDeleted(mProject.getId());
                                             rebuildLayout();
                                         }
                                     })
                                     .setNegativeButton(R.string.no, null)
-                                    .show();
+                                    .show("DelConfirm");
                         }
                     }
                 });
@@ -234,13 +235,13 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
                             task.addOnProgressListener(item.onProgressListener);
                         } else {
                             // confirm with the user
-                            new android.support.v7.app.AlertDialog.Builder(getActivity())
+                            CustomAlertDialog.Create(getActivity())
                                     .setTitle(R.string.download)
                                     .setIcon(R.drawable.ic_refresh_black_24dp)
                                     .setMessage(R.string.source_language_already_downloaded)
-                                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                    .setPositiveButton(R.string.yes, new View.OnClickListener() {
                                         @Override
-                                        public void onClick(DialogInterface dialog, int which) {
+                                        public void onClick(View v) {
                                             DownloadSourceLanguageTask task = new DownloadSourceLanguageTask(mProject.getId(), item.sourceLanguage.getId());
                                             task.addOnFinishedListener(ServerLibraryDetailFragment.this);
                                             TaskManager.addTask(task, mProject.getId() + "-" + item.sourceLanguage.getId());
@@ -250,7 +251,7 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
                                         }
                                     })
                                     .setNegativeButton(R.string.no, null)
-                                    .show();
+                                    .show("LangAlready");
                         }
                     }
                 }

@@ -24,6 +24,7 @@ import android.widget.LinearLayout;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.CheckForLatestReleaseTask;
 import com.door43.translationstudio.tasks.UploadBugReportTask;
 import com.door43.util.tasks.ManagedTask;
@@ -216,20 +217,20 @@ public class FeedbackDialog extends DialogFragment implements ManagedTask.OnFini
     private void notifyLatestRelease(final CheckForLatestReleaseTask.Release release) {
         final Boolean isStoreVersion = ((MainApplication)getActivity().getApplication()).isStoreVersion();
 
-        new AlertDialog.Builder(getActivity())
+        CustomAlertDialog.Create(getActivity())
                 .setTitle(R.string.apk_update_available)
                 .setMessage(R.string.upload_report_or_download_latest_apk)
-                .setNegativeButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
+                .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
+                    public void onClick(View v) {
                         mLatestRelease = null;
                         FeedbackDialog.this.dismiss();
                     }
                 })
-                .setNeutralButton(R.string.download_update, new DialogInterface.OnClickListener() {
+                .setNeutralButton(R.string.download_update, new View.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if(isStoreVersion) {
+                    public void onClick(View v) {
+                        if (isStoreVersion) {
                             // open play store
                             final String appPackageName = getActivity().getPackageName();
                             try {
@@ -242,14 +243,13 @@ public class FeedbackDialog extends DialogFragment implements ManagedTask.OnFini
                             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(release.downloadUrl));
                             startActivity(browserIntent);
                         }
-                        dialog.dismiss();
                         FeedbackDialog.this.dismiss();
                     }
                 })
-                .setPositiveButton(R.string.label_continue, new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if(!mMessage.isEmpty()) {
+                    public void onClick(View v) {
+                        if (!mMessage.isEmpty()) {
                             UploadBugReportTask newTask = new UploadBugReportTask(mMessage);
                             newTask.addOnFinishedListener(FeedbackDialog.this);
                             TaskManager.addTask(newTask, UploadBugReportTask.TASK_ID);
@@ -257,11 +257,9 @@ public class FeedbackDialog extends DialogFragment implements ManagedTask.OnFini
                             notifyInputRequired();
                             FeedbackDialog.this.dismiss();
                         }
-                        dialog.dismiss();
                     }
                 })
-                .create()
-                .show();
+                .show("ReleaseNotify");
     }
 
     @Override
