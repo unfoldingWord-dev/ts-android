@@ -34,10 +34,13 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.spannables.NoteSpan;
+import com.door43.translationstudio.spannables.Span;
 import com.door43.widget.ViewUtil;
 
 import java.util.ArrayList;
@@ -250,7 +253,23 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
             RenderingGroup sourceRendering = new RenderingGroup();
             if (bodyFormat == TranslationFormat.USX) {
                 // TODO: add click listeners
-                USXRenderer renderer = new USXRenderer(null, null);
+                USXRenderer renderer = new USXRenderer(null, new Span.OnClickListener() {
+                    @Override
+                    public void onClick(View view, Span span, int start, int end) {
+                        if(span instanceof NoteSpan) {
+                            CustomAlertDialog.Create(mContext)
+                                    .setTitle(R.string.title_note)
+                                    .setMessage(((NoteSpan)span).getNotes())
+                                    .setPositiveButton(R.string.dismiss, null)
+                                    .show("note");
+                        }
+                    }
+
+                    @Override
+                    public void onLongClick(View view, Span span, int start, int end) {
+
+                    }
+                });
                 sourceRendering.addEngine(renderer);
 
                 // In read mode (and only in read mode), pull leading major section headings out for
@@ -268,6 +287,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         }
 
         holder.mSourceBody.setText(mRenderedSourceBody[position]);
+        ViewUtil.makeLinksClickable(holder.mSourceBody);
         String chapterTitle = chapter.title;
         if(chapter.title.isEmpty()) {
             chapterTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());

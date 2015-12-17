@@ -1,12 +1,16 @@
 package com.door43.translationstudio.spannables;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
+import android.text.style.ImageSpan;
 import android.text.style.StyleSpan;
 import android.util.Xml;
 
@@ -15,6 +19,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.AppContext;
 
 import org.apache.commons.io.input.CharSequenceReader;
+import org.spongycastle.pqc.math.linearalgebra.CharUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xmlpull.v1.XmlPullParser;
@@ -83,17 +88,15 @@ public class NoteSpan extends Span {
             spanTitle = passageText;
         } else if(!TextUtils.isEmpty(quotation)) {
             spanTitle = quotation;
-        } else if(!TextUtils.isEmpty(altQuotation)) {
-            spanTitle = altQuotation;
         } else {
-            spanTitle = "["+note+"]";
+            spanTitle = "[note]";
         }
 
         init(spanTitle, generateTag(style, caller, spanTitle, chars));
 
         mCaller = caller;
         mPassage = spanTitle;
-        mNotes = note;
+        mNotes = TextUtils.concat(note, " ", altQuotation);
         mStyle = style;
     }
 
@@ -102,9 +105,16 @@ public class NoteSpan extends Span {
         if(mSpannable == null) {
             mSpannable = super.render();
             // apply custom styles
-            mSpannable.setSpan(new BackgroundColorSpan(AppContext.context().getResources().getColor(R.color.footnote_yellow)), 0, mSpannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            mSpannable.setSpan(new StyleSpan(Typeface.ITALIC), 0, mSpannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            mSpannable.setSpan(new ForegroundColorSpan(AppContext.context().getResources().getColor(R.color.dark_gray)), 0, mSpannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            if(getHumanReadable().toString().equals("[note]")) {
+                Bitmap image = BitmapFactory.decodeResource(AppContext.context().getResources(), R.drawable.ic_description_black_24dp);
+                BitmapDrawable background = new BitmapDrawable(AppContext.context().getResources(), image);
+                background.setBounds(0, 0, background.getMinimumWidth(), background.getMinimumHeight());
+                mSpannable.setSpan(new ImageSpan(background), 0, mSpannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            } else {
+                mSpannable.setSpan(new BackgroundColorSpan(AppContext.context().getResources().getColor(R.color.footnote_yellow)), 0, mSpannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                mSpannable.setSpan(new StyleSpan(Typeface.ITALIC), 0, mSpannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                mSpannable.setSpan(new ForegroundColorSpan(AppContext.context().getResources().getColor(R.color.dark_gray)), 0, mSpannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
         }
         return mSpannable;
     }
