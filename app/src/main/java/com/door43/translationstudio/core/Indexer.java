@@ -263,6 +263,72 @@ public class Indexer {
         return true;
     }
 
+    /**
+     * Builds a translation academy index from json
+     * @param sourceTranslation
+     * @param catalog
+     */
+    public synchronized boolean indexTranslationAcademy(SourceTranslation sourceTranslation, String catalog) {
+        JSONArray items;
+        try {
+            JSONObject catalogJson = new JSONObject(catalog);
+            items = catalogJson.getJSONArray("volumes");
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        Resource resource = mDatabaseHelper.getResource(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug);
+
+        if(resource != null) {
+            for(int i = 0; i < items.length(); i ++) {
+                try {
+                    JSONObject volume = items.getJSONObject(i);
+                    JSONArray manuals = volume.getJSONArray("manuals");
+
+                    // index volume
+                    String volSlug = volume.getString("id");
+                    String volTitle = volume.getString("title");
+                    long volumeId = mDatabaseHelper.addTranslationAcademyVolume(mDatabase, volSlug, resource.getDBId(), Security.md5(resource.getAcademyCatalogUrl()), volTitle);
+
+                    for(int j  = 0; j < manuals.length(); j ++) {
+                        try {
+                            JSONObject manual = manuals.getJSONObject(j);
+                            JSONArray articles = manual.getJSONArray("articles");
+
+                            // index manual
+                            String manSlug = manual.getString("id");
+                            String manTitle = manual.getString("title");
+                            long manualId = mDatabaseHelper.addTranslationAcademyManual(mDatabase, manSlug, volumeId, manTitle);
+
+                            for(int k = 0; k < articles.length(); k ++) {
+                                try {
+                                    JSONObject article = articles.getJSONObject(k);
+
+                                    // index article
+                                    String artSlug = article.getString("id");
+                                    String artTitle = article.getString("title");
+                                    String artRef = article.getString("reference");
+                                    String artText = article.getString("text");
+                                    mDatabaseHelper.addTranslationAcademyArticle(mDatabase, artSlug, manualId, artTitle, artText, artRef);
+                                } catch (JSONException e) {
+                                    Logger.w(this.getClass().getName(), "Failed to parse a translation academy article for " + sourceTranslation.getId(), e);
+                                }
+                            }
+                        } catch (JSONException e) {
+                            Logger.w(this.getClass().getName(), "Failed to parse a translation academy manual for " + sourceTranslation.getId(), e);
+                        }
+                    }
+
+                } catch (JSONException e) {
+                    Logger.w(this.getClass().getName(), "Failed to parse a translation academy volume for " + sourceTranslation.getId(), e);
+                }
+            }
+        }
+
+        return true;
+    }
+
     public synchronized void markSourceCatalogUpToDate(SourceTranslation sourceTranslation) {
         mDatabaseHelper.markSourceCatalogUpToDate(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug);
     }
@@ -483,7 +549,7 @@ public class Indexer {
      * @param catalog
      * @return
      */
-    public synchronized boolean indexWords(SourceTranslation sourceTranslation, String catalog) {
+    public synchronized boolean indexTranslationWords(SourceTranslation sourceTranslation, String catalog) {
         JSONArray items;
         try {
             items = new JSONArray(catalog);
@@ -909,6 +975,25 @@ public class Indexer {
 
         if(resourceId > 0) {
             return mDatabaseHelper.getTranslationWord(mDatabase, wordSlug, resourceId);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns a translation academy item
+     * @param sourceTranslation
+     * @param volume
+     *@param manual
+     * @param translationArticleSlug  @return
+     */
+    public TranslationArticle getTranslationArticle(SourceTranslation sourceTranslation, String volume, String manual, String translationArticleSlug) {
+        long projectId = mDatabaseHelper.getProjectDBId(mDatabase, sourceTranslation.projectSlug);
+        long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceTranslation.sourceLanguageSlug, projectId);
+        long resourceId = mDatabaseHelper.getResourceDBId(mDatabase, sourceTranslation.resourceSlug, sourceLanguageId);
+
+        if(resourceId > 0) {
+            return mDatabaseHelper.getTranslationArticle(mDatabase, resourceId, volume, manual, translationArticleSlug);
         } else {
             return null;
         }

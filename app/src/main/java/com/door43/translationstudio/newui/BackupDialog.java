@@ -1,11 +1,9 @@
 package com.door43.translationstudio.newui;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -25,6 +23,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.UploadTargetTranslationTask;
 import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.util.tasks.ManagedTask;
@@ -178,11 +177,11 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
                     Logger.e(BackupDialog.class.getName(), "Failed to export the target translation " + mTargetTranslation.getId(), e);
                 }
                 if (exportFile.exists()) {
-                    new AlertDialog.Builder(getActivity())
+                    CustomAlertDialog.Create(getActivity())
                             .setTitle(R.string.backup_to_sd)
                             .setMessage(R.string.success)
                             .setNeutralButton(R.string.dismiss, null)
-                            .show();
+                            .show("Backup");
                 } else {
                     Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_export_failed, Snackbar.LENGTH_LONG);
                     ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
@@ -253,14 +252,13 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
      */
     private void notifyBackupFailed(final TargetTranslation targetTranslation) {
         final Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.backup)
+        CustomAlertDialog.Create(getActivity())
+                .setTitle(R.string.backup)
                 .setMessage(R.string.upload_failed)
                 .setPositiveButton(R.string.dismiss, null)
-                .setNeutralButton(R.string.menu_bug, new DialogInterface.OnClickListener() {
+                .setNeutralButton(R.string.menu_bug, new View.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
+                    public void onClick(View v) {
 
                         // open bug report dialog
                         FragmentTransaction ft = getFragmentManager().beginTransaction();
@@ -281,7 +279,7 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
                         dialog.setArguments(args);
                         dialog.show(ft, "bugDialog");
                     }
-                }).show();
+                }).show("BackupFailed");
     }
 
     @Override
@@ -294,14 +292,16 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
             hand.post(new Runnable() {
                 @Override
                 public void run() {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                    builder.setTitle(R.string.success).setMessage(R.string.project_uploaded).setPositiveButton(R.string.dismiss, null).setNeutralButton(R.string.label_details, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                            builder.setTitle(R.string.project_uploaded).setMessage(response).setPositiveButton(R.string.dismiss, null).show();
-                        }
-                    }).show();
+                    CustomAlertDialog.Create(getActivity())
+                        .setTitle(R.string.success).setMessage(R.string.project_uploaded)
+                            .setPositiveButton(R.string.dismiss, null)
+                            .setNeutralButton(R.string.label_details, new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    CustomAlertDialog.Create(getActivity())
+                                        .setTitle(R.string.project_uploaded).setMessage(response).setPositiveButton(R.string.dismiss, null).show("UploadDetails");
+                                }
+                            }).show("UploadSuccess");
                 }
             });
         } else {

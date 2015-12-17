@@ -22,6 +22,7 @@ import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.tasks.UploadTargetTranslationTask;
 import com.door43.translationstudio.AppContext;
@@ -215,14 +216,15 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                     mUploadButton.setVisibility(View.GONE);
                     mUploadSuccess.setVisibility(View.VISIBLE);
 
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                    builder.setTitle(R.string.success).setMessage(R.string.project_uploaded).setPositiveButton(R.string.dismiss, null).setNeutralButton(R.string.label_details, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                            builder.setTitle(R.string.project_uploaded).setMessage(response).setPositiveButton(R.string.dismiss, null).show();
-                        }
-                    }).show();
+                    CustomAlertDialog.Create(getActivity())
+                        .setTitle(R.string.success).setMessage(R.string.project_uploaded).setPositiveButton(R.string.dismiss, null)
+                        .setNeutralButton(R.string.label_details, new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                CustomAlertDialog.Create(getActivity())
+                                    .setTitle(R.string.project_uploaded).setMessage(response).setPositiveButton(R.string.dismiss, null).show("PubDetails");
+                            }
+                        }).show("PubFinished");
                 }
             });
         } else {
@@ -238,14 +240,13 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
      */
     private void notifyPublishFailed(final TargetTranslation targetTranslation) {
         final Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.publish)
+        CustomAlertDialog.Create(getActivity())
+                .setTitle(R.string.publish)
                 .setMessage(R.string.upload_failed)
                 .setPositiveButton(R.string.dismiss, null)
-                .setNeutralButton(R.string.menu_bug, new DialogInterface.OnClickListener() {
+                .setNeutralButton(R.string.menu_bug, new View.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
+                    public void onClick(View v) {
 
                         // open bug report dialog
                         FragmentTransaction ft = getFragmentManager().beginTransaction();
@@ -266,7 +267,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                         dialog.setArguments(args);
                         dialog.show(ft, "bugDialog");
                     }
-                }).show();
+                }).show("PublishFail");
     }
 
     @Override

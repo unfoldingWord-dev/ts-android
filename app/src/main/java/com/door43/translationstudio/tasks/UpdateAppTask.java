@@ -1,5 +1,6 @@
 package com.door43.translationstudio.tasks;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -25,7 +26,12 @@ import java.io.IOException;
  */
 public class UpdateAppTask extends ManagedTask {
     public static final String TASK_ID = "update_app";
+    private final Context mContext;
     private String mError = null;
+
+    public UpdateAppTask(Context context) {
+        mContext = context;
+    }
 
     /**
      * Returns any error messages
@@ -80,6 +86,32 @@ public class UpdateAppTask extends ManagedTask {
         if(lastVersion < 108) {
             upgradePre108();
         }
+        if(lastVersion < 109) {
+            upgradePre109();
+        }
+
+        updateBuildNumbers();
+    }
+
+    /**
+     * Updates the generator information for the target translations
+     */
+    private void updateBuildNumbers() {
+        TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
+        for(TargetTranslation tt:targetTranslations) {
+            try {
+                TargetTranslation.updateGenerator(mContext, tt);
+            } catch (Exception e) {
+                Logger.e(this.getClass().getName(), "Failed to update the generator in the target translation " + tt.getId());
+            }
+        }
+    }
+
+    /**
+     * Updated db schema
+     */
+    private void upgradePre109() {
+        AppContext.context().deleteDatabase(Library.DATABASE_NAME);
     }
 
     /**

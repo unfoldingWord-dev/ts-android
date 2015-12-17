@@ -1,6 +1,7 @@
 package com.door43.translationstudio.rendering;
 
 import android.graphics.Typeface;
+import android.os.Build;
 import android.text.Layout;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -271,6 +272,14 @@ public class USXRenderer extends RenderingEngine {
      */
     public CharSequence renderVerse(CharSequence in) {
         CharSequence out = "";
+
+        CharSequence insert = "";
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN) {
+            insert = "\n"; // this is a hack to get around bug in JellyBean in rendering multiple
+                            // verses on a long line.  This hack messes up the paragraph formatting,
+                            // but at least JellyBean becomes usable and doesn't crash.
+        }
+
         Pattern pattern = Pattern.compile(VerseSpan.PATTERN);
         Matcher matcher = pattern.matcher(in);
         int lastIndex = 0;
@@ -312,7 +321,7 @@ public class USXRenderer extends RenderingEngine {
                         boolean invalidVerse = false;
                         if(mExpectedVerseRange.length > 0) {
                             int minVerse = mExpectedVerseRange[0];
-                            int maxVerse = mExpectedVerseRange[1];
+                            int maxVerse = (mExpectedVerseRange.length > 1) ? mExpectedVerseRange[1] : 0;
                             if(maxVerse == 0) maxVerse = minVerse;
 
                             int verseNumStart = ((VerseSpan) verse).getStartVerseNumber();
@@ -322,7 +331,7 @@ public class USXRenderer extends RenderingEngine {
                         }
                         if(!invalidVerse) {
                             verse.setOnClickListener(mVerseListener);
-                            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), verse.toCharSequence());
+                            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), insert, verse.toCharSequence());
                         } else {
                             // exclude invalid verse
                             out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()));

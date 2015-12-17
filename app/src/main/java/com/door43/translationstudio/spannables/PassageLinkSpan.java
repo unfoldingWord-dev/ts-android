@@ -115,19 +115,19 @@ public class PassageLinkSpan extends Span {
         }
     }
 
-    /**
-     * Returns the human readable name of the link
-     * @param rawLink
-     * @return
-     */
-    public void parseLink(String rawLink) {
-        Matcher matcher = PATTERN.matcher(rawLink);
-        while(matcher.find()) {
-            mTitle = matcher.group(3);
-            mAddress = matcher.group(2);
-            explodeAddress(mAddress);
-        }
-    }
+//    /**
+//     * Returns the human readable name of the link
+//     * @param rawLink
+//     * @return
+//     */
+//    public void parseLink(String rawLink) {
+//        Matcher matcher = PATTERN.matcher(rawLink);
+//        while(matcher.find()) {
+//            mTitle = matcher.group(3);
+//            mAddress = matcher.group(2);
+//            explodeAddress(mAddress);
+//        }
+//    }
 
     /**
      * Returns the link title

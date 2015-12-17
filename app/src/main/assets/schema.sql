@@ -324,6 +324,72 @@ CREATE TABLE `meta` (
   `value` TEXT NOT NULL
 );
 
+
+-- ---
+-- Table 'translation_academy_volume'
+--
+-- ---
+
+DROP TABLE IF EXISTS `translation_academy_volume`;
+
+CREATE TABLE `translation_academy_volume` (
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  `slug` TEXT NOT NULL,
+  `catalog_hash` TEXT NOT NULL,
+  `title` TEXT NOT NULL,
+  UNIQUE (`slug`, `catalog_hash`)
+);
+
+-- ---
+-- Table 'translation_academy_manual'
+--
+-- ---
+
+DROP TABLE IF EXISTS `translation_academy_manual`;
+
+CREATE TABLE `translation_academy_manual` (
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  `slug` TEXT NOT NULL,
+  `translation_academy_volume_id` INTEGER NOT NULL,
+  `title` TEXT NOT NULL,
+  UNIQUE (`slug`, `translation_academy_volume_id`),
+  FOREIGN KEY (translation_academy_volume_id) REFERENCES `translation_academy_volume` (`id`)
+);
+
+-- ---
+-- Table 'translation_academy_article'
+--
+-- ---
+
+DROP TABLE IF EXISTS `translation_academy_article`;
+
+CREATE TABLE `translation_academy_article` (
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  `slug` TEXT NOT NULL,
+  `translation_academy_manual_id` INTEGER NOT NULL,
+  `title` TEXT NOT NULL,
+  `text` TEXT NOT NULL,
+  `reference` TEXT NOT NULL,
+  UNIQUE (`slug`, `translation_academy_manual_id`),
+  FOREIGN KEY (translation_academy_manual_id) REFERENCES `translation_academy_manual` (`id`)
+);
+
+-- ---
+-- Table 'resource__translation_academy_volume'
+--
+-- ---
+
+DROP TABLE IF EXISTS `resource__translation_academy_volume`;
+
+CREATE TABLE `resource__translation_academy_volume` (
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  `resource_id` INTEGER NOT NULL,
+  `translation_academy_volume_id` INTEGER NOT NULL,
+  UNIQUE (`resource_id`, `translation_academy_volume_id`),
+  FOREIGN KEY (resource_id) REFERENCES `resource` (`id`),
+  FOREIGN KEY (translation_academy_volume_id) REFERENCES `translation_academy_volume` (`id`)
+);
+
 -- ---
 -- Indexes
 -- ---

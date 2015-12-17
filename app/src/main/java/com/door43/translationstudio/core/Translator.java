@@ -269,6 +269,9 @@ public class Translator {
                     // import new translation
                     FileUtils.moveDirectory(newDir, localDir);
                 }
+                // update the generator info
+                TargetTranslation.updateGenerator(mContext, getTargetTranslation(newDir.getName()));
+
                 importedTargetTranslationSlugs.add(newDir.getName());
             }
             if(targetTranslationDirs.length == 0) {

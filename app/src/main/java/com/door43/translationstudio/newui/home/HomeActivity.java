@@ -24,6 +24,7 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
@@ -112,6 +113,9 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
 
                                 FeedbackDialog dialog = new FeedbackDialog();
                                 dialog.show(ft, "bugDialog");
+
+//                                CustomAlertDialog.test(HomeActivity.this);
+
                                 return true;
                             case R.id.action_share_apk:
                                 try {
@@ -148,19 +152,19 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
      * Triggers the process of opening the server library
      */
     private void openLibrary() {
-        new android.support.v7.app.AlertDialog.Builder(HomeActivity.this)
-                .setTitle(R.string.update_projects)
-                .setIcon(R.drawable.ic_local_library_black_24dp)
-                .setMessage(R.string.use_internet_confirmation)
-                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Intent intent = new Intent(HomeActivity.this, ServerLibraryActivity.class);
-                        startActivity(intent);
-                    }
-                })
-                .setNegativeButton(R.string.no, null)
-                .show();
+        CustomAlertDialog.Create(HomeActivity.this)
+            .setTitle(R.string.update_projects)
+            .setIcon(R.drawable.ic_local_library_black_24dp)
+            .setMessage(R.string.use_internet_confirmation)
+            .setPositiveButton(R.string.yes, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(HomeActivity.this, ServerLibraryActivity.class);
+                    startActivity(intent);
+                }
+            })
+            .setNegativeButton(R.string.no, null)
+            .show("UpdateLib");
     }
 
     @Override
@@ -187,16 +191,16 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
     @Override
     public void onBackPressed() {
         // display confirmation before closing the app
-        new AlertDialog.Builder(this)
+        CustomAlertDialog.Create(this)
                 .setMessage(R.string.exit_confirmation)
-                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.yes, new View.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
+                    public void onClick(View v) {
                         HomeActivity.super.onBackPressed();
                     }
                 })
                 .setNegativeButton(R.string.no, null)
-                .show();
+                .show("ExitConfirm");
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {

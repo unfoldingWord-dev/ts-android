@@ -19,7 +19,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
 
     // TRICKY: when you bump the db version you should run the library tests to generate a new index.
     // Note that the extract test will fail.
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
     private final String mDatabaseName;
     private final String mSchema;
 
@@ -1869,5 +1869,131 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
                 + "   LEFT JOIN `source_language` AS `sl` ON `sl`.`project_id`=`p`.`id`"
                 + "   WHERE `p`.`slug`=? AND `sl`.`slug`=?"
                 + " ) AND `slug`=?", new String[]{projectSlug, sourceLanguageSlug, resourceSlug});
+    }
+
+    /**
+     *
+     * @param db
+     * @param volSlug
+     * @param resourceDBId
+     * @param cataloghash
+     * @param volTitle
+     * @return the database id of the volume
+     */
+    public long addTranslationAcademyVolume(SQLiteDatabase db, String volSlug, long resourceDBId, String cataloghash, String volTitle) {
+        ContentValues values = new ContentValues();
+        values.put("slug", volSlug);
+        values.put("catalog_hash", cataloghash);
+        values.put("title", volTitle);
+
+        Cursor cursor = db.rawQuery("SELECT `id` from `translation_academy_volume` WHERE `slug`=? AND `catalog_hash`=?", new String[]{volSlug, cataloghash});
+        long volumeId;
+        if(cursor.moveToFirst()) {
+            // update
+            volumeId = cursor.getLong(0);
+            db.update("translation_academy_volume", values, "`id`=" + volumeId, null);
+        } else {
+            // insert
+            volumeId = db.insert("translation_academy_volume", null, values);
+        }
+        cursor.close();
+
+        // link volume to resource
+        ContentValues linkValues = new ContentValues();
+        linkValues.put("resource_id", resourceDBId);
+        linkValues.put("translation_academy_volume_id", volumeId);
+        db.insertWithOnConflict("resource__translation_academy_volume", null, linkValues, SQLiteDatabase.CONFLICT_IGNORE);
+
+        return volumeId;
+    }
+
+    /**
+     *
+     * @param db
+     * @param manualSlug
+     * @param volumeDBId
+     * @param manualTitle
+     * @return the database id of the manual
+     */
+    public long addTranslationAcademyManual(SQLiteDatabase db, String manualSlug, long volumeDBId, String manualTitle) {
+        ContentValues values = new ContentValues();
+        values.put("slug", manualSlug);
+        values.put("translation_academy_volume_id", volumeDBId);
+        values.put("title", manualTitle);
+
+        Cursor cursor = db.rawQuery("SELECT `id` FROM `translation_academy_manual` WHERE `slug`=? AND `translation_academy_volume_id`=" + volumeDBId, new String[]{manualSlug});
+        long manualId;
+        if(cursor.moveToFirst()) {
+            // update
+            manualId = cursor.getLong(0);
+            db.update("translation_academy_manual", values, "`id`=" + manualId, null);
+        } else {
+            // insert
+            manualId = db.insert("translation_academy_manual", null, values);
+        }
+        cursor.close();
+        return manualId;
+    }
+
+    /**
+     *
+     * @param db
+     * @param articleId
+     * @param manualDBId
+     * @param articleTitle
+     * @param articleText
+     * @return the database id of the article
+     */
+    public long addTranslationAcademyArticle(SQLiteDatabase db, String articleId, long manualDBId, String articleTitle, String articleText, String articleReference) {
+        ContentValues values = new ContentValues();
+        values.put("slug", articleId);
+        values.put("translation_academy_manual_id", manualDBId);
+        values.put("title", articleTitle);
+        values.put("reference", articleReference);
+        values.put("text", articleText);
+
+        Cursor cursor = db.rawQuery("SELECT `id` FROM `translation_academy_article` WHERE `slug`=? AND `translation_academy_manual_id`=" + manualDBId, new String[]{articleId});
+        long articleDBId;
+        if(cursor.moveToFirst()) {
+            // update
+            articleDBId = cursor.getLong(0);
+            db.update("translation_academy_article", values, "`id`=" + articleDBId, null);
+        } else {
+            // insert
+            articleDBId = db.insert("translation_academy_article", null, values);
+        }
+        cursor.close();
+        return articleDBId;
+    }
+
+    /**
+     * Returns a translation article
+     * @param db
+     * @param resourceId
+     * @param volume
+     * @param manual
+     * @param referenceSlug
+     * @return
+     */
+    public TranslationArticle getTranslationArticle(SQLiteDatabase db, long resourceId, String volume, String manual, String referenceSlug) {
+        Cursor cursor = db.rawQuery("SELECT `taa`.`id`, `taa`.`slug`, `taa`.`translation_academy_manual_id`, `taa`.`title`, `taa`.`text`, `taa`.`reference` FROM `translation_academy_article` AS `taa`"
+                + " LEFT JOIN `translation_academy_manual` AS `tam` ON `tam`.`id`=`taa`.`translation_academy_manual_id`"
+                + " LEFT JOIN `translation_academy_volume` AS `tav` ON `tav`.`id`=`tam`.`translation_academy_volume_id`"
+                + " LEFT JOIN `resource__translation_academy_volume` AS `rtav` ON `rtav`.`translation_academy_volume_id`=`tav`.`id`"
+                + " WHERE `taa`.`reference` LIKE ? AND `tam`.`slug`=? AND `tav`.`slug`=? AND `rtav`.`resource_id`=" + resourceId, new String[]{"%/" + referenceSlug, manual, volume});
+        TranslationArticle article = null;
+        if(cursor.moveToFirst()) {
+            long articleId = cursor.getLong(0);
+            String slug = cursor.getString(1);
+            long manualDBId = cursor.getLong(2);
+            String title = cursor.getString(3);
+            String text = cursor.getString(4);
+            String reference = cursor.getString(5);
+
+            article = new TranslationArticle(volume, manual, slug, title, text, reference);
+            article.setDBId(articleId);
+        }
+        cursor.close();
+        return article;
     }
 }

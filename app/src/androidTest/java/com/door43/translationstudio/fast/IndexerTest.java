@@ -3,6 +3,7 @@ package com.door43.translationstudio.fast;
 import android.content.Context;
 import android.test.InstrumentationTestCase;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.core.CheckingQuestion;
 import com.door43.translationstudio.core.Indexer;
@@ -11,6 +12,12 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.core.Util;
+import com.door43.util.Zip;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Created by joel on 8/27/2015.
@@ -116,7 +123,7 @@ public class IndexerTest extends InstrumentationTestCase {
         SourceTranslation translation = SourceTranslation.simple("obs", "en", "obs");
         String catalog = Util.readStream(mContext.getAssets().open("indexer/obs/en/obs/terms.json"));
         mIndex.beginTransaction();
-        assertTrue(mIndex.indexWords(translation, catalog));
+        assertTrue(mIndex.indexTranslationWords(translation, catalog));
         mIndex.endTransaction(true);
         String[] allTermIds = mIndex.getWordSlugs(translation);
         assertTrue(allTermIds.length > 0);
@@ -138,5 +145,23 @@ public class IndexerTest extends InstrumentationTestCase {
         CheckingQuestion[] questions = mIndex.getCheckingQuestions(translation, "01", "01");
         assertTrue(questions.length > 0);
         assertNotNull(mIndex.getCheckingQuestion(translation, "01", "01", questions[0].getId()));
+    }
+
+    public void test08IndexTranslationAcademy() throws Exception {
+        SourceTranslation translation = SourceTranslation.simple("gen", "en", "ulb");
+        String catalog = Util.readStream(mApp.getAssets().open("ta.json"));
+        mIndex.beginTransaction();
+        assertTrue(mIndex.indexTranslationAcademy(translation, catalog));
+        mIndex.endTransaction(true);
+        // TODO: 12/4/2015 test retrieving an article
+
+        // export translation academy index
+        File destDir = AppContext.getPublicDownloadsDirectory();
+        SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+        String date = s.format(new Date());
+        File destFile = new File(destDir, "ta_library_" + date + ".zip");
+        destDir.mkdirs();
+        destFile.createNewFile();
+        Zip.zip(mApp.getDatabasePath(mIndex.getIndexId()).getPath(), destFile.getPath());
     }
 }

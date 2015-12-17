@@ -24,10 +24,12 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
@@ -38,6 +40,7 @@ import com.door43.translationstudio.core.CheckingQuestion;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.LinedEditText;
 import com.door43.translationstudio.core.ProjectTranslation;
 import com.door43.translationstudio.core.TranslationNote;
 import com.door43.translationstudio.core.SourceLanguage;
@@ -85,6 +88,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private boolean mResourcesOpened = false;
     private ContentValues[] mTabs;
     private int[] mOpenResourceTab;
+//    private boolean onBind = false;
 
     public ReviewModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String startingChapterSlug, String startingFrameSlug, boolean resourcesOpened) {
 
@@ -256,7 +260,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     public int getItemPosition(String chapterId, String frameId) {
         for(int i = 0; i < mListItems.length; i ++) {
             ListItem item = mListItems[i];
-            if(item.chapterSlug.equals(chapterId) && item.frameSlug != null && item.frameSlug.equals(frameId)) {
+            if(item.isFrame() && item.chapterSlug.equals(chapterId) && item.frameSlug.equals(frameId)) {
                 return i;
             }
         }
@@ -295,6 +299,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
+//        this.onBind = true;
         final ListItem item = mListItems[position];
 
         // open/close resources
@@ -320,6 +325,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             Typography.format(mContext, holder.mTargetBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
             Typography.format(mContext, holder.mTargetEditableBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
         }
+//        this.onBind = false;
     }
 
     /**
@@ -395,7 +401,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             chapter = null;
         }
 
-        // disable text watcher
+        // remove old text watcher
         if(holder.mEditableTextWatcher != null) {
             holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
         }
@@ -412,13 +418,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // insert rendered text
         if(item.isEditing) {
             // editing mode
-            if(holder.mEditableTextWatcher != null) {
-                holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
-            }
             holder.mTargetEditableBody.setText(item.renderedTargetBody);
-            if(holder.mEditableTextWatcher != null) {
-                holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
-            }
         } else {
             // verse marker mode
             holder.mTargetBody.setText(item.renderedTargetBody);
@@ -525,7 +525,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     holder.mTargetBody.setVisibility(View.GONE);
                     holder.mTargetEditableBody.setVisibility(View.VISIBLE);
                     holder.mTargetEditableBody.requestFocus();
-                    holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
+                    holder.mTargetInnerCard.setBackgroundResource(R.color.white);
+                    holder.mTargetEditableBody.setEnableLines(true);
                     InputMethodManager mgr = (InputMethodManager)mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
                     mgr.showSoftInput(holder.mTargetEditableBody, InputMethodManager.SHOW_IMPLICIT);
 
@@ -541,6 +542,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     holder.mTargetBody.setVisibility(View.VISIBLE);
                     holder.mTargetEditableBody.setVisibility(View.GONE);
                     holder.mTargetInnerCard.setBackgroundResource(R.color.white);
+                    holder.mTargetEditableBody.setEnableLines(false);
                     if(holder.mEditableTextWatcher != null) {
                         holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
                     }
@@ -568,67 +570,74 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
             holder.mTargetBody.setVisibility(View.GONE);
             holder.mTargetEditableBody.setVisibility(View.VISIBLE);
-            holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
+            holder.mTargetEditableBody.setEnableLines(true);
+            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         } else {
             holder.mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
             holder.mTargetBody.setVisibility(View.VISIBLE);
             holder.mTargetEditableBody.setVisibility(View.GONE);
+            holder.mTargetEditableBody.setEnableLines(false);
             holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         }
+
+        // disable listener
+        holder.mDoneSwitch.setOnCheckedChangeListener(null);
 
         // display as finished
         if(item.isTranslationFinished) {
             holder.mEditButton.setVisibility(View.GONE);
-            holder.mDoneButton.setVisibility(View.GONE);
-            holder.mDoneFlag.setVisibility(View.VISIBLE);
+            holder.mDoneSwitch.setChecked(true);
             holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         } else {
             holder.mEditButton.setVisibility(View.VISIBLE);
-            holder.mDoneButton.setVisibility(View.VISIBLE);
-            holder.mDoneFlag.setVisibility(View.GONE);
+            holder.mDoneSwitch.setChecked(false);
         }
 
         // display source language tabs
         renderTabs(holder);
 
         // done buttons
-        holder.mDoneButton.setOnClickListener(new View.OnClickListener() {
+        holder.mDoneSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View v) {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
 
-                final CustomAlertDialog dlg = CustomAlertDialog.Create(mContext);
-                dlg.setTitle(R.string.chunk_checklist_title)
-                    .setMessageHtml(R.string.chunk_checklist_body)
-                    .setPositiveButton(R.string.confirm, new View.OnClickListener() {
+                    CustomAlertDialog.Create(mContext)
+                            .setTitle(R.string.chunk_checklist_title)
+                            .setMessageHtml(R.string.chunk_checklist_body)
+                            .setPositiveButton(R.string.confirm, new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            onConfirmChunk(item, chapter, frame);
+                                        }
+                                    }
+                            )
+                            .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    onConfirmChunk( item, chapter, frame);
-                                    dlg.dismiss();
+                                    holder.mDoneSwitch.setChecked(false); // force back off if not accepted
                                 }
-                            }
-                    )
-                    .setNegativeButton(R.string.title_cancel, null)
-                    .show("Chunk2");
-            }
-        });
-        holder.mDoneFlag.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                boolean opened;
-                if (item.isChapterReference) {
-                    opened = mTargetTranslation.reopenChapterReference(chapter);
-                } else if (item.isChapterTitle) {
-                    opened = mTargetTranslation.reopenChapterTitle(chapter);
-                } else if (item.isProjectTitle) {
-                    opened = mTargetTranslation.reopenProjectTitle();
-                } else {
-                    opened = mTargetTranslation.reopenFrame(frame);
-                }
-                if (opened) {
-                    item.renderedTargetBody = null;
-                    notifyDataSetChanged();
-                } else {
-                    // TODO: 10/27/2015 notify user the frame could not be completed.
+                            })
+                            .show("Chunk2");
+
+                } else { // done button checked off
+
+                    boolean opened;
+                    if (item.isChapterReference) {
+                        opened = mTargetTranslation.reopenChapterReference(chapter);
+                    } else if (item.isChapterTitle) {
+                        opened = mTargetTranslation.reopenChapterTitle(chapter);
+                    } else if (item.isProjectTitle) {
+                        opened = mTargetTranslation.reopenProjectTitle();
+                    } else {
+                        opened = mTargetTranslation.reopenFrame(frame);
+                    }
+                    if (opened) {
+                        item.renderedTargetBody = null;
+                        notifyDataSetChanged();
+                    } else {
+                        // TODO: 10/27/2015 notify user the frame could not be completed.
+                    }
                 }
             }
         });
@@ -1051,12 +1060,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public final CardView mResourceCard;
         public final LinearLayout mMainContent;
         public final LinearLayout mResourceLayout;
-        public final LinearLayout mDoneButton;
-        private final LinearLayout mDoneFlag;
+        public final Switch mDoneSwitch;
         private final LinearLayout mTargetInnerCard;
         private final TabLayout mResourceTabs;
         private final LinearLayout mResourceList;
-        public final EditText mTargetEditableBody;
+        public final LinedEditText mTargetEditableBody;
         public int mLayoutBuildNumber = -1;
         public TextWatcher mEditableTextWatcher;
         public final TextView mTargetTitle;
@@ -1080,11 +1088,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             mTargetInnerCard = (LinearLayout)v.findViewById(R.id.target_translation_inner_card);
             mTargetTitle = (TextView)v.findViewById(R.id.target_translation_title);
             mTargetBody = (EditText)v.findViewById(R.id.target_translation_body);
-            mTargetEditableBody = (EditText)v.findViewById(R.id.target_translation_editable_body);
+            mTargetEditableBody = (LinedEditText)v.findViewById(R.id.target_translation_editable_body);
             mTranslationTabs = (TabLayout)v.findViewById(R.id.source_translation_tabs);
             mEditButton = (ImageButton)v.findViewById(R.id.edit_translation_button);
-            mDoneButton = (LinearLayout)v.findViewById(R.id.done_button);
-            mDoneFlag = (LinearLayout)v.findViewById(R.id.done_flag);
+            mDoneSwitch = (Switch)v.findViewById(R.id.done_button);
             mTranslationTabs.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
             mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);
         }

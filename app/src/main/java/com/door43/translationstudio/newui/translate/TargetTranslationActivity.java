@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,15 +13,18 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
 import android.text.Layout;
 import android.util.Log;
+import android.view.Display;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.SeekBar;
+import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
@@ -55,6 +59,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     public static final String EXTRA_VIEW_MODE = "extra_view_mode_id";
     private Fragment mFragment;
     private SeekBar mSeekBar;
+    private ViewGroup mGraduations;
     private Translator mTranslator;
     private TargetTranslation mTargetTranslation;
     private Timer mCommitTimer = new Timer();
@@ -114,6 +119,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         }
 
         // set up menu items
+        mGraduations = (ViewGroup)findViewById(R.id.action_seek_graduations);
         mSeekBar = (SeekBar)findViewById(R.id.action_seek);
         mSeekBar.setMax(100);
         mSeekBar.setProgress(computePositionFromProgress(0));
@@ -143,12 +149,12 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
+                mGraduations.animate().alpha(1.f);
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
+                mGraduations.animate().alpha(0.f);
             }
         });
         ImageButton moreButton = (ImageButton)findViewById(R.id.action_more);
@@ -344,6 +350,46 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mSeekBar.setMax(itemCount);
         mSeekBar.setProgress(itemCount - progress);
         closeKeyboard();
+        setupGraduations();
+    }
+
+    private void setupGraduations() {
+        final int numChapters = mSeekBar.getMax();
+        TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
+
+        // Set up visibility of the graduation bar.
+        // Display graduations evenly spaced by number of chapters (but not more than the number
+        // of chapters that exist). As a special case, display nothing if there's only one chapter.
+        // Also, show nothing unless we're in read mode, since the other modes are indexed by
+        // frame, not by chapter, so displaying either frame numbers or chapter numbers would be
+        // nonsensical.
+        int numVisibleGraduations = Math.min(numChapters, mGraduations.getChildCount());
+        if (numChapters < 2) {
+            numVisibleGraduations = 0;
+        }
+        if (viewMode != TranslationViewMode.READ) {
+            numVisibleGraduations = 0;
+        }
+
+        // Set up the visible chapters.
+        for (int i = 0; i < numVisibleGraduations; ++i) {
+            ViewGroup container = (ViewGroup)mGraduations.getChildAt(i);
+            container.setVisibility(View.VISIBLE);
+            TextView text = (TextView)container.getChildAt(1);
+
+            // This calculation, full of fudge factors, has the following properties:
+            //   - It starts at 1.
+            //   - It ends with the last chapter.
+            //   - It's evenly spaced in between.
+            int label = 1 + i * (numChapters - 1) / (numVisibleGraduations - 1);
+
+            text.setText(Integer.toString(label));
+        }
+
+        // Undisplay the invisible chapters.
+        for(int i = numVisibleGraduations; i < mGraduations.getChildCount(); ++i) {
+            mGraduations.getChildAt(i).setVisibility(View.GONE);
+        }
     }
 
     private boolean displaySeekBarAsInverted() {

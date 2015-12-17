@@ -1,5 +1,6 @@
 package com.door43.translationstudio.spannables;
 
+import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -16,11 +17,13 @@ public abstract class Span {
     private CharSequence mHumanReadable;
     private CharSequence mMachineReadable;
     private OnClickListener mClickListener;
+    private Bundle extras;
 
     /**
      * Creates a new empty span.
      * This is useful for classes that extends this class because they may need to perform
      * some proccesing before fully initializing.
+     * You should manualy call init() if using this constructor
      */
     public Span() {
         init("", "");
@@ -31,8 +34,16 @@ public abstract class Span {
      * @param humanReadable the human readable title of the span
      * @param machineReadable the machine readable definition of the span
      */
-    public Span(CharSequence humanReadable, CharSequence machineReadable) {
+    Span(CharSequence humanReadable, CharSequence machineReadable) {
         init(humanReadable, machineReadable);
+    }
+
+    public Bundle getExtras() {
+        return this.extras;
+    }
+
+    public void setExtras(Bundle extras) {
+        this.extras = extras;
     }
 
     /**
@@ -62,36 +73,38 @@ public abstract class Span {
      * @return
      */
     public SpannableStringBuilder render() {
-        SpannableStringBuilder spannable = new SpannableStringBuilder(mHumanReadable);
+        SpannableStringBuilder spannable;
+        if(mHumanReadable != null && !mHumanReadable.toString().isEmpty()) {
+            spannable = new SpannableStringBuilder(mHumanReadable);
+        } else {
+            spannable = new SpannableStringBuilder(mMachineReadable);
+        }
         if (spannable.length() > 0) {
             spannable.setSpan(new SpannedString(mMachineReadable), 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-//            if (mClickListener != null) {
-                LongClickableSpan clickSpan = new LongClickableSpan() {
-
-                    @Override
-                    public void onLongClick(View view) {
-                        if(mClickListener != null) {
-                            TextView tv = (TextView)view;
-                            Spanned s = (Spanned)tv.getText();
-                            int start = s.getSpanStart(this);
-                            int end = s.getSpanEnd(this);
-                            mClickListener.onLongClick(view, Span.this, start, end);
-                        }
+            LongClickableSpan clickSpan = new LongClickableSpan() {
+                @Override
+                public void onLongClick(View view) {
+                    if(mClickListener != null) {
+                        TextView tv = (TextView)view;
+                        Spanned s = (Spanned)tv.getText();
+                        int start = s.getSpanStart(this);
+                        int end = s.getSpanEnd(this);
+                        mClickListener.onLongClick(view, Span.this, start, end);
                     }
+                }
 
-                    @Override
-                    public void onClick(View view) {
-                        if (mClickListener != null) {
-                            TextView tv = (TextView)view;
-                            Spanned s = (Spanned)tv.getText();
-                            int start = s.getSpanStart(this);
-                            int end = s.getSpanEnd(this);
-                            mClickListener.onClick(view, Span.this, start, end);
-                        }
+                @Override
+                public void onClick(View view) {
+                    if (mClickListener != null) {
+                        TextView tv = (TextView)view;
+                        Spanned s = (Spanned)tv.getText();
+                        int start = s.getSpanStart(this);
+                        int end = s.getSpanEnd(this);
+                        mClickListener.onClick(view, Span.this, start, end);
                     }
-                };
-                spannable.setSpan(clickSpan, 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-//            }
+                }
+            };
+            spannable.setSpan(clickSpan, 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         return spannable;
     }
