@@ -224,6 +224,7 @@ public class Translator {
             Zip.unzip(file, tempCache);
             File[] targetTranslationDirs = ArchiveImporter.importArchive(tempCache);
             for(File newDir:targetTranslationDirs) {
+
                 File localDir = new File(mRootDir, newDir.getName());
                 if(localDir.exists()) {
                     // commit local changes to history

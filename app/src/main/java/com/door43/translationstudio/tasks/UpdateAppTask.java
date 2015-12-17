@@ -89,6 +89,9 @@ public class UpdateAppTask extends ManagedTask {
         if(lastVersion < 109) {
             upgradePre109();
         }
+        if(lastVersion < 110) {
+            upgradePre110();
+        }
 
         updateBuildNumbers();
     }
@@ -103,6 +106,20 @@ public class UpdateAppTask extends ManagedTask {
                 TargetTranslation.updateGenerator(mContext, tt);
             } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "Failed to update the generator in the target translation " + tt.getId());
+            }
+        }
+    }
+
+    /**
+     * We to migrate chunks in targetTranslations because some no longer match up to the source.
+     */
+    private void upgradePre110() {
+        TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
+        for(TargetTranslation tt:targetTranslations) {
+            try {
+                // TODO: 12/17/2015 loop through all targetTranslations and merge invalid chunks to sibling chunks
+            } catch (Exception e) {
+                Logger.e(this.getClass().getName(), "Failed to merge the chunks in the target translation " + tt.getId());
             }
         }
     }

@@ -361,6 +361,7 @@ public class ClientService extends NetworkService {
                                 // TODO: 11/23/2015 perform a diff first
                                 try {
                                     String[] targetTranslationSlugs = translator.importArchive(file);
+                                    // TODO: 12/17/2015 merge chunks .. loop
                                     if(listener != null) {
                                         listener.onReceivedTargetTranslations(server, targetTranslationSlugs);
                                     }

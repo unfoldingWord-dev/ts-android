@@ -171,6 +171,7 @@ public class ImportDialog extends DialogFragment {
                 if(FilenameUtils.getExtension(file.getName()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
                     try {
                         AppContext.getTranslator().importArchive(file);
+                        // TODO: 12/17/2015 merge chunks .. loop
                         CustomAlertDialog.Create(getActivity())
                                 .setTitle(R.string.import_from_sd)
                                 .setMessage(R.string.success)

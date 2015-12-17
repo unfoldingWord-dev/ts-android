@@ -122,4 +122,16 @@ public class TargetTranslationMigrator {
     private static boolean v3(JSONObject manifest, File path) {
         return true;
     }
+
+    /**
+     * Merges chunks found in the target translation that do not exist in the source translation
+     * to a sibling chunk so that no data is lost.
+     * @param library
+     * @param targetTranslation the path to the target translation that will be processed
+     * @return
+     */
+    public static boolean mergeInvalidChunks(Library library, TargetTranslation targetTranslation) {
+        // TODO: 12/17/2015 merge stuff.
+        return false;
+    }
 }

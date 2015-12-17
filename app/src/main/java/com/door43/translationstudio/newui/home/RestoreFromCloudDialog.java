@@ -165,6 +165,9 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
                 if(targetTranslation != null) {
                     Logger.i(this.getClass().getName(), "Restoring HEAD in " + targetTranslationSlug + " from the cloud");
                     final File targetPath = targetTranslation.getPath();
+                    // TODO: 12/17/2015 we may need to change this to use the import method in the translator. this would be way easier to maintain.
+                    // TODO: 12/17/2015 we may not want to delete the head. Just merge in the translations from the server??
+                    // or perhaps we could provide some options to the user so they can choose.
                     // delete HEAD of target
                     targetPath.listFiles(new FilenameFilter() {
                         @Override
@@ -201,6 +204,8 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
                     } catch (Exception e) {
                         Logger.e(RestoreFromCloudDialog.class.getName(), "Failed to commit changes after restoring backup", e);
                     }
+
+                    // TODO: 12/17/2015 merge chunks
                 }
 
                 FileUtils.deleteQuietly(sourcePath);
