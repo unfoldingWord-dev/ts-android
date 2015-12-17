@@ -94,6 +94,8 @@ public class ProfileFragment extends PublishStepFragment {
             }
         });
 
+        addContributorButton.setVisibility(View.GONE); //TODO remove to re-enable support for multiple contributors
+
         ImageButton deleteContributorButton = (ImageButton)rootView.findViewById(R.id.delete_contributor_button);
         deleteContributorButton.setOnClickListener(new View.OnClickListener() {
             @Override
