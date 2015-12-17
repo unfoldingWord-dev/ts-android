@@ -1,15 +1,10 @@
 package com.door43.translationstudio.core;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageInfo;
-import android.os.AsyncTask;
-import android.util.Log;
 
 import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.git.Repo;
-import com.door43.translationstudio.git.tasks.StopTaskException;
 //import com.door43.translationstudio.git.tasks.repo.CommitTask;
 import com.door43.util.Manifest;
 
@@ -250,7 +245,7 @@ public class TargetTranslation {
     public boolean addTranslator(NativeSpeaker translator) {
         ArrayList<NativeSpeaker> translators = getTranslators();
 
-        int foundAt = find(translator.name);
+        int foundAt = getTranslatorByName(translator.name);
         if(foundAt >= 0) { // if found, update data
             translators.set(foundAt, translator);
         } else { // if new translator then add
@@ -267,7 +262,7 @@ public class TargetTranslation {
     public boolean removeTranslator(String name) {
         ArrayList<NativeSpeaker> translators = getTranslators();
 
-            int foundAt = find(name);
+            int foundAt = getTranslatorByName(name);
             if(foundAt < 0) { // if not found, skip
                 return false;
             } else { // if new translator then add
@@ -311,7 +306,7 @@ public class TargetTranslation {
      * Finds index of translator with name match
      * @param name
      */
-    public int find(String name) {
+    public int getTranslatorByName(String name) {
         ArrayList<NativeSpeaker> translators = getTranslators();
 
         for (int i = 0; i < translators.size(); i++) {

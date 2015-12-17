@@ -1,7 +1,5 @@
 package com.door43.translationstudio.newui.publish;
 
-import android.app.Activity;
-import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
@@ -19,8 +17,6 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.widget.ViewUtil;
-
-import org.sufficientlysecure.htmltextview.HtmlTextView;
 
 import java.util.ArrayList;
 
@@ -147,7 +143,7 @@ public class ProfileFragment extends PublishStepFragment {
      */
     private void showTranslator(String name) {
 
-        int pos = mTargetTranslation.find(name);
+        int pos = mTargetTranslation.getTranslatorByName(name);
 
         if(pos < 0) {
             pos = 0;
