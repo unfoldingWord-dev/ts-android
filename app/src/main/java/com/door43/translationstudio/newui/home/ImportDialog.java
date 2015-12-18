@@ -20,7 +20,9 @@ import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
@@ -170,8 +172,10 @@ public class ImportDialog extends DialogFragment {
                 File file = new File(data.getData().getPath());
                 if(FilenameUtils.getExtension(file.getName()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
                     try {
-                        AppContext.getTranslator().importArchive(file);
-                        // TODO: 12/17/2015 merge chunks .. loop
+                        final Translator translator = AppContext.getTranslator();
+                        final String[] targetTranslationSlugs = translator.importArchive(file);
+                        TargetTranslationMigrator.mergeInvalidChunksFromProjects(translator, AppContext.getLibrary(), translator.getPath(), targetTranslationSlugs);
+
                         CustomAlertDialog.Create(getActivity())
                                 .setTitle(R.string.import_from_sd)
                                 .setMessage(R.string.success)

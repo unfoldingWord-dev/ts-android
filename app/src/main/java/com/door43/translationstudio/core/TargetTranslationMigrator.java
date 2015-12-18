@@ -1,12 +1,18 @@
 package com.door43.translationstudio.core;
 
+import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.AppContext;
+
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 
 /**
@@ -127,11 +133,158 @@ public class TargetTranslationMigrator {
      * Merges chunks found in the target translation that do not exist in the source translation
      * to a sibling chunk so that no data is lost.
      * @param library
-     * @param targetTranslation the path to the target translation that will be processed
+     * @param baseDir the base folder
+     * @param targetTranslation project to translate
      * @return
      */
-    public static boolean mergeInvalidChunks(Library library, TargetTranslation targetTranslation) {
-        // TODO: 12/17/2015 merge stuff.
-        return false;
+    public static boolean mergeInvalidChunks(Library library, File baseDir, TargetTranslation targetTranslation) throws Exception {
+
+        boolean success = true;
+
+        final String CHUNK_EXT = "txt";
+
+        final String language = targetTranslation.getTargetLanguageId();
+        final String targetTranslationId = targetTranslation.getPath().getName();
+        final String sourceTranslationID = AppContext.getSelectedSourceTranslationId(targetTranslationId);;
+
+        final SourceTranslation sourceTranslation = library.getSourceTranslation(sourceTranslationID);
+        if(null == sourceTranslation)  {
+            Logger.w(TargetTranslationMigrator.class.getName(), "no source translations found for " + targetTranslation.getProjectId());
+            return false;
+        }
+
+        final Chapter[] chapters = library.getChapters( sourceTranslation);
+
+        final File localDir = targetTranslation.getPath();
+        if(localDir.exists()) {
+
+            // merge folders in translation
+            final File[] newFiles = localDir.listFiles();
+            for(File localFolder:newFiles) {
+                if(localFolder.isDirectory()) {
+
+                    // merge the folders
+
+                    final String chapterID = getFileBase(localFolder.getName());
+                    Chapter currentChapter = null;
+
+                    for(Chapter chapter: chapters) {
+                        if(chapter.getId().equals(chapterID)) {
+                            currentChapter = chapter;
+                            break;
+                        }
+                    }
+
+                    if(null != currentChapter) {
+
+                        final Frame[] frames = library.getFrames( sourceTranslation, currentChapter.getId());
+
+                        File[] chunks = localFolder.listFiles();
+                        Arrays.sort(chunks);
+
+                        File previousChunk = null;
+                        File currentChunk = null;
+
+                        for (File chunk : chunks) {
+
+                            if (getFileExt(chunk.getName()).equals(CHUNK_EXT)) {
+                                previousChunk = currentChunk;
+                                currentChunk = chunk;
+
+                                String chunkBase = getFileBase(chunk.getName());
+
+                                Frame matchFrame = null;
+                                for(Frame frame:frames) {
+
+                                    if(frame.getId().equals(chunkBase)) {
+                                        matchFrame = frame;
+                                        break;
+                                    }
+                                }
+
+                                if(null == matchFrame) { // if frame is not found
+                                    // append content to previous chunk
+
+                                    if(null != previousChunk) {
+                                        try {
+                                            //TODO flag chunk as modified - remove from finished list
+
+                                            // merge frames
+                                            String extraData = FileUtils.readFileToString(currentChunk);
+                                            String previousData = FileUtils.readFileToString(previousChunk);
+                                            FileUtils.write(previousChunk, previousData + extraData);
+
+                                            //clear extra frame
+                                            FileUtils.write(currentChunk, "");
+
+                                        } catch (IOException e) {
+                                            Logger.w(TargetTranslationMigrator.class.getName(), "merge of frames failed", e);
+                                            success = false;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+        return success;
+    }
+
+    /**
+     * Merges chunks found in the target translation that do not exist in the source translation
+     * to a sibling chunk so that no data is lost.
+     * @param library
+     * @param baseDir the base folder
+     * @param translationSlugs projects to translate
+     * @return
+     */
+    public static boolean mergeInvalidChunksFromProjects(Translator translator, Library library, File baseDir, String[] translationSlugs) {
+        boolean mergeSuccess = true;
+        for (String translationSlug : translationSlugs) {
+            try {
+                TargetTranslation targetTranslation = translator.getTargetTranslation(translationSlug);
+
+                boolean success = mergeInvalidChunks( library,  baseDir,  targetTranslation);
+                mergeSuccess = mergeSuccess && success;
+
+            } catch (Exception e) {
+                Logger.w(TargetTranslationMigrator.class.getName(), "merge of " + translationSlug + " failed", e);
+                mergeSuccess = false;
+            }
+        }
+
+        return mergeSuccess;
+    }
+
+
+
+    private static String getFileExt(String fileName) {
+        return fileName.substring((fileName.lastIndexOf(".") + 1), fileName.length());
+    }
+
+    private static String getFileBase(String fileName) {
+
+        int pos = fileName.lastIndexOf(".");
+
+        if(pos < 0) { // no extension
+            return fileName;
+        }
+
+        return fileName.substring(0, pos);
+    }
+
+    private static int getFileBaseAsNumber(String fileName) {
+        try {
+            String base = getFileBase(fileName);
+
+            Integer value = Integer.parseInt(base);
+            return value.intValue();
+
+        } catch (NumberFormatException nfe) {
+            return -1; // not number
+        }
     }
 }
