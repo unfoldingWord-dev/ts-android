@@ -167,6 +167,9 @@ public class TargetTranslationMigrator {
             Logger.w(TargetTranslationMigrator.class.getName(), "no source translation ID found for " + targetTranslation.getProjectId());
             return false;
         }
+
+        Logger.i(TargetTranslationMigrator.class.getName(), "source Translation ID: " + sourceTranslationID);
+
         final SourceTranslation sourceTranslation = library.getSourceTranslation(sourceTranslationID);
         if(null == sourceTranslation)  {
             Logger.w(TargetTranslationMigrator.class.getName(), "no source translations found for " + targetTranslation.getProjectId());
