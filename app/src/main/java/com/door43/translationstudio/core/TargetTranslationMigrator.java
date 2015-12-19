@@ -159,6 +159,8 @@ public class TargetTranslationMigrator {
      */
     public static boolean mergeInvalidChunksFromProject(final Library library, final TargetTranslation targetTranslation)  {
 
+        Logger.i(TargetTranslationMigrator.class.getName(), "merging project " + targetTranslation.getProjectId());
+
         final String targetTranslationID = targetTranslation.getPath().getName();
         final String sourceTranslationID = AppContext.getSelectedSourceTranslationId(targetTranslationID);
         if(null == sourceTranslationID) { // likely a new import and no sources have been selected
@@ -204,6 +206,9 @@ public class TargetTranslationMigrator {
 
     private static boolean mergeInvalidChunksInChapter(final Library library, final SourceTranslation sourceTranslation, final TargetTranslation targetTranslation, final File localFolder, final Chapter chapter) {
         boolean success = true;
+
+        Logger.i(TargetTranslationMigrator.class.getName(), "searching chapter " + chapter.getId());
+
         final Frame[] frames = library.getFrames(sourceTranslation, chapter.getId());
         File[] chunks = localFolder.listFiles();
         Arrays.sort(chunks);
@@ -223,6 +228,8 @@ public class TargetTranslationMigrator {
                             success = false;
                         }
                     }
+                } else {
+                    Logger.w(TargetTranslationMigrator.class.getName(), "no merge frame found for " + chunkBase);
                 }
             }
         }
@@ -230,15 +237,29 @@ public class TargetTranslationMigrator {
     }
 
     private static void mergeExtraChunkIntoValidFrame(TargetTranslation targetTranslation, File localFolder, File extraChunk, Frame mergeFrame) throws IOException {
-        if(extraChunk.length() <= 0) { return; } // skip if file is empty
+        if(extraChunk.length() <= 0) {
+            Logger.i(TargetTranslationMigrator.class.getName(), "skipping merge of empty file: " + extraChunk.toString());
+            return;
+        } // skip if file is empty
+
+        Logger.i(TargetTranslationMigrator.class.getName(), "merging '" + extraChunk.toString() +"' into '" + mergeFrame.getId() + "' in folder: " + localFolder.toString());
 
         File mergeChunk = new File(localFolder, mergeFrame.getId() + CHUNK_FULL_EXT);
 
         // merge extra chunk into target chunk
         String extraData = FileUtils.readFileToString(extraChunk);
         String previousData = FileUtils.readFileToString(mergeChunk);
-        FileUtils.write(mergeChunk, previousData + " " + extraData);
 
+        String mergedString;
+        if(extraChunk.toString().compareTo(mergeChunk.toString()) >= 0) {
+            mergedString = previousData + " " + extraData;
+        } else {
+            mergedString = extraData + " " + previousData;
+        }
+
+        Logger.i(TargetTranslationMigrator.class.getName(), "merged data: " + mergedString);
+
+        FileUtils.write(mergeChunk, mergedString);
         FileUtils.write(extraChunk, ""); //clear extra chunk
 
         targetTranslation.reopenFrame(mergeFrame);
@@ -248,6 +269,11 @@ public class TargetTranslationMigrator {
     private static Frame getMergeFrame(Frame[] frames, String chunkBase) {
         Frame previousFrame = null;
         for(Frame frame:frames) {
+
+            if(null == previousFrame) { // always start with first valid frame
+                previousFrame = frame;
+            }
+
             int compare = frame.getId().compareTo(chunkBase);
             if(compare == 0) { // found match
                 previousFrame = frame;
