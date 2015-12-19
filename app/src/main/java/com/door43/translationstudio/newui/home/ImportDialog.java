@@ -174,7 +174,7 @@ public class ImportDialog extends DialogFragment {
                     try {
                         final Translator translator = AppContext.getTranslator();
                         final String[] targetTranslationSlugs = translator.importArchive(file);
-                        TargetTranslationMigrator.mergeInvalidChunksFromProjects(translator, AppContext.getLibrary(), translator.getPath(), targetTranslationSlugs);
+                        TargetTranslationMigrator.mergeInvalidChunksFromProjects(translator, AppContext.getLibrary(), targetTranslationSlugs);
 
                         CustomAlertDialog.Create(getActivity())
                                 .setTitle(R.string.import_from_sd)

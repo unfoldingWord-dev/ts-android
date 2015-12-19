@@ -17,6 +17,7 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.AppContext;
@@ -118,6 +119,7 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
                 if(targetTranslation != null) {
                     try {
                         targetTranslation.addSourceTranslation(sourceTranslation);
+                        TargetTranslationMigrator.mergeInvalidChunksFromProject(AppContext.getLibrary(), targetTranslation);
                     } catch (JSONException e) {
                         Logger.e(this.getClass().getName(), "Failed to record source translation (" + sourceTranslation.getId() + ") usage in the target translation " + targetTranslation.getId(), e);
                     }
