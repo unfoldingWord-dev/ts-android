@@ -186,7 +186,7 @@ public class TargetTranslationMigrator {
      * @param targetTranslation project to translate
      * @return
      */
-    public static boolean mergeInvalidChunksInChapters(final Library library, final SourceTranslation sourceTranslation, final TargetTranslation targetTranslation)  {
+    private static boolean mergeInvalidChunksInChapters(final Library library, final SourceTranslation sourceTranslation, final TargetTranslation targetTranslation)  {
         boolean mergeSuccess = true;
         final File localDir = targetTranslation.getPath();
         final File[] newFiles = localDir.listFiles();
