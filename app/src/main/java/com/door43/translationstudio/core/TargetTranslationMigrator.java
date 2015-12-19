@@ -133,17 +133,15 @@ public class TargetTranslationMigrator {
      * Merges chunks found in the target translation that do not exist in the source translation
      * to a sibling chunk so that no data is lost.
      * @param library
-     * @param baseDir the base folder
      * @param targetTranslation project to translate
      * @return
      */
-    public static boolean mergeInvalidChunks(Library library, File baseDir, TargetTranslation targetTranslation) throws Exception {
+    public static boolean mergeInvalidChunks(Library library, TargetTranslation targetTranslation) throws Exception {
 
         boolean success = true;
 
         final String CHUNK_EXT = "txt";
 
-        final String language = targetTranslation.getTargetLanguageId();
         final String targetTranslationId = targetTranslation.getPath().getName();
         final String sourceTranslationID = AppContext.getSelectedSourceTranslationId(targetTranslationId);;
 
@@ -177,45 +175,53 @@ public class TargetTranslationMigrator {
 
                     if(null != currentChapter) {
 
-                        final Frame[] frames = library.getFrames( sourceTranslation, currentChapter.getId());
+                        Frame[] frames = library.getFrames(sourceTranslation, currentChapter.getId());
 
                         File[] chunks = localFolder.listFiles();
                         Arrays.sort(chunks);
 
-                        File previousChunk = null;
-                        File currentChunk = null;
-
-                        for (File chunk : chunks) {
+                         for (File chunk : chunks) {
 
                             if (getFileExt(chunk.getName()).equals(CHUNK_EXT)) {
-                                previousChunk = currentChunk;
-                                currentChunk = chunk;
 
                                 String chunkBase = getFileBase(chunk.getName());
 
+                                Frame previousFrame = null;
                                 Frame matchFrame = null;
                                 for(Frame frame:frames) {
 
-                                    if(frame.getId().equals(chunkBase)) {
+                                    int compare = frame.getId().compareTo(chunkBase);
+                                    if(compare == 0) { // found match
                                         matchFrame = frame;
                                         break;
+                                    } else if (compare > 0) { // gone past
+                                        break;
                                     }
+
+                                    previousFrame = frame;
                                 }
 
                                 if(null == matchFrame) { // if frame is not found
                                     // append content to previous chunk
 
-                                    if(null != previousChunk) {
+                                    if(null != previousFrame) {
                                         try {
-                                            //TODO flag chunk as modified - remove from finished list
+                                            targetTranslation.reopenFrame(previousFrame);
+
+                                            long fileSize = chunk.length();
+                                            if(fileSize <= 0) { // if file is empty
+                                                continue; // skip to next file
+                                            }
+
+                                            File previousChunk = new File(localFolder, previousFrame.getId() + "." + CHUNK_EXT);
 
                                             // merge frames
-                                            String extraData = FileUtils.readFileToString(currentChunk);
+                                            String extraData = FileUtils.readFileToString(chunk);
                                             String previousData = FileUtils.readFileToString(previousChunk);
-                                            FileUtils.write(previousChunk, previousData + extraData);
+                                            FileUtils.write(previousChunk, previousData + " " + extraData);
 
-                                            //clear extra frame
-                                            FileUtils.write(currentChunk, "");
+                                            //clear extra chunk
+                                            FileUtils.write(chunk, "");
 
                                         } catch (IOException e) {
                                             Logger.w(TargetTranslationMigrator.class.getName(), "merge of frames failed", e);
@@ -247,7 +253,7 @@ public class TargetTranslationMigrator {
             try {
                 TargetTranslation targetTranslation = translator.getTargetTranslation(translationSlug);
 
-                boolean success = mergeInvalidChunks( library,  baseDir,  targetTranslation);
+                boolean success = mergeInvalidChunks( library,  targetTranslation);
                 mergeSuccess = mergeSuccess && success;
 
             } catch (Exception e) {
