@@ -160,7 +160,14 @@ public class AppContext {
 //        }
 
         final String externalStorageState = Environment.getExternalStorageState();
-        return Environment.MEDIA_MOUNTED.equals(externalStorageState);
+        boolean mounted = Environment.MEDIA_MOUNTED.equals(externalStorageState);
+        if(mounted) { // do a double check
+            File sdCard = Environment.getExternalStorageDirectory();
+            if(sdCard.exists()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
