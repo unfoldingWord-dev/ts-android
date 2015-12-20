@@ -151,6 +151,22 @@ public class TargetTranslationMigrator {
     }
 
     /**
+     * Merges chunks found in the target translation projects that do not exist in the source translation
+     * to a sibling chunk so that no data is lost.
+     * @param library
+     * @param targetTranslations projects to translate
+     * @return
+     */
+    public static boolean mergeInvalidChunksFromProjects(final Library library, final TargetTranslation[] targetTranslations) {
+        boolean mergeSuccess = true;
+        for (TargetTranslation targetTranslation : targetTranslations) {
+            boolean success = mergeInvalidChunksFromProject(AppContext.getLibrary(), targetTranslation);
+            mergeSuccess = mergeSuccess && success;
+        }
+        return mergeSuccess;
+    }
+
+    /**
      * Merges chunks found in a target translation Project that do not exist in the source translation
      * to a sibling chunk so that no data is lost.
      * @param library
@@ -158,29 +174,32 @@ public class TargetTranslationMigrator {
      * @return
      */
     public static boolean mergeInvalidChunksFromProject(final Library library, final TargetTranslation targetTranslation)  {
+        try {
+            Logger.i(TargetTranslationMigrator.class.getName(), "merging project " + targetTranslation.getProjectId());
 
-        Logger.i(TargetTranslationMigrator.class.getName(), "merging project " + targetTranslation.getProjectId());
+            final String targetTranslationID = targetTranslation.getPath().getName();
+            final String sourceTranslationID = AppContext.getSelectedSourceTranslationId(targetTranslationID);
+            if(null == sourceTranslationID) { // likely a new import and no sources have been selected
+                Logger.w(TargetTranslationMigrator.class.getName(), "no source translation ID found for " + targetTranslation.getProjectId());
+                return false;
+            }
 
-        final String targetTranslationID = targetTranslation.getPath().getName();
-        final String sourceTranslationID = AppContext.getSelectedSourceTranslationId(targetTranslationID);
-        if(null == sourceTranslationID) { // likely a new import and no sources have been selected
-            Logger.w(TargetTranslationMigrator.class.getName(), "no source translation ID found for " + targetTranslation.getProjectId());
-            return false;
+            Logger.i(TargetTranslationMigrator.class.getName(), "source Translation ID: " + sourceTranslationID);
+
+            final SourceTranslation sourceTranslation = library.getSourceTranslation(sourceTranslationID);
+            if(null == sourceTranslation)  {
+                Logger.w(TargetTranslationMigrator.class.getName(), "no source translations found for " + targetTranslation.getProjectId());
+                return false;
+            }
+
+            final File localDir = targetTranslation.getPath();
+            if(localDir.exists()) {
+                return mergeInvalidChunksInChapters(library, sourceTranslation, targetTranslation);
+            }
+
+        } catch (Exception e) {
+            Logger.e(TargetTranslationMigrator.class.getName(), "Failed to merge the chunks in the target translation " + targetTranslation.getProjectId());
         }
-
-        Logger.i(TargetTranslationMigrator.class.getName(), "source Translation ID: " + sourceTranslationID);
-
-        final SourceTranslation sourceTranslation = library.getSourceTranslation(sourceTranslationID);
-        if(null == sourceTranslation)  {
-            Logger.w(TargetTranslationMigrator.class.getName(), "no source translations found for " + targetTranslation.getProjectId());
-            return false;
-        }
-
-        final File localDir = targetTranslation.getPath();
-        if(localDir.exists()) {
-            return mergeInvalidChunksInChapters(library, sourceTranslation, targetTranslation);
-        }
-
         return false;
     }
 
