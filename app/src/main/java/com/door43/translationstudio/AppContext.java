@@ -151,14 +151,6 @@ public class AppContext {
      * @return
      */
     public static boolean isExternalMediaAvailable() {
-//        // TRICKY: KITKAT introduced changes to the external media that made sd cards read only
-//        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) { // || Root.isDeviceRooted()
-//            StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
-//            return removeableMediaInfo != null;
-//        } else {
-//            return Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState());
-//        }
-
         final String externalStorageState = Environment.getExternalStorageState();
         boolean mounted = Environment.MEDIA_MOUNTED.equals(externalStorageState);
         if(mounted) { // do a double check
