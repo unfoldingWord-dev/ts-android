@@ -151,13 +151,16 @@ public class AppContext {
      * @return
      */
     public static boolean isExternalMediaAvailable() {
-        // TRICKY: KITKAT introduced changes to the external media that made sd cards read only
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) { // || Root.isDeviceRooted()
-            StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
-            return removeableMediaInfo != null;
-        } else {
-            return Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState());
-        }
+//        // TRICKY: KITKAT introduced changes to the external media that made sd cards read only
+//        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) { // || Root.isDeviceRooted()
+//            StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
+//            return removeableMediaInfo != null;
+//        } else {
+//            return Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState());
+//        }
+
+        final String externalStorageState = Environment.getExternalStorageState();
+        return Environment.MEDIA_MOUNTED.equals(externalStorageState);
     }
 
     /**
@@ -166,14 +169,8 @@ public class AppContext {
      */
     public static File getPublicDownloadsDirectory() {
         File dir;
-        // TRICKY: KITKAT introduced changes to the external media that made sd cards read only
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) { // || Root.isDeviceRooted()
-            StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
-            if(removeableMediaInfo != null) {
-                dir = new File("/storage/" + removeableMediaInfo.getMountName() + "/Download/translationStudio");
-            } else {
-                dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "translationStudio");
-            }
+        if(isExternalMediaAvailable()) {
+            dir = new File(Environment.getExternalStorageDirectory() + "/Download/translationStudio");
         } else {
             dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "translationStudio");
         }
