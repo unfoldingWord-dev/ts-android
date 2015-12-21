@@ -110,7 +110,7 @@ public class UpdateAppTask extends ManagedTask {
     }
 
     /**
-     * We to migrate chunks in targetTranslations because some no longer match up to the source.
+     * We need to migrate chunks in targetTranslations because some no longer match up to the source.
      */
     private void upgradePre110() {
         TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
