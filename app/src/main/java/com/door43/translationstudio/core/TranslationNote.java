@@ -17,7 +17,11 @@ public class TranslationNote {
         mChapterId = chapterId;
         mFrameId = frameId;
         mId = noteId;
-        this.title = title;
+        if (title.trim().isEmpty()) {
+            this.title = body;
+        } else {
+            this.title = title;
+        }
         this.body = body;
     }
 
