@@ -1,6 +1,5 @@
 package com.door43.translationstudio.newui.home;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
@@ -9,7 +8,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,31 +17,17 @@ import android.widget.Button;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.SettingsActivity;
-import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.filebrowser.FileBrowserActivity;
-import com.door43.translationstudio.git.SSHSession;
 import com.door43.translationstudio.newui.DeviceNetworkAliasDialog;
 import com.door43.translationstudio.newui.ShareWithPeerDialog;
-import com.door43.util.tasks.ThreadableUI;
 import com.door43.widget.ViewUtil;
-import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.JSchException;
 
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by joel on 10/5/2015.
@@ -174,7 +158,7 @@ public class ImportDialog extends DialogFragment {
                     try {
                         final Translator translator = AppContext.getTranslator();
                         final String[] targetTranslationSlugs = translator.importArchive(file);
-                        TargetTranslationMigrator.mergeInvalidChunksFromProjects(translator, AppContext.getLibrary(), targetTranslationSlugs);
+                        TargetTranslationMigrator.migrateChunkChanges(translator, AppContext.getLibrary(), targetTranslationSlugs);
 
                         CustomAlertDialog.Create(getActivity())
                                 .setTitle(R.string.import_from_sd)

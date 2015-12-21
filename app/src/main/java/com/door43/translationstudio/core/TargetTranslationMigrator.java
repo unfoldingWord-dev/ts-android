@@ -19,9 +19,6 @@ import java.util.Iterator;
  */
 public class TargetTranslationMigrator {
 
-    final static String CHUNK_EXT = "txt";
-    final static String CHUNK_FULL_EXT = "." + CHUNK_EXT;
-
     private TargetTranslationMigrator() {
 
     }
@@ -133,18 +130,17 @@ public class TargetTranslationMigrator {
     }
 
    /**
-     * Merges chunks found in the target translation projects that do not exist in the source translation
-     * to a sibling chunk so that no data is lost.
-     * @param library
-     * @param translationSlugs projects to translate
-     * @return
-     */
-    public static boolean mergeInvalidChunksFromProjects(final Translator translator, final Library library, final String[] translationSlugs) {
+    * Merges chunks found in the target translation projects that do not exist in the source translation
+    * to a sibling chunk so that no data is lost.
+    * @param library
+    * @param translationSlugs target translations to merge
+    * @return
+    */
+    public static boolean migrateChunkChanges(final Translator translator, final Library library, final String[] translationSlugs) {
         boolean mergeSuccess = true;
         for (String translationSlug : translationSlugs) {
-
             final TargetTranslation targetTranslation = translator.getTargetTranslation(translationSlug);
-            boolean success = mergeInvalidChunksFromProject(library, targetTranslation);
+            boolean success = migrateChunkChanges(library, targetTranslation);
             mergeSuccess = mergeSuccess && success;
         }
         return mergeSuccess;
@@ -154,13 +150,13 @@ public class TargetTranslationMigrator {
      * Merges chunks found in the target translation projects that do not exist in the source translation
      * to a sibling chunk so that no data is lost.
      * @param library
-     * @param targetTranslations projects to translate
+     * @param targetTranslations target translations to merge
      * @return
      */
-    public static boolean mergeInvalidChunksFromProjects(final Library library, final TargetTranslation[] targetTranslations) {
+    public static boolean migrateChunkChanges(final Library library, final TargetTranslation[] targetTranslations) {
         boolean mergeSuccess = true;
         for (TargetTranslation targetTranslation : targetTranslations) {
-            boolean success = mergeInvalidChunksFromProject(AppContext.getLibrary(), targetTranslation);
+            boolean success = migrateChunkChanges(AppContext.getLibrary(), targetTranslation);
             mergeSuccess = mergeSuccess && success;
         }
         return mergeSuccess;
@@ -170,33 +166,29 @@ public class TargetTranslationMigrator {
      * Merges chunks found in a target translation Project that do not exist in the source translation
      * to a sibling chunk so that no data is lost.
      * @param library
-     * @param targetTranslation project to translate
+     * @param targetTranslation target translation to merge
      * @return
      */
-    public static boolean mergeInvalidChunksFromProject(final Library library, final TargetTranslation targetTranslation)  {
+    public static boolean migrateChunkChanges(final Library library, final TargetTranslation targetTranslation)  {
         try {
-            Logger.i(TargetTranslationMigrator.class.getName(), "merging project " + targetTranslation.getProjectId());
-
-            final String targetTranslationID = targetTranslation.getPath().getName();
-            final String sourceTranslationID = AppContext.getSelectedSourceTranslationId(targetTranslationID);
-            if(null == sourceTranslationID) { // likely a new import and no sources have been selected
-                Logger.w(TargetTranslationMigrator.class.getName(), "no source translation ID found for " + targetTranslation.getProjectId());
+            Logger.i(TargetTranslationMigrator.class.getName(), "Migrating chunks in target translation " + targetTranslation.getProjectId());
+            final SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(targetTranslation.getProjectId(), "en");
+            if(sourceTranslation == null) {
+                Logger.w(TargetTranslationMigrator.class.getName(), "Could not find a source translation for the target translation " + targetTranslation.getId());
                 return false;
             }
-
-            Logger.i(TargetTranslationMigrator.class.getName(), "source Translation ID: " + sourceTranslationID);
-
-            final SourceTranslation sourceTranslation = library.getSourceTranslation(sourceTranslationID);
-            if(null == sourceTranslation)  {
-                Logger.w(TargetTranslationMigrator.class.getName(), "no source translations found for " + targetTranslation.getProjectId());
-                return false;
+            if(targetTranslation.getPath().exists()) {
+                boolean migrationSuccess = true;
+                // perform the chunk migration on each chapter of the target translation
+                for(ChapterTranslation chapterTranslation:targetTranslation.getChapterTranslations()) {
+                    Chapter chapter = library.getChapter(sourceTranslation, chapterTranslation.getId());
+                    if(chapter != null) {
+                        boolean success = mergeInvalidChunksInChapter(library, sourceTranslation, targetTranslation, chapter);
+                        migrationSuccess = migrationSuccess && success;
+                    }
+                }
+                return migrationSuccess;
             }
-
-            final File localDir = targetTranslation.getPath();
-            if(localDir.exists()) {
-                return mergeInvalidChunksInChapters(library, sourceTranslation, targetTranslation);
-            }
-
         } catch (Exception e) {
             Logger.e(TargetTranslationMigrator.class.getName(), "Failed to merge the chunks in the target translation " + targetTranslation.getProjectId());
         }
@@ -204,149 +196,56 @@ public class TargetTranslationMigrator {
     }
 
     /**
-     * Merges chunks found in the target translation that do not exist in the source translation
-     * to a sibling chunk so that no data is lost.
+     * Merges invalid chunks found in the target translation with a valid sibling chunk in order
+     * to preserve translation data. Merged chunks are marked as not finished to force
+     * translators to review the changes.
      * @param library
-     * @param targetTranslation project to translate
+     * @param sourceTranslation
+     * @param targetTranslation
+     * @param chapter
      * @return
      */
-    private static boolean mergeInvalidChunksInChapters(final Library library, final SourceTranslation sourceTranslation, final TargetTranslation targetTranslation)  {
-        boolean mergeSuccess = true;
-        final File localDir = targetTranslation.getPath();
-        final File[] newFiles = localDir.listFiles();
-        for(File localFolder:newFiles) {
-            if(localFolder.isDirectory()) {
-                Chapter chapter = getChapter(library, sourceTranslation, getFileBase(localFolder.getName()));
-                if(null != chapter) {
-                    boolean success = mergeInvalidChunksInChapter(library, sourceTranslation, targetTranslation, localFolder, chapter);
-                    mergeSuccess = mergeSuccess && success;
-                }
-            }
-        }
-        return mergeSuccess;
-    }
-
-    private static boolean mergeInvalidChunksInChapter(final Library library, final SourceTranslation sourceTranslation, final TargetTranslation targetTranslation, final File localFolder, final Chapter chapter) {
+    private static boolean mergeInvalidChunksInChapter(final Library library, final SourceTranslation sourceTranslation, final TargetTranslation targetTranslation, final Chapter chapter) {
         boolean success = true;
-
-        Logger.i(TargetTranslationMigrator.class.getName(), "searching chapter " + chapter.getId());
-
-        final Frame[] frames = library.getFrames(sourceTranslation, chapter.getId());
-        File[] chunks = localFolder.listFiles();
-        Arrays.sort(chunks);
-        for (File chunk : chunks) {
-            String chunkName = chunk.getName();
-            if (getFileExt(chunkName).equals(CHUNK_EXT)) {
-                String chunkBase = getFileBase(chunkName);
-                Frame mergeFrame = getMergeFrame(frames, chunkBase);
-
-                if(null != mergeFrame) {
-                    if(!mergeFrame.getId().equals(chunkBase)) { // if merge frame is not same as current frame
-                        try {
-                            mergeExtraChunkIntoValidFrame(targetTranslation, localFolder, chunk, mergeFrame);
-
-                        } catch (IOException e) {
-                            Logger.w(TargetTranslationMigrator.class.getName(), "merge of frames failed", e);
-                            success = false;
-                        }
-                    }
+        Logger.i(TargetTranslationMigrator.class.getName(), "Searching chapter " + chapter.getId() + " for invalid chunks ");
+        // TRICKY: the translation format doesn't matter for migrating
+        FrameTranslation[] frameTranslations = targetTranslation.getFrameTranslations(chapter.getId(), TranslationFormat.DEFAULT);
+        String invalidChunks = "";
+        Frame lastValidFrame = null;
+        for(FrameTranslation frameTranslation:frameTranslations) {
+            Frame frame = library.getFrame(sourceTranslation, chapter.getId(), frameTranslation.getId());
+            if(frame != null) {
+                lastValidFrame =  frame;
+                // merge invalid frames into the existing frame
+                if(!invalidChunks.isEmpty()) {
+                    targetTranslation.applyFrameTranslation(frameTranslation, invalidChunks + frameTranslation.body);
+                    invalidChunks = "";
+                    targetTranslation.reopenFrame(frame);
+                }
+            } else if(!frameTranslation.body.trim().isEmpty()) {
+                // collect invalid frame
+                invalidChunks += frameTranslation.body + "\n\n";
+            }
+        }
+        // clean up remaining invalid chunks
+        if(!invalidChunks.isEmpty()) {
+            if(lastValidFrame == null) {
+                // push remaining invalid chunks onto the first available frame
+                String[] frameslugs = library.getFrameSlugs(sourceTranslation, chapter.getId());
+                if(frameslugs.length > 0) {
+                    lastValidFrame = library.getFrame(sourceTranslation, chapter.getId(), frameslugs[0]);
                 } else {
-                    Logger.w(TargetTranslationMigrator.class.getName(), "no merge frame found for " + chunkBase);
+                    Logger.w(TargetTranslationMigrator.class.getName(), "No frames were found for chapter " + chapter.getId());
                 }
             }
+
+            if(lastValidFrame != null) {
+                FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(lastValidFrame);
+                targetTranslation.applyFrameTranslation(frameTranslation, invalidChunks + frameTranslation.body);
+                targetTranslation.reopenFrame(lastValidFrame);
+            }
         }
+
         return success;
-    }
-
-    private static void mergeExtraChunkIntoValidFrame(TargetTranslation targetTranslation, File localFolder, File extraChunk, Frame mergeFrame) throws IOException {
-        if(extraChunk.length() <= 0) {
-            Logger.i(TargetTranslationMigrator.class.getName(), "skipping merge of empty file: " + extraChunk.toString());
-            return;
-        } // skip if file is empty
-
-        Logger.i(TargetTranslationMigrator.class.getName(), "merging '" + extraChunk.toString() +"' into '" + mergeFrame.getId() + "' in folder: " + localFolder.toString());
-
-        File mergeChunk = new File(localFolder, mergeFrame.getId() + CHUNK_FULL_EXT);
-
-        // merge extra chunk into target chunk
-        String extraData = FileUtils.readFileToString(extraChunk);
-        String previousData = FileUtils.readFileToString(mergeChunk);
-
-        String mergedString;
-        if(extraChunk.toString().compareTo(mergeChunk.toString()) >= 0) {
-            mergedString = previousData + " " + extraData;
-        } else {
-            mergedString = extraData + " " + previousData;
-        }
-
-        Logger.i(TargetTranslationMigrator.class.getName(), "merged data: " + mergedString);
-
-        FileUtils.write(mergeChunk, mergedString);
-        FileUtils.write(extraChunk, ""); //clear extra chunk
-
-        targetTranslation.reopenFrame(mergeFrame);
-    }
-
-    @Nullable
-    private static Frame getMergeFrame(Frame[] frames, String chunkBase) {
-        Frame previousFrame = null;
-        for(Frame frame:frames) {
-
-            if(null == previousFrame) { // always start with first valid frame
-                previousFrame = frame;
-            }
-
-            int compare = frame.getId().compareTo(chunkBase);
-            if(compare == 0) { // found match
-                previousFrame = frame;
-                break;
-            } else if (compare > 0) { // gone past
-                break;
-            }
-
-            previousFrame = frame;
-        }
-        return previousFrame;
-    }
-
-    @Nullable
-    private static Chapter getChapter(final Library library, final SourceTranslation sourceTranslation, final String chapterID) {
-        Chapter currentChapter = null;
-        final Chapter[] chapters = library.getChapters( sourceTranslation);
-
-        for(Chapter chapter: chapters) {
-            if(chapter.getId().equals(chapterID)) {
-                currentChapter = chapter;
-                break;
-            }
-        }
-        return currentChapter;
-    }
-
-    private static String getFileExt(String fileName) {
-        return fileName.substring((fileName.lastIndexOf(".") + 1), fileName.length());
-    }
-
-    private static String getFileBase(String fileName) {
-
-        int pos = fileName.lastIndexOf(".");
-
-        if(pos < 0) { // no extension
-            return fileName;
-        }
-
-        return fileName.substring(0, pos);
-    }
-
-    private static int getFileBaseAsNumber(String fileName) {
-        try {
-            String base = getFileBase(fileName);
-
-            Integer value = Integer.parseInt(base);
-            return value.intValue();
-
-        } catch (NumberFormatException nfe) {
-            return -1; // not number
-        }
     }
 }

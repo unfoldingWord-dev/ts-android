@@ -1,6 +1,5 @@
 package com.door43.translationstudio.newui.home;
 
-import android.app.AlertDialog;
 import android.app.DialogFragment;
 import android.os.Bundle;
 import android.os.Handler;
@@ -30,7 +29,6 @@ import com.door43.util.tasks.TaskManager;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 
@@ -206,7 +204,7 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
                         Logger.e(RestoreFromCloudDialog.class.getName(), "Failed to commit changes after restoring backup", e);
                     }
 
-                    TargetTranslationMigrator.mergeInvalidChunksFromProject(AppContext.getLibrary(), targetTranslation);
+                    TargetTranslationMigrator.migrateChunkChanges(AppContext.getLibrary(), targetTranslation);
                 }
 
                 FileUtils.deleteQuietly(sourcePath);

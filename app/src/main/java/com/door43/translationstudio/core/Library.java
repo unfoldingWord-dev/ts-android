@@ -1,6 +1,7 @@
 package com.door43.translationstudio.core;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.util.Zip;
@@ -481,6 +482,7 @@ public class Library {
      * @param chapterId
      * @return
      */
+    @Nullable
     public Chapter getChapter(SourceTranslation sourceTranslation, String chapterId) {
         return getActiveIndex().getChapter(sourceTranslation, chapterId);
     }
@@ -536,6 +538,7 @@ public class Library {
      * @param frameId
      * @return
      */
+    @Nullable
     public Frame getFrame(SourceTranslation sourceTranslation, String chapterId, String frameId) {
         if(frameId == null || chapterId == null) {
             return null;

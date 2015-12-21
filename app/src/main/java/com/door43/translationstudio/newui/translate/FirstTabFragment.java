@@ -119,7 +119,6 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
                 if(targetTranslation != null) {
                     try {
                         targetTranslation.addSourceTranslation(sourceTranslation);
-                        TargetTranslationMigrator.mergeInvalidChunksFromProject(AppContext.getLibrary(), targetTranslation);
                     } catch (JSONException e) {
                         Logger.e(this.getClass().getName(), "Failed to record source translation (" + sourceTranslation.getId() + ") usage in the target translation " + targetTranslation.getId(), e);
                     }

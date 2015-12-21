@@ -10,7 +10,6 @@ import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.AppContext;
-import com.door43.translationstudio.core.IndexerSQLiteHelper;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
@@ -115,7 +114,7 @@ public class UpdateAppTask extends ManagedTask {
      */
     private void upgradePre110() {
         TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
-        TargetTranslationMigrator.mergeInvalidChunksFromProjects(AppContext.getLibrary(), targetTranslations);
+        TargetTranslationMigrator.migrateChunkChanges(AppContext.getLibrary(), targetTranslations);
     }
 
     /**
