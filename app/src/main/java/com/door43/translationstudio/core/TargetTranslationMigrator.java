@@ -224,7 +224,7 @@ public class TargetTranslationMigrator {
                 }
             } else if(!frameTranslation.body.trim().isEmpty()) {
                 // collect invalid frame
-                invalidChunks += frameTranslation.body + "\n\n";
+                invalidChunks += frameTranslation.body + "\n----------\n";
             }
         }
         // clean up remaining invalid chunks

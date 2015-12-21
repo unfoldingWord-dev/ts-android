@@ -174,6 +174,8 @@ public class Translator {
             throw new Exception("Not a translationStudio archive");
         }
 
+        targetTranslation.commit();
+
         // build manifest
         JSONObject manifestJson = new JSONObject();
         JSONObject generatorJson = new JSONObject();
