@@ -250,7 +250,7 @@ public class Library {
         }
 
         // word assignments
-        // TODO: delete current term assignments
+        // TODO: delete current translationWord assignments
         if(mDownloader.downloadWordAssignments(sourceTranslation, mAppIndex)) {
             mAppIndex.markWordAssignmentsCatalogUpToDate(sourceTranslation);
         }
@@ -552,7 +552,6 @@ public class Library {
      * @return
      */
     public TargetLanguage getTargetLanguage(String targetLanguageId) {
-        // TODO: cache for better performance
         return getActiveIndex().getTargetLanguage(targetLanguageId);
     }
 

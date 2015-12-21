@@ -341,18 +341,18 @@ public class ServerService extends NetworkService {
                 // TODO: we shouldn't use the project manager here because this may be running in the background (eventually)
 
                 // read preferred source languages (for better readability on the client)
-//                List<Language> preferredLanguages = new ArrayList<>();
-                try {
-                    JSONArray preferredLanguagesJson = contextJson.getJSONArray("preferred_source_language_ids");
-                    for(int i = 0; i < preferredLanguagesJson.length(); i ++) {
-//                        Language lang =  null;//AppContext.projectManager().getLanguage(preferredLanguagesJson.getString(i));
-//                        if(lang != null) {
-//                            preferredLanguages.add(lang);
-//                        }
-                    }
-                } catch (JSONException e) {
-                    Logger.e(this.getClass().getName(), "failed to parse preferred language list", e);
-                }
+////                List<Language> preferredLanguages = new ArrayList<>();
+//                try {
+////                    JSONArray preferredLanguagesJson = contextJson.getJSONArray("preferred_source_language_ids");
+////                    for(int i = 0; i < preferredLanguagesJson.length(); i ++) {
+////                        Language lang =  null;//AppContext.projectManager().getLanguage(preferredLanguagesJson.getString(i));
+////                        if(lang != null) {
+////                            preferredLanguages.add(lang);
+////                        }
+////                    }
+//                } catch (JSONException e) {
+//                    Logger.e(this.getClass().getName(), "failed to parse preferred language list", e);
+//                }
 
                 // generate project library
                 // TODO: identifying the projects that have changes could be expensive if there are lots of clients and lots of projects. We might want to cache this
