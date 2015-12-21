@@ -1,6 +1,10 @@
 package com.door43.translationstudio;
 
+import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -8,6 +12,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.door43.tools.reporting.GlobalExceptionHandler;
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.home.HomeActivity;
 import com.door43.translationstudio.tasks.InitializeLibraryTask;
@@ -22,8 +27,10 @@ import java.io.File;
  * This activity initializes the app
  */
 public class SplashScreenActivity extends BaseActivity implements ManagedTask.OnFinishedListener, ManagedTask.OnStartListener {
+    private static final int REQUEST_CODE_STORAGE_ACCESS = 42;
     private TextView mProgressTextView;
     private ProgressBar mProgressBar;
+    private boolean requestSdCardAccess = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +54,7 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
             startActivity(intent);
             finish();
         }
+
     }
 
     @Override
@@ -150,10 +158,14 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
     }
 
     private void openMainActivity() {
-        AppContext.setLoaded(true);
-        Intent intent = new Intent(this, HomeActivity.class);
-        startActivity(intent);
-        finish();
+        if(requestSdCardAccess) {
+            triggerStorageAccessFramework();
+        } else {
+            AppContext.setLoaded(true);
+            Intent intent = new Intent(this, HomeActivity.class);
+            startActivity(intent);
+            finish();
+        }
     }
 
     @Override
@@ -180,5 +192,35 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
         disconnectTask(InitializeLibraryTask.TASK_ID);
         disconnectTask(UpdateAppTask.TASK_ID);
         super.onDestroy();
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private void triggerStorageAccessFramework() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        startActivityForResult(intent, REQUEST_CODE_STORAGE_ACCESS);
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_CODE_STORAGE_ACCESS) {
+            Uri treeUri = null;
+            if (resultCode == Activity.RESULT_OK) {
+
+                requestSdCardAccess = false;
+
+                // Get Uri from Storage Access Framework.
+                treeUri = data.getData();
+
+                // Persist URI in shared preference so that you can use it later.
+                // Use your own framework here instead of PreferenceUtil.
+//                PreferenceUtil.setSharedPreferenceUri(R.string.key_internal_uri_extsdcard, treeUri);
+                Logger.i(this.getClass().getName(), "URI = " + treeUri.toString());
+
+                // Persist access permissions.
+//                final int takeFlags = resultData.getFlags()
+//                        & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                getContentResolver().takePersistableUriPermission(treeUri, (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION));
+            }
+        }
     }
 }
