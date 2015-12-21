@@ -115,13 +115,7 @@ public class UpdateAppTask extends ManagedTask {
      */
     private void upgradePre110() {
         TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
-        for(TargetTranslation tt:targetTranslations) {
-            try {
-                // TODO: 12/17/2015 loop through all targetTranslations and merge invalid chunks to sibling chunks
-            } catch (Exception e) {
-                Logger.e(this.getClass().getName(), "Failed to merge the chunks in the target translation " + tt.getId());
-            }
-        }
+        TargetTranslationMigrator.mergeInvalidChunksFromProjects(AppContext.getLibrary(), targetTranslations);
     }
 
     /**

@@ -7,6 +7,7 @@ import android.os.IBinder;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.device2device.SocketMessages;
 import com.door43.translationstudio.network.Connection;
@@ -361,7 +362,9 @@ public class ClientService extends NetworkService {
                                 // TODO: 11/23/2015 perform a diff first
                                 try {
                                     String[] targetTranslationSlugs = translator.importArchive(file);
-                                    // TODO: 12/17/2015 merge chunks .. loop
+
+                                    TargetTranslationMigrator.mergeInvalidChunksFromProjects(translator, AppContext.getLibrary(), targetTranslationSlugs);
+
                                     if(listener != null) {
                                         listener.onReceivedTargetTranslations(server, targetTranslationSlugs);
                                     }
