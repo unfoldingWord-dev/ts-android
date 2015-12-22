@@ -1007,6 +1007,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                 editText.setText(text);
                                 String translation = Translator.compileTranslation((Editable)editText.getText());
                                 mTargetTranslation.applyFrameTranslation(frameTranslation, translation);
+
+                                // Reload, so that bodyTranslation and other data are kept in sync.
+                                item.loadTranslations(mSourceTranslation, mTargetTranslation, null, frame);
                             } else if(event.getAction() == DragEvent.ACTION_DRAG_ENDED) {
                                 view.setOnDragListener(null);
                                 editText.setSelection(editText.getSelectionEnd());
