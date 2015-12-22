@@ -113,8 +113,19 @@ public class UpdateAppTask extends ManagedTask {
      * We need to migrate chunks in targetTranslations because some no longer match up to the source.
      */
     private void upgradePre110() {
+        AppContext.context().deleteDatabase(Library.DATABASE_NAME);
+
+        // TRICKY: we deploy the new library in a different task but since we are using it we need to do so now
+        try {
+            AppContext.deployDefaultLibrary();
+        } catch (Exception e) {
+            Logger.e(this.getClass().getName(), "Failed to deploy the default index", e);
+        }
+        
+        // migrate broken chunks
         TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
         TargetTranslationMigrator.migrateChunkChanges(AppContext.getLibrary(), targetTranslations);
+
     }
 
     /**
