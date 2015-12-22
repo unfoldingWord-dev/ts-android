@@ -213,21 +213,12 @@ public class AppContext {
     public static boolean documentFolderWrite(final DocumentFile document, final String data, final boolean append) {
 
         boolean success = true;
-
-        int mode = 0;
-        if (append) {
-            mode = Context.MODE_APPEND;
-        } else {
-            mode = Context.MODE_WORLD_WRITEABLE;
-        }
-
-        FileOutputStream fout = null;
+        OutputStream fout = null;
 
         try {
-
-            fout = mContext.openFileOutput(document.getName(), mode);
+            fout = mContext.getContentResolver().openOutputStream(document.getUri());
             fout.write(data.getBytes());
-            fout.flush();
+            fout.close();
         } catch (Exception e) {
             Logger.i(AppContext.class.getName(), "Could not write to folder");
             success = false; // write failed
