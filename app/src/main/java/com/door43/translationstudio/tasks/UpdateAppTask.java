@@ -10,7 +10,6 @@ import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.AppContext;
-import com.door43.translationstudio.core.IndexerSQLiteHelper;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
@@ -89,6 +88,9 @@ public class UpdateAppTask extends ManagedTask {
         if(lastVersion < 109) {
             upgradePre109();
         }
+        if(lastVersion < 110) {
+            upgradePre110();
+        }
 
         updateBuildNumbers();
     }
@@ -105,6 +107,25 @@ public class UpdateAppTask extends ManagedTask {
                 Logger.e(this.getClass().getName(), "Failed to update the generator in the target translation " + tt.getId());
             }
         }
+    }
+
+    /**
+     * We need to migrate chunks in targetTranslations because some no longer match up to the source.
+     */
+    private void upgradePre110() {
+        AppContext.context().deleteDatabase(Library.DATABASE_NAME);
+
+        // TRICKY: we deploy the new library in a different task but since we are using it we need to do so now
+        try {
+            AppContext.deployDefaultLibrary();
+        } catch (Exception e) {
+            Logger.e(this.getClass().getName(), "Failed to deploy the default index", e);
+        }
+
+        // migrate broken chunks
+        TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
+        TargetTranslationMigrator.migrateChunkChanges(AppContext.getLibrary(), targetTranslations);
+
     }
 
     /**

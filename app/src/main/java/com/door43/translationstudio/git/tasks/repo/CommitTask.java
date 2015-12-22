@@ -10,6 +10,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.IOException;
 
+@Deprecated
 public class CommitTask extends RepoOpTask {
 
     private String mFilePattern;

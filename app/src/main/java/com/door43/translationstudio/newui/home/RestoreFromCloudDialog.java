@@ -1,6 +1,5 @@
 package com.door43.translationstudio.newui.home;
 
-import android.app.AlertDialog;
 import android.app.DialogFragment;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,6 +17,7 @@ import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.CloneTargetTranslationTask;
@@ -29,7 +29,6 @@ import com.door43.util.tasks.TaskManager;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 
@@ -165,6 +164,9 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
                 if(targetTranslation != null) {
                     Logger.i(this.getClass().getName(), "Restoring HEAD in " + targetTranslationSlug + " from the cloud");
                     final File targetPath = targetTranslation.getPath();
+                    // TODO: 12/17/2015 we may need to change this to use the import method in the translator. this would be way easier to maintain.
+                    // TODO: 12/17/2015 we may not want to delete the head. Just merge in the translations from the server??
+                    // or perhaps we could provide some options to the user so they can choose.
                     // delete HEAD of target
                     targetPath.listFiles(new FilenameFilter() {
                         @Override
@@ -201,6 +203,8 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
                     } catch (Exception e) {
                         Logger.e(RestoreFromCloudDialog.class.getName(), "Failed to commit changes after restoring backup", e);
                     }
+
+                    TargetTranslationMigrator.migrateChunkChanges(AppContext.getLibrary(), targetTranslation);
                 }
 
                 FileUtils.deleteQuietly(sourcePath);
