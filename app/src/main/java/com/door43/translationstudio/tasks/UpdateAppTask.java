@@ -121,7 +121,7 @@ public class UpdateAppTask extends ManagedTask {
         } catch (Exception e) {
             Logger.e(this.getClass().getName(), "Failed to deploy the default index", e);
         }
-        
+
         // migrate broken chunks
         TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
         TargetTranslationMigrator.migrateChunkChanges(AppContext.getLibrary(), targetTranslations);
