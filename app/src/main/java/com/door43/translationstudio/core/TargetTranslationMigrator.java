@@ -1,7 +1,5 @@
 package com.door43.translationstudio.core;
 
-import android.support.annotation.Nullable;
-
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 
@@ -10,14 +8,14 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.Iterator;
 
 /**
  * Created by joel on 11/4/2015.
  */
 public class TargetTranslationMigrator {
+
+    private static final String CHUNK_MERGE_MARKER = "\n----------\n";
 
     private TargetTranslationMigrator() {
 
@@ -223,8 +221,15 @@ public class TargetTranslationMigrator {
                     targetTranslation.reopenFrame(frame);
                 }
             } else if(!frameTranslation.body.trim().isEmpty()) {
-                // collect invalid frame
-                invalidChunks += frameTranslation.body + "\n----------\n";
+                if(lastValidFrame == null) {
+                    // collect invalid frame
+                    invalidChunks += frameTranslation.body + CHUNK_MERGE_MARKER;
+                } else { // if last frame is not null, then append invalid chunk to it
+                    FrameTranslation lastFrameTranslation = targetTranslation.getFrameTranslation(lastValidFrame);
+                    targetTranslation.applyFrameTranslation(lastFrameTranslation, lastFrameTranslation.body + CHUNK_MERGE_MARKER + frameTranslation.body );
+                    targetTranslation.reopenFrame(lastValidFrame);
+                }
+                targetTranslation.applyFrameTranslation(frameTranslation, "" ); // clear out old data
             }
         }
         // clean up remaining invalid chunks
@@ -241,7 +246,7 @@ public class TargetTranslationMigrator {
 
             if(lastValidFrame != null) {
                 FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(lastValidFrame);
-                targetTranslation.applyFrameTranslation(frameTranslation, invalidChunks + frameTranslation.body);
+                targetTranslation.applyFrameTranslation(frameTranslation, invalidChunks + CHUNK_MERGE_MARKER + frameTranslation.body);
                 targetTranslation.reopenFrame(lastValidFrame);
             }
         }
