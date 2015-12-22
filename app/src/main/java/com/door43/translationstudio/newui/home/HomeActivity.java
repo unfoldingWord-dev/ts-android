@@ -1,14 +1,19 @@
 package com.door43.translationstudio.newui.home;
 
+import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
+import android.os.Build;
+import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.os.Bundle;
@@ -18,6 +23,7 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Library;
@@ -40,10 +46,12 @@ import java.util.List;
 import java.util.Locale;
 
 public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
+    private static final int REQUEST_CODE_STORAGE_ACCESS = 42;
     private static final int NEW_TARGET_TRANSLATION_REQUEST = 1;
     private Library mLibrary;
     private Translator mTranslator;
     private Fragment mFragment;
+    private boolean requestSdCardAccess = true; // disable by setting false
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -146,7 +154,36 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                 moreMenu.show();
             }
         });
+
+        if (doWeNeedToRequestSdCardAccess()) {
+            triggerStorageAccessFramework();
+        }
     }
+
+    private boolean doWeNeedToRequestSdCardAccess() {
+        Logger.i(this.getClass().getName(), "requestSdCardAccess: " + requestSdCardAccess);
+        if (requestSdCardAccess) { // if request is enabled
+            Logger.i(this.getClass().getName(), "version API: " + Build.VERSION.SDK_INT);
+            Logger.i(this.getClass().getName(), "Environment.getExternalStorageDirectory(): " + Environment.getExternalStorageDirectory());
+            Logger.i(this.getClass().getName(), "Environment.getExternalStorageState(): " + Environment.getExternalStorageState());
+
+            AppContext.restoreSdCardWriteAccess();
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                if (!AppContext.isExternalMediaAvailable()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private void triggerStorageAccessFramework() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        startActivityForResult(intent, REQUEST_CODE_STORAGE_ACCESS);
+    }
+
 
     /**
      * Triggers the process of opening the server library
@@ -203,7 +240,18 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                 .show("ExitConfirm");
     }
 
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+   public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_CODE_STORAGE_ACCESS) {
+            Uri treeUri = null;
+            if (resultCode == Activity.RESULT_OK) {
+                requestSdCardAccess = false;
+
+                // Get Uri from Storage Access Framework.
+                treeUri = data.getData();
+                final int takeFlags = data.getFlags();
+                AppContext.persistSdCardWriteAccess(treeUri, takeFlags);
+            }
+        } else
         if(requestCode == NEW_TARGET_TRANSLATION_REQUEST) {
             if(resultCode == RESULT_OK) {
                 if(mFragment instanceof WelcomeFragment) {
