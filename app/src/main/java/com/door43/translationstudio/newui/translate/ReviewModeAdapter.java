@@ -66,6 +66,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by joel on 9/18/2015.
@@ -611,7 +613,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             .setPositiveButton(R.string.confirm, new View.OnClickListener() {
                                         @Override
                                         public void onClick(View v) {
-                                            onConfirmChunk(item, chapter, frame);
+                                            boolean success = onConfirmChunk(item, chapter, frame);
+                                            holder.mDoneSwitch.setChecked(success);
                                         }
                                     }
                             )
@@ -646,27 +649,64 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         });
     }
 
-    private void onConfirmChunk(final ListItem item, final Chapter chapter, final Frame frame) {
+    private static final Pattern CONSECUTIVE_VERSE_MARKERS =
+            Pattern.compile("<verse .*/>\\s*<verse .*/>");
 
-        boolean finished;
-        if (item.isChapterReference) {
-            finished = mTargetTranslation.finishChapterReference(chapter);
-        } else if (item.isChapterTitle) {
-            finished = mTargetTranslation.finishChapterTitle(chapter);
-        } else if (item.isProjectTitle) {
-            finished = mTargetTranslation.finishProjectTitle();
-        } else {
-            finished = mTargetTranslation.finishFrame(frame);
-        }
-        if (finished) {
-            item.isEditing = false;
-            item.renderedTargetBody = null;
-            notifyDataSetChanged();
-        } else {
+
+    /**
+     * Performs some validation, and commits changes if ready.
+     * @return true if the section was successfully confirmed; otherwise false.
+     */
+    private boolean onConfirmChunk(final ListItem item, final Chapter chapter, final Frame frame) {
+        boolean success = true; // So far, so good.
+
+        // Check for empty translation.
+        if (item.bodyTranslation.isEmpty()) {
             Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.translate_first, Snackbar.LENGTH_LONG);
             ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
             snack.show();
+            success = false;
         }
+
+        // Check for contiguous verse numbers.
+        if (success) {
+            Matcher matcher = CONSECUTIVE_VERSE_MARKERS.matcher(item.bodyTranslation);
+            if (matcher.find()) {
+                Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.consecutive_verse_markers, Snackbar.LENGTH_LONG);
+                ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
+                snack.show();
+                success = false;
+            }
+        }
+
+        // Everything looks good so far. Try and commit.
+        if (success) {
+            if (item.isChapterReference) {
+                success = mTargetTranslation.finishChapterReference(chapter);
+            } else if (item.isChapterTitle) {
+                success = mTargetTranslation.finishChapterTitle(chapter);
+            } else if (item.isProjectTitle) {
+                success = mTargetTranslation.finishProjectTitle();
+            } else {
+                success = mTargetTranslation.finishFrame(frame);
+            }
+
+            if (!success) {
+                // TODO: Use a more accurate (if potentially more opaque) error message.
+                Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.failed_to_commit_chunk, Snackbar.LENGTH_LONG);
+                ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
+                snack.show();
+            }
+        }
+
+        // Wrap up.
+        if (success) {
+            item.isEditing = false;
+            item.renderedTargetBody = null;
+            notifyDataSetChanged();
+        }
+
+        return success;
     }
 
 
