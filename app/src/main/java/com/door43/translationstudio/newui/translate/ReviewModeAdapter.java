@@ -650,8 +650,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     private static final Pattern CONSECUTIVE_VERSE_MARKERS =
-            Pattern.compile("<verse .*/>\\s*<verse .*/>");
+            Pattern.compile("(<verse [^>]+/>\\s*){2}");
 
+    private static final Pattern VERSE_MARKER =
+            Pattern.compile("<verse\\s+number=\"(\\d+)\"[^>]*>");
 
     /**
      * Performs some validation, and commits changes if ready.
@@ -676,6 +678,26 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
                 snack.show();
                 success = false;
+            }
+        }
+
+        // Check for out-of-order verse markers.
+        if (success) {
+            Matcher matcher = VERSE_MARKER.matcher(item.bodyTranslation);
+            int lastVerseSeen = 0;
+            while (matcher.find()) {
+                int currentVerse = Integer.valueOf(matcher.group(1));
+                if (currentVerse < lastVerseSeen) {
+                    success = false;
+                    break;
+                } else {
+                    lastVerseSeen = currentVerse;
+                }
+            }
+            if (!success) {
+                Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.outoforder_verse_markers, Snackbar.LENGTH_LONG);
+                ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
+                snack.show();
             }
         }
 
