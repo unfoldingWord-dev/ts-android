@@ -45,6 +45,7 @@ public class AppContext {
     private static final String DEFAULT_LIBRARY_ZIP = "library.zip";
     private static final String TARGET_TRANSLATIONS_DIR = "translations";
     public static final String PROFILES_DIR = "profiles";
+    public static final String DOWNLOAD_TRANSLATION_STUDIO = "/Download/translationStudio";
     private static MainApplication mContext;
     public static final Bundle args = new Bundle();
     private static boolean loaded;
@@ -172,38 +173,79 @@ public class AppContext {
             StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
             return removeableMediaInfo != null;
         } else {
+            String sdCard = findSdCardFolder();
+            return sdCard != null;
+        }
+    }
 
-            final File sdCardDirectory = getSdCardDirectory();
-            if (null != sdCardDirectory) {
-                final String externalStorageState = EnvironmentCompat.getStorageState(sdCardDirectory);
-                boolean mounted = Environment.MEDIA_MOUNTED.equals(externalStorageState);
-                if (mounted) { // do a double check
-                    if (sdCardDirectory.exists()) {
-                        try {
-                            Uri sdCardFolder = getSdCardAccessUri();
-                            DocumentFile document = DocumentFile.fromTreeUri(mContext, sdCardFolder);
-                            DocumentFile downloadFolder = documentFolderMkdir(document, "Download");
-                            DocumentFile translationFolder = documentFolderMkdir(downloadFolder, "translationStudio");
-                            boolean success = translationFolder != null;
-                            if (success) {
-                                if (translationFolder.canWrite()) {
-                                    DocumentFile file = translationFolder.createFile("text/plain", "_zzztestzzz_.txt"); // TODO remove after testing
-                                    documentFolderWrite(file, "test", false); // TODO remove after testing
-//                                    success = file.delete();
-                                    return true;
+    /**
+     * Returns the file to the external public downloads directory
+     * @return
+     */
+    public static String findSdCardFolder() {
+
+        if(!sdCardPath.isEmpty()) {
+            return sdCardPath;
+        }
+
+        String[] mounts = getExternalDirectories();
+        String sdPath = null;
+
+        final String testFolder = "__testing.dir__";
+
+        if(null == mounts) {
+            return null;
+        }
+
+        DocumentFile sdCardTempFolder = sdCardMkdirs(testFolder);
+        boolean success = sdCardTempFolder != null;
+        if (success) {
+            if (sdCardTempFolder.canWrite()) {
+                DocumentFile file = sdCardTempFolder.createFile("text/plain", "_zzztestzzz_.txt"); // make sure URI write accessable
+                String testData = "test Data";
+                success = documentFolderWrite(file, testData, false); // make sure we can write
+                if(file.length() < file.length()) {
+                    success = false;
+                }
+                file.delete(); // cleanup after use
+
+                try {
+                    if(success) {
+                        if (mounts.length > 0) {
+
+                            for (String mount : mounts) {
+
+                                final String externalStorageState = EnvironmentCompat.getStorageState(new File(mount));
+                                boolean mounted = Environment.MEDIA_MOUNTED.equals(externalStorageState);
+                                if (!mounted) { // do a double check
+                                    continue;
                                 }
-                            }
-                            return success;
 
-                        } catch (Exception e) {
-                            Logger.i(AppContext.class.getName(), "Could not write to folder");
-                            return false; // write failed
+                                File testFolderFile = new File(mount, testFolder);
+                                boolean isPresent = testFolderFile.exists();
+                                if (isPresent) {
+                                    Logger.i(AppContext.class.toString(), "found folder: " + testFolderFile.toString());
+                                    sdPath = mount;
+                                    break;
+                                }
+                            } // end for mounts
+                        }
+
+                        if (null == sdPath) {
+                            Logger.i(AppContext.class.toString(), "SD card folder not found");
+                        } else {
+                            sdCardPath = sdPath;
                         }
                     }
+
+                    sdCardTempFolder.delete(); // remove test folder
+
+                } catch (Exception e) {
+                    Logger.w(AppContext.class.toString(),"Error getting external card folder", e);
                 }
             }
         }
-        return false;
+        return sdPath;
     }
 
     /**
@@ -230,10 +272,41 @@ public class AppContext {
     }
 
     /**
+     * recursively creates a folder on SD card and then returns the new folder or null if error
+     * @return
+     */
+    public static DocumentFile sdCardMkdirs(final String folderName) {
+
+        Uri sdCardFolderUri = getSdCardAccessUri();
+        DocumentFile sdCardFolder = DocumentFile.fromTreeUri(mContext, sdCardFolderUri);
+        DocumentFile document = sdCardFolder;
+
+        String[] parts = folderName.split("\\/");
+        if(parts.length < 1) {
+            return null;
+        }
+
+        for (int i = 0; i < parts.length; i++) {
+            if(parts[i].isEmpty()) { // skip over extraneous slashes
+                continue;
+            }
+
+            DocumentFile nextDocument = documentFolderMkdir(document, parts[i]);
+            if (nextDocument == null) {
+                return null;
+            }
+
+            document = nextDocument;
+        }
+
+        return document;
+    }
+
+    /**
      * creates a folder and then returns the new folder or null if error
      * @return
      */
-    public static DocumentFile documentFolderMkdir(final DocumentFile document, final String folderName) {
+    private static DocumentFile documentFolderMkdir(final DocumentFile document, final String folderName) {
 
         if(document == null) {
             return null;
@@ -256,22 +329,67 @@ public class AppContext {
     }
 
     /**
-     * Returns the file to the external public downloads directory
+     * Returns true if an SD card is present and mounted on Android Kitkat or greater
      * @return
      */
+    public static boolean isSdCardPresentKitKat() {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            File sdCard = getSdCardDirectory();
+            return sdCard != null;
+        }
+
+        return false;
+    }
+
+    /**
+    * Returns the file to the external public downloads directory.  Warning this may not be writeable.
+     * Just a rough check to see if one is possibly present.
+    * @return
+    */
     public static File getSdCardDirectory() {
 
-        if(!sdCardPath.isEmpty()) {
+        if (!sdCardPath.isEmpty()) {
             return new File(sdCardPath);
         }
 
+        String[] mounts = getExternalDirectories();
+
+        try {
+            if( (mounts != null) && (mounts.length > 0)) {
+                String path = mounts[0];
+                for(String mount:mounts) {
+                    File mountFile = new File(mount);
+                    String state = EnvironmentCompat.getStorageState(mountFile);
+                    boolean mounted = Environment.MEDIA_MOUNTED.equals(state);
+                    if(mounted) {
+                        path = mount;
+                        break;
+                    }
+                }
+                File absolute = new File(path).getCanonicalFile();
+                sdCardPath = absolute.toString(); // cache value
+                return absolute;
+            }
+        } catch (Exception e) {
+            Logger.w(AppContext.class.toString(),"Error getting external card folder", e);
+        }
+        return null;
+    }
+
+    /**
+     * Returns list of all the external directories
+     * @return
+     */
+    public static String[] getExternalDirectories() {
+
+        List<String> mounts = new ArrayList<>();
         try {
             Runtime runtime = Runtime.getRuntime();
             Process proc = runtime.exec("mount");
             InputStream is = proc.getInputStream();
             InputStreamReader isr = new InputStreamReader(is);
             String line;
-            List<String> mounts = new ArrayList<>();
             BufferedReader br = new BufferedReader(isr);
             while ((line = br.readLine()) != null) {
                 if (line.contains("secure")) continue;
@@ -294,21 +412,8 @@ public class AppContext {
                 }
             }
 
-            if (mounts.size() > 0) {
-                String path = mounts.get(0);
-                for(String mount:mounts) {
-                    File mountFile = new File(mount);
-                    String state = EnvironmentCompat.getStorageState(mountFile);
-                    boolean mounted = Environment.MEDIA_MOUNTED.equals(state);
-                    if(mounted) {
-                        path = mount;
-                        break;
-                    }
-                }
-                File absolute = new File(path).getCanonicalFile();
-                sdCardPath = absolute.toString(); // cache value
-                return absolute;
-            }
+            return mounts.toArray(new String[mounts.size()]);
+
         } catch (Exception e) {
             Logger.w(AppContext.class.toString(),"Error getting external card folder", e);
         }
@@ -331,6 +436,7 @@ public class AppContext {
             AppContext.setUserString(SettingsActivity.KEY_SDCARD_ACCESS_FLAGS, String.valueOf(flags));
             Logger.i(AppContext.class.getName(), "URI = " + sdUri.toString());
 
+            sdCardPath = ""; // reset persisted path to SD card, will need to find it again
             restoreSdCardWriteAccess(); // apply settings
         } else {
             return true;
@@ -385,7 +491,7 @@ public class AppContext {
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) { // || Root.isDeviceRooted()
             StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
             if(removeableMediaInfo != null) {
-                dir = new File("/storage/" + removeableMediaInfo.getMountName() + "/Download/translationStudio");
+                dir = new File("/storage/" + removeableMediaInfo.getMountName() + DOWNLOAD_TRANSLATION_STUDIO);
             } else {
                 dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "translationStudio");
             }
