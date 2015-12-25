@@ -156,7 +156,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
         });
 
         if (doWeNeedToRequestSdCardAccess()) {
-            triggerStorageAccessFramework();
+            AppContext.triggerStorageAccessFramework(this);
         }
     }
 
@@ -169,21 +169,14 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
 
             AppContext.restoreSdCardWriteAccess();
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                if (!AppContext.isExternalMediaAvailable()) {
+            if (!AppContext.isSdCardAvailable()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                     return true;
                 }
             }
         }
         return false;
     }
-
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private void triggerStorageAccessFramework() {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-        startActivityForResult(intent, REQUEST_CODE_STORAGE_ACCESS);
-    }
-
 
     /**
      * Triggers the process of opening the server library
@@ -241,7 +234,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
     }
 
    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_CODE_STORAGE_ACCESS) {
+        if (requestCode == AppContext.REQUEST_CODE_STORAGE_ACCESS) {
             Uri treeUri = null;
             if (resultCode == Activity.RESULT_OK) {
                 requestSdCardAccess = false;

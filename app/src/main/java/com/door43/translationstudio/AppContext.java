@@ -1,8 +1,7 @@
 package com.door43.translationstudio;
 
 import android.annotation.TargetApi;
-import android.app.Application;
-import android.content.ContentResolver;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -29,7 +28,6 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -50,6 +48,7 @@ public class AppContext {
     public static final Bundle args = new Bundle();
     private static boolean loaded;
     private static String sdCardPath = "";
+    public static final int REQUEST_CODE_STORAGE_ACCESS = 42;
 
     /**
      * Initializes the basic functions context.
@@ -164,14 +163,46 @@ public class AppContext {
     }
 
     /**
+     * Checks path to external storage - may not be mounted
+     * @return
+     */
+    private static File getLegacyExternalStorageDirectory() {
+        String path = System.getenv("EXTERNAL_STORAGE");
+        return new File(path);
+    }
+
+
+    /**
      * Checks if the external media is mounted and writeable
      * @return
      */
-    public static boolean isExternalMediaAvailable() {
+    public static boolean isSdCardAvailable() {
         // TRICKY: KITKAT introduced changes to the external media that made sd cards read only
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) { // || Root.isDeviceRooted()
-            StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
-            return removeableMediaInfo != null;
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+
+//            StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
+//            return removeableMediaInfo != null;
+
+            File sdCard = getSdCardDirectory();
+            return sdCard != null;
+
+//            try {
+//                Logger.i(AppContext.class.getName(), "environment = " + System.getenv());
+//                File sdCardFolder = getLegacyExternalStorageDirectory();
+//                final String externalStorageState = EnvironmentCompat.getStorageState(sdCardFolder);
+//                boolean mounted = Environment.MEDIA_MOUNTED.equals(externalStorageState);
+//                if(mounted) {
+//                    String extStorage = System.getenv("EMULATED_STORAGE_SOURCE");
+//                    if(extStorage != null) {
+//                        boolean internal = (extStorage.toString().indexOf(extStorage) != 0);
+//                        return !internal;
+//                    }
+//                }
+//            } catch (Exception e) {
+//                Logger.i(AppContext.class.getName(), "Could not get external folder");
+//            }
+//
+//            return false;
         } else {
             String sdCard = findSdCardFolder();
             return sdCard != null;
@@ -277,7 +308,12 @@ public class AppContext {
      */
     public static DocumentFile sdCardMkdirs(final String folderName) {
 
-        Uri sdCardFolderUri = getSdCardAccessUri();
+        String sdCardFolderUriStr = getSdCardAccessUriStr();
+        if(null == sdCardFolderUriStr) {
+            return null;
+        }
+
+        Uri sdCardFolderUri = Uri.parse(sdCardFolderUriStr);
         DocumentFile sdCardFolder = DocumentFile.fromTreeUri(mContext, sdCardFolderUri);
         DocumentFile document = sdCardFolder;
 
@@ -335,6 +371,17 @@ public class AppContext {
     public static boolean isSdCardPresentKitKat() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+
+            if (!sdCardPath.isEmpty()) { // see if we already have detected an SD card
+                return true;
+            }
+
+            if( getSdCardAccessUriStr() != null) { // if user has already chosen a path for SD card
+                if(findSdCardFolder() != null) { // verify card is still present
+                    return true;
+                }
+            }
+
             File sdCard = getSdCardDirectory();
             return sdCard != null;
         }
@@ -357,7 +404,7 @@ public class AppContext {
 
         try {
             if( (mounts != null) && (mounts.length > 0)) {
-                String path = mounts[0];
+                String path = null;
                 for(String mount:mounts) {
                     File mountFile = new File(mount);
                     String state = EnvironmentCompat.getStorageState(mountFile);
@@ -367,9 +414,11 @@ public class AppContext {
                         break;
                     }
                 }
-                File absolute = new File(path).getCanonicalFile();
-                sdCardPath = absolute.toString(); // cache value
-                return absolute;
+                if(path != null) {
+                    File absolute = new File(path).getCanonicalFile();
+                    sdCardPath = absolute.toString(); // cache value
+                    return absolute;
+                }
             }
         } catch (Exception e) {
             Logger.w(AppContext.class.toString(),"Error getting external card folder", e);
@@ -395,7 +444,7 @@ public class AppContext {
                 if (line.contains("secure")) continue;
                 if (line.contains("asec")) continue;
 
-                Logger.i(AppContext.class.getName(),"Checking: " + line);
+//                Logger.i(AppContext.class.getName(),"Checking: " + line);
 
                 if (line.contains("fat")) {//TF card
                     String columns[] = line.split(" ");
@@ -421,6 +470,15 @@ public class AppContext {
         return null;
     }
 
+    public static void triggerStorageAccessFramework(final Activity context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) { // doesn't look like this is possible on Lollipop
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+            context.startActivityForResult(intent, REQUEST_CODE_STORAGE_ACCESS);
+        } else {
+            Logger.w(AppContext.class.toString(),"triggerStorageAccessFramework: not supported for " + Build.VERSION.SDK_INT);
+        }
+    }
+
     /**
      * persists write permission for SD card access
      * @return
@@ -442,7 +500,7 @@ public class AppContext {
             return true;
         }
 
-        boolean success = isExternalMediaAvailable();
+        boolean success = isSdCardAvailable();
         return success;
     }
 
@@ -476,9 +534,9 @@ public class AppContext {
      * reads the stored URI for SD card access
      * @return
      */
-    public static Uri getSdCardAccessUri() {
+    public static String getSdCardAccessUriStr() {
         String path = AppContext.getUserString(SettingsActivity.KEY_SDCARD_ACCESS_URI, null);
-        return Uri.parse(path);
+        return path;
     }
 
     /**
