@@ -28,6 +28,8 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -387,6 +389,65 @@ public class AppContext {
         }
 
         return false;
+    }
+
+    public static void copyFileOrDirectory(String srcDir, String dstDir) {
+
+        try {
+            File src = new File(srcDir);
+            File dst = new File(dstDir, src.getName());
+
+            if (src.isDirectory()) {
+
+                String files[] = src.list();
+                int filesLength = files.length;
+                for (int i = 0; i < filesLength; i++) {
+                    String src1 = (new File(src, files[i]).getPath());
+                    String dst1 = dst.getPath();
+                    copyFileOrDirectory(src1, dst1);
+
+                }
+            } else {
+                copyFile(src, dst);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void copyFile(File sourceFile, File destFile) throws IOException {
+        if (!destFile.getParentFile().exists())
+            destFile.getParentFile().mkdirs();
+
+        if (!destFile.exists()) {
+            destFile.createNewFile();
+        }
+
+        InputStream source = null;
+        OutputStream destination = null;
+
+        try {
+            source = new FileInputStream(sourceFile);
+            destination = new FileOutputStream(destFile);
+            copyStream(source, destination);
+        } catch (IOException e) {
+            Logger.w(AppContext.class.toString(), "copyFile: IOException occurred.", e);
+        }
+    }
+
+    public static boolean copyStream(InputStream in, OutputStream out)  {
+        boolean success = true;
+        try {
+            IOUtils.copy(in, out);
+        } catch (IOException e) {
+            Logger.w(AppContext.class.toString(), "copyStream: IOException occurred.", e);
+            success = false;
+        } finally {
+            IOUtils.closeQuietly(out);
+            IOUtils.closeQuietly(in);
+        }
+
+        return success;
     }
 
     /**
