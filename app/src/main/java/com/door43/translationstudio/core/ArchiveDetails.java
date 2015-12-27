@@ -1,5 +1,9 @@
 package com.door43.translationstudio.core;
 
+import android.content.ContentResolver;
+import android.content.Context;
+import android.support.v4.provider.DocumentFile;
+
 import com.door43.util.Zip;
 
 import org.json.JSONArray;
@@ -36,6 +40,33 @@ public class ArchiveDetails {
     public static ArchiveDetails newInstance(File archive, String preferredLocale, Library library) throws Exception {
         if(archive != null && archive.exists()) {
             String rawManifest = Zip.read(archive, "manifest.json");
+            if(rawManifest != null) {
+                JSONObject json = new JSONObject(rawManifest);
+                if(json.has("package_version")) {
+                    int manifestVersion = json.getInt("package_version");
+                    switch (manifestVersion) {
+                        case 1:
+                            return parseV1Manifest(json);
+                        case 2:
+                            return parseV2Manifest(json, preferredLocale, library);
+                    }
+                }
+            }
+            return null;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Reads the details from a translationStudio archive
+     * @param archive
+     * @return
+     * @throws IOException
+     */
+    public static ArchiveDetails newInstance(Context context, DocumentFile archive, String preferredLocale, Library library) throws Exception {
+        if(archive != null && archive.exists()) {
+            String rawManifest = Zip.readInputStream(context.getContentResolver().openInputStream(archive.getUri()), "manifest.json");
             if(rawManifest != null) {
                 JSONObject json = new JSONObject(rawManifest);
                 if(json.has("package_version")) {

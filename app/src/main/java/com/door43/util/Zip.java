@@ -1,13 +1,12 @@
 package com.door43.util;
 
-import com.door43.translationstudio.core.Util;
+import android.support.annotation.Nullable;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -360,11 +359,21 @@ public class Zip {
      */
     public static String read(File zipArchive, String path) throws IOException {
         InputStream is;
-        ZipInputStream zis;
-        String contents = null;
-        ZipEntry ze;
         is = new FileInputStream(zipArchive);
-        zis = new ZipInputStream(new BufferedInputStream(is));
+        return readInputStream(is, path);
+    }
+
+    /**
+     * Reads the contents of a file from the zip archive
+     * @param zipStream
+     * @param path
+     * @return
+     */    @Nullable
+    public static String readInputStream(InputStream zipStream, String path) throws IOException {
+        String contents = null;
+        ZipInputStream zis;
+        ZipEntry ze;
+        zis = new ZipInputStream(new BufferedInputStream(zipStream));
 
         while ((ze = zis.getNextEntry()) != null) {
             if (ze.isDirectory()) {

@@ -391,36 +391,35 @@ public class AppContext {
         return false;
     }
 
-    public static void copyFileOrDirectory(String srcDir, String dstDir) {
+//    public static void copyFileOrDirectorytoSdCard(String srcDir, String dstDir) {
+//
+//        try {
+//            File src = new File(srcDir);
+//            File dst = new File(dstDir, src.getName());
+//
+//            if (src.isDirectory()) {
+//
+//                String files[] = src.list();
+//                int filesLength = files.length;
+//                for (int i = 0; i < filesLength; i++) {
+//                    String src1 = (new File(src, files[i]).getPath());
+//                    String dst1 = dst.getPath();
+//                    copyFileOrDirectory(src1, dst1);
+//
+//                }
+//            } else {
+//                boolean success = copyFileToDocumentFile(src, dst);
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 
-        try {
-            File src = new File(srcDir);
-            File dst = new File(dstDir, src.getName());
-
-            if (src.isDirectory()) {
-
-                String files[] = src.list();
-                int filesLength = files.length;
-                for (int i = 0; i < filesLength; i++) {
-                    String src1 = (new File(src, files[i]).getPath());
-                    String dst1 = dst.getPath();
-                    copyFileOrDirectory(src1, dst1);
-
-                }
-            } else {
-                copyFile(src, dst);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void copyFile(File sourceFile, File destFile) throws IOException {
-        if (!destFile.getParentFile().exists())
-            destFile.getParentFile().mkdirs();
+    public static boolean copyFileToDocumentFile(File sourceFile, DocumentFile destFile) {
+       DocumentFile destFolder  = sdCardMkdirs(destFile.getParentFile().toString());
 
         if (!destFile.exists()) {
-            destFile.createNewFile();
+            destFile = destFile.createFile("image", destFile.getName());
         }
 
         InputStream source = null;
@@ -428,11 +427,13 @@ public class AppContext {
 
         try {
             source = new FileInputStream(sourceFile);
-            destination = new FileOutputStream(destFile);
-            copyStream(source, destination);
+            destination = mContext.getContentResolver().openOutputStream(destFile.getUri());
+            boolean success = copyStream(source, destination);
+            return success;
         } catch (IOException e) {
             Logger.w(AppContext.class.toString(), "copyFile: IOException occurred.", e);
         }
+        return false;
     }
 
     public static boolean copyStream(InputStream in, OutputStream out)  {
@@ -569,10 +570,9 @@ public class AppContext {
      * restores previously granted write permission for SD card access
      * @return
      */
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     public static void restoreSdCardWriteAccess() {
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 
             String flagStr = AppContext.getUserString(SettingsActivity.KEY_SDCARD_ACCESS_FLAGS, null);
             String path = AppContext.getUserString(SettingsActivity.KEY_SDCARD_ACCESS_URI, null);
