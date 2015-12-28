@@ -63,6 +63,15 @@ public class FileBrowserActivity extends BaseActivity {
                 try {
                     Uri uri = intent.getData();
                     path = DocumentFile.fromTreeUri(AppContext.context(),uri);
+                    Bundle bundle = intent.getExtras();
+                    String folder = (String) bundle.get("Folder");
+                    if(folder != null) {
+                        DocumentFile subDoc = AppContext.documentFileMkdirs(path, folder);
+                        if(subDoc != null) {
+                            path = subDoc;
+                        }
+                    }
+
                 } catch (Exception e) {
                     Logger.w(FileBrowserActivity.class.toString(), "onCreate: Exception occurred opening file", e);
                     path = null;
@@ -212,7 +221,11 @@ public class FileBrowserActivity extends BaseActivity {
                 DocumentFile file = adapter.getItem(i).file;
                 if (adapter.getItem(i).isUpButton) {
                     // open parent directory
-                    loadFileList(mCurrentDir.getParentFile());
+                    if (!mDocFileType) {
+                        loadFileList(mCurrentDir.getParentFile());
+                    } else {
+                        loadDocFileList(mCurrentDocFileDir.getParentFile());
+                    }
                     removeDialog(DIALOG_LOAD_FILE);
                     showDialog(DIALOG_LOAD_FILE);
                 } else if (file.isDirectory()) {

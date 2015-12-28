@@ -81,9 +81,12 @@ public class ImportDialog extends DialogFragment {
             public void onClick(View v) {
                 String typeStr = null;
                 Uri baseFolder = null;
+                Intent intent = new Intent(getActivity(), FileBrowserActivity.class);
+
                 if(AppContext.isSdCardPresentKitKat()) {
-                    DocumentFile file = AppContext.getSdCardDownloadsFolder();
-                    baseFolder = file.getUri();
+                    String uriStr = AppContext.getSdCardAccessUriStr();
+                    intent.putExtra("Folder", AppContext.DOWNLOAD_TRANSLATION_STUDIO_FOLDER);
+                    baseFolder = Uri.parse(uriStr);
                     typeStr = FileBrowserActivity.DOC_FILE_TYPE;
                     isDocumentFile = true;
                 } else
@@ -93,7 +96,6 @@ public class ImportDialog extends DialogFragment {
                     typeStr = FileBrowserActivity.FILE_TYPE;
                 }
 
-                Intent intent = new Intent(getActivity(), FileBrowserActivity.class);
                 intent.setDataAndType(baseFolder, typeStr);
                 startActivityForResult(intent, IMPORT_PROJECT_FROM_SD_REQUEST);
             }

@@ -316,8 +316,17 @@ public class AppContext {
         }
 
         Uri sdCardFolderUri = Uri.parse(sdCardFolderUriStr);
-        DocumentFile sdCardFolder = DocumentFile.fromTreeUri(mContext, sdCardFolderUri);
-        DocumentFile document = sdCardFolder;
+        DocumentFile document = DocumentFile.fromTreeUri(mContext, sdCardFolderUri);
+        return documentFileMkdirs(document, folderName);
+    }
+
+    /**
+     * recursively creates a folder from DocumentFile folder and then returns the new folder or null if error
+     * @return
+     */    public static DocumentFile documentFileMkdirs(DocumentFile document, String folderName) {
+        if(null == document) {
+            return null;
+        }
 
         String[] parts = folderName.split("\\/");
         if(parts.length < 1) {
@@ -330,7 +339,7 @@ public class AppContext {
             }
 
             DocumentFile nextDocument = documentFolderMkdir(document, parts[i]);
-            if (nextDocument == null) {
+            if (null == nextDocument) {
                 return null;
             }
 
