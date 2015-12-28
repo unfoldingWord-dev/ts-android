@@ -275,7 +275,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
                 // In read mode (and only in read mode), pull leading major section headings out for
                 // display above chapter headings.
                 renderer.setSuppressLeadingMajorSectionHeadings(true);
-                CharSequence heading = renderer.getLeadingMajorScetionHeading(chapterBody);
+                CharSequence heading = renderer.getLeadingMajorSectionHeading(chapterBody);
                 holder.mSourceHeading.setText(heading);
                 holder.mSourceHeading.setVisibility(
                         heading.length() > 0 ? View.VISIBLE : View.GONE);
