@@ -447,9 +447,7 @@ public class AppContext {
      * @return
      */
     public static boolean isSdCardPresentKitKat() {
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-
             if (!sdCardPath.isEmpty()) { // see if we already have detected an SD card this session
                 return true;
             }
@@ -459,11 +457,7 @@ public class AppContext {
                     return true;
                 }
             }
-
-            File sdCard = getSdCardDirectory();
-            return sdCard != null;
         }
-
         return false;
     }
 
