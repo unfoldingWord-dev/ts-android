@@ -29,6 +29,7 @@ import com.door43.widget.ViewUtil;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
+import java.io.InputStream;
 
 /**
  * Created by joel on 10/5/2015.
@@ -169,18 +170,17 @@ public class ImportDialog extends DialogFragment {
         if(requestCode == IMPORT_PROJECT_FROM_SD_REQUEST) {
             if(data != null) {
                 if(isDocumentFile) {
-                    String uriStr = data.getData().getPath();
-                    DocumentFile file = DocumentFile.fromTreeUri(AppContext.context(), Uri.parse(uriStr));
-                    if(FilenameUtils.getExtension(file.getName()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
+                    Uri uri = data.getData();
+                    if(FilenameUtils.getExtension(uri.getPath()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
                         try {
-                            // // TODO: 12/27/15 need to finish
-//                            AppContext.getTranslator().importArchive(file);
-//                            // TODO: 12/17/2015 merge chunks .. loop
-//                            CustomAlertDialog.Create(getActivity())
-//                                    .setTitle(R.string.import_from_sd)
-//                                    .setMessage(R.string.success)
-//                                    .setNeutralButton(R.string.dismiss, null)
-//                                    .show("ImportSuccess");
+                            InputStream in = AppContext.context().getContentResolver().openInputStream(uri);
+                            AppContext.getTranslator().importArchive(in,uri.getPath());
+                            // TODO: 12/17/2015 merge chunks .. loop
+                            CustomAlertDialog.Create(getActivity())
+                                    .setTitle(R.string.import_from_sd)
+                                    .setMessage(R.string.success)
+                                    .setNeutralButton(R.string.dismiss, null)
+                                    .show("ImportSuccess");
                         } catch (Exception e) {
                             Logger.e(this.getClass().getName(), "Failed to import the archive", e);
                             Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_import_failed, Snackbar.LENGTH_LONG);

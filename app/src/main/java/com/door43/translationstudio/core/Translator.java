@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -213,6 +214,34 @@ public class Translator {
     /**
      * Imports target translations from an archive
      * todo: we should have another method that will inspect the archive and return the details to the user so they can decide if they want to import it
+     * @param in
+     * @return an array of target translation slugs
+     */
+    public String[] importArchive(InputStream in, final String name) throws Exception {
+        File tempCache = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
+        List<String> importedTargetTranslationSlugs = new ArrayList<>();
+        try {
+            tempCache.mkdirs();
+            Zip.unzipFromStream(in, tempCache);
+            importArchiveFromTempCache(tempCache, importedTargetTranslationSlugs);
+
+        } catch (Exception e) {
+            FileUtils.deleteQuietly(tempCache);
+            if(!FilenameUtils.getExtension(name).toLowerCase().equals(ARCHIVE_EXTENSION)) {
+                throw new Exception("Not a translationStudio archive");
+            } else {
+                throw e;
+            }
+        }
+
+        // clean
+        FileUtils.deleteQuietly(tempCache);
+        return importedTargetTranslationSlugs.toArray(new String[importedTargetTranslationSlugs.size()]);
+    }
+
+    /**
+     * Imports target translations from an archive
+     * todo: we should have another method that will inspect the archive and return the details to the user so they can decide if they want to import it
      * @param file
      * @return an array of target translation slugs
      */
@@ -222,62 +251,7 @@ public class Translator {
         try {
             tempCache.mkdirs();
             Zip.unzip(file, tempCache);
-            File[] targetTranslationDirs = ArchiveImporter.importArchive(tempCache);
-            for(File newDir:targetTranslationDirs) {
-
-                File localDir = new File(mRootDir, newDir.getName());
-                if(localDir.exists()) {
-                    // commit local changes to history
-                    TargetTranslation targetTranslation = getTargetTranslation(localDir.getName());
-                    if(targetTranslation != null) {
-                        targetTranslation.commit();
-                    }
-
-                    // clean out local translation (retaining history)
-                    // TODO: 12/1/2015 there should be an option to discard local changes (though not it's history)
-//                    File[] oldFiles = localDir.listFiles(new FilenameFilter() {
-//                        @Override
-//                        public boolean accept(File dir, String filename) {
-//                            return !filename.equals(".git");
-//                        }
-//                    });
-//                    for(File f:oldFiles) {
-//                        FileUtils.deleteQuietly(f);
-//                    }
-
-                    // copy files into existing translation
-                    File[] newFiles = newDir.listFiles(new FilenameFilter() {
-                        @Override
-                        public boolean accept(File dir, String filename) {
-                            return !filename.equals(".git");
-                        }
-                    });
-                    for(File importedFile:newFiles) {
-                        File localFile = new File(localDir, importedFile.getName());
-                        if(importedFile.getName().equals("manifest.json")) {
-                            JSONObject localManifest = new JSONObject(FileUtils.readFileToString(localFile));
-                            JSONObject importedManifest = new JSONObject(FileUtils.readFileToString(importedFile));
-                            // TODO: merge the manifest files instead of doing a blind copy.
-                            // we need to merge the translators, finished_frames, finished_titles, and finished_references.
-                            FileUtils.deleteQuietly(localFile);
-                            FileUtils.moveFile(importedFile, localFile);
-                        } else {
-                            // merge the files
-                            mergeRecursively(importedFile, localFile);
-                        }
-                    }
-                } else {
-                    // import new translation
-                    FileUtils.moveDirectory(newDir, localDir);
-                }
-                // update the generator info
-                TargetTranslation.updateGenerator(mContext, getTargetTranslation(newDir.getName()));
-
-                importedTargetTranslationSlugs.add(newDir.getName());
-            }
-            if(targetTranslationDirs.length == 0) {
-                throw new Exception("The archive does not contain any valid target translations");
-            }
+            importArchiveFromTempCache(tempCache, importedTargetTranslationSlugs);
 
         } catch (Exception e) {
             FileUtils.deleteQuietly(tempCache);
@@ -291,6 +265,65 @@ public class Translator {
         // clean
         FileUtils.deleteQuietly(tempCache);
         return importedTargetTranslationSlugs.toArray(new String[importedTargetTranslationSlugs.size()]);
+    }
+
+    private void importArchiveFromTempCache(File tempCache, List<String> importedTargetTranslationSlugs) throws Exception {
+        File[] targetTranslationDirs = ArchiveImporter.importArchive(tempCache);
+        for(File newDir:targetTranslationDirs) {
+
+            File localDir = new File(mRootDir, newDir.getName());
+            if(localDir.exists()) {
+                // commit local changes to history
+                TargetTranslation targetTranslation = getTargetTranslation(localDir.getName());
+                if(targetTranslation != null) {
+                    targetTranslation.commit();
+                }
+
+                // clean out local translation (retaining history)
+                // TODO: 12/1/2015 there should be an option to discard local changes (though not it's history)
+//                    File[] oldFiles = localDir.listFiles(new FilenameFilter() {
+//                        @Override
+//                        public boolean accept(File dir, String filename) {
+//                            return !filename.equals(".git");
+//                        }
+//                    });
+//                    for(File f:oldFiles) {
+//                        FileUtils.deleteQuietly(f);
+//                    }
+
+                // copy files into existing translation
+                File[] newFiles = newDir.listFiles(new FilenameFilter() {
+                    @Override
+                    public boolean accept(File dir, String filename) {
+                        return !filename.equals(".git");
+                    }
+                });
+                for(File importedFile:newFiles) {
+                    File localFile = new File(localDir, importedFile.getName());
+                    if(importedFile.getName().equals("manifest.json")) {
+                        JSONObject localManifest = new JSONObject(FileUtils.readFileToString(localFile));
+                        JSONObject importedManifest = new JSONObject(FileUtils.readFileToString(importedFile));
+                        // TODO: merge the manifest files instead of doing a blind copy.
+                        // we need to merge the translators, finished_frames, finished_titles, and finished_references.
+                        FileUtils.deleteQuietly(localFile);
+                        FileUtils.moveFile(importedFile, localFile);
+                    } else {
+                        // merge the files
+                        mergeRecursively(importedFile, localFile);
+                    }
+                }
+            } else {
+                // import new translation
+                FileUtils.moveDirectory(newDir, localDir);
+            }
+            // update the generator info
+            TargetTranslation.updateGenerator(mContext, getTargetTranslation(newDir.getName()));
+
+            importedTargetTranslationSlugs.add(newDir.getName());
+        }
+        if(targetTranslationDirs.length == 0) {
+            throw new Exception("The archive does not contain any valid target translations");
+        }
     }
 
     /**

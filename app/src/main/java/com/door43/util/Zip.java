@@ -301,8 +301,16 @@ public class Zip {
         String filename;
         ZipEntry ze;
         int count;
-        byte[] buffer = new byte[1024];
         is = new FileInputStream(zipArchive);
+        unzipFromStream(is, destDir);
+    }
+
+    public static void unzipFromStream(InputStream is, File destDir) throws IOException {
+        byte[] buffer = new byte[1024];
+        ZipInputStream zis;
+        ZipEntry ze;
+        String filename;
+        int count;
         zis = new ZipInputStream(new BufferedInputStream(is));
 
         destDir.mkdirs();
