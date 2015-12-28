@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v4.provider.DocumentFile;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,6 +39,7 @@ public class ImportDialog extends DialogFragment {
     public static final String TAG = "importDialog";
     private static final String STATE_SETTING_DEVICE_ALIAS = "state_setting_device_alias";
     private boolean settingDeviceAlias = false;
+    private boolean isDocumentFile = false;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -79,9 +81,10 @@ public class ImportDialog extends DialogFragment {
                 String typeStr = null;
                 Uri baseFolder = null;
                 if(AppContext.isSdCardPresentKitKat()) {
-                    String path = AppContext.getSdCardAccessUriStr();
-                    baseFolder = Uri.parse(path);
+                    DocumentFile file = AppContext.getSdCardDownloadsFolder();
+                    baseFolder = file.getUri();
                     typeStr = FileBrowserActivity.DOC_FILE_TYPE;
+                    isDocumentFile = true;
                 } else
                 {
                     File path = AppContext.getPublicDownloadsDirectory();
@@ -165,28 +168,58 @@ public class ImportDialog extends DialogFragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == IMPORT_PROJECT_FROM_SD_REQUEST) {
             if(data != null) {
-                File file = new File(data.getData().getPath());
-                if(FilenameUtils.getExtension(file.getName()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
-                    try {
-                        AppContext.getTranslator().importArchive(file);
-                        // TODO: 12/17/2015 merge chunks .. loop
-                        CustomAlertDialog.Create(getActivity())
-                                .setTitle(R.string.import_from_sd)
-                                .setMessage(R.string.success)
-                                .setNeutralButton(R.string.dismiss, null)
-                                .show("ImportSuccess");
-                    } catch (Exception e) {
-                        Logger.e(this.getClass().getName(), "Failed to import the archive", e);
-                        Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_import_failed, Snackbar.LENGTH_LONG);
+                if(isDocumentFile) {
+                    String uriStr = data.getData().getPath();
+                    DocumentFile file = DocumentFile.fromTreeUri(AppContext.context(), Uri.parse(uriStr));
+                    if(FilenameUtils.getExtension(file.getName()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
+                        try {
+                            // // TODO: 12/27/15 need to finish
+//                            AppContext.getTranslator().importArchive(file);
+//                            // TODO: 12/17/2015 merge chunks .. loop
+//                            CustomAlertDialog.Create(getActivity())
+//                                    .setTitle(R.string.import_from_sd)
+//                                    .setMessage(R.string.success)
+//                                    .setNeutralButton(R.string.dismiss, null)
+//                                    .show("ImportSuccess");
+                        } catch (Exception e) {
+                            Logger.e(this.getClass().getName(), "Failed to import the archive", e);
+                            Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_import_failed, Snackbar.LENGTH_LONG);
+                            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                            snack.show();
+                        }
+
+                        // todo: terrible hack.
+                        ((HomeActivity)getActivity()).notifyDatasetChanged();
+                    } else {
+                        Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.invalid_file, Snackbar.LENGTH_LONG);
                         ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                         snack.show();
                     }
-                    // todo: terrible hack.
-                    ((HomeActivity)getActivity()).notifyDatasetChanged();
                 } else {
-                    Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.invalid_file, Snackbar.LENGTH_LONG);
-                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                    snack.show();
+                    File file = new File(data.getData().getPath());
+                    if (FilenameUtils.getExtension(file.getName()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
+                        try {
+                            AppContext.getTranslator().importArchive(file);
+                            // TODO: 12/17/2015 merge chunks .. loop
+                            CustomAlertDialog.Create(getActivity())
+                                    .setTitle(R.string.import_from_sd)
+                                    .setMessage(R.string.success)
+                                    .setNeutralButton(R.string.dismiss, null)
+                                    .show("ImportSuccess");
+                        } catch (Exception e) {
+                            Logger.e(this.getClass().getName(), "Failed to import the archive", e);
+                            Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_import_failed, Snackbar.LENGTH_LONG);
+                            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                            snack.show();
+                        }
+
+                        // todo: terrible hack.
+                        ((HomeActivity) getActivity()).notifyDatasetChanged();
+                    } else {
+                        Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.invalid_file, Snackbar.LENGTH_LONG);
+                        ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                        snack.show();
+                    }
                 }
             }
         }

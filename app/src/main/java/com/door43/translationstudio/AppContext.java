@@ -29,7 +29,6 @@ import org.apache.commons.io.IOUtils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -45,7 +44,8 @@ public class AppContext {
     private static final String DEFAULT_LIBRARY_ZIP = "library.zip";
     private static final String TARGET_TRANSLATIONS_DIR = "translations";
     public static final String PROFILES_DIR = "profiles";
-    public static final String DOWNLOAD_TRANSLATION_STUDIO = "/Download/translationStudio";
+    public static final String DOWNLOAD_FOLDER = "/Download";
+    public static final String DOWNLOAD_TRANSLATION_STUDIO_FOLDER = DOWNLOAD_FOLDER + "/translationStudio";
     private static MainApplication mContext;
     public static final Bundle args = new Bundle();
     private static boolean loaded;
@@ -374,7 +374,7 @@ public class AppContext {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 
-            if (!sdCardPath.isEmpty()) { // see if we already have detected an SD card
+            if (!sdCardPath.isEmpty()) { // see if we already have detected an SD card this session
                 return true;
             }
 
@@ -601,6 +601,15 @@ public class AppContext {
     }
 
     /**
+     * gets the SD card downloads folder
+     * @return
+     */
+    public static DocumentFile getSdCardDownloadsFolder() {
+        DocumentFile downloadFolder = sdCardMkdirs( DOWNLOAD_FOLDER);
+        return downloadFolder;
+    }
+
+    /**
      * Returns the file to the external public downloads directory
      * @return
      */
@@ -610,7 +619,7 @@ public class AppContext {
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) { // || Root.isDeviceRooted()
             StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
             if(removeableMediaInfo != null) {
-                dir = new File("/storage/" + removeableMediaInfo.getMountName() + DOWNLOAD_TRANSLATION_STUDIO);
+                dir = new File("/storage/" + removeableMediaInfo.getMountName() + DOWNLOAD_TRANSLATION_STUDIO_FOLDER);
             } else {
                 dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "translationStudio");
             }

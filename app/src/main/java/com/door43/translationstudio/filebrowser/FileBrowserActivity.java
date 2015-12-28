@@ -110,7 +110,8 @@ public class FileBrowserActivity extends BaseActivity {
                     if (f.isDirectory()) {
                         fileList.add(DocumentFileItem.getInstance(context, f));
                     } else {
-                        fileList.add(DocumentFileItem.getInstance(context, f));                    }
+                        fileList.add(DocumentFileItem.getInstance(context, f));
+                    }
                 }
 
                 // add up button
