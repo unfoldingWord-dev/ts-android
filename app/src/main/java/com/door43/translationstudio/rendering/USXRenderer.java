@@ -540,7 +540,7 @@ public class USXRenderer extends RenderingEngine {
      * @param in The string to examine for a leading major section heading.
      * @return The leading major section heading; or the empty string if there is none.
      */
-    public static CharSequence getLeadingMajorScetionHeading(CharSequence in) {
+    public static CharSequence getLeadingMajorSectionHeading(CharSequence in) {
         Pattern pattern = paraPattern("ms");
         Matcher matcher = pattern.matcher(in);
 
