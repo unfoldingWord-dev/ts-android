@@ -123,15 +123,20 @@ public class Zip {
     }
 
     /**
-     * Zips up a list of files
+     * Zips up a list of files to file
      * @param files
-     * @param archivePath
+     * @param archivePath - destination file
      */
     public static void zip(File[] files, File archivePath) throws IOException {
         FileOutputStream dest = new FileOutputStream(archivePath);
         zipToStream(files, dest);
     }
 
+    /**
+     * Zips up a list of files to output stream
+     * @param files
+     * @param dest - destination output stream
+     */
     public static void zipToStream(File[] files, OutputStream dest) throws IOException {
         final int BUFFER = 2048;
         BufferedInputStream origin = null;
@@ -298,6 +303,7 @@ public class Zip {
     /**
      * Extracts a zip archive
      * @param zipArchive
+     * @param destDir - place to store unzipped file
      * @throws IOException
      */
     public static void unzip(File zipArchive, File destDir) throws IOException {
@@ -310,6 +316,12 @@ public class Zip {
         unzipFromStream(is, destDir);
     }
 
+    /**
+     * Extracts a zip archive from a stream
+     * @param is - input stream of zip file
+     * @param destDir - place to store unzipped file
+     * @throws IOException
+     */
     public static void unzipFromStream(InputStream is, File destDir) throws IOException {
         byte[] buffer = new byte[1024];
         ZipInputStream zis;

@@ -165,7 +165,7 @@ public class AppContext {
     }
 
     /**
-     * Checks path to external storage - may not be mounted
+     * get external storage folder - may not be mounted
      * @return
      */
     private static File getLegacyExternalStorageDirectory() {
@@ -181,30 +181,8 @@ public class AppContext {
     public static boolean isSdCardAvailable() {
         // TRICKY: KITKAT introduced changes to the external media that made sd cards read only
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-
-//            StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
-//            return removeableMediaInfo != null;
-
             File sdCard = getSdCardDirectory();
             return sdCard != null;
-
-//            try {
-//                Logger.i(AppContext.class.getName(), "environment = " + System.getenv());
-//                File sdCardFolder = getLegacyExternalStorageDirectory();
-//                final String externalStorageState = EnvironmentCompat.getStorageState(sdCardFolder);
-//                boolean mounted = Environment.MEDIA_MOUNTED.equals(externalStorageState);
-//                if(mounted) {
-//                    String extStorage = System.getenv("EMULATED_STORAGE_SOURCE");
-//                    if(extStorage != null) {
-//                        boolean internal = (extStorage.toString().indexOf(extStorage) != 0);
-//                        return !internal;
-//                    }
-//                }
-//            } catch (Exception e) {
-//                Logger.i(AppContext.class.getName(), "Could not get external folder");
-//            }
-//
-//            return false;
         } else {
             DocumentFile sdCard = sdCardMkdirs(null);
             return sdCard != null;
@@ -212,7 +190,7 @@ public class AppContext {
     }
 
     /**
-     * Returns the file to the external public downloads directory
+     * Searches and verifies write location on SD card
      * @return
      */
     public static String findSdCardFolder() {
@@ -282,7 +260,10 @@ public class AppContext {
     }
 
     /**
-     * write string to document folder
+     * write string to document file
+     * @param document - document to write
+     * @param data - text to write to file
+     * @param append - if true then data is appended to file, if false then it is overwritten
      * @return
      */
     public static boolean documentFolderWrite(final DocumentFile document, final String data, final boolean append) {
@@ -305,10 +286,11 @@ public class AppContext {
     }
 
     /**
-     * recursively creates a folder on SD card and then returns the new folder or null if error
+     * creates and returns the selected subfolder on SD card.  Returns null if error.
+     * @param subFolderName - name of subfolder to move to
      * @return
      */
-    public static DocumentFile sdCardMkdirs(final String folderName) {
+    public static DocumentFile sdCardMkdirs(final String subFolderName) {
 
         String sdCardFolderUriStr = getSdCardAccessUriStr();
         if(null == sdCardFolderUriStr) {
@@ -317,7 +299,7 @@ public class AppContext {
 
         Uri sdCardFolderUri = Uri.parse(sdCardFolderUriStr);
         DocumentFile document = DocumentFile.fromTreeUri(mContext, sdCardFolderUri);
-        DocumentFile subDocument = documentFileMkdirs(document, folderName);
+        DocumentFile subDocument = documentFileMkdirs(document, subFolderName);
         if ( (subDocument != null) && subDocument.isDirectory() && subDocument.canWrite() ) {
             return subDocument;
         }
@@ -326,28 +308,39 @@ public class AppContext {
     }
 
     /**
-     * recursively creates a folder from DocumentFile folder and then returns the new folder or null if error
+     * creates and returns the selected subfolder.  Returns null if error.
+     * @param baseFolder - base folder
+     * @param subFolderName - name of subfolder to move to
      * @return
      */
-    public static DocumentFile documentFileMkdirs(DocumentFile document, final String folderName) {
-        return traverseSubDocFolders(document, folderName, true);
+    public static DocumentFile documentFileMkdirs(final DocumentFile baseFolder, final String subFolderName) {
+        return traverseSubDocFolders(baseFolder, subFolderName, true);
     }
 
     /**
-     * recursively creates a folder from DocumentFile folder and then returns the new folder or null if error
+     * get the selected subfolder recursively or null if not present
+     * @param baseFolder - base folder
+     * @param subFolderName - name of subfolder to move to
      * @return
      */
-    public static DocumentFile documentFileChgdirs(DocumentFile document, final String folderName) {
-        return traverseSubDocFolders(document, folderName, false);
+    public static DocumentFile documentFileChgdirs(final DocumentFile baseFolder, final String subFolderName) {
+        return traverseSubDocFolders(baseFolder, subFolderName, false);
     }
 
-    private static DocumentFile traverseSubDocFolders(DocumentFile document, final String folderName, boolean createFolders) {
-        if(null == document) {
+    /**
+     * get the selected subfolder recursively or null if error
+     * @param baseFolder - base folder
+     * @param subFolderName - name of subfolder to move to
+     * @param createFolders - if true then missing folders will be created
+     * @return
+     */
+    private static DocumentFile traverseSubDocFolders( DocumentFile baseFolder, final String subFolderName, boolean createFolders) {
+        if(null == baseFolder) {
             return null;
         }
 
-        if(folderName != null) {
-            String[] parts = folderName.split("\\/");
+        if(subFolderName != null) {
+            String[] parts = subFolderName.split("\\/");
             if (parts.length < 1) {
                 return null;
             }
@@ -357,33 +350,36 @@ public class AppContext {
                     continue;
                 }
 
-                DocumentFile nextDocument = documentFolderChgdir(document, parts[i], createFolders);
+                DocumentFile nextDocument = documentFolderChgdir(baseFolder, parts[i], createFolders);
                 if (null == nextDocument) {
                     return null;
                 }
 
-                document = nextDocument;
+                baseFolder = nextDocument;
             }
         }
 
-        return document;
+        return baseFolder;
     }
 
     /**
-     * creates a folder and then returns the new folder or null if error
+     * get the selected subfolder or null if error
+     * @param baseFolder - base folder
+     * @param subFolderName - name of subfolder to move to
+     * @param createFolders - if true then missing folders will be created
      * @return
      */
-    private static DocumentFile documentFolderChgdir(final DocumentFile document, final String folderName, boolean createFolders) {
+    private static DocumentFile documentFolderChgdir(final DocumentFile baseFolder, final String subFolderName, boolean createFolders) {
 
-        if(document == null) {
+        if(baseFolder == null) {
             return null;
         }
 
-        DocumentFile nextDocument = document.findFile(folderName);
+        DocumentFile nextDocument = baseFolder.findFile(subFolderName);
         try {
 
             if( (nextDocument == null) && createFolders) {
-                nextDocument = document.createDirectory(folderName);
+                nextDocument = baseFolder.createDirectory(subFolderName);
             }
 
         } catch (Exception e) {
@@ -395,21 +391,25 @@ public class AppContext {
     }
 
     /**
-     * gets first instance of file in folder or null if not found
+     * find first instance of file in folder or null if not found
+     * @param folder - folder to search
+     * @param fileName - filename to find
      * @return
      */
-    public static DocumentFile documentFileFind(final DocumentFile document, final String fileName) {
+    public static DocumentFile documentFileFind(final DocumentFile folder, final String fileName) {
 
-        if(document == null) {
+        if(folder == null) {
             return null;
         }
 
-        DocumentFile nextDocument = document.findFile(fileName);
+        DocumentFile nextDocument = folder.findFile(fileName);
         return nextDocument;
     }
 
     /**
-     * finds first instance of file in folder
+     * finds first instance of file type in folder
+     * @param baseFolder - base folder for search
+     * @param extension - extension to match
      * @return
      */
     public static String searchFolderAndParentsForDocFile(final DocumentFile baseFolder, final String extension) {
@@ -443,7 +443,7 @@ public class AppContext {
     }
 
     /**
-     * Returns true if an SD card is present and mounted on Android Kitkat or greater
+     * Returns true if an SD card is present and writeable on Android Kitkat or greater
      * @return
      */
     public static boolean isSdCardPresentKitKat() {
@@ -468,7 +468,7 @@ public class AppContext {
     }
 
     /**
-    * Returns the file to the external public downloads directory.  Warning this may not be writeable.
+    * Returns the external public downloads directory.  Warning this may not be writeable.
      * Just a rough check to see if one is possibly present.
     * @return
     */
@@ -505,7 +505,8 @@ public class AppContext {
     }
 
     /**
-     * Returns list of all the external directories
+     * Returns list of all the external directories.  Requires additional checking to see if any of
+     * these belong to external SD card.
      * @return
      */
     public static String[] getExternalDirectories() {
@@ -548,8 +549,12 @@ public class AppContext {
         return null;
     }
 
+    /**
+     * if available, this triggers browser dialog for user to select SD card folder to allow access
+     * @param context
+     */
     public static void triggerStorageAccessFramework(final Activity context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) { // doesn't look like this is possible on Lollipop
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) { // doesn't look like this is possible on Kitkat
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
             context.startActivityForResult(intent, REQUEST_CODE_STORAGE_ACCESS);
         } else {
@@ -559,15 +564,14 @@ public class AppContext {
 
     /**
      * persists write permission for SD card access
+     * @param sdUri - uri to persist
+     * @param flags - permission flags
      * @return
      */
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public static boolean persistSdCardWriteAccess(final Uri sdUri, final int flags) {
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            // Persist URI in shared preference so that you can use it later.
-            // Use your own framework here instead of PreferenceUtil.
-//                PreferenceUtil.setSharedPreferenceUri("key_internal_uri_extsdcard", treeUri);
             AppContext.setUserString(SettingsActivity.KEY_SDCARD_ACCESS_URI, sdUri.toString());
             AppContext.setUserString(SettingsActivity.KEY_SDCARD_ACCESS_FLAGS, String.valueOf(flags));
             Logger.i(AppContext.class.getName(), "URI = " + sdUri.toString());
@@ -587,9 +591,7 @@ public class AppContext {
      * @return
      */
     public static void restoreSdCardWriteAccess() {
-
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-
             String flagStr = AppContext.getUserString(SettingsActivity.KEY_SDCARD_ACCESS_FLAGS, null);
             String path = AppContext.getUserString(SettingsActivity.KEY_SDCARD_ACCESS_URI, null);
             if ((path != null) && (flagStr != null)) {
@@ -626,7 +628,7 @@ public class AppContext {
     }
 
     /**
-     * Returns the file to the external public downloads directory
+     * Returns the external public downloads directory
      * @return
      */
     public static File getPublicDownloadsDirectory() {
@@ -646,6 +648,10 @@ public class AppContext {
         return dir;
     }
 
+    /**
+     * Returns the public downloads directory
+     * @return
+     */
     public static File getPublicDirectory() {
         File dir = new File(Environment.getExternalStorageDirectory(), "translationStudio");
         dir.mkdirs();
