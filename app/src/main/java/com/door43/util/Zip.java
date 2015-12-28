@@ -11,6 +11,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -127,9 +128,13 @@ public class Zip {
      * @param archivePath
      */
     public static void zip(File[] files, File archivePath) throws IOException {
+        FileOutputStream dest = new FileOutputStream(archivePath);
+        zipToStream(files, dest);
+    }
+
+    public static void zipToStream(File[] files, OutputStream dest) throws IOException {
         final int BUFFER = 2048;
         BufferedInputStream origin = null;
-        FileOutputStream dest = new FileOutputStream(archivePath);
         ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(
                 dest));
 

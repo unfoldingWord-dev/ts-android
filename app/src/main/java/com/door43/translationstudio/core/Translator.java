@@ -2,7 +2,6 @@ package com.door43.translationstudio.core;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
-import android.os.Build;
 import android.text.Editable;
 import android.text.SpannedString;
 
@@ -21,6 +20,7 @@ import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -175,6 +175,53 @@ public class Translator {
             throw new Exception("Not a translationStudio archive");
         }
 
+        JSONObject manifestJson = buildManifest(targetTranslation);
+        File tempCache = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
+        try {
+            tempCache.mkdirs();
+            File manifestFile = new File(tempCache, "manifest.json");
+            manifestFile.createNewFile();
+            FileUtils.write(manifestFile, manifestJson.toString());
+            Zip.zip(new File[]{manifestFile, targetTranslation.getPath()}, outputFile);
+        } catch (Exception e) {
+            FileUtils.deleteQuietly(tempCache);
+            FileUtils.deleteQuietly(outputFile);
+            throw e;
+        }
+
+        // clean
+        FileUtils.deleteQuietly(tempCache);
+    }
+
+    /**
+     * Exports a single target translation in .tstudio format
+     * @param targetTranslation
+     * @param out
+     */
+    public void exportArchiveToStream(TargetTranslation targetTranslation, OutputStream out, String fileName) throws Exception {
+        if(!FilenameUtils.getExtension(fileName).toLowerCase().equals(ARCHIVE_EXTENSION)) {
+            throw new Exception("Not a translationStudio archive");
+        }
+
+        JSONObject manifestJson = buildManifest(targetTranslation);
+        File tempCache = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
+        try {
+            tempCache.mkdirs();
+            File manifestFile = new File(tempCache, "manifest.json");
+            manifestFile.createNewFile();
+            FileUtils.write(manifestFile, manifestJson.toString());
+            Zip.zipToStream(new File[]{manifestFile, targetTranslation.getPath()}, out);
+        } catch (Exception e) {
+            FileUtils.deleteQuietly(tempCache);
+//            FileUtils.deleteQuietly(outputFile);
+            throw e;
+        }
+
+        // clean
+        FileUtils.deleteQuietly(tempCache);
+    }
+
+    private JSONObject buildManifest(TargetTranslation targetTranslation) throws Exception {
         // build manifest
         JSONObject manifestJson = new JSONObject();
         JSONObject generatorJson = new JSONObject();
@@ -193,22 +240,7 @@ public class Translator {
         translationJson.put("target_language_name", targetTranslation.getTargetLanguageName());
         translationsJson.put(translationJson);
         manifestJson.put("target_translations", translationsJson);
-
-        File tempCache = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
-        try {
-            tempCache.mkdirs();
-            File manifestFile = new File(tempCache, "manifest.json");
-            manifestFile.createNewFile();
-            FileUtils.write(manifestFile, manifestJson.toString());
-            Zip.zip(new File[]{manifestFile, targetTranslation.getPath()}, outputFile);
-        } catch (Exception e) {
-            FileUtils.deleteQuietly(tempCache);
-            FileUtils.deleteQuietly(outputFile);
-            throw e;
-        }
-
-        // clean
-        FileUtils.deleteQuietly(tempCache);
+        return manifestJson;
     }
 
     /**

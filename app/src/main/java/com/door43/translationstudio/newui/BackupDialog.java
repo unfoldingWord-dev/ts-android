@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
+import android.support.v4.provider.DocumentFile;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +35,7 @@ import com.door43.util.tasks.TaskManager;
 import com.door43.widget.ViewUtil;
 
 import java.io.File;
+import java.io.OutputStream;
 import java.security.InvalidParameterException;
 
 /**
@@ -173,18 +175,32 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
             @Override
             public void onClick(View v) {
                 // TODO: 10/27/2015 have the user choose the file location
-                File exportFile = new File(AppContext.getPublicDownloadsDirectory(), System.currentTimeMillis() / 1000L + "_" + filename);
+                String fileName = System.currentTimeMillis() / 1000L + "_" + filename;
+                boolean success = false;
                 try {
-                    AppContext.getTranslator().exportArchive(mTargetTranslation, exportFile);
+                    if(AppContext.isSdCardPresentKitKat()) {
+                        DocumentFile baseFolder = AppContext.sdCardMkdirs(AppContext.DOWNLOAD_TRANSLATION_STUDIO_FOLDER);
+                        success = baseFolder != null;
+                        if (success) {
+                            if (baseFolder.canWrite()) {
+                                DocumentFile file = baseFolder.createFile("image", fileName);
+                                OutputStream out = AppContext.context().getContentResolver().openOutputStream(file.getUri());
+                                AppContext.getTranslator().exportArchiveToStream(mTargetTranslation, out, fileName);
+                                success = true;
+                            }
+                        }
+                    } else {
+                        File exportFile = new File(AppContext.getPublicDownloadsDirectory(), fileName);
+                        AppContext.getTranslator().exportArchive(mTargetTranslation, exportFile);
+                        success = exportFile.exists();
+                    }
                 } catch (Exception e) {
+                    success = false;
                     Logger.e(BackupDialog.class.getName(), "Failed to export the target translation " + mTargetTranslation.getId(), e);
                 }
-                if (exportFile.exists()) {
-                    CustomAlertDialog.Create(getActivity())
-                            .setTitle(R.string.backup_to_sd)
-                            .setMessage(R.string.success)
-                            .setNeutralButton(R.string.dismiss, null)
-                            .show("Backup");
+
+                if (success) {
+                    showSuccess();
                 } else {
                     Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_export_failed, Snackbar.LENGTH_LONG);
                     ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
@@ -217,6 +233,14 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
         });
 
         return v;
+    }
+
+    private void showSuccess() {
+        CustomAlertDialog.Create(getActivity())
+                .setTitle(R.string.backup_to_sd)
+                .setMessage(R.string.success)
+                .setNeutralButton(R.string.dismiss, null)
+                .show("Backup");
     }
 
     @Override
