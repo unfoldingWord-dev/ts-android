@@ -80,23 +80,30 @@ public class ImportDialog extends DialogFragment {
             @Override
             public void onClick(View v) {
                 String typeStr = null;
-                Uri baseFolder = null;
+                Uri baseFolderURI = null;
                 Intent intent = new Intent(getActivity(), FileBrowserActivity.class);
+                isDocumentFile = AppContext.isSdCardPresentKitKat();
 
-                if(AppContext.isSdCardPresentKitKat()) {
-                    String uriStr = AppContext.getSdCardAccessUriStr();
-                    intent.putExtra("Folder", AppContext.DOWNLOAD_TRANSLATION_STUDIO_FOLDER);
-                    baseFolder = Uri.parse(uriStr);
-                    typeStr = FileBrowserActivity.DOC_FILE_TYPE;
-                    isDocumentFile = true;
-                } else
-                {
+                if(isDocumentFile) {
+                    DocumentFile baseFolder = AppContext.sdCardMkdirs(null);
+                    String subFolder =  AppContext.searchFolderAndParentsForDocFile(baseFolder, Translator.ARCHIVE_EXTENSION);
+                    if(null == subFolder) {
+                        isDocumentFile = false;
+                    } else {
+                        String uriStr = AppContext.getSdCardAccessUriStr();
+                        intent.putExtra("Folder", subFolder);
+                        baseFolderURI = Uri.parse(uriStr);
+                        typeStr = FileBrowserActivity.DOC_FILE_TYPE;
+                    }
+                }
+
+                if(!isDocumentFile) {
                     File path = AppContext.getPublicDownloadsDirectory();
-                    baseFolder = Uri.fromFile(path);
+                    baseFolderURI = Uri.fromFile(path);
                     typeStr = FileBrowserActivity.FILE_TYPE;
                 }
 
-                intent.setDataAndType(baseFolder, typeStr);
+                intent.setDataAndType(baseFolderURI, typeStr);
                 startActivityForResult(intent, IMPORT_PROJECT_FROM_SD_REQUEST);
             }
         });

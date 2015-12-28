@@ -177,17 +177,21 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
                 // TODO: 10/27/2015 have the user choose the file location
                 String fileName = System.currentTimeMillis() / 1000L + "_" + filename;
                 boolean success = false;
+                boolean canWriteToSdCardBackup = false;
+                DocumentFile baseFolder = null;
+
                 try {
                     if(AppContext.isSdCardPresentKitKat()) {
-                        DocumentFile baseFolder = AppContext.sdCardMkdirs(AppContext.DOWNLOAD_TRANSLATION_STUDIO_FOLDER);
-                        success = baseFolder != null;
-                        if (success) {
-                            if (baseFolder.canWrite()) {
-                                DocumentFile file = baseFolder.createFile("image", fileName);
-                                OutputStream out = AppContext.context().getContentResolver().openOutputStream(file.getUri());
-                                AppContext.getTranslator().exportArchiveToStream(mTargetTranslation, out, fileName);
-                                success = true;
-                            }
+                        baseFolder = AppContext.sdCardMkdirs(AppContext.DOWNLOAD_TRANSLATION_STUDIO_FOLDER);
+                        canWriteToSdCardBackup = baseFolder != null;
+                    }
+
+                    if (canWriteToSdCardBackup) { // default to writing to SD card if available
+                        if (baseFolder.canWrite()) {
+                            DocumentFile file = baseFolder.createFile("image", fileName);
+                            OutputStream out = AppContext.context().getContentResolver().openOutputStream(file.getUri());
+                            AppContext.getTranslator().exportArchiveToStream(mTargetTranslation, out, fileName);
+                            success = true;
                         }
                     } else {
                         File exportFile = new File(AppContext.getPublicDownloadsDirectory(), fileName);

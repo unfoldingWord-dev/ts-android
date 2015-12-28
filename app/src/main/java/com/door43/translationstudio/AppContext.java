@@ -24,11 +24,11 @@ import com.door43.util.StringUtilities;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -206,7 +206,7 @@ public class AppContext {
 //
 //            return false;
         } else {
-            String sdCard = findSdCardFolder();
+            DocumentFile sdCard = sdCardMkdirs(null);
             return sdCard != null;
         }
     }
@@ -317,33 +317,53 @@ public class AppContext {
 
         Uri sdCardFolderUri = Uri.parse(sdCardFolderUriStr);
         DocumentFile document = DocumentFile.fromTreeUri(mContext, sdCardFolderUri);
-        return documentFileMkdirs(document, folderName);
+        DocumentFile subDocument = documentFileMkdirs(document, folderName);
+        if ( (subDocument != null) && subDocument.isDirectory() && subDocument.canWrite() ) {
+            return subDocument;
+        }
+
+        return null;
     }
 
     /**
      * recursively creates a folder from DocumentFile folder and then returns the new folder or null if error
      * @return
-     */    public static DocumentFile documentFileMkdirs(DocumentFile document, String folderName) {
+     */
+    public static DocumentFile documentFileMkdirs(DocumentFile document, final String folderName) {
+        return traverseSubDocFolders(document, folderName, true);
+    }
+
+    /**
+     * recursively creates a folder from DocumentFile folder and then returns the new folder or null if error
+     * @return
+     */
+    public static DocumentFile documentFileChgdirs(DocumentFile document, final String folderName) {
+        return traverseSubDocFolders(document, folderName, false);
+    }
+
+    private static DocumentFile traverseSubDocFolders(DocumentFile document, final String folderName, boolean createFolders) {
         if(null == document) {
             return null;
         }
 
-        String[] parts = folderName.split("\\/");
-        if(parts.length < 1) {
-            return null;
-        }
-
-        for (int i = 0; i < parts.length; i++) {
-            if(parts[i].isEmpty()) { // skip over extraneous slashes
-                continue;
-            }
-
-            DocumentFile nextDocument = documentFolderMkdir(document, parts[i]);
-            if (null == nextDocument) {
+        if(folderName != null) {
+            String[] parts = folderName.split("\\/");
+            if (parts.length < 1) {
                 return null;
             }
 
-            document = nextDocument;
+            for (int i = 0; i < parts.length; i++) {
+                if (parts[i].isEmpty()) { // skip over extraneous slashes
+                    continue;
+                }
+
+                DocumentFile nextDocument = documentFolderChgdir(document, parts[i], createFolders);
+                if (null == nextDocument) {
+                    return null;
+                }
+
+                document = nextDocument;
+            }
         }
 
         return document;
@@ -353,17 +373,16 @@ public class AppContext {
      * creates a folder and then returns the new folder or null if error
      * @return
      */
-    private static DocumentFile documentFolderMkdir(final DocumentFile document, final String folderName) {
+    private static DocumentFile documentFolderChgdir(final DocumentFile document, final String folderName, boolean createFolders) {
 
         if(document == null) {
             return null;
         }
 
         DocumentFile nextDocument = document.findFile(folderName);
-
         try {
 
-            if (nextDocument == null) {
+            if( (nextDocument == null) && createFolders) {
                 nextDocument = document.createDirectory(folderName);
             }
 
@@ -373,6 +392,54 @@ public class AppContext {
         }
 
         return nextDocument;
+    }
+
+    /**
+     * gets first instance of file in folder or null if not found
+     * @return
+     */
+    public static DocumentFile documentFileFind(final DocumentFile document, final String fileName) {
+
+        if(document == null) {
+            return null;
+        }
+
+        DocumentFile nextDocument = document.findFile(fileName);
+        return nextDocument;
+    }
+
+    /**
+     * finds first instance of file in folder
+     * @return
+     */
+    public static String searchFolderAndParentsForDocFile(final DocumentFile baseFolder, final String extension) {
+
+        if(null == baseFolder) {
+            return null;
+        }
+
+        String[] paths = new String[]{ DOWNLOAD_TRANSLATION_STUDIO_FOLDER, DOWNLOAD_FOLDER, ""}; // try in this order
+
+        for(String path: paths) {
+            DocumentFile document = AppContext.documentFileChgdirs(baseFolder, path);
+            if (null == document) {
+                continue;
+            }
+
+            DocumentFile[] files = document.listFiles();
+            for(DocumentFile file: files) {
+                String ext = FilenameUtils.getExtension(file.getName());
+                if(ext != null) {
+                    if (ext.toLowerCase().equals(extension)) {
+                        if ((file != null) && file.canRead()) {
+                            return path;
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -388,7 +455,7 @@ public class AppContext {
             }
 
             if( getSdCardAccessUriStr() != null) { // if user has already chosen a path for SD card
-                if(findSdCardFolder() != null) { // verify card is still present
+                if(sdCardMkdirs(null) != null) { // verify card is still present and writeable
                     return true;
                 }
             }
@@ -398,66 +465,6 @@ public class AppContext {
         }
 
         return false;
-    }
-
-//    public static void copyFileOrDirectorytoSdCard(String srcDir, String dstDir) {
-//
-//        try {
-//            File src = new File(srcDir);
-//            File dst = new File(dstDir, src.getName());
-//
-//            if (src.isDirectory()) {
-//
-//                String files[] = src.list();
-//                int filesLength = files.length;
-//                for (int i = 0; i < filesLength; i++) {
-//                    String src1 = (new File(src, files[i]).getPath());
-//                    String dst1 = dst.getPath();
-//                    copyFileOrDirectory(src1, dst1);
-//
-//                }
-//            } else {
-//                boolean success = copyFileToDocumentFile(src, dst);
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-    public static boolean copyFileToDocumentFile(File sourceFile, DocumentFile destFile) {
-       DocumentFile destFolder  = sdCardMkdirs(destFile.getParentFile().toString());
-
-        if (!destFile.exists()) {
-            destFile = destFile.createFile("image", destFile.getName());
-        }
-
-        InputStream source = null;
-        OutputStream destination = null;
-
-        try {
-            source = new FileInputStream(sourceFile);
-            destination = mContext.getContentResolver().openOutputStream(destFile.getUri());
-            boolean success = copyStream(source, destination);
-            return success;
-        } catch (IOException e) {
-            Logger.w(AppContext.class.toString(), "copyFile: IOException occurred.", e);
-        }
-        return false;
-    }
-
-    public static boolean copyStream(InputStream in, OutputStream out)  {
-        boolean success = true;
-        try {
-            IOUtils.copy(in, out);
-        } catch (IOException e) {
-            Logger.w(AppContext.class.toString(), "copyStream: IOException occurred.", e);
-            success = false;
-        } finally {
-            IOUtils.closeQuietly(out);
-            IOUtils.closeQuietly(in);
-        }
-
-        return success;
     }
 
     /**
