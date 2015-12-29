@@ -50,6 +50,8 @@ public class AppContext {
     public static final Bundle args = new Bundle();
     private static boolean loaded;
     private static String sdCardPath = "";
+    private static boolean alreadyReadSdCardDirectory = false;
+    private static String verifiedSdCardPath = "";
     public static final int REQUEST_CODE_STORAGE_ACCESS = 42;
 
     /**
@@ -178,7 +180,7 @@ public class AppContext {
      * Checks if the external media is mounted and writeable
      * @return
      */
-    public static boolean isSdCardAvailable() {
+    public static boolean isSdCardAccessable() {
         // TRICKY: KITKAT introduced changes to the external media that made sd cards read only,
         //      and now starting with Lollipop the user has to grant access permission
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
@@ -196,8 +198,8 @@ public class AppContext {
      */
     public static String findSdCardFolder() {
 
-        if(!sdCardPath.isEmpty()) {
-            return sdCardPath;
+        if(!verifiedSdCardPath.isEmpty()) {
+            return verifiedSdCardPath;
         }
 
         String[] mounts = getExternalDirectories();
@@ -246,7 +248,7 @@ public class AppContext {
                         if (null == sdPath) {
                             Logger.i(AppContext.class.toString(), "SD card folder not found");
                         } else {
-                            sdCardPath = sdPath;
+                            verifiedSdCardPath = sdPath;
                         }
                     }
 
@@ -449,29 +451,47 @@ public class AppContext {
      */
     public static boolean isSdCardPresentLollipop() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (!sdCardPath.isEmpty()) { // see if we already have detected an SD card this session
+            if (!verifiedSdCardPath.isEmpty()) { // see if we already have detected an SD card this session
                 return true;
             }
 
+            // see if we already have enabled access
             if( getSdCardAccessUriStr() != null) { // if user has already chosen a path for SD card
                 if(sdCardMkdirs(null) != null) { // verify card is still present and writeable
                     return true;
                 }
             }
+
+            // rough check to see if SD card is currently present
+            File sdCard = getSdCardDirectory();
+            if(sdCard != null) {
+                return true;
+            }
         }
+
         return false;
     }
 
     /**
-    * Returns the external public downloads directory.  Warning this may not be writeable.
+    * Returns the SD card directory.  Warning this may not be writeable.
      * Just a rough check to see if one is possibly present.
     * @return
     */
     public static File getSdCardDirectory() {
 
-        if (!sdCardPath.isEmpty()) {
-            return new File(sdCardPath);
+        if (!verifiedSdCardPath.isEmpty()) {
+            return new File(verifiedSdCardPath);
         }
+
+        if(alreadyReadSdCardDirectory) {
+            if (!sdCardPath.isEmpty()) {
+                return new File(sdCardPath);
+            } else {
+                return null;
+            }
+        }
+
+        alreadyReadSdCardDirectory = true;
 
         String[] mounts = getExternalDirectories();
 
@@ -483,8 +503,10 @@ public class AppContext {
                     String state = EnvironmentCompat.getStorageState(mountFile);
                     boolean mounted = Environment.MEDIA_MOUNTED.equals(state);
                     if(mounted) {
-                        path = mount;
-                        break;
+                        if(mount.toLowerCase().indexOf("emulated") < 0) {
+                            path = mount;
+                            break;
+                        }
                     }
                 }
                 if(path != null) {
@@ -492,6 +514,7 @@ public class AppContext {
                     sdCardPath = absolute.toString(); // cache value
                     return absolute;
                 }
+                sdCardPath = "";
             }
         } catch (Exception e) {
             Logger.w(AppContext.class.toString(),"Error getting external card folder", e);
@@ -552,10 +575,12 @@ public class AppContext {
         Logger.i(AppContext.class.getName(), "Environment.getExternalStorageDirectory(): " + Environment.getExternalStorageDirectory());
         Logger.i(AppContext.class.getName(), "Environment.getExternalStorageState(): " + Environment.getExternalStorageState());
 
-        AppContext.restoreSdCardWriteAccess(); // only does something if supported on device
-        if (!AppContext.isSdCardAvailable()) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                return true;
+        restoreSdCardWriteAccess(); // only does something if supported on device
+        if (!isSdCardAccessable()) { // if accessable, we do not need to request access
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) { // can only request access if lollipop or greater
+                if( isSdCardPresentLollipop() ) {
+                    return true; // if there is an SD card present, is there any point in requesting access
+                }
             }
         }
 
@@ -620,7 +645,7 @@ public class AppContext {
 
         restoreSdCardWriteAccess(); // apply settings
 
-        boolean success = isSdCardAvailable();
+        boolean success = isSdCardAccessable();
         if(!success) {
             storeSdCardAccess(null, 0); // clear value since invalid
         }
@@ -633,6 +658,7 @@ public class AppContext {
         AppContext.setUserString(SettingsActivity.KEY_SDCARD_ACCESS_FLAGS, String.valueOf(flags));
         Logger.i(AppContext.class.getName(), "URI = " + sdUri);
         sdCardPath = ""; // reset persisted path to SD card, will need to find it again
+        verifiedSdCardPath = ""; // reset persisted path to SD card, will need to find it again
     }
 
     /**

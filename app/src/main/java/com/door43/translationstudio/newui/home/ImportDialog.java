@@ -211,11 +211,7 @@ public class ImportDialog extends DialogFragment {
                             InputStream in = AppContext.context().getContentResolver().openInputStream(uri);
                             AppContext.getTranslator().importArchive(in,uri.getPath());
                             // TODO: 12/17/2015 merge chunks .. loop
-                            CustomAlertDialog.Create(getActivity())
-                                    .setTitle(R.string.import_from_sd)
-                                    .setMessage(R.string.success)
-                                    .setNeutralButton(R.string.dismiss, null)
-                                    .show("ImportSuccess");
+                            showImportSuccess();
                         } catch (Exception e) {
                             Logger.e(this.getClass().getName(), "Failed to import the archive", e);
                             Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_import_failed, Snackbar.LENGTH_LONG);
@@ -236,11 +232,7 @@ public class ImportDialog extends DialogFragment {
                         try {
                             AppContext.getTranslator().importArchive(file);
                             // TODO: 12/17/2015 merge chunks .. loop
-                            CustomAlertDialog.Create(getActivity())
-                                    .setTitle(R.string.import_from_sd)
-                                    .setMessage(R.string.success)
-                                    .setNeutralButton(R.string.dismiss, null)
-                                    .show("ImportSuccess");
+                            showImportSuccess();
                         } catch (Exception e) {
                             Logger.e(this.getClass().getName(), "Failed to import the archive", e);
                             Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_import_failed, Snackbar.LENGTH_LONG);
@@ -258,6 +250,14 @@ public class ImportDialog extends DialogFragment {
                 }
             }
         }
+    }
+
+    private void showImportSuccess() {
+        CustomAlertDialog.Create(getActivity())
+                .setTitle(R.string.import_from_sd)
+                .setMessage(R.string.success)
+                .setNeutralButton(R.string.dismiss, null)
+                .show("ImportSuccess");
     }
 
     @Override
