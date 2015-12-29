@@ -589,4 +589,5 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="add_contributor">Add Contributor</string>
     <string name="confirm_delete_translator">This will permanently remove the translator. Continue?</string>
     <string name="delete_translator_title">Delete Translator</string>
+    <string name="action_translate_resources">Translate Resources</string>
 </resources>

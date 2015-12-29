@@ -9,15 +9,21 @@
         android:icon="@drawable/ic_library_books_black_24dp"
         app:showAsAction="never" />
 
+    <item android:id="@+id/action_translate_resources"
+        android:title="@string/action_translate_resources"
+        android:orderInCategory="120"
+        android:icon="@drawable/ic_translate_black_24dp"
+        app:showAsAction="never" />
+
     <item android:id="@+id/action_publish"
         android:title="@string/publish"
-        android:orderInCategory="100"
+        android:orderInCategory="130"
         android:icon="@drawable/ic_cloud_done_black_24dp"
         app:showAsAction="never" />
 
     <item android:id="@+id/action_backup"
         android:title="@string/backup"
-        android:orderInCategory="100"
+        android:orderInCategory="140"
         android:icon="@drawable/ic_file_upload_black_24dp"
         app:showAsAction="never" />
 
