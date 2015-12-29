@@ -216,7 +216,7 @@ public class AppContext {
                 DocumentFile file = sdCardTempFolder.createFile("text/plain", "_zzztestzzz_.txt"); // make sure URI write accessable
                 String testData = "test Data";
                 success = documentFolderWrite(file, testData, false); // make sure we can write
-                if(file.length() < file.length()) {
+                if(file.length() < testData.length()) {
                     success = false;
                 }
                 file.delete(); // cleanup after use
@@ -564,28 +564,63 @@ public class AppContext {
      * @return
      */
     @TargetApi(Build.VERSION_CODES.KITKAT)
-    public static boolean persistSdCardWriteAccess(final Uri sdUri, final int flags) {
+    public static boolean validateSdCardWriteAccess(final Uri sdUri, final int flags) {
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            AppContext.setUserString(SettingsActivity.KEY_SDCARD_ACCESS_URI, sdUri.toString());
-            AppContext.setUserString(SettingsActivity.KEY_SDCARD_ACCESS_FLAGS, String.valueOf(flags));
-            Logger.i(AppContext.class.getName(), "URI = " + sdUri.toString());
-
-            sdCardPath = ""; // reset persisted path to SD card, will need to find it again
-            restoreSdCardWriteAccess(); // apply settings
-        } else {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
             return true;
         }
 
-        boolean success = isSdCardAvailable();
+        boolean success = persistSdCardWriteAccess(sdUri, flags);
+
+        String sdCardActualFolder = findSdCardFolder();
+        if(sdCardActualFolder != null) {
+            Logger.i(AppContext.class.getName(), "found card at = " + sdCardActualFolder);
+        } else {
+            Logger.i(AppContext.class.getName(), "invalid access Uri = " + sdUri);
+            storeSdCardAccess(null, 0); // clear value since invalid
+            success = false;
+        }
+
         return success;
+    }
+
+    /**
+     * persists write permission for SD card access
+     * @param sdUri - uri to persist
+     * @param flags - permission flags
+     * @return
+     */
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    public static boolean persistSdCardWriteAccess(final Uri sdUri, final int flags) {
+
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            return true;
+        }
+
+        storeSdCardAccess(sdUri, flags);
+
+        restoreSdCardWriteAccess(); // apply settings
+
+        boolean success = isSdCardAvailable();
+        if(!success) {
+            storeSdCardAccess(null, 0); // clear value since invalid
+        }
+        return success;
+    }
+
+    private static void storeSdCardAccess(Uri sdUri, int flags) {
+        String uriStr = (null == sdUri) ? null : sdUri.toString();
+        AppContext.setUserString(SettingsActivity.KEY_SDCARD_ACCESS_URI, uriStr);
+        AppContext.setUserString(SettingsActivity.KEY_SDCARD_ACCESS_FLAGS, String.valueOf(flags));
+        Logger.i(AppContext.class.getName(), "URI = " + sdUri);
+        sdCardPath = ""; // reset persisted path to SD card, will need to find it again
     }
 
     /**
      * restores previously granted write permission for SD card access
      * @return
      */
-    public static void restoreSdCardWriteAccess() {
+    public static boolean restoreSdCardWriteAccess() {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             String flagStr = AppContext.getUserString(SettingsActivity.KEY_SDCARD_ACCESS_FLAGS, null);
             String path = AppContext.getUserString(SettingsActivity.KEY_SDCARD_ACCESS_URI, null);
@@ -594,14 +629,23 @@ public class AppContext {
                 Integer flags = Integer.parseInt(flagStr);
                 Uri sdUri = Uri.parse(path);
                 Logger.i(AppContext.class.getName(), "Restore URI = " + sdUri.toString());
-
-                // Persist access permissions.
-                int takeFlags = flags
-                        & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                mContext.grantUriPermission(mContext.getPackageName(), sdUri, takeFlags); //TODO 12/22/2015 need to find way to remove this warning
-                mContext.getContentResolver().takePersistableUriPermission(sdUri,takeFlags);
+                applyPermissions(sdUri, flags);
+                return true;
             }
         }
+        return false;
+    }
+
+    public static boolean applyPermissions(Uri sdUri, Integer flags) {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Logger.i(AppContext.class.getName(), "Apply permissions to URI '" + sdUri.toString() + "' flags: " + flags);
+            int takeFlags = flags
+                    & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            mContext.grantUriPermission(mContext.getPackageName(), sdUri, takeFlags); //TODO 12/22/2015 need to find way to remove this warning
+            mContext.getContentResolver().takePersistableUriPermission(sdUri, takeFlags);
+            return true;
+        }
+        return false;
     }
 
     /**

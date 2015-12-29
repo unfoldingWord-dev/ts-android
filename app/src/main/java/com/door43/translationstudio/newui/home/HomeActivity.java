@@ -178,8 +178,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
             Logger.i(this.getClass().getName(), "Environment.getExternalStorageDirectory(): " + Environment.getExternalStorageDirectory());
             Logger.i(this.getClass().getName(), "Environment.getExternalStorageState(): " + Environment.getExternalStorageState());
 
-            AppContext.restoreSdCardWriteAccess();
-
+            AppContext.restoreSdCardWriteAccess(); // only does something if supported on device
             if (!AppContext.isSdCardAvailable()) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     return true;
@@ -253,7 +252,16 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                 // Get Uri from Storage Access Framework.
                 treeUri = data.getData();
                 final int takeFlags = data.getFlags();
-                AppContext.persistSdCardWriteAccess(treeUri, takeFlags);
+                boolean success = AppContext.validateSdCardWriteAccess(treeUri, takeFlags);
+                if(!success) {
+                    String template = getResources().getString(R.string.access_failed);
+                    String msg = String.format(template,treeUri.toString());
+                    CustomAlertDialog.Create(this)
+                            .setTitle(R.string.access_failed_title)
+                            .setMessage(msg)
+                            .setPositiveButton(R.string.label_ok, null)
+                            .show("AccessError");
+                }
             }
         } else
         if(requestCode == NEW_TARGET_TRANSLATION_REQUEST) {
