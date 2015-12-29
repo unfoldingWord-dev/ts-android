@@ -598,7 +598,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 </ul>
 ]]>
     </string>
-    <string name="access_failed_title">Access Attempt Failed</string>
+    <string name="access_title">Access Attempt</string>
     <string name="access_failed">Failed on access request to:\n%s</string>
+    <string name="access_granted_backup">Success!\nAccess Granted\nPlease retry SD card backup operation</string>
+    <string name="access_granted_import">Success!\nAccess Granted\nPlease retry SD card import operation</string>
+    <string name="access_skipped">Access Not Granted</string>
+    <string name="label_skip">Skip</string>
 
 </resources>

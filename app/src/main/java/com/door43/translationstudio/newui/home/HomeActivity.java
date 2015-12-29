@@ -51,7 +51,6 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
     private Library mLibrary;
     private Translator mTranslator;
     private Fragment mFragment;
-    private boolean requestSdCardAccess = true; // disable by setting false
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,8 +107,8 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                                 }
                                 backupFt.addToBackStack(null);
 
-                                ImportDialog backupDialog = new ImportDialog();
-                                backupDialog.show(backupFt, ImportDialog.TAG);
+                                ImportDialog importDialog = new ImportDialog();
+                                importDialog.show(backupFt, ImportDialog.TAG);
                                 return true;
                             case R.id.action_feedback:
                                 FragmentTransaction ft = getFragmentManager().beginTransaction();
@@ -154,38 +153,6 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                 moreMenu.show();
             }
         });
-
-        if (doWeNeedToRequestSdCardAccess()) {
-            final HomeActivity self = this;
-            final CustomAlertDialog dialog = CustomAlertDialog.Create(this);
-            dialog.setTitle(R.string.enable_sd_card_access_title)
-                    .setMessageHtml(R.string.enable_sd_card_access)
-                    .setPositiveButton(R.string.confirm, new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                        AppContext.triggerStorageAccessFramework(self);
-                        }
-                    })
-                    .setNegativeButton(R.string.title_cancel, null)
-                    .show("approve-SD-access");
-        }
-    }
-
-    private boolean doWeNeedToRequestSdCardAccess() {
-        Logger.i(this.getClass().getName(), "requestSdCardAccess: " + requestSdCardAccess);
-        if (requestSdCardAccess) { // if request is enabled
-            Logger.i(this.getClass().getName(), "version API: " + Build.VERSION.SDK_INT);
-            Logger.i(this.getClass().getName(), "Environment.getExternalStorageDirectory(): " + Environment.getExternalStorageDirectory());
-            Logger.i(this.getClass().getName(), "Environment.getExternalStorageState(): " + Environment.getExternalStorageState());
-
-            AppContext.restoreSdCardWriteAccess(); // only does something if supported on device
-            if (!AppContext.isSdCardAvailable()) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     /**
@@ -246,8 +213,8 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == AppContext.REQUEST_CODE_STORAGE_ACCESS) {
             Uri treeUri = null;
+            String msg = "";
             if (resultCode == Activity.RESULT_OK) {
-                requestSdCardAccess = false;
 
                 // Get Uri from Storage Access Framework.
                 treeUri = data.getData();
@@ -255,14 +222,18 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                 boolean success = AppContext.validateSdCardWriteAccess(treeUri, takeFlags);
                 if(!success) {
                     String template = getResources().getString(R.string.access_failed);
-                    String msg = String.format(template,treeUri.toString());
-                    CustomAlertDialog.Create(this)
-                            .setTitle(R.string.access_failed_title)
-                            .setMessage(msg)
-                            .setPositiveButton(R.string.label_ok, null)
-                            .show("AccessError");
+                    msg = String.format(template,treeUri.toString());
+                } else {
+                    msg = getResources().getString(R.string.access_granted_import);
                 }
+            } else {
+                msg = getResources().getString(R.string.access_skipped);
             }
+            CustomAlertDialog.Create(this)
+                    .setTitle(R.string.access_title)
+                    .setMessage(msg)
+                    .setPositiveButton(R.string.label_ok, null)
+                    .show("AccessResults");
         } else
         if(requestCode == NEW_TARGET_TRANSLATION_REQUEST) {
             if(resultCode == RESULT_OK) {

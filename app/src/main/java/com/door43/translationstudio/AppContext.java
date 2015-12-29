@@ -545,6 +545,25 @@ public class AppContext {
     }
 
     /**
+     * returns true if we need to enable SD card access
+     */
+    public static boolean doWeNeedToRequestSdCardAccess() {
+        Logger.i(AppContext.class.getName(), "version API: " + Build.VERSION.SDK_INT);
+        Logger.i(AppContext.class.getName(), "Environment.getExternalStorageDirectory(): " + Environment.getExternalStorageDirectory());
+        Logger.i(AppContext.class.getName(), "Environment.getExternalStorageState(): " + Environment.getExternalStorageState());
+
+        AppContext.restoreSdCardWriteAccess(); // only does something if supported on device
+        if (!AppContext.isSdCardAvailable()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    /**
      * if available, this triggers browser dialog for user to select SD card folder to allow access
      * @param context
      */

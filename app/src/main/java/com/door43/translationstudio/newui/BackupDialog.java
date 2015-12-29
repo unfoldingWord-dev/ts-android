@@ -171,41 +171,26 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
         backupToSDButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: 10/27/2015 have the user choose the file location
-                String fileName = System.currentTimeMillis() / 1000L + "_" + filename;
-                boolean success = false;
-                boolean canWriteToSdCardBackupLollipop = false;
-                DocumentFile baseFolder = null;
 
-                try {
-                    if(AppContext.isSdCardPresentLollipop()) {
-                        baseFolder = AppContext.sdCardMkdirs(AppContext.DOWNLOAD_TRANSLATION_STUDIO_FOLDER);
-                        canWriteToSdCardBackupLollipop = baseFolder != null;
-                    }
-
-                    if (canWriteToSdCardBackupLollipop) { // default to writing to SD card if available
-                        if (baseFolder.canWrite()) {
-                            DocumentFile file = baseFolder.createFile("image", fileName);
-                            OutputStream out = AppContext.context().getContentResolver().openOutputStream(file.getUri());
-                            AppContext.getTranslator().exportArchiveToStream(mTargetTranslation, out, fileName);
-                            success = true;
-                        }
-                    } else {
-                        File exportFile = new File(AppContext.getPublicDownloadsDirectory(), fileName);
-                        AppContext.getTranslator().exportArchive(mTargetTranslation, exportFile);
-                        success = exportFile.exists();
-                    }
-                } catch (Exception e) {
-                    success = false;
-                    Logger.e(BackupDialog.class.getName(), "Failed to export the target translation " + mTargetTranslation.getId(), e);
-                }
-
-                if (success) {
-                    showSuccess();
+                if (AppContext.doWeNeedToRequestSdCardAccess()) {
+                    final CustomAlertDialog dialog = CustomAlertDialog.Create(getActivity());
+                    dialog.setTitle(R.string.enable_sd_card_access_title)
+                            .setMessageHtml(R.string.enable_sd_card_access)
+                            .setPositiveButton(R.string.confirm, new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    AppContext.triggerStorageAccessFramework(getActivity());
+                                }
+                            })
+                            .setNegativeButton(R.string.label_skip, new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    doSdCardBackup(filename);
+                                }
+                            })
+                            .show("approve-SD-access");
                 } else {
-                    Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_export_failed, Snackbar.LENGTH_LONG);
-                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                    snack.show();
+                    doSdCardBackup(filename);
                 }
             }
         });
@@ -234,6 +219,45 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
         });
 
         return v;
+    }
+
+    private void doSdCardBackup(String filename) {
+        // TODO: 10/27/2015 have the user choose the file location
+        String fileName = System.currentTimeMillis() / 1000L + "_" + filename;
+        boolean success = false;
+        boolean canWriteToSdCardBackupLollipop = false;
+        DocumentFile baseFolder = null;
+
+        try {
+            if(AppContext.isSdCardPresentLollipop()) {
+                baseFolder = AppContext.sdCardMkdirs(AppContext.DOWNLOAD_TRANSLATION_STUDIO_FOLDER);
+                canWriteToSdCardBackupLollipop = baseFolder != null;
+            }
+
+            if (canWriteToSdCardBackupLollipop) { // default to writing to SD card if available
+                if (baseFolder.canWrite()) {
+                    DocumentFile file = baseFolder.createFile("image", fileName);
+                    OutputStream out = AppContext.context().getContentResolver().openOutputStream(file.getUri());
+                    AppContext.getTranslator().exportArchiveToStream(mTargetTranslation, out, fileName);
+                    success = true;
+                }
+            } else {
+                File exportFile = new File(AppContext.getPublicDownloadsDirectory(), fileName);
+                AppContext.getTranslator().exportArchive(mTargetTranslation, exportFile);
+                success = exportFile.exists();
+            }
+        } catch (Exception e) {
+            success = false;
+            Logger.e(BackupDialog.class.getName(), "Failed to export the target translation " + mTargetTranslation.getId(), e);
+        }
+
+        if (success) {
+            showSuccess();
+        } else {
+            Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_export_failed, Snackbar.LENGTH_LONG);
+            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+            snack.show();
+        }
     }
 
     private void showSuccess() {

@@ -6,7 +6,9 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.design.widget.Snackbar;
 import android.support.v4.provider.DocumentFile;
 import android.view.LayoutInflater;
@@ -79,40 +81,35 @@ public class ImportDialog extends DialogFragment {
         importFromSDButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String typeStr = null;
-                Uri baseFolderURI = null;
-                Intent intent = new Intent(getActivity(), FileBrowserActivity.class);
-                isDocumentFile = AppContext.isSdCardPresentLollipop();
 
-                if(isDocumentFile) {
-                    DocumentFile baseFolder = AppContext.sdCardMkdirs(null);
-                    String subFolder =  AppContext.searchFolderAndParentsForDocFile(baseFolder, Translator.ARCHIVE_EXTENSION);
-                    if(null == subFolder) {
-                        isDocumentFile = false;
-                    } else {
-                        String uriStr = AppContext.getSdCardAccessUriStr();
-                        intent.putExtra("Folder", subFolder);
-                        baseFolderURI = Uri.parse(uriStr);
-                        typeStr = FileBrowserActivity.DOC_FILE_TYPE;
-                    }
+                if (AppContext.doWeNeedToRequestSdCardAccess()) {
+                    final CustomAlertDialog dialog = CustomAlertDialog.Create(getActivity());
+                    dialog.setTitle(R.string.enable_sd_card_access_title)
+                            .setMessageHtml(R.string.enable_sd_card_access)
+                            .setPositiveButton(R.string.confirm, new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    AppContext.triggerStorageAccessFramework(getActivity());
+                                }
+                            })
+                            .setNegativeButton(R.string.label_skip, new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    doImportFromSdCard();
+                                }
+                            })
+                            .show("approve-SD-access");
+                } else {
+                    doImportFromSdCard();
                 }
-
-                if(!isDocumentFile) {
-                    File path = AppContext.getPublicDownloadsDirectory();
-                    baseFolderURI = Uri.fromFile(path);
-                    typeStr = FileBrowserActivity.FILE_TYPE;
-                }
-
-                intent.setDataAndType(baseFolderURI, typeStr);
-                startActivityForResult(intent, IMPORT_PROJECT_FROM_SD_REQUEST);
             }
         });
         importFromFriend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // TODO: 11/18/2015 eventually we need to support bluetooth as well as an adhoc network
-                if(AppContext.context().isNetworkAvailable()) {
-                    if(AppContext.getDeviceNetworkAlias() == null) {
+                if (AppContext.context().isNetworkAvailable()) {
+                    if (AppContext.getDeviceNetworkAlias() == null) {
                         // get device alias
                         FragmentTransaction ft = getFragmentManager().beginTransaction();
                         Fragment prev = getFragmentManager().findFragmentByTag(ImportDialog.TAG);
@@ -144,6 +141,35 @@ public class ImportDialog extends DialogFragment {
         });
 
         return v;
+    }
+
+    private void doImportFromSdCard() {
+        String typeStr = null;
+        Uri baseFolderURI = null;
+        Intent intent = new Intent(getActivity(), FileBrowserActivity.class);
+        isDocumentFile = AppContext.isSdCardPresentLollipop();
+
+        if(isDocumentFile) {
+            DocumentFile baseFolder = AppContext.sdCardMkdirs(null);
+            String subFolder =  AppContext.searchFolderAndParentsForDocFile(baseFolder, Translator.ARCHIVE_EXTENSION);
+            if(null == subFolder) {
+                isDocumentFile = false;
+            } else {
+                String uriStr = AppContext.getSdCardAccessUriStr();
+                intent.putExtra("Folder", subFolder);
+                baseFolderURI = Uri.parse(uriStr);
+                typeStr = FileBrowserActivity.DOC_FILE_TYPE;
+            }
+        }
+
+        if(!isDocumentFile) {
+            File path = AppContext.getPublicDownloadsDirectory();
+            baseFolderURI = Uri.fromFile(path);
+            typeStr = FileBrowserActivity.FILE_TYPE;
+        }
+
+        intent.setDataAndType(baseFolderURI, typeStr);
+        startActivityForResult(intent, IMPORT_PROJECT_FROM_SD_REQUEST);
     }
 
     @Override
