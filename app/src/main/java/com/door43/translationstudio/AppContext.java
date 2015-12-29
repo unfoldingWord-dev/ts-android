@@ -179,7 +179,8 @@ public class AppContext {
      * @return
      */
     public static boolean isSdCardAvailable() {
-        // TRICKY: KITKAT introduced changes to the external media that made sd cards read only
+        // TRICKY: KITKAT introduced changes to the external media that made sd cards read only,
+        //      and now starting with Lollipop the user has to grant access permission
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
             File sdCard = getSdCardDirectory();
             return sdCard != null;
@@ -443,11 +444,11 @@ public class AppContext {
     }
 
     /**
-     * Returns true if an SD card is present and writeable on Android Kitkat or greater
+     * Returns true if an external SD card is present and writeable on Android Lollipop or greater
      * @return
      */
-    public static boolean isSdCardPresentKitKat() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+    public static boolean isSdCardPresentLollipop() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             if (!sdCardPath.isEmpty()) { // see if we already have detected an SD card this session
                 return true;
             }
