@@ -82,7 +82,7 @@ public class ImportDialog extends DialogFragment {
                 String typeStr = null;
                 Uri baseFolderURI = null;
                 Intent intent = new Intent(getActivity(), FileBrowserActivity.class);
-                isDocumentFile = AppContext.isSdCardPresentKitKat();
+                isDocumentFile = AppContext.isSdCardPresentLollipop();
 
                 if(isDocumentFile) {
                     DocumentFile baseFolder = AppContext.sdCardMkdirs(null);

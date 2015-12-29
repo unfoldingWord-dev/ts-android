@@ -586,4 +586,16 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="add_contributor">Add Contributor</string>
     <string name="confirm_delete_translator">This will permanently remove the translator. Continue?</string>
     <string name="delete_translator_title">Delete Translator</string>
+    <string name="enable_sd_card_access_title">Enable SD Card Accessr</string>
+    <string name="enable_sd_card_access">
+<![CDATA[
+<p>Do you want to enable SD card access?  If so then:<p>
+<ul>
+  <li>Click Confirm and wait for access dialog to appear</li>
+  <li>If SD card is not shown on left, click on menu (three vertical dots in upper right corner)</li>
+  <li>Click on SD card on left</li>
+  <li>Click on 'Select "SD card"' at bottom</li>
+</ul>
+]]>
+    </string>
 </resources>

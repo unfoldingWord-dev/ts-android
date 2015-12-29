@@ -1,14 +1,11 @@
 package com.door43.translationstudio.newui;
 
-import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -177,16 +174,16 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
                 // TODO: 10/27/2015 have the user choose the file location
                 String fileName = System.currentTimeMillis() / 1000L + "_" + filename;
                 boolean success = false;
-                boolean canWriteToSdCardBackup = false;
+                boolean canWriteToSdCardBackupLollipop = false;
                 DocumentFile baseFolder = null;
 
                 try {
-                    if(AppContext.isSdCardPresentKitKat()) {
+                    if(AppContext.isSdCardPresentLollipop()) {
                         baseFolder = AppContext.sdCardMkdirs(AppContext.DOWNLOAD_TRANSLATION_STUDIO_FOLDER);
-                        canWriteToSdCardBackup = baseFolder != null;
+                        canWriteToSdCardBackupLollipop = baseFolder != null;
                     }
 
-                    if (canWriteToSdCardBackup) { // default to writing to SD card if available
+                    if (canWriteToSdCardBackupLollipop) { // default to writing to SD card if available
                         if (baseFolder.canWrite()) {
                             DocumentFile file = baseFolder.createFile("image", fileName);
                             OutputStream out = AppContext.context().getContentResolver().openOutputStream(file.getUri());

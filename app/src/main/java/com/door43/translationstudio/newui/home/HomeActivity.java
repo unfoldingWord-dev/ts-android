@@ -156,7 +156,18 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
         });
 
         if (doWeNeedToRequestSdCardAccess()) {
-            AppContext.triggerStorageAccessFramework(this);
+            final HomeActivity self = this;
+            final CustomAlertDialog dialog = CustomAlertDialog.Create(this);
+            dialog.setTitle(R.string.enable_sd_card_access_title)
+                    .setMessageHtml(R.string.enable_sd_card_access)
+                    .setPositiveButton(R.string.confirm, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                        AppContext.triggerStorageAccessFramework(self);
+                        }
+                    })
+                    .setNegativeButton(R.string.title_cancel, null)
+                    .show("approve-SD-access");
         }
     }
 
@@ -170,7 +181,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
             AppContext.restoreSdCardWriteAccess();
 
             if (!AppContext.isSdCardAvailable()) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     return true;
                 }
             }
