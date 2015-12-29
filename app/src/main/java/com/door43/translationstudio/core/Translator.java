@@ -2,6 +2,7 @@ package com.door43.translationstudio.core;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
+import android.os.Build;
 import android.text.Editable;
 import android.text.SpannedString;
 
@@ -175,6 +176,8 @@ public class Translator {
             throw new Exception("Not a translationStudio archive");
         }
 
+        targetTranslation.commit();
+
         JSONObject manifestJson = buildManifest(targetTranslation);
         File tempCache = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
         try {
@@ -203,6 +206,8 @@ public class Translator {
             throw new Exception("Not a translationStudio archive");
         }
 
+        targetTranslation.commit();
+
         JSONObject manifestJson = buildManifest(targetTranslation);
         File tempCache = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
         try {
@@ -222,6 +227,8 @@ public class Translator {
     }
 
     private JSONObject buildManifest(TargetTranslation targetTranslation) throws Exception {
+        targetTranslation.commit();
+
         // build manifest
         JSONObject manifestJson = new JSONObject();
         JSONObject generatorJson = new JSONObject();
@@ -256,14 +263,10 @@ public class Translator {
             tempCache.mkdirs();
             Zip.unzipFromStream(in, tempCache);
             importArchiveFromTempCache(tempCache, importedTargetTranslationSlugs);
-
+            in.close();
         } catch (Exception e) {
             FileUtils.deleteQuietly(tempCache);
-            if(!FilenameUtils.getExtension(name).toLowerCase().equals(ARCHIVE_EXTENSION)) {
-                throw new Exception("Not a translationStudio archive");
-            } else {
-                throw e;
-            }
+            throw e;
         }
 
         // clean
@@ -323,26 +326,30 @@ public class Translator {
 //                        FileUtils.deleteQuietly(f);
 //                    }
 
-                // copy files into existing translation
-                File[] newFiles = newDir.listFiles(new FilenameFilter() {
-                    @Override
-                    public boolean accept(File dir, String filename) {
-                        return !filename.equals(".git");
+                    // copy files into existing translation
+                    File[] newFiles = newDir.listFiles(new FilenameFilter() {
+                        @Override
+                        public boolean accept(File dir, String filename) {
+                            return !filename.equals(".git");
+                        }
+                    });
+                    for(File importedFile:newFiles) {
+                        File localFile = new File(localDir, importedFile.getName());
+                        if(importedFile.getName().equals("manifest.json")) {
+                            JSONObject localManifest = new JSONObject(FileUtils.readFileToString(localFile));
+                            JSONObject importedManifest = new JSONObject(FileUtils.readFileToString(importedFile));
+                            // TODO: merge the manifest files instead of doing a blind copy.
+                            // we need to merge the translators, finished_frames, finished_titles, and finished_references.
+                            FileUtils.deleteQuietly(localFile);
+                            FileUtils.moveFile(importedFile, localFile);
+                        } else {
+                            // merge the files
+                            mergeRecursively(importedFile, localFile);
+                        }
                     }
-                });
-                for(File importedFile:newFiles) {
-                    File localFile = new File(localDir, importedFile.getName());
-                    if(importedFile.getName().equals("manifest.json")) {
-                        JSONObject localManifest = new JSONObject(FileUtils.readFileToString(localFile));
-                        JSONObject importedManifest = new JSONObject(FileUtils.readFileToString(importedFile));
-                        // TODO: merge the manifest files instead of doing a blind copy.
-                        // we need to merge the translators, finished_frames, finished_titles, and finished_references.
-                        FileUtils.deleteQuietly(localFile);
-                        FileUtils.moveFile(importedFile, localFile);
-                    } else {
-                        // merge the files
-                        mergeRecursively(importedFile, localFile);
-                    }
+                } else {
+                    // import new translation
+                    FileUtils.moveDirectory(newDir, localDir);
                 }
             } else {
                 // import new translation

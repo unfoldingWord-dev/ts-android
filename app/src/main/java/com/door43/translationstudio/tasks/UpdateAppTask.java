@@ -10,7 +10,6 @@ import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.AppContext;
-import com.door43.translationstudio.core.IndexerSQLiteHelper;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
@@ -111,17 +110,22 @@ public class UpdateAppTask extends ManagedTask {
     }
 
     /**
-     * We to migrate chunks in targetTranslations because some no longer match up to the source.
+     * We need to migrate chunks in targetTranslations because some no longer match up to the source.
      */
     private void upgradePre110() {
-        TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
-        for(TargetTranslation tt:targetTranslations) {
-            try {
-                // TODO: 12/17/2015 loop through all targetTranslations and merge invalid chunks to sibling chunks
-            } catch (Exception e) {
-                Logger.e(this.getClass().getName(), "Failed to merge the chunks in the target translation " + tt.getId());
-            }
+        AppContext.context().deleteDatabase(Library.DATABASE_NAME);
+
+        // TRICKY: we deploy the new library in a different task but since we are using it we need to do so now
+        try {
+            AppContext.deployDefaultLibrary();
+        } catch (Exception e) {
+            Logger.e(this.getClass().getName(), "Failed to deploy the default index", e);
         }
+
+        // migrate broken chunks
+        TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
+        TargetTranslationMigrator.migrateChunkChanges(AppContext.getLibrary(), targetTranslations);
+
     }
 
     /**

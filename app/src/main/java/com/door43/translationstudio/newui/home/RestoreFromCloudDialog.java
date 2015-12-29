@@ -1,6 +1,5 @@
 package com.door43.translationstudio.newui.home;
 
-import android.app.AlertDialog;
 import android.app.DialogFragment;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,6 +17,7 @@ import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.CloneTargetTranslationTask;
@@ -29,7 +29,6 @@ import com.door43.util.tasks.TaskManager;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 
@@ -205,7 +204,7 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
                         Logger.e(RestoreFromCloudDialog.class.getName(), "Failed to commit changes after restoring backup", e);
                     }
 
-                    // TODO: 12/17/2015 merge chunks
+                    TargetTranslationMigrator.migrateChunkChanges(AppContext.getLibrary(), targetTranslation);
                 }
 
                 FileUtils.deleteQuietly(sourcePath);

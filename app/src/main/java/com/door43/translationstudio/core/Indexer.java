@@ -2,6 +2,7 @@ package com.door43.translationstudio.core;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.Nullable;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.util.Security;
@@ -968,6 +969,7 @@ public class Indexer {
      * @param wordSlug
      * @return
      */
+    @Nullable
     public TranslationWord getWord(SourceTranslation sourceTranslation, String wordSlug) {
         long projectId = mDatabaseHelper.getProjectDBId(mDatabase, sourceTranslation.projectSlug);
         long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceTranslation.sourceLanguageSlug, projectId);
@@ -984,9 +986,10 @@ public class Indexer {
      * Returns a translation academy item
      * @param sourceTranslation
      * @param volume
-     *@param manual
+     * @param manual
      * @param translationArticleSlug  @return
      */
+    @Nullable
     public TranslationArticle getTranslationArticle(SourceTranslation sourceTranslation, String volume, String manual, String translationArticleSlug) {
         long projectId = mDatabaseHelper.getProjectDBId(mDatabase, sourceTranslation.projectSlug);
         long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceTranslation.sourceLanguageSlug, projectId);
@@ -1094,6 +1097,7 @@ public class Indexer {
      * @param chapterSlug
      * @return
      */
+    @Nullable
     public Chapter getChapter(SourceTranslation sourceTranslation, String chapterSlug) {
         long projectId = mDatabaseHelper.getProjectDBId(mDatabase, sourceTranslation.projectSlug);
         long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceTranslation.sourceLanguageSlug, projectId);
@@ -1111,6 +1115,7 @@ public class Indexer {
      * @param frameSlug
      * @return
      */
+    @Nullable
     public Frame getFrame(SourceTranslation sourceTranslation, String chapterSlug, String frameSlug) {
         long projectId = mDatabaseHelper.getProjectDBId(mDatabase, sourceTranslation.projectSlug);
         long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceTranslation.sourceLanguageSlug, projectId);
@@ -1129,6 +1134,7 @@ public class Indexer {
      * @param questionSlug
      * @return
      */
+    @Nullable
     public CheckingQuestion getCheckingQuestion(SourceTranslation sourceTranslation, String chapterSlug, String frameSlug, String questionSlug) {
         long projectId = mDatabaseHelper.getProjectDBId(mDatabase, sourceTranslation.projectSlug);
         long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceTranslation.sourceLanguageSlug, projectId);
@@ -1149,6 +1155,7 @@ public class Indexer {
      * @param noteSlug
      * @return
      */
+    @Nullable
     public TranslationNote getNote(SourceTranslation sourceTranslation, String chapterSlug, String frameSlug, String noteSlug) {
         long projectId = mDatabaseHelper.getProjectDBId(mDatabase, sourceTranslation.projectSlug);
         long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceTranslation.sourceLanguageSlug, projectId);

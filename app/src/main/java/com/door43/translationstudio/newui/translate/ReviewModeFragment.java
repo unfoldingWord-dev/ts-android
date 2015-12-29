@@ -370,11 +370,11 @@ public class ReviewModeFragment extends ViewModeFragment {
                         String url = span.getMachineReadable().toString();
                         ArticleLinkSpan link = ArticleLinkSpan.parse(url);
                         if(link != null) {
-                            // TODO: 12/2/2015 navigate to the correct ta article
                             onTranslationArticleClick(link.getVolume(), link.getManual(), link.getId(), mResourcesDrawer.getLayoutParams().width);
                         }
                     } else if(((LinkSpan)span).getType().equals("p")) {
-                        PassageLinkSpan link = (PassageLinkSpan) span;
+                        String url = span.getMachineReadable().toString();
+                        PassageLinkSpan link = new PassageLinkSpan("", url);
                         scrollToFrame(link.getChapterId(), link.getFrameId());
                     }
                 }
@@ -497,7 +497,8 @@ public class ReviewModeFragment extends ViewModeFragment {
                             onTranslationArticleClick(link.getVolume(), link.getManual(), link.getId(), mResourcesDrawer.getLayoutParams().width);
                         }
                     } else if(((LinkSpan)span).getType().equals("p")) {
-                        PassageLinkSpan link = (PassageLinkSpan) span;
+                        String url = span.getMachineReadable().toString();
+                        PassageLinkSpan link = new PassageLinkSpan("", url);
                         scrollToFrame(link.getChapterId(), link.getFrameId());
                     }
                 }

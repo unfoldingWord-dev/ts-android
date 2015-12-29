@@ -20,6 +20,9 @@ import android.widget.Button;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.filebrowser.FileBrowserActivity;
@@ -27,7 +30,6 @@ import com.door43.translationstudio.filebrowser.FileBrowserActivity;
 import com.door43.translationstudio.newui.DeviceNetworkAliasDialog;
 import com.door43.translationstudio.newui.ShareWithPeerDialog;
 import com.door43.widget.ViewUtil;
-
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
@@ -108,8 +110,8 @@ public class ImportDialog extends DialogFragment {
             @Override
             public void onClick(View v) {
                 // TODO: 11/18/2015 eventually we need to support bluetooth as well as an adhoc network
-                if (AppContext.context().isNetworkAvailable()) {
-                    if (AppContext.getDeviceNetworkAlias() == null) {
+                if(AppContext.context().isNetworkAvailable()) {
+                    if(AppContext.getDeviceNetworkAlias() == null) {
                         // get device alias
                         FragmentTransaction ft = getFragmentManager().beginTransaction();
                         Fragment prev = getFragmentManager().findFragmentByTag(ImportDialog.TAG);
@@ -208,9 +210,10 @@ public class ImportDialog extends DialogFragment {
                     Uri uri = data.getData();
                     if(FilenameUtils.getExtension(uri.getPath()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
                         try {
-                            InputStream in = AppContext.context().getContentResolver().openInputStream(uri);
-                            AppContext.getTranslator().importArchive(in,uri.getPath());
-                            // TODO: 12/17/2015 merge chunks .. loop
+                            final InputStream in = AppContext.context().getContentResolver().openInputStream(uri);
+                            final Translator translator = AppContext.getTranslator();
+                            final String[] targetTranslationSlugs = translator.importArchive(in, uri.getPath());
+                            TargetTranslationMigrator.migrateChunkChanges(translator, AppContext.getLibrary(), targetTranslationSlugs);
                             showImportSuccess();
                         } catch (Exception e) {
                             Logger.e(this.getClass().getName(), "Failed to import the archive", e);
@@ -230,8 +233,9 @@ public class ImportDialog extends DialogFragment {
                     File file = new File(data.getData().getPath());
                     if (FilenameUtils.getExtension(file.getName()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
                         try {
-                            AppContext.getTranslator().importArchive(file);
-                            // TODO: 12/17/2015 merge chunks .. loop
+                            final Translator translator = AppContext.getTranslator();
+                            final String[] targetTranslationSlugs = translator.importArchive(file);
+                            TargetTranslationMigrator.migrateChunkChanges(translator, AppContext.getLibrary(), targetTranslationSlugs);
                             showImportSuccess();
                         } catch (Exception e) {
                             Logger.e(this.getClass().getName(), "Failed to import the archive", e);

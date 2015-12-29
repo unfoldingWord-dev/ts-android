@@ -7,12 +7,12 @@ import android.os.IBinder;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.device2device.SocketMessages;
 import com.door43.translationstudio.network.Connection;
 import com.door43.translationstudio.network.Peer;
 import com.door43.util.RSAEncryption;
-import com.door43.util.StringUtilities;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,8 +29,6 @@ import java.net.Socket;
 import java.security.MessageDigest;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -361,7 +359,9 @@ public class ClientService extends NetworkService {
                                 // TODO: 11/23/2015 perform a diff first
                                 try {
                                     String[] targetTranslationSlugs = translator.importArchive(file);
-                                    // TODO: 12/17/2015 merge chunks .. loop
+
+                                    TargetTranslationMigrator.migrateChunkChanges(translator, AppContext.getLibrary(), targetTranslationSlugs);
+
                                     if(listener != null) {
                                         listener.onReceivedTargetTranslations(server, targetTranslationSlugs);
                                     }

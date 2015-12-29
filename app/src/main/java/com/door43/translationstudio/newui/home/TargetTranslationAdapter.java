@@ -106,7 +106,7 @@ public class TargetTranslationAdapter extends BaseAdapter {
 
                 @Override
                 public void run() {
-                    // TODO: this method should respond correct to thread interruptions
+                    // TODO: this method should respond correctly to thread interruptions
                     progress = Math.round(library.getTranslationProgress(targetTranslation) * 100);
                 }
 

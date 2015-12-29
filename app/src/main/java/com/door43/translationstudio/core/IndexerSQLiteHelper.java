@@ -1551,7 +1551,6 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @return
      */
     public Chapter[] getChapters(SQLiteDatabase db, long resourceId) {
-        // TODO: 11/2/2015 this should take in the slugs rather than the resource id.
         // we'll need to update the schema to include the slugs in the chapter table in order to do this
         List<Chapter> chapters = new ArrayList<>();
         Cursor cursor = db.rawQuery("SELECT `slug`, `reference`, `title` FROM `chapter` WHERE `resource_id`=" + resourceId + " ORDER BY `sort` ASC", null);
