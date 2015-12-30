@@ -17,6 +17,7 @@ import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.newui.BaseActivity;
+import com.door43.translationstudio.util.SdUtils;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -66,7 +67,7 @@ public class FileBrowserActivity extends BaseActivity {
                     Bundle bundle = intent.getExtras();
                     String folder = (String) bundle.get("Folder");
                     if(folder != null) {
-                        DocumentFile subDoc = AppContext.documentFileMkdirs(path, folder);
+                        DocumentFile subDoc = SdUtils.documentFileMkdirs(path, folder);
                         if(subDoc != null) {
                             path = subDoc;
                         }

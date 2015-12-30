@@ -41,6 +41,7 @@ import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.PrintDialog;
 import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.util.SdUtils;
 import com.door43.widget.VerticalSeekBar;
 import com.door43.widget.ViewUtil;
 import com.door43.translationstudio.newui.BaseActivity;
@@ -561,7 +562,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == AppContext.REQUEST_CODE_STORAGE_ACCESS) {
+        if (requestCode == SdUtils.REQUEST_CODE_STORAGE_ACCESS) {
             Uri treeUri = null;
             String msg = "";
             if (resultCode == Activity.RESULT_OK) {
@@ -569,7 +570,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 // Get Uri from Storage Access Framework.
                 treeUri = data.getData();
                 final int takeFlags = data.getFlags();
-                boolean success = AppContext.validateSdCardWriteAccess(treeUri, takeFlags);
+                boolean success = SdUtils.validateSdCardWriteAccess(treeUri, takeFlags);
                 if (!success) {
                     String template = getResources().getString(R.string.access_failed);
                     msg = String.format(template, treeUri.toString());

@@ -24,6 +24,7 @@ import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.filebrowser.FileBrowserActivity;
 import com.door43.translationstudio.newui.DeviceNetworkAliasDialog;
 import com.door43.translationstudio.newui.ShareWithPeerDialog;
+import com.door43.translationstudio.util.SdUtils;
 import com.door43.widget.ViewUtil;
 
 import org.apache.commons.io.FilenameUtils;
@@ -80,14 +81,14 @@ public class ImportDialog extends DialogFragment {
             @Override
             public void onClick(View v) {
 
-                if (AppContext.doWeNeedToRequestSdCardAccess()) {
+                if (SdUtils.doWeNeedToRequestSdCardAccess()) {
                     final CustomAlertDialog dialog = CustomAlertDialog.Create(getActivity());
                     dialog.setTitle(R.string.enable_sd_card_access_title)
                             .setMessageHtml(R.string.enable_sd_card_access)
                             .setPositiveButton(R.string.confirm, new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    AppContext.triggerStorageAccessFramework(getActivity());
+                                    SdUtils.triggerStorageAccessFramework(getActivity());
                                 }
                             })
                             .setNegativeButton(R.string.label_skip, new View.OnClickListener() {
@@ -145,15 +146,15 @@ public class ImportDialog extends DialogFragment {
         String typeStr = null;
         Uri baseFolderURI = null;
         Intent intent = new Intent(getActivity(), FileBrowserActivity.class);
-        isDocumentFile = AppContext.isSdCardPresentLollipop();
+        isDocumentFile = SdUtils.isSdCardPresentLollipop();
 
         if(isDocumentFile) {
-            DocumentFile baseFolder = AppContext.sdCardMkdirs(null);
-            String subFolder =  AppContext.searchFolderAndParentsForDocFile(baseFolder, Translator.ARCHIVE_EXTENSION);
+            DocumentFile baseFolder = SdUtils.sdCardMkdirs(null);
+            String subFolder =  SdUtils.searchFolderAndParentsForDocFile(baseFolder, Translator.ARCHIVE_EXTENSION);
             if(null == subFolder) {
                 isDocumentFile = false;
             } else {
-                String uriStr = AppContext.getSdCardAccessUriStr();
+                String uriStr = SdUtils.getSdCardAccessUriStr();
                 intent.putExtra("Folder", subFolder);
                 baseFolderURI = Uri.parse(uriStr);
                 typeStr = FileBrowserActivity.DOC_FILE_TYPE;

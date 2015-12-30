@@ -26,6 +26,7 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.UploadTargetTranslationTask;
+import com.door43.translationstudio.util.SdUtils;
 import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
@@ -172,14 +173,14 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
             @Override
             public void onClick(View v) {
 
-                if (AppContext.doWeNeedToRequestSdCardAccess()) {
+                if (SdUtils.doWeNeedToRequestSdCardAccess()) {
                     final CustomAlertDialog dialog = CustomAlertDialog.Create(getActivity());
                     dialog.setTitle(R.string.enable_sd_card_access_title)
                             .setMessageHtml(R.string.enable_sd_card_access)
                             .setPositiveButton(R.string.confirm, new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    AppContext.triggerStorageAccessFramework(getActivity());
+                                    SdUtils.triggerStorageAccessFramework(getActivity());
                                 }
                             })
                             .setNegativeButton(R.string.label_skip, new View.OnClickListener() {
@@ -229,8 +230,8 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
         DocumentFile baseFolder = null;
 
         try {
-            if(AppContext.isSdCardPresentLollipop()) {
-                baseFolder = AppContext.sdCardMkdirs(AppContext.DOWNLOAD_TRANSLATION_STUDIO_FOLDER);
+            if(SdUtils.isSdCardPresentLollipop()) {
+                baseFolder = SdUtils.sdCardMkdirs(SdUtils.DOWNLOAD_TRANSLATION_STUDIO_FOLDER);
                 canWriteToSdCardBackupLollipop = baseFolder != null;
             }
 
