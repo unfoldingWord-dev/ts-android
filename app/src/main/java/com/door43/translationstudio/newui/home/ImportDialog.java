@@ -6,9 +6,7 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.design.widget.Snackbar;
 import android.support.v4.provider.DocumentFile;
 import android.view.LayoutInflater;
@@ -20,16 +18,14 @@ import android.widget.Button;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.SettingsActivity;
-import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.filebrowser.FileBrowserActivity;
-
 import com.door43.translationstudio.newui.DeviceNetworkAliasDialog;
 import com.door43.translationstudio.newui.ShareWithPeerDialog;
 import com.door43.widget.ViewUtil;
+
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;

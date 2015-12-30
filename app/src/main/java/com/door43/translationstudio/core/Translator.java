@@ -166,6 +166,30 @@ public class Translator {
         return compiledString.toString().trim();
     }
 
+    private JSONObject buildManifest(TargetTranslation targetTranslation) throws Exception {
+        targetTranslation.commit();
+
+        // build manifest
+        JSONObject manifestJson = new JSONObject();
+        JSONObject generatorJson = new JSONObject();
+        generatorJson.put("name", GENERATOR_NAME);
+        PackageInfo pInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
+        generatorJson.put("build", pInfo.versionCode);
+        manifestJson.put("generator", generatorJson);
+        manifestJson.put("package_version", TSTUDIO_PACKAGE_VERSION);
+        manifestJson.put("timestamp", Util.unixTime());
+        JSONArray translationsJson = new JSONArray();
+        JSONObject translationJson = new JSONObject();
+        translationJson.put("path", targetTranslation.getId());
+        translationJson.put("id", targetTranslation.getId());
+        translationJson.put("commit_hash", targetTranslation.getCommitHash());
+        translationJson.put("direction", targetTranslation.getTargetLanguageDirection());
+        translationJson.put("target_language_name", targetTranslation.getTargetLanguageName());
+        translationsJson.put(translationJson);
+        manifestJson.put("target_translations", translationsJson);
+        return manifestJson;
+    }
+
     /**
      * Exports a single target translation in .tstudio format
      * @param targetTranslation
@@ -218,7 +242,7 @@ public class Translator {
             Zip.zipToStream(new File[]{manifestFile, targetTranslation.getPath()}, out);
         } catch (Exception e) {
             FileUtils.deleteQuietly(tempCache);
-//            FileUtils.deleteQuietly(outputFile);
+            out.close();
             throw e;
         }
 
@@ -226,55 +250,7 @@ public class Translator {
         FileUtils.deleteQuietly(tempCache);
     }
 
-    private JSONObject buildManifest(TargetTranslation targetTranslation) throws Exception {
-        targetTranslation.commit();
-
-        // build manifest
-        JSONObject manifestJson = new JSONObject();
-        JSONObject generatorJson = new JSONObject();
-        generatorJson.put("name", GENERATOR_NAME);
-        PackageInfo pInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
-        generatorJson.put("build", pInfo.versionCode);
-        manifestJson.put("generator", generatorJson);
-        manifestJson.put("package_version", TSTUDIO_PACKAGE_VERSION);
-        manifestJson.put("timestamp", Util.unixTime());
-        JSONArray translationsJson = new JSONArray();
-        JSONObject translationJson = new JSONObject();
-        translationJson.put("path", targetTranslation.getId());
-        translationJson.put("id", targetTranslation.getId());
-        translationJson.put("commit_hash", targetTranslation.getCommitHash());
-        translationJson.put("direction", targetTranslation.getTargetLanguageDirection());
-        translationJson.put("target_language_name", targetTranslation.getTargetLanguageName());
-        translationsJson.put(translationJson);
-        manifestJson.put("target_translations", translationsJson);
-        return manifestJson;
-    }
-
-    /**
-     * Imports target translations from an archive
-     * todo: we should have another method that will inspect the archive and return the details to the user so they can decide if they want to import it
-     * @param in
-     * @return an array of target translation slugs
-     */
-    public String[] importArchive(InputStream in, final String name) throws Exception {
-        File tempCache = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
-        List<String> importedTargetTranslationSlugs = new ArrayList<>();
-        try {
-            tempCache.mkdirs();
-            Zip.unzipFromStream(in, tempCache);
-            importArchiveFromTempCache(tempCache, importedTargetTranslationSlugs);
-            in.close();
-        } catch (Exception e) {
-            FileUtils.deleteQuietly(tempCache);
-            throw e;
-        }
-
-        // clean
-        FileUtils.deleteQuietly(tempCache);
-        return importedTargetTranslationSlugs.toArray(new String[importedTargetTranslationSlugs.size()]);
-    }
-
-    /**
+     /**
      * Imports target translations from an archive
      * todo: we should have another method that will inspect the archive and return the details to the user so they can decide if they want to import it
      * @param file
@@ -295,6 +271,30 @@ public class Translator {
             } else {
                 throw e;
             }
+        }
+
+        // clean
+        FileUtils.deleteQuietly(tempCache);
+        return importedTargetTranslationSlugs.toArray(new String[importedTargetTranslationSlugs.size()]);
+    }
+
+    /**
+     * Imports target translations from an archive
+     * todo: we should have another method that will inspect the archive and return the details to the user so they can decide if they want to import it
+     * @param in
+     * @return an array of target translation slugs
+     */
+    public String[] importArchive(InputStream in, final String name) throws Exception {
+        File tempCache = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
+        List<String> importedTargetTranslationSlugs = new ArrayList<>();
+        try {
+            tempCache.mkdirs();
+            Zip.unzipFromStream(in, tempCache);
+            importArchiveFromTempCache(tempCache, importedTargetTranslationSlugs);
+            in.close();
+        } catch (Exception e) {
+            FileUtils.deleteQuietly(tempCache);
+            throw e;
         }
 
         // clean
@@ -351,10 +351,6 @@ public class Translator {
                     // import new translation
                     FileUtils.moveDirectory(newDir, localDir);
                 }
-            } else {
-                // import new translation
-                FileUtils.moveDirectory(newDir, localDir);
-            }
             // update the generator info
             TargetTranslation.updateGenerator(mContext, getTargetTranslation(newDir.getName()));
 

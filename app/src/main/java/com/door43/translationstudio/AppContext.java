@@ -657,7 +657,6 @@ public class AppContext {
         AppContext.setUserString(SettingsActivity.KEY_SDCARD_ACCESS_URI, uriStr);
         AppContext.setUserString(SettingsActivity.KEY_SDCARD_ACCESS_FLAGS, String.valueOf(flags));
         Logger.i(AppContext.class.getName(), "URI = " + sdUri);
-        sdCardPath = ""; // reset persisted path to SD card, will need to find it again
         verifiedSdCardPath = ""; // reset persisted path to SD card, will need to find it again
     }
 
