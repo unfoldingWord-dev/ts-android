@@ -1,7 +1,6 @@
 package com.door43.translationstudio.filebrowser;
 
 import android.content.Context;
-import android.support.v4.provider.DocumentFile;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -86,11 +85,13 @@ public class DocumentFileBrowserAdapter extends BaseAdapter {
             holder = (ViewHolder)v.getTag();
         }
 
-        holder.icon.setImageResource(getItem(position).getIconResource());
-        if(getItem(position).isBackupsDir()) {
+        DocumentFileItem item = getItem(position);
+        holder.icon.setImageResource(item.getIconResource());
+        boolean isBackupsDir = item.isBackupsDir();
+        if(isBackupsDir) {
             holder.title.setText(parent.getContext().getResources().getString(R.string.automatic_backups));
         } else {
-            holder.title.setText(getItem(position).getTitle());
+            holder.title.setText(item.getTitle());
         }
         holder.archiveDetails.setVisibility(View.GONE);
         holder.title.setTextColor(parent.getContext().getResources().getColor(R.color.dark_secondary_text));
@@ -98,8 +99,8 @@ public class DocumentFileBrowserAdapter extends BaseAdapter {
             holder.archiveDetails.removeAllViews();
         }
 
-        if(getItem(position).isTranslationArchive() && getItem(position).getArchiveDetails() != null) {
-            ArchiveDetails details = getItem(position).getArchiveDetails();
+        if(item.isTranslationArchive() && item.getArchiveDetails() != null) {
+            ArchiveDetails details = item.getArchiveDetails();
             holder.archiveDetails.setVisibility(View.VISIBLE);
             DateFormat format = DateFormat.getDateTimeInstance();
             Date date = Util.dateFromUnixTime(details.createdAt);
@@ -112,7 +113,7 @@ public class DocumentFileBrowserAdapter extends BaseAdapter {
             }
         }
 
-        if(getItem(position).isBackupsDir()) {
+        if(isBackupsDir) {
             holder.title.setTextColor(parent.getContext().getResources().getColor(R.color.dark_primary_text));
         }
 

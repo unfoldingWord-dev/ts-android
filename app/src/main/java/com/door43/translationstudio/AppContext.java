@@ -31,6 +31,7 @@ public class AppContext {
     private static final String DEFAULT_LIBRARY_ZIP = "library.zip";
     private static final String TARGET_TRANSLATIONS_DIR = "translations";
     public static final String PROFILES_DIR = "profiles";
+    public static final String TRANSLATION_STUDIO = "translationStudio";
     private static MainApplication mContext;
     public static final Bundle args = new Bundle();
     private static boolean loaded;
@@ -174,7 +175,7 @@ public class AppContext {
      * @return
      */
     public static File getPublicDirectory() {
-        File dir = new File(Environment.getExternalStorageDirectory(), "translationStudio");
+        File dir = new File(Environment.getExternalStorageDirectory(), TRANSLATION_STUDIO);
         dir.mkdirs();
         return dir;
     }
