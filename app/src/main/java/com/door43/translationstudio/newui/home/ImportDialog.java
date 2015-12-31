@@ -17,6 +17,7 @@ import android.widget.Button;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.ImportFileChooserActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.Translator;
@@ -145,7 +146,7 @@ public class ImportDialog extends DialogFragment {
     private void doImportFromSdCard() {
         String typeStr = null;
         Uri baseFolderURI = null;
-        Intent intent = new Intent(getActivity(), FileBrowserActivity.class);
+        Intent intent = new Intent(getActivity(), ImportFileChooserActivity.class);
         isDocumentFile = SdUtils.isSdCardPresentLollipop();
 
         if(isDocumentFile) {

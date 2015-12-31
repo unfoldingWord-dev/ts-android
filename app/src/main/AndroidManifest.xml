@@ -81,6 +81,10 @@
             android:label="@string/title_activity_crash_reporter" >
         </activity>
         <activity
+            android:name=".ImportFileChooserActivity"
+            android:label="@string/title_file_browser" >
+        </activity>
+        <activity
             android:name=".device2device.DeviceToDeviceActivity"
             android:label="@string/title_activity_sharing"
             android:parentActivityName=".SharingActivity" >

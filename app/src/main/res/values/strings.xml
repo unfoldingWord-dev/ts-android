@@ -607,5 +607,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="access_granted_import">Success!\nAccess Granted\nPlease retry SD card import operation</string>
     <string name="access_skipped">Access Not Granted</string>
     <string name="label_skip">Skip</string>
+    <string name="label_internal">Internal</string>
+    <string name="label_sd_card">SD Card</string>
+    <string name="label_up">Up</string>
+    <string name="title_file_browser">File Browser</string>
 
 </resources>
