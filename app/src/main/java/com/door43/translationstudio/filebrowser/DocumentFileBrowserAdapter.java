@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.AppContext;
@@ -32,10 +33,10 @@ public class DocumentFileBrowserAdapter extends BaseAdapter {
 
     private List<DocumentFileItem> mFiles = new ArrayList<>();
 
-    public void loadFiles(Context context, List<DocumentFileItem> files) {
+    public void loadFiles(ListView listView, List<DocumentFileItem> files) {
         final Library library = AppContext.getLibrary();
         mFiles = files;
-        new ThreadableUI(context) {
+        new ThreadableUI(listView.getContext()) {
 
             @Override
             public void onStop() {

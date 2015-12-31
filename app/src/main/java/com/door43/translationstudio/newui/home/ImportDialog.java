@@ -22,7 +22,6 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
-import com.door43.translationstudio.filebrowser.FileBrowserActivity;
 import com.door43.translationstudio.newui.DeviceNetworkAliasDialog;
 import com.door43.translationstudio.newui.ShareWithPeerDialog;
 import com.door43.translationstudio.util.SdUtils;
@@ -156,16 +155,16 @@ public class ImportDialog extends DialogFragment {
                 isDocumentFile = false;
             } else {
                 String uriStr = SdUtils.getSdCardAccessUriStr();
-                intent.putExtra("Folder", subFolder);
+                intent.putExtra(ImportFileChooserActivity.FOLDER_KEY, subFolder);
                 baseFolderURI = Uri.parse(uriStr);
-                typeStr = FileBrowserActivity.DOC_FILE_TYPE;
+                typeStr = ImportFileChooserActivity.SD_CARD_TYPE;
             }
         }
 
         if(!isDocumentFile) {
             File path = AppContext.getPublicDownloadsDirectory();
             baseFolderURI = Uri.fromFile(path);
-            typeStr = FileBrowserActivity.FILE_TYPE;
+            typeStr = ImportFileChooserActivity.INTERNAL_TYPE;
         }
 
         intent.setDataAndType(baseFolderURI, typeStr);
