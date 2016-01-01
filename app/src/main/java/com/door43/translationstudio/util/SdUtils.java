@@ -32,7 +32,7 @@ import java.util.List;
  */
 public class SdUtils {
     public static final String DOWNLOAD_FOLDER = "/Download";
-    public static final String DOWNLOAD_TRANSLATION_STUDIO_FOLDER = DOWNLOAD_FOLDER + "/translationStudio";
+    public static final String DOWNLOAD_TRANSLATION_STUDIO_FOLDER = DOWNLOAD_FOLDER + "/" + AppContext.TRANSLATION_STUDIO;
     private static String sdCardPath = "";
     private static boolean alreadyReadSdCardDirectory = false;
     private static String verifiedSdCardPath = "";
