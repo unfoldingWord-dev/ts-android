@@ -18,6 +18,7 @@ import com.door43.translationstudio.filebrowser.DocumentFileItem;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.util.SdUtils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +26,8 @@ import java.util.List;
  * Created by blm on 12/31/15.
  */
 public class ImportFileChooserActivity extends BaseActivity {
-    public static final String FOLDER_KEY = "Folder";
+    public static final String FOLDER_KEY = "folder";
+    public static final String FILE_PATH_KEY = "file_path";
     public static final String SD_CARD_TYPE = "sd_card";
     public static final String INTERNAL_TYPE = "internal";
 
@@ -38,7 +40,8 @@ public class ImportFileChooserActivity extends BaseActivity {
 
     private DocumentFile mCurrentDocFileDir;
     private String mType;
-    private String mSubFolder = "";
+    private String mSubFolder = null;
+    private String mFilePath = null;
     private boolean mIsSdCard = false;
     private static final int DIALOG_LOAD_FILE = 1000;
 
@@ -46,6 +49,8 @@ public class ImportFileChooserActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_choose_import_file);
+
+        mAdapter = new DocumentFileBrowserAdapter();
 
         mUpButton = (Button) findViewById(R.id.up_folder_button);
         mInternalButton = (Button) findViewById(R.id.internal_button);
@@ -83,13 +88,19 @@ public class ImportFileChooserActivity extends BaseActivity {
         Bundle bundle = intent.getExtras();
         if (bundle != null) {
             mSubFolder = (String) bundle.get(FOLDER_KEY);
+            mFilePath = (String) bundle.get(FILE_PATH_KEY);
         }
 
         if (uri != null) {
 
             DocumentFile path = null;
             try {
-                path = DocumentFile.fromTreeUri(AppContext.context(),uri);
+                if(mIsSdCard) {
+                    path = DocumentFile.fromTreeUri(AppContext.context(), uri);
+                } else {
+                    File file = new File(mFilePath);
+                    path = DocumentFile.fromFile(file);
+                }
                 if(mSubFolder != null) {
                     DocumentFile subDoc = SdUtils.documentFileMkdirs(path, mSubFolder);
                     if(subDoc != null) {
@@ -103,8 +114,6 @@ public class ImportFileChooserActivity extends BaseActivity {
                 Logger.w(ImportFileChooserActivity.class.toString(), "onCreate: Exception occurred opening file", e);
             }
         }
-
-        mAdapter = new DocumentFileBrowserAdapter();
     }
 
     /**
@@ -144,7 +153,7 @@ public class ImportFileChooserActivity extends BaseActivity {
         }
 
         if(fileList.size() > 0) {
-            mAdapter.loadFiles(mFileList, fileList);
+            mAdapter.loadFiles(this, fileList);
         } else {
             Toast toast = Toast.makeText(this, R.string.empty_directory, Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.TOP, 0, 0);

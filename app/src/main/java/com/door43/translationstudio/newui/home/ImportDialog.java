@@ -7,6 +7,7 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.design.widget.Snackbar;
 import android.support.v4.provider.DocumentFile;
 import android.view.LayoutInflater;
@@ -162,7 +163,9 @@ public class ImportDialog extends DialogFragment {
         }
 
         if(!isDocumentFile) {
-            File path = AppContext.getPublicDownloadsDirectory();
+            File path = Environment.getExternalStorageDirectory(); // AppContext.getPublicDownloadsDirectory();
+//            intent.putExtra(ImportFileChooserActivity.FOLDER_KEY, AppContext.TRANSLATION_STUDIO);
+            intent.putExtra(ImportFileChooserActivity.FILE_PATH_KEY, path.toString());
             baseFolderURI = Uri.fromFile(path);
             typeStr = ImportFileChooserActivity.INTERNAL_TYPE;
         }
