@@ -1,9 +1,11 @@
 package com.door43.translationstudio;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.provider.DocumentFile;
 import android.view.Gravity;
 import android.view.View;
@@ -15,6 +17,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.filebrowser.DocumentFileBrowserAdapter;
 import com.door43.translationstudio.filebrowser.DocumentFileItem;
 import com.door43.translationstudio.newui.BaseActivity;
@@ -61,7 +65,8 @@ public class ImportFileChooserActivity extends BaseActivity {
         mAdapter = new DocumentFileBrowserAdapter();
         mFileList.setAdapter(mAdapter);
 
-        mCurrentFolder.setText(".");
+        File sdCardFolder = SdUtils.getSdCardDirectory();
+        mSdCardButton.setVisibility((sdCardFolder != null) ? View.VISIBLE : View.GONE);
 
         mUpButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -74,14 +79,33 @@ public class ImportFileChooserActivity extends BaseActivity {
         mInternalButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO: 1/2/2016 need to add support
+                doImportFromInternal(null);
             }
         });
 
         mSdCardButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO: 1/2/2016 need to add support
+                if (SdUtils.doWeNeedToRequestSdCardAccess()) {
+                    final CustomAlertDialog dialog = CustomAlertDialog.Create(ImportFileChooserActivity.this);
+                    dialog.setTitle(R.string.enable_sd_card_access_title)
+                            .setMessageHtml(R.string.enable_sd_card_access)
+                            .setPositiveButton(R.string.confirm, new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    SdUtils.triggerStorageAccessFramework(ImportFileChooserActivity.this);
+                                }
+                            })
+                            .setNegativeButton(R.string.label_skip, new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    doImportFromSdCard();
+                                }
+                            })
+                            .show("approve-SD-access");
+                } else {
+                    doImportFromSdCard();
+                }
             }
         });
 
@@ -109,28 +133,47 @@ public class ImportFileChooserActivity extends BaseActivity {
             mFilePath = (String) bundle.get(FILE_PATH_KEY);
         }
 
-        if (uri != null) {
+        doImportFromSdCard();
+    }
 
-            DocumentFile path = null;
-            try {
-                if(mIsSdCard) {
-                    path = DocumentFile.fromTreeUri(AppContext.context(), uri);
-                } else {
-                    File file = new File(mFilePath);
-                    path = DocumentFile.fromFile(file);
-                }
-                if(mSubFolder != null) {
-                    DocumentFile subDoc = SdUtils.documentFileMkdirs(path, mSubFolder);
-                    if(subDoc != null) {
-                        path = subDoc;
-                    }
-                }
+    private void doImportFromSdCard() {
 
+        boolean isSdCardPresentLollipop = SdUtils.isSdCardPresentLollipop();
+        if(isSdCardPresentLollipop) {
+            DocumentFile baseFolder = SdUtils.sdCardMkdirs(null);
+            String subFolder =  SdUtils.searchFolderAndParentsForDocFile(baseFolder, Translator.ARCHIVE_EXTENSION);
+            if(null != subFolder) {
+                DocumentFile path = SdUtils.documentFileMkdirs(baseFolder, subFolder);
                 loadDocFileList(path);
-
-            } catch (Exception e) {
-                Logger.w(ImportFileChooserActivity.class.toString(), "onCreate: Exception occurred opening file", e);
+            } else {
+                doImportFromInternal(null);
             }
+        } else { // SD card not present or not lollipop
+            boolean sdCardFound = false;
+            File sdCardFolder = SdUtils.getSdCardDirectory();
+            if(sdCardFolder != null) {
+                if(sdCardFolder.isDirectory() && sdCardFolder.exists() && sdCardFolder.canRead()) {
+                    doImportFromInternal(sdCardFolder);
+                }
+            }
+
+            if(!sdCardFound) {
+                doImportFromInternal(null);
+            }
+        }
+    }
+
+    private void doImportFromInternal(File dir) {
+
+        File storagePath = dir;
+        if (null == storagePath) {
+            storagePath = Environment.getExternalStorageDirectory(); // AppContext.getPublicDownloadsDirectory();
+        }
+        DocumentFile baseFolder = DocumentFile.fromFile(storagePath);
+        String subFolder =  SdUtils.searchFolderAndParentsForDocFile(baseFolder, Translator.ARCHIVE_EXTENSION);
+        if(null != subFolder) {
+            DocumentFile path = SdUtils.documentFileMkdirs(baseFolder, subFolder);
+            loadDocFileList(path);
         }
     }
 
@@ -199,6 +242,33 @@ public class ImportFileChooserActivity extends BaseActivity {
     @Override
     public void onResume() {
         super.onResume();
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == SdUtils.REQUEST_CODE_STORAGE_ACCESS) {
+            Uri treeUri = null;
+            String msg = "";
+            if (resultCode == Activity.RESULT_OK) {
+
+                // Get Uri from Storage Access Framework.
+                treeUri = data.getData();
+                final int takeFlags = data.getFlags();
+                boolean success = SdUtils.validateSdCardWriteAccess(treeUri, takeFlags);
+                if (!success) {
+                    String template = getResources().getString(R.string.access_failed);
+                    msg = String.format(template, treeUri.toString());
+                } else {
+                    msg = getResources().getString(R.string.access_granted_import);
+                }
+            } else {
+                msg = getResources().getString(R.string.access_skipped);
+            }
+            CustomAlertDialog.Create(this)
+                    .setTitle(R.string.access_title)
+                    .setMessage(msg)
+                    .setPositiveButton(R.string.label_ok, null)
+                    .show("AccessResults");
+        }
     }
 }
 
