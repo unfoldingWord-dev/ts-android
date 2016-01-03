@@ -203,30 +203,6 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
     }
 
    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == SdUtils.REQUEST_CODE_STORAGE_ACCESS) {
-            Uri treeUri = null;
-            String msg = "";
-            if (resultCode == Activity.RESULT_OK) {
-
-                // Get Uri from Storage Access Framework.
-                treeUri = data.getData();
-                final int takeFlags = data.getFlags();
-                boolean success = SdUtils.validateSdCardWriteAccess(treeUri, takeFlags);
-                if(!success) {
-                    String template = getResources().getString(R.string.access_failed);
-                    msg = String.format(template,treeUri.toString());
-                } else {
-                    msg = getResources().getString(R.string.access_granted_import);
-                }
-            } else {
-                msg = getResources().getString(R.string.access_skipped);
-            }
-            CustomAlertDialog.Create(this)
-                    .setTitle(R.string.access_title)
-                    .setMessage(msg)
-                    .setPositiveButton(R.string.label_ok, null)
-                    .show("AccessResults");
-        } else
         if(requestCode == NEW_TARGET_TRANSLATION_REQUEST) {
             if(resultCode == RESULT_OK) {
                 if(mFragment instanceof WelcomeFragment) {

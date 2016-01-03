@@ -38,7 +38,7 @@ import java.io.InputStream;
  */
 public class ImportDialog extends DialogFragment {
 
-    private static final int IMPORT_PROJECT_FROM_SD_REQUEST = 0;
+    private static final int IMPORT_PROJECT_FROM_SD_REQUEST = 142;
     public static final String TAG = "importDialog";
     private static final String STATE_SETTING_DEVICE_ALIAS = "state_setting_device_alias";
     private boolean settingDeviceAlias = false;
@@ -81,27 +81,7 @@ public class ImportDialog extends DialogFragment {
         importFromSDButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                if (SdUtils.doWeNeedToRequestSdCardAccess()) {
-                    final CustomAlertDialog dialog = CustomAlertDialog.Create(getActivity());
-                    dialog.setTitle(R.string.enable_sd_card_access_title)
-                            .setMessageHtml(R.string.enable_sd_card_access)
-                            .setPositiveButton(R.string.confirm, new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    SdUtils.triggerStorageAccessFramework(getActivity());
-                                }
-                            })
-                            .setNegativeButton(R.string.label_skip, new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    doImportFromSdCard();
-                                }
-                            })
-                            .show("approve-SD-access");
-                } else {
                     doImportFromSdCard();
-                }
             }
         });
         importFromFriend.setOnClickListener(new View.OnClickListener() {
@@ -145,32 +125,15 @@ public class ImportDialog extends DialogFragment {
 
     private void doImportFromSdCard() {
         String typeStr = null;
-        Uri baseFolderURI = null;
         Intent intent = new Intent(getActivity(), ImportFileChooserActivity.class);
         isDocumentFile = SdUtils.isSdCardPresentLollipop();
-
         if(isDocumentFile) {
-            DocumentFile baseFolder = SdUtils.sdCardMkdirs(null);
-            String subFolder =  SdUtils.searchFolderAndParentsForDocFile(baseFolder, Translator.ARCHIVE_EXTENSION);
-            if(null == subFolder) {
-                isDocumentFile = false;
-            } else {
-                String uriStr = SdUtils.getSdCardAccessUriStr();
-                intent.putExtra(ImportFileChooserActivity.FOLDER_KEY, subFolder);
-                baseFolderURI = Uri.parse(uriStr);
-                typeStr = ImportFileChooserActivity.SD_CARD_TYPE;
-            }
-        }
-
-        if(!isDocumentFile) {
-            File path = Environment.getExternalStorageDirectory(); // AppContext.getPublicDownloadsDirectory();
-//            intent.putExtra(ImportFileChooserActivity.FOLDER_KEY, AppContext.TRANSLATION_STUDIO);
-            intent.putExtra(ImportFileChooserActivity.FILE_PATH_KEY, path.toString());
-            baseFolderURI = Uri.fromFile(path);
+            typeStr = ImportFileChooserActivity.SD_CARD_TYPE;
+        } else {
             typeStr = ImportFileChooserActivity.INTERNAL_TYPE;
         }
 
-        intent.setDataAndType(baseFolderURI, typeStr);
+        intent.setType(typeStr);
         startActivityForResult(intent, IMPORT_PROJECT_FROM_SD_REQUEST);
     }
 
