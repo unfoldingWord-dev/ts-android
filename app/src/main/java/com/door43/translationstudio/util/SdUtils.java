@@ -39,6 +39,54 @@ public class SdUtils {
     public static final int REQUEST_CODE_STORAGE_ACCESS = 42;
 
     /**
+     * combines string array into single string
+     * @param parts
+     * @param delimeter
+     * @return
+     */
+    public static String joinString(String[] parts, String delimeter) {
+        StringBuilder sbStr = new StringBuilder();
+        for (int i = 0, il = parts.length; i < il; i++) {
+            if (i > 0) {
+                sbStr.append(delimeter);
+            }
+            sbStr.append(parts[i]);
+        }
+        return sbStr.toString();
+    }
+
+    /**
+     * Gets human readable path string
+     * @param dir
+     * @return
+     */
+    public static String getPathString(DocumentFile dir) {
+        final String FILE = "file://";
+        final String CONTENT = "content://";
+        final String CONTENT_DIVIDER = "%3A";
+        final String FOLDER_MARKER = "%2F";
+        String uriStr = dir.getUri().toString();
+
+        int pos = uriStr.indexOf(FILE);
+        if(pos >= 0) {
+            return uriStr.substring(pos + FILE.length());
+        }
+
+        pos = uriStr.indexOf(CONTENT);
+        if(pos >= 0) {
+            pos = uriStr.lastIndexOf(CONTENT_DIVIDER);
+            if(pos >= 0) {
+                String subPath =  uriStr.substring(pos + CONTENT_DIVIDER.length());
+                String[] parts = subPath.split(FOLDER_MARKER);
+                String showPath = "SD_CARD/" + joinString(parts, "/");
+                return showPath;
+            }
+        }
+
+        return uriStr;
+    }
+
+    /**
      * returns true if we need to enable SD card access
      */
     public static boolean doWeNeedToRequestSdCardAccess() {
@@ -57,7 +105,6 @@ public class SdUtils {
 
         return false;
     }
-
 
     /**
      * if available, this triggers browser dialog for user to select SD card folder to allow access

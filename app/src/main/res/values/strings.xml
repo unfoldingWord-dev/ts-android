@@ -612,5 +612,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="label_up">Up</string>
     <string name="title_file_browser">File Browser</string>
     <string name="no_item_selected">No Item Selected</string>
-    <string name="backup_failed">Backup Failed</string>
+    <string name="backup_failed">Failed Backing up to:</string>
+    <string name="backup_success">Success Backing up to:</string>
 </resources>

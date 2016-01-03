@@ -228,6 +228,7 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
         boolean success = false;
         boolean canWriteToSdCardBackupLollipop = false;
         DocumentFile baseFolder = null;
+        String filePath = null;
 
         try {
             if(SdUtils.isSdCardPresentLollipop()) {
@@ -236,16 +237,20 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
             }
 
             if (canWriteToSdCardBackupLollipop) { // default to writing to SD card if available
+                filePath = SdUtils.getPathString(baseFolder);
                 if (baseFolder.canWrite()) {
                     DocumentFile file = baseFolder.createFile("image", fileName);
+                    filePath = SdUtils.getPathString(file);
                     OutputStream out = AppContext.context().getContentResolver().openOutputStream(file.getUri());
                     AppContext.getTranslator().exportArchiveToStream(mTargetTranslation, out, fileName);
                     success = true;
                 }
             } else {
                 File exportFile = new File(AppContext.getPublicDownloadsDirectory(), fileName);
+                filePath = exportFile.toString();
                 AppContext.getTranslator().exportArchive(mTargetTranslation, exportFile);
                 success = exportFile.exists();
+
             }
         } catch (Exception e) {
             success = false;
@@ -253,16 +258,20 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
         }
 
         if (success) {
-            showBackupResults(R.string.success);
+            showBackupResults(R.string.backup_success, filePath);
         } else {
-            showBackupResults(R.string.backup_failed);
+            showBackupResults(R.string.backup_failed, filePath);
         }
     }
 
-    private void showBackupResults(final int textResId) {
+    private void showBackupResults(final int textResId, final String filePath) {
+        String message = getResources().getString(textResId);
+        if(filePath != null) {
+            message += "\n" + filePath;
+        }
         CustomAlertDialog.Create(getActivity())
                 .setTitle(R.string.backup_to_sd)
-                .setMessage(R.string.success)
+                .setMessage(message)
                 .setNeutralButton(R.string.dismiss, null)
                 .show("Backup");
     }

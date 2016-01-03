@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.provider.DocumentFile;
-import android.util.SparseBooleanArray;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
@@ -17,15 +16,12 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.filebrowser.DocumentFileBrowserAdapter;
 import com.door43.translationstudio.filebrowser.DocumentFileItem;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.util.SdUtils;
-import com.door43.util.StringUtilities;
-import com.itextpdf.text.pdf.StringUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -229,54 +225,6 @@ public class ImportFileChooserActivity extends BaseActivity {
     }
 
     /**
-     * combines string array into single string
-     * @param parts
-     * @param delimeter
-     * @return
-     */
-    private String joinString(String[] parts, String delimeter) {
-        StringBuilder sbStr = new StringBuilder();
-        for (int i = 0, il = parts.length; i < il; i++) {
-            if (i > 0) {
-                sbStr.append(delimeter);
-            }
-            sbStr.append(parts[i]);
-        }
-        return sbStr.toString();
-    }
-
-    /**
-     * Gets human readable path string
-     * @param dir
-     * @return
-     */
-    private String getFolderName(DocumentFile dir) {
-        final String FILE = "file://";
-        final String CONTENT = "content://";
-        final String CONTENT_DIVIDER = "%3A";
-        final String FOLDER_MARKER = "%2F";
-        String uriStr = dir.getUri().toString();
-
-        int pos = uriStr.indexOf(FILE);
-        if(pos >= 0) {
-            return uriStr.substring(pos + FILE.length());
-        }
-
-        pos = uriStr.indexOf(CONTENT);
-        if(pos >= 0) {
-            pos = uriStr.lastIndexOf(CONTENT_DIVIDER);
-            if(pos >= 0) {
-                String subPath =  uriStr.substring(pos + CONTENT_DIVIDER.length());
-                String[] parts = subPath.split(FOLDER_MARKER);
-                String showPath = "SD_CARD/" + joinString(parts, "/");
-                return showPath;
-            }
-        }
-
-        return uriStr;
-    }
-
-    /**
      * Generates a list of files to display from a directory
      * @param dir
      * @return
@@ -296,7 +244,7 @@ public class ImportFileChooserActivity extends BaseActivity {
 
              // remember directory
             mCurrentDir = dir;
-            mCurrentFolder.setText(getFolderName(dir));
+            mCurrentFolder.setText(SdUtils.getPathString(dir));
 
             // list files
             DocumentFile[] files = dir.listFiles();
