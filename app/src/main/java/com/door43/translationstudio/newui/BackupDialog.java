@@ -253,15 +253,13 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
         }
 
         if (success) {
-            showSuccess();
+            showBackupResults(R.string.success);
         } else {
-            Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_export_failed, Snackbar.LENGTH_LONG);
-            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-            snack.show();
+            showBackupResults(R.string.backup_failed);
         }
     }
 
-    private void showSuccess() {
+    private void showBackupResults(final int textResId) {
         CustomAlertDialog.Create(getActivity())
                 .setTitle(R.string.backup_to_sd)
                 .setMessage(R.string.success)

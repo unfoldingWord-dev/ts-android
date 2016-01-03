@@ -69,14 +69,6 @@
                 android:value="com.door43.translationstudio.newui.home.HomeActivity" />
         </activity>
         <activity
-            android:name=".filebrowser.FileBrowserActivity"
-            android:label="@string/title_activity_file_explorer"
-            android:theme="@style/AppTheme.Transparent" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.door43.translationstudio.SharingActivity" />
-        </activity>
-        <activity
             android:name=".CrashReporterActivity"
             android:label="@string/title_activity_crash_reporter" >
         </activity>
