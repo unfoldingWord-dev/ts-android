@@ -1,5 +1,6 @@
 package com.door43.translationstudio.newui.home;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
@@ -168,7 +169,7 @@ public class ImportDialog extends DialogFragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == IMPORT_PROJECT_FROM_SD_REQUEST) {
-            if(data != null) {
+            if((resultCode == Activity.RESULT_OK) && (data != null)) {
                 if(isDocumentFile) {
                     Uri uri = data.getData();
                     if(FilenameUtils.getExtension(uri.getPath()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {

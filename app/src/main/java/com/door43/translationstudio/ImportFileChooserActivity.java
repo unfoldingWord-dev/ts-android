@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.provider.DocumentFile;
+import android.util.SparseBooleanArray;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
@@ -65,9 +66,6 @@ public class ImportFileChooserActivity extends BaseActivity {
         mCurrentFolder = (TextView) findViewById(R.id.current_folder);
         mFileList = (ListView) findViewById(R.id.file_list);
 
-        mAdapter = new DocumentFileBrowserAdapter();
-        mFileList.setAdapter(mAdapter);
-
         setTitle(R.string.title_activity_file_explorer);
 
         File sdCardFolder = SdUtils.getSdCardDirectory();
@@ -86,7 +84,7 @@ public class ImportFileChooserActivity extends BaseActivity {
             public void onClick(View view) {
                 boolean itemSelected = false;
                 DocumentFileItem selectedItem = null;
-                int position = mFileList.getSelectedItemPosition();
+                int position = mFileList.getCheckedItemPosition();
                 if (position >= 0) {
                     selectedItem = mAdapter.getItem(position);
                     if (!selectedItem.file.isDirectory()) {
@@ -100,7 +98,8 @@ public class ImportFileChooserActivity extends BaseActivity {
                     returnSelectedFile(selectedItem);
                 } else {
                     final CustomAlertDialog dialog = CustomAlertDialog.Create(ImportFileChooserActivity.this);
-                    dialog.setMessageHtml(R.string.no_item_selected)
+                    dialog.setTitle(R.string.title_activity_file_explorer)
+                            .setMessageHtml(R.string.no_item_selected)
                             .setPositiveButton(R.string.confirm, null)
                             .show("no_selection");
                 }
@@ -152,15 +151,17 @@ public class ImportFileChooserActivity extends BaseActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 DocumentFileItem selectedItem = mAdapter.getItem(position);
                 if (selectedItem.file.isDirectory()) {
+                    mFileList.clearChoices();
                     loadDocFileList(selectedItem.file);
+                    return;
                 } else {   // file item selected
                     if (selectedItem.isTranslationArchive()) {
+                        mFileList.setItemChecked(position, true);
                         return;
                     }
                 }
 
                 //clear selections
-                mFileList.setSelection(-1);
                 mFileList.clearChoices();
             }
         });
@@ -222,6 +223,7 @@ public class ImportFileChooserActivity extends BaseActivity {
 
     private void cancel() {
         Intent intent = getIntent();
+        intent.setData(null);
         setResult(RESULT_CANCELED, intent);
         finish();
     }
@@ -280,11 +282,19 @@ public class ImportFileChooserActivity extends BaseActivity {
      * @return
      */
     private void loadDocFileList(DocumentFile dir) {
+
+        mAdapter = new DocumentFileBrowserAdapter();
+        mFileList.setAdapter(mAdapter);
+
         Context context = AppContext.context();
         List<DocumentFileItem> fileList = new ArrayList<>();
 
+        mFileList.clearFocus();
+        mFileList.clearChoices();
+
         if (dir.exists() && dir.isDirectory()) {
-            // remember directory
+
+             // remember directory
             mCurrentDir = dir;
             mCurrentFolder.setText(getFolderName(dir));
 
@@ -318,9 +328,9 @@ public class ImportFileChooserActivity extends BaseActivity {
             }
         }
 
-        if(fileList.size() > 0) {
-            mAdapter.loadFiles(this, fileList);
-        } else {
+        mAdapter.loadFiles(this, fileList);
+
+        if(fileList.size() <= 0) {
             Toast toast = Toast.makeText(this, R.string.empty_directory, Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.TOP, 0, 0);
             toast.show();
