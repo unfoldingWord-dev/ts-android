@@ -7,7 +7,8 @@
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_above="@+id/action_buttons">
 
         <LinearLayout
             android:orientation="vertical"
@@ -33,7 +34,8 @@
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginTop="@dimen/dialog_controls_margin">
+            android:layout_marginTop="@dimen/dialog_controls_margin"
+            android:weightSum="1">
 
             <LinearLayout
                 android:orientation="horizontal"
@@ -71,10 +73,46 @@
                 android:id="@+id/file_list"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:layout_above="@+id/controlsLayout" />
+                android:layout_above="@+id/controlsLayout"
+                android:layout_weight="1.46"
+                android:choiceMode="singleChoice"
+                android:listSelector="@color/accent_light" />
 
         </LinearLayout>
 
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/action_buttons"
+        android:gravity="right">
+
+        <Button
+            android:id="@+id/cancel_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/title_cancel"
+            android:textColor="?attr/colorAccent"
+            android:textSize="@dimen/button"
+            android:background="?attr/selectableItemBackground"
+            android:layout_marginLeft="@dimen/dialog_content_margin"
+            android:capitalize="words" />
+
+        <Button
+            android:id="@+id/confirm_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/confirm"
+            android:textColor="?attr/colorAccent"
+            android:textSize="@dimen/button"
+            android:background="?attr/selectableItemBackground"
+            android:layout_marginLeft="@dimen/dialog_content_margin"
+            android:layout_marginRight="@dimen/dialog_content_margin"
+            android:capitalize="words" />
     </LinearLayout>
 
 </RelativeLayout>

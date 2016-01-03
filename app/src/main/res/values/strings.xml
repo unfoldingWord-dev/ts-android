@@ -611,5 +611,5 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="label_sd_card">SD Card</string>
     <string name="label_up">Up</string>
     <string name="title_file_browser">File Browser</string>
-
+    <string name="no_item_selected">No Item Selected</string>
 </resources>

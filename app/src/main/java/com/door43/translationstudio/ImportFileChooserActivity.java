@@ -23,6 +23,8 @@ import com.door43.translationstudio.filebrowser.DocumentFileBrowserAdapter;
 import com.door43.translationstudio.filebrowser.DocumentFileItem;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.util.SdUtils;
+import com.door43.util.StringUtilities;
+import com.itextpdf.text.pdf.StringUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -40,16 +42,15 @@ public class ImportFileChooserActivity extends BaseActivity {
     private ImageButton mUpButton;
     private Button mInternalButton;
     private Button mSdCardButton;
+    private Button mCancelButton;
+    private Button mConfirmButton;
     private TextView mCurrentFolder;
     private ListView mFileList;
     private DocumentFileBrowserAdapter mAdapter;
 
     private DocumentFile mCurrentDir;
     private String mType;
-    private String mSubFolder = null;
-    private String mFilePath = null;
-    private boolean mIsSdCard = false;
-    private static final int DIALOG_LOAD_FILE = 1000;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,11 +60,15 @@ public class ImportFileChooserActivity extends BaseActivity {
         mUpButton = (ImageButton) findViewById(R.id.up_folder_button);
         mInternalButton = (Button) findViewById(R.id.internal_button);
         mSdCardButton = (Button) findViewById(R.id.sd_card_button);
+        mCancelButton = (Button) findViewById(R.id.cancel_button);
+        mConfirmButton = (Button) findViewById(R.id.confirm_button);
         mCurrentFolder = (TextView) findViewById(R.id.current_folder);
         mFileList = (ListView) findViewById(R.id.file_list);
 
         mAdapter = new DocumentFileBrowserAdapter();
         mFileList.setAdapter(mAdapter);
+
+        setTitle(R.string.title_activity_file_explorer);
 
         File sdCardFolder = SdUtils.getSdCardDirectory();
         mSdCardButton.setVisibility((sdCardFolder != null) ? View.VISIBLE : View.GONE);
@@ -73,6 +78,39 @@ public class ImportFileChooserActivity extends BaseActivity {
             public void onClick(View view) {
                 DocumentFile parent = mCurrentDir.getParentFile();
                 loadDocFileList(parent);
+            }
+        });
+
+        mConfirmButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                boolean itemSelected = false;
+                DocumentFileItem selectedItem = null;
+                int position = mFileList.getSelectedItemPosition();
+                if (position >= 0) {
+                    selectedItem = mAdapter.getItem(position);
+                    if (!selectedItem.file.isDirectory()) {
+                        if (selectedItem.isTranslationArchive()) {
+                            itemSelected = true;
+                        }
+                    }
+                }
+
+                if (itemSelected) {
+                    returnSelectedFile(selectedItem);
+                } else {
+                    final CustomAlertDialog dialog = CustomAlertDialog.Create(ImportFileChooserActivity.this);
+                    dialog.setMessageHtml(R.string.no_item_selected)
+                            .setPositiveButton(R.string.confirm, null)
+                            .show("no_selection");
+                }
+            }
+        });
+
+        mCancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                cancel();
             }
         });
 
@@ -113,25 +151,22 @@ public class ImportFileChooserActivity extends BaseActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 DocumentFileItem selectedItem = mAdapter.getItem(position);
-                if(selectedItem.file.isDirectory()) {
+                if (selectedItem.file.isDirectory()) {
                     loadDocFileList(selectedItem.file);
                 } else {   // file item selected
-                   if(selectedItem.isTranslationArchive()) {
-                       returnSelectedFile(selectedItem);
-                   }
+                    if (selectedItem.isTranslationArchive()) {
+                        return;
+                    }
                 }
+
+                //clear selections
+                mFileList.setSelection(-1);
+                mFileList.clearChoices();
             }
         });
 
         Intent intent = getIntent();
         mType = intent.getType();
-        mIsSdCard = SD_CARD_TYPE.equals(mType);
-        Uri uri = intent.getData();
-        Bundle bundle = intent.getExtras();
-        if (bundle != null) {
-            mSubFolder = (String) bundle.get(FOLDER_KEY);
-            mFilePath = (String) bundle.get(FILE_PATH_KEY);
-        }
 
         doImportFromSdCard();
     }
@@ -139,10 +174,10 @@ public class ImportFileChooserActivity extends BaseActivity {
     private void doImportFromSdCard() {
 
         boolean isSdCardPresentLollipop = SdUtils.isSdCardPresentLollipop();
-        if(isSdCardPresentLollipop) {
+        if (isSdCardPresentLollipop) {
             DocumentFile baseFolder = SdUtils.sdCardMkdirs(null);
-            String subFolder =  SdUtils.searchFolderAndParentsForDocFile(baseFolder, Translator.ARCHIVE_EXTENSION);
-            if(null != subFolder) {
+            String subFolder = SdUtils.searchFolderAndParentsForDocFile(baseFolder, Translator.ARCHIVE_EXTENSION);
+            if (null != subFolder) {
                 DocumentFile path = SdUtils.documentFileMkdirs(baseFolder, subFolder);
                 loadDocFileList(path);
             } else {
@@ -151,13 +186,13 @@ public class ImportFileChooserActivity extends BaseActivity {
         } else { // SD card not present or not lollipop
             boolean sdCardFound = false;
             File sdCardFolder = SdUtils.getSdCardDirectory();
-            if(sdCardFolder != null) {
-                if(sdCardFolder.isDirectory() && sdCardFolder.exists() && sdCardFolder.canRead()) {
+            if (sdCardFolder != null) {
+                if (sdCardFolder.isDirectory() && sdCardFolder.exists() && sdCardFolder.canRead()) {
                     doImportFromInternal(sdCardFolder);
                 }
             }
 
-            if(!sdCardFound) {
+            if (!sdCardFound) {
                 doImportFromInternal(null);
             }
         }
@@ -170,8 +205,8 @@ public class ImportFileChooserActivity extends BaseActivity {
             storagePath = Environment.getExternalStorageDirectory(); // AppContext.getPublicDownloadsDirectory();
         }
         DocumentFile baseFolder = DocumentFile.fromFile(storagePath);
-        String subFolder =  SdUtils.searchFolderAndParentsForDocFile(baseFolder, Translator.ARCHIVE_EXTENSION);
-        if(null != subFolder) {
+        String subFolder = SdUtils.searchFolderAndParentsForDocFile(baseFolder, Translator.ARCHIVE_EXTENSION);
+        if (null != subFolder) {
             DocumentFile path = SdUtils.documentFileMkdirs(baseFolder, subFolder);
             loadDocFileList(path);
         }
@@ -180,9 +215,63 @@ public class ImportFileChooserActivity extends BaseActivity {
     private void returnSelectedFile(DocumentFileItem selectedItem) {
         // return selected file
         Intent intent = getIntent();
-        intent.setData( selectedItem.file.getUri() );
+        intent.setData(selectedItem.file.getUri());
         setResult(RESULT_OK, intent);
         finish();
+    }
+
+    private void cancel() {
+        Intent intent = getIntent();
+        setResult(RESULT_CANCELED, intent);
+        finish();
+    }
+
+    /**
+     * combines string array into single string
+     * @param parts
+     * @param delimeter
+     * @return
+     */
+    private String joinString(String[] parts, String delimeter) {
+        StringBuilder sbStr = new StringBuilder();
+        for (int i = 0, il = parts.length; i < il; i++) {
+            if (i > 0) {
+                sbStr.append(delimeter);
+            }
+            sbStr.append(parts[i]);
+        }
+        return sbStr.toString();
+    }
+
+    /**
+     * Gets human readable path string
+     * @param dir
+     * @return
+     */
+    private String getFolderName(DocumentFile dir) {
+        final String FILE = "file://";
+        final String CONTENT = "content://";
+        final String CONTENT_DIVIDER = "%3A";
+        final String FOLDER_MARKER = "%2F";
+        String uriStr = dir.getUri().toString();
+
+        int pos = uriStr.indexOf(FILE);
+        if(pos >= 0) {
+            return uriStr.substring(pos + FILE.length());
+        }
+
+        pos = uriStr.indexOf(CONTENT);
+        if(pos >= 0) {
+            pos = uriStr.lastIndexOf(CONTENT_DIVIDER);
+            if(pos >= 0) {
+                String subPath =  uriStr.substring(pos + CONTENT_DIVIDER.length());
+                String[] parts = subPath.split(FOLDER_MARKER);
+                String showPath = "SD_CARD/" + joinString(parts, "/");
+                return showPath;
+            }
+        }
+
+        return uriStr;
     }
 
     /**
@@ -197,7 +286,7 @@ public class ImportFileChooserActivity extends BaseActivity {
         if (dir.exists() && dir.isDirectory()) {
             // remember directory
             mCurrentDir = dir;
-            mCurrentFolder.setText(dir.getUri().toString());
+            mCurrentFolder.setText(getFolderName(dir));
 
             // list files
             DocumentFile[] files = dir.listFiles();
