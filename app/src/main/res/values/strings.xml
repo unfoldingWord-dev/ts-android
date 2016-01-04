@@ -592,19 +592,20 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="enable_sd_card_access_title">Enable SD Card Accessr</string>
     <string name="enable_sd_card_access">
 <![CDATA[
-<p>Do you want to enable SD card access?  If so then:<p>
+<p>Do you want to enable SD card access?  If so then:</p>
 <ul>
   <li>Click Confirm and wait for access dialog to appear</li>
   <li>If SD card is not shown on left, click on menu (three vertical dots in upper right corner)</li>
   <li>Click on SD card on left</li>
   <li>Click on \'Select "SD card"\' at bottom</li>
 </ul>
+<p>If you press SKIP, then import/backup will be with internal memory.</p>
 ]]>
     </string>
     <string name="access_title">Access Attempt</string>
     <string name="access_failed">Failed on access request to:\n%s\nYou may have selected a folder other than the SD CARD base</string>
-    <string name="access_granted_backup">Success!\nAccess Granted.\nPlease retry SD card backup operation.</string>
-    <string name="access_granted_import">Success!\nAccess Granted.\nPlease press SD CARD button again.</string>
+    <string name="access_granted_backup">Success!\nAccess Granted.\nPlease retry SD CARD backup operation.</string>
+    <string name="access_granted_import">Success!\nAccess Granted.</string>
     <string name="access_skipped">Access Request Cancelled</string>
     <string name="label_skip">Skip</string>
     <string name="label_internal">Internal</string>

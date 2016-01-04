@@ -65,7 +65,8 @@ public class ImportFileChooserActivity extends BaseActivity {
         setTitle(R.string.title_activity_file_explorer);
 
         File sdCardFolder = SdUtils.getSdCardDirectory();
-        mSdCardButton.setVisibility((sdCardFolder != null) ? View.VISIBLE : View.GONE);
+        boolean haveSDCard = sdCardFolder != null;
+        applySdCardStatus(haveSDCard);
 
         mUpButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -129,12 +130,7 @@ public class ImportFileChooserActivity extends BaseActivity {
                                     SdUtils.triggerStorageAccessFramework(ImportFileChooserActivity.this);
                                 }
                             })
-                            .setNegativeButton(R.string.label_skip, new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    doImportFromSdCard();
-                                }
-                            })
+                            .setNegativeButton(R.string.label_skip, null)
                             .show("approve-SD-access");
                 } else {
                     doImportFromSdCard();
@@ -168,6 +164,11 @@ public class ImportFileChooserActivity extends BaseActivity {
         doImportFromSdCard();
     }
 
+    private void applySdCardStatus(boolean haveSDCard) {
+        mSdCardButton.setVisibility( haveSDCard ? View.VISIBLE : View.GONE);
+        mInternalButton.setVisibility( haveSDCard ? View.VISIBLE : View.GONE);
+    }
+
     private void doImportFromSdCard() {
 
         boolean isSdCardPresentLollipop = SdUtils.isSdCardPresentLollipop();
@@ -175,6 +176,7 @@ public class ImportFileChooserActivity extends BaseActivity {
             DocumentFile baseFolder = SdUtils.sdCardMkdirs(null);
             String subFolder = SdUtils.searchFolderAndParentsForDocFile(baseFolder, Translator.ARCHIVE_EXTENSION);
             if (null != subFolder) {
+                applySdCardStatus(true);
                 DocumentFile path = SdUtils.documentFileMkdirs(baseFolder, subFolder);
                 loadDocFileList(path);
             } else {
@@ -185,11 +187,18 @@ public class ImportFileChooserActivity extends BaseActivity {
             File sdCardFolder = SdUtils.getSdCardDirectory();
             if (sdCardFolder != null) {
                 if (sdCardFolder.isDirectory() && sdCardFolder.exists() && sdCardFolder.canRead()) {
+
+                    File storagePath = Environment.getExternalStorageDirectory();
+                    if(sdCardFolder.equals(storagePath)) {
+                        applySdCardStatus(false); // if SD card path is same as internal storage, then SD card selection is pointless
+                    }
+
                     doImportFromInternal(sdCardFolder);
                 }
             }
 
             if (!sdCardFound) {
+                applySdCardStatus(false);
                 doImportFromInternal(null);
             }
         }
@@ -306,6 +315,7 @@ public class ImportFileChooserActivity extends BaseActivity {
                     msg = String.format(template, treeUri.toString());
                 } else {
                     msg = getResources().getString(R.string.access_granted_import);
+                    doImportFromSdCard();
                 }
             } else {
                 msg = getResources().getString(R.string.access_skipped);

@@ -24,7 +24,7 @@
                 android:src="@drawable/ic_folder_open_black_24dp"/>
             <TextView
                 android:id="@+id/title"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/dark_secondary_text"
                 android:textSize="@dimen/body"
@@ -42,7 +42,7 @@
             android:id="@+id/archive_details"
             android:orientation="vertical"
             android:paddingLeft="54dip"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content">
             <!-- use dialog_file_sub_item.xml in here -->
         </LinearLayout>
