@@ -32,6 +32,8 @@ import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 import com.door43.widget.ViewUtil;
 
+import org.apache.commons.io.IOUtils;
+
 import java.io.File;
 import java.io.OutputStream;
 import java.security.InvalidParameterException;
@@ -229,6 +231,8 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
         boolean canWriteToSdCardBackupLollipop = false;
         DocumentFile baseFolder = null;
         String filePath = null;
+        DocumentFile sdCardFile = null;
+        OutputStream out = null;
 
         try {
             if(SdUtils.isSdCardPresentLollipop()) {
@@ -239,9 +243,9 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
             if (canWriteToSdCardBackupLollipop) { // default to writing to SD card if available
                 filePath = SdUtils.getPathString(baseFolder);
                 if (baseFolder.canWrite()) {
-                    DocumentFile file = baseFolder.createFile("image", fileName);
-                    filePath = SdUtils.getPathString(file);
-                    OutputStream out = AppContext.context().getContentResolver().openOutputStream(file.getUri());
+                    sdCardFile = baseFolder.createFile("image", fileName);
+                    filePath = SdUtils.getPathString(sdCardFile);
+                    out = AppContext.context().getContentResolver().openOutputStream(sdCardFile.getUri());
                     AppContext.getTranslator().exportArchiveToStream(mTargetTranslation, out, fileName);
                     success = true;
                 }
@@ -254,6 +258,15 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
             }
         } catch (Exception e) {
             success = false;
+            if(sdCardFile != null) {
+                try {
+                    if(null != out) {
+                        IOUtils.closeQuietly(out);
+                    }
+                    sdCardFile.delete();
+                } catch(Exception e2) {
+                }
+            }
             Logger.e(BackupDialog.class.getName(), "Failed to export the target translation " + mTargetTranslation.getId(), e);
         }
 
