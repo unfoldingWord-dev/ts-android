@@ -8,11 +8,13 @@ import android.text.SpannedString;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.util.FileUtilities;
+import com.door43.util.Manifest;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -33,6 +35,7 @@ public class Translator {
     private static final int TSTUDIO_PACKAGE_VERSION = 2;
     private static final String GENERATOR_NAME = "ts-android";
     public static final String ARCHIVE_EXTENSION = "tstudio";
+
     private final File mRootDir;
     private final Context mContext;
 
@@ -259,10 +262,8 @@ public class Translator {
                         if(importedFile.getName().equals("manifest.json")) {
                             JSONObject localManifest = new JSONObject(FileUtils.readFileToString(localFile));
                             JSONObject importedManifest = new JSONObject(FileUtils.readFileToString(importedFile));
-                            // TODO: merge the manifest files instead of doing a blind copy.
-                            // we need to merge the translators, finished_frames, finished_titles, and finished_references.
-                            FileUtils.deleteQuietly(localFile);
-                            FileUtils.moveFile(importedFile, localFile);
+                            JSONObject mergedManifest = mergeManifests(localManifest, importedManifest);
+                            FileUtils.writeStringToFile(localFile, mergedManifest.toString(), false);
                         } else {
                             // merge the files
                             mergeRecursively(importedFile, localFile);
@@ -293,6 +294,165 @@ public class Translator {
         // clean
         FileUtils.deleteQuietly(tempCache);
         return importedTargetTranslationSlugs.toArray(new String[importedTargetTranslationSlugs.size()]);
+    }
+
+    /**
+     * merges manifests
+     * @param localManifest
+     * @param importedManifest
+     * @throws IOException
+     */
+    private JSONObject mergeManifests(final JSONObject localManifest, final JSONObject importedManifest) {
+
+        try {
+            JSONObject mergedManifest = new JSONObject(importedManifest.toString());
+            mergeManifestsObjectArray(mergedManifest, localManifest, Manifest.TRANSLATORS);
+            mergeManifestsStringArray(mergedManifest, localManifest, Manifest.FINISHED_FRAMES);
+            mergeManifestsStringArray(mergedManifest, localManifest, Manifest.FINISHED_TITLES);
+            mergeManifestsStringArray(mergedManifest, localManifest, Manifest.FINISHED_REFERENCES);
+            return mergedManifest;
+        } catch (JSONException e) {
+            Logger.w(this.getClass().toString(), "mergeManifest exception", e);
+            return importedManifest;
+        }
+    }
+
+    /**
+     * merges arrays in manifest
+     * @param mergeManifest
+     * @param sourceManifest
+     * @throws IOException
+     */
+    private boolean mergeManifestsObjectArray(JSONObject mergeManifest, final JSONObject sourceManifest, final String key) {
+
+        try {
+            JSONArray sourceArray = sourceManifest.optJSONArray(key);
+            if(null == sourceArray) {
+                return true; // nothing to do
+            }
+
+            JSONArray mergedArray = mergeManifest.optJSONArray(key);
+            if(null == mergedArray) {
+                mergeManifest.put(key, sourceArray); // just copy
+                return true;
+            }
+
+            mergeObjectElementsInStringArray( mergedArray, sourceArray);
+            return true;
+        } catch (JSONException e) {
+            return false;
+        }
+    }
+
+    /**
+     * merges array elements
+     * @param mergeArray
+     * @param sourceArray
+     * @throws IOException
+     */
+    private boolean mergeObjectElementsInStringArray(JSONArray mergeArray, final JSONArray sourceArray) {
+        try {
+            for(int i = 0; i < sourceArray.length(); i++) {
+                JSONObject value = sourceArray.getJSONObject(i);
+                int position = findObjectInStringArray(mergeArray, value);
+                if (position < 0) { // if not found, append to merge array
+                    mergeArray.put(value);
+                }
+            }
+            return true;
+        } catch (JSONException e) {
+            return false;
+        }
+    }
+
+    /**
+     * merges array elements
+     * @param array
+     * @param value
+     * @return position of match
+     */
+    private int findObjectInStringArray(JSONArray array, final JSONObject value) {
+        if(null != value) {
+            try {
+                for (int i = 0; i < array.length(); i++) {
+                    JSONObject element = array.getJSONObject(i);
+                    if (value.equals(element)) {
+                        return i;
+                    }
+                }
+            } catch (JSONException e) {}
+        }
+        return -1;
+    }
+
+
+    /**
+     * merges arrays in manifest
+     * @param mergeManifest
+     * @param sourceManifest
+     * @throws IOException
+     */
+    private boolean mergeManifestsStringArray(JSONObject mergeManifest, final JSONObject sourceManifest, final String key) {
+
+        try {
+            JSONArray sourceArray = sourceManifest.optJSONArray(key);
+            if(null == sourceArray) {
+                return true; // nothing to do
+            }
+
+            JSONArray mergedArray = mergeManifest.optJSONArray(key);
+            if(null == mergedArray) {
+                mergeManifest.put(key, sourceArray); // just copy
+                return true;
+            }
+
+            mergeElementsInStringArray( mergedArray, sourceArray);
+            return true;
+        } catch (JSONException e) {
+            return false;
+        }
+    }
+
+    /**
+     * merges array elements
+     * @param mergeArray
+     * @param sourceArray
+     * @throws IOException
+     */
+    private boolean mergeElementsInStringArray(JSONArray mergeArray, final JSONArray sourceArray) {
+        try {
+            for(int i = 0; i < sourceArray.length(); i++) {
+                String value = sourceArray.getString(i);
+                int position = findElementsInStringArray(mergeArray, value);
+                if (position < 0) { // if not found, append to merge array
+                    mergeArray.put(value);
+                }
+            }
+            return true;
+        } catch (JSONException e) {
+            return false;
+        }
+    }
+
+    /**
+     * merges array elements
+     * @param array
+     * @param value
+     * @return position of match
+     */
+    private int findElementsInStringArray(JSONArray array, final String value) {
+        if(null != value) {
+            try {
+                for (int i = 0; i < array.length(); i++) {
+                    String element = array.getString(i);
+                    if (value.equals(element)) {
+                        return i;
+                    }
+                }
+            } catch (JSONException e) {
+            }
+        }
+        return -1;
     }
 
     /**
