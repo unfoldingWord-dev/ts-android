@@ -89,8 +89,8 @@ public class ImportDialog extends DialogFragment {
             @Override
             public void onClick(View v) {
                 // TODO: 11/18/2015 eventually we need to support bluetooth as well as an adhoc network
-                if(AppContext.context().isNetworkAvailable()) {
-                    if(AppContext.getDeviceNetworkAlias() == null) {
+                if (AppContext.context().isNetworkAvailable()) {
+                    if (AppContext.getDeviceNetworkAlias() == null) {
                         // get device alias
                         FragmentTransaction ft = getFragmentManager().beginTransaction();
                         Fragment prev = getFragmentManager().findFragmentByTag(ImportDialog.TAG);
@@ -178,20 +178,16 @@ public class ImportDialog extends DialogFragment {
                             final Translator translator = AppContext.getTranslator();
                             final String[] targetTranslationSlugs = translator.importArchive(in, uri.getPath());
                             TargetTranslationMigrator.migrateChunkChanges(translator, AppContext.getLibrary(), targetTranslationSlugs);
-                            showImportSuccess();
+                            showImportResults(R.string.import_success, SdUtils.getPathString(uri.toString()));
                         } catch (Exception e) {
                             Logger.e(this.getClass().getName(), "Failed to import the archive", e);
-                            Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_import_failed, Snackbar.LENGTH_LONG);
-                            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                            snack.show();
+                            showImportResults(R.string.import_failed, SdUtils.getPathString(uri.toString()));
                         }
 
                         // todo: terrible hack.
                         ((HomeActivity)getActivity()).notifyDatasetChanged();
                     } else {
-                        Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.invalid_file, Snackbar.LENGTH_LONG);
-                        ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                        snack.show();
+                        showImportResults(R.string.invalid_file, uri.toString());
                     }
                 } else {
                     File file = new File(data.getData().getPath());
@@ -200,32 +196,32 @@ public class ImportDialog extends DialogFragment {
                             final Translator translator = AppContext.getTranslator();
                             final String[] targetTranslationSlugs = translator.importArchive(file);
                             TargetTranslationMigrator.migrateChunkChanges(translator, AppContext.getLibrary(), targetTranslationSlugs);
-                            showImportSuccess();
+                            showImportResults(R.string.import_success, file.toString());
                         } catch (Exception e) {
                             Logger.e(this.getClass().getName(), "Failed to import the archive", e);
-                            Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_import_failed, Snackbar.LENGTH_LONG);
-                            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                            snack.show();
+                            showImportResults(R.string.import_failed, file.toString());
                         }
 
                         // todo: terrible hack.
                         ((HomeActivity) getActivity()).notifyDatasetChanged();
                     } else {
-                        Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.invalid_file, Snackbar.LENGTH_LONG);
-                        ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                        snack.show();
+                        showImportResults(R.string.invalid_file, file.toString());
                     }
                 }
             }
         }
     }
 
-    private void showImportSuccess() {
+    private void showImportResults(final int textResId, final String filePath) {
+        String message = getResources().getString(textResId);
+        if(filePath != null) {
+            message += "\n" + filePath;
+        }
         CustomAlertDialog.Create(getActivity())
                 .setTitle(R.string.import_from_sd)
-                .setMessage(R.string.success)
+                .setMessage(message)
                 .setNeutralButton(R.string.dismiss, null)
-                .show("ImportSuccess");
+                .show("Import");
     }
 
     @Override

@@ -61,11 +61,30 @@ public class SdUtils {
      * @return
      */
     public static String getPathString(DocumentFile dir) {
+        if(null == dir) {
+            return "<null>";
+        }
+
+        String uriStr = dir.getUri().toString();
+        return getPathString(uriStr);
+    }
+
+    /**
+     * Gets human readable path string
+     * @param dir
+     * @return
+     */
+    public static String getPathString(final String dir) {
         final String FILE = "file://";
         final String CONTENT = "content://";
         final String CONTENT_DIVIDER = "%3A";
         final String FOLDER_MARKER = "%2F";
-        String uriStr = dir.getUri().toString();
+
+        if(null == dir) {
+            return "<null>";
+        }
+
+        String uriStr = dir;
 
         int pos = uriStr.indexOf(FILE);
         if(pos >= 0) {
