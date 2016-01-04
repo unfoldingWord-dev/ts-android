@@ -143,19 +143,22 @@ public class ImportFileChooserActivity extends BaseActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 DocumentFileItem selectedItem = mAdapter.getItem(position);
                 if (selectedItem.file.isDirectory()) {
+                    mAdapter.setSelectedPosition(-1);
                     mFileList.clearChoices();
                     loadDocFileList(selectedItem.file);
                     return;
                 } else {   // file item selected
                     if (selectedItem.isTranslationArchive()) {
+                        mAdapter.setSelectedPosition(position);
                         mFileList.setItemChecked(position, true);
                         return;
                     }
                 }
 
                 //clear selections
+                mAdapter.setSelectedPosition(-1);
                 mFileList.clearChoices();
-            }
+             }
         });
 
         Intent intent = getIntent();
@@ -206,6 +209,7 @@ public class ImportFileChooserActivity extends BaseActivity {
 
     private void doImportFromInternal(File dir) {
 
+        DocumentFile path = null;
         File storagePath = dir;
         if (null == storagePath) {
             storagePath = Environment.getExternalStorageDirectory(); // AppContext.getPublicDownloadsDirectory();
@@ -213,9 +217,17 @@ public class ImportFileChooserActivity extends BaseActivity {
         DocumentFile baseFolder = DocumentFile.fromFile(storagePath);
         String subFolder = SdUtils.searchFolderAndParentsForDocFile(baseFolder, Translator.ARCHIVE_EXTENSION);
         if (null != subFolder) {
-            DocumentFile path = SdUtils.documentFileMkdirs(baseFolder, subFolder);
-            loadDocFileList(path);
+            path = SdUtils.documentFileMkdirs(baseFolder, subFolder);
+        }else {
+            path = SdUtils.documentFileMkdirs(baseFolder, SdUtils.DOWNLOAD_FOLDER); // try downloads folder if present.
+
         }
+
+        if(null == path) {
+            path = baseFolder; // if nothing is found, then default to base
+        }
+
+        loadDocFileList(path);
     }
 
     private void returnSelectedFile(DocumentFileItem selectedItem) {
@@ -248,6 +260,7 @@ public class ImportFileChooserActivity extends BaseActivity {
 
         mFileList.clearFocus();
         mFileList.clearChoices();
+        mUpButton.setVisibility(View.GONE);
 
         if (dir.exists() && dir.isDirectory()) {
 
@@ -259,9 +272,8 @@ public class ImportFileChooserActivity extends BaseActivity {
             DocumentFile[] files = dir.listFiles();
             if(files != null) {
                 for (DocumentFile f : files) {
-
                     if( !f.canRead() ) {
-                        continue;
+                        continue; // skip if not readable
                     }
 
                     if (f.isDirectory()) {
@@ -272,15 +284,8 @@ public class ImportFileChooserActivity extends BaseActivity {
                 }
 
                 // add up button
-                boolean upButton = false;
                 if (dir.getParentFile() != null && dir.getParentFile().exists() && dir.getParentFile().canRead()) {
-                    upButton = true;
-                }
-
-                if(upButton) {
                     mUpButton.setVisibility(View.VISIBLE);
-                } else {
-                    mUpButton.setVisibility(View.GONE);
                 }
             }
         }

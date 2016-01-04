@@ -1,6 +1,7 @@
 package com.door43.translationstudio.filebrowser;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +31,7 @@ import java.util.Locale;
 public class DocumentFileBrowserAdapter extends BaseAdapter {
 
     private List<DocumentFileItem> mFiles = new ArrayList<>();
+    private int mSelectedPosition = -1;
 
     public void loadFiles(Context context, List<DocumentFileItem> files) {
         final Library library = AppContext.getLibrary();
@@ -83,6 +85,15 @@ public class DocumentFileBrowserAdapter extends BaseAdapter {
             holder = new ViewHolder(v);
         } else {
             holder = (ViewHolder)v.getTag();
+        }
+
+        if(mSelectedPosition == position) {
+            v.setBackgroundColor(parent.getContext().getResources().getColor(R.color.accent_light));
+        } else {
+            Drawable currentBackground = v.getBackground();
+            if(currentBackground != null) {
+                v.setBackgroundDrawable(null); // clear background
+            }
         }
 
         DocumentFileItem item = getItem(position);
@@ -181,6 +192,14 @@ public class DocumentFileBrowserAdapter extends BaseAdapter {
                 return sort;
             }
         });
+    }
+
+    public int getSelectedPosition() {
+        return mSelectedPosition;
+    }
+
+    public void setSelectedPosition(int mSelectedPosition) {
+        this.mSelectedPosition = mSelectedPosition;
     }
 }
 

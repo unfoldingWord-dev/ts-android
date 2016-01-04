@@ -75,8 +75,7 @@
                 android:layout_height="match_parent"
                 android:layout_above="@+id/controlsLayout"
                 android:layout_weight="1.46"
-                android:choiceMode="singleChoice"
-                android:listSelector="@color/accent_light" />
+                android:choiceMode="singleChoice" />
 
         </LinearLayout>
 
