@@ -2,6 +2,7 @@ package com.door43.translationstudio.core;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
+import android.support.annotation.Nullable;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.git.Repo;
@@ -12,7 +13,12 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListTagCommand;
+import org.eclipse.jgit.api.LogCommand;
+import org.eclipse.jgit.api.TagCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -48,7 +54,7 @@ public class TargetTranslation {
     public TargetTranslation(String targetLanguageId, String projectId, File rootDir) {
         mTargetLanguageId = targetLanguageId;
         mProjectId = projectId;
-        mTargetTranslationDirectory = generateTargetTranslationDir(generateTargetTranslationId(targetLanguageId, projectId), rootDir);;
+        mTargetTranslationDirectory = generateTargetTranslationDir(generateTargetTranslationId(targetLanguageId, projectId), rootDir);
         mManifest = Manifest.generate(mTargetTranslationDirectory);
         String name = targetLanguageId;
         try {
@@ -953,6 +959,119 @@ public class TargetTranslation {
     }
 
     /**
+     * sets publish tag in the repository
+     * @return true if successful
+     */
+    public void setPublishTag(final OnTagListener listener)  {
+        try {
+            Git git = getRepo().getGit();
+            final TagCommand tag = git.tag();
+            String name = "published-" + System.currentTimeMillis();
+            tag.setName(name);
+
+            Thread thread = new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        tag.call();
+                        if(listener != null) {
+                            listener.onTag(true);
+                        }
+                    } catch (Exception e) {
+                        Logger.e(TargetTranslation.class.getName(), "Failed to commit changes", e);
+                        if(listener != null) {
+                            listener.onTag(false);
+                        }
+                    }
+                }
+            };
+            thread.start();
+
+        } catch (Exception e) {
+            Logger.e(this.getClass().toString(), "error setting publish tag", e);
+            if(listener != null) {
+                listener.onTag(false);
+            }
+        }
+    }
+
+    /**
+     * sets publish tag in the repository
+     * @return true if successful
+     */
+    public RevCommit getLastPublishTag() throws IOException, GitAPIException {
+        try {
+            Git git = getRepo().getGit();
+            Repository repository = git.getRepository();
+            ListTagCommand tags = git.tagList();
+            List<Ref> refs = tags.call();
+            for (int i=refs.size()-1; i >= 0; i--) {
+                Ref ref = refs.get(i);
+                Logger.i(this.getClass().toString(), "Tag: " + ref + " " + ref.getName() + " " + ref.getObjectId().getName());
+
+                // fetch all commits for this tag
+                LogCommand log = git.log();
+                log.setMaxCount(1);
+
+                Ref peeledRef = repository.peel(ref);
+                if(peeledRef.getPeeledObjectId() != null) {
+                    log.add(peeledRef.getPeeledObjectId());
+                } else {
+                    log.add(ref.getObjectId());
+                }
+
+                Iterable<RevCommit> logs = log.call();
+                for (RevCommit rev : logs) {
+                    Logger.i(this.getClass().toString(), "....Commit: " + rev /* + ", name: " + rev.getName() + ", id: " + rev.getId().getName() */);
+                    return rev;
+                }
+            }
+
+        } catch (GitAPIException|IOException e) {
+            Logger.w(this.getClass().toString(), "error setting publish tag", e);
+            throw e;
+        }
+        return null;
+    }
+
+    /**
+     * sets publish tag in the repository
+     * @return true if successful
+     */
+    public PublishStatus getPublishStatus()  {
+
+        try {
+            RevCommit lastTag = getLastPublishTag();
+            if(null == lastTag) {
+                return PublishStatus.NOT_PUBLISHED;
+            }
+
+            RevCommit head = getGitHead();
+            if(null == head) {
+                return PublishStatus.QUERY_ERROR;
+            }
+
+            if(head.getCommitTime() > lastTag.getCommitTime()) {
+                return PublishStatus.NOT_CURRENT;
+            }
+
+            return PublishStatus.IS_CURRENT;
+
+        } catch (Exception e) {
+            Logger.w(this.getClass().toString(), "error setting publish tag", e);
+        }
+
+        return PublishStatus.QUERY_ERROR;
+    }
+
+    public enum PublishStatus {
+        IS_CURRENT,
+        NOT_CURRENT,
+        NOT_PUBLISHED,
+        QUERY_ERROR
+    }
+
+    /**
      * Returns the repository for this target translation
      * @return
      */
@@ -966,13 +1085,8 @@ public class TargetTranslation {
      * @throws Exception
      */
     public String getCommitHash() throws Exception {
-        Repo repo = getRepo();
         String tag = null;
-        Iterable<RevCommit> commits = repo.getGit().log().setMaxCount(1).call();
-        RevCommit commit = null;
-        for(RevCommit c : commits) {
-            commit = c;
-        }
+        RevCommit commit = getGitHead();
         if(commit != null) {
             String[] pieces = commit.toString().split(" ");
             tag = pieces[1];
@@ -981,6 +1095,22 @@ public class TargetTranslation {
         }
 
         return tag;
+    }
+
+    /**
+     * Returns the commit HEAD
+     * @return
+     * @throws GitAPIException, IOException
+     */
+    @Nullable
+    private RevCommit getGitHead() throws GitAPIException, IOException {
+        Repo repo = getRepo();
+        Iterable<RevCommit> commits = repo.getGit().log().setMaxCount(1).call();
+        RevCommit commit = null;
+        for(RevCommit c : commits) {
+            commit = c;
+        }
+        return commit;
     }
 
     /**
@@ -1130,5 +1260,9 @@ public class TargetTranslation {
 
     public interface OnCommitListener {
         void onCommit(boolean success);
+    }
+
+    public interface OnTagListener {
+        void onTag(boolean success);
     }
 }

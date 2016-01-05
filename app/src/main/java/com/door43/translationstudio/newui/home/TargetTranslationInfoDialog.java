@@ -107,6 +107,29 @@ public class TargetTranslationInfoDialog extends DialogFragment {
         }
         // TODO: 10/1/2015 support displaying multiple translators
 
+        TextView publishView = (TextView)v.findViewById(R.id.publish_state);
+        publishView.setText("");
+        int statusID = 0;
+        switch (mTargetTranslation.getPublishStatus()) {
+            case NOT_PUBLISHED:
+                statusID = R.string.publish_status_not;
+                break;
+
+            case IS_CURRENT:
+                statusID = R.string.publish_status_current;
+                break;
+
+            case NOT_CURRENT:
+                statusID = R.string.publish_status_not_current;
+                break;
+
+            default:
+            case QUERY_ERROR:
+                statusID = R.string.publish_status_error;
+                break;
+        }
+        publishView.setText(statusID);
+
         ImageButton deleteButton = (ImageButton)v.findViewById(R.id.delete_button);
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
