@@ -61,6 +61,9 @@ public class CustomAlertDialog extends DialogFragment {
         super.onCreate(savedInstanceState);
         int style = DialogFragment.STYLE_NO_TITLE, theme = 0;
         setStyle(style, theme);
+        if(savedInstanceState != null) {
+            dismiss();
+        }
     }
 
     @Override
