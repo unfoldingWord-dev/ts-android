@@ -5,8 +5,8 @@ import android.content.pm.PackageInfo;
 import android.support.annotation.Nullable;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.git.Repo;
-//import com.door43.translationstudio.git.tasks.repo.CommitTask;
 import com.door43.util.Manifest;
 
 import org.apache.commons.io.FileUtils;
@@ -37,11 +37,11 @@ import java.util.Timer;
  * Created by joel on 8/29/2015.
  */
 public class TargetTranslation {
-    private static final long COMMIT_DELAY = 5000;
     private static final int PACKAGE_VERSION = 3; // the version of the manifest
     private final String mTargetLanguageId;
     private final String mProjectId;
     private static final String GLOBAL_PROJECT_ID = "uw";
+    public static final String TRANSLATORS = "translators";
     public static final String NAME = "name";
     public static final String PHONE = "phone";
     public static final String EMAIL = "email";
@@ -153,6 +153,9 @@ public class TargetTranslation {
             // TODO: we should restructure this output to match what we see in the api. if we do we'll need to migrate all the old manifest files.
             // also the target language should have a toJson method that will do all of this.
             manifest.put("target_language", targetLangaugeJson);
+            // TODO: 1/5/2016 we should only add the open profile (e.g. the current user) as a translator
+            JSONArray translatorsJson = encodeTranslators(NativeSpeaker.nativeSpeakersFromProfiles(AppContext.getProfiles()));
+            manifest.put(TRANSLATORS, translatorsJson);
         }
         // load the target translation (new or otherwise)
         return new TargetTranslation(targetLanguage.getId(), projectId, rootDir);
@@ -284,27 +287,35 @@ public class TargetTranslation {
     public boolean saveTranslators(ArrayList<NativeSpeaker> translators) {
 
         try {
-
-            JSONArray translatorsJson = new JSONArray();
-
-            for(int i = 0; i < translators.size(); i++) {
-                JSONObject translatorJSON = new JSONObject();
-                NativeSpeaker currentTranslator = translators.get(i);
-                translatorJSON.put(NAME,currentTranslator.name);
-                translatorJSON.put(EMAIL,currentTranslator.email);
-                translatorJSON.put(PHONE,currentTranslator.phone);
-
-                translatorsJson.put(translatorJSON);
-            }
-
-            mManifest.put(Manifest.TRANSLATORS,translatorsJson);
-
+            JSONArray translatorsJson = encodeTranslators(translators);
+            mManifest.put(TRANSLATORS,translatorsJson);
         } catch (Exception e) {
             Logger.e(TargetTranslation.class.getName(), "failed save translators", e);
             return false;
         }
 
         return true;
+    }
+
+    /**
+     * Encodes the native speakers into json
+     * @param translators
+     * @return
+     * @throws JSONException
+     */
+    private static JSONArray encodeTranslators(List<NativeSpeaker> translators) throws JSONException {
+        JSONArray translatorsJson = new JSONArray();
+
+        for(int i = 0; i < translators.size(); i++) {
+            JSONObject translatorJSON = new JSONObject();
+            NativeSpeaker currentTranslator = translators.get(i);
+            translatorJSON.put(NAME,currentTranslator.name);
+            translatorJSON.put(EMAIL,currentTranslator.email);
+            translatorJSON.put(PHONE,currentTranslator.phone);
+
+            translatorsJson.put(translatorJSON);
+        }
+        return translatorsJson;
     }
 
     /**
@@ -332,7 +343,7 @@ public class TargetTranslation {
 
         JSONArray translatorsJson = mManifest.getJSONArray(Manifest.TRANSLATORS);
 
-        ArrayList<NativeSpeaker> translators = new  ArrayList<NativeSpeaker>();
+        ArrayList<NativeSpeaker> translators = new ArrayList<>();
 
         if(translatorsJson.length() > 0) {
 

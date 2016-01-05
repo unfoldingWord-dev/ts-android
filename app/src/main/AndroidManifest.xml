@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.door43.translationstudio" >
+    package="com.door43.translationstudio">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -13,12 +13,12 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme">
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.door43.translationstudio.fileprovider"
             android:exported="false"
-            android:grantUriPermissions="true" >
+            android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/filepaths" />
@@ -26,29 +26,24 @@
 
         <service
             android:name=".service.BackupService"
-            android:label="Backup Manager" >
-        </service>
+            android:label="Backup Manager"></service>
         <service
             android:name=".service.BroadcastService"
-            android:label="Services Broadcaster" >
-        </service>
+            android:label="Services Broadcaster"></service>
         <service
             android:name=".service.BroadcastListenerService"
-            android:label="Services Listener" >
-        </service>
+            android:label="Services Listener"></service>
         <service
             android:name=".service.ServerService"
-            android:label="Server Service" >
-        </service>
+            android:label="Server Service"></service>
         <service
             android:name=".service.ClientService"
-            android:label="Client Service" >
-        </service>
+            android:label="Client Service"></service>
 
         <activity
             android:name=".TermsOfUseActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar" >
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -58,12 +53,11 @@
         <activity
             android:name=".SplashScreenActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar" >
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName=".newui.home.HomeActivity" >
+            android:parentActivityName=".newui.home.HomeActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.door43.translationstudio.newui.home.HomeActivity" />
@@ -71,26 +65,25 @@
         <activity
             android:name=".filebrowser.FileBrowserActivity"
             android:label="@string/title_activity_file_explorer"
-            android:theme="@style/AppTheme.Transparent" >
+            android:theme="@style/AppTheme.Transparent">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.door43.translationstudio.SharingActivity" />
         </activity>
         <activity
             android:name=".CrashReporterActivity"
-            android:label="@string/title_activity_crash_reporter" >
-        </activity>
+            android:label="@string/title_activity_crash_reporter"></activity>
         <activity
             android:name=".device2device.DeviceToDeviceActivity"
             android:label="@string/title_activity_sharing"
-            android:parentActivityName=".SharingActivity" >
+            android:parentActivityName=".SharingActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.door43.translationstudio.SharingActivity" />
         </activity>
         <activity
             android:name=".DeveloperToolsActivity"
-            android:label="@string/title_activity_developer" >
+            android:label="@string/title_activity_developer">
             <intent-filter>
                 <action android:name="com.activity.DeveloperToolsActivity" />
 
@@ -106,7 +99,7 @@
             android:label="@string/title_activity_project_library"
             android:launchMode="singleTop"
             android:parentActivityName=".newui.home.HomeActivity"
-            android:theme="@style/AppTheme.NoActionBar" >
+            android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".newui.home.HomeActivity" />
@@ -123,7 +116,7 @@
         <activity
             android:name=".newui.library.ProjectLibraryDetailActivity"
             android:label="@string/title_project_detail"
-            android:parentActivityName=".newui.library.ServerLibraryActivity" >
+            android:parentActivityName=".newui.library.ServerLibraryActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".newui.library.ServerLibraryActivity" />
@@ -131,12 +124,11 @@
         <activity
             android:name=".newui.home.HomeActivity"
             android:label="@string/title_activity_target_translations"
-            android:theme="@style/AppTheme.NoActionBar" >
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity
             android:name=".newui.newtranslation.NewTargetTranslationActivity"
             android:label="@string/title_activity_new_target_translation"
-            android:parentActivityName=".newui.home.HomeActivity" >
+            android:parentActivityName=".newui.home.HomeActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".newui.home.HomeActivity" />
@@ -145,7 +137,7 @@
             android:name=".newui.translate.TargetTranslationActivity"
             android:label="@string/title_activity_target_translation_detail"
             android:parentActivityName=".newui.home.HomeActivity"
-            android:theme="@style/AppTheme.NoActionBar" >
+            android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".newui.home.HomeActivity" />
@@ -153,17 +145,21 @@
         <activity
             android:name=".newui.publish.PublishActivity"
             android:label="@string/title_activity_publish"
-            android:theme="@style/AppTheme.NoActionBar" >
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity
             android:name=".newui.legal.LegalDocumentActivity"
             android:label=""
-            android:theme="@style/AppTheme.Transparent" >
+            android:theme="@style/AppTheme.Transparent">
             <intent-filter>
                 <action android:name="com.activity.LegalDocumentActivity" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ProfileActivity"
+            android:label="@string/title_activity_profile"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

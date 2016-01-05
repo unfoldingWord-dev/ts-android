@@ -67,6 +67,7 @@ public class SettingsActivity extends PreferenceActivity {
     public static final String KEY_PREF_LOGGING_LEVEL = "logging_level";
     public static final String KEY_PREF_BACKUP_INTERVAL = "backup_interval";
     public static final String KEY_PREF_DEVICE_ALIAS = "device_name";
+    public static final String KEY_PROFILES = "profiles";
 
     /**
      * TRICKY: this was added after API 19 to fix a vulnerability.
