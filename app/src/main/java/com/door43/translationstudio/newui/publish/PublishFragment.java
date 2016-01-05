@@ -110,7 +110,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                                         }
                                     });
                                 } else {
-                                    targetTranslation.setPublishTag(null); //TODO: move to completion
+                                    targetTranslation.setPublishTag();
                                     // begin upload
                                     UploadTargetTranslationTask task = new UploadTargetTranslationTask(targetTranslation);
                                     mTaskWatcher.watch(task);
@@ -207,6 +207,8 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             final String response = ((UploadTargetTranslationTask)task).getResponse();
             mUploaded = true;
             // marks the publish step as done
+            TargetTranslation targetTranslation = ((UploadTargetTranslationTask)task).getTargetTranslation();
+            targetTranslation.setPublishTag(null);
             getListener().finishPublishing();
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {
