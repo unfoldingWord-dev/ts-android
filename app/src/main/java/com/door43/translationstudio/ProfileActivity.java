@@ -2,17 +2,17 @@ package com.door43.translationstudio;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
 
 import com.door43.translationstudio.core.Person;
+import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.home.HomeActivity;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProfileActivity extends AppCompatActivity {
+public class ProfileActivity extends BaseActivity {
 
     private EditText mName;
     private EditText mEmail;
@@ -50,7 +50,7 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
 
         if (AppContext.getProfiles() != null) {

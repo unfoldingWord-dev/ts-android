@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.git.Repo;
 //import com.door43.translationstudio.git.tasks.repo.CommitTask;
 import com.door43.util.Manifest;
@@ -148,6 +149,8 @@ public class TargetTranslation {
             // TODO: we should restructure this output to match what we see in the api. if we do we'll need to migrate all the old manifest files.
             // also the target language should have a toJson method that will do all of this.
             manifest.put("target_language", targetLangaugeJson);
+            JSONArray translatorsJson = encodeTranslators(NativeSpeaker.nativeSpeakersFromProfiles(AppContext.getProfiles()));
+            manifest.put(TRANSLATORS, translatorsJson);
         }
         // load the target translation (new or otherwise)
         return new TargetTranslation(targetLanguage.getId(), projectId, rootDir);
@@ -279,27 +282,29 @@ public class TargetTranslation {
     public boolean saveTranslators(ArrayList<NativeSpeaker> translators) {
 
         try {
-
-            JSONArray translatorsJson = new JSONArray();
-
-            for(int i = 0; i < translators.size(); i++) {
-                JSONObject translatorJSON = new JSONObject();
-                NativeSpeaker currentTranslator = translators.get(i);
-                translatorJSON.put(NAME,currentTranslator.name);
-                translatorJSON.put(EMAIL,currentTranslator.email);
-                translatorJSON.put(PHONE,currentTranslator.phone);
-
-                translatorsJson.put(translatorJSON);
-            }
-
+            JSONArray translatorsJson = encodeTranslators(translators);
             mManifest.put(TRANSLATORS,translatorsJson);
-
         } catch (Exception e) {
             Logger.e(TargetTranslation.class.getName(), "failed save translators", e);
             return false;
         }
 
         return true;
+    }
+
+    private static JSONArray encodeTranslators(List<NativeSpeaker> translators) throws JSONException {
+        JSONArray translatorsJson = new JSONArray();
+
+        for(int i = 0; i < translators.size(); i++) {
+            JSONObject translatorJSON = new JSONObject();
+            NativeSpeaker currentTranslator = translators.get(i);
+            translatorJSON.put(NAME,currentTranslator.name);
+            translatorJSON.put(EMAIL,currentTranslator.email);
+            translatorJSON.put(PHONE,currentTranslator.phone);
+
+            translatorsJson.put(translatorJSON);
+        }
+        return translatorsJson;
     }
 
     /**
@@ -327,7 +332,7 @@ public class TargetTranslation {
 
         JSONArray translatorsJson = mManifest.getJSONArray(TRANSLATORS);
 
-        ArrayList<NativeSpeaker> translators = new  ArrayList<NativeSpeaker>();
+        ArrayList<NativeSpeaker> translators = new ArrayList<NativeSpeaker>();
 
         if(translatorsJson.length() > 0) {
 

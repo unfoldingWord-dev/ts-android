@@ -22,12 +22,16 @@ import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -459,10 +463,8 @@ public class AppContext {
         }
 
         try {
-            ByteArrayInputStream bi =
-                    new ByteArrayInputStream(Base64.decode(profilesEncoded, Base64.DEFAULT));
-            List<Person> profiles = (List<Person>)new ObjectInputStream(bi).readObject();
-            return profiles;
+            JSONArray profilesJson = new JSONArray(profilesEncoded);
+            return Person.decodeJsonArray(profilesJson);
         }
         catch (Exception e) {
             // There are lots of ways for this to fail, none of which are particularly serious.
@@ -474,15 +476,10 @@ public class AppContext {
 
     public static void setProfiles(List<Person> profiles) {
         try {
-            ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream();
-            ObjectOutputStream objectStream = new ObjectOutputStream(byteArrayStream);
-            objectStream.writeObject(profiles);
-            objectStream.flush();
-            String profilesEncoded =
-                    Base64.encodeToString(byteArrayStream.toByteArray(), Base64.DEFAULT);
-            setUserString(SettingsActivity.KEY_PROFILES, profilesEncoded);
+            String profilesJson = Person.encodeJsonArray(profiles).toString();
+            setUserString(SettingsActivity.KEY_PROFILES, profilesJson);
         }
-        catch (Exception e) {
+        catch (JSONException e) {
             // Failures to save are not particularly severe. Log and continue.
             Log.e("", "setProfiles: Failed to encode profile data", e);
         }
