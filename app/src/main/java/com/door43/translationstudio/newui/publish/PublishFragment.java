@@ -110,7 +110,6 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                                         }
                                     });
                                 } else {
-                                    targetTranslation.setPublishTag();
                                     // begin upload
                                     UploadTargetTranslationTask task = new UploadTargetTranslationTask(targetTranslation);
                                     mTaskWatcher.watch(task);

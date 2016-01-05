@@ -1047,12 +1047,12 @@ public class TargetTranslation {
                 return PublishStatus.NOT_PUBLISHED;
             }
 
-            RevCommit commit = getGitHead();
-            if(null == commit) {
+            RevCommit head = getGitHead();
+            if(null == head) {
                 return PublishStatus.QUERY_ERROR;
             }
 
-            if(commit.getCommitTime() > lastTag.getCommitTime()) {
+            if(head.getCommitTime() > lastTag.getCommitTime()) {
                 return PublishStatus.NOT_CURRENT;
             }
 
