@@ -23,7 +23,7 @@ public class ArchiveImporter {
     }
 
     /**
-     * Prepares an archive for import with backwards compatable support.
+     * Prepares an archive for import with backwards compatible support.
      * @param expandedArchiveDir
      * @return an array of target translation directories that are ready and valid for import
      * @throws Exception

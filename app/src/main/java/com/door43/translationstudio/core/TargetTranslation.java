@@ -36,7 +36,6 @@ public class TargetTranslation {
     private final String mTargetLanguageId;
     private final String mProjectId;
     private static final String GLOBAL_PROJECT_ID = "uw";
-    public static final String TRANSLATORS = "translators";
     public static final String NAME = "name";
     public static final String PHONE = "phone";
     public static final String EMAIL = "email";
@@ -292,7 +291,7 @@ public class TargetTranslation {
                 translatorsJson.put(translatorJSON);
             }
 
-            mManifest.put(TRANSLATORS,translatorsJson);
+            mManifest.put(Manifest.TRANSLATORS,translatorsJson);
 
         } catch (Exception e) {
             Logger.e(TargetTranslation.class.getName(), "failed save translators", e);
@@ -325,7 +324,7 @@ public class TargetTranslation {
      */
     public ArrayList<NativeSpeaker> getTranslators() {
 
-        JSONArray translatorsJson = mManifest.getJSONArray(TRANSLATORS);
+        JSONArray translatorsJson = mManifest.getJSONArray(Manifest.TRANSLATORS);
 
         ArrayList<NativeSpeaker> translators = new  ArrayList<NativeSpeaker>();
 
@@ -653,7 +652,7 @@ public class TargetTranslation {
     public boolean finishChapterTitle(Chapter chapter) {
         File file = getChapterTitleFile(chapter.getId());
         if(file.exists()) {
-            JSONArray finishedTitles = mManifest.getJSONArray("finished_titles");
+            JSONArray finishedTitles = mManifest.getJSONArray(Manifest.FINISHED_TITLES);
             boolean isFinished = false;
             try {
                 for (int i = 0; i < finishedTitles.length(); i++) {
@@ -668,7 +667,7 @@ public class TargetTranslation {
             }
             if(!isFinished) {
                 finishedTitles.put(chapter.getId());
-                mManifest.put("finished_titles", finishedTitles);
+                mManifest.put(Manifest.FINISHED_TITLES, finishedTitles);
             }
             return true;
         }
@@ -681,7 +680,7 @@ public class TargetTranslation {
      * @return
      */
     public boolean reopenChapterTitle(Chapter chapter) {
-        JSONArray finishedTitles = mManifest.getJSONArray("finished_titles");
+        JSONArray finishedTitles = mManifest.getJSONArray(Manifest.FINISHED_TITLES);
         JSONArray updatedTitles = new JSONArray();
         try {
             for (int i = 0; i < finishedTitles.length(); i++) {
@@ -690,7 +689,7 @@ public class TargetTranslation {
                     updatedTitles.put(finishedTitles.getString(i));
                 }
             }
-            mManifest.put("finished_titles", updatedTitles);
+            mManifest.put(Manifest.FINISHED_TITLES, updatedTitles);
             return true;
         } catch (JSONException e) {
             e.printStackTrace();
@@ -713,7 +712,7 @@ public class TargetTranslation {
      * @return
      */
     private boolean isChapterTitleFinished(String chapterSlug) {
-        JSONArray finishedTitles = mManifest.getJSONArray("finished_titles");
+        JSONArray finishedTitles = mManifest.getJSONArray(Manifest.FINISHED_TITLES);
         try {
             for (int i = 0; i < finishedTitles.length(); i++) {
                 if(finishedTitles.getString(i).equals(chapterSlug)) {
@@ -734,7 +733,7 @@ public class TargetTranslation {
     public boolean finishChapterReference(Chapter chapter) {
         File file = getChapterReferenceFile(chapter.getId());
         if(file.exists()) {
-            JSONArray finishedReferences = mManifest.getJSONArray("finished_references");
+            JSONArray finishedReferences = mManifest.getJSONArray(Manifest.FINISHED_REFERENCES);
             boolean isFinished = false;
             try {
                 for (int i = 0; i < finishedReferences.length(); i++) {
@@ -749,7 +748,7 @@ public class TargetTranslation {
             }
             if(!isFinished) {
                 finishedReferences.put(chapter.getId());
-                mManifest.put("finished_references", finishedReferences);
+                mManifest.put(Manifest.FINISHED_REFERENCES, finishedReferences);
             }
             return true;
         }
@@ -762,7 +761,7 @@ public class TargetTranslation {
      * @return
      */
     public boolean reopenChapterReference(Chapter chapter) {
-        JSONArray finishedReferences = mManifest.getJSONArray("finished_references");
+        JSONArray finishedReferences = mManifest.getJSONArray(Manifest.FINISHED_REFERENCES);
         JSONArray updatedReferences = new JSONArray();
         try {
             for (int i = 0; i < finishedReferences.length(); i++) {
@@ -771,7 +770,7 @@ public class TargetTranslation {
                     updatedReferences.put(finishedReferences.getString(i));
                 }
             }
-            mManifest.put("finished_references", updatedReferences);
+            mManifest.put(Manifest.FINISHED_REFERENCES, updatedReferences);
             return true;
         } catch (JSONException e) {
             e.printStackTrace();
@@ -794,7 +793,7 @@ public class TargetTranslation {
      * @return
      */
     private boolean isChapterReferenceFinished(String chapterSlug) {
-        JSONArray finishedReferences = mManifest.getJSONArray("finished_references");
+        JSONArray finishedReferences = mManifest.getJSONArray(Manifest.FINISHED_REFERENCES);
         try {
             for (int i = 0; i < finishedReferences.length(); i++) {
                 if(finishedReferences.getString(i).equals(chapterSlug)) {
@@ -815,7 +814,7 @@ public class TargetTranslation {
     public boolean finishFrame(Frame frame) {
         File file = getFrameFile(frame.getChapterId(), frame.getId());
         if(file.exists()) {
-            JSONArray finishedFrames = mManifest.getJSONArray("finished_frames");
+            JSONArray finishedFrames = mManifest.getJSONArray(Manifest.FINISHED_FRAMES);
             boolean isFinished = false;
             try {
                 for (int i = 0; i < finishedFrames.length(); i++) {
@@ -830,7 +829,7 @@ public class TargetTranslation {
             }
             if(!isFinished) {
                 finishedFrames.put(frame.getComplexId());
-                mManifest.put("finished_frames", finishedFrames);
+                mManifest.put(Manifest.FINISHED_FRAMES, finishedFrames);
             }
             return true;
         }
@@ -843,7 +842,7 @@ public class TargetTranslation {
      * @return
      */
     public boolean reopenFrame(Frame frame) {
-        JSONArray finishedFrames = mManifest.getJSONArray("finished_frames");
+        JSONArray finishedFrames = mManifest.getJSONArray(Manifest.FINISHED_FRAMES);
         JSONArray updatedFrames = new JSONArray();
         try {
             for (int i = 0; i < finishedFrames.length(); i++) {
@@ -852,7 +851,7 @@ public class TargetTranslation {
                     updatedFrames.put(finishedFrames.getString(i));
                 }
             }
-            mManifest.put("finished_frames", updatedFrames);
+            mManifest.put(Manifest.FINISHED_FRAMES, updatedFrames);
             return true;
         } catch (JSONException e) {
             e.printStackTrace();
@@ -875,7 +874,7 @@ public class TargetTranslation {
      * @return
      */
     private boolean isFrameFinished(String frameComplexId) {
-        JSONArray finishedFrames = mManifest.getJSONArray("finished_frames");
+        JSONArray finishedFrames = mManifest.getJSONArray(Manifest.FINISHED_FRAMES);
         try {
             for (int i = 0; i < finishedFrames.length(); i++) {
                 if(finishedFrames.getString(i).equals(frameComplexId)) {
@@ -1071,9 +1070,9 @@ public class TargetTranslation {
      * @return
      */
     public int numFinished() {
-        JSONArray finishedFrames = mManifest.getJSONArray("finished_frames");
-        JSONArray finishedTitles = mManifest.getJSONArray("finished_titles");
-        JSONArray finishedReferences = mManifest.getJSONArray("finished_references");
+        JSONArray finishedFrames = mManifest.getJSONArray(Manifest.FINISHED_FRAMES);
+        JSONArray finishedTitles = mManifest.getJSONArray(Manifest.FINISHED_TITLES);
+        JSONArray finishedReferences = mManifest.getJSONArray(Manifest.FINISHED_REFERENCES);
         return finishedFrames.length() + finishedTitles.length() + finishedReferences.length();
     }
 

@@ -4,6 +4,7 @@ import android.support.annotation.Nullable;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
+import com.door43.util.Manifest;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
@@ -70,7 +71,7 @@ public class TargetTranslationMigrator {
                 }
             }
             manifest.remove("frames");
-            manifest.put("finished_frames", finishedFrames);
+            manifest.put(Manifest.FINISHED_FRAMES, finishedFrames);
         }
         // fix finished chapter titles and references
         if(manifest.has("chapters")) {
