@@ -57,6 +57,7 @@ public class FeedbackDialog extends DialogFragment implements ManagedTask.OnFini
         return dialog;
     }
 
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         View v = inflater.inflate(R.layout.dialog_feedback, container, false);
