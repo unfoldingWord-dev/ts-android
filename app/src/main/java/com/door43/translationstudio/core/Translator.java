@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -374,9 +375,28 @@ public class Translator {
     private int findObjectInStringArray(JSONArray array, final JSONObject value) {
         if(null != value) {
             try {
+
+                JSONArray valueKeys = value.names();
+
                 for (int i = 0; i < array.length(); i++) {
                     JSONObject element = array.getJSONObject(i);
-                    if (value.equals(element)) {
+                    JSONArray elementKeys = element.names();
+                    if(!elementKeys.equals(valueKeys)) {
+                        continue;
+                    }
+
+                    boolean matched = true;
+                    for(int j=0; j<elementKeys.length(); j++) {
+                        String key = elementKeys.getString(j);
+                        String elementValue = element.getString(key);
+                        String valueValue = value.getString(key);
+                        if(!elementValue.equals(valueValue)) {
+                            matched = false;
+                            break;
+                        }
+                    }
+
+                    if (matched) {
                         return i;
                     }
                 }
