@@ -613,6 +613,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             .setPositiveButton(R.string.confirm, new View.OnClickListener() {
                                         @Override
                                         public void onClick(View v) {
+                                            if(!item.isEditing) { // make sure to capture verse marker changes
+                                                item.renderedTargetBody = holder.mTargetEditableBody.getText();
+                                            }
                                             boolean success = onConfirmChunk(item, chapter, frame);
                                             holder.mDoneSwitch.setChecked(success);
                                         }
