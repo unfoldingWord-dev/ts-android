@@ -59,6 +59,7 @@ public class MainApplication extends Application {
         MultiDex.install(this);
     }
 
+    @Override
     public void onCreate() {
         super.onCreate();
 
