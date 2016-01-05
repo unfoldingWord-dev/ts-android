@@ -7,12 +7,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
-import android.util.Base64;
 import android.util.Log;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.Person;
+import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Util;
@@ -21,17 +20,11 @@ import com.door43.util.StringUtilities;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -454,9 +447,9 @@ public class AppContext {
 
     /**
      * Returns information about the user of the application.
-     * @return A list of {@link Person} objects, or {@code null} if not set.
+     * @return A list of {@link Profile} objects, or {@code null} if not set.
      */
-    public static List<Person> getProfiles() {
+    public static List<Profile> getProfiles() {
         String profilesEncoded = getUserString(SettingsActivity.KEY_PROFILES, null);
         if (profilesEncoded == null) {
             return null;
@@ -464,7 +457,7 @@ public class AppContext {
 
         try {
             JSONArray profilesJson = new JSONArray(profilesEncoded);
-            return Person.decodeJsonArray(profilesJson);
+            return Profile.decodeJsonArray(profilesJson);
         }
         catch (Exception e) {
             // There are lots of ways for this to fail, none of which are particularly serious.
@@ -474,9 +467,9 @@ public class AppContext {
         }
     }
 
-    public static void setProfiles(List<Person> profiles) {
+    public static void setProfiles(List<Profile> profiles) {
         try {
-            String profilesJson = Person.encodeJsonArray(profiles).toString();
+            String profilesJson = Profile.encodeJsonArray(profiles).toString();
             setUserString(SettingsActivity.KEY_PROFILES, profilesJson);
         }
         catch (JSONException e) {

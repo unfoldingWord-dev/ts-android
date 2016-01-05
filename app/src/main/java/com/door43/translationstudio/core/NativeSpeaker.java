@@ -17,15 +17,15 @@ public class NativeSpeaker {
         this.phone = phone;
     }
 
-    public NativeSpeaker(Person p) {
+    public NativeSpeaker(Profile p) {
         this.name = p.name;
         this.email = p.email;
         this.phone = p.phone;
     }
 
-    public static List<NativeSpeaker> nativeSpeakersFromProfiles(List<Person> persons) {
-        ArrayList<NativeSpeaker> a = new ArrayList<>(persons.size());
-        for (Person p : persons) {
+    public static List<NativeSpeaker> nativeSpeakersFromProfiles(List<Profile> profiles) {
+        ArrayList<NativeSpeaker> a = new ArrayList<>(profiles.size());
+        for (Profile p : profiles) {
             a.add(new NativeSpeaker(p));
         }
         return a;
