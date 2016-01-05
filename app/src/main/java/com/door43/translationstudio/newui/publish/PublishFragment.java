@@ -1,9 +1,7 @@
 package com.door43.translationstudio.newui.publish;
 
-import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -108,10 +106,11 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                                     hand.post(new Runnable() {
                                         @Override
                                         public void run() {
-                                            notifyPublishFailed(targetTranslation);
+                                        notifyPublishFailed(targetTranslation);
                                         }
                                     });
                                 } else {
+                                    targetTranslation.setPublishTag();
                                     // begin upload
                                     UploadTargetTranslationTask task = new UploadTargetTranslationTask(targetTranslation);
                                     mTaskWatcher.watch(task);

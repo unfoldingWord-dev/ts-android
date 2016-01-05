@@ -12,6 +12,7 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.TagCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.json.JSONArray;
@@ -951,6 +952,28 @@ public class TargetTranslation {
             }
         };
         thread.start();
+    }
+
+    /**
+     * sets publish tag in the repository
+     * @return true if successful
+     */
+    public boolean setPublishTag()  {
+        try {
+            Git git = getRepo().getGit();
+            TagCommand tag = git.tag();
+            String hash = getCommitHash();
+            String name = "Published - " + (System.currentTimeMillis() / 1000L);
+            tag.setName(name);
+            tag.setMessage(hash);
+            tag.call();
+            return true;
+
+        } catch (Exception e) {
+            Logger.w(this.getClass().toString(),"error setting publish tag",e);
+            e.printStackTrace();
+        }
+        return false;
     }
 
     /**
