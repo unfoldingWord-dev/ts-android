@@ -6,7 +6,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
 
+import com.door43.translationstudio.core.Person;
 import com.door43.translationstudio.newui.home.HomeActivity;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ProfileActivity extends AppCompatActivity {
 
@@ -26,6 +30,14 @@ public class ProfileActivity extends AppCompatActivity {
         findViewById(R.id.ok_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // TODO: Support multiple profiles.
+                List<Person> profiles = new ArrayList<>();
+                profiles.add(new Person(
+                        mName.getText().toString(),
+                        mEmail.getText().toString(),
+                        mPhone.getText().toString()));
+                AppContext.setProfiles(profiles);
+
                 openMainActivity();
             }
         });
@@ -35,6 +47,15 @@ public class ProfileActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (AppContext.getProfiles() != null) {
+            openMainActivity();
+        }
     }
 
     private void openMainActivity() {

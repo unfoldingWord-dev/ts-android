@@ -7,9 +7,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
+import android.util.Base64;
+import android.util.Log;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.Person;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Util;
@@ -18,9 +21,14 @@ import com.door43.util.StringUtilities;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.List;
 
 /**
  * This class provides global access to the application context as well as other important tools
@@ -437,6 +445,46 @@ public class AppContext {
             return null;
         } else {
             return name;
+        }
+    }
+
+    /**
+     * Returns information about the user of the application.
+     * @return A list of {@link Person} objects, or {@code null} if not set.
+     */
+    public static List<Person> getProfiles() {
+        String profilesEncoded = getUserString(SettingsActivity.KEY_PROFILES, null);
+        if (profilesEncoded == null) {
+            return null;
+        }
+
+        try {
+            ByteArrayInputStream bi =
+                    new ByteArrayInputStream(Base64.decode(profilesEncoded, Base64.DEFAULT));
+            List<Person> profiles = (List<Person>)new ObjectInputStream(bi).readObject();
+            return profiles;
+        }
+        catch (Exception e) {
+            // There are lots of ways for this to fail, none of which are particularly serious.
+            // In this case, log the result but allow the data to be lost.
+            Log.e("", "getProfiles: Failed to parse profile data", e);
+            return null;
+        }
+    }
+
+    public static void setProfiles(List<Person> profiles) {
+        try {
+            ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream();
+            ObjectOutputStream objectStream = new ObjectOutputStream(byteArrayStream);
+            objectStream.writeObject(profiles);
+            objectStream.flush();
+            String profilesEncoded =
+                    Base64.encodeToString(byteArrayStream.toByteArray(), Base64.DEFAULT);
+            setUserString(SettingsActivity.KEY_PROFILES, profilesEncoded);
+        }
+        catch (Exception e) {
+            // Failures to save are not particularly severe. Log and continue.
+            Log.e("", "setProfiles: Failed to encode profile data", e);
         }
     }
 
