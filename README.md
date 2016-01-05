@@ -18,7 +18,7 @@ If you would like to contribute to this project please read the [Contributing](h
 First make sure you have all the dependencies installed
 
 * [Android Studio](http://developer.android.com/sdk/index.html)
-* [Virtual Box](https://www.virtualbox.org/)
+* [Virtual Box](https://www.virtualbox.org/) (you may skip this and the rest of these steps if using a physical device)
 * [Genymotion](http://www.genymotion.com/)
 * [Genymotion Android Studio Plugin](https://cloud.genymotion.com/page/doc/#collapse-intellij)
 
