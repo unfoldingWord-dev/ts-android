@@ -111,10 +111,12 @@ public class GithubReporter {
      */
     public void reportBug(String notes, File logFile) {
         String log = null;
-        try {
-            log = FileUtils.readFileToString(logFile);
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(logFile != null && logFile.exists()) {
+            try {
+                log = FileUtils.readFileToString(logFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         reportBug(notes, log);
     }
