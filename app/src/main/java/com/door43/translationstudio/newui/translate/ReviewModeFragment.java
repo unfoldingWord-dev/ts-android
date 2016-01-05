@@ -296,7 +296,8 @@ public class ReviewModeFragment extends ViewModeFragment {
                     startActivity(intent);
                 }
             });
-            view.loadData(renderer.render(article.getBody()).toString(), "text/html", "utf-8");
+            view.loadData(Typography.getStyle(getActivity())
+                    + renderer.render(article.getBody()).toString(), "text/html", "utf-8");
 
             mScrollingResourcesDrawerContent.removeAllViews();
             mScrollingResourcesDrawerContent.addView(view);
