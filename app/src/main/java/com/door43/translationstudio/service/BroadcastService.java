@@ -79,7 +79,7 @@ public class BroadcastService extends NetworkService {
                 setRunning(true);
                 final int udpPort = args.getInt(PARAM_BROADCAST_PORT);
                 final int serviceTCPPort = args.getInt(PARAM_SERVICE_PORT);
-                final int broadcastFrequency = args.getInt(PARAM_FREQUENCY);
+                final int broadcastFrequency = args.getInt(PARAM_FREQUENCY, 2000);
 
                 JSONObject json = new JSONObject();
                 try {
