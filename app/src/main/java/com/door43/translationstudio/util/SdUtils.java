@@ -88,7 +88,9 @@ public class SdUtils {
 
         int pos = uriStr.indexOf(FILE);
         if(pos >= 0) {
-            return uriStr.substring(pos + FILE.length());
+            String showPath = uriStr.substring(pos + FILE.length());
+            Logger.i(SdUtils.class.getName(), "converting File path from '" + dir + "' to '" + showPath + "'");
+            return showPath;
         }
 
         pos = uriStr.indexOf(CONTENT);
@@ -98,6 +100,7 @@ public class SdUtils {
                 String subPath =  uriStr.substring(pos + CONTENT_DIVIDER.length());
                 String[] parts = subPath.split(FOLDER_MARKER);
                 String showPath = "SD_CARD/" + joinString(parts, "/");
+                Logger.i(SdUtils.class.getName(), "converting SD card path from '" + dir + "' to '" + showPath + "'");
                 return showPath;
             }
         }

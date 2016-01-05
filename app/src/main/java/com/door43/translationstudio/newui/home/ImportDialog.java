@@ -174,6 +174,7 @@ public class ImportDialog extends DialogFragment {
                     Uri uri = data.getData();
                     if(FilenameUtils.getExtension(uri.getPath()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
                         try {
+                            Logger.i(this.getClass().getName(), "Importing SD card: " + uri);
                             final InputStream in = AppContext.context().getContentResolver().openInputStream(uri);
                             final Translator translator = AppContext.getTranslator();
                             final String[] targetTranslationSlugs = translator.importArchive(in, uri.getPath());
@@ -193,6 +194,7 @@ public class ImportDialog extends DialogFragment {
                     File file = new File(data.getData().getPath());
                     if (FilenameUtils.getExtension(file.getName()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
                         try {
+                            Logger.i(this.getClass().getName(), "Importing internal file: " + file.toString());
                             final Translator translator = AppContext.getTranslator();
                             final String[] targetTranslationSlugs = translator.importArchive(file);
                             TargetTranslationMigrator.migrateChunkChanges(translator, AppContext.getLibrary(), targetTranslationSlugs);
