@@ -67,6 +67,19 @@ public class Typography {
     }
 
     /**
+     * Returns a subset of user preferences (currently, just the size) as a CSS style tag.
+     * @param context
+     * @return Valid HTML, for prepending to unstyled HTML text
+     */
+    public static CharSequence getStyle(Context context) {
+        return "<style type=\"text/css\">"
+                + "body {"
+                + "  font-size: " + getFontSize(context) + ";"
+                + "}"
+                + "</style>";
+    }
+
+    /**
      * Returns the font size chosen by the user
      * @param context
      * @return

@@ -15,7 +15,11 @@ import java.io.IOException;
 public class Manifest {
     private final File mManifestFile;
     private JSONObject mManifest = new JSONObject();
-    private static final String FILE_NAME = "manifest.json";
+    public static final String MANIFEST_JSON = "manifest.json";
+    public static final String FINISHED_FRAMES = "finished_frames";
+    public static final String FINISHED_TITLES = "finished_titles";
+    public static final String FINISHED_REFERENCES = "finished_references";
+    public static final String TRANSLATORS = "translators";
 
     /**
      * Creates a new manifest object representing a file on the disk
@@ -32,7 +36,7 @@ public class Manifest {
      * @return the manifest object or null if the manifest could not be created
      */
     public static Manifest generate(File directory) {
-        File file = new File(directory, FILE_NAME);
+        File file = new File(directory, MANIFEST_JSON);
         if(!file.exists()) {
             file.getParentFile().mkdirs();
         }

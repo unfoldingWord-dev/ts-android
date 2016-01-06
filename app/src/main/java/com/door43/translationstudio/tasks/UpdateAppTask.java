@@ -13,6 +13,8 @@ import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
+import com.door43.translationstudio.core.Translator;
+import com.door43.util.FileUtilities;
 import com.door43.util.tasks.ManagedTask;
 
 import org.apache.commons.io.FileUtils;
@@ -91,6 +93,9 @@ public class UpdateAppTask extends ManagedTask {
         if(lastVersion < 110) {
             upgradePre110();
         }
+        if(lastVersion < 111) {
+            upgradePre111();
+        }
 
         updateBuildNumbers();
     }
@@ -106,6 +111,23 @@ public class UpdateAppTask extends ManagedTask {
             } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "Failed to update the generator in the target translation " + tt.getId());
             }
+        }
+    }
+
+    /**
+     * We moved the target translations to the public files directory so that they persist when the
+     * app is uninstalled
+     */
+    private void upgradePre111() {
+        File legacyTranslationsDir = new File(mContext.getFilesDir(), "translations");
+        File translationsDir = AppContext.getTranslator().getPath();
+
+        // the translations directory should not exist at this point but we delete just in case
+        FileUtils.deleteQuietly(translationsDir);
+        try {
+            FileUtils.copyDirectory(legacyTranslationsDir, translationsDir);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

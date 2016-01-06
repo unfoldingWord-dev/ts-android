@@ -1,9 +1,7 @@
 package com.door43.translationstudio.newui.publish;
 
-import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -108,7 +106,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                                     hand.post(new Runnable() {
                                         @Override
                                         public void run() {
-                                            notifyPublishFailed(targetTranslation);
+                                        notifyPublishFailed(targetTranslation);
                                         }
                                     });
                                 } else {
@@ -208,6 +206,8 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             final String response = ((UploadTargetTranslationTask)task).getResponse();
             mUploaded = true;
             // marks the publish step as done
+            TargetTranslation targetTranslation = ((UploadTargetTranslationTask)task).getTargetTranslation();
+            targetTranslation.setPublishTag(null);
             getListener().finishPublishing();
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {

@@ -151,7 +151,7 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
 
     private void openMainActivity() {
         AppContext.setLoaded(true);
-        Intent intent = new Intent(this, HomeActivity.class);
+        Intent intent = new Intent(this, ProfileActivity.class);
         startActivity(intent);
         finish();
     }

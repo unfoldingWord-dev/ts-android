@@ -10,6 +10,7 @@ import android.provider.Settings;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Util;
@@ -19,9 +20,12 @@ import com.door43.util.StringUtilities;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.io.File;
 import java.io.IOException;
-
+import java.util.List;
 
 /**
  * This class provides global access to the application context as well as other important tools
@@ -99,11 +103,12 @@ public class AppContext {
     }
 
     /**
-     * Returns an instance of the translator
+     * Returns an instance of the translator.
+     * Target translations are stored in the public directory so that they persist if the app is uninstalled.
      * @return
      */
     public static Translator getTranslator() {
-        return new Translator(mContext, new File(mContext.getFilesDir(), TARGET_TRANSLATIONS_DIR));
+        return new Translator(mContext, new File(getPublicDirectory(), TARGET_TRANSLATIONS_DIR));
     }
 
     /**
@@ -150,7 +155,7 @@ public class AppContext {
 
 
     /**
-     * Returns the external public downloads directory
+     * Returns the file to the external public downloads directory
      * @return
      */
     public static File getPublicDownloadsDirectory() {
@@ -169,9 +174,10 @@ public class AppContext {
         dir.mkdirs();
         return dir;
     }
-
+    
     /**
-     * Returns the public downloads directory
+     * Returns the path to the public files directory.
+     * Files saved in this directory will not be removed when the application is uninstalled
      * @return
      */
     public static File getPublicDirectory() {
@@ -430,6 +436,39 @@ public class AppContext {
             return null;
         } else {
             return name;
+        }
+    }
+
+    /**
+     * Returns information about the user of the application.
+     * @return A list of {@link Profile} objects, or {@code null} if not set.
+     */
+    public static List<Profile> getProfiles() {
+        String profilesEncoded = getUserString(SettingsActivity.KEY_PROFILES, null);
+        if (profilesEncoded == null) {
+            return null;
+        }
+
+        try {
+            JSONArray profilesJson = new JSONArray(profilesEncoded);
+            return Profile.decodeJsonArray(profilesJson);
+        }
+        catch (Exception e) {
+            // There are lots of ways for this to fail, none of which are particularly serious.
+            // In this case, log the result but allow the data to be lost.
+            Log.e("", "getProfiles: Failed to parse profile data", e);
+            return null;
+        }
+    }
+
+    public static void setProfiles(List<Profile> profiles) {
+        try {
+            String profilesJson = Profile.encodeJsonArray(profiles).toString();
+            setUserString(SettingsActivity.KEY_PROFILES, profilesJson);
+        }
+        catch (JSONException e) {
+            // Failures to save are not particularly severe. Log and continue.
+            Log.e("", "setProfiles: Failed to encode profile data", e);
         }
     }
 

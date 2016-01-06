@@ -2,17 +2,23 @@ package com.door43.translationstudio.core;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
+import android.support.annotation.Nullable;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.git.Repo;
-//import com.door43.translationstudio.git.tasks.repo.CommitTask;
 import com.door43.util.Manifest;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListTagCommand;
+import org.eclipse.jgit.api.LogCommand;
+import org.eclipse.jgit.api.TagCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,7 +37,6 @@ import java.util.Timer;
  * Created by joel on 8/29/2015.
  */
 public class TargetTranslation {
-    private static final long COMMIT_DELAY = 5000;
     private static final int PACKAGE_VERSION = 3; // the version of the manifest
     private final String mTargetLanguageId;
     private final String mProjectId;
@@ -49,7 +54,7 @@ public class TargetTranslation {
     public TargetTranslation(String targetLanguageId, String projectId, File rootDir) {
         mTargetLanguageId = targetLanguageId;
         mProjectId = projectId;
-        mTargetTranslationDirectory = generateTargetTranslationDir(generateTargetTranslationId(targetLanguageId, projectId), rootDir);;
+        mTargetTranslationDirectory = generateTargetTranslationDir(generateTargetTranslationId(targetLanguageId, projectId), rootDir);
         mManifest = Manifest.generate(mTargetTranslationDirectory);
         String name = targetLanguageId;
         try {
@@ -148,6 +153,9 @@ public class TargetTranslation {
             // TODO: we should restructure this output to match what we see in the api. if we do we'll need to migrate all the old manifest files.
             // also the target language should have a toJson method that will do all of this.
             manifest.put("target_language", targetLangaugeJson);
+            // TODO: 1/5/2016 we should only add the open profile (e.g. the current user) as a translator
+            JSONArray translatorsJson = encodeTranslators(NativeSpeaker.nativeSpeakersFromProfiles(AppContext.getProfiles()));
+            manifest.put(TRANSLATORS, translatorsJson);
         }
         // load the target translation (new or otherwise)
         return new TargetTranslation(targetLanguage.getId(), projectId, rootDir);
@@ -279,27 +287,35 @@ public class TargetTranslation {
     public boolean saveTranslators(ArrayList<NativeSpeaker> translators) {
 
         try {
-
-            JSONArray translatorsJson = new JSONArray();
-
-            for(int i = 0; i < translators.size(); i++) {
-                JSONObject translatorJSON = new JSONObject();
-                NativeSpeaker currentTranslator = translators.get(i);
-                translatorJSON.put(NAME,currentTranslator.name);
-                translatorJSON.put(EMAIL,currentTranslator.email);
-                translatorJSON.put(PHONE,currentTranslator.phone);
-
-                translatorsJson.put(translatorJSON);
-            }
-
+            JSONArray translatorsJson = encodeTranslators(translators);
             mManifest.put(TRANSLATORS,translatorsJson);
-
         } catch (Exception e) {
             Logger.e(TargetTranslation.class.getName(), "failed save translators", e);
             return false;
         }
 
         return true;
+    }
+
+    /**
+     * Encodes the native speakers into json
+     * @param translators
+     * @return
+     * @throws JSONException
+     */
+    private static JSONArray encodeTranslators(List<NativeSpeaker> translators) throws JSONException {
+        JSONArray translatorsJson = new JSONArray();
+
+        for(int i = 0; i < translators.size(); i++) {
+            JSONObject translatorJSON = new JSONObject();
+            NativeSpeaker currentTranslator = translators.get(i);
+            translatorJSON.put(NAME,currentTranslator.name);
+            translatorJSON.put(EMAIL,currentTranslator.email);
+            translatorJSON.put(PHONE,currentTranslator.phone);
+
+            translatorsJson.put(translatorJSON);
+        }
+        return translatorsJson;
     }
 
     /**
@@ -325,9 +341,9 @@ public class TargetTranslation {
      */
     public ArrayList<NativeSpeaker> getTranslators() {
 
-        JSONArray translatorsJson = mManifest.getJSONArray(TRANSLATORS);
+        JSONArray translatorsJson = mManifest.getJSONArray(Manifest.TRANSLATORS);
 
-        ArrayList<NativeSpeaker> translators = new  ArrayList<NativeSpeaker>();
+        ArrayList<NativeSpeaker> translators = new ArrayList<>();
 
         if(translatorsJson.length() > 0) {
 
@@ -653,7 +669,7 @@ public class TargetTranslation {
     public boolean finishChapterTitle(Chapter chapter) {
         File file = getChapterTitleFile(chapter.getId());
         if(file.exists()) {
-            JSONArray finishedTitles = mManifest.getJSONArray("finished_titles");
+            JSONArray finishedTitles = mManifest.getJSONArray(Manifest.FINISHED_TITLES);
             boolean isFinished = false;
             try {
                 for (int i = 0; i < finishedTitles.length(); i++) {
@@ -668,7 +684,7 @@ public class TargetTranslation {
             }
             if(!isFinished) {
                 finishedTitles.put(chapter.getId());
-                mManifest.put("finished_titles", finishedTitles);
+                mManifest.put(Manifest.FINISHED_TITLES, finishedTitles);
             }
             return true;
         }
@@ -681,7 +697,7 @@ public class TargetTranslation {
      * @return
      */
     public boolean reopenChapterTitle(Chapter chapter) {
-        JSONArray finishedTitles = mManifest.getJSONArray("finished_titles");
+        JSONArray finishedTitles = mManifest.getJSONArray(Manifest.FINISHED_TITLES);
         JSONArray updatedTitles = new JSONArray();
         try {
             for (int i = 0; i < finishedTitles.length(); i++) {
@@ -690,7 +706,7 @@ public class TargetTranslation {
                     updatedTitles.put(finishedTitles.getString(i));
                 }
             }
-            mManifest.put("finished_titles", updatedTitles);
+            mManifest.put(Manifest.FINISHED_TITLES, updatedTitles);
             return true;
         } catch (JSONException e) {
             e.printStackTrace();
@@ -713,7 +729,7 @@ public class TargetTranslation {
      * @return
      */
     private boolean isChapterTitleFinished(String chapterSlug) {
-        JSONArray finishedTitles = mManifest.getJSONArray("finished_titles");
+        JSONArray finishedTitles = mManifest.getJSONArray(Manifest.FINISHED_TITLES);
         try {
             for (int i = 0; i < finishedTitles.length(); i++) {
                 if(finishedTitles.getString(i).equals(chapterSlug)) {
@@ -734,7 +750,7 @@ public class TargetTranslation {
     public boolean finishChapterReference(Chapter chapter) {
         File file = getChapterReferenceFile(chapter.getId());
         if(file.exists()) {
-            JSONArray finishedReferences = mManifest.getJSONArray("finished_references");
+            JSONArray finishedReferences = mManifest.getJSONArray(Manifest.FINISHED_REFERENCES);
             boolean isFinished = false;
             try {
                 for (int i = 0; i < finishedReferences.length(); i++) {
@@ -749,7 +765,7 @@ public class TargetTranslation {
             }
             if(!isFinished) {
                 finishedReferences.put(chapter.getId());
-                mManifest.put("finished_references", finishedReferences);
+                mManifest.put(Manifest.FINISHED_REFERENCES, finishedReferences);
             }
             return true;
         }
@@ -762,7 +778,7 @@ public class TargetTranslation {
      * @return
      */
     public boolean reopenChapterReference(Chapter chapter) {
-        JSONArray finishedReferences = mManifest.getJSONArray("finished_references");
+        JSONArray finishedReferences = mManifest.getJSONArray(Manifest.FINISHED_REFERENCES);
         JSONArray updatedReferences = new JSONArray();
         try {
             for (int i = 0; i < finishedReferences.length(); i++) {
@@ -771,7 +787,7 @@ public class TargetTranslation {
                     updatedReferences.put(finishedReferences.getString(i));
                 }
             }
-            mManifest.put("finished_references", updatedReferences);
+            mManifest.put(Manifest.FINISHED_REFERENCES, updatedReferences);
             return true;
         } catch (JSONException e) {
             e.printStackTrace();
@@ -794,7 +810,7 @@ public class TargetTranslation {
      * @return
      */
     private boolean isChapterReferenceFinished(String chapterSlug) {
-        JSONArray finishedReferences = mManifest.getJSONArray("finished_references");
+        JSONArray finishedReferences = mManifest.getJSONArray(Manifest.FINISHED_REFERENCES);
         try {
             for (int i = 0; i < finishedReferences.length(); i++) {
                 if(finishedReferences.getString(i).equals(chapterSlug)) {
@@ -815,7 +831,7 @@ public class TargetTranslation {
     public boolean finishFrame(Frame frame) {
         File file = getFrameFile(frame.getChapterId(), frame.getId());
         if(file.exists()) {
-            JSONArray finishedFrames = mManifest.getJSONArray("finished_frames");
+            JSONArray finishedFrames = mManifest.getJSONArray(Manifest.FINISHED_FRAMES);
             boolean isFinished = false;
             try {
                 for (int i = 0; i < finishedFrames.length(); i++) {
@@ -830,7 +846,7 @@ public class TargetTranslation {
             }
             if(!isFinished) {
                 finishedFrames.put(frame.getComplexId());
-                mManifest.put("finished_frames", finishedFrames);
+                mManifest.put(Manifest.FINISHED_FRAMES, finishedFrames);
             }
             return true;
         }
@@ -843,7 +859,7 @@ public class TargetTranslation {
      * @return
      */
     public boolean reopenFrame(Frame frame) {
-        JSONArray finishedFrames = mManifest.getJSONArray("finished_frames");
+        JSONArray finishedFrames = mManifest.getJSONArray(Manifest.FINISHED_FRAMES);
         JSONArray updatedFrames = new JSONArray();
         try {
             for (int i = 0; i < finishedFrames.length(); i++) {
@@ -852,7 +868,7 @@ public class TargetTranslation {
                     updatedFrames.put(finishedFrames.getString(i));
                 }
             }
-            mManifest.put("finished_frames", updatedFrames);
+            mManifest.put(Manifest.FINISHED_FRAMES, updatedFrames);
             return true;
         } catch (JSONException e) {
             e.printStackTrace();
@@ -875,7 +891,7 @@ public class TargetTranslation {
      * @return
      */
     private boolean isFrameFinished(String frameComplexId) {
-        JSONArray finishedFrames = mManifest.getJSONArray("finished_frames");
+        JSONArray finishedFrames = mManifest.getJSONArray(Manifest.FINISHED_FRAMES);
         try {
             for (int i = 0; i < finishedFrames.length(); i++) {
                 if(finishedFrames.getString(i).equals(frameComplexId)) {
@@ -954,6 +970,119 @@ public class TargetTranslation {
     }
 
     /**
+     * sets publish tag in the repository
+     * @return true if successful
+     */
+    public void setPublishTag(final OnTagListener listener)  {
+        try {
+            Git git = getRepo().getGit();
+            final TagCommand tag = git.tag();
+            String name = "published-" + System.currentTimeMillis();
+            tag.setName(name);
+
+            Thread thread = new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        tag.call();
+                        if(listener != null) {
+                            listener.onTag(true);
+                        }
+                    } catch (Exception e) {
+                        Logger.e(TargetTranslation.class.getName(), "Failed to commit changes", e);
+                        if(listener != null) {
+                            listener.onTag(false);
+                        }
+                    }
+                }
+            };
+            thread.start();
+
+        } catch (Exception e) {
+            Logger.e(this.getClass().toString(), "error setting publish tag", e);
+            if(listener != null) {
+                listener.onTag(false);
+            }
+        }
+    }
+
+    /**
+     * sets publish tag in the repository
+     * @return true if successful
+     */
+    public RevCommit getLastPublishTag() throws IOException, GitAPIException {
+        try {
+            Git git = getRepo().getGit();
+            Repository repository = git.getRepository();
+            ListTagCommand tags = git.tagList();
+            List<Ref> refs = tags.call();
+            for (int i=refs.size()-1; i >= 0; i--) {
+                Ref ref = refs.get(i);
+                Logger.i(this.getClass().toString(), "Tag: " + ref + " " + ref.getName() + " " + ref.getObjectId().getName());
+
+                // fetch all commits for this tag
+                LogCommand log = git.log();
+                log.setMaxCount(1);
+
+                Ref peeledRef = repository.peel(ref);
+                if(peeledRef.getPeeledObjectId() != null) {
+                    log.add(peeledRef.getPeeledObjectId());
+                } else {
+                    log.add(ref.getObjectId());
+                }
+
+                Iterable<RevCommit> logs = log.call();
+                for (RevCommit rev : logs) {
+                    Logger.i(this.getClass().toString(), "....Commit: " + rev /* + ", name: " + rev.getName() + ", id: " + rev.getId().getName() */);
+                    return rev;
+                }
+            }
+
+        } catch (GitAPIException|IOException e) {
+            Logger.w(this.getClass().toString(), "error setting publish tag", e);
+            throw e;
+        }
+        return null;
+    }
+
+    /**
+     * sets publish tag in the repository
+     * @return true if successful
+     */
+    public PublishStatus getPublishStatus()  {
+
+        try {
+            RevCommit lastTag = getLastPublishTag();
+            if(null == lastTag) {
+                return PublishStatus.NOT_PUBLISHED;
+            }
+
+            RevCommit head = getGitHead();
+            if(null == head) {
+                return PublishStatus.QUERY_ERROR;
+            }
+
+            if(head.getCommitTime() > lastTag.getCommitTime()) {
+                return PublishStatus.NOT_CURRENT;
+            }
+
+            return PublishStatus.IS_CURRENT;
+
+        } catch (Exception e) {
+            Logger.w(this.getClass().toString(), "error setting publish tag", e);
+        }
+
+        return PublishStatus.QUERY_ERROR;
+    }
+
+    public enum PublishStatus {
+        IS_CURRENT,
+        NOT_CURRENT,
+        NOT_PUBLISHED,
+        QUERY_ERROR
+    }
+
+    /**
      * Returns the repository for this target translation
      * @return
      */
@@ -967,13 +1096,8 @@ public class TargetTranslation {
      * @throws Exception
      */
     public String getCommitHash() throws Exception {
-        Repo repo = getRepo();
         String tag = null;
-        Iterable<RevCommit> commits = repo.getGit().log().setMaxCount(1).call();
-        RevCommit commit = null;
-        for(RevCommit c : commits) {
-            commit = c;
-        }
+        RevCommit commit = getGitHead();
         if(commit != null) {
             String[] pieces = commit.toString().split(" ");
             tag = pieces[1];
@@ -982,6 +1106,22 @@ public class TargetTranslation {
         }
 
         return tag;
+    }
+
+    /**
+     * Returns the commit HEAD
+     * @return
+     * @throws GitAPIException, IOException
+     */
+    @Nullable
+    private RevCommit getGitHead() throws GitAPIException, IOException {
+        Repo repo = getRepo();
+        Iterable<RevCommit> commits = repo.getGit().log().setMaxCount(1).call();
+        RevCommit commit = null;
+        for(RevCommit c : commits) {
+            commit = c;
+        }
+        return commit;
     }
 
     /**
@@ -1071,9 +1211,9 @@ public class TargetTranslation {
      * @return
      */
     public int numFinished() {
-        JSONArray finishedFrames = mManifest.getJSONArray("finished_frames");
-        JSONArray finishedTitles = mManifest.getJSONArray("finished_titles");
-        JSONArray finishedReferences = mManifest.getJSONArray("finished_references");
+        JSONArray finishedFrames = mManifest.getJSONArray(Manifest.FINISHED_FRAMES);
+        JSONArray finishedTitles = mManifest.getJSONArray(Manifest.FINISHED_TITLES);
+        JSONArray finishedReferences = mManifest.getJSONArray(Manifest.FINISHED_REFERENCES);
         return finishedFrames.length() + finishedTitles.length() + finishedReferences.length();
     }
 
@@ -1131,5 +1271,9 @@ public class TargetTranslation {
 
     public interface OnCommitListener {
         void onCommit(boolean success);
+    }
+
+    public interface OnTagListener {
+        void onTag(boolean success);
     }
 }
