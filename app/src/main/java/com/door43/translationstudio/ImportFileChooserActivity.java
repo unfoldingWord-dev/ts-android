@@ -113,7 +113,7 @@ public class ImportFileChooserActivity extends BaseActivity {
         mInternalButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                doImportFromInternal();
+                showFileFolderFromInternalMemory();
             }
         });
 
@@ -133,7 +133,7 @@ public class ImportFileChooserActivity extends BaseActivity {
                             .setNegativeButton(R.string.label_skip, null)
                             .show("approve-SD-access");
                 } else {
-                    doImportFromSdCard();
+                    showFolderFromSdCard();
                 }
             }
         });
@@ -164,15 +164,24 @@ public class ImportFileChooserActivity extends BaseActivity {
         Intent intent = getIntent();
         mType = intent.getType();
 
-        doImportFromSdCard();
+        showFolderFromSdCard();
     }
 
+    /**
+     * if sd card is available this will display buttons for "internal" and "sd card".
+     * Otherwise neither will be displayed since we cannot switch.
+     * @param haveSDCard
+     */
     private void showSdCardOption(boolean haveSDCard) {
         mSdCardButton.setVisibility( haveSDCard ? View.VISIBLE : View.GONE);
         mInternalButton.setVisibility( haveSDCard ? View.VISIBLE : View.GONE);
     }
 
-    private void doImportFromSdCard() {
+    /**
+     * will display file list for SD card folder if accessible.
+     * Otherwise it will display file list from internal memory.
+     */
+    private void showFolderFromSdCard() {
         DocumentFile path = null;
         boolean sdCardFound = false;
         boolean sdCardHaveAccess = false;
@@ -205,7 +214,7 @@ public class ImportFileChooserActivity extends BaseActivity {
                     if(!sdCardFolder.equals(storagePath)) { // make sure it doesn't reflect back to internal memory
                         sdCardFound = true;
                         sdCardHaveAccess = true;
-                        doImportFromFile(sdCardFolder);
+                        showFileFolder(sdCardFolder);
                     }
                 }
             }
@@ -213,16 +222,23 @@ public class ImportFileChooserActivity extends BaseActivity {
 
         showSdCardOption(sdCardFound);
         if (!sdCardHaveAccess) {
-            doImportFromInternal();
+            showFileFolderFromInternalMemory();
         }
     }
 
-    private void doImportFromInternal() {
+    /**
+     * will display file list for external storage directory
+     */
+    private void showFileFolderFromInternalMemory() {
         File storagePath = Environment.getExternalStorageDirectory();
-        doImportFromFile(storagePath);
+        showFileFolder(storagePath);
     }
 
-    private void doImportFromFile(File storagePath) {
+    /**
+     * will display file list for specified Folder
+     * @param storagePath
+     */
+    private void showFileFolder(File storagePath) {
         DocumentFile path = null;
         DocumentFile baseFolder = DocumentFile.fromFile(storagePath);
         String subFolder = SdUtils.searchFolderAndParentsForDocFile(baseFolder, Translator.ARCHIVE_EXTENSION);
@@ -239,6 +255,10 @@ public class ImportFileChooserActivity extends BaseActivity {
         loadDocFileList(path);
     }
 
+    /**
+     * returns the selected file to calling activity
+     * @param selectedItem
+     */
     private void returnSelectedFile(DocumentFileItem selectedItem) {
         // return selected file
         Intent intent = getIntent();
@@ -247,6 +267,9 @@ public class ImportFileChooserActivity extends BaseActivity {
         finish();
     }
 
+    /**
+     * notify calling activity that user has cancelled
+     */
     private void cancel() {
         Intent intent = getIntent();
         intent.setData(null);
@@ -329,7 +352,7 @@ public class ImportFileChooserActivity extends BaseActivity {
                     msg = String.format(template, treeUri.toString());
                 } else {
                     msg = getResources().getString(R.string.access_granted_import);
-                    doImportFromSdCard();
+                    showFolderFromSdCard();
                 }
             } else {
                 msg = getResources().getString(R.string.access_skipped);

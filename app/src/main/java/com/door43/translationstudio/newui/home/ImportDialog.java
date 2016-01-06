@@ -8,9 +8,7 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.design.widget.Snackbar;
-import android.support.v4.provider.DocumentFile;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -172,48 +170,69 @@ public class ImportDialog extends DialogFragment {
             if((resultCode == Activity.RESULT_OK) && (data != null)) {
                 if(isDocumentFile) {
                     Uri uri = data.getData();
-                    if(FilenameUtils.getExtension(uri.getPath()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
-                        try {
-                            Logger.i(this.getClass().getName(), "Importing SD card: " + uri);
-                            final InputStream in = AppContext.context().getContentResolver().openInputStream(uri);
-                            final Translator translator = AppContext.getTranslator();
-                            final String[] targetTranslationSlugs = translator.importArchive(in, uri.getPath());
-                            TargetTranslationMigrator.migrateChunkChanges(translator, AppContext.getLibrary(), targetTranslationSlugs);
-                            showImportResults(R.string.import_success, SdUtils.getPathString(uri.toString()));
-                        } catch (Exception e) {
-                            Logger.e(this.getClass().getName(), "Failed to import the archive", e);
-                            showImportResults(R.string.import_failed, SdUtils.getPathString(uri.toString()));
-                        }
-
-                        // todo: terrible hack.
-                        ((HomeActivity)getActivity()).notifyDatasetChanged();
-                    } else {
-                        showImportResults(R.string.invalid_file, uri.toString());
-                    }
+                    importUri(uri);
                 } else {
                     File file = new File(data.getData().getPath());
-                    if (FilenameUtils.getExtension(file.getName()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
-                        try {
-                            Logger.i(this.getClass().getName(), "Importing internal file: " + file.toString());
-                            final Translator translator = AppContext.getTranslator();
-                            final String[] targetTranslationSlugs = translator.importArchive(file);
-                            TargetTranslationMigrator.migrateChunkChanges(translator, AppContext.getLibrary(), targetTranslationSlugs);
-                            showImportResults(R.string.import_success, file.toString());
-                        } catch (Exception e) {
-                            Logger.e(this.getClass().getName(), "Failed to import the archive", e);
-                            showImportResults(R.string.import_failed, file.toString());
-                        }
-
-                        // todo: terrible hack.
-                        ((HomeActivity) getActivity()).notifyDatasetChanged();
-                    } else {
-                        showImportResults(R.string.invalid_file, file.toString());
-                    }
+                    importFile(file);
                 }
             }
         }
     }
 
+    /**
+     * import selected file
+     * @param file
+     */
+    private void importFile(File file) {
+        if (FilenameUtils.getExtension(file.getName()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
+            try {
+                Logger.i(this.getClass().getName(), "Importing internal file: " + file.toString());
+                final Translator translator = AppContext.getTranslator();
+                final String[] targetTranslationSlugs = translator.importArchive(file);
+                TargetTranslationMigrator.migrateChunkChanges(translator, AppContext.getLibrary(), targetTranslationSlugs);
+                showImportResults(R.string.import_success, file.toString());
+            } catch (Exception e) {
+                Logger.e(this.getClass().getName(), "Failed to import the archive", e);
+                showImportResults(R.string.import_failed, file.toString());
+            }
+
+            // todo: terrible hack.
+            ((HomeActivity) getActivity()).notifyDatasetChanged();
+        } else {
+            showImportResults(R.string.invalid_file, file.toString());
+        }
+    }
+
+    /**
+     * import selected uri
+     * @param uri
+     */
+    private void importUri(Uri uri) {
+        if(FilenameUtils.getExtension(uri.getPath()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
+            try {
+                Logger.i(this.getClass().getName(), "Importing SD card: " + uri);
+                final InputStream in = AppContext.context().getContentResolver().openInputStream(uri);
+                final Translator translator = AppContext.getTranslator();
+                final String[] targetTranslationSlugs = translator.importArchive(in, uri.getPath());
+                TargetTranslationMigrator.migrateChunkChanges(translator, AppContext.getLibrary(), targetTranslationSlugs);
+                showImportResults(R.string.import_success, SdUtils.getPathString(uri.toString()));
+            } catch (Exception e) {
+                Logger.e(this.getClass().getName(), "Failed to import the archive", e);
+                showImportResults(R.string.import_failed, SdUtils.getPathString(uri.toString()));
+            }
+
+            // todo: terrible hack.
+            ((HomeActivity)getActivity()).notifyDatasetChanged();
+        } else {
+            showImportResults(R.string.invalid_file, uri.toString());
+        }
+    }
+
+    /**
+     * show the import results to user
+     * @param textResId
+     * @param filePath
+     */
     private void showImportResults(final int textResId, final String filePath) {
         String message = getResources().getString(textResId);
         if(filePath != null) {

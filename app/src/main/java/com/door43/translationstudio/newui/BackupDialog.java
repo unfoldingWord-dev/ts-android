@@ -174,7 +174,6 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
         backupToSDButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 if (SdUtils.doWeNeedToRequestSdCardAccess()) {
                     final CustomAlertDialog dialog = CustomAlertDialog.Create(getActivity());
                     dialog.setTitle(R.string.enable_sd_card_access_title)
@@ -224,6 +223,10 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
         return v;
     }
 
+    /**
+     * back up project - will try to write to SD card if available - otherwise will save to internal memory
+     * @param filename
+     */
     private void doSdCardBackup(String filename) {
         // TODO: 10/27/2015 have the user choose the file location
         String fileName = System.currentTimeMillis() / 1000L + "_" + filename;

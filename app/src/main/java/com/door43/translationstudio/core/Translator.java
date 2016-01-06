@@ -12,6 +12,7 @@ import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -170,6 +171,12 @@ public class Translator {
         return compiledString.toString().trim();
     }
 
+    /**
+     * creates a JSON object that contains the manifest.
+     * @param targetTranslation
+     * @return
+     * @throws Exception
+     */
     private JSONObject buildManifest(TargetTranslation targetTranslation) throws Exception {
         targetTranslation.commit();
 
@@ -195,7 +202,7 @@ public class Translator {
     }
 
     /**
-     * Exports a single target translation in .tstudio format
+     * Exports a single target translation in .tstudio format to File
      * @param targetTranslation
      * @param outputFile
      */
@@ -208,14 +215,12 @@ public class Translator {
         } catch (Exception e) {
             throw e;
         } finally {
-            if(out != null) {
-                out.close();
-            }
+            IOUtils.closeQuietly(out);
         }
     }
 
     /**
-     * Exports a single target translation in .tstudio format
+     * Exports a single target translation in .tstudio format to OutputStream
      * @param targetTranslation
      * @param out
      */
@@ -237,15 +242,13 @@ public class Translator {
         } catch (Exception e) {
             throw e;
         } finally {
-            if(out != null) {
-                out.close();
-            }
+            IOUtils.closeQuietly(out);
             FileUtils.deleteQuietly(tempCache);
         }
     }
 
      /**
-     * Imports target translations from an archive
+     * Imports target translations from an archive specified by file
      * todo: we should have another method that will inspect the archive and return the details to the user so they can decide if they want to import it
      * @param file
      * @return an array of target translation slugs
@@ -258,14 +261,12 @@ public class Translator {
         } catch (Exception e) {
             throw e;
         } finally {
-            if(in != null) {
-                in.close();
-            }
+            IOUtils.closeQuietly(in);
         }
     }
 
     /**
-     * Imports target translations from an archive
+     * Imports target translations from an archive in InputStream
      * todo: we should have another method that will inspect the archive and return the details to the user so they can decide if they want to import it
      * @param in
      * @return an array of target translation slugs
@@ -277,10 +278,10 @@ public class Translator {
             tempCache.mkdirs();
             Zip.unzipFromStream(in, tempCache);
             importArchiveFromTempCache(tempCache, importedTargetTranslationSlugs);
-            in.close();
         } catch (Exception e) {
             throw e;
         } finally {
+            IOUtils.closeQuietly(in);
             FileUtils.deleteQuietly(tempCache);
         }
 
