@@ -173,29 +173,31 @@ public class ImportFileChooserActivity extends BaseActivity {
     }
 
     private void doImportFromSdCard() {
-
+        DocumentFile path = null;
         boolean isSdCardPresentLollipop = SdUtils.isSdCardPresentLollipop();
         if (isSdCardPresentLollipop) {
             DocumentFile baseFolder = SdUtils.sdCardMkdirs(null);
             String subFolder = SdUtils.searchFolderAndParentsForDocFile(baseFolder, Translator.ARCHIVE_EXTENSION);
             if (null != subFolder) {
                 applySdCardStatus(true);
-                DocumentFile path = SdUtils.documentFileMkdirs(baseFolder, subFolder);
+                path = SdUtils.documentFileMkdirs(baseFolder, subFolder);
                 loadDocFileList(path);
             } else {
-                doImportFromInternal(null);
+                path = SdUtils.documentFileMkdirs(baseFolder, SdUtils.DOWNLOAD_FOLDER); // use downloads folder, or make if not present.
+                if(null == path) {
+                    path = baseFolder; // if folder creation fails, fall back to base folder
+                }
+                loadDocFileList(path);
             }
         } else { // SD card not present or not lollipop
             boolean sdCardFound = false;
             File sdCardFolder = SdUtils.getSdCardDirectory();
             if (sdCardFolder != null) {
                 if (sdCardFolder.isDirectory() && sdCardFolder.exists() && sdCardFolder.canRead()) {
-
                     File storagePath = Environment.getExternalStorageDirectory();
                     if(sdCardFolder.equals(storagePath)) {
                         applySdCardStatus(false); // if SD card path is same as internal storage, then SD card selection is pointless
                     }
-
                     doImportFromInternal(sdCardFolder);
                 }
             }
@@ -219,8 +221,7 @@ public class ImportFileChooserActivity extends BaseActivity {
         if (null != subFolder) {
             path = SdUtils.documentFileMkdirs(baseFolder, subFolder);
         }else {
-            path = SdUtils.documentFileMkdirs(baseFolder, SdUtils.DOWNLOAD_FOLDER); // try downloads folder if present.
-
+            path = SdUtils.documentFileMkdirs(baseFolder, SdUtils.DOWNLOAD_FOLDER); // use downloads folder, or make if not present.
         }
 
         if(null == path) {

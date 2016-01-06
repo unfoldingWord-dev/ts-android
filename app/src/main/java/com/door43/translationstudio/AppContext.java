@@ -456,7 +456,7 @@ public class AppContext {
         catch (Exception e) {
             // There are lots of ways for this to fail, none of which are particularly serious.
             // In this case, log the result but allow the data to be lost.
-            Log.e("", "getProfiles: Failed to parse profile data", e);
+            Logger.e("", "getProfiles: Failed to parse profile data", e);
             return null;
         }
     }
@@ -468,7 +468,7 @@ public class AppContext {
         }
         catch (JSONException e) {
             // Failures to save are not particularly severe. Log and continue.
-            Log.e("", "setProfiles: Failed to encode profile data", e);
+            Logger.e("", "setProfiles: Failed to encode profile data", e);
         }
     }
 
