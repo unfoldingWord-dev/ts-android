@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
+import android.support.v4.provider.DocumentFile;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,12 +26,16 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.UploadTargetTranslationTask;
+import com.door43.translationstudio.util.SdUtils;
 import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 import com.door43.widget.ViewUtil;
 
+import org.apache.commons.io.IOUtils;
+
 import java.io.File;
+import java.io.OutputStream;
 import java.security.InvalidParameterException;
 
 /**
@@ -169,23 +174,25 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
         backupToSDButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: 10/27/2015 have the user choose the file location
-                File exportFile = new File(AppContext.getPublicDownloadsDirectory(), System.currentTimeMillis() / 1000L + "_" + filename);
-                try {
-                    AppContext.getTranslator().exportArchive(mTargetTranslation, exportFile);
-                } catch (Exception e) {
-                    Logger.e(BackupDialog.class.getName(), "Failed to export the target translation " + mTargetTranslation.getId(), e);
-                }
-                if (exportFile.exists()) {
-                    CustomAlertDialog.Create(getActivity())
-                            .setTitle(R.string.backup_to_sd)
-                            .setMessage(R.string.success)
-                            .setNeutralButton(R.string.dismiss, null)
-                            .show("Backup");
+                if (SdUtils.doWeNeedToRequestSdCardAccess()) {
+                    final CustomAlertDialog dialog = CustomAlertDialog.Create(getActivity());
+                    dialog.setTitle(R.string.enable_sd_card_access_title)
+                            .setMessageHtml(R.string.enable_sd_card_access)
+                            .setPositiveButton(R.string.confirm, new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    SdUtils.triggerStorageAccessFramework(getActivity());
+                                }
+                            })
+                            .setNegativeButton(R.string.label_skip, new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    doSdCardBackup(filename);
+                                }
+                            })
+                            .show("approve-SD-access");
                 } else {
-                    Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_export_failed, Snackbar.LENGTH_LONG);
-                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                    snack.show();
+                    doSdCardBackup(filename);
                 }
             }
         });
@@ -214,6 +221,75 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
         });
 
         return v;
+    }
+
+    /**
+     * back up project - will try to write to SD card if available - otherwise will save to internal memory
+     * @param filename
+     */
+    private void doSdCardBackup(String filename) {
+        // TODO: 10/27/2015 have the user choose the file location
+        String fileName = System.currentTimeMillis() / 1000L + "_" + filename;
+        boolean success = false;
+        boolean canWriteToSdCardBackupLollipop = false;
+        DocumentFile baseFolder = null;
+        String filePath = null;
+        DocumentFile sdCardFile = null;
+        OutputStream out = null;
+
+        try {
+            if(SdUtils.isSdCardPresentLollipop()) {
+                baseFolder = SdUtils.sdCardMkdirs(SdUtils.DOWNLOAD_TRANSLATION_STUDIO_FOLDER);
+                canWriteToSdCardBackupLollipop = baseFolder != null;
+            }
+
+            if (canWriteToSdCardBackupLollipop) { // default to writing to SD card if available
+                filePath = SdUtils.getPathString(baseFolder);
+                if (baseFolder.canWrite()) {
+                    sdCardFile = baseFolder.createFile("image", fileName);
+                    filePath = SdUtils.getPathString(sdCardFile);
+                    out = AppContext.context().getContentResolver().openOutputStream(sdCardFile.getUri());
+                    AppContext.getTranslator().exportArchive(mTargetTranslation, out, fileName);
+                    success = true;
+                }
+            } else {
+                File exportFile = new File(AppContext.getPublicDownloadsDirectory(), fileName);
+                filePath = exportFile.toString();
+                AppContext.getTranslator().exportArchive(mTargetTranslation, exportFile);
+                success = exportFile.exists();
+
+            }
+        } catch (Exception e) {
+            success = false;
+            if(sdCardFile != null) {
+                try {
+                    if(null != out) {
+                        IOUtils.closeQuietly(out);
+                    }
+                    sdCardFile.delete();
+                } catch(Exception e2) {
+                }
+            }
+            Logger.e(BackupDialog.class.getName(), "Failed to export the target translation " + mTargetTranslation.getId(), e);
+        }
+
+        if (success) {
+            showBackupResults(R.string.backup_success, filePath);
+        } else {
+            showBackupResults(R.string.backup_failed, filePath);
+        }
+    }
+
+    private void showBackupResults(final int textResId, final String filePath) {
+        String message = getResources().getString(textResId);
+        if(filePath != null) {
+            message += "\n" + filePath;
+        }
+        CustomAlertDialog.Create(getActivity())
+                .setTitle(R.string.backup_to_sd)
+                .setMessage(message)
+                .setNeutralButton(R.string.dismiss, null)
+                .show("Backup");
     }
 
     @Override

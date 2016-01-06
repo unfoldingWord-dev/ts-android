@@ -1,19 +1,14 @@
 package com.door43.translationstudio.newui.translate;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
-import android.print.PrintDocumentInfo;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.FileProvider;
 import android.text.Layout;
-import android.util.Log;
-import android.view.Display;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -29,21 +24,20 @@ import android.widget.TextView;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.core.Typography;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BackupDialog;
 import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.PrintDialog;
 import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.util.SdUtils;
 import com.door43.widget.VerticalSeekBar;
 import com.door43.widget.ViewUtil;
 import com.door43.translationstudio.newui.BaseActivity;
 
-import java.io.File;
 import java.security.InvalidParameterException;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -78,25 +72,25 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         Bundle args = getIntent().getExtras();
         final String targetTranslationId = args.getString(TargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID, null);
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
-        if(mTargetTranslation == null) {
+        if (mTargetTranslation == null) {
             throw new InvalidParameterException("a valid target translation id is required");
         }
 
         // manual location settings
         String viewModeId = args.getString(TargetTranslationActivity.EXTRA_VIEW_MODE, null);
-        if(viewModeId != null && TranslationViewMode.get(viewModeId) != null) {
+        if (viewModeId != null && TranslationViewMode.get(viewModeId) != null) {
             AppContext.setLastViewMode(targetTranslationId, TranslationViewMode.get(viewModeId));
         }
 
-        mReadButton = (ImageButton)findViewById(R.id.action_read);
-        mChunkButton = (ImageButton)findViewById(R.id.action_chunk);
-        mReviewButton = (ImageButton)findViewById(R.id.action_review);
+        mReadButton = (ImageButton) findViewById(R.id.action_read);
+        mChunkButton = (ImageButton) findViewById(R.id.action_chunk);
+        mReviewButton = (ImageButton) findViewById(R.id.action_review);
 
         setupSidebarModeIcons();
 
         // inject fragments
-        if(findViewById(R.id.fragment_container) != null) {
-            if(savedInstanceState != null) {
+        if (findViewById(R.id.fragment_container) != null) {
+            if (savedInstanceState != null) {
                 mFragment = getFragmentManager().findFragmentById(R.id.fragment_container);
             } else {
                 TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
@@ -119,8 +113,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         }
 
         // set up menu items
-        mGraduations = (ViewGroup)findViewById(R.id.action_seek_graduations);
-        mSeekBar = (SeekBar)findViewById(R.id.action_seek);
+        mGraduations = (ViewGroup) findViewById(R.id.action_seek_graduations);
+        mSeekBar = (SeekBar) findViewById(R.id.action_seek);
         mSeekBar.setMax(100);
         mSeekBar.setProgress(computePositionFromProgress(0));
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -142,7 +136,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 }
 
                 TargetTranslationActivity activity = (TargetTranslationActivity) seekBar.getContext();
-                if(activity != null) {
+                if (activity != null) {
                     activity.closeKeyboard();
                 }
             }
@@ -157,7 +151,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 mGraduations.animate().alpha(0.f);
             }
         });
-        ImageButton moreButton = (ImageButton)findViewById(R.id.action_more);
+        ImageButton moreButton = (ImageButton) findViewById(R.id.action_more);
         moreButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -272,7 +266,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     public void closeKeyboard() {
-        if(mFragment instanceof ViewModeFragment) {
+        if (mFragment instanceof ViewModeFragment) {
             ((ViewModeFragment) mFragment).closeKeyboard();
         }
     }
@@ -280,10 +274,10 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     public void checkIfCursorStillOnScreen() {
 
         Rect cursorPos = getCursorPositionOnScreen();
-        if(cursorPos != null) {
+        if (cursorPos != null) {
 
             View scrollView = findViewById(R.id.fragment_container);
-            if(scrollView != null) {
+            if (scrollView != null) {
 
                 Boolean visible = true;
 
@@ -315,13 +309,13 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             int focusedViewX = l[0];
             int focusedViewY = l[1];
 
-            if(focusedView instanceof  EditText) {
+            if (focusedView instanceof EditText) {
 
                 // getting relative cursor position
                 EditText editText = (EditText) focusedView;
                 int pos = editText.getSelectionStart();
                 Layout layout = editText.getLayout();
-                if(layout != null) {
+                if (layout != null) {
                     int line = layout.getLineForOffset(pos);
                     int baseline = layout.getLineBaseline(line);
                     int ascent = layout.getLineAscent(line);
@@ -373,9 +367,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
         // Set up the visible chapters.
         for (int i = 0; i < numVisibleGraduations; ++i) {
-            ViewGroup container = (ViewGroup)mGraduations.getChildAt(i);
+            ViewGroup container = (ViewGroup) mGraduations.getChildAt(i);
             container.setVisibility(View.VISIBLE);
-            TextView text = (TextView)container.getChildAt(1);
+            TextView text = (TextView) container.getChildAt(1);
 
             // This calculation, full of fudge factors, has the following properties:
             //   - It starts at 1.
@@ -387,7 +381,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         }
 
         // Undisplay the invisible chapters.
-        for(int i = numVisibleGraduations; i < mGraduations.getChildCount(); ++i) {
+        for (int i = numVisibleGraduations; i < mGraduations.getChildCount(); ++i) {
             mGraduations.getChildAt(i).setVisibility(View.GONE);
         }
     }
@@ -406,7 +400,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     @Override
     public void onNoSourceTranslations(String targetTranslationId) {
-        if(mFragment instanceof FirstTabFragment == false) {
+        if (mFragment instanceof FirstTabFragment == false) {
             mFragment = new FirstTabFragment();
             mFragment.setArguments(getIntent().getExtras());
             getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
@@ -419,12 +413,12 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     public void openTranslationMode(TranslationViewMode mode, Bundle extras) {
         Bundle fragmentExtras = new Bundle();
         fragmentExtras.putAll(getIntent().getExtras());
-        if(extras != null) {
+        if (extras != null) {
             fragmentExtras.putAll(extras);
         }
 
         // close the keyboard when switching between modes
-        if(getCurrentFocus() != null) {
+        if (getCurrentFocus() != null) {
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
         } else {
@@ -436,7 +430,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
         switch (mode) {
             case READ:
-                if(mFragment instanceof ReadModeFragment == false) {
+                if (mFragment instanceof ReadModeFragment == false) {
                     mFragment = new ReadModeFragment();
                     mFragment.setArguments(fragmentExtras);
 
@@ -446,7 +440,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 }
                 break;
             case CHUNK:
-                if(mFragment instanceof  ChunkModeFragment == false) {
+                if (mFragment instanceof ChunkModeFragment == false) {
                     mFragment = new ChunkModeFragment();
                     mFragment.setArguments(fragmentExtras);
 
@@ -456,7 +450,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 }
                 break;
             case REVIEW:
-                if(mFragment instanceof  ReviewModeFragment == false) {
+                if (mFragment instanceof ReviewModeFragment == false) {
                     mFragment = new ReviewModeFragment();
                     mFragment.setArguments(fragmentExtras);
 
@@ -472,11 +466,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     @Override
     public void onHasSourceTranslations() {
         TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
-        if(viewMode == TranslationViewMode.READ) {
+        if (viewMode == TranslationViewMode.READ) {
             mFragment = new ReadModeFragment();
-        } else if(viewMode == TranslationViewMode.CHUNK) {
+        } else if (viewMode == TranslationViewMode.CHUNK) {
             mFragment = new ChunkModeFragment();
-        } else if(viewMode == TranslationViewMode.REVIEW) {
+        } else if (viewMode == TranslationViewMode.REVIEW) {
             mFragment = new ReviewModeFragment();
         }
         mFragment.setArguments(getIntent().getExtras());
@@ -487,8 +481,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
-        if(mFragment instanceof ViewModeFragment) {
-            if(!((ViewModeFragment)mFragment).onTouchEvent(event)) {
+        if (mFragment instanceof ViewModeFragment) {
+            if (!((ViewModeFragment) mFragment).onTouchEvent(event)) {
                 return super.dispatchTouchEvent(event);
             } else {
                 return true;
@@ -513,8 +507,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      * Causes the activity to tell the fragment it needs to reload
      */
     public void notifyDatasetChanged() {
-        if(mFragment instanceof ViewModeFragment) {
-            ((ViewModeFragment)mFragment).getAdapter().reload();
+        if (mFragment instanceof ViewModeFragment) {
+            ((ViewModeFragment) mFragment).getAdapter().reload();
         }
     }
 
@@ -555,6 +549,35 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 mReviewButton.setImageResource(R.drawable.ic_assignment_turned_in_white_24dp);
                 mReviewButton.setBackgroundColor(backgroundColor);
                 break;
+        }
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == SdUtils.REQUEST_CODE_STORAGE_ACCESS) {
+            Uri treeUri = null;
+            String msg = "";
+            if (resultCode == Activity.RESULT_OK) {
+
+                // Get Uri from Storage Access Framework.
+                treeUri = data.getData();
+                final int takeFlags = data.getFlags();
+                boolean success = SdUtils.validateSdCardWriteAccess(treeUri, takeFlags);
+                if (!success) {
+                    String template = getResources().getString(R.string.access_failed);
+                    msg = String.format(template, treeUri.toString());
+                } else {
+                    msg = getResources().getString(R.string.access_granted_backup);
+                }
+            } else {
+                msg = getResources().getString(R.string.access_skipped);
+            }
+            CustomAlertDialog.Create(this)
+                    .setTitle(R.string.access_title)
+                    .setMessage(msg)
+                    .setPositiveButton(R.string.label_ok, null)
+                    .show("AccessResults");
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 }

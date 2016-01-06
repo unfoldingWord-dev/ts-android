@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:background="@color/white"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/action_buttons">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/dialog_controls_margin">
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_internal"
+                android:id="@+id/internal_button" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_sd_card"
+                android:id="@+id/sd_card_button" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/dialog_controls_margin"
+            android:weightSum="1">
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/up_folder_button"
+                    android:layout_marginLeft="@dimen/dialog_controls_margin"
+                    android:src="@drawable/ic_arrow_back_black_24dp"
+                    android:paddingTop="@dimen/dialog_controls_margin"
+                    android:paddingBottom="@dimen/dialog_controls_margin"
+                    android:paddingLeft="@dimen/dialog_controls_margin"
+                    android:paddingRight="@dimen/dialog_controls_margin"
+                    android:layout_gravity="center"
+                    android:background="?attr/selectableItemBackground"
+                   />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Directory"
+                    android:id="@+id/current_folder"
+                    android:layout_marginLeft="@dimen/dialog_content_margin"
+                    android:layout_marginRight="@dimen/dialog_content_margin"
+                    android:layout_gravity="center_vertical"
+                    android:visibility="visible" />
+
+            </LinearLayout>
+
+            <ListView
+                android:id="@+id/file_list"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_above="@+id/controlsLayout"
+                android:layout_weight="1.46"
+                android:choiceMode="singleChoice" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/action_buttons"
+        android:gravity="right">
+
+        <Button
+            android:id="@+id/cancel_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/title_cancel"
+            android:textColor="?attr/colorAccent"
+            android:textSize="@dimen/button"
+            android:background="?attr/selectableItemBackground"
+            android:layout_marginLeft="@dimen/dialog_content_margin"
+            android:capitalize="words" />
+
+        <Button
+            android:id="@+id/confirm_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/confirm"
+            android:textColor="?attr/colorAccent"
+            android:textSize="@dimen/button"
+            android:background="?attr/selectableItemBackground"
+            android:layout_marginLeft="@dimen/dialog_content_margin"
+            android:layout_marginRight="@dimen/dialog_content_margin"
+            android:capitalize="words" />
+    </LinearLayout>
+
+</RelativeLayout>

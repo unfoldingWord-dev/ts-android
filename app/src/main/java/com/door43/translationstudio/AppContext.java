@@ -7,7 +7,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
-import android.util.Log;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.core.Library;
@@ -15,6 +14,7 @@ import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Util;
+import com.door43.translationstudio.util.SdUtils;
 import com.door43.util.StorageUtils;
 import com.door43.util.StringUtilities;
 import com.door43.util.Zip;
@@ -35,6 +35,7 @@ public class AppContext {
     private static final String DEFAULT_LIBRARY_ZIP = "library.zip";
     private static final String TARGET_TRANSLATIONS_DIR = "translations";
     public static final String PROFILES_DIR = "profiles";
+    public static final String TRANSLATION_STUDIO = "translationStudio";
     private static MainApplication mContext;
     public static final Bundle args = new Bundle();
     private static boolean loaded;
@@ -152,19 +153,6 @@ public class AppContext {
         return folder;
     }
 
-    /**
-     * Checks if the external media is mounted and writeable
-     * @return
-     */
-    public static boolean isExternalMediaAvailable() {
-        // TRICKY: KITKAT introduced changes to the external media that made sd cards read only
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) { // || Root.isDeviceRooted()
-            StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
-            return removeableMediaInfo != null;
-        } else {
-            return Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState());
-        }
-    }
 
     /**
      * Returns the file to the external public downloads directory
@@ -176,7 +164,7 @@ public class AppContext {
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) { // || Root.isDeviceRooted()
             StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
             if(removeableMediaInfo != null) {
-                dir = new File("/storage/" + removeableMediaInfo.getMountName() + "/Download/translationStudio");
+                dir = new File("/storage/" + removeableMediaInfo.getMountName() + SdUtils.DOWNLOAD_TRANSLATION_STUDIO_FOLDER);
             } else {
                 dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "translationStudio");
             }
@@ -186,14 +174,14 @@ public class AppContext {
         dir.mkdirs();
         return dir;
     }
-
+    
     /**
      * Returns the path to the public files directory.
-     * Files saved in this direcory will not be removed when the application is uninstalled
+     * Files saved in this directory will not be removed when the application is uninstalled
      * @return
      */
     public static File getPublicDirectory() {
-        File dir = new File(Environment.getExternalStorageDirectory(), "translationStudio");
+        File dir = new File(Environment.getExternalStorageDirectory(), TRANSLATION_STUDIO);
         dir.mkdirs();
         return dir;
     }
@@ -468,7 +456,7 @@ public class AppContext {
         catch (Exception e) {
             // There are lots of ways for this to fail, none of which are particularly serious.
             // In this case, log the result but allow the data to be lost.
-            Log.e("", "getProfiles: Failed to parse profile data", e);
+            Logger.e("", "getProfiles: Failed to parse profile data", e);
             return null;
         }
     }
@@ -480,7 +468,7 @@ public class AppContext {
         }
         catch (JSONException e) {
             // Failures to save are not particularly severe. Log and continue.
-            Log.e("", "setProfiles: Failed to encode profile data", e);
+            Logger.e("", "setProfiles: Failed to encode profile data", e);
         }
     }
 

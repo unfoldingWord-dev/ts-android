@@ -1,17 +1,17 @@
 package com.door43.util;
 
-import com.door43.translationstudio.core.Util;
+import android.support.annotation.Nullable;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -123,14 +123,23 @@ public class Zip {
     }
 
     /**
-     * Zips up a list of files
+     * Zips up a list of files to file
      * @param files
-     * @param archivePath
+     * @param archivePath - destination file
      */
     public static void zip(File[] files, File archivePath) throws IOException {
+        FileOutputStream dest = new FileOutputStream(archivePath);
+        zipToStream(files, dest);
+    }
+
+    /**
+     * Zips up a list of files to output stream
+     * @param files
+     * @param dest - destination output stream
+     */
+    public static void zipToStream(File[] files, OutputStream dest) throws IOException {
         final int BUFFER = 2048;
         BufferedInputStream origin = null;
-        FileOutputStream dest = new FileOutputStream(archivePath);
         ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(
                 dest));
 
@@ -294,6 +303,7 @@ public class Zip {
     /**
      * Extracts a zip archive
      * @param zipArchive
+     * @param destDir - place to store unzipped file
      * @throws IOException
      */
     public static void unzip(File zipArchive, File destDir) throws IOException {
@@ -302,8 +312,22 @@ public class Zip {
         String filename;
         ZipEntry ze;
         int count;
-        byte[] buffer = new byte[1024];
         is = new FileInputStream(zipArchive);
+        unzipFromStream(is, destDir);
+    }
+
+    /**
+     * Extracts a zip archive from a stream
+     * @param is - input stream of zip file
+     * @param destDir - place to store unzipped file
+     * @throws IOException
+     */
+    public static void unzipFromStream(InputStream is, File destDir) throws IOException {
+        byte[] buffer = new byte[1024];
+        ZipInputStream zis;
+        ZipEntry ze;
+        String filename;
+        int count;
         zis = new ZipInputStream(new BufferedInputStream(is));
 
         destDir.mkdirs();
@@ -360,11 +384,21 @@ public class Zip {
      */
     public static String read(File zipArchive, String path) throws IOException {
         InputStream is;
-        ZipInputStream zis;
-        String contents = null;
-        ZipEntry ze;
         is = new FileInputStream(zipArchive);
-        zis = new ZipInputStream(new BufferedInputStream(is));
+        return readInputStream(is, path);
+    }
+
+    /**
+     * Reads the contents of a file from the zip archive
+     * @param zipStream
+     * @param path
+     * @return
+     */    @Nullable
+    public static String readInputStream(InputStream zipStream, String path) throws IOException {
+        String contents = null;
+        ZipInputStream zis;
+        ZipEntry ze;
+        zis = new ZipInputStream(new BufferedInputStream(zipStream));
 
         while ((ze = zis.getNextEntry()) != null) {
             if (ze.isDirectory()) {

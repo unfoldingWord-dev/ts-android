@@ -1,29 +1,34 @@
 package com.door43.translationstudio.filebrowser;
 
+import android.content.ContentResolver;
+import android.content.Context;
+import android.support.v4.provider.DocumentFile;
+
+import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.ArchiveDetails;
 import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.util.Zip;
 
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
-import java.io.IOException;
+
 
 /**
  * This class represents a single file item
  */
-public class FileItem {
-    public final File file;
+public class DocumentFileItem {
+    public final DocumentFile file;
+    public final Context context;
     public final boolean isUpButton;
     private ArchiveDetails archiveDetails;
 
 
-    private FileItem(File file, boolean isUpButton) {
+    private DocumentFileItem(Context context, DocumentFile file, boolean isUpButton) {
         this.file = file;
         this.isUpButton = isUpButton;
+        this.context = context;
     }
 
     /**
@@ -31,8 +36,8 @@ public class FileItem {
      * @param file
      * @return
      */
-    public static FileItem getInstance(File file) {
-        return new FileItem(file, false);
+    public static DocumentFileItem getInstance(Context context, DocumentFile file) {
+        return new DocumentFileItem(context, file, false);
     }
 
     /**
@@ -40,8 +45,8 @@ public class FileItem {
      *
      * @return
      */
-    public static FileItem getUpInstance() {
-        return new FileItem(null, true);
+    public static DocumentFileItem getUpInstance() {
+        return new DocumentFileItem(null, null, true);
     }
 
     /**
@@ -62,7 +67,7 @@ public class FileItem {
     public void inspect(String preferredLocale, Library library) {
         if(file != null) {
             try {
-                this.archiveDetails = ArchiveDetails.newInstance(file, preferredLocale, library);
+                this.archiveDetails = ArchiveDetails.newInstance(AppContext.context(), file, preferredLocale, library);
                 return;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -106,8 +111,8 @@ public class FileItem {
      */
     public boolean isBackupsDir() {
         return !isUpButton
-            && file != null
-            && file.isDirectory()
+                && file != null
+                && file.isDirectory()
                 && file.getName().equalsIgnoreCase("backups")
                 && file.getParentFile().getName().equalsIgnoreCase("translationStudio");
     }

@@ -1,13 +1,10 @@
 package com.door43.translationstudio.newui.home;
 
-import android.app.AlertDialog;
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -31,6 +28,7 @@ import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationAct
 import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.util.SdUtils;
 import com.door43.widget.ViewUtil;
 
 import org.apache.commons.io.FileUtils;
@@ -40,6 +38,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
+    private static final int REQUEST_CODE_STORAGE_ACCESS = 42;
     private static final int NEW_TARGET_TRANSLATION_REQUEST = 1;
     private Library mLibrary;
     private Translator mTranslator;
@@ -100,8 +99,8 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                                 }
                                 backupFt.addToBackStack(null);
 
-                                ImportDialog backupDialog = new ImportDialog();
-                                backupDialog.show(backupFt, ImportDialog.TAG);
+                                ImportDialog importDialog = new ImportDialog();
+                                importDialog.show(backupFt, ImportDialog.TAG);
                                 return true;
                             case R.id.action_feedback:
                                 FragmentTransaction ft = getFragmentManager().beginTransaction();
@@ -203,7 +202,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                 .show("ExitConfirm");
     }
 
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+   public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == NEW_TARGET_TRANSLATION_REQUEST) {
             if(resultCode == RESULT_OK) {
                 if(mFragment instanceof WelcomeFragment) {

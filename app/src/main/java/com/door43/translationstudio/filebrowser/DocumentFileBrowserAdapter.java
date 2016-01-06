@@ -1,6 +1,7 @@
 package com.door43.translationstudio.filebrowser;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,16 +24,16 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.TimeZone;
 
 /**
  * Handles the rendering of the file browser activity
  */
-public class FileBrowserAdapter extends BaseAdapter {
+public class DocumentFileBrowserAdapter extends BaseAdapter {
 
-    private List<FileItem> mFiles = new ArrayList<>();
+    private List<DocumentFileItem> mFiles = new ArrayList<>();
+    private int mSelectedPosition = -1;
 
-    public void loadFiles(Context context, List<FileItem> files) {
+    public void loadFiles(Context context, List<DocumentFileItem> files) {
         final Library library = AppContext.getLibrary();
         mFiles = files;
         new ThreadableUI(context) {
@@ -44,7 +45,7 @@ public class FileBrowserAdapter extends BaseAdapter {
 
             @Override
             public void run() {
-                for(FileItem item:mFiles) {
+                for(DocumentFileItem item:mFiles) {
                     if(item.isTranslationArchive()) {
                         item.inspect(Locale.getDefault().getLanguage(), library);
                     }
@@ -65,7 +66,7 @@ public class FileBrowserAdapter extends BaseAdapter {
     }
 
     @Override
-    public FileItem getItem(int i) {
+    public DocumentFileItem getItem(int i) {
         return mFiles.get(i);
     }
 
@@ -86,11 +87,22 @@ public class FileBrowserAdapter extends BaseAdapter {
             holder = (ViewHolder)v.getTag();
         }
 
-        holder.icon.setImageResource(getItem(position).getIconResource());
-        if(getItem(position).isBackupsDir()) {
+        if(mSelectedPosition == position) {
+            v.setBackgroundColor(parent.getContext().getResources().getColor(R.color.accent_light));
+        } else {
+            Drawable currentBackground = v.getBackground();
+            if(currentBackground != null) {
+                v.setBackgroundDrawable(null); // clear background
+            }
+        }
+
+        DocumentFileItem item = getItem(position);
+        holder.icon.setImageResource(item.getIconResource());
+        boolean isBackupsDir = item.isBackupsDir();
+        if(isBackupsDir) {
             holder.title.setText(parent.getContext().getResources().getString(R.string.automatic_backups));
         } else {
-            holder.title.setText(getItem(position).getTitle());
+            holder.title.setText(item.getTitle());
         }
         holder.archiveDetails.setVisibility(View.GONE);
         holder.title.setTextColor(parent.getContext().getResources().getColor(R.color.dark_secondary_text));
@@ -98,8 +110,8 @@ public class FileBrowserAdapter extends BaseAdapter {
             holder.archiveDetails.removeAllViews();
         }
 
-        if(getItem(position).isTranslationArchive() && getItem(position).getArchiveDetails() != null) {
-            ArchiveDetails details = getItem(position).getArchiveDetails();
+        if(item.isTranslationArchive() && item.getArchiveDetails() != null) {
+            ArchiveDetails details = item.getArchiveDetails();
             holder.archiveDetails.setVisibility(View.VISIBLE);
             DateFormat format = DateFormat.getDateTimeInstance();
             Date date = Util.dateFromUnixTime(details.createdAt);
@@ -112,7 +124,7 @@ public class FileBrowserAdapter extends BaseAdapter {
             }
         }
 
-        if(getItem(position).isBackupsDir()) {
+        if(isBackupsDir) {
             holder.title.setTextColor(parent.getContext().getResources().getColor(R.color.dark_primary_text));
         }
 
@@ -137,40 +149,40 @@ public class FileBrowserAdapter extends BaseAdapter {
      * Sorts target languages by id
      * @param files
      */
-    private static void sortFiles(List<FileItem> files) {
-        Collections.sort(files, new Comparator<FileItem>() {
+    private static void sortFiles(List<DocumentFileItem> files) {
+        Collections.sort(files, new Comparator<DocumentFileItem>() {
             @Override
-            public int compare(FileItem lhs, FileItem rhs) {
+            public int compare(DocumentFileItem lhs, DocumentFileItem rhs) {
                 int sort = 0;
-                if(lhs.isUpButton || rhs.isUpButton) {
+                if (lhs.isUpButton || rhs.isUpButton) {
                     // up button is always first
                     sort = lhs.isUpButton ? -1 : 1;
-                } else if(lhs.isBackupsDir()) {
+                } else if (lhs.isBackupsDir()) {
                     // backup dir is after archives
-                    if(rhs.isTranslationArchive()) {
+                    if (rhs.isTranslationArchive()) {
                         return 1;
                     } else {
                         return -1;
                     }
-                } else if(rhs.isBackupsDir()) {
+                } else if (rhs.isBackupsDir()) {
                     // backup dir is after archives
-                    if(lhs.isTranslationArchive()) {
+                    if (lhs.isTranslationArchive()) {
                         return -1;
                     } else {
                         return 1;
                     }
-                } else if(lhs.isTranslationArchive() && rhs.isTranslationArchive()) {
+                } else if (lhs.isTranslationArchive() && rhs.isTranslationArchive()) {
                     // sort by date (if the archive has been inspected)
-                    if(lhs.getArchiveDetails() != null && rhs.getArchiveDetails() != null) {
+                    if (lhs.getArchiveDetails() != null && rhs.getArchiveDetails() != null) {
                         long lhsCreated = lhs.getArchiveDetails().createdAt;
                         long rhsCreated = rhs.getArchiveDetails().createdAt;
-                        if(lhsCreated > rhsCreated) {
+                        if (lhsCreated > rhsCreated) {
                             sort = -1;
-                        } else if(lhsCreated < rhsCreated) {
+                        } else if (lhsCreated < rhsCreated) {
                             sort = 1;
                         }
                     }
-                } else if(!lhs.isTranslationArchive() && !rhs.isTranslationArchive()) {
+                } else if (!lhs.isTranslationArchive() && !rhs.isTranslationArchive()) {
                     // sort by name
                     sort = lhs.getTitle().compareToIgnoreCase(rhs.getTitle());
                 } else {
@@ -181,4 +193,13 @@ public class FileBrowserAdapter extends BaseAdapter {
             }
         });
     }
+
+    public int getSelectedPosition() {
+        return mSelectedPosition;
+    }
+
+    public void setSelectedPosition(int mSelectedPosition) {
+        this.mSelectedPosition = mSelectedPosition;
+    }
 }
+

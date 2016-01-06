@@ -2,7 +2,6 @@ package com.door43.translationstudio.core;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
-import android.os.Build;
 import android.text.Editable;
 import android.text.SpannedString;
 
@@ -13,19 +12,23 @@ import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -169,15 +172,12 @@ public class Translator {
     }
 
     /**
-     * Exports a single target translation in .tstudio format
+     * creates a JSON object that contains the manifest.
      * @param targetTranslation
-     * @param outputFile
+     * @return
+     * @throws Exception
      */
-    public void exportArchive(TargetTranslation targetTranslation, File outputFile) throws Exception {
-        if(!FilenameUtils.getExtension(outputFile.getName()).toLowerCase().equals(ARCHIVE_EXTENSION)) {
-            throw new Exception("Not a translationStudio archive");
-        }
-
+    private JSONObject buildManifest(TargetTranslation targetTranslation) throws Exception {
         targetTranslation.commit();
 
         // build manifest
@@ -198,49 +198,110 @@ public class Translator {
         translationJson.put("target_language_name", targetTranslation.getTargetLanguageName());
         translationsJson.put(translationJson);
         manifestJson.put("target_translations", translationsJson);
+        return manifestJson;
+    }
 
+    /**
+     * Exports a single target translation in .tstudio format to File
+     * @param targetTranslation
+     * @param outputFile
+     */
+    public void exportArchive(TargetTranslation targetTranslation, File outputFile) throws Exception {
+
+        FileOutputStream out = null;
+        try {
+            out = new FileOutputStream(outputFile);
+            exportArchive(targetTranslation, out, outputFile.toString());
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            IOUtils.closeQuietly(out);
+        }
+    }
+
+    /**
+     * Exports a single target translation in .tstudio format to OutputStream
+     * @param targetTranslation
+     * @param out
+     */
+    public void exportArchive(TargetTranslation targetTranslation, OutputStream out, String fileName) throws Exception {
+        if(!FilenameUtils.getExtension(fileName).toLowerCase().equals(ARCHIVE_EXTENSION)) {
+            throw new Exception("Not a translationStudio archive");
+        }
+
+        targetTranslation.commit();
+
+        JSONObject manifestJson = buildManifest(targetTranslation);
         File tempCache = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
         try {
             tempCache.mkdirs();
             File manifestFile = new File(tempCache, "manifest.json");
             manifestFile.createNewFile();
             FileUtils.write(manifestFile, manifestJson.toString());
-            Zip.zip(new File[]{manifestFile, targetTranslation.getPath()}, outputFile);
+            Zip.zipToStream(new File[]{manifestFile, targetTranslation.getPath()}, out);
         } catch (Exception e) {
-            FileUtils.deleteQuietly(tempCache);
-            FileUtils.deleteQuietly(outputFile);
             throw e;
+        } finally {
+            IOUtils.closeQuietly(out);
+            FileUtils.deleteQuietly(tempCache);
         }
-
-        // clean
-        FileUtils.deleteQuietly(tempCache);
     }
 
-    /**
-     * Imports target translations from an archive
+     /**
+     * Imports target translations from an archive specified by file
      * todo: we should have another method that will inspect the archive and return the details to the user so they can decide if they want to import it
      * @param file
      * @return an array of target translation slugs
      */
     public String[] importArchive(File file) throws Exception {
+        FileInputStream in = null;
+        try {
+            in = new FileInputStream(file);
+            return importArchive( in, file.toString());
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            IOUtils.closeQuietly(in);
+        }
+    }
+
+    /**
+     * Imports target translations from an archive in InputStream
+     * todo: we should have another method that will inspect the archive and return the details to the user so they can decide if they want to import it
+     * @param in
+     * @return an array of target translation slugs
+     */
+    public String[] importArchive(InputStream in, final String name) throws Exception {
         File tempCache = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
         List<String> importedTargetTranslationSlugs = new ArrayList<>();
         try {
             tempCache.mkdirs();
-            Zip.unzip(file, tempCache);
-            File[] targetTranslationDirs = ArchiveImporter.importArchive(tempCache);
-            for(File newDir:targetTranslationDirs) {
+            Zip.unzipFromStream(in, tempCache);
+            importArchiveFromTempCache(tempCache, importedTargetTranslationSlugs);
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            IOUtils.closeQuietly(in);
+            FileUtils.deleteQuietly(tempCache);
+        }
 
-                File localDir = new File(mRootDir, newDir.getName());
-                if(localDir.exists()) {
-                    // commit local changes to history
-                    TargetTranslation targetTranslation = getTargetTranslation(localDir.getName());
-                    if(targetTranslation != null) {
-                        targetTranslation.commit();
-                    }
+        return importedTargetTranslationSlugs.toArray(new String[importedTargetTranslationSlugs.size()]);
+    }
 
-                    // clean out local translation (retaining history)
-                    // TODO: 12/1/2015 there should be an option to discard local changes (though not it's history)
+    private void importArchiveFromTempCache(File tempCache, List<String> importedTargetTranslationSlugs) throws Exception {
+        File[] targetTranslationDirs = ArchiveImporter.importArchive(tempCache);
+        for(File newDir:targetTranslationDirs) {
+
+            File localDir = new File(mRootDir, newDir.getName());
+            if(localDir.exists()) {
+                // commit local changes to history
+                TargetTranslation targetTranslation = getTargetTranslation(localDir.getName());
+                if(targetTranslation != null) {
+                    targetTranslation.commit();
+                }
+
+                // clean out local translation (retaining history)
+                // TODO: 12/1/2015 there should be an option to discard local changes (though not it's history)
 //                    File[] oldFiles = localDir.listFiles(new FilenameFilter() {
 //                        @Override
 //                        public boolean accept(File dir, String filename) {
@@ -274,27 +335,14 @@ public class Translator {
                     // import new translation
                     FileUtils.moveDirectory(newDir, localDir);
                 }
-                // update the generator info
-                TargetTranslation.updateGenerator(mContext, getTargetTranslation(newDir.getName()));
+            // update the generator info
+            TargetTranslation.updateGenerator(mContext, getTargetTranslation(newDir.getName()));
 
-                importedTargetTranslationSlugs.add(newDir.getName());
-            }
-            if(targetTranslationDirs.length == 0) {
-                throw new Exception("The archive does not contain any valid target translations");
-            }
-
-        } catch (Exception e) {
-            FileUtils.deleteQuietly(tempCache);
-            if(!FilenameUtils.getExtension(file.getName()).toLowerCase().equals(ARCHIVE_EXTENSION)) {
-                throw new Exception("Not a translationStudio archive");
-            } else {
-                throw e;
-            }
+            importedTargetTranslationSlugs.add(newDir.getName());
         }
-
-        // clean
-        FileUtils.deleteQuietly(tempCache);
-        return importedTargetTranslationSlugs.toArray(new String[importedTargetTranslationSlugs.size()]);
+        if(targetTranslationDirs.length == 0) {
+            throw new Exception("The archive does not contain any valid target translations");
+        }
     }
 
     /**
