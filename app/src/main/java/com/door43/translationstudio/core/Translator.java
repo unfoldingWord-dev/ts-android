@@ -19,6 +19,7 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -200,28 +201,18 @@ public class Translator {
      * @param outputFile
      */
     public void exportArchive(TargetTranslation targetTranslation, File outputFile) throws Exception {
-        if(!FilenameUtils.getExtension(outputFile.getName()).toLowerCase().equals(ARCHIVE_EXTENSION)) {
-            throw new Exception("Not a translationStudio archive");
-        }
 
-        targetTranslation.commit();
-
-        JSONObject manifestJson = buildManifest(targetTranslation);
-        File tempCache = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
+        FileOutputStream out = null;
         try {
-            tempCache.mkdirs();
-            File manifestFile = new File(tempCache, "manifest.json");
-            manifestFile.createNewFile();
-            FileUtils.write(manifestFile, manifestJson.toString());
-            Zip.zip(new File[]{manifestFile, targetTranslation.getPath()}, outputFile);
+            out = new FileOutputStream(outputFile);
+            exportArchiveToStream( targetTranslation, out, outputFile.toString());
         } catch (Exception e) {
-            FileUtils.deleteQuietly(tempCache);
-            FileUtils.deleteQuietly(outputFile);
             throw e;
+        } finally {
+            if(out != null) {
+                out.close();
+            }
         }
-
-        // clean
-        FileUtils.deleteQuietly(tempCache);
     }
 
     /**
@@ -245,13 +236,13 @@ public class Translator {
             FileUtils.write(manifestFile, manifestJson.toString());
             Zip.zipToStream(new File[]{manifestFile, targetTranslation.getPath()}, out);
         } catch (Exception e) {
-            FileUtils.deleteQuietly(tempCache);
-            out.close();
             throw e;
+        } finally {
+            if(out != null) {
+                out.close();
+            }
+            FileUtils.deleteQuietly(tempCache);
         }
-
-        // clean
-        FileUtils.deleteQuietly(tempCache);
     }
 
      /**
