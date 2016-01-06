@@ -246,7 +246,7 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
                     sdCardFile = baseFolder.createFile("image", fileName);
                     filePath = SdUtils.getPathString(sdCardFile);
                     out = AppContext.context().getContentResolver().openOutputStream(sdCardFile.getUri());
-                    AppContext.getTranslator().exportArchiveToStream(mTargetTranslation, out, fileName);
+                    AppContext.getTranslator().exportArchive(mTargetTranslation, out, fileName);
                     success = true;
                 }
             } else {

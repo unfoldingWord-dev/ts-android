@@ -2,7 +2,6 @@ package com.door43.translationstudio.core;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
-import android.os.Build;
 import android.text.Editable;
 import android.text.SpannedString;
 
@@ -19,6 +18,7 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FilenameFilter;
@@ -28,7 +28,6 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -205,7 +204,7 @@ public class Translator {
         FileOutputStream out = null;
         try {
             out = new FileOutputStream(outputFile);
-            exportArchiveToStream( targetTranslation, out, outputFile.toString());
+            exportArchive(targetTranslation, out, outputFile.toString());
         } catch (Exception e) {
             throw e;
         } finally {
@@ -220,7 +219,7 @@ public class Translator {
      * @param targetTranslation
      * @param out
      */
-    public void exportArchiveToStream(TargetTranslation targetTranslation, OutputStream out, String fileName) throws Exception {
+    public void exportArchive(TargetTranslation targetTranslation, OutputStream out, String fileName) throws Exception {
         if(!FilenameUtils.getExtension(fileName).toLowerCase().equals(ARCHIVE_EXTENSION)) {
             throw new Exception("Not a translationStudio archive");
         }
@@ -252,25 +251,17 @@ public class Translator {
      * @return an array of target translation slugs
      */
     public String[] importArchive(File file) throws Exception {
-        File tempCache = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
-        List<String> importedTargetTranslationSlugs = new ArrayList<>();
+        FileInputStream in = null;
         try {
-            tempCache.mkdirs();
-            Zip.unzip(file, tempCache);
-            importArchiveFromTempCache(tempCache, importedTargetTranslationSlugs);
-
+            in = new FileInputStream(file);
+            return importArchive( in, file.toString());
         } catch (Exception e) {
-            FileUtils.deleteQuietly(tempCache);
-            if(!FilenameUtils.getExtension(file.getName()).toLowerCase().equals(ARCHIVE_EXTENSION)) {
-                throw new Exception("Not a translationStudio archive");
-            } else {
-                throw e;
+            throw e;
+        } finally {
+            if(in != null) {
+                in.close();
             }
         }
-
-        // clean
-        FileUtils.deleteQuietly(tempCache);
-        return importedTargetTranslationSlugs.toArray(new String[importedTargetTranslationSlugs.size()]);
     }
 
     /**
@@ -288,12 +279,11 @@ public class Translator {
             importArchiveFromTempCache(tempCache, importedTargetTranslationSlugs);
             in.close();
         } catch (Exception e) {
-            FileUtils.deleteQuietly(tempCache);
             throw e;
+        } finally {
+            FileUtils.deleteQuietly(tempCache);
         }
 
-        // clean
-        FileUtils.deleteQuietly(tempCache);
         return importedTargetTranslationSlugs.toArray(new String[importedTargetTranslationSlugs.size()]);
     }
 
