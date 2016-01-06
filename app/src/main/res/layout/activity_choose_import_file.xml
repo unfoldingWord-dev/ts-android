@@ -42,8 +42,7 @@
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginTop="@dimen/dialog_controls_margin"
-            android:weightSum="1">
+            android:layout_marginTop="@dimen/dialog_controls_margin">
 
             <LinearLayout
                 android:orientation="horizontal"
@@ -82,7 +81,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_above="@+id/controlsLayout"
-                android:layout_weight="1.46"
                 android:choiceMode="singleChoice" />
 
         </LinearLayout>
