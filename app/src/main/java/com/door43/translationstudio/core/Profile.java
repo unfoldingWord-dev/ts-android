@@ -26,6 +26,17 @@ public class Profile implements Serializable {
         this.phone = phone;
     }
 
+    /**
+     * Indicates whether this object is sufficiently complete to be used.
+     *
+     * <p>This is where business logic for profile validation goes. Currently it consists of
+     * checking for the presence of a few fields, but other checks can be added here.</p>
+     * @return true if valid, otherwise false
+     */
+    public boolean isValid() {
+        return name != null && !name.isEmpty() && email != null && !email.isEmpty();
+    }
+
     public JSONObject encodeJsonObject() throws JSONException {
         JSONObject o = new JSONObject();
         o.put(TAG_NAME, name);

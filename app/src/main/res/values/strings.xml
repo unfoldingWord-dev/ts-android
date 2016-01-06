@@ -241,6 +241,7 @@
     <string name="label_email">Email</string>
     <string name="label_phone">Phone</string>
     <string name="contact_form_description">Please provide your contact information. This will be securely transferred to the server when you publish</string>
+    <string name="profile_information_required">Please provide your name (or pseudonym) and email address.</string>
     <string name="verse_out_of_bounds">Choose a verse between <xliff:g example="1" id="number">%1$s</xliff:g> and <xliff:g example="100" id="number">%2$s</xliff:g></string>
     <string name="no_key_terms">There are no Words</string>
     <string name="title_activity_developer">Developer Tools</string>

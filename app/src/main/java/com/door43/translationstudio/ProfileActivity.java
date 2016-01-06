@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.EditText;
 
 import com.door43.translationstudio.core.Profile;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.home.HomeActivity;
 
@@ -31,14 +32,21 @@ public class ProfileActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 // TODO: Support multiple profiles.
-                List<Profile> profiles = new ArrayList<>();
-                profiles.add(new Profile(
+                Profile profile = new Profile(
                         mName.getText().toString(),
                         mEmail.getText().toString(),
-                        mPhone.getText().toString()));
-                AppContext.setProfiles(profiles);
+                        mPhone.getText().toString());
 
-                openMainActivity();
+                if (profile.isValid()) {
+                    List<Profile> profiles = new ArrayList<>();
+                    profiles.add(profile);
+                    AppContext.setProfiles(profiles);
+                    openMainActivity();
+                } else {
+                    CustomAlertDialog.Create(ProfileActivity.this)
+                            .setMessage(R.string.profile_information_required)
+                            .show("Profile");
+                }
             }
         });
         findViewById(R.id.cancel_button).setOnClickListener(new View.OnClickListener() {
