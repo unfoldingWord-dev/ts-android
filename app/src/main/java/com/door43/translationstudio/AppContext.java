@@ -102,11 +102,12 @@ public class AppContext {
     }
 
     /**
-     * Returns an instance of the translator
+     * Returns an instance of the translator.
+     * Target translations are stored in the public directory so that they persist if the app is uninstalled.
      * @return
      */
     public static Translator getTranslator() {
-        return new Translator(mContext, new File(mContext.getFilesDir(), TARGET_TRANSLATIONS_DIR));
+        return new Translator(mContext, new File(getPublicDirectory(), TARGET_TRANSLATIONS_DIR));
     }
 
     /**
@@ -186,6 +187,11 @@ public class AppContext {
         return dir;
     }
 
+    /**
+     * Returns the path to the public files directory.
+     * Files saved in this direcory will not be removed when the application is uninstalled
+     * @return
+     */
     public static File getPublicDirectory() {
         File dir = new File(Environment.getExternalStorageDirectory(), "translationStudio");
         dir.mkdirs();
