@@ -17,6 +17,7 @@ import java.util.List;
 
 /**
  * Holds details about the translation archive
+ * TODO: this duplicates a lot of code from ArchiveImporter. Eventually it might be nice to refactor both so that there is less duplication.
  */
 public class ArchiveDetails {
     public final long createdAt;
