@@ -449,21 +449,19 @@ public class AppContext {
      * @return A list of {@link Profile} objects; or an empty list if not set, or on error.
      */
     public static List<Profile> getProfiles() {
-        String profilesEncoded = getUserString(SettingsActivity.KEY_PREF_PROFILES, null);
-        if (profilesEncoded == null) {
-            return null;
-        }
-
         try {
-            JSONArray profilesJson = new JSONArray(profilesEncoded);
-            return Profile.decodeJsonArray(profilesJson);
+            String profilesEncoded = getUserString(SettingsActivity.KEY_PREF_PROFILES, null);
+            if (profilesEncoded != null) {
+                JSONArray profilesJson = new JSONArray(profilesEncoded);
+                return Profile.decodeJsonArray(profilesJson);
+            }
         }
         catch (Exception e) {
             // There are lots of ways for this to fail, none of which are particularly serious.
             // In this case, log the result but allow the data to be lost.
             Logger.e("", "getProfiles: Failed to parse profile data", e);
-            return new ArrayList<Profile>();
         }
+        return new ArrayList<Profile>();
     }
 
     /**

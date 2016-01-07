@@ -45,6 +45,7 @@ public class ProfileActivity extends BaseActivity {
                 } else {
                     CustomAlertDialog.Create(ProfileActivity.this)
                             .setMessage(R.string.profile_information_required)
+                            .setPositiveButton(R.string.label_ok, null)
                             .show("Profile");
                 }
             }

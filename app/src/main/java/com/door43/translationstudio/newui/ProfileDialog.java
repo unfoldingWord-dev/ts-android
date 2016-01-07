@@ -13,7 +13,9 @@ import android.widget.EditText;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Profile;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -58,27 +60,49 @@ public class ProfileDialog extends DialogFragment {
         confirmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Profile profile = new Profile(
-                        name.getText().toString(),
-                        email.getText().toString(),
-                        phone.getText().toString());
-
-                // If there is no profile set, save it.
-                // If there are more than one, only set 0 for now.
-                // TODO: Support multiple profiles.
-                List<Profile> profiles = AppContext.getProfiles();
-                if (profiles.isEmpty()) {
-                    profiles.add(profile);
-                } else {
-                    profiles.set(0, profile);
+                if (persistChanges(name, email, phone)) {
+                    dismiss();
                 }
-
-                AppContext.setProfiles(profiles);
-                dismiss();
             }
         });
 
         return v;
+    }
+
+    /**
+     * Given user-entered values, save them if possible.
+     *
+     * @param name
+     * @param email
+     * @param phone
+     * @return true if the input was sufficiently well-formed to save; otherwise false.
+     */
+    private boolean persistChanges(EditText name, EditText email, EditText phone) {
+        Profile profile = new Profile(
+                name.getText().toString(),
+                email.getText().toString(),
+                phone.getText().toString());
+
+        if (!profile.isValid()) {
+            CustomAlertDialog.Create(getActivity())
+                    .setMessage(R.string.profile_information_required)
+                    .setPositiveButton(R.string.label_ok, null)
+                    .show("Profile");
+            return false;
+        }
+
+        // If there is no profile set, save it.
+        // If there are more than one, only set 0 for now.
+        // TODO: Support multiple profiles.
+        List<Profile> profiles = AppContext.getProfiles();
+        if (profiles.isEmpty()) {
+            profiles.add(profile);
+        } else {
+            profiles.set(0, profile);
+        }
+
+        AppContext.setProfiles(profiles);
+        return true;
     }
 
     @Override
