@@ -1,5 +1,7 @@
 package com.door43.translationstudio.core;
 
+import android.support.annotation.Nullable;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -12,9 +14,9 @@ import java.util.List;
  * Created by jshuma on 1/4/16.
  */
 public class Profile implements Serializable {
-    public final String name;
-    public final String email;
-    public final String phone;
+    @Nullable public final String name;
+    @Nullable public final String email;
+    @Nullable public final String phone;
 
     private static final String TAG_NAME = "name";
     private static final String TAG_PHONE = "phone";
@@ -60,6 +62,13 @@ public class Profile implements Serializable {
         return (name != null) ? new Profile(name, email, phone) : null;
     }
 
+    /**
+     * Given a JSONArray representing user preferences, return the objects encoded by this.
+     *
+     * @param a The JSONArray described
+     * @return The objects encoded, or an empty list. Never null.
+     * @throws JSONException on error
+     */
     public static List<Profile> decodeJsonArray(JSONArray a) throws JSONException {
         List<Profile> profiles = new ArrayList<>(a.length());
         for (int i = 0; i < a.length(); ++i) {
