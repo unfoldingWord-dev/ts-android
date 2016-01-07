@@ -43,7 +43,7 @@ android:animateLayoutChanges="true">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/your_name"
+                android:text="@string/name"
                 android:textSize="@dimen/body" />
             <EditText
                 android:layout_width="match_parent"
@@ -57,7 +57,7 @@ android:animateLayoutChanges="true">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/your_email"
+                android:text="@string/email"
                 android:textSize="@dimen/body"/>
             <EditText
                 android:layout_width="match_parent"
@@ -71,7 +71,7 @@ android:animateLayoutChanges="true">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/your_phone"
+                android:text="@string/phone"
                 android:textSize="@dimen/body"/>
             <EditText
                 android:layout_width="match_parent"
