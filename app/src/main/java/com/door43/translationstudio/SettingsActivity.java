@@ -2,6 +2,7 @@ package com.door43.translationstudio;
 
 import android.annotation.TargetApi;
 import android.app.Dialog;
+import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
@@ -357,21 +358,29 @@ public class SettingsActivity extends PreferenceActivity {
 
             final Preference profilesPref = findPreference(KEY_PREF_PROFILES);
             profilesPref.setSummary(AppContext.getProfileSummary());
+            final ProfileDialog.OnDismissListener onDismissListener =
+                    new ProfileDialog.OnDismissListener() {
+                        @Override
+                        public void onDismiss() {
+                            profilesPref.setSummary(AppContext.getProfileSummary());
+                        }
+                    };
             profilesPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
                     ProfileDialog d = new ProfileDialog();
                     FragmentTransaction ft = getFragmentManager().beginTransaction();
                     d.show(ft, ProfileDialog.TAG);
-                    d.setOnDismissListener(new ProfileDialog.OnDismissListener() {
-                        @Override
-                        public void onDismiss() {
-                            profilesPref.setSummary(AppContext.getProfileSummary());
-                        }
-                    });
+                    d.setOnDismissListener(onDismissListener);
                     return true;
                 }
             });
+            // If the dialog was created from a previous incantation of this activity, tell it about
+            // the new place where it should persist its results.
+            Fragment prev = getFragmentManager().findFragmentByTag(ProfileDialog.TAG);
+            if (prev != null) {
+                ((ProfileDialog)prev).setOnDismissListener(onDismissListener);
+            }
 
             ListPreference fontPref = (ListPreference)findPreference(KEY_PREF_TRANSLATION_TYPEFACE);
             fontPref.setEntries(entries.toArray(new CharSequence[entries.size()]));
