@@ -98,14 +98,6 @@ public class MainApplication extends Application {
 //    }
 
     /**
-     * Checks if the app should use the saved positions.
-     * @return
-     */
-    public boolean rememberLastPosition() {
-        return getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)));
-    }
-
-    /**
      * Checks if the app should always share resources.
      * @return
      */

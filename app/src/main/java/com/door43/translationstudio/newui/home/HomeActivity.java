@@ -1,6 +1,5 @@
 package com.door43.translationstudio.newui.home;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Intent;
@@ -28,13 +27,11 @@ import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationAct
 import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.AppContext;
-import com.door43.translationstudio.util.SdUtils;
 import com.door43.widget.ViewUtil;
 
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.util.List;
 import java.util.Locale;
 
 public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
@@ -43,6 +40,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
     private Library mLibrary;
     private Translator mTranslator;
     private Fragment mFragment;
+    private boolean mInitialOpen = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -171,6 +169,17 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
         super.onResume();
 
         int numTranslations = mTranslator.getTargetTranslations().length;
+
+        boolean initialOpen = mInitialOpen;
+        mInitialOpen = false;
+        if(initialOpen) { // on startup open last project
+            TargetTranslation targetTranslation = getLastOpened();
+            if (targetTranslation != null) {
+                onItemClick(targetTranslation);
+                return;
+            }
+        }
+
         if(numTranslations > 0 && mFragment instanceof WelcomeFragment) {
             // display target translations list
             mFragment = new TargetTranslationListFragment();
@@ -185,6 +194,21 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
             // reload list
             ((TargetTranslationListFragment)mFragment).reloadList();
         }
+    }
+
+    /**
+     * get last project opened and make sure it is still present
+     * @return
+     */
+    private TargetTranslation getLastOpened() {
+        String lastTarget = AppContext.getLastFocusTargetTranslation();
+        if (lastTarget != null) {
+            TargetTranslation targetTranslation = mTranslator.getTargetTranslation(lastTarget);
+            if (targetTranslation != null) {
+                return targetTranslation;
+            }
+        }
+        return null;
     }
 
     @Override
