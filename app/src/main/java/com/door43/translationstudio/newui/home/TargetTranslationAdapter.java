@@ -10,9 +10,11 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
+import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.AppContext;
 import com.door43.util.tasks.ThreadableUI;
@@ -69,7 +71,7 @@ public class TargetTranslationAdapter extends BaseAdapter {
     @Override
     public View getView(final int position, View convertView, final ViewGroup parent) {
         View v = convertView;
-        ViewHolder holder;
+        final ViewHolder holder;
 
         if(convertView == null) {
             v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_target_translation_list_item, null);
@@ -139,6 +141,37 @@ public class TargetTranslationAdapter extends BaseAdapter {
             }
         });
 
+        // check for draft language
+        boolean enableSettings = false;
+        if(library != null) {
+            String targetProjectID = targetTranslation.getProjectId();
+            String targetLanguageID = targetTranslation.getTargetLanguageId();
+            TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
+            for(TargetTranslation t:targetTranslations) {
+                Logger.i(this.getClass().toString(), "TargetTranslation:" + t.getId());
+                String projectID = t.getProjectId();
+                String languageID = t.getTargetLanguageId();
+                if(targetProjectID.equals(projectID) && targetLanguageID.equals(languageID)) {
+                    SourceTranslation[] sourceTranslations = library.getDraftTranslations(t.getProjectId());
+                    for (SourceTranslation s : sourceTranslations) {
+                        String draftLanguageID = s.sourceLanguageSlug;
+                        if(targetLanguageID.equals(draftLanguageID)) {
+                            Logger.i(this.getClass().toString(), ".....SourceTranslation:" + s.getId());
+                            enableSettings = true;
+                            holder.mDraftTranslation = s;
+                        }
+                    }
+                }
+            }
+        }
+
+        holder.mSettingsButton.setVisibility(enableSettings ? View.VISIBLE : View.GONE);
+        holder.mSettingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Logger.i(this.getClass().toString(),"settings button click, draft translation: " + holder.mDraftTranslation.getId());
+            }
+        });
 
         return v;
     }
@@ -161,8 +194,10 @@ public class TargetTranslationAdapter extends BaseAdapter {
         public TextView mLanguageView;
         public ProgressPieView mProgressView;
         public ImageButton mInfoButton;
+        public ImageButton mSettingsButton;
         public ThreadableUI mProgressTask;
         public int mCalculatingProgressForPosition = -1;
+        public SourceTranslation mDraftTranslation;
 
         public ViewHolder(View view, Context context) {
             mIconView = (ImageView) view.findViewById(R.id.projectIcon);
@@ -171,6 +206,7 @@ public class TargetTranslationAdapter extends BaseAdapter {
             mProgressView = (ProgressPieView) view.findViewById(R.id.translationProgress);
             mProgressView.setMax(100);
             mInfoButton = (ImageButton) view.findViewById(R.id.infoButton);
+            mSettingsButton = (ImageButton) view.findViewById(R.id.settings);
             ViewUtil.tintViewDrawable(mInfoButton, context.getResources().getColor(R.color.dark_disabled_text));
             view.setTag(this);
         }

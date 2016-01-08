@@ -151,7 +151,6 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                 return;
             }
         }
-
     }
 
     /**
