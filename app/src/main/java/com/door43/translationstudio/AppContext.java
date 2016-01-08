@@ -25,6 +25,7 @@ import org.json.JSONException;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -470,35 +471,85 @@ public class AppContext {
 
     /**
      * Returns information about the user of the application.
-     * @return A list of {@link Profile} objects, or {@code null} if not set.
+     *
+     * <p>This is a readable collection of information, not a "live-updating" reference to storage.
+     * To change the profiles in use, call {@link #setProfiles(List)}</p>.
+     *
+     * @return A list of {@link Profile} objects; or an empty list if not set, or on error.
      */
     public static List<Profile> getProfiles() {
-        String profilesEncoded = getUserString(SettingsActivity.KEY_PROFILES, null);
-        if (profilesEncoded == null) {
-            return null;
-        }
-
         try {
-            JSONArray profilesJson = new JSONArray(profilesEncoded);
-            return Profile.decodeJsonArray(profilesJson);
+            String profilesEncoded = getUserString(SettingsActivity.KEY_PREF_PROFILES, null);
+            if (profilesEncoded != null) {
+                JSONArray profilesJson = new JSONArray(profilesEncoded);
+                return Profile.decodeJsonArray(profilesJson);
+            }
         }
         catch (Exception e) {
             // There are lots of ways for this to fail, none of which are particularly serious.
             // In this case, log the result but allow the data to be lost.
             Logger.e("", "getProfiles: Failed to parse profile data", e);
-            return null;
         }
+        return new ArrayList<Profile>();
     }
 
+    /**
+     * Set the user's default profile, used to populate translator information when creating a new
+     * translation.
+     *
+     * <p>This persists the information but does not retain a reference to it. Changes to the
+     * argument made after this call are not persisted.</p>
+     *
+     * @param profiles A list of profile objects.
+     */
     public static void setProfiles(List<Profile> profiles) {
         try {
             String profilesJson = Profile.encodeJsonArray(profiles).toString();
-            setUserString(SettingsActivity.KEY_PROFILES, profilesJson);
+            setUserString(SettingsActivity.KEY_PREF_PROFILES, profilesJson);
         }
         catch (JSONException e) {
             // Failures to save are not particularly severe. Log and continue.
             Logger.e("", "setProfiles: Failed to encode profile data", e);
         }
+    }
+
+    /**
+     * Returns a human-readable string summarizing the user's profile settings, suitable for
+     * display as a single string.
+     *
+     * @return A string, or the empty string if nothing is set
+     */
+    public static String getProfileSummary() {
+        List<Profile> profiles = getProfiles();
+
+        StringBuilder all = new StringBuilder();
+        StringBuilder single = new StringBuilder();
+
+        for (Profile profile : profiles) {
+            // Prepare a summary of the profile we're examining right now.
+            String[] fields = { profile.name, profile.email, profile.phone };
+            for (String field : fields) {
+                if (field == null || field.isEmpty()) {
+                    continue;
+                }
+
+                if (single.length() > 0) {
+                    single.append(", ");
+                }
+
+                single.append(field);
+            }
+
+            // Add the single-profile summary to the overall summary. But only include it if
+            // this profile has a summary (i.e., prefer "foo, bar; baz" to "foo, bar; ; baz").
+            if (all.length() > 0 && single.length() > 0) {
+                all.append("; ");
+            }
+            all.append(single);
+            single.delete(0, single.length());
+        }
+
+        return all.toString();
     }
 
     /**
