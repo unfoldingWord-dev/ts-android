@@ -73,8 +73,7 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
             throw new InvalidParameterException("The target translation id was not specified");
         }
 
-        // TODO: 11/11/2015 check if at least one translator has been recorded on this target translation
-        // if there are no translators the user must be presented with a form to enter a translator.
+        mTargetTranslation.applyDefaultTranslatorsIfNoneSpecified();
 
         Button backupToCloudButton = (Button)v.findViewById(R.id.backup_to_cloud);
         Button backupToSDButton = (Button)v.findViewById(R.id.backup_to_sd);

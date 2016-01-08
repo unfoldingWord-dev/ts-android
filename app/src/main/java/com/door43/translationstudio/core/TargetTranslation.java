@@ -366,6 +366,21 @@ public class TargetTranslation {
     }
 
     /**
+     * If there are no translators specified from a project, this sets them from the defaults.
+     * If there are translators specified, this does nothing.
+     */
+    public void applyDefaultTranslatorsIfNoneSpecified() {
+        if (getTranslators().isEmpty()) {
+            // TODO: 1/7/2016 we should only add the open profile (e.g. the current user) as a translator
+            List<Profile> profiles = AppContext.getProfiles();
+            List<NativeSpeaker> translators = NativeSpeaker.nativeSpeakersFromProfiles(profiles);
+            for (NativeSpeaker translator : translators) {
+                addTranslator(translator);
+            }
+        }
+    }
+
+    /**
      * Returns the translation of a frame
      *
      * @param frame
