@@ -56,7 +56,6 @@ public class SettingsActivity extends PreferenceActivity {
     public static final String KEY_PREF_AUTH_SERVER_PORT = "auth_server_port";
     public static final String KEY_PREF_GIT_SERVER = "git_server";
     public static final String KEY_PREF_GIT_SERVER_PORT = "git_server_port";
-    public static final String KEY_PREF_REMEMBER_POSITION = "remember_position";
     public static final String KEY_PREF_ALWAYS_SHARE = "always_share";
     public static final String KEY_PREF_MEDIA_SERVER = "media_server";
 //    public static final String KEY_PREF_EXPORT_FORMAT = "export_format";

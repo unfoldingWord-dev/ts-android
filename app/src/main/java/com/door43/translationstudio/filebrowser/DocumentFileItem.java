@@ -114,7 +114,7 @@ public class DocumentFileItem {
                 && file != null
                 && file.isDirectory()
                 && file.getName().equalsIgnoreCase("backups")
-                && file.getParentFile().getName().equalsIgnoreCase("translationStudio");
+                && file.getParentFile().getName().equalsIgnoreCase(AppContext.TRANSLATION_STUDIO);
     }
 
     /**

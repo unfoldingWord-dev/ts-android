@@ -396,7 +396,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         if(mGesture != null) {
             return mGesture.onTouchEvent(event);
         } else {
-            Logger.w(this.getClass().getName(), "The gesture dectector was not initialized so the touch was not handled");
+            Logger.w(this.getClass().getName(), "The gesture detector was not initialized so the touch was not handled");
             return false;
         }
     }

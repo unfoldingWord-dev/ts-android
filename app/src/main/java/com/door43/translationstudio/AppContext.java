@@ -36,6 +36,13 @@ public class AppContext {
     private static final String TARGET_TRANSLATIONS_DIR = "translations";
     public static final String PROFILES_DIR = "profiles";
     public static final String TRANSLATION_STUDIO = "translationStudio";
+    public static final String LAST_VIEW_MODE = "last_view_mode_";
+    public static final String LAST_FOCUS_CHAPTER = "last_focus_chapter_";
+    public static final String LAST_FOCUS_FRAME = "last_focus_frame_";
+    public static final String OPEN_SOURCE_TRANSLATIONS = "open_source_translations_";
+    public static final String SELECTED_SOURCE_TRANSLATION = "selected_source_translation_";
+    public static final String LAST_CHECKED_SERVER_FOR_UPDATES = "last_checked_server_for_updates";
+    public static final String LAST_TRANSLATION = "last_translation";
     private static MainApplication mContext;
     public static final Bundle args = new Bundle();
     private static boolean loaded;
@@ -166,10 +173,10 @@ public class AppContext {
             if(removeableMediaInfo != null) {
                 dir = new File("/storage/" + removeableMediaInfo.getMountName() + SdUtils.DOWNLOAD_TRANSLATION_STUDIO_FOLDER);
             } else {
-                dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "translationStudio");
+                dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), TRANSLATION_STUDIO);
             }
         } else {
-            dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "translationStudio");
+            dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), TRANSLATION_STUDIO);
         }
         dir.mkdirs();
         return dir;
@@ -206,7 +213,7 @@ public class AppContext {
     public static void setLastViewMode(String targetTranslationId, TranslationViewMode viewMode) {
         SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("last_view_mode_" + targetTranslationId, viewMode.toString());
+        editor.putString(LAST_VIEW_MODE + targetTranslationId, viewMode.toString());
         editor.apply();
     }
 
@@ -219,11 +226,32 @@ public class AppContext {
      */
     public static TranslationViewMode getLastViewMode(String targetTranslationId) {
         SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
-        TranslationViewMode viewMode = TranslationViewMode.get(prefs.getString("last_view_mode_" + targetTranslationId, null));
+        TranslationViewMode viewMode = TranslationViewMode.get(prefs.getString(LAST_VIEW_MODE + targetTranslationId, null));
         if(viewMode == null) {
             return TranslationViewMode.READ;
         }
         return viewMode;
+    }
+
+    /**
+     * Returns the last focused target translation
+     * @return
+     */
+    public static String getLastFocusTargetTranslation() {
+        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        return prefs.getString(LAST_TRANSLATION, null);
+    }
+
+
+    /**
+     * Sets the last focused target translation
+     * @param targetTranslationId
+     */
+    public static void setLastFocusTargetTranslation(String targetTranslationId) {
+        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(LAST_TRANSLATION, targetTranslationId);
+        editor.apply();
     }
 
     /**
@@ -235,9 +263,10 @@ public class AppContext {
     public static void setLastFocus(String targetTranslationId, String chapterId, String frameId) {
         SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("last_focus_chapter_" + targetTranslationId, chapterId);
-        editor.putString("last_focus_frame_" + targetTranslationId, frameId);
+        editor.putString(LAST_FOCUS_CHAPTER + targetTranslationId, chapterId);
+        editor.putString(LAST_FOCUS_FRAME + targetTranslationId, frameId);
         editor.apply();
+        setLastFocusTargetTranslation(targetTranslationId);
     }
 
     /**
@@ -247,7 +276,7 @@ public class AppContext {
      */
     public static String getLastFocusChapterId(String targetTranslationId) {
         SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
-        return prefs.getString("last_focus_chapter_" + targetTranslationId, null);
+        return prefs.getString(LAST_FOCUS_CHAPTER + targetTranslationId, null);
     }
 
     /**
@@ -257,7 +286,7 @@ public class AppContext {
      */
     public static String getLastFocusFrameId(String targetTranslationId) {
         SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
-        return prefs.getString("last_focus_frame_" + targetTranslationId, null);
+        return prefs.getString(LAST_FOCUS_FRAME + targetTranslationId, null);
     }
 
     /**
@@ -277,7 +306,7 @@ public class AppContext {
                 }
             }
             newIdSet += sourceTranslationId;
-            editor.putString("open_source_translations_" + targetTranslationId, newIdSet);
+            editor.putString(OPEN_SOURCE_TRANSLATIONS + targetTranslationId, newIdSet);
             editor.apply();
         }
     }
@@ -305,7 +334,7 @@ public class AppContext {
                     setSelectedSourceTranslation(targetTranslationId, null);
                 }
             }
-            editor.putString("open_source_translations_" + targetTranslationId, newIdSet);
+            editor.putString(OPEN_SOURCE_TRANSLATIONS + targetTranslationId, newIdSet);
             editor.apply();
         }
     }
@@ -317,7 +346,7 @@ public class AppContext {
      */
     public static String[] getOpenSourceTranslationIds(String targetTranslationId) {
         SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
-        String idSet = prefs.getString("open_source_translations_" + targetTranslationId, "").trim();
+        String idSet = prefs.getString(OPEN_SOURCE_TRANSLATIONS + targetTranslationId, "").trim();
         if(idSet.isEmpty()) {
             return new String[0];
         } else {
@@ -334,9 +363,9 @@ public class AppContext {
         SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         if(sourceTranslationId != null && !sourceTranslationId.isEmpty()) {
-            editor.putString("selected_source_translation_" + targetTranslationId, sourceTranslationId);
+            editor.putString(SELECTED_SOURCE_TRANSLATION + targetTranslationId, sourceTranslationId);
         } else {
-            editor.remove("selected_source_translation_"  + targetTranslationId);
+            editor.remove(SELECTED_SOURCE_TRANSLATION + targetTranslationId);
         }
         editor.apply();
     }
@@ -349,7 +378,7 @@ public class AppContext {
      */
     public static String getSelectedSourceTranslationId(String targetTranslationId) {
         SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
-        String selectedSourceTranslationId = prefs.getString("selected_source_translation_" + targetTranslationId, null);
+        String selectedSourceTranslationId = prefs.getString(SELECTED_SOURCE_TRANSLATION + targetTranslationId, null);
         if(selectedSourceTranslationId == null || selectedSourceTranslationId.isEmpty()) {
             // default to first tab
             String[] openSourceTranslationIds = getOpenSourceTranslationIds(targetTranslationId);
@@ -368,11 +397,11 @@ public class AppContext {
     public static void clearTargetTranslationSettings(String targetTranslationId) {
         SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.remove("selected_source_translation_" + targetTranslationId);
-        editor.remove("open_source_translations_" + targetTranslationId);
-        editor.remove("last_focus_frame_" + targetTranslationId);
-        editor.remove("last_focus_chapter_" + targetTranslationId);
-        editor.remove("last_view_mode_" + targetTranslationId);
+        editor.remove(SELECTED_SOURCE_TRANSLATION + targetTranslationId);
+        editor.remove(OPEN_SOURCE_TRANSLATIONS + targetTranslationId);
+        editor.remove(LAST_FOCUS_FRAME + targetTranslationId);
+        editor.remove(LAST_FOCUS_CHAPTER + targetTranslationId);
+        editor.remove(LAST_VIEW_MODE + targetTranslationId);
         editor.apply();
     }
 
@@ -401,7 +430,7 @@ public class AppContext {
      */
     public static long getLastCheckedForUpdates() {
         SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
-        return prefs.getLong("last_checked_server_for_updates", 0L);
+        return prefs.getLong(LAST_CHECKED_SERVER_FOR_UPDATES, 0L);
     }
 
     /**
@@ -411,7 +440,7 @@ public class AppContext {
     public static void setLastCheckedForUpdates(long timeMillis) {
         SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putLong("last_checked_server_for_updates", timeMillis);
+        editor.putLong(LAST_CHECKED_SERVER_FOR_UPDATES, timeMillis);
         editor.apply();
     }
 
