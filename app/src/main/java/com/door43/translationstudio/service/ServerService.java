@@ -16,7 +16,6 @@ import com.door43.translationstudio.network.Connection;
 import com.door43.translationstudio.network.Peer;
 import com.door43.util.RSAEncryption;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -298,6 +297,7 @@ public class ServerService extends NetworkService {
                 TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationSlug);
                 if(targetTranslation != null) {
                     try {
+                        targetTranslation.applyDefaultTranslatorsIfNoneSpecified();
                         translator.exportArchive(targetTranslation, exportFile);
                         if(exportFile.exists()) {
                             ServerSocket fileSocket = openWriteSocket(new OnSocketEventListener() {
