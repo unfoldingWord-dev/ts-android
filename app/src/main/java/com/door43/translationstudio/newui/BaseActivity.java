@@ -28,7 +28,8 @@ public abstract class BaseActivity extends AppCompatActivity {
                 && this instanceof LegalDocumentActivity == false
                 && this instanceof SplashScreenActivity == false
                 && this instanceof CrashReporterActivity == false
-                && this instanceof ImportFileChooserActivity == false) {
+                && this instanceof ImportFileChooserActivity == false
+                && this instanceof DraftPreviewActivity == false) {
             // check if we crashed or if we need to reload
             File dir = new File(getExternalCacheDir(), AppContext.context().STACKTRACE_DIR);
             String[] crashFiles = GlobalExceptionHandler.getStacktraces(dir);

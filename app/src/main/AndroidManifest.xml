@@ -26,19 +26,19 @@
 
         <service
             android:name=".service.BackupService"
-            android:label="Backup Manager"></service>
+            android:label="Backup Manager" />
         <service
             android:name=".service.BroadcastService"
-            android:label="Services Broadcaster"></service>
+            android:label="Services Broadcaster" />
         <service
             android:name=".service.BroadcastListenerService"
-            android:label="Services Listener"></service>
+            android:label="Services Listener" />
         <service
             android:name=".service.ServerService"
-            android:label="Server Service"></service>
+            android:label="Server Service" />
         <service
             android:name=".service.ClientService"
-            android:label="Client Service"></service>
+            android:label="Client Service" />
 
         <activity
             android:name=".TermsOfUseActivity"
@@ -53,7 +53,7 @@
         <activity
             android:name=".SplashScreenActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
@@ -64,11 +64,10 @@
         </activity>
         <activity
             android:name=".CrashReporterActivity"
-            android:label="@string/title_activity_crash_reporter"></activity>
+            android:label="@string/title_activity_crash_reporter" />
         <activity
             android:name=".ImportFileChooserActivity"
-            android:label="@string/title_file_browser" >
-        </activity>
+            android:label="@string/title_file_browser"></activity>
         <activity
             android:name=".device2device.DeviceToDeviceActivity"
             android:label="@string/title_activity_sharing"
@@ -120,7 +119,7 @@
         <activity
             android:name=".newui.home.HomeActivity"
             android:label="@string/title_activity_target_translations"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".newui.newtranslation.NewTargetTranslationActivity"
             android:label="@string/title_activity_new_target_translation"
@@ -141,7 +140,7 @@
         <activity
             android:name=".newui.publish.PublishActivity"
             android:label="@string/title_activity_publish"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".newui.legal.LegalDocumentActivity"
             android:label=""
@@ -155,7 +154,16 @@
         <activity
             android:name=".ProfileActivity"
             android:label="@string/title_activity_profile"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".newui.DraftPreviewActivity"
+            android:label="@string/title_activity_draft_preview"
+            android:parentActivityName=".BaseActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="BaseActivity" />
+        </activity>
     </application>
 
 </manifest>

@@ -626,4 +626,5 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="import_failed">Failed Import from:</string>
     <string name="backup_success">Success Backing up to:</string>
     <string name="import_success">Success Importing from:</string>
+    <string name="title_activity_draft_preview">DraftPreviewActivity</string>
 </resources>

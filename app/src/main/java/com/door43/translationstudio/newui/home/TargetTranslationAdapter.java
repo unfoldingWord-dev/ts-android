@@ -2,6 +2,7 @@ package com.door43.translationstudio.newui.home;
 
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,7 @@ import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.newui.DraftPreviewActivity;
 import com.door43.util.tasks.ThreadableUI;
 import com.door43.widget.ViewUtil;
 import com.filippudak.ProgressPieView.ProgressPieView;
@@ -169,7 +171,11 @@ public class TargetTranslationAdapter extends BaseAdapter {
         holder.mSettingsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Logger.i(this.getClass().toString(),"settings button click, draft translation: " + holder.mDraftTranslation.getId());
+                Logger.i(this.getClass().toString(), "settings button click, draft translation: " + holder.mDraftTranslation.getId());
+                Intent intent = new Intent(mContext, DraftPreviewActivity.class);
+                intent.setType(holder.mDraftTranslation.getId());
+                HomeActivity activity = (HomeActivity) mContext;
+                activity.startActivityForResult(intent, DraftPreviewActivity.VERIFY_EDIT_OF_DRAFT);
             }
         });
 

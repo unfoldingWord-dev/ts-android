@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Library;
@@ -21,6 +22,7 @@ import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
+import com.door43.translationstudio.newui.DraftPreviewActivity;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
@@ -225,8 +227,14 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
     }
 
    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == NEW_TARGET_TRANSLATION_REQUEST) {
-            if(resultCode == RESULT_OK) {
+        if(DraftPreviewActivity.VERIFY_EDIT_OF_DRAFT == requestCode) {
+            String type = data.getType();
+            if(RESULT_OK == resultCode ) {
+                Logger.i(this.getClass().toString(), "Selection type: " + type + ", result:" + resultCode);
+            }
+        } else
+        if(NEW_TARGET_TRANSLATION_REQUEST == requestCode ) {
+            if(RESULT_OK == resultCode ) {
                 if(mFragment instanceof WelcomeFragment) {
                     // display target translations list
                     mFragment = new TargetTranslationListFragment();
@@ -239,7 +247,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                 Intent intent = new Intent(HomeActivity.this, TargetTranslationActivity.class);
                 intent.putExtra(TargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID, data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID));
                 startActivity(intent);
-            } else if(resultCode == NewTargetTranslationActivity.RESULT_DUPLICATE) {
+            } else if( NewTargetTranslationActivity.RESULT_DUPLICATE == resultCode ) {
                 // display duplicate notice to user
                 String targetTranslationId = data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID);
                 TargetTranslation existingTranslation = mTranslator.getTargetTranslation(targetTranslationId);
