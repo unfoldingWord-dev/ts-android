@@ -40,7 +40,6 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
     private Library mLibrary;
     private Translator mTranslator;
     private Fragment mFragment;
-    private boolean mInitialOpen = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -143,6 +142,16 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                 moreMenu.show();
             }
         });
+
+        boolean initialOpen = (null==savedInstanceState);
+        if(initialOpen) { // on startup open last project
+            TargetTranslation targetTranslation = getLastOpened();
+            if (targetTranslation != null) {
+                onItemClick(targetTranslation);
+                return;
+            }
+        }
+
     }
 
     /**
@@ -169,16 +178,6 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
         super.onResume();
 
         int numTranslations = mTranslator.getTargetTranslations().length;
-
-        boolean initialOpen = mInitialOpen;
-        mInitialOpen = false;
-        if(initialOpen) { // on startup open last project
-            TargetTranslation targetTranslation = getLastOpened();
-            if (targetTranslation != null) {
-                onItemClick(targetTranslation);
-                return;
-            }
-        }
 
         if(numTranslations > 0 && mFragment instanceof WelcomeFragment) {
             // display target translations list
