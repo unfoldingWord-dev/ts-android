@@ -144,29 +144,8 @@ public class TargetTranslationAdapter extends BaseAdapter {
         });
 
         // check for draft language
-        boolean enableSettings = false;
-        if(library != null) {
-            String targetProjectID = targetTranslation.getProjectId();
-            String targetLanguageID = targetTranslation.getTargetLanguageId();
-            TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
-            for(TargetTranslation t:targetTranslations) {
-                Logger.i(this.getClass().toString(), "TargetTranslation:" + t.getId());
-                String projectID = t.getProjectId();
-                String languageID = t.getTargetLanguageId();
-                if(targetProjectID.equals(projectID) && targetLanguageID.equals(languageID)) {
-                    SourceTranslation[] sourceTranslations = library.getDraftTranslations(t.getProjectId());
-                    for (SourceTranslation s : sourceTranslations) {
-                        String draftLanguageID = s.sourceLanguageSlug;
-                        if(targetLanguageID.equals(draftLanguageID)) {
-                            Logger.i(this.getClass().toString(), ".....SourceTranslation:" + s.getId());
-                            enableSettings = true;
-                            holder.mDraftTranslation = s;
-                        }
-                    }
-                }
-            }
-        }
-
+        holder.mDraftTranslation = library.getDraftSourceTranslation(targetTranslation.getTargetLanguageId(),targetTranslation.getProjectId());
+        boolean enableSettings = holder.mDraftTranslation != null;
         holder.mSettingsButton.setVisibility(enableSettings ? View.VISIBLE : View.GONE);
         holder.mSettingsButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -174,6 +153,7 @@ public class TargetTranslationAdapter extends BaseAdapter {
                 Logger.i(this.getClass().toString(), "settings button click, draft translation: " + holder.mDraftTranslation.getId());
                 Intent intent = new Intent(mContext, DraftPreviewActivity.class);
                 intent.setType(holder.mDraftTranslation.getId());
+                intent.putExtra(DraftPreviewActivity.EXTRA_SOURCE_TRANSLATION_ID, holder.mDraftTranslation.getId());
                 HomeActivity activity = (HomeActivity) mContext;
                 activity.startActivityForResult(intent, DraftPreviewActivity.VERIFY_EDIT_OF_DRAFT);
             }

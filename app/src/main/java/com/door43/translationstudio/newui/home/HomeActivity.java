@@ -5,6 +5,7 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.os.Bundle;
@@ -19,6 +20,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
+import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
@@ -200,6 +202,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
      * get last project opened and make sure it is still present
      * @return
      */
+    @Nullable
     private TargetTranslation getLastOpened() {
         String lastTarget = AppContext.getLastFocusTargetTranslation();
         if (lastTarget != null) {
