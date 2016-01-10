@@ -63,19 +63,26 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         mTranslator = AppContext.getTranslator();
 
         Bundle args = getArguments();
-        String targetTranslationId = args.getString(TargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID, null);
+        String targetTranslationId = args.getString(AppContext.EXTRA_TARGET_TRANSLATION_ID, null);
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         if(mTargetTranslation == null) {
             throw new InvalidParameterException("a valid target translation id is required");
         }
 
-        String chapterId = args.getString(TargetTranslationActivity.EXTRA_CHAPTER_ID, AppContext.getLastFocusChapterId(targetTranslationId));
-        String frameId = args.getString(TargetTranslationActivity.EXTRA_FRAME_ID, AppContext.getLastFocusFrameId(targetTranslationId));
+        String chapterId = args.getString(AppContext.EXTRA_CHAPTER_ID, AppContext.getLastFocusChapterId(targetTranslationId));
+        String frameId = args.getString(AppContext.EXTRA_FRAME_ID, AppContext.getLastFocusFrameId(targetTranslationId));
 
-        // open selected tab
-        mSourceTranslationId = AppContext.getSelectedSourceTranslationId(targetTranslationId);
+        // check if we have draft source
+        String draftTranslationId = args.getString(AppContext.EXTRA_SOURCE_DRAFT_TRANSLATION_ID, null);
+        if(null != draftTranslationId) {
+            SourceTranslation sourceTranslation = mLibrary.getDraftTranslation(draftTranslationId);
+            mSourceTranslationId = sourceTranslation.getId();
+        } else {
+            // open selected tab
+            mSourceTranslationId = AppContext.getSelectedSourceTranslationId(targetTranslationId);
+        }
 
-        if(mSourceTranslationId == null) {
+        if(null == mSourceTranslationId) {
             mListener.onNoSourceTranslations(targetTranslationId);
         } else {
             mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view);

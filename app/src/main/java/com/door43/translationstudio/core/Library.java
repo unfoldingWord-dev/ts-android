@@ -391,7 +391,7 @@ public class Library {
         // preferred language
         SourceLanguage sourceLanguage = getActiveIndex().getSourceLanguage(projectId, sourceLanguageSlug);
         // try to use default (en)
-        if(sourceLanguage == null || (!sourceLanguage.code.equals(sourceLanguageSlug) && !sourceLanguageSlug.equals("en"))) {
+        if (sourceLanguage == null || (!sourceLanguage.code.equals(sourceLanguageSlug) && !sourceLanguageSlug.equals("en"))) {
             sourceLanguage = getActiveIndex().getSourceLanguage(projectId, "en");
         }
         return sourceLanguage;
@@ -649,13 +649,25 @@ public class Library {
     }
 
     /**
+     * finds a specific draft source translation that matches ID or null if not present
+     * @param sourceTranslationID
+     * @return
+     */
+    @Nullable
+    public SourceTranslation getDraftTranslation(String sourceTranslationID) {
+        String projectID = SourceTranslation.getProjectIdFromId(sourceTranslationID);
+        String languageID = SourceTranslation.getSourceLanguageIdFromId(sourceTranslationID);
+        return getDraftTranslation( languageID, projectID);
+    }
+
+    /**
      * finds a specific draft source translation that matches parameters or null if not present
      * @param languageID
      * @param projectID
      * @return
      */
     @Nullable
-    public SourceTranslation getDraftSourceTranslation(String languageID, String projectID) {
+    public SourceTranslation getDraftTranslation(String languageID, String projectID) {
         SourceTranslation[] sourceTranslations = getDraftTranslations(projectID);
         for (SourceTranslation s : sourceTranslations) {
             String draftLanguageID = s.sourceLanguageSlug;

@@ -19,6 +19,7 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.newui.DraftPreviewActivity;
+import com.door43.translationstudio.newui.translate.ViewModeFragment;
 import com.door43.util.tasks.ThreadableUI;
 import com.door43.widget.ViewUtil;
 import com.filippudak.ProgressPieView.ProgressPieView;
@@ -29,7 +30,7 @@ import java.util.Locale;
  * Created by joel on 9/3/2015.
  */
 public class TargetTranslationAdapter extends BaseAdapter {
-
+    public static final int VERIFY_EDIT_OF_DRAFT = 142;
     private final Context mContext;
     private TargetTranslation[] mTranslations;
     private OnInfoClickListener mInfoClickListener = null;
@@ -144,7 +145,7 @@ public class TargetTranslationAdapter extends BaseAdapter {
         });
 
         // check for draft language
-        holder.mDraftTranslation = library.getDraftSourceTranslation(targetTranslation.getTargetLanguageId(),targetTranslation.getProjectId());
+        holder.mDraftTranslation = library.getDraftTranslation(targetTranslation.getTargetLanguageId(), targetTranslation.getProjectId());
         boolean enableSettings = holder.mDraftTranslation != null;
         holder.mSettingsButton.setVisibility(enableSettings ? View.VISIBLE : View.GONE);
         holder.mSettingsButton.setOnClickListener(new View.OnClickListener() {
@@ -153,9 +154,9 @@ public class TargetTranslationAdapter extends BaseAdapter {
                 Logger.i(this.getClass().toString(), "settings button click, draft translation: " + holder.mDraftTranslation.getId());
                 Intent intent = new Intent(mContext, DraftPreviewActivity.class);
                 intent.setType(holder.mDraftTranslation.getId());
-                intent.putExtra(DraftPreviewActivity.EXTRA_SOURCE_TRANSLATION_ID, holder.mDraftTranslation.getId());
+                intent.putExtra(AppContext.EXTRA_SOURCE_DRAFT_TRANSLATION_ID, holder.mDraftTranslation.getId());
                 HomeActivity activity = (HomeActivity) mContext;
-                activity.startActivityForResult(intent, DraftPreviewActivity.VERIFY_EDIT_OF_DRAFT);
+                activity.startActivityForResult(intent, VERIFY_EDIT_OF_DRAFT);
             }
         });
 

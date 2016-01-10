@@ -1,6 +1,5 @@
 package com.door43.translationstudio.newui;
 
-import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -8,24 +7,24 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.newui.translate.FirstTabFragment;
-import com.door43.translationstudio.newui.translate.ReadModeFragment;
-import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
+import com.door43.translationstudio.newui.translate.PreviewModeFragment;
 import com.door43.translationstudio.newui.translate.ViewModeFragment;
 
 import java.security.InvalidParameterException;
 
-public class DraftPreviewActivity extends BaseActivity {
-    public static final int VERIFY_EDIT_OF_DRAFT = 142;
-    public static final String EXTRA_SOURCE_TRANSLATION_ID = "extra_source_translation_id";
+
+public class DraftPreviewActivity extends BaseActivity implements ViewModeFragment.OnEventListener {
+    public static final String TAG = DraftPreviewActivity.class.toString();
     private String mDraftTranslation;
-    private TargetTranslation mTargetTranslation;
-    private Fragment mFragment;
+    private SourceTranslation mSourceTranslation;
+    private PreviewModeFragment mFragment;
     private Translator mTranslator;
 
     @Override
@@ -42,25 +41,24 @@ public class DraftPreviewActivity extends BaseActivity {
 
         // validate parameters
         Bundle args = getIntent().getExtras();
-        final String sourceTranslationId = args.getString(EXTRA_SOURCE_TRANSLATION_ID, null);
-        SourceTranslation sourceTranslation = SourceTranslation.simple(sourceTranslationId);
+        final String sourceTranslationId = args.getString(AppContext.EXTRA_SOURCE_DRAFT_TRANSLATION_ID, null);
+        mSourceTranslation = SourceTranslation.simple(sourceTranslationId);
         String projectId = SourceTranslation.getProjectIdFromId(sourceTranslationId);
         String sourceLanguageId = SourceTranslation.getSourceLanguageIdFromId(sourceTranslationId);
-        mTargetTranslation = AppContext.findExistingTargetTranslation(projectId, sourceLanguageId);
-        if (mTargetTranslation == null) {
+        TargetTranslation targetTranslation = AppContext.findExistingTargetTranslation(projectId, sourceLanguageId);
+        if (targetTranslation == null) {
             throw new InvalidParameterException("a valid target translation id is required");
         }
 
-        // TODO: 1/9/2016 - need to create draft preview fragment
-        
         if(findViewById(R.id.fragment) != null) {
             if(savedInstanceState != null) {
-                mFragment = getFragmentManager().findFragmentById(R.id.fragment);
+                mFragment = (PreviewModeFragment) getFragmentManager().findFragmentById(R.id.fragment);
             } else {
-                mFragment = new ReadModeFragment();
-                args.putString(TargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID,mTargetTranslation.getId());
-                ((ReadModeFragment) mFragment).setArguments(args);
-                getFragmentManager().beginTransaction().add(R.id.fragment, (ReadModeFragment) mFragment).commit();
+                mFragment = new PreviewModeFragment();
+                args.putString(AppContext.EXTRA_TARGET_TRANSLATION_ID,targetTranslation.getId());
+                args.putString(AppContext.EXTRA_SOURCE_DRAFT_TRANSLATION_ID, mSourceTranslation.getId());
+                mFragment.setArguments(args);
+                getFragmentManager().beginTransaction().add(R.id.fragment, mFragment).commit();
             }
         }
 
@@ -95,5 +93,25 @@ public class DraftPreviewActivity extends BaseActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-    
+
+    @Override
+    public void onNoSourceTranslations(String targetTranslationId) {
+        Logger.i(TAG, "onNoSourceTranslations");
+    }
+
+    public void onItemCountChanged(int itemCount, int progress) {
+        Logger.i(TAG, "onItemCountChanged");
+    }
+
+    @Override
+    public void onScrollProgress(int position) {
+        Logger.i(TAG, "onScrollProgress");
+    }
+
+    @Override
+    public void openTranslationMode(TranslationViewMode mode, Bundle extras) {
+        Bundle fragmentExtras = new Bundle();
+    }
+
+
 }

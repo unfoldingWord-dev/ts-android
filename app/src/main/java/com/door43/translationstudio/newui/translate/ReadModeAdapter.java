@@ -323,7 +323,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
                 public boolean onSingleTapUp(MotionEvent e) {
                     Bundle args = new Bundle();
                     args.putBoolean(ChunkModeFragment.EXTRA_TARGET_OPEN, true);
-                    args.putString(TargetTranslationActivity.EXTRA_CHAPTER_ID, chapter.getId());
+                    args.putString(AppContext.EXTRA_CHAPTER_ID, chapter.getId());
                     getListener().openTranslationMode(TranslationViewMode.CHUNK, args);
                     return true;
                 }
