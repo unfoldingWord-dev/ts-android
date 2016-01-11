@@ -278,12 +278,12 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
 
         //get translation to overwrite
         final TargetTranslation targetTranslation = AppContext.findExistingTargetTranslation(targetProjectID, targetLanguageID);
-        String targetTranslationId = targetTranslation.getId();
 
         try {
             String projectTitle = sourceTranslation.getProjectTitle();
             if (projectTitle != null) {
                 targetTranslation.applyProjectTitleTranslation(projectTitle);
+                targetTranslation.reopenProjectTitle();
             }
 
             Chapter[] chapters = mLibrary.getChapters(sourceTranslation);
@@ -294,22 +294,13 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                 // add title and reference cards for chapter
                 if(!c.title.isEmpty()) {
                     targetTranslation.applyChapterTitleTranslation(chapterTranslation, c.title);
-                }
+                    targetTranslation.reopenChapterTitle(c);                }
                 if(!c.reference.isEmpty()) {
                     targetTranslation.applyChapterReferenceTranslation(chapterTranslation, c.reference);
+                    targetTranslation.reopenChapterReference(c);
                 }
 
-//                {
-// {
-//                        frameTranslation = targetTranslation.getFrameTranslation(frame);
-//                        translationFormat = frameTranslation.getFormat();
-//                        bodyTranslation = frameTranslation.body;
-//                        bodySource = frame.body;
-//                        isTranslationFinished = frameTranslation.isFinished();
-//                    }
-//                }
-
-                // put target frames in map
+                // put target frames in map.  later we will remove entries that we overwrite
                 HashMap<String, FrameTranslation> frameMap = new HashMap<String, FrameTranslation>();
                 FrameTranslation[] frames = targetTranslation.getFrameTranslations(c.getId(), TranslationFormat.DEFAULT);
                 for(FrameTranslation f:frames) {
@@ -324,11 +315,12 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
 
                     FrameTranslation destination = frameMap.get(frameSlug);
                     if(destination != null) {
-                        frameMap.remove(frameSlug); // remove the slug as we copy data
+                        frameMap.remove(frameSlug); // remove the frame that we will overwrite
                     } else {
                         destination = new FrameTranslation(frameSlug, c.getId(), "", TranslationFormat.DEFAULT, false);
                     }
                     targetTranslation.applyFrameTranslation(destination, frameText);
+                    targetTranslation.reopenFrame(frame);
                 }
 
                 if(!frameMap.isEmpty()) {
@@ -354,6 +346,10 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                     .setMessage(R.string.translation_import_failed)
                     .setPositiveButton(R.string.confirm, null)
                     .show("importFailed");
+        } finally {
+            try {
+                targetTranslation.commit();
+            } catch (Exception e) { };
         }
     }
 
