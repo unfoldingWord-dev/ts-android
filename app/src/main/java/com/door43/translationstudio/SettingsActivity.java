@@ -1,12 +1,16 @@
 package com.door43.translationstudio;
 
 import android.annotation.TargetApi;
+import android.app.Dialog;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.DialogPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -19,6 +23,8 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.newui.DeviceNetworkAliasDialog;
+import com.door43.translationstudio.newui.ProfileDialog;
 import com.door43.translationstudio.newui.legal.LegalDocumentActivity;
 import com.door43.translationstudio.service.BackupService;
 import com.door43.util.TTFAnalyzer;
@@ -66,7 +72,7 @@ public class SettingsActivity extends PreferenceActivity {
     public static final String KEY_PREF_LOGGING_LEVEL = "logging_level";
     public static final String KEY_PREF_BACKUP_INTERVAL = "backup_interval";
     public static final String KEY_PREF_DEVICE_ALIAS = "device_name";
-    public static final String KEY_PROFILES = "profiles";
+    public static final String KEY_PREF_PROFILES = "profiles";
     public static final String KEY_SDCARD_ACCESS_URI = "internal_uri_extsdcard";
     public static final String KEY_SDCARD_ACCESS_FLAGS = "internal_flags_extsdcard";
 
@@ -276,7 +282,6 @@ public class SettingsActivity extends PreferenceActivity {
                         index >= 0
                                 ? listPreference.getEntries()[index]
                                 : null);
-
             } else {
                 // For all other preferences, set the summary to the value's
                 // simple string representation.
@@ -348,12 +353,40 @@ public class SettingsActivity extends PreferenceActivity {
                 }
             }
 
-            ListPreference pref = (ListPreference)findPreference(KEY_PREF_TRANSLATION_TYPEFACE);
-            pref.setEntries(entries.toArray(new CharSequence[entries.size()]));
-            pref.setEntryValues(entryValues.toArray(new CharSequence[entryValues.size()]));
-            bindPreferenceSummaryToValue(pref);
-            bindPreferenceSummaryToValue(findPreference(KEY_PREF_TYPEFACE_SIZE));
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_DEVICE_ALIAS));
+
+            final Preference profilesPref = findPreference(KEY_PREF_PROFILES);
+            profilesPref.setSummary(AppContext.getProfileSummary());
+            final ProfileDialog.OnDismissListener onDismissListener =
+                    new ProfileDialog.OnDismissListener() {
+                        @Override
+                        public void onDismiss() {
+                            profilesPref.setSummary(AppContext.getProfileSummary());
+                        }
+                    };
+            profilesPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    ProfileDialog d = new ProfileDialog();
+                    FragmentTransaction ft = getFragmentManager().beginTransaction();
+                    d.show(ft, ProfileDialog.TAG);
+                    d.setOnDismissListener(onDismissListener);
+                    return true;
+                }
+            });
+            // If the dialog was created from a previous incantation of this activity, tell it about
+            // the new place where it should persist its results.
+            Fragment prev = getFragmentManager().findFragmentByTag(ProfileDialog.TAG);
+            if (prev != null) {
+                ((ProfileDialog)prev).setOnDismissListener(onDismissListener);
+            }
+
+            ListPreference fontPref = (ListPreference)findPreference(KEY_PREF_TRANSLATION_TYPEFACE);
+            fontPref.setEntries(entries.toArray(new CharSequence[entries.size()]));
+            fontPref.setEntryValues(entryValues.toArray(new CharSequence[entryValues.size()]));
+            bindPreferenceSummaryToValue(fontPref);
+
+            bindPreferenceSummaryToValue(findPreference(KEY_PREF_TYPEFACE_SIZE));
         }
     }
 

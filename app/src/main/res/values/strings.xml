@@ -367,6 +367,9 @@
     <string name="your_name">Your Name or Pseudonym</string>
     <string name="your_email">Your Email Address</string>
     <string name="your_phone">Your Phone Number</string>
+    <string name="name">Name or Pseudonym</string>
+    <string name="email">Email Address</string>
+    <string name="phone">Phone Number</string>
     <string name="profile">Profile</string>
     <string name="enter_profile_defaults">Enter default profile information</string>
     <string name="project_title_complex">Project: <xliff:g example="Genesis" id="project">%1$s</xliff:g></string>

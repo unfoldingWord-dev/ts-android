@@ -72,6 +72,7 @@ public class UpdateAppTask extends ManagedTask {
      * @param currentVersion
      */
     private void performUpdates(int lastVersion, int currentVersion) {
+        // perform migrations
         if(lastVersion < 87) {
             upgradePre87();
         }
@@ -122,12 +123,28 @@ public class UpdateAppTask extends ManagedTask {
         File legacyTranslationsDir = new File(mContext.getFilesDir(), "translations");
         File translationsDir = AppContext.getTranslator().getPath();
 
-        // the translations directory should not exist at this point but we delete just in case
-        FileUtils.deleteQuietly(translationsDir);
-        try {
-            FileUtils.copyDirectory(legacyTranslationsDir, translationsDir);
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(legacyTranslationsDir.exists()) {
+            translationsDir.mkdirs();
+            File[] oldFiles = legacyTranslationsDir.listFiles();
+            boolean errors = false;
+            for(File file:oldFiles) {
+                File newFile = new File(translationsDir, file.getName());
+                try {
+                    if(file.isDirectory()) {
+                        FileUtils.copyDirectory(file, newFile);
+                    } else {
+                        FileUtils.copyFile(file, newFile);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Logger.e(this.getClass().getName(), "Failed to move targetTranslation", e);
+                    errors = true;
+                }
+            }
+            // remove old files if there were no errors
+            if(!errors) {
+                FileUtils.deleteQuietly(legacyTranslationsDir);
+            }
         }
     }
 

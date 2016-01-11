@@ -5,11 +5,11 @@
         android:title="@string/device_name"
         android:defaultValue=""/>
 
-    <!--<CheckBoxPreference-->
-        <!--android:key="highlight_key_terms"-->
-        <!--android:title="@string/pref_title_highlight_key_terms"-->
-        <!--android:summary="@string/pref_description_highlight_key_terms"-->
-        <!--android:defaultValue="@string/pref_default_highlight_key_terms" />-->
+    <Preference
+        android:key="profiles"
+        android:title="@string/profile"
+        android:defaultValue="">
+    </Preference>
 
     <ListPreference
         android:key="translation_typeface"

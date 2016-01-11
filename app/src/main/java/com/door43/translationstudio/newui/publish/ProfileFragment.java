@@ -134,6 +134,7 @@ public class ProfileFragment extends PublishStepFragment {
             }
         });
 
+        mTargetTranslation.applyDefaultTranslatorsIfNoneSpecified();
         updateTranslator();
 
         return rootView;
