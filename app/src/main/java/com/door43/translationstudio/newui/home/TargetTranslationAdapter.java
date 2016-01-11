@@ -148,17 +148,19 @@ public class TargetTranslationAdapter extends BaseAdapter {
         holder.mDraftTranslation = library.getDraftTranslation(targetTranslation.getTargetLanguageId(), targetTranslation.getProjectId());
         boolean enableSettings = holder.mDraftTranslation != null;
         holder.mSettingsButton.setVisibility(enableSettings ? View.VISIBLE : View.GONE);
-        holder.mSettingsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Logger.i(this.getClass().toString(), "settings button click, draft translation: " + holder.mDraftTranslation.getId());
-                Intent intent = new Intent(mContext, DraftPreviewActivity.class);
-                intent.setType(holder.mDraftTranslation.getId());
-                intent.putExtra(AppContext.EXTRA_SOURCE_DRAFT_TRANSLATION_ID, holder.mDraftTranslation.getId());
-                HomeActivity activity = (HomeActivity) mContext;
-                activity.startActivityForResult(intent, VERIFY_EDIT_OF_DRAFT);
-            }
-        });
+        if(enableSettings) {
+            holder.mSettingsButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Logger.i(this.getClass().toString(), "settings button click, draft translation: " + holder.mDraftTranslation.getId());
+                    Intent intent = new Intent(mContext, DraftPreviewActivity.class);
+                    intent.setType(holder.mDraftTranslation.getId());
+                    intent.putExtra(AppContext.EXTRA_SOURCE_DRAFT_TRANSLATION_ID, holder.mDraftTranslation.getId());
+                    HomeActivity activity = (HomeActivity) mContext;
+                    activity.startActivityForResult(intent, VERIFY_EDIT_OF_DRAFT);
+                }
+            });
+        }
 
         return v;
     }

@@ -6,6 +6,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
@@ -60,12 +61,13 @@ public class DraftPreviewActivity extends BaseActivity implements ViewModeFragme
                 args.putString(AppContext.EXTRA_TARGET_TRANSLATION_ID,targetTranslation.getId());
                 args.putString(AppContext.EXTRA_SOURCE_DRAFT_TRANSLATION_ID, mSourceTranslation.getId());
                 mFragment.setArguments(args);
+                mFragment.setRememberLastPosition(false);
                 getFragmentManager().beginTransaction().add(R.id.fragment, mFragment).commit();
             }
         }
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        Button edit = (Button) findViewById(R.id.edit_button);
+        edit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 final CustomAlertDialog dialog = CustomAlertDialog.Create(DraftPreviewActivity.this);
@@ -86,6 +88,7 @@ public class DraftPreviewActivity extends BaseActivity implements ViewModeFragme
                         .show("verifyDraftUsage");
             }
         });
+
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 

@@ -27,32 +27,6 @@ android:clipChildren="false">
         android:layout_height="match_parent"
         android:gravity="center_vertical">
 
-        <FrameLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/card_margin">
-            <android.support.design.widget.TabLayout
-                android:id="@+id/source_translation_tabs"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="@dimen/stacked_card_margin"
-                android:layout_marginLeft="@dimen/stacked_card_margin"
-                android:layout_gravity="center_vertical|center_horizontal"
-                app:layout_scrollFlags="scroll|enterAlways"/>
-            <ImageButton
-                android:id="@+id/new_tab_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp"
-                android:paddingLeft="@dimen/card_margin"
-                android:paddingRight="@dimen/stacked_card_margin"
-                android:layout_gravity="right|center_vertical"
-                android:background="?attr/selectableItemBackground"
-                android:src="@drawable/icon_tabedit_normal"/>
-        </FrameLayout>
-
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

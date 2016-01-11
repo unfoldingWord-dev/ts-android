@@ -45,6 +45,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     private Library mLibrary;
     private String mSourceTranslationId;
     private GestureDetector mGesture;
+    private boolean mRememberLastPosition = true;
 
     /**
      * Returns an instance of the adapter
@@ -382,7 +383,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     @Override
     public void onDestroy() {
         // save position state
-        if(mLayoutManager != null) {
+        if(mRememberLastPosition && (mLayoutManager != null)) {
             int lastItemPosition = mLayoutManager.findFirstVisibleItemPosition();
             String chapterId = mAdapter.getFocusedChapterId(lastItemPosition);
             String frameId = mAdapter.getFocusedFrameId(lastItemPosition);
@@ -414,6 +415,10 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      */
     public void openTranslationMode(TranslationViewMode mode, Bundle extras) {
         mListener.openTranslationMode(mode, extras);
+    }
+
+    public void setRememberLastPosition(boolean rememberLastPosition) {
+        this.mRememberLastPosition = rememberLastPosition;
     }
 
     public interface OnEventListener {

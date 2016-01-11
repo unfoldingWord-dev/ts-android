@@ -46,7 +46,6 @@ public class PreviewModeAdapter extends ViewModeAdapter<PreviewModeAdapter.ViewH
     private final Library mLibrary;
     private Chapter[] mChapters;
     private int mLayoutBuildNumber = 0;
-    private ContentValues[] mTabs;
 
     public PreviewModeAdapter(Activity context, String sourceTranslationId, String chapterId, String frameId) {
         mLibrary = AppContext.getLibrary();
@@ -56,8 +55,6 @@ public class PreviewModeAdapter extends ViewModeAdapter<PreviewModeAdapter.ViewH
 
         mChapters = mLibrary.getChapters(mSourceTranslation);
         mRenderedSourceBody = new CharSequence[mChapters.length];
-
-        loadTabInfo();
     }
 
     /**
@@ -70,8 +67,6 @@ public class PreviewModeAdapter extends ViewModeAdapter<PreviewModeAdapter.ViewH
 
         mChapters = mLibrary.getChapters(mSourceTranslation);
         mRenderedSourceBody = new CharSequence[mChapters.length];
-
-        loadTabInfo();
 
         notifyDataSetChanged();
     }
@@ -119,27 +114,6 @@ public class PreviewModeAdapter extends ViewModeAdapter<PreviewModeAdapter.ViewH
         return vh;
     }
 
-    /**
-     * Rebuilds the card tabs
-     */
-    private void loadTabInfo() {
-        List<ContentValues> tabContents = new ArrayList<>();
-
-        if(mSourceTranslation != null) {
-            ContentValues values = new ContentValues();
-            // include the resource id if there are more than one
-            if(mLibrary.getResources(mSourceTranslation.projectSlug, mSourceTranslation.sourceLanguageSlug).length > 1) {
-                values.put("title", mSourceTranslation.getSourceLanguageTitle() + " " + mSourceTranslation.resourceSlug.toUpperCase());
-            } else {
-                values.put("title", mSourceTranslation.getSourceLanguageTitle());
-            }
-            values.put("tag", mSourceTranslation.getId());
-            tabContents.add(values);
-        }
-
-        mTabs = tabContents.toArray(new ContentValues[tabContents.size()]);
-    }
-
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         int cardMargin = mContext.getResources().getDimensionPixelSize(R.dimen.card_margin);
@@ -150,18 +124,6 @@ public class PreviewModeAdapter extends ViewModeAdapter<PreviewModeAdapter.ViewH
         holder.mSourceCard.setLayoutParams(sourceParams);
         ((View) holder.mSourceCard.getParent()).requestLayout();
         ((View) holder.mSourceCard.getParent()).invalidate();
-
-        // re-enable new tab button
-        holder.mNewTabButton.setEnabled(true);
-
-        holder.mNewTabButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (getListener() != null) {
-                    getListener().onNewSourceTranslationTabClick();
-                }
-            }
-        });
 
         final Chapter chapter = mChapters[position];
 
@@ -213,54 +175,6 @@ public class PreviewModeAdapter extends ViewModeAdapter<PreviewModeAdapter.ViewH
         }
         holder.mSourceTitle.setText(chapterTitle);
 
-//        ChapterTranslation getChapterTranslation(String chapterSlug);
-
-         // load tabs
-        holder.mTabLayout.setOnTabSelectedListener(null);
-        holder.mTabLayout.removeAllTabs();
-        for(ContentValues values:mTabs) {
-            TabLayout.Tab tab = holder.mTabLayout.newTab();
-            tab.setText(values.getAsString("title"));
-            tab.setTag(values.getAsString("tag"));
-            holder.mTabLayout.addTab(tab);
-        }
-
-        // select correct tab
-        for(int i = 0; i < holder.mTabLayout.getTabCount(); i ++) {
-            TabLayout.Tab tab = holder.mTabLayout.getTabAt(i);
-            if(tab.getTag().equals(mSourceTranslation.getId())) {
-                tab.select();
-                break;
-            }
-        }
-
-        // hook up listener
-        holder.mTabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                final String sourceTranslationId = (String) tab.getTag();
-                if (getListener() != null) {
-                    Handler hand = new Handler(Looper.getMainLooper());
-                    hand.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            getListener().onSourceTranslationTabClick(sourceTranslationId);
-                        }
-                    });
-                }
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
-        });
-
         // set up fonts
         if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
             holder.mLayoutBuildNumber = mLayoutBuildNumber;
@@ -282,11 +196,9 @@ public class PreviewModeAdapter extends ViewModeAdapter<PreviewModeAdapter.ViewH
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private final CardView mSourceCard;
-        private final ImageButton mNewTabButton;
         public TextView mSourceHeading;
         public TextView mSourceTitle;
         public TextView mSourceBody;
-        public TabLayout mTabLayout;
         public int mLayoutBuildNumber = -1;
 
         public ViewHolder(View v) {
@@ -295,9 +207,6 @@ public class PreviewModeAdapter extends ViewModeAdapter<PreviewModeAdapter.ViewH
             mSourceHeading = (TextView)v.findViewById(R.id.source_translation_heading);
             mSourceTitle = (TextView)v.findViewById(R.id.source_translation_title);
             mSourceBody = (TextView)v.findViewById(R.id.source_translation_body);
-            mTabLayout = (TabLayout)v.findViewById(R.id.source_translation_tabs);
-            mTabLayout.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
-            mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);
         }
     }
 }

@@ -26,7 +26,6 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
-import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
@@ -41,13 +40,13 @@ import com.door43.widget.ViewUtil;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 
 public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
     private static final int REQUEST_CODE_STORAGE_ACCESS = 42;
     private static final int NEW_TARGET_TRANSLATION_REQUEST = 1;
+    public static final String TAG = HomeActivity.class.getSimpleName();
     private Library mLibrary;
     private Translator mTranslator;
     private Fragment mFragment;
@@ -240,7 +239,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
             String sourceTranslationId = data.getType();
             if(RESULT_OK == resultCode ) {
                 Logger.i(this.getClass().toString(), "Selection type: " + sourceTranslationId + ", result:" + resultCode);
-                loadSourceIntoTargetTranslation(sourceTranslationId);
+                loadDraftSourceIntoTargetTranslation(sourceTranslationId);
             }
         } else
         if(NEW_TARGET_TRANSLATION_REQUEST == requestCode ) {
@@ -271,12 +270,25 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
         }
     }
 
-    public void loadSourceIntoTargetTranslation(String sourceTranslationId) {
+    /**
+     * load draft source into target translation overwriting any work there
+     * @param sourceTranslationId
+     */
+    public void loadDraftSourceIntoTargetTranslation(String sourceTranslationId) {
         SourceTranslation sourceTranslation = mLibrary.getDraftTranslation(sourceTranslationId);
+        loadSourceIntoTargetTranslation(sourceTranslation);
+    }
+
+    /**
+     * load source translation into target translation overwriting any work there
+     * @param sourceTranslation
+     */
+    public void loadSourceIntoTargetTranslation(SourceTranslation sourceTranslation) {
         String targetProjectID = sourceTranslation.projectSlug;
         String targetLanguageID = sourceTranslation.sourceLanguageSlug;
+        boolean error = false;
 
-        //get translation to overwrite
+        //get target translation that we will overwrite
         final TargetTranslation targetTranslation = AppContext.findExistingTargetTranslation(targetProjectID, targetLanguageID);
 
         try {
@@ -287,7 +299,6 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
             }
 
             Chapter[] chapters = mLibrary.getChapters(sourceTranslation);
-//            Chapter lastChapter = null;
             for(Chapter c:chapters) {
                 final ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(c);
 
@@ -324,23 +335,15 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                 }
 
                 if(!frameMap.isEmpty()) {
-                    // handle extra frames
+                    // clean out extra frames
                     for (String key : frameMap.keySet()) {
                         FrameTranslation f = frameMap.get(key);
                         targetTranslation.applyFrameTranslation(f, "");
                     }
                 }
-
             }
-
-//                File file = sourceTranslation.get
-//                Logger.i(this.getClass().getName(), "Importing internal file: " + file.toString());
-//                final Translator translator = AppContext.getTranslator();
-//                final String[] targetTranslationSlugs = translator.importArchive(file);
-//                TargetTranslationMigrator.migrateChunkChanges(translator, AppContext.getLibrary(), targetTranslationSlugs);
-//                showImportResults(R.string.import_success, file.toString());
-
         } catch (Exception e) {
+            error = true;
             final CustomAlertDialog dialog = CustomAlertDialog.Create(this);
             dialog.setTitle(R.string.import_draft)
                     .setMessage(R.string.translation_import_failed)
@@ -348,8 +351,15 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                     .show("importFailed");
         } finally {
             try {
+                AppContext.setLastFocus(targetTranslation.getId(), "", ""); // clear resume location
                 targetTranslation.commit();
-            } catch (Exception e) { };
+            } catch (Exception e) {
+                Logger.w(TAG, "Error Importing Draft", e);
+            };
+
+            if(!error) {
+                onItemClick(targetTranslation); // automatically open draft project
+            }
         }
     }
 

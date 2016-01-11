@@ -23,12 +23,16 @@
 
     <include layout="@layout/content_draft_preview" />
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
+    <Button
+        android:id="@+id/edit_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        android:src="@android:drawable/ic_dialog_email" />
+        android:text="@string/edit"
+        android:textColor="?attr/colorAccent"
+        android:textSize="@dimen/body"
+        android:background="?attr/selectableItemBackground"
+        android:layout_margin="@dimen/dialog_content_margin"
+        android:capitalize="words" />
 
 </android.support.design.widget.CoordinatorLayout>
