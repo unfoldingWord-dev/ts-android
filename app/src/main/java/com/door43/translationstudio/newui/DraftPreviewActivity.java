@@ -14,6 +14,7 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.translate.PreviewModeFragment;
 import com.door43.translationstudio.newui.translate.ViewModeFragment;
 
@@ -23,6 +24,7 @@ import java.security.InvalidParameterException;
 public class DraftPreviewActivity extends BaseActivity implements ViewModeFragment.OnEventListener {
     public static final String TAG = DraftPreviewActivity.class.toString();
     private String mDraftTranslation;
+    private String mSourceTranslationId;
     private SourceTranslation mSourceTranslation;
     private PreviewModeFragment mFragment;
     private Translator mTranslator;
@@ -41,10 +43,10 @@ public class DraftPreviewActivity extends BaseActivity implements ViewModeFragme
 
         // validate parameters
         Bundle args = getIntent().getExtras();
-        final String sourceTranslationId = args.getString(AppContext.EXTRA_SOURCE_DRAFT_TRANSLATION_ID, null);
-        mSourceTranslation = SourceTranslation.simple(sourceTranslationId);
-        String projectId = SourceTranslation.getProjectIdFromId(sourceTranslationId);
-        String sourceLanguageId = SourceTranslation.getSourceLanguageIdFromId(sourceTranslationId);
+        mSourceTranslationId = args.getString(AppContext.EXTRA_SOURCE_DRAFT_TRANSLATION_ID, null);
+        mSourceTranslation = SourceTranslation.simple(mSourceTranslationId);
+        String projectId = SourceTranslation.getProjectIdFromId(mSourceTranslationId);
+        String sourceLanguageId = SourceTranslation.getSourceLanguageIdFromId(mSourceTranslationId);
         TargetTranslation targetTranslation = AppContext.findExistingTargetTranslation(projectId, sourceLanguageId);
         if (targetTranslation == null) {
             throw new InvalidParameterException("a valid target translation id is required");
@@ -66,7 +68,22 @@ public class DraftPreviewActivity extends BaseActivity implements ViewModeFragme
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                returnUserSelection(true);
+                final CustomAlertDialog dialog = CustomAlertDialog.Create(DraftPreviewActivity.this);
+                dialog.setTitle(R.string.title_overwrite_confirmation)
+                        .setMessageHtml(R.string.overwrite_target_translation)
+                        .setPositiveButton(R.string.confirm, new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                returnUserSelection(true);
+                            }
+                        })
+                        .setNegativeButton(R.string.no, new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                returnUserSelection(false);
+                            }
+                        })
+                        .show("verifyDraftUsage");
             }
         });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);

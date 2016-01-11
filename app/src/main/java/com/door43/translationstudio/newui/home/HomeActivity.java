@@ -20,7 +20,9 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
+import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
@@ -228,9 +230,26 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
 
    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(TargetTranslationAdapter.VERIFY_EDIT_OF_DRAFT == requestCode) {
-            String type = data.getType();
+            String sourceTranslationId = data.getType();
             if(RESULT_OK == resultCode ) {
-                Logger.i(this.getClass().toString(), "Selection type: " + type + ", result:" + resultCode);
+                Logger.i(this.getClass().toString(), "Selection type: " + sourceTranslationId + ", result:" + resultCode);
+
+                SourceTranslation sourceTranslation = mLibrary.getDraftTranslation(sourceTranslationId);
+                String targetProjectID = sourceTranslation.projectSlug;
+                String targetLanguageID = sourceTranslation.sourceLanguageSlug;
+
+                //get translation to overwrite
+                final TargetTranslation targetTranslation = AppContext.findExistingTargetTranslation( targetProjectID, targetLanguageID);
+                String targetTranslationId = targetTranslation.getId();
+
+                String chapterBody = mLibrary.getChapterBody(sourceTranslation, "00"));
+
+//                File file = sourceTranslation.get
+//                Logger.i(this.getClass().getName(), "Importing internal file: " + file.toString());
+//                final Translator translator = AppContext.getTranslator();
+//                final String[] targetTranslationSlugs = translator.importArchive(file);
+//                TargetTranslationMigrator.migrateChunkChanges(translator, AppContext.getLibrary(), targetTranslationSlugs);
+//                showImportResults(R.string.import_success, file.toString());
             }
         } else
         if(NEW_TARGET_TRANSLATION_REQUEST == requestCode ) {
