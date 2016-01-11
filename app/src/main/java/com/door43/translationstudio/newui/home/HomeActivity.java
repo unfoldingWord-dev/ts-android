@@ -18,11 +18,16 @@ import android.widget.PopupMenu;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.core.Chapter;
+import com.door43.translationstudio.core.ChapterTranslation;
+import com.door43.translationstudio.core.Frame;
+import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
+import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
@@ -36,6 +41,8 @@ import com.door43.widget.ViewUtil;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Locale;
 
 public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
@@ -233,23 +240,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
             String sourceTranslationId = data.getType();
             if(RESULT_OK == resultCode ) {
                 Logger.i(this.getClass().toString(), "Selection type: " + sourceTranslationId + ", result:" + resultCode);
-
-                SourceTranslation sourceTranslation = mLibrary.getDraftTranslation(sourceTranslationId);
-                String targetProjectID = sourceTranslation.projectSlug;
-                String targetLanguageID = sourceTranslation.sourceLanguageSlug;
-
-                //get translation to overwrite
-                final TargetTranslation targetTranslation = AppContext.findExistingTargetTranslation( targetProjectID, targetLanguageID);
-                String targetTranslationId = targetTranslation.getId();
-
-                String chapterBody = mLibrary.getChapterBody(sourceTranslation, "00"));
-
-//                File file = sourceTranslation.get
-//                Logger.i(this.getClass().getName(), "Importing internal file: " + file.toString());
-//                final Translator translator = AppContext.getTranslator();
-//                final String[] targetTranslationSlugs = translator.importArchive(file);
-//                TargetTranslationMigrator.migrateChunkChanges(translator, AppContext.getLibrary(), targetTranslationSlugs);
-//                showImportResults(R.string.import_success, file.toString());
+                loadSourceIntoTargetTranslation(sourceTranslationId);
             }
         } else
         if(NEW_TARGET_TRANSLATION_REQUEST == requestCode ) {
@@ -277,6 +268,92 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                     snack.show();
                 }
             }
+        }
+    }
+
+    public void loadSourceIntoTargetTranslation(String sourceTranslationId) {
+        SourceTranslation sourceTranslation = mLibrary.getDraftTranslation(sourceTranslationId);
+        String targetProjectID = sourceTranslation.projectSlug;
+        String targetLanguageID = sourceTranslation.sourceLanguageSlug;
+
+        //get translation to overwrite
+        final TargetTranslation targetTranslation = AppContext.findExistingTargetTranslation(targetProjectID, targetLanguageID);
+        String targetTranslationId = targetTranslation.getId();
+
+        try {
+            String projectTitle = sourceTranslation.getProjectTitle();
+            if (projectTitle != null) {
+                targetTranslation.applyProjectTitleTranslation(projectTitle);
+            }
+
+            Chapter[] chapters = mLibrary.getChapters(sourceTranslation);
+//            Chapter lastChapter = null;
+            for(Chapter c:chapters) {
+                final ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(c);
+
+                // add title and reference cards for chapter
+                if(!c.title.isEmpty()) {
+                    targetTranslation.applyChapterTitleTranslation(chapterTranslation, c.title);
+                }
+                if(!c.reference.isEmpty()) {
+                    targetTranslation.applyChapterReferenceTranslation(chapterTranslation, c.reference);
+                }
+
+//                {
+// {
+//                        frameTranslation = targetTranslation.getFrameTranslation(frame);
+//                        translationFormat = frameTranslation.getFormat();
+//                        bodyTranslation = frameTranslation.body;
+//                        bodySource = frame.body;
+//                        isTranslationFinished = frameTranslation.isFinished();
+//                    }
+//                }
+
+                // put target frames in map
+                HashMap<String, FrameTranslation> frameMap = new HashMap<String, FrameTranslation>();
+                FrameTranslation[] frames = targetTranslation.getFrameTranslations(c.getId(), TranslationFormat.DEFAULT);
+                for(FrameTranslation f:frames) {
+                    frameMap.put(f.getId(),f);
+                }
+
+                String[] chapterFrameSlugs = mLibrary.getFrameSlugs(sourceTranslation, c.getId());
+
+                for(String frameSlug:chapterFrameSlugs) {
+                    Frame frame = mLibrary.getFrame(sourceTranslation, c.getId(), frameSlug);
+                    String frameText = frame.body;
+
+                    FrameTranslation destination = frameMap.get(frameSlug);
+                    if(destination != null) {
+                        frameMap.remove(frameSlug); // remove the slug as we copy data
+                    } else {
+                        destination = new FrameTranslation(frameSlug, c.getId(), "", TranslationFormat.DEFAULT, false);
+                    }
+                    targetTranslation.applyFrameTranslation(destination, frameText);
+                }
+
+                if(!frameMap.isEmpty()) {
+                    // handle extra frames
+                    for (String key : frameMap.keySet()) {
+                        FrameTranslation f = frameMap.get(key);
+                        targetTranslation.applyFrameTranslation(f, "");
+                    }
+                }
+
+            }
+
+//                File file = sourceTranslation.get
+//                Logger.i(this.getClass().getName(), "Importing internal file: " + file.toString());
+//                final Translator translator = AppContext.getTranslator();
+//                final String[] targetTranslationSlugs = translator.importArchive(file);
+//                TargetTranslationMigrator.migrateChunkChanges(translator, AppContext.getLibrary(), targetTranslationSlugs);
+//                showImportResults(R.string.import_success, file.toString());
+
+        } catch (Exception e) {
+            final CustomAlertDialog dialog = CustomAlertDialog.Create(this);
+            dialog.setTitle(R.string.import_draft)
+                    .setMessage(R.string.translation_import_failed)
+                    .setPositiveButton(R.string.confirm, null)
+                    .show("importFailed");
         }
     }
 
