@@ -292,6 +292,8 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
         final TargetTranslation targetTranslation = AppContext.findExistingTargetTranslation(targetProjectID, targetLanguageID);
 
         try {
+            AppContext.addOpenSourceTranslation(targetTranslation.getId(), sourceTranslation.getId());
+
             String projectTitle = sourceTranslation.getProjectTitle();
             if (projectTitle != null) {
                 targetTranslation.applyProjectTitleTranslation(projectTitle);
