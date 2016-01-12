@@ -1,15 +1,21 @@
 package com.door43.translationstudio.core;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.AppContext;
+import com.door43.util.FileUtilities;
 
 import org.apache.http.util.ByteArrayBuffer;
 
 import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 
 /**
  * Created by joel on 8/27/2015.
@@ -55,6 +61,43 @@ public class Downloader {
         } catch(IOException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    private boolean requestToFile(String apiUrl, File outputFile) {
+        if(apiUrl.trim().isEmpty()) {
+            return false;
+        }
+        URL url;
+        try {
+            url = new URL(apiUrl);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        try {
+            URLConnection conn = url.openConnection();
+            conn.setReadTimeout(5000);
+            conn.setConnectTimeout(5000);
+
+            ReadableByteChannel channel = Channels.newChannel(conn.getInputStream());
+            FileOutputStream os = new FileOutputStream(outputFile);
+
+            long bytesRead;
+            long pos = 0;
+            do {
+                // TODO 01/11/2016: Use actual size, or put this somewhere else
+                bytesRead = os.getChannel().transferFrom(channel, pos, 40000000);
+                pos += bytesRead;
+            } while (bytesRead > 0);
+
+            // TODO 01/11/2016: Report progress on the download.
+
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
@@ -214,6 +257,17 @@ public class Downloader {
             }
         }
         return true;
+    }
+
+    public boolean downloadImages() {
+        String url = Resource.getImagesCatalogUrl();
+        String filename = url.replaceAll(".*/", "");
+        File imagesDir = AppContext.getLibrary().getImagesDir();
+        String fullPath = String.format("%s/%s", imagesDir, filename);
+        if (!(imagesDir.isDirectory() || imagesDir.mkdirs())) {
+            return false;
+        }
+        return requestToFile(url, new File(fullPath));
     }
 
     /**

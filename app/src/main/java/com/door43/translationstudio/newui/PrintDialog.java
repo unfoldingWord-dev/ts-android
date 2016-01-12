@@ -1,10 +1,12 @@
 package com.door43.translationstudio.newui;
 
 import android.app.DialogFragment;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
 import android.view.LayoutInflater;
@@ -18,12 +20,16 @@ import android.widget.TextView;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.Downloader;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
+import com.door43.translationstudio.tasks.DownloadImagesTask;
+import com.door43.util.tasks.ManagedTask;
+import com.door43.util.tasks.TaskManager;
 import com.door43.widget.ViewUtil;
 
 import java.io.File;
@@ -38,6 +44,8 @@ public class PrintDialog extends DialogFragment {
     public static final String ARG_TARGET_TRANSLATION_ID = "arg_target_translation_id";
     public static final String STATE_INCLUDE_IMAGES = "include_images";
     public static final String STATE_INCLUDE_INCOMPLETE = "include_incomplete";
+    public static final String DOWNLOAD_IMAGES_TASK_KEY = "download_images_task";
+    public static final String DOWNLOAD_IMAGES_TASK_GROUP = "download_images_task";
     private Translator translator;
     private TargetTranslation mTargetTranslation;
     private Library library;
@@ -102,8 +110,35 @@ public class PrintDialog extends DialogFragment {
                 includeIncompleteCheckBox.setEnabled(false);
                 printButton.setEnabled(false);
                 if(includeImages) {
-                    // TODO: 11/16/2015 check if all the images have been downloaded for this project
-                    print();
+                    // TODO: 11/16/2015 check if all the images have been downloaded for this project; present warning if so
+
+                    final ProgressDialog progress = new ProgressDialog(getActivity());
+                    progress.setTitle(R.string.downloading);
+                    progress.setMessage("Fetching images...");
+                    progress.setCancelable(false);
+                    progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                    progress.show();
+
+                    DownloadImagesTask task = new DownloadImagesTask();
+                    task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
+                        @Override
+                        public void onFinished(ManagedTask task) {
+                            TaskManager.clearTask(task);
+                            progress.dismiss();
+
+                            // TODO: Report failure
+
+                            new Handler(getActivity().getMainLooper()).post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    print();
+                                }
+                            });
+                        }
+                    });
+                    TaskManager.addTask(task, DOWNLOAD_IMAGES_TASK_KEY);
+                    TaskManager.groupTask(task, DOWNLOAD_IMAGES_TASK_GROUP);
+                    // TODO 11/16/2015: Extract the files
                 } else {
                     print();
                 }
@@ -125,7 +160,6 @@ public class PrintDialog extends DialogFragment {
         File exportFile = new File(AppContext.getSharingDir(), mTargetTranslation.getId() + ".pdf");
         try {
             SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(mTargetTranslation.getProjectId(), "en");
-            // TODO: 11/18/2015 provide path to images dir
             File imagesDir = library.getImagesDir();
             this.translator.exportPdf(library, mTargetTranslation, sourceTranslation.getFormat(), Typography.getAssetPath(getActivity()), imagesDir, includeImages, includeIncompleteFrames, exportFile);
             if (exportFile.exists()) {

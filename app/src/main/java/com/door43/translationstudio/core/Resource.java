@@ -184,6 +184,12 @@ public class Resource {
         return sourceDateModified;
     }
 
+    private static final String IMAGES_URL = "https://cdn.unfoldingword.org/obs/jpg/obs-images-360px.zip";
+
+    public static String getImagesCatalogUrl() {
+        return IMAGES_URL;
+    }
+
     public String getNotesCatalogUrl() {
         return notesCatalogUrl;
     }

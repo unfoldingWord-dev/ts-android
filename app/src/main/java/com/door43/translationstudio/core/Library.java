@@ -274,6 +274,29 @@ public class Library {
             listener.onProgress(5, 5);
         }
 
+        // Images are not downloaded here; rather, fetched on demand since they're large.
+
+        return success;
+    }
+
+    /**
+     * Downloads images from the server
+     * @param listener
+     * @return
+     */
+    public Boolean downloadImages(OnProgressListener listener) {
+        mAppIndex.beginTransaction();
+        boolean success = startImagesDownload(listener);
+        mAppIndex.endTransaction(success);
+        return success;
+    }
+
+    private Boolean startImagesDownload(OnProgressListener listener) {
+        boolean success = mDownloader.downloadImages();
+        // TODO 01/11/2016: Mark as complete.
+
+        listener.onProgress(1, 1);
+
         return success;
     }
 
