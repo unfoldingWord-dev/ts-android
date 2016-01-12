@@ -292,7 +292,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
         final TargetTranslation targetTranslation = AppContext.findExistingTargetTranslation(targetProjectID, targetLanguageID);
 
         try {
-            AppContext.addOpenSourceTranslation(targetTranslation.getId(), sourceTranslation.getId());
+//            AppContext.addOpenSourceTranslation(targetTranslation.getId(), sourceTranslation.getId()); // to add the draft to the sources tab
 
             String projectTitle = sourceTranslation.getProjectTitle();
             if (projectTitle != null) {
