@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.SourceTranslation;
@@ -147,6 +148,11 @@ public class TargetTranslationAdapter extends BaseAdapter {
         // check for draft language
         holder.mDraftTranslation = library.getDraftTranslation(targetTranslation.getTargetLanguageId(), targetTranslation.getProjectId());
         boolean enableSettings = holder.mDraftTranslation != null;
+        if(enableSettings) {
+            Chapter[] chapters = library.getChapters(holder.mDraftTranslation); // see if chapters have actually been loaded
+            enableSettings = chapters.length > 0;
+        }
+
         holder.mSettingsButton.setVisibility(enableSettings ? View.VISIBLE : View.GONE);
         if(enableSettings) {
             holder.mSettingsButton.setOnClickListener(new View.OnClickListener() {

@@ -630,6 +630,8 @@ public class Library {
 
     /**
      * Returns an array of source translations in a project that have not yet met the minimum checking level
+     * Note that the drafts may not have been downloaded yet.  Check chapter count to make sure
+     * the draft has been downloaded.
      * @param projectId
      */
     public SourceTranslation[] getDraftTranslations(String projectId) {
@@ -649,7 +651,9 @@ public class Library {
     }
 
     /**
-     * finds a specific draft source translation that matches ID or null if not present
+     * finds a specific draft source translation that matches ID or null if not found
+     * Note that the draft may not have been downloaded yet.  Check chapter count to make sure
+     * the draft has been downloaded.
      * @param sourceTranslationID
      * @return
      */
@@ -657,11 +661,13 @@ public class Library {
     public SourceTranslation getDraftTranslation(String sourceTranslationID) {
         String projectID = SourceTranslation.getProjectIdFromId(sourceTranslationID);
         String languageID = SourceTranslation.getSourceLanguageIdFromId(sourceTranslationID);
-        return getDraftTranslation( languageID, projectID);
+        return getDraftTranslation(languageID, projectID);
     }
 
     /**
-     * finds a specific draft source translation that matches parameters or null if not present
+     * finds a specific draft source translation that matches parameters or null if not found.
+     * Note that the draft may not have been downloaded yet.  Check chapter count to make sure
+     * the draft has been downloaded.
      * @param languageID
      * @param projectID
      * @return
@@ -673,7 +679,11 @@ public class Library {
             String draftLanguageID = s.sourceLanguageSlug;
             if (languageID.equals(draftLanguageID)) {
                 Logger.i(TAG, "SourceTranslation:" + s.getId());
-                return s;
+                if(!s.getProjectTitle().isEmpty()) {
+                    return s;
+                } else {
+                    Logger.i(TAG, "Not loaded:" + s.getId());
+                }
             }
         }
         return null;

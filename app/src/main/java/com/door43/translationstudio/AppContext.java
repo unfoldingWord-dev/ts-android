@@ -51,7 +51,7 @@ public class AppContext {
     public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
     public static final String EXTRA_CHAPTER_ID = "extra_chapter_id";
     public static final String EXTRA_FRAME_ID = "extra_frame_id";
-    public static final String EXTRA_VIEW_MODE = "extra_view_mode_id";    private static MainApplication mContext;
+    public static final String EXTRA_VIEW_MODE = "extra_view_mode_id";
 
     public static final String TAG = AppContext.class.toString();
     private static MainApplication mContext;
