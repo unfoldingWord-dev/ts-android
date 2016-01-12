@@ -64,7 +64,7 @@ public class Downloader {
         }
     }
 
-    private boolean requestToFile(String apiUrl, File outputFile) {
+    private boolean requestToFile(String apiUrl, File outputFile, long expectedSize, Library.OnProgressListener listener) {
         if(apiUrl.trim().isEmpty()) {
             return false;
         }
@@ -87,12 +87,10 @@ public class Downloader {
             long bytesRead;
             long pos = 0;
             do {
-                // TODO 01/11/2016: Use actual size, or put this somewhere else
-                bytesRead = os.getChannel().transferFrom(channel, pos, 40000000);
+                bytesRead = os.getChannel().transferFrom(channel, pos, expectedSize);
                 pos += bytesRead;
+                listener.onProgress((int) pos, (int) expectedSize);
             } while (bytesRead > 0);
-
-            // TODO 01/11/2016: Report progress on the download.
 
             return true;
         } catch (IOException e) {
@@ -259,7 +257,7 @@ public class Downloader {
         return true;
     }
 
-    public boolean downloadImages() {
+    public boolean downloadImages(Library.OnProgressListener listener) {
         String url = Resource.getImagesCatalogUrl();
         String filename = url.replaceAll(".*/", "");
         File imagesDir = AppContext.getLibrary().getImagesDir();
@@ -267,7 +265,7 @@ public class Downloader {
         if (!(imagesDir.isDirectory() || imagesDir.mkdirs())) {
             return false;
         }
-        return requestToFile(url, new File(fullPath));
+        return requestToFile(url, new File(fullPath), Resource.getImagesCatalogSize(), listener);
     }
 
     /**

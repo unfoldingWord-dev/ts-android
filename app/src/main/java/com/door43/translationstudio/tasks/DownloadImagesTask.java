@@ -2,8 +2,6 @@ package com.door43.translationstudio.tasks;
 
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.Resource;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.util.tasks.ManagedTask;
 
 /**
@@ -16,7 +14,6 @@ public class DownloadImagesTask extends ManagedTask {
     private final Library mLibrary;
     private int mMaxProgress = 1;
     private boolean mSuccess;
-    private int mTaskProgress = 0;
 
     public DownloadImagesTask() {
         mLibrary = AppContext.getLibrary();
@@ -24,17 +21,12 @@ public class DownloadImagesTask extends ManagedTask {
 
     @Override
     public void start() {
-        publishProgress(-1, "");
-        mSuccess = true;
-
-        publishProgress(mTaskProgress, "Waiting to start...");
         mSuccess = mLibrary.downloadImages(new Library.OnProgressListener() {
 
             @Override
             public boolean onProgress(int progress, int max) {
-                mMaxProgress = 1;
-                mTaskProgress++;
-                publishProgress(mTaskProgress, "");
+                mMaxProgress = max;
+                publishProgress((float)progress / max, progress / 1024 / 1024 + "");
                 return !isCanceled();
             }
 
@@ -45,7 +37,7 @@ public class DownloadImagesTask extends ManagedTask {
             }
         });
 
-        publishProgress(mTaskProgress, "Finished.");
+        publishProgress(1., "Finished.");
     }
 
     @Override

@@ -286,17 +286,8 @@ public class Library {
      */
     public Boolean downloadImages(OnProgressListener listener) {
         mAppIndex.beginTransaction();
-        boolean success = startImagesDownload(listener);
+        boolean success = mDownloader.downloadImages(listener);
         mAppIndex.endTransaction(success);
-        return success;
-    }
-
-    private Boolean startImagesDownload(OnProgressListener listener) {
-        boolean success = mDownloader.downloadImages();
-        // TODO 01/11/2016: Mark as complete.
-
-        listener.onProgress(1, 1);
-
         return success;
     }
 
