@@ -4,11 +4,13 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -24,6 +26,7 @@ public class Library {
     private static final int MIN_CHECKING_LEVEL = 3; // the minimum level to be considered a source translation
     private static final String DEFAULT_RESOURCE_SLUG = "ulb";
     private static final String IMAGES_DIR = "images";
+    private static final String IMAGES_DOWNLOADED_TAG = "images_downloaded_and_extracted";
     private final Indexer mAppIndex;
     public static String DATABASE_NAME = "app";
     private final Context mContext;
@@ -285,10 +288,25 @@ public class Library {
      * @return
      */
     public Boolean downloadImages(OnProgressListener listener) {
+        AppContext.setUserString(IMAGES_DOWNLOADED_TAG, Boolean.toString(false));
+
         mAppIndex.beginTransaction();
         boolean success = mDownloader.downloadImages(listener);
         mAppIndex.endTransaction(success);
+
+        AppContext.setUserString(IMAGES_DOWNLOADED_TAG, Boolean.toString(success));
         return success;
+    }
+
+    /**
+     * Indicates whether the imagery download is complete and extraction was successful.
+     *
+     * <p>If any part of the process was not complete, this returns false. This method makes no
+     * statement as to the freshness of the information downloaded.</p>
+     * @return true if the download is complete
+     */
+    public boolean imagesPresent() {
+        return Boolean.valueOf(AppContext.getUserString(IMAGES_DOWNLOADED_TAG, "false"));
     }
 
     /**

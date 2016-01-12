@@ -228,7 +228,9 @@
     <string name="no_projects_available_on_server">No projects available on server</string>
     <string name="downloading">Downloading</string>
     <string name="downloading_images">Downloading images</string>
+    <string name="connecting_to_server">Connecting to remote server...</string>
     <string name="downloading_images_for_print_failed">The download failed to complete. Try printing without images.</string>
+    <string name="out_of">out of</string> <!-- as in "23 out of 46 MB downloaded" -->
     <string name="mb_downloaded">MB downloaded</string>
     <string name="image_large_download">Downloading images will take several megabytes. Are you sure you want to include images?</string>
     <string name="confirm_import">Please confirm import data</string>

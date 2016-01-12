@@ -110,7 +110,7 @@ public class PrintDialog extends DialogFragment {
                 includeImages = includeImagesCheckBox.isChecked();
                 includeIncompleteFrames = includeIncompleteCheckBox.isChecked();
                 enableInteraction(false);
-                if(includeImages) {
+                if(includeImages && !AppContext.getLibrary().imagesPresent()) {
                     // TODO: 11/16/2015 check if all the images have been downloaded for this project
                     CustomAlertDialog
                             .Create(getActivity())
@@ -146,20 +146,28 @@ public class PrintDialog extends DialogFragment {
         final ProgressDialog progressDialog = new ProgressDialog(getActivity());
         progressDialog.setTitle(R.string.downloading_images);
         progressDialog.setMessage(getResources().getString(R.string.downloading_images));
-        progressDialog.setCancelable(false);
+        progressDialog.setCancelable(false); // TODO: 01/11/2016 make the download cancelable
         progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        progressDialog.setProgressNumberFormat("");
         progressDialog.show();
 
         final DownloadImagesTask task = new DownloadImagesTask();
         task.addOnProgressListener(new ManagedTask.OnProgressListener() {
             @Override
             public void onProgress(ManagedTask task, double progress, String message, boolean secondary) {
-                int totalMb = task.maxProgress() / 1024 / 1024;
-                double mbDownloaded = progress * task.maxProgress() / 1024 / 1024;
-                progressDialog.setMax(totalMb);
-                progressDialog.setProgress((int)mbDownloaded);
-                String m = String.format("%2.2f %s", mbDownloaded, getResources().getString(R.string.mb_downloaded));
-                progressDialog.setMessage(m);
+                if (progress < 0) {
+                    progressDialog.setMessage(getResources().getString(R.string.connecting_to_server));
+                } else {
+                    double mbDownloaded = progress * task.maxProgress();
+                    progressDialog.setMax(task.maxProgress());
+                    progressDialog.setProgress((int) mbDownloaded);
+                    String m = String.format("%2.2f %s %2.2f %s",
+                            mbDownloaded / (1024. * 1024.),
+                            getResources().getString(R.string.out_of),
+                            task.maxProgress() / (1024. * 1024.),
+                            getResources().getString(R.string.mb_downloaded));
+                    progressDialog.setMessage(m);
+                }
             }
         });
         task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {

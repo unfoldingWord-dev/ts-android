@@ -3,6 +3,7 @@ package com.door43.translationstudio.core;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.util.FileUtilities;
+import com.door43.util.Zip;
 
 import org.apache.http.util.ByteArrayBuffer;
 
@@ -261,11 +262,22 @@ public class Downloader {
         String url = Resource.getImagesCatalogUrl();
         String filename = url.replaceAll(".*/", "");
         File imagesDir = AppContext.getLibrary().getImagesDir();
-        String fullPath = String.format("%s/%s", imagesDir, filename);
+        File fullPath = new File(String.format("%s/%s", imagesDir, filename));
         if (!(imagesDir.isDirectory() || imagesDir.mkdirs())) {
             return false;
         }
-        return requestToFile(url, new File(fullPath), Resource.getImagesCatalogSize(), listener);
+        boolean success = requestToFile(url, fullPath, Resource.getImagesCatalogSize(), listener);
+
+        if (success) {
+            try {
+                Zip.unzip(fullPath, imagesDir);
+                success = true;
+            }
+            catch (IOException e) {
+                success = false;
+            }
+        }
+        return success;
     }
 
     /**

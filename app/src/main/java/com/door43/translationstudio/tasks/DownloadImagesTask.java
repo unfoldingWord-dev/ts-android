@@ -26,7 +26,7 @@ public class DownloadImagesTask extends ManagedTask {
             @Override
             public boolean onProgress(int progress, int max) {
                 mMaxProgress = max;
-                publishProgress((float)progress / max, progress / 1024 / 1024 + "");
+                publishProgress((float)progress / max, "");
                 return !isCanceled();
             }
 
