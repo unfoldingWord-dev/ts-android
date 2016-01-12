@@ -272,6 +272,7 @@ public class Downloader {
             try {
                 Zip.unzip(fullPath, imagesDir);
                 success = true;
+                fullPath.delete();
             }
             catch (IOException e) {
                 success = false;
