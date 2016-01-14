@@ -527,6 +527,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 if(item.isEditing) {
                     // open editing mode
                     holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
+                    holder.mAddNoteButton.setVisibility(View.VISIBLE);
                     holder.mTargetBody.setVisibility(View.GONE);
                     holder.mTargetEditableBody.setVisibility(View.VISIBLE);
                     holder.mTargetEditableBody.requestFocus();
@@ -544,6 +545,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 } else {
                     // close editing mode
                     holder.mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
+                    holder.mAddNoteButton.setVisibility(View.GONE);
                     holder.mTargetBody.setVisibility(View.VISIBLE);
                     holder.mTargetEditableBody.setVisibility(View.GONE);
                     holder.mTargetInnerCard.setBackgroundResource(R.color.white);
@@ -570,15 +572,40 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         });
 
+        holder.mAddNoteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int endPos = holder.mTargetEditableBody.getSelectionEnd();
+                if(endPos < 0) { endPos = 0; }
+                final int insertPos = endPos;
+
+                // pop up note prompt
+                final CustomAlertDialog dialog = CustomAlertDialog.Create(mContext);
+                dialog.setTitle(R.string.title_add_footnote)
+                        .setMessage(R.string.add_footnote)
+                        .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                String footnote = dialog.getEnteredText();
+                            }
+                        })
+                        .setNegativeButton(R.string.title_cancel, null)
+                        .addInputPrompt(true)
+                        .show("approve-SD-access");
+            }
+        });
+
         // display verse/editing mode
         if(item.isEditing) {
             holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
+            holder.mAddNoteButton.setVisibility(View.VISIBLE);
             holder.mTargetBody.setVisibility(View.GONE);
             holder.mTargetEditableBody.setVisibility(View.VISIBLE);
             holder.mTargetEditableBody.setEnableLines(true);
             holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         } else {
             holder.mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
+            holder.mAddNoteButton.setVisibility(View.GONE);
             holder.mTargetBody.setVisibility(View.VISIBLE);
             holder.mTargetEditableBody.setVisibility(View.GONE);
             holder.mTargetEditableBody.setEnableLines(false);
@@ -591,6 +618,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // display as finished
         if(item.isTranslationFinished) {
             holder.mEditButton.setVisibility(View.GONE);
+            holder.mAddNoteButton.setVisibility(View.GONE);
             holder.mDoneSwitch.setChecked(true);
             holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         } else {
@@ -1143,6 +1171,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        public final ImageButton mAddNoteButton;
         public final ImageButton mEditButton;
         public final CardView mResourceCard;
         public final LinearLayout mMainContent;
@@ -1178,6 +1207,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             mTargetEditableBody = (LinedEditText)v.findViewById(R.id.target_translation_editable_body);
             mTranslationTabs = (TabLayout)v.findViewById(R.id.source_translation_tabs);
             mEditButton = (ImageButton)v.findViewById(R.id.edit_translation_button);
+            mAddNoteButton = (ImageButton)v.findViewById(R.id.add_note_button);
             mDoneSwitch = (Switch)v.findViewById(R.id.done_button);
             mTranslationTabs.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
             mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);

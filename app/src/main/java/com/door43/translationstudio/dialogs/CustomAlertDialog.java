@@ -5,12 +5,15 @@ import android.app.DialogFragment;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
@@ -51,6 +54,8 @@ public class CustomAlertDialog extends DialogFragment {
     private CharSequence mTitle = null;
     private CharSequence mMessage = null;
     private String mMessageHtml = "";
+
+    private EditText mEditText = null;
 
     private View mContentView = null;
 
@@ -103,6 +108,13 @@ public class CustomAlertDialog extends DialogFragment {
             int index = parent.indexOfChild(content);
             parent.removeView(content);
             parent.addView(mContentView, index);
+        }
+
+        if (null != mEditText) {
+            final LinearLayout layout = (LinearLayout) rootView.findViewById(R.id.content_layout);
+            LinearLayout.LayoutParams linLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            mEditText.setLayoutParams(linLayoutParams);
+            layout.addView(mEditText);
         }
 
         mPositiveButton = setupButton( rootView, R.id.positiveButton, mPositiveTextID);
@@ -228,6 +240,26 @@ public class CustomAlertDialog extends DialogFragment {
         mIconID = textResId;
         return this;
     }
+
+    public CustomAlertDialog addInputPrompt(boolean enableInput) {
+        if(enableInput) {
+            if(null == mEditText) {
+                mEditText = new EditText(mContext);
+            }
+        } else {
+            mEditText = null;
+        }
+        return this;
+    }
+
+    @Nullable
+    public String getEnteredText() {
+        if(mEditText != null) {
+            return mEditText.getText().toString();
+        }
+        return null;
+    }
+
 
     public CustomAlertDialog setCancelableChainable(boolean cancelable) {
         super.setCancelable(cancelable);
