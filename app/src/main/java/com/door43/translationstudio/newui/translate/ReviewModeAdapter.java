@@ -15,6 +15,7 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.Selection;
+import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.DragEvent;
@@ -56,6 +57,7 @@ import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.spannables.Char;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.VersePinSpan;
@@ -575,9 +577,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mAddNoteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int endPos = holder.mTargetEditableBody.getSelectionEnd();
+                final LinedEditText editText = holder.mTargetEditableBody;
+                final CharSequence original = editText.getText();
+                int endPos = editText.getSelectionEnd();
                 if(endPos < 0) { endPos = 0; }
                 final int insertPos = endPos;
+
+                LayoutInflater inflater = LayoutInflater.from(mContext);
+                final View footnoteFragment = inflater.inflate(R.layout.fragment_footnote_prompt, null);
 
                 // pop up note prompt
                 final CustomAlertDialog dialog = CustomAlertDialog.Create(mContext);
@@ -586,11 +593,22 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                String footnote = dialog.getEnteredText();
+                                EditText footnote_title = (EditText)footnoteFragment.findViewById(R.id.footnote_title_input_text);
+                                EditText footnote_text = (EditText)footnoteFragment.findViewById(R.id.footnote_text);
+                                if( (footnote_title != null) && (footnote_text != null)) {
+                                    CharSequence footnote = footnote_text.getText();
+                                    NoteSpan footnoteSpannable = NoteSpan.generateUserNote(footnote_title.getText(),footnote);
+                                    if (footnote != null) {
+                                        CharSequence footnoteText = footnoteSpannable.render();
+                                        CharSequence newText = TextUtils.concat(original.subSequence(0, insertPos), footnoteText, original.subSequence(insertPos, original.length()));
+                                        editText.setText(newText);
+                                        editText.setSelection(insertPos, insertPos + footnoteText.length());
+                                    }
+                                }
                             }
                         })
                         .setNegativeButton(R.string.title_cancel, null)
-                        .addInputPrompt(true)
+                        .setView(footnoteFragment)
                         .show("approve-SD-access");
             }
         });
@@ -1190,6 +1208,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public final TabLayout mTranslationTabs;
         public final ImageButton mNewTabButton;
         public TextView mSourceBody;
+
         public ViewHolder(Context context, View v) {
             super(v);
             mMainContent = (LinearLayout)v.findViewById(R.id.main_content);

@@ -630,5 +630,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="backup_success">Success Backing up to:</string>
     <string name="import_success">Success Importing from:</string>
     <string name="title_add_footnote">Add Footnote</string>
-    <string name="add_footnote">Enter Footnote:</string>
+    <string name="add_footnote_title">Title:</string>
+    <string name="add_footnote">Footnote:</string>
+    <string name="add_footnote_title_prompt">Enter Title</string>
+    <string name="add_footnote_prompt">Enter Footnote</string>
 </resources>

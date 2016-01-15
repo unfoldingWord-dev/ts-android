@@ -253,9 +253,9 @@ public class CustomAlertDialog extends DialogFragment {
     }
 
     @Nullable
-    public String getEnteredText() {
+    public CharSequence getEnteredText() {
         if(mEditText != null) {
-            return mEditText.getText().toString();
+            return mEditText.getText();
         }
         return null;
     }
