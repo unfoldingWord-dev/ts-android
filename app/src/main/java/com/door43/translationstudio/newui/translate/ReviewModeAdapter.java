@@ -389,7 +389,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private void renderSourceCard(int position, final ListItem item, ViewHolder holder) {
         // render
         if(item.renderedSourceBody == null) {
-            item.renderedSourceBody = renderSourceText(item.bodySource, item.translationFormat);
+            item.renderedSourceBody = renderSourceText(item.bodySource, item.translationFormat, item, false);
         }
         holder.mSourceBody.setText(item.renderedSourceBody);
     }
@@ -416,7 +416,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // render body
         if(item.renderedTargetBody == null) {
             if(item.isTranslationFinished || item.isEditing) {
-                item.renderedTargetBody = renderSourceText(item.bodyTranslation, item.translationFormat);
+                item.renderedTargetBody = renderSourceText(item.bodyTranslation, item.translationFormat, item, true);
             } else {
                 item.renderedTargetBody = renderTargetText(item.bodyTranslation, item.translationFormat, frame, item.frameTranslation, holder, item);
             }
@@ -487,8 +487,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 } else if(item.isFrame()) {
                     mTargetTranslation.applyFrameTranslation(item.frameTranslation, translation);
                 }
-                item.renderedTargetBody = renderSourceText(translation, item.translationFormat);
-
+                item.renderedTargetBody = renderSourceText(translation, item.translationFormat, item, true);
 
                 // update view if pasting text
                 // TRICKY: anything worth rendering will need to change by at least 7 characters
@@ -541,7 +540,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     // TRICKY: there may be changes to translation
                     item.loadTranslations(mSourceTranslation, mTargetTranslation, chapter, frame);
                     // re-render for editing mode
-                    item.renderedTargetBody = renderSourceText(item.bodyTranslation, item.translationFormat);
+                    item.renderedTargetBody = renderSourceText(item.bodyTranslation, item.translationFormat, item, true);
                     holder.mTargetEditableBody.setText(item.renderedTargetBody);
                     holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
                 } else {
@@ -577,39 +576,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mAddNoteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final LinedEditText editText = holder.mTargetEditableBody;
-                final CharSequence original = editText.getText();
-                int endPos = editText.getSelectionEnd();
-                if(endPos < 0) { endPos = 0; }
-                final int insertPos = endPos;
-
-                LayoutInflater inflater = LayoutInflater.from(mContext);
-                final View footnoteFragment = inflater.inflate(R.layout.fragment_footnote_prompt, null);
-
-                // pop up note prompt
-                final CustomAlertDialog dialog = CustomAlertDialog.Create(mContext);
-                dialog.setTitle(R.string.title_add_footnote)
-                        .setMessage(R.string.add_footnote)
-                        .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                EditText footnote_title = (EditText)footnoteFragment.findViewById(R.id.footnote_title_input_text);
-                                EditText footnote_text = (EditText)footnoteFragment.findViewById(R.id.footnote_text);
-                                if( (footnote_title != null) && (footnote_text != null)) {
-                                    CharSequence footnote = footnote_text.getText();
-                                    NoteSpan footnoteSpannable = NoteSpan.generateUserNote(footnote_title.getText(),footnote);
-                                    if (footnote != null) {
-                                        CharSequence footnoteText = footnoteSpannable.render();
-                                        CharSequence newText = TextUtils.concat(original.subSequence(0, insertPos), footnoteText, original.subSequence(insertPos, original.length()));
-                                        editText.setText(newText);
-                                        editText.setSelection(insertPos, insertPos + footnoteText.length());
-                                    }
-                                }
-                            }
-                        })
-                        .setNegativeButton(R.string.title_cancel, null)
-                        .setView(footnoteFragment)
-                        .show("approve-SD-access");
+                editFootnote("", "", holder, item);
             }
         });
 
@@ -696,6 +663,62 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
             }
         });
+    }
+
+    private void editFootnote(CharSequence initialTitle, CharSequence initialNote, ViewHolder holder, ListItem editItem) {
+        final LinedEditText editText = holder.mTargetEditableBody;
+        final CharSequence original = editText.getText();
+        int endPos = editText.getSelectionEnd();
+        if (endPos < 0) {
+            endPos = 0;
+        }
+        final int insertPos = endPos;
+        final ListItem item = editItem;
+
+        LayoutInflater inflater = LayoutInflater.from(mContext);
+        final View footnoteFragment = inflater.inflate(R.layout.fragment_footnote_prompt, null);
+        if(footnoteFragment != null) {
+            final EditText footnoteTitle = (EditText) footnoteFragment.findViewById(R.id.footnote_title_input_text);
+            final EditText footnoteText = (EditText) footnoteFragment.findViewById(R.id.footnote_text);
+            if ((footnoteTitle != null) && (footnoteText != null)) {
+
+                footnoteTitle.setText(initialTitle);
+                footnoteText.setText(initialNote);
+
+                // pop up note prompt
+                final CustomAlertDialog dialog = CustomAlertDialog.Create(mContext);
+                dialog.setTitle(R.string.title_add_footnote)
+                        .setMessage(R.string.add_footnote)
+                        .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+
+                                CharSequence footnote = footnoteText.getText();
+                                NoteSpan footnoteSpannable = NoteSpan.generateUserNote(footnoteTitle.getText(), footnote);
+                                if (footnote != null) {
+                                    CharSequence footnoteText = footnoteSpannable.render();
+                                    CharSequence newText = TextUtils.concat(original.subSequence(0, insertPos), footnoteText, original.subSequence(insertPos, original.length()));
+
+                                    item.renderedTargetBody = newText;
+                                    editText.setText(newText);
+                                    editText.setSelection(insertPos, insertPos + footnoteText.length());
+                                    String translation = Translator.compileTranslation((Editable) editText.getText());
+                                    mTargetTranslation.applyFrameTranslation(item.frameTranslation, translation);
+
+                                    if(item.isFrame()) {
+                                        final Frame frame  = loadFrame(item.chapterSlug, item.frameSlug);
+
+                                        // Reload, so that bodyTranslation and other data are kept in sync.
+                                        item.loadTranslations(mSourceTranslation, mTargetTranslation, null, frame);
+                                    }
+                                }
+                            }
+                        })
+                        .setNegativeButton(R.string.title_cancel, null)
+                        .setView(footnoteFragment)
+                        .show("add-footnote");
+            }
+        }
     }
 
     private static final Pattern CONSECUTIVE_VERSE_MARKERS =
@@ -1111,7 +1134,22 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     });
                 }
             };
-            USXRenderer usxRenderer = new USXRenderer(verseClickListener, null);
+
+            Span.OnClickListener noteClickListener = new Span.OnClickListener() {
+                @Override
+                public void onClick(View view, Span span, int start, int end) {
+                    if (span instanceof NoteSpan) {
+                        showNote(item, (NoteSpan) span, true);
+                    }
+                }
+
+                @Override
+                public void onLongClick(View view, Span span, int start, int end) {
+
+                }
+            };
+
+            USXRenderer usxRenderer = new USXRenderer(verseClickListener, noteClickListener);
             usxRenderer.setPopulateVerseMarkers(frame.getVerseRange());
             renderingGroup.addEngine(usxRenderer);
         } else {
@@ -1126,7 +1164,21 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
     }
 
-    private CharSequence renderSourceText(String text, TranslationFormat format) {
+    private void showNote(ListItem item, NoteSpan span, final boolean target) {
+        CharSequence marker = span.getPassage();
+        CharSequence title = mContext.getResources().getText(R.string.title_note);
+        title = title + " - " + marker;
+        CharSequence message = span.getNotes();
+        boolean editable = target && !item.isTranslationFinished; // TODO: 1/15/2016 add edit support
+
+        CustomAlertDialog.Create(mContext)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(R.string.dismiss, null)
+                .show("note");
+    }
+
+    private CharSequence renderSourceText(String text, TranslationFormat format, final ListItem item, final boolean target) {
         RenderingGroup renderingGroup = new RenderingGroup();
         if (format == TranslationFormat.USX) {
             // TODO: add click listeners for verses and notes
@@ -1134,11 +1186,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
                     if(span instanceof NoteSpan) {
-                        CustomAlertDialog.Create(mContext)
-                                .setTitle(R.string.title_note)
-                                .setMessage(((NoteSpan)span).getNotes())
-                                .setPositiveButton(R.string.dismiss, null)
-                                .show("note");
+                        showNote(item, (NoteSpan) span, target);
                     }
                 }
 
