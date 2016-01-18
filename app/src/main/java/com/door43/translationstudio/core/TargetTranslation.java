@@ -480,7 +480,7 @@ public class TargetTranslation {
      * @param translatedText
      */
     public void applyFrameTranslation(final FrameTranslation frameTranslation, final String translatedText) {
-        // testing this performance. it will make a lot of things eaiser if we don't have to use a timeout for performance.
+        // testing this performance. it will make a lot of things easier if we don't have to use a timeout for performance.
         try {
             saveFrameTranslation(frameTranslation, translatedText);
         } catch (IOException e) {

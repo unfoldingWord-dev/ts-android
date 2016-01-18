@@ -15,7 +15,7 @@
         android:id="@+id/footnote_title_label" />
 
     <EditText
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="@dimen/body"
         android:layout_gravity="left|center_vertical"
@@ -23,7 +23,8 @@
         android:gravity="left|center"
         android:text="@string/add_footnote_title_prompt"
         android:id="@+id/footnote_title_input_text"
-        android:layout_marginLeft="@dimen/dialog_content_margin" />
+        android:layout_marginLeft="@dimen/dialog_content_margin"
+        android:layout_marginRight="@dimen/dialog_controls_margin" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -36,7 +37,7 @@
         android:id="@+id/footnote_label" />
 
     <EditText
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="@dimen/body"
         android:layout_gravity="left|center_vertical"
@@ -44,5 +45,6 @@
         android:gravity="left|center"
         android:text="@string/add_footnote_prompt"
         android:id="@+id/footnote_text"
-        android:layout_marginLeft="@dimen/dialog_content_margin" />
+        android:layout_marginLeft="@dimen/dialog_content_margin"
+        android:layout_marginRight="@dimen/dialog_controls_margin" />
 </LinearLayout>
