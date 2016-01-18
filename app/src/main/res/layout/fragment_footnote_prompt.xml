@@ -14,8 +14,10 @@
         android:text="@string/add_footnote_title"
         android:id="@+id/footnote_title_label" />
 
+    <!--android:layout_width="@dimen/dialog_fixed_width_major" --> <!--this causes crash on Lollipop (but not ICS), so had to hard code value -->
+
     <EditText
-        android:layout_width="match_parent"
+        android:layout_width="320dp"
         android:layout_height="wrap_content"
         android:textSize="@dimen/body"
         android:layout_gravity="left|center_vertical"
@@ -37,7 +39,7 @@
         android:id="@+id/footnote_label" />
 
     <EditText
-        android:layout_width="match_parent"
+        android:layout_width="320dp"
         android:layout_height="wrap_content"
         android:textSize="@dimen/body"
         android:layout_gravity="left|center_vertical"
