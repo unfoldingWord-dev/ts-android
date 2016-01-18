@@ -634,4 +634,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="add_footnote">Footnote:</string>
     <string name="add_footnote_title_prompt">Enter Title</string>
     <string name="add_footnote_prompt">Enter Footnote</string>
+    <string name="title_footnote_invalid">Invalid Footnote</string>
+    <string name="footnote_confirm_delete">Are you sure you want to delete footnote?</string>
+    <string name="footnote_label">Footnote</string>
 </resources>

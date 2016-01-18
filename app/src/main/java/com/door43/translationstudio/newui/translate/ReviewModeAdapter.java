@@ -15,6 +15,7 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.Selection;
+import android.text.SpannedString;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.DragEvent;
@@ -683,15 +684,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         editFootnote(initialTitle, initialNote, holder, item, insertPos, insertPos);
     }
 
-    /**
-     * edit contents of footnote
-     * @param initialTitle
-     * @param initialNote
-     * @param holder
-     * @param item
-     * @param insertPos
-     * @param insertEndPos
-     */
+        /**
+         * edit contents of footnote
+         * @param initialTitle
+         * @param initialNote
+         * @param holder
+         * @param item
+         * @param insertPos
+         * @param insertEndPos
+         */
     private void editFootnote(CharSequence initialTitle, CharSequence initialNote, final ViewHolder holder, final ListItem item, final int insertPos, final int insertEndPos ) {
         final EditText editText = getEditText(holder, item);
         final CharSequence original = editText.getText();
@@ -716,7 +717,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
                                 CharSequence footnote = footnoteText.getText();
                                 CharSequence footnoteTitleText = footnoteTitle.getText();
-                                insertFootnote(footnote, footnoteTitleText, original, insertPos, insertEndPos, holder, item, editText);
+                                placeFootnote(footnote, footnoteTitleText, original, insertPos, insertEndPos, holder, item, editText);
                             }
                         })
                         .setNegativeButton(R.string.title_cancel, null)
@@ -727,7 +728,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     * insert footnote into EditText
+     * insert footnote into EditText or remove footnote
      * @param footnote
      * @param footnoteTitleText
      * @param original
@@ -736,25 +737,41 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param item
      * @param editText
      */
-    private void insertFootnote(CharSequence footnote, CharSequence footnoteTitleText, CharSequence original, int insertPos, final int insertEndPos, final ViewHolder holder, final ListItem item, EditText editText) {
-        NoteSpan footnoteSpannable = NoteSpan.generateUserNote(footnoteTitleText, footnote);
-        if (footnote != null) {
-            CharSequence footnoteRendered = footnoteSpannable.render();
-            CharSequence newText = TextUtils.concat(original.subSequence(0, insertPos), footnoteRendered, original.subSequence(insertEndPos, original.length()));
-            editText.setText(newText);
+    private void placeFootnote(CharSequence footnote, CharSequence footnoteTitleText, CharSequence original, int insertPos, final int insertEndPos, final ViewHolder holder, final ListItem item, EditText editText) {
 
-            item.bodyTranslation = Translator.compileTranslation((Editable) editText.getText());
-            mTargetTranslation.applyFrameTranslation(item.frameTranslation, item.bodyTranslation);
-
-            Frame frame = null;
-            if(item.isFrame()) {
-                frame  = loadFrame(item.chapterSlug, item.frameSlug);
+        CharSequence footnoteRendered ="";
+        if((null == footnoteTitleText) && (null == footnote)) {
+            // will remove footnote
+        } else {
+            // sanity checks
+            if ((null == footnoteTitleText) || (footnoteTitleText.length() <= 0)) {
+                footnoteTitleText = mContext.getResources().getString(R.string.footnote_label);
             }
 
-            renderTargetBody(item, holder, frame);
-            editText.setText(item.renderedTargetBody);
-            editText.setSelection(insertPos, insertPos + footnoteRendered.length());
+            if ((null == footnote) || (footnote.length() <= 0)) {
+                footnote = mContext.getResources().getString(R.string.footnote_label);
+            }
+
+            NoteSpan footnoteSpannable = NoteSpan.generateUserNote(footnoteTitleText, footnote);
+            if (footnote != null) {
+                footnoteRendered = footnoteSpannable.render();
+            }
         }
+
+        CharSequence newText = TextUtils.concat(original.subSequence(0, insertPos), footnoteRendered, original.subSequence(insertEndPos, original.length()));
+        editText.setText(newText);
+
+        item.bodyTranslation = Translator.compileTranslation((Editable) editText.getText());
+        mTargetTranslation.applyFrameTranslation(item.frameTranslation, item.bodyTranslation);
+
+        Frame frame = null;
+        if(item.isFrame()) {
+            frame  = loadFrame(item.chapterSlug, item.frameSlug);
+        }
+
+        renderTargetBody(item, holder, frame);
+        editText.setText(item.renderedTargetBody);
+        editText.setSelection(insertPos, insertPos + footnoteRendered.length());
     }
 
     private static final Pattern CONSECUTIVE_VERSE_MARKERS =
@@ -1224,18 +1241,113 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 public void onClick(View v) {
 
                     //get footnote location
-                    CharSequence spanText = span.render();
-                    final EditText editText = getEditText(holder, item);
-                    int insertPos = editText.getText().toString().indexOf(spanText.toString());
-                    int insertEndPos = insertPos + spanText.length();
-                    if(insertPos < 0) { // sanity check
-                        insertPos = insertEndPos = 0;
+                    final EditText editTextView = getEditText(holder, item);
+                    Editable editText = editTextView.getText();
+                    int[] insertLocation = findNoteSpan(editText, span);
+
+                    if(insertLocation.length == 2) {
+                        int insertPos = insertLocation[0];
+                        int insertEndPos = insertLocation[1];
+
+                        if (insertPos < 0) { // sanity check
+                            insertPos = insertEndPos = 0;
+                        }
+                        editFootnote(span.getPassage(), span.getNotes(), holder, item, insertPos, insertEndPos);
                     }
-                    editFootnote(span.getPassage(),span.getNotes(), holder, item, insertPos, insertEndPos);
+                }
+            });
+
+            dlg.setNegativeButton(R.string.label_delete, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    //get footnote location
+                    final EditText editTextView = getEditText(holder, item);
+                    Editable editText = editTextView.getText();
+                    int[] insertLocation = findNoteSpan(editText, span);
+
+                    if (insertLocation.length == 2) {
+                        int insertPos = insertLocation[0];
+                        int insertEndPos = insertLocation[1];
+
+                        if (insertPos < 0) { // sanity check
+                            insertPos = insertEndPos = 0;
+                        }
+                        deleteFootnote(span.getPassage(), span.getNotes(), holder, item, insertPos, insertEndPos);
+                    }
                 }
             });
         }
         dlg.show("viewNote");
+    }
+
+    /**
+     * search spanned text for span
+     * @param editText
+     * @param span
+     * @return
+     */
+    private int[] findNoteSpan(Editable editText, Span span) {
+        CharSequence lookingFor = span.getMachineReadable();
+        String lookingForText = lookingFor.toString();
+        SpannedString found = null;
+        int next;
+        int lastIndex = 0;
+        int start = 0;
+        int end = 0;
+        for (int i = 0; (i < editText.length()) && (null == found); i = next) {
+            next = editText.nextSpanTransition(i, editText.length(), SpannedString.class);
+            SpannedString[] verses = editText.getSpans(i, next, SpannedString.class);
+            for (SpannedString s : verses) {
+                start = editText.getSpanStart(s);
+                end = editText.getSpanEnd(s);
+
+                String humanStr = s.toString();
+                if(humanStr.equals(lookingForText)) {
+                    found = s;
+                    break;
+                }
+
+                lastIndex = end;
+            }
+        }
+
+        if(null != found) {
+            int insertLocation[] = new int[2];
+            insertLocation[0] = start;
+            insertLocation[1] = end;
+            return insertLocation;
+        }
+
+        return new int[]{};
+    }
+
+    /**
+     * prompt to remove specific footnote
+     * @param initialTitle
+     * @param initialNote
+     * @param holder
+     * @param item
+     * @param insertPos
+     * @param insertEndPos
+     */
+    private void deleteFootnote(CharSequence initialTitle, CharSequence initialNote, final ViewHolder holder, final ListItem item, final int insertPos, final int insertEndPos ) {
+        final EditText editText = getEditText(holder, item);
+        final CharSequence original = editText.getText();
+
+        // pop up delete prompt
+        final CustomAlertDialog dialog = CustomAlertDialog.Create(mContext);
+        dialog.setTitle(R.string.footnote_confirm_delete)
+                .setMessage(initialTitle + "\n" + initialNote)
+                .setPositiveButton(R.string.label_delete, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        placeFootnote(null, null, original, insertPos, insertEndPos, holder, item, editText);
+                    }
+                })
+                .setNegativeButton(R.string.title_cancel, null)
+                .show("add-footnote");
     }
 
     /**
