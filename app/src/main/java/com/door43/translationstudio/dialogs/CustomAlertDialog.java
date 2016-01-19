@@ -23,7 +23,7 @@ import org.sufficientlysecure.htmltextview.HtmlTextView;
 /**
  * Created by blm on 11/28/15.
  * The intent of this is to create an AlertDialog replacement that has a modern UI appearance even
- *     on older devices.
+ *     on older devices.  Many of the calls are chainable to simplify code.
  *
  * Limitations:
  *      not all features of AlertDialog supported
@@ -60,6 +60,8 @@ public class CustomAlertDialog extends DialogFragment {
     private View mContentView = null;
 
     private Activity mContext;
+
+    private boolean autoDismiss = true;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -125,7 +127,9 @@ public class CustomAlertDialog extends DialogFragment {
                     mPositiveListener.onClick(v);
                 }
 
-                dismiss();
+                if(autoDismiss) {
+                    dismiss();
+                }
             }
         });
 
@@ -137,7 +141,9 @@ public class CustomAlertDialog extends DialogFragment {
                     mNegativeListener.onClick(v);
                 }
 
-                dismiss();
+                if(autoDismiss) {
+                    dismiss();
+                }
             }
         });
 
@@ -149,7 +155,9 @@ public class CustomAlertDialog extends DialogFragment {
                     mNeutralListener.onClick(v);
                 }
 
-                dismiss();
+                if(autoDismiss) {
+                    dismiss();
+                }
             }
         });
 
@@ -166,81 +174,152 @@ public class CustomAlertDialog extends DialogFragment {
         return rootView;
     }
 
+    /**
+     * Chainable - set context to use for resources
+     * @param context
+     * @return
+     */
     public CustomAlertDialog setContext(final Activity context) {
         mContext = context;
         return this;
     }
 
+    /**
+     * Chainable - set resource to display in title
+     * @param textResId
+     * @return
+     */
     public CustomAlertDialog setTitle(int textResId) {
         mTitleID = textResId;
         mTitle = null;
         return this;
     }
 
+    /**
+     * Chainable - set text to display in title
+     * @param text
+     * @return
+     */
     public CustomAlertDialog setTitle(CharSequence text) {
         mTitle = text;
         mTitleID = 0;
         return this;
     }
 
+    /**
+     * Chainable - set resource to display in message
+     * @param textResId
+     * @return
+     */
     public CustomAlertDialog setMessage(int textResId) {
         mMessageID = textResId;
         mMessage = null;
         return this;
     }
 
+    /**
+     * Chainable - set text to display in message
+     * @param text
+     * @return
+     */
     public CustomAlertDialog setMessage(CharSequence text) {
         mMessage = text;
         mMessageID = 0;
         return this;
     }
 
+    /**
+     * Chainable - set HTML string to display in message
+     * @param textHtml
+     * @return
+     */
     public CustomAlertDialog setMessageHtml(String textHtml) {
         mMessageHtml = textHtml;
         mMessageHtmlID = 0;
         return this;
     }
 
+    /**
+     * Chainable - set HTML resource to display in message
+     * @param textResId
+     * @return
+     */
     public CustomAlertDialog setMessageHtml(int textResId) {
         mMessageHtmlID = textResId;
         mMessageHtml = "";
         return this;
     }
 
+    /**
+     * display the dialog
+     * @param tag - string identifier to associate with dialog
+     */
     public void show(final String tag) {
         FragmentManager fm = mContext.getFragmentManager();
         show(fm, tag);
     }
 
+    /**
+     * Chainable - enables display of a positive button (right most) on button bar
+     * @param textResId
+     * @param l - optional click listener.  Set null if not needed.
+     * @return
+     */
     public CustomAlertDialog setPositiveButton(int textResId, View.OnClickListener l) {
         mPositiveListener = l;
         mPositiveTextID = textResId;
         return this;
     }
 
+    /**
+     * Chainable - enables display of a negative button (left most) on button bar
+     * @param textResId
+     * @param l - optional click listener.  Set null if not needed.
+     * @return
+     */
     public CustomAlertDialog setNegativeButton(int textResId, View.OnClickListener l) {
         mNegativeListener = l;
         mNegativeTextID = textResId;
         return this;
     }
 
+    /**
+     * Chainable - enables display of an extra button on button bar between the negative and positive buttons
+     * @param textResId
+     * @param l - optional click listener.  Set null if not needed.
+     * @return
+     */
     public CustomAlertDialog setNeutralButton(int textResId, View.OnClickListener l) {
         mNeutralListener = l;
         mNeutralTextID = textResId;
         return this;
     }
 
-
+    /**
+     * Chainable - replaces message text with custom view
+     * @param v
+     * @return
+     */
     public CustomAlertDialog setView(View v) {
         mContentView = v;
         return this;
     }
 
+    /**
+     * Chainable - displays an icon in title
+     * @param textResId
+     * @return
+     */
     public CustomAlertDialog setIcon(int textResId) {
         mIconID = textResId;
         return this;
     }
 
+    /**
+     * Chainable - adds a text input field if enableInput is true
+     * @param enableInput
+     * @return
+     */
     public CustomAlertDialog addInputPrompt(boolean enableInput) {
         if(enableInput) {
             if(null == mEditText) {
@@ -252,6 +331,10 @@ public class CustomAlertDialog extends DialogFragment {
         return this;
     }
 
+    /**
+     * if text input was selected, then this returns the text enterred by the user
+     * @return
+     */
     @Nullable
     public CharSequence getEnteredText() {
         if(mEditText != null) {
@@ -260,13 +343,34 @@ public class CustomAlertDialog extends DialogFragment {
         return null;
     }
 
+    /**
+     * Chainable - enable/disable auto dismiss of dialog. If autoDismiss is set false, then dismiss()
+     *      must be explicitly called on dialog to remove it.
+     * @param autoDismiss
+     * @return
+     */
+    public CustomAlertDialog setAutoDismiss(boolean autoDismiss) {
+        this.autoDismiss = autoDismiss;
+        return this;
+    }
 
+    /**
+     * applies cancelable setting in a Chainable fashion
+     * @param cancelable
+     * @return
+     */
     public CustomAlertDialog setCancelableChainable(boolean cancelable) {
         super.setCancelable(cancelable);
         return this;
     }
 
-
+    /**
+     * shared button setup code
+     * @param rootView
+     * @param buttonResID
+     * @param buttonTextID
+     * @return
+     */
     private Button setupButton(View rootView, int buttonResID, int buttonTextID) {
         Button button = (Button) rootView.findViewById(buttonResID);
         if(null != button) {
@@ -286,7 +390,11 @@ public class CustomAlertDialog extends DialogFragment {
         return button;
     }
 
-
+    /**
+     * creates an instance of a custom alert dialog (not displayed until show() is called)
+     * @param context
+     * @return
+     */
     static public CustomAlertDialog Create(final Activity context) {
         CustomAlertDialog dlg = new CustomAlertDialog();
         dlg.setContext(context);

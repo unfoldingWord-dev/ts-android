@@ -569,7 +569,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mAddNoteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                editFootnote("", "", holder, item);
+                createFootnoteAtSelection(holder, item);
             }
         });
 
@@ -668,32 +668,53 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     * edit contents of footnote
-     * @param initialTitle
-     * @param initialNote
+     * create a new footnote at selected position in target text.  Displays an edit dialog to enter footnote data.
      * @param holder
      * @param item
      */
-    private void editFootnote(CharSequence initialTitle, CharSequence initialNote, final ViewHolder holder, final ListItem item) {
+    private void createFootnoteAtSelection(final ViewHolder holder, final ListItem item) {
         final EditText editText = getEditText(holder, item);
         int endPos = editText.getSelectionEnd();
         if (endPos < 0) {
             endPos = 0;
         }
         final int insertPos = endPos;
-        editFootnote(initialTitle, initialNote, holder, item, insertPos, insertPos);
+        editFootnote("", "", holder, item, insertPos, insertPos);
     }
 
-        /**
-         * edit contents of footnote
-         * @param initialTitle
-         * @param initialNote
-         * @param holder
-         * @param item
-         * @param insertPos
-         * @param insertEndPos
-         */
-    private void editFootnote(CharSequence initialTitle, CharSequence initialNote, final ViewHolder holder, final ListItem item, final int insertPos, final int insertEndPos ) {
+    /**
+     * edit contents of footnote
+     * @param span
+     * @param holder
+     * @param item
+     */
+    private void editFootnote(NoteSpan span, ViewHolder holder, ListItem item) {
+        //get footnote location
+        final EditText editTextView = getEditText(holder, item);
+        Editable editText = editTextView.getText();
+        int[] insertLocation = findSpan(editText, span);
+
+        if(insertLocation.length == 2) {
+            int insertPos = insertLocation[0];
+            int insertEndPos = insertLocation[1];
+
+            if (insertPos < 0) { // sanity check
+                insertPos = insertEndPos = 0;
+            }
+            editFootnote(span.getPassage(), span.getNotes(), holder, item, insertPos, insertEndPos);
+        }
+    }
+
+    /**
+     * edit contents of footnote at specified position
+     * @param initialTitle
+     * @param initialNote
+     * @param holder
+     * @param item
+     * @param footnotePos
+     * @param footnoteEndPos
+     */
+    private void editFootnote(CharSequence initialTitle, CharSequence initialNote, final ViewHolder holder, final ListItem item, final int footnotePos, final int footnoteEndPos ) {
         final EditText editText = getEditText(holder, item);
         final CharSequence original = editText.getText();
 
@@ -710,17 +731,25 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 // pop up note prompt
                 final CustomAlertDialog dialog = CustomAlertDialog.Create(mContext);
                 dialog.setTitle(R.string.title_add_footnote)
-                        .setMessage(R.string.add_footnote)
+                        .setAutoDismiss(false)
                         .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
 
                                 CharSequence footnote = footnoteText.getText();
                                 CharSequence footnoteTitleText = footnoteTitle.getText();
-                                placeFootnote(footnote, footnoteTitleText, original, insertPos, insertEndPos, holder, item, editText);
+                                boolean validated = verifyAndReplaceFootnote(footnote, footnoteTitleText, original, footnotePos, footnoteEndPos, holder, item, editText);
+                                if(validated) {
+                                    dialog.dismiss();
+                                }
                             }
                         })
-                        .setNegativeButton(R.string.title_cancel, null)
+                        .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                dialog.dismiss();
+                            }
+                        })
                         .setView(footnoteFragment)
                         .show("add-footnote");
             }
@@ -728,7 +757,49 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     * insert footnote into EditText or remove footnote
+     * insert footnote into EditText or remove footnote from EditText if both footnote and
+     *      footnoteTitleText are null
+     * @param footnote
+     * @param footnoteTitleText
+     * @param original
+     * @param insertPos
+     * @param insertEndPos
+     * @param item
+     * @param editText
+     */
+    private boolean verifyAndReplaceFootnote(CharSequence footnote, CharSequence footnoteTitleText, CharSequence original, int insertPos, final int insertEndPos, final ViewHolder holder, final ListItem item, EditText editText) {
+
+        // sanity checks
+        if ((null == footnoteTitleText) || (footnoteTitleText.length() <= 0)) {
+            warnDialog(R.string.title_footnote_invalid, R.string.footnote_title_empty);
+            return false;
+        }
+
+        if ((null == footnote) || (footnote.length() <= 0)) {
+            warnDialog(R.string.title_footnote_invalid, R.string.footnote_message_empty);
+            return false;
+        }
+
+        placeFootnote(footnote, footnoteTitleText, original, insertPos, insertEndPos, holder, item, editText);
+        return true;
+    }
+
+    /**
+     * display warning dialog
+     * @param titleID
+     * @param messageID
+     */
+    private void warnDialog(int titleID, int messageID) {
+        final CustomAlertDialog dialog = CustomAlertDialog.Create(mContext);
+        dialog.setTitle(titleID)
+                .setMessage(messageID)
+                .setPositiveButton(R.string.dismiss, null)
+                .show("warn-dialog");
+    }
+
+    /**
+     * insert footnote into EditText or remove footnote from EditText if both footnote and
+     *      footnoteTitleText are null
      * @param footnote
      * @param footnoteTitleText
      * @param original
@@ -741,8 +812,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         CharSequence footnoteRendered ="";
         if((null == footnoteTitleText) && (null == footnote)) {
-            // will remove footnote
-        } else {
+            // no rendered footnote is created which will remove existing footnote
+        } else { // replace existing footnote
+
             // sanity checks
             if ((null == footnoteTitleText) || (footnoteTitleText.length() <= 0)) {
                 footnoteTitleText = mContext.getResources().getString(R.string.footnote_label);
@@ -754,24 +826,61 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             NoteSpan footnoteSpannable = NoteSpan.generateUserNote(footnoteTitleText, footnote);
             if (footnote != null) {
-                footnoteRendered = footnoteSpannable.render();
+                footnoteRendered = footnoteSpannable.render(); // get spannable for footnote
             }
         }
 
         CharSequence newText = TextUtils.concat(original.subSequence(0, insertPos), footnoteRendered, original.subSequence(insertEndPos, original.length()));
         editText.setText(newText);
 
-        item.bodyTranslation = Translator.compileTranslation((Editable) editText.getText());
-        mTargetTranslation.applyFrameTranslation(item.frameTranslation, item.bodyTranslation);
+        item.bodyTranslation = Translator.compileTranslation((Editable) editText.getText()); // get XML for footnote
+        mTargetTranslation.applyFrameTranslation(item.frameTranslation, item.bodyTranslation); // save change
 
         Frame frame = null;
         if(item.isFrame()) {
             frame  = loadFrame(item.chapterSlug, item.frameSlug);
         }
 
-        renderTargetBody(item, holder, frame);
+        renderTargetBody(item, holder, frame); // generate spannable again adding
         editText.setText(item.renderedTargetBody);
         editText.setSelection(insertPos, insertPos + footnoteRendered.length());
+    }
+
+    /**
+     * search spanned text for specific span, returns an array of {startPos, endPos} if found
+     *      or empty array if not found
+     * @param editText
+     * @param span
+     * @return
+     */
+    private int[] findSpan(Editable editText, Span span) {
+        String lookingForText = span.getMachineReadable().toString();
+        SpannedString found = null;
+        int next = 0, start = 0, end = 0;
+
+        for (int i = 0; (i < editText.length()) && (null == found); i = next) {
+            next = editText.nextSpanTransition(i, editText.length(), SpannedString.class);
+            SpannedString[] spans = editText.getSpans(i, next, SpannedString.class);
+            for (SpannedString s : spans) {
+                start = editText.getSpanStart(s);
+                end = editText.getSpanEnd(s);
+
+                String humanStr = s.toString();
+                if(humanStr.equals(lookingForText)) {
+                    found = s;
+                    break;
+                }
+            }
+        }
+
+        if(null != found) {
+            int foundLocation[] = new int[2];
+            foundLocation[0] = start;
+            foundLocation[1] = end;
+            return foundLocation;
+        }
+
+        return new int[]{}; // not found
     }
 
     private static final Pattern CONSECUTIVE_VERSE_MARKERS =
@@ -1093,6 +1202,16 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
     }
 
+    /**
+     * generate spannable for target text.  Will add click listener for notes and verses if USX
+     * @param text
+     * @param format
+     * @param frame
+     * @param frameTranslation
+     * @param holder
+     * @param item
+     * @return
+     */
     private CharSequence renderTargetText(String text, TranslationFormat format, final Frame frame, final FrameTranslation frameTranslation, final ViewHolder holder, final ListItem item) {
         RenderingGroup renderingGroup = new RenderingGroup();
         if(format == TranslationFormat.USX && frame != null) {
@@ -1218,11 +1337,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     * display selected footnote
+     * display selected footnote in dialog.  If editable, then it adds options to delete and edit
+     *      the footnote
      * @param holder
      * @param item
      * @param span
-     * @param target
+     * @param target - flag that we are rendering for target card (will allow editing of footnote)
      */
     private void showFootnote(final ViewHolder holder, final ListItem item, final NoteSpan span, final boolean target) {
         CharSequence marker = span.getPassage();
@@ -1239,42 +1359,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             dlg.setNeutralButton(R.string.edit, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
-                    //get footnote location
-                    final EditText editTextView = getEditText(holder, item);
-                    Editable editText = editTextView.getText();
-                    int[] insertLocation = findNoteSpan(editText, span);
-
-                    if(insertLocation.length == 2) {
-                        int insertPos = insertLocation[0];
-                        int insertEndPos = insertLocation[1];
-
-                        if (insertPos < 0) { // sanity check
-                            insertPos = insertEndPos = 0;
-                        }
-                        editFootnote(span.getPassage(), span.getNotes(), holder, item, insertPos, insertEndPos);
-                    }
+                    editFootnote(span, holder, item);
                 }
             });
 
             dlg.setNegativeButton(R.string.label_delete, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
-                    //get footnote location
-                    final EditText editTextView = getEditText(holder, item);
-                    Editable editText = editTextView.getText();
-                    int[] insertLocation = findNoteSpan(editText, span);
-
-                    if (insertLocation.length == 2) {
-                        int insertPos = insertLocation[0];
-                        int insertEndPos = insertLocation[1];
-
-                        if (insertPos < 0) { // sanity check
-                            insertPos = insertEndPos = 0;
-                        }
-                        deleteFootnote(span.getPassage(), span.getNotes(), holder, item, insertPos, insertEndPos);
-                    }
+                    deleteFootnote(span, holder, item);
                 }
             });
         }
@@ -1282,68 +1374,50 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     * search spanned text for span
-     * @param editText
+     * prompt to confirm removal of footnote
      * @param span
-     * @return
+     * @param holder
+     * @param item
      */
-    private int[] findNoteSpan(Editable editText, Span span) {
-        CharSequence lookingFor = span.getMachineReadable();
-        String lookingForText = lookingFor.toString();
-        SpannedString found = null;
-        int next;
-        int lastIndex = 0;
-        int start = 0;
-        int end = 0;
-        for (int i = 0; (i < editText.length()) && (null == found); i = next) {
-            next = editText.nextSpanTransition(i, editText.length(), SpannedString.class);
-            SpannedString[] verses = editText.getSpans(i, next, SpannedString.class);
-            for (SpannedString s : verses) {
-                start = editText.getSpanStart(s);
-                end = editText.getSpanEnd(s);
+    private void deleteFootnote(NoteSpan span, ViewHolder holder, ListItem item) {
+        //get footnote location
+        final EditText editTextView = getEditText(holder, item);
+        Editable editText = editTextView.getText();
+        int[] deleteLocation = findSpan(editText, span);
 
-                String humanStr = s.toString();
-                if(humanStr.equals(lookingForText)) {
-                    found = s;
-                    break;
-                }
+        if (deleteLocation.length == 2) {
+            int deletePos = deleteLocation[0];
+            int deleteEndPos = deleteLocation[1];
 
-                lastIndex = end;
+            if (deletePos < 0) { // sanity check
+                deletePos = deleteEndPos = 0;
             }
+            deleteFootnote(span.getPassage(), span.getNotes(), holder, item, deletePos, deleteEndPos);
         }
-
-        if(null != found) {
-            int insertLocation[] = new int[2];
-            insertLocation[0] = start;
-            insertLocation[1] = end;
-            return insertLocation;
-        }
-
-        return new int[]{};
     }
 
     /**
-     * prompt to remove specific footnote
-     * @param initialTitle
-     * @param initialNote
+     * prompt to confirm removal of specific footnote at position
+     * @param title
+     * @param note
      * @param holder
      * @param item
-     * @param insertPos
-     * @param insertEndPos
+     * @param deletePos
+     * @param deleteEndPos
      */
-    private void deleteFootnote(CharSequence initialTitle, CharSequence initialNote, final ViewHolder holder, final ListItem item, final int insertPos, final int insertEndPos ) {
+    private void deleteFootnote(CharSequence title, CharSequence note, final ViewHolder holder, final ListItem item, final int deletePos, final int deleteEndPos ) {
         final EditText editText = getEditText(holder, item);
         final CharSequence original = editText.getText();
 
         // pop up delete prompt
         final CustomAlertDialog dialog = CustomAlertDialog.Create(mContext);
         dialog.setTitle(R.string.footnote_confirm_delete)
-                .setMessage(initialTitle + "\n" + initialNote)
+                .setMessage(title + "\n" + note)
                 .setPositiveButton(R.string.label_delete, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
 
-                        placeFootnote(null, null, original, insertPos, insertEndPos, holder, item, editText);
+                        placeFootnote(null, null, original, deletePos, deleteEndPos, holder, item, editText);
                     }
                 })
                 .setNegativeButton(R.string.title_cancel, null)
@@ -1364,10 +1438,19 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
     }
 
+    /**
+     * generate spannable for source text.  Will add click listener for notes if USX
+     * @param text
+     * @param format
+     * @param holder
+     * @param item
+     * @param target - flag that we are rendering for target card (will allow editing of footnote)
+     * @return
+     */
     private CharSequence renderSourceText(String text, TranslationFormat format, final ViewHolder holder, final ListItem item, final boolean target) {
         RenderingGroup renderingGroup = new RenderingGroup();
         if (format == TranslationFormat.USX) {
-            // TODO: add click listeners for verses and notes
+            // TODO: add click listeners for verses
             renderingGroup.addEngine(new USXRenderer(null, new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
@@ -1392,16 +1475,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     @Override
     public int getItemCount() {
         return mListItems.length;
-    }
-
-    public int getPosition(final ListItem item) {
-        for(int i = 0; i < mListItems.length; i++) {
-            ListItem currentItem = mListItems[i];
-            if(currentItem.equals(item)) {
-                return i;
-            }
-        }
-        return -1;
     }
 
     /**

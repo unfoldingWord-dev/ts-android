@@ -142,7 +142,7 @@ public class Translator {
     }
 
     /**
-     * Compiles all the spans within the text into human readable strings
+     * Compiles all the spans within the text into machine readable strings (XML)
      * @param text
      * @return
      */
