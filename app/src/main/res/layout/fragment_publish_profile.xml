@@ -2,8 +2,7 @@
 <android.support.v4.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:elevation="@dimen/appbar_elevation">
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -156,8 +155,7 @@
                 android:layout_gravity="center_horizontal"
                 style="@style/Widget.Button.White"
                 android:text="@string/add_contributor"
-                android:layout_marginRight="@dimen/dialog_controls_margin"
-                android:elevation="@dimen/appbar_elevation" />
+                android:layout_marginRight="@dimen/dialog_controls_margin" />
 
             <Button
                 android:id="@+id/next_button"

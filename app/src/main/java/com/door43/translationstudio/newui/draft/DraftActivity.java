@@ -31,13 +31,13 @@ public class DraftActivity extends BaseActivity implements GenericTaskWatcher.On
     public static final String TAG = "DraftActivity";
     public static final String EXTRA_TARGET_TRANSLATION_ID = "target_translation_id";
     private TargetTranslation mTargetTranslation;
-    private List<SourceTranslation> mDraftTranslations = new ArrayList<>();
     private Translator mTranslator;
     private Library mLibrary;
     private RecyclerView mRecylerView;
     private LinearLayoutManager mLayoutManager;
     private DraftAdapter mAdapter;
     private GenericTaskWatcher taskWatcher;
+    private SourceTranslation mDraftTranslation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,12 +49,13 @@ public class DraftActivity extends BaseActivity implements GenericTaskWatcher.On
         mLibrary = AppContext.getLibrary();
 
         // validate parameters
+        List<SourceTranslation> draftTranslations = new ArrayList<>();
         Bundle extras = getIntent().getExtras();
         if(extras != null) {
             String targetTranslationId = extras.getString(EXTRA_TARGET_TRANSLATION_ID, null);
             mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
             if(mTargetTranslation != null) {
-                mDraftTranslations = mLibrary.getDraftTranslations(mTargetTranslation.getProjectId(), mTargetTranslation.getTargetLanguageId());
+                draftTranslations = mLibrary.getDraftTranslations(mTargetTranslation.getProjectId(), mTargetTranslation.getTargetLanguageId());
             } else {
                 throw new InvalidParameterException("a valid target translation id is required");
             }
@@ -62,17 +63,19 @@ public class DraftActivity extends BaseActivity implements GenericTaskWatcher.On
             throw new InvalidParameterException("This activity expects some arguments");
         }
 
-        if(mDraftTranslations.size() == 0) {
+        if(draftTranslations.size() == 0) {
             finish();
             return;
         }
+
+        // TODO: 1/20/2016 eventually users will be forced to define which resource they are translating into as well. When that happens we'll know which draft to choose
+        mDraftTranslation = draftTranslations.get(0);
 
         mRecylerView = (RecyclerView)findViewById(R.id.recycler_view);
         mLayoutManager = new LinearLayoutManager(this);
         mRecylerView.setLayoutManager(mLayoutManager);
         mRecylerView.setItemAnimator(new DefaultItemAnimator());
-        // TODO: 1/20/2016 we need to displays tabs so the user can switch between the different draft translations.
-        mAdapter = new DraftAdapter(this, mDraftTranslations.get(0));
+        mAdapter = new DraftAdapter(this, mDraftTranslation);
         mRecylerView.setAdapter(mAdapter);
 
         taskWatcher = new GenericTaskWatcher(this, R.string.loading);
@@ -90,7 +93,7 @@ public class DraftActivity extends BaseActivity implements GenericTaskWatcher.On
                             @Override
                             public void onClick(View v) {
                                 // // TODO: 1/20/2016 use the draft from the selected tab
-                                ImportDraftTask task = new ImportDraftTask(mDraftTranslations.get(0));
+                                ImportDraftTask task = new ImportDraftTask(mDraftTranslation);
                                 taskWatcher.watch(task);
                                 TaskManager.addTask(task, ImportDraftTask.TASK_ID);
                             }

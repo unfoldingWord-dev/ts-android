@@ -108,8 +108,7 @@
                     android:layout_gravity="center_horizontal"
                     style="@style/Widget.Button.White"
                     android:text="@string/title_cancel"
-                    android:layout_marginRight="@dimen/dialog_controls_margin"
-                    android:elevation="@dimen/appbar_elevation" />
+                    android:layout_marginRight="@dimen/dialog_controls_margin" />
 
                 <Button
                     android:id="@+id/ok_button"
