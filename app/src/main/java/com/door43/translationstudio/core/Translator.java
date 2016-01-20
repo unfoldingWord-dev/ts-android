@@ -273,6 +273,7 @@ public class Translator {
                         t.applyFrameTranslation(t.getFrameTranslation(f), f.body);
                     }
                 }
+                t.setParentDraft(draftTranslation);
                 t.commit();
             }
         } catch (IOException e) {

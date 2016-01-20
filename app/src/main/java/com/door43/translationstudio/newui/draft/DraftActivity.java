@@ -71,7 +71,7 @@ public class DraftActivity extends BaseActivity implements GenericTaskWatcher.On
         mLayoutManager = new LinearLayoutManager(this);
         mRecylerView.setLayoutManager(mLayoutManager);
         mRecylerView.setItemAnimator(new DefaultItemAnimator());
-        // TODO: 1/20/2016 we need to place in the correct draft translation. Need to have tabs
+        // TODO: 1/20/2016 we need to displays tabs so the user can switch between the different draft translations.
         mAdapter = new DraftAdapter(this, mDraftTranslations.get(0));
         mRecylerView.setAdapter(mAdapter);
 
@@ -89,7 +89,7 @@ public class DraftActivity extends BaseActivity implements GenericTaskWatcher.On
                         .setPositiveButton(R.string.label_import, new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                // // TODO: 1/20/2016 use the correct draft translation
+                                // // TODO: 1/20/2016 use the draft from the selected tab
                                 ImportDraftTask task = new ImportDraftTask(mDraftTranslations.get(0));
                                 taskWatcher.watch(task);
                                 TaskManager.addTask(task, ImportDraftTask.TASK_ID);

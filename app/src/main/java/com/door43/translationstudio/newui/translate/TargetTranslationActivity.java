@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.text.Layout;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -41,6 +42,7 @@ import com.door43.widget.ViewUtil;
 import com.door43.translationstudio.newui.BaseActivity;
 
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -59,6 +61,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private ImageButton mReadButton;
     private ImageButton mChunkButton;
     private ImageButton mReviewButton;
+    private List<SourceTranslation> draftTranslations = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +76,22 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         if (mTargetTranslation == null) {
             throw new InvalidParameterException("a valid target translation id is required");
+        }
+
+        // notify user that a draft translation exists the first time actvity starts
+        draftTranslations = AppContext.getLibrary().getDraftTranslations(mTargetTranslation.getProjectId(), mTargetTranslation.getTargetLanguageId());
+        if(savedInstanceState == null && draftTranslations.size() > 0 && mTargetTranslation.getParentDraft() == null) {
+            Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.draft_translation_exists, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.preview, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent(TargetTranslationActivity.this, DraftActivity.class);
+                            intent.putExtra(DraftActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                            startActivity(intent);
+                        }
+                    });
+            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+            snack.show();
         }
 
         // manual location settings
@@ -160,7 +179,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
                 // display menu item for draft translations
                 MenuItem draftsMenuItem = moreMenu.getMenu().findItem(R.id.action_drafts_available);
-                List<SourceTranslation> draftTranslations = AppContext.getLibrary().getDraftTranslations(mTargetTranslation.getProjectId(), mTargetTranslation.getTargetLanguageId());
                 draftsMenuItem.setVisible(draftTranslations.size() > 0);
 
                 moreMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {

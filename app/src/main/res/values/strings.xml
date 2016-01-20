@@ -632,4 +632,5 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="view_available_drafts">View available drafts</string>
     <string name="preview">Preview</string>
     <string name="importing_draft">Importing draft</string>
+    <string name="draft_translation_exists">A draft of this translation is available</string>
 </resources>
