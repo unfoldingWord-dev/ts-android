@@ -1,16 +1,12 @@
-package com.door43.translationstudio.newui.translate;
+package com.door43.translationstudio.newui.draft;
 
 import android.app.Activity;
-import android.content.ContentValues;
-import android.os.Handler;
-import android.os.Looper;
-import android.support.design.widget.TabLayout;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
+import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.door43.translationstudio.AppContext;
@@ -22,6 +18,7 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
+import com.door43.translationstudio.newui.translate.ViewModeAdapter;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.USXRenderer;
@@ -29,14 +26,11 @@ import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.widget.ViewUtil;
 
-import java.util.ArrayList;
-import java.util.List;
-
 
 /**
  * Created by blm on 1/10/2016.
  */
-public class PreviewModeAdapter extends ViewModeAdapter<PreviewModeAdapter.ViewHolder> {
+public class DraftAdapter extends RecyclerView.Adapter<DraftAdapter.ViewHolder> {
 
     private SourceLanguage mSourceLanguage;
     private CharSequence[] mRenderedSourceBody;
@@ -47,7 +41,7 @@ public class PreviewModeAdapter extends ViewModeAdapter<PreviewModeAdapter.ViewH
     private Chapter[] mChapters;
     private int mLayoutBuildNumber = 0;
 
-    public PreviewModeAdapter(Activity context, String sourceTranslationId, String chapterId, String frameId) {
+    public DraftAdapter(Activity context, String sourceTranslationId, String chapterId, String frameId) {
         mLibrary = AppContext.getLibrary();
         mContext = context;
         mSourceTranslation = mLibrary.getDraftTranslation(sourceTranslationId);
@@ -71,17 +65,10 @@ public class PreviewModeAdapter extends ViewModeAdapter<PreviewModeAdapter.ViewH
         notifyDataSetChanged();
     }
 
-    @Override
-    void onCoordinate(ViewHolder holder) {
-
-    }
-
-    @Override
     public String getFocusedFrameId(int position) {
         return null;
     }
 
-    @Override
     public String getFocusedChapterId(int position) {
         if(position >= 0 && position < mChapters.length) {
             return mChapters[position].getId();
@@ -90,7 +77,6 @@ public class PreviewModeAdapter extends ViewModeAdapter<PreviewModeAdapter.ViewH
         }
     }
 
-    @Override
     public int getItemPosition(String chapterId, String frameId) {
         for(int i = 0; i < mChapters.length; i ++) {
             Chapter chapter = mChapters[i];
@@ -102,13 +88,7 @@ public class PreviewModeAdapter extends ViewModeAdapter<PreviewModeAdapter.ViewH
     }
 
     @Override
-    public void reload() {
-        setSourceTranslation(mSourceTranslation.getId());
-    }
-
-
-    @Override
-    public ViewHolder onCreateManagedViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_preview_list_item, parent, false);
         ViewHolder vh = new ViewHolder(v);
         return vh;

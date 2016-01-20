@@ -24,6 +24,7 @@ import android.widget.TextView;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
@@ -31,6 +32,7 @@ import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BackupDialog;
 import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.PrintDialog;
+import com.door43.translationstudio.newui.draft.DraftActivity;
 import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.util.SdUtils;
@@ -39,6 +41,7 @@ import com.door43.widget.ViewUtil;
 import com.door43.translationstudio.newui.BaseActivity;
 
 import java.security.InvalidParameterException;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -154,6 +157,12 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 PopupMenu moreMenu = new PopupMenu(TargetTranslationActivity.this, v);
                 ViewUtil.forcePopupMenuIcons(moreMenu);
                 moreMenu.getMenuInflater().inflate(R.menu.menu_target_translation_detail, moreMenu.getMenu());
+
+                // display menu item for draft translations
+                MenuItem draftsMenuItem = moreMenu.getMenu().findItem(R.id.action_drafts_available);
+                List<SourceTranslation> draftTranslations = AppContext.getLibrary().getDraftTranslations(mTargetTranslation.getProjectId(), mTargetTranslation.getTargetLanguageId());
+                draftsMenuItem.setVisible(draftTranslations.size() > 0);
+
                 moreMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
@@ -169,6 +178,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                                 // TRICKY: we may move back and forth between the publisher and translation activites
                                 // so we finish to avoid filling the stack.
                                 finish();
+                                return true;
+                            case R.id.action_drafts_available:
+                                Intent intent = new Intent(TargetTranslationActivity.this, DraftActivity.class);
+                                intent.putExtra(DraftActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                                startActivity(intent);
                                 return true;
                             case R.id.action_backup:
                                 FragmentTransaction backupFt = getFragmentManager().beginTransaction();

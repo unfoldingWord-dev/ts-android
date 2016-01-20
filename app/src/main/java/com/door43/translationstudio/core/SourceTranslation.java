@@ -46,18 +46,6 @@ public class SourceTranslation {
     }
 
     /**
-     * create source translation from an ID returned from SourceTranslation,getId()
-     * @param sourceTranslationID
-     * @return
-     */
-    public static SourceTranslation simple(String sourceTranslationID) {
-        return new SourceTranslation(getProjectIdFromId(sourceTranslationID),
-                getSourceLanguageIdFromId(sourceTranslationID),
-                getResourceIdFromId(sourceTranslationID),
-                "", "", "", 0, 0, "0.0.0", TranslationFormat.DEFAULT);
-    }
-
-    /**
      * Returns the translation format of this source translation.
      * @return
      */

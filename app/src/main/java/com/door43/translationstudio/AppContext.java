@@ -599,24 +599,4 @@ public class AppContext {
         }
         editor.apply();
     }
-
-    /**
-     * find existing targetTranslation or null if not present.
-     * @param targetProjectID
-     * @param targetLanguageID
-     * @return
-     */
-    @Nullable
-    public static TargetTranslation findExistingTargetTranslation(String targetProjectID, String targetLanguageID) {
-        TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
-        for (TargetTranslation t : targetTranslations) {
-            Logger.i(TAG, "TargetTranslation:" + t.getId());
-            String projectID = t.getProjectId();
-            String languageID = t.getTargetLanguageId();
-            if (targetProjectID.equals(projectID) && targetLanguageID.equals(languageID)) {
-                return t;
-            }
-        }
-        return null;
-    }
 }

@@ -629,7 +629,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="import_failed">Failed Import from:</string>
     <string name="backup_success">Success Backing up to:</string>
     <string name="import_success">Success Importing from:</string>
-    <string name="title_activity_draft_preview">Do You Want To Edit This Draft Translation?</string>
     <string name="title_overwrite_confirmation">Overwrite Confirmation</string>
     <string name="overwrite_target_translation">Do you want to edit this draft translation?  This will overwrite any of your translation changes.</string>
+    <string name="view_available_drafts">View available drafts</string>
 </resources>

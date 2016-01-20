@@ -17,6 +17,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import javax.xml.transform.Source;
+
 /**
  * Created by joel on 8/29/2015.
  */
@@ -630,63 +632,66 @@ public class Library {
 
     /**
      * Returns an array of source translations in a project that have not yet met the minimum checking level
-     * Note that the drafts may not have been downloaded yet.  Check chapter count to make sure
-     * the draft has been downloaded.
+     *
      * @param projectId
      */
     public SourceTranslation[] getDraftTranslations(String projectId) {
-        // TODO: 10/20/2015 write query for this
         List<SourceTranslation> draftTranslations = new ArrayList<>();
         String[] sourceLanguageIds = getActiveIndex().getSourceLanguageSlugs(projectId);
         for(String sourceLanguageId:sourceLanguageIds) {
-            String[] resourceIds = getActiveIndex().getResourceSlugs(projectId, sourceLanguageId);
-            for(String resourceId:resourceIds) {
-                SourceTranslation sourceTranslation = getSourceTranslation(projectId, sourceLanguageId, resourceId);
-                if(sourceTranslation != null && sourceTranslation.getCheckingLevel() < MIN_CHECKING_LEVEL) {
-                    draftTranslations.add(sourceTranslation);
-                }
-            }
+            draftTranslations.addAll(getDraftTranslations(projectId, sourceLanguageId));
         }
         return draftTranslations.toArray(new SourceTranslation[draftTranslations.size()]);
     }
 
     /**
-     * finds a specific draft source translation that matches ID or null if not found
-     * Note that the draft may not have been downloaded yet.  Check chapter count to make sure
-     * the draft has been downloaded.
-     * @param sourceTranslationID
+     * Returns an array of source translations in a project and source language that have not yet met the minimum checking level
+     *
+     * @param projectId
+     * @param sourceLanguageId
      * @return
      */
-    @Nullable
-    public SourceTranslation getDraftTranslation(String sourceTranslationID) {
-        String projectID = SourceTranslation.getProjectIdFromId(sourceTranslationID);
-        String languageID = SourceTranslation.getSourceLanguageIdFromId(sourceTranslationID);
-        return getDraftTranslation(languageID, projectID);
+    public List<SourceTranslation> getDraftTranslations(String projectId, String sourceLanguageId) {
+        List<SourceTranslation> draftTranslations = new ArrayList<>();
+        String[] resourceIds = getActiveIndex().getResourceSlugs(projectId, sourceLanguageId);
+        for(String resourceId:resourceIds) {
+            SourceTranslation sourceTranslation = getDraftTranslation(projectId, sourceLanguageId, resourceId);
+            if(sourceTranslation != null) {
+                draftTranslations.add(sourceTranslation);
+            }
+        }
+        return draftTranslations;
     }
 
     /**
-     * finds a specific draft source translation that matches parameters or null if not found.
-     * Note that the draft may not have been downloaded yet.  Check chapter count to make sure
-     * the draft has been downloaded.
-     * @param languageID
-     * @param projectID
+     * Returns a source translation that has not yet met the minimum checking level.
+     *
+     * @param projectId
+     * @param sourceLanguageId
+     * @param resourceId
      * @return
      */
-    @Nullable
-    public SourceTranslation getDraftTranslation(String languageID, String projectID) {
-        SourceTranslation[] sourceTranslations = getDraftTranslations(projectID);
-        for (SourceTranslation s : sourceTranslations) {
-            String draftLanguageID = s.sourceLanguageSlug;
-            if (languageID.equals(draftLanguageID)) {
-                Logger.i(TAG, "SourceTranslation:" + s.getId());
-                if(!s.getProjectTitle().isEmpty()) {
-                    return s;
-                } else {
-                    Logger.i(TAG, "Not loaded:" + s.getId());
-                }
-            }
+    public SourceTranslation getDraftTranslation(String projectId, String sourceLanguageId, String resourceId) {
+        SourceTranslation sourceTranslation = getSourceTranslation(projectId, sourceLanguageId, resourceId);
+        if(sourceTranslation != null && sourceTranslation.getCheckingLevel() < MIN_CHECKING_LEVEL) {
+            return sourceTranslation;
+        } else {
+            return null;
         }
-        return null;
+    }
+
+    /**
+     * Returns the source translation that has not yet met the minimum checking level
+     * @param sourceTranslationId
+     * @return
+     */
+    public SourceTranslation getDraftTranslation(String sourceTranslationId) {
+        SourceTranslation sourceTranslation = getSourceTranslation(sourceTranslationId);
+        if(sourceTranslation != null && sourceTranslation.getCheckingLevel() < MIN_CHECKING_LEVEL) {
+            return sourceTranslation;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -800,12 +805,20 @@ public class Library {
     public boolean sourceLanguageHasSource(String projectId, String sourceLanguageId) {
         String[] resourceIds = getActiveIndex().getResourceSlugs(projectId, sourceLanguageId);
         for(String resourceId:resourceIds) {
-            String[] chapterIds = getActiveIndex().getChapterSlugs(SourceTranslation.simple(projectId, sourceLanguageId, resourceId));
-            if(chapterIds.length > 0) {
+            if(sourceTranslationHasSource(SourceTranslation.simple(projectId, sourceLanguageId, resourceId))) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Checks if the source translation has any source downloaded
+     * @param sourceTranslation
+     * @return
+     */
+    public boolean sourceTranslationHasSource(SourceTranslation sourceTranslation) {
+        return getActiveIndex().getChapterSlugs(sourceTranslation).length > 0;
     }
 
     /**

@@ -234,14 +234,8 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                 .show("ExitConfirm");
     }
 
-   public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(TargetTranslationAdapter.VERIFY_EDIT_OF_DRAFT == requestCode) {
-            String sourceTranslationId = data.getType();
-            if(RESULT_OK == resultCode ) {
-                Logger.i(this.getClass().toString(), "Selection type: " + sourceTranslationId + ", result:" + resultCode);
-                loadDraftSourceIntoTargetTranslation(sourceTranslationId);
-            }
-        } else
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(NEW_TARGET_TRANSLATION_REQUEST == requestCode ) {
             if(RESULT_OK == resultCode ) {
                 if(mFragment instanceof WelcomeFragment) {
@@ -266,101 +260,6 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                     ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                     snack.show();
                 }
-            }
-        }
-    }
-
-    /**
-     * load draft source into target translation overwriting any work there
-     * @param sourceTranslationId
-     */
-    public void loadDraftSourceIntoTargetTranslation(String sourceTranslationId) {
-        SourceTranslation sourceTranslation = mLibrary.getDraftTranslation(sourceTranslationId);
-        loadSourceIntoTargetTranslation(sourceTranslation);
-    }
-
-    /**
-     * load source translation into target translation overwriting any work there
-     * @param sourceTranslation
-     */
-    public void loadSourceIntoTargetTranslation(SourceTranslation sourceTranslation) {
-        String targetProjectID = sourceTranslation.projectSlug;
-        String targetLanguageID = sourceTranslation.sourceLanguageSlug;
-        boolean error = false;
-
-        //get target translation that we will overwrite
-        final TargetTranslation targetTranslation = AppContext.findExistingTargetTranslation(targetProjectID, targetLanguageID);
-
-        try {
-            targetTranslation.addSourceTranslation(sourceTranslation); // to keep track of what this is based on
-//            AppContext.addOpenSourceTranslation(targetTranslation.getId(), sourceTranslation.getId()); // to add the draft to the sources tab
-            String projectTitle = sourceTranslation.getProjectTitle();
-            if (projectTitle != null) {
-                targetTranslation.applyProjectTitleTranslation(projectTitle);
-                targetTranslation.reopenProjectTitle();
-            }
-
-            Chapter[] chapters = mLibrary.getChapters(sourceTranslation);
-            for(Chapter c:chapters) {
-                final ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(c);
-
-                // add title and reference cards for chapter
-                if(!c.title.isEmpty()) {
-                    targetTranslation.applyChapterTitleTranslation(chapterTranslation, c.title);
-                    targetTranslation.reopenChapterTitle(c);                }
-                if(!c.reference.isEmpty()) {
-                    targetTranslation.applyChapterReferenceTranslation(chapterTranslation, c.reference);
-                    targetTranslation.reopenChapterReference(c);
-                }
-
-                // put target frames in map.  later we will remove entries that we overwrite
-                HashMap<String, FrameTranslation> frameMap = new HashMap<String, FrameTranslation>();
-                FrameTranslation[] frames = targetTranslation.getFrameTranslations(c.getId(), TranslationFormat.DEFAULT);
-                for(FrameTranslation f:frames) {
-                    frameMap.put(f.getId(),f);
-                }
-
-                String[] chapterFrameSlugs = mLibrary.getFrameSlugs(sourceTranslation, c.getId());
-
-                for(String frameSlug:chapterFrameSlugs) {
-                    Frame frame = mLibrary.getFrame(sourceTranslation, c.getId(), frameSlug);
-                    String frameText = frame.body;
-
-                    FrameTranslation destination = frameMap.get(frameSlug);
-                    if(destination != null) {
-                        frameMap.remove(frameSlug); // remove the frame that we will overwrite
-                    } else {
-                        destination = new FrameTranslation(frameSlug, c.getId(), "", TranslationFormat.DEFAULT, false);
-                    }
-                    targetTranslation.applyFrameTranslation(destination, frameText);
-                    targetTranslation.reopenFrame(frame);
-                }
-
-                if(!frameMap.isEmpty()) {
-                    // clean out extra frames
-                    for (String key : frameMap.keySet()) {
-                        FrameTranslation f = frameMap.get(key);
-                        targetTranslation.applyFrameTranslation(f, "");
-                    }
-                }
-            }
-        } catch (Exception e) {
-            error = true;
-            final CustomAlertDialog dialog = CustomAlertDialog.Create(this);
-            dialog.setTitle(R.string.import_draft)
-                    .setMessage(R.string.translation_import_failed)
-                    .setPositiveButton(R.string.confirm, null)
-                    .show("importFailed");
-        } finally {
-            try {
-                AppContext.setLastFocus(targetTranslation.getId(), "", ""); // clear resume location
-                targetTranslation.commit();
-            } catch (Exception e) {
-                Logger.w(TAG, "Error Importing Draft", e);
-            };
-
-            if(!error) {
-                onItemClick(targetTranslation); // automatically open draft project
             }
         }
     }

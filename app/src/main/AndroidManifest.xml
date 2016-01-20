@@ -156,13 +156,12 @@
             android:label="@string/title_activity_profile"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".newui.DraftPreviewActivity"
-            android:label="@string/title_activity_draft_preview"
-            android:parentActivityName=".BaseActivity"
+            android:name=".newui.draft.DraftActivity"
+            android:label="@string/drafts"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="BaseActivity" />
+                android:value=".newui.translate.TargetTranslationActivity" />
         </activity>
     </application>
 

@@ -289,13 +289,17 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
         return new ArrayList(sourceLanguages.values());
     }
 
+    /**
+     * Returns a list of unique source languages that have drafts available
+     * @return
+     */
     private List<SourceLanguage> getDraftLanguages() {
         // TRICKY: we convert the source translations to source languages so we only get
         // languages that meet the minimum checking level
         SourceTranslation[] draftTranslations = mServerLibrary.getDraftTranslations(mProject.getId());
         Map<String, SourceLanguage> draftLanguages = new HashMap<>();
-        for(SourceTranslation sourceTranslation:draftTranslations) {
-            SourceLanguage sourceLanguage = mServerLibrary.getSourceLanguage(mProject.getId(), sourceTranslation.sourceLanguageSlug);
+        for(SourceTranslation draftTranslation:draftTranslations) {
+            SourceLanguage sourceLanguage = mServerLibrary.getSourceLanguage(mProject.getId(), draftTranslation.sourceLanguageSlug);
             // TRICKY: a source language could be represented several times due to multiple resources
             if(!draftLanguages.containsKey(sourceLanguage.getId())) {
                 draftLanguages.put(sourceLanguage.getId(), sourceLanguage);

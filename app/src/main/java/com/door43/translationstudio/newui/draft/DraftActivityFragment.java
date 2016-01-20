@@ -1,4 +1,4 @@
-package com.door43.translationstudio.newui;
+package com.door43.translationstudio.newui.draft;
 
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -11,9 +11,9 @@ import com.door43.translationstudio.R;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class DraftPreviewActivityFragment extends Fragment {
+public class DraftActivityFragment extends Fragment {
 
-    public DraftPreviewActivityFragment() {
+    public DraftActivityFragment() {
     }
 
     @Override

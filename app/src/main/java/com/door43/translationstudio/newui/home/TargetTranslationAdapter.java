@@ -2,7 +2,6 @@ package com.door43.translationstudio.newui.home;
 
 
 import android.content.Context;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,16 +10,11 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.AppContext;
-import com.door43.translationstudio.newui.DraftPreviewActivity;
-import com.door43.translationstudio.newui.translate.ViewModeFragment;
 import com.door43.util.tasks.ThreadableUI;
 import com.door43.widget.ViewUtil;
 import com.filippudak.ProgressPieView.ProgressPieView;
@@ -31,7 +25,6 @@ import java.util.Locale;
  * Created by joel on 9/3/2015.
  */
 public class TargetTranslationAdapter extends BaseAdapter {
-    public static final int VERIFY_EDIT_OF_DRAFT = 142;
     private final Context mContext;
     private TargetTranslation[] mTranslations;
     private OnInfoClickListener mInfoClickListener = null;
@@ -144,30 +137,6 @@ public class TargetTranslationAdapter extends BaseAdapter {
                 }
             }
         });
-
-        // check for draft language
-        holder.mDraftTranslation = library.getDraftTranslation(targetTranslation.getTargetLanguageId(), targetTranslation.getProjectId());
-        boolean enableSettings = holder.mDraftTranslation != null;
-        if(enableSettings) {
-            Chapter[] chapters = library.getChapters(holder.mDraftTranslation); // see if chapters have actually been loaded
-            enableSettings = chapters.length > 0;
-        }
-
-        holder.mSettingsButton.setVisibility(enableSettings ? View.VISIBLE : View.GONE);
-        if(enableSettings) {
-            holder.mSettingsButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Logger.i(this.getClass().toString(), "settings button click, draft translation: " + holder.mDraftTranslation.getId());
-                    Intent intent = new Intent(mContext, DraftPreviewActivity.class);
-                    intent.setType(holder.mDraftTranslation.getId());
-                    intent.putExtra(AppContext.EXTRA_SOURCE_DRAFT_TRANSLATION_ID, holder.mDraftTranslation.getId());
-                    HomeActivity activity = (HomeActivity) mContext;
-                    activity.startActivityForResult(intent, VERIFY_EDIT_OF_DRAFT);
-                }
-            });
-        }
-
         return v;
     }
 
@@ -189,10 +158,8 @@ public class TargetTranslationAdapter extends BaseAdapter {
         public TextView mLanguageView;
         public ProgressPieView mProgressView;
         public ImageButton mInfoButton;
-        public ImageButton mSettingsButton;
         public ThreadableUI mProgressTask;
         public int mCalculatingProgressForPosition = -1;
-        public SourceTranslation mDraftTranslation;
 
         public ViewHolder(View view, Context context) {
             mIconView = (ImageView) view.findViewById(R.id.projectIcon);
@@ -201,7 +168,6 @@ public class TargetTranslationAdapter extends BaseAdapter {
             mProgressView = (ProgressPieView) view.findViewById(R.id.translationProgress);
             mProgressView.setMax(100);
             mInfoButton = (ImageButton) view.findViewById(R.id.infoButton);
-            mSettingsButton = (ImageButton) view.findViewById(R.id.settings);
             ViewUtil.tintViewDrawable(mInfoButton, context.getResources().getColor(R.color.dark_disabled_text));
             view.setTag(this);
         }
