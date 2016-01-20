@@ -275,6 +275,12 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         }, COMMIT_INTERVAL, COMMIT_INTERVAL);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        notifyDatasetChanged();
+    }
+
     public void closeKeyboard() {
         if (mFragment instanceof ViewModeFragment) {
             ((ViewModeFragment) mFragment).closeKeyboard();

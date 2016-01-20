@@ -6,7 +6,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.door43.translationstudio.AppContext;
@@ -18,7 +17,6 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
-import com.door43.translationstudio.newui.translate.ViewModeAdapter;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.USXRenderer;
@@ -33,35 +31,32 @@ import com.door43.widget.ViewUtil;
 public class DraftAdapter extends RecyclerView.Adapter<DraftAdapter.ViewHolder> {
 
     private SourceLanguage mSourceLanguage;
-    private CharSequence[] mRenderedSourceBody;
+    private CharSequence[] mRenderedDraftBody;
     private final Activity mContext;
 
-    private SourceTranslation mSourceTranslation;
+    private SourceTranslation mDraftTranslation;
     private final Library mLibrary;
     private Chapter[] mChapters;
     private int mLayoutBuildNumber = 0;
 
-    public DraftAdapter(Activity context, String sourceTranslationId, String chapterId, String frameId) {
+    public DraftAdapter(Activity context, SourceTranslation draftTranslation) {
         mLibrary = AppContext.getLibrary();
         mContext = context;
-        mSourceTranslation = mLibrary.getDraftTranslation(sourceTranslationId);
-        mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectSlug, mSourceTranslation.sourceLanguageSlug);
-
-        mChapters = mLibrary.getChapters(mSourceTranslation);
-        mRenderedSourceBody = new CharSequence[mChapters.length];
+        mDraftTranslation = draftTranslation;
+        mSourceLanguage = mLibrary.getSourceLanguage(mDraftTranslation.projectSlug, mDraftTranslation.sourceLanguageSlug);
+        mChapters = mLibrary.getChapters(mDraftTranslation);
+        mRenderedDraftBody = new CharSequence[mChapters.length];
     }
 
     /**
-     * Updates the source translation displayed
-     * @param sourceTranslationId
+     * Updates the draft translation displayed
+     * @param draftTranslation
      */
-    public void setSourceTranslation(String sourceTranslationId) {
-        mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
-        mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectSlug, mSourceTranslation.sourceLanguageSlug);
-
-        mChapters = mLibrary.getChapters(mSourceTranslation);
-        mRenderedSourceBody = new CharSequence[mChapters.length];
-
+    public void setDraftTranslation(SourceTranslation draftTranslation) {
+        mDraftTranslation = draftTranslation;
+        mSourceLanguage = mLibrary.getSourceLanguage(mDraftTranslation.projectSlug, mDraftTranslation.sourceLanguageSlug);
+        mChapters = mLibrary.getChapters(mDraftTranslation);
+        mRenderedDraftBody = new CharSequence[mChapters.length];
         notifyDataSetChanged();
     }
 
@@ -89,7 +84,7 @@ public class DraftAdapter extends RecyclerView.Adapter<DraftAdapter.ViewHolder> 
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_preview_list_item, parent, false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_draft_list_item, parent, false);
         ViewHolder vh = new ViewHolder(v);
         return vh;
     }
@@ -107,10 +102,10 @@ public class DraftAdapter extends RecyclerView.Adapter<DraftAdapter.ViewHolder> 
 
         final Chapter chapter = mChapters[position];
 
-        // render the source chapter body
-        if(mRenderedSourceBody[position] == null) {
-            String chapterBody = mLibrary.getChapterBody(mSourceTranslation, chapter.getId());
-            TranslationFormat bodyFormat = mLibrary.getChapterBodyFormat(mSourceTranslation, chapter.getId());
+        // render the draft chapter body
+        if(mRenderedDraftBody[position] == null) {
+            String chapterBody = mLibrary.getChapterBody(mDraftTranslation, chapter.getId());
+            TranslationFormat bodyFormat = mLibrary.getChapterBodyFormat(mDraftTranslation, chapter.getId());
             RenderingGroup sourceRendering = new RenderingGroup();
             if (bodyFormat == TranslationFormat.USX) {
                 // TODO: add click listeners
@@ -144,14 +139,14 @@ public class DraftAdapter extends RecyclerView.Adapter<DraftAdapter.ViewHolder> 
                 sourceRendering.addEngine(new DefaultRenderer());
             }
             sourceRendering.init(chapterBody);
-            mRenderedSourceBody[position] = sourceRendering.start();
+            mRenderedDraftBody[position] = sourceRendering.start();
         }
 
-        holder.mSourceBody.setText(mRenderedSourceBody[position]);
+        holder.mSourceBody.setText(mRenderedDraftBody[position]);
         ViewUtil.makeLinksClickable(holder.mSourceBody);
         String chapterTitle = chapter.title;
         if(chapter.title.isEmpty()) {
-            chapterTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
+            chapterTitle = mDraftTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
         }
         holder.mSourceTitle.setText(chapterTitle);
 

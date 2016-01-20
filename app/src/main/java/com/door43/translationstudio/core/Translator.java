@@ -247,6 +247,43 @@ public class Translator {
         }
     }
 
+    /**
+     * Imports a draft translation into a target translation.
+     * A new target translation will be created if one does not already exist.
+     * This is a lengthy operation and should be ran within a task
+     * @param draftTranslation the draft translation to be imported
+     * @param library
+     * @return
+     */
+    public TargetTranslation importDraftTranslation(SourceTranslation draftTranslation, Library library) {
+        TargetLanguage targetLanguage = library.getTargetLanguage(draftTranslation.sourceLanguageSlug);
+        TargetTranslation t = createTargetTranslation(targetLanguage, draftTranslation.projectSlug);
+        try {
+            if (t != null) {
+                // commit local changes to history
+                t.commit();
+
+                // begin import
+                t.applyProjectTitleTranslation(draftTranslation.getProjectTitle());
+                for(Chapter c:library.getChapters(draftTranslation)) {
+                    ChapterTranslation ct = t.getChapterTranslation(c.getId());
+                    t.applyChapterTitleTranslation(ct, c.title);
+                    t.applyChapterReferenceTranslation(ct, c.reference);
+                    for(Frame f:library.getFrames(draftTranslation, c.getId())) {
+                        t.applyFrameTranslation(t.getFrameTranslation(f), f.body);
+                    }
+                }
+                t.commit();
+            }
+        } catch (IOException e) {
+            Logger.e(this.getClass().getName(), "Failed to import target translation", e);
+            // TODO: 1/20/2016 revert changes
+        } catch (Exception e) {
+            Logger.e(this.getClass().getName(), "Failed to save target translation before importing target translation", e);
+        }
+        return t;
+    }
+
      /**
      * Imports target translations from an archive specified by file
      * todo: we should have another method that will inspect the archive and return the details to the user so they can decide if they want to import it

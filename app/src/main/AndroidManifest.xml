@@ -157,8 +157,9 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".newui.draft.DraftActivity"
-            android:label="@string/drafts"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:label="@string/preview">
+
+            <!--android:theme="@style/AppTheme.NoActionBar"-->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".newui.translate.TargetTranslationActivity" />

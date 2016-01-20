@@ -282,7 +282,7 @@
     <string name="download_confirmation">You are about to download a potentially large amount of data, continue?</string>
     <string name="action_cancel_edit_projects">Stop Editing Projects</string>
     <string name="import_draft">Import Draft</string>
-    <string name="import_draft_confirmation">Replace existing translation in this target language?</string>
+    <string name="import_draft_confirmation">Replace existing translation with this draft?</string>
     <string name="action_search">Search</string>
     <string name="transfer_from_device">Transfer from device</string>
     <string name="transfer_from_device_description">Transfer from nearby device over the network</string>
@@ -629,7 +629,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="import_failed">Failed Import from:</string>
     <string name="backup_success">Success Backing up to:</string>
     <string name="import_success">Success Importing from:</string>
-    <string name="title_overwrite_confirmation">Overwrite Confirmation</string>
-    <string name="overwrite_target_translation">Do you want to edit this draft translation?  This will overwrite any of your translation changes.</string>
     <string name="view_available_drafts">View available drafts</string>
+    <string name="preview">Preview</string>
 </resources>
