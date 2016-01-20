@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.text.Layout;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -24,6 +25,7 @@ import android.widget.TextView;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
@@ -31,6 +33,7 @@ import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BackupDialog;
 import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.PrintDialog;
+import com.door43.translationstudio.newui.draft.DraftActivity;
 import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.util.SdUtils;
@@ -39,6 +42,7 @@ import com.door43.widget.ViewUtil;
 import com.door43.translationstudio.newui.BaseActivity;
 
 import java.security.InvalidParameterException;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -46,11 +50,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     private static final String TAG = TargetTranslationActivity.class.getSimpleName();
 
-    public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
     private static final long COMMIT_INTERVAL = 2 * 60 * 1000; // commit changes every 2 minutes
-    public static final String EXTRA_CHAPTER_ID = "extra_chapter_id";
-    public static final String EXTRA_FRAME_ID = "extra_frame_id";
-    public static final String EXTRA_VIEW_MODE = "extra_view_mode_id";
     private Fragment mFragment;
     private SeekBar mSeekBar;
     private ViewGroup mGraduations;
@@ -60,6 +60,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private ImageButton mReadButton;
     private ImageButton mChunkButton;
     private ImageButton mReviewButton;
+    private List<SourceTranslation> draftTranslations;
+    private ImageButton mMoreButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,14 +72,29 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
         // validate parameters
         Bundle args = getIntent().getExtras();
-        final String targetTranslationId = args.getString(TargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID, null);
+        final String targetTranslationId = args.getString(AppContext.EXTRA_TARGET_TRANSLATION_ID, null);
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         if (mTargetTranslation == null) {
             throw new InvalidParameterException("a valid target translation id is required");
         }
 
+        // notify user that a draft translation exists the first time actvity starts
+        if(savedInstanceState == null && draftIsAvailable() && !targetTranslationHasDraft()) {
+            Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.draft_translation_exists, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.preview, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent(TargetTranslationActivity.this, DraftActivity.class);
+                            intent.putExtra(DraftActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                            startActivity(intent);
+                        }
+                    });
+            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+            snack.show();
+        }
+
         // manual location settings
-        String viewModeId = args.getString(TargetTranslationActivity.EXTRA_VIEW_MODE, null);
+        String viewModeId = args.getString(AppContext.EXTRA_VIEW_MODE, null);
         if (viewModeId != null && TranslationViewMode.get(viewModeId) != null) {
             AppContext.setLastViewMode(targetTranslationId, TranslationViewMode.get(viewModeId));
         }
@@ -151,13 +168,61 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 mGraduations.animate().alpha(0.f);
             }
         });
-        ImageButton moreButton = (ImageButton) findViewById(R.id.action_more);
-        moreButton.setOnClickListener(new View.OnClickListener() {
+        mMoreButton = (ImageButton) findViewById(R.id.action_more);
+        buildMenu();
+
+        mReadButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openTranslationMode(TranslationViewMode.READ, null);
+
+                TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
+            }
+        });
+
+        mChunkButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openTranslationMode(TranslationViewMode.CHUNK, null);
+
+                TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
+            }
+        });
+
+        mReviewButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openTranslationMode(TranslationViewMode.REVIEW, null);
+
+                TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
+            }
+        });
+
+        // schedule translation commits
+        mCommitTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    mTargetTranslation.commit();
+                } catch (Exception e) {
+                    Logger.e(TargetTranslationActivity.class.getName(), "Failed to commit the latest translation of " + targetTranslationId, e);
+                }
+            }
+        }, COMMIT_INTERVAL, COMMIT_INTERVAL);
+    }
+
+    private void buildMenu() {
+        mMoreButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 PopupMenu moreMenu = new PopupMenu(TargetTranslationActivity.this, v);
                 ViewUtil.forcePopupMenuIcons(moreMenu);
                 moreMenu.getMenuInflater().inflate(R.menu.menu_target_translation_detail, moreMenu.getMenu());
+
+                // display menu item for draft translations
+                MenuItem draftsMenuItem = moreMenu.getMenu().findItem(R.id.action_drafts_available);
+                draftsMenuItem.setVisible(draftIsAvailable() && !targetTranslationHasDraft());
+
                 moreMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
@@ -173,6 +238,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                                 // TRICKY: we may move back and forth between the publisher and translation activites
                                 // so we finish to avoid filling the stack.
                                 finish();
+                                return true;
+                            case R.id.action_drafts_available:
+                                Intent intent = new Intent(TargetTranslationActivity.this, DraftActivity.class);
+                                intent.putExtra(DraftActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                                startActivity(intent);
                                 return true;
                             case R.id.action_backup:
                                 FragmentTransaction backupFt = getFragmentManager().beginTransaction();
@@ -224,45 +294,58 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 moreMenu.show();
             }
         });
+    }
 
-        mReadButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openTranslationMode(TranslationViewMode.READ, null);
+    /**
+     * Checks if the target translation aleady has the best draft
+     * @return
+     */
+    private boolean targetTranslationHasDraft() {
+        return mTargetTranslation.getParentDraft() != null;
+        // TODO: 1/20/2016 once users are forced to specify a resource they are translating into we'll use this to check
+//        if(mTargetTranslation.getParentDraft() != null) {
+//            // check for matching resource
+//            if(mTargetTranslation.resourceSlug.equals(mTargetTranslation.getParentDraft().resourceSlug)) {
+//                return true;
+//            } else {
+//                // check for second best
+//                if (draftTranslations == null) {
+//                    draftTranslations = AppContext.getLibrary().getDraftTranslations(mTargetTranslation.getProjectId(), mTargetTranslation.getTargetLanguageId());
+//                }
+//                for (SourceTranslation st : draftTranslations) {
+//                    if (st.resourceSlug.equals(mTargetTranslation.getParentDraft().resourceSlug)) {
+//                        return true;
+//                    }
+//                }
+//            }
+//        }
+//        return false;
+    }
 
-                TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
-            }
-        });
+    /**
+     * Checks if a draft is available
+     *
+     * @return
+     */
+    private boolean draftIsAvailable() {
+        if(draftTranslations == null) {
+            draftTranslations = AppContext.getLibrary().getDraftTranslations(mTargetTranslation.getProjectId(), mTargetTranslation.getTargetLanguageId());
+        }
+        return draftTranslations.size() > 0;
+        // TODO: 1/20/2016 once users are forced to specify a resource they are translating into we'll use this to check
+//        for(SourceTranslation st:draftTranslations) {
+//            if(st.resourceSlug.equals(mTargetTranslation.resourceSlug)) {
+//                return true;
+//            }
+//        }
+//        return false;
+    }
 
-        mChunkButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openTranslationMode(TranslationViewMode.CHUNK, null);
-
-                TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
-            }
-        });
-
-        mReviewButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openTranslationMode(TranslationViewMode.REVIEW, null);
-
-                TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
-            }
-        });
-
-        // schedule translation commits
-        mCommitTimer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    mTargetTranslation.commit();
-                } catch (Exception e) {
-                    Logger.e(TargetTranslationActivity.class.getName(), "Failed to commit the latest translation of " + targetTranslationId, e);
-                }
-            }
-        }, COMMIT_INTERVAL, COMMIT_INTERVAL);
+    @Override
+    public void onResume() {
+        super.onResume();
+        notifyDatasetChanged();
+        buildMenu();
     }
 
     public void closeKeyboard() {

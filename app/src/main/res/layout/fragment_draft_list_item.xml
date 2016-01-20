@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:card_view="http://schemas.android.com/apk/res-auto"
+android:id="@+id/main_content"
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:fitsSystemWindows="true"
+android:descendantFocusability="blocksDescendants"
+android:clipChildren="false">
+
+    <android.support.v7.widget.CardView
+    android:id="@+id/source_translation_card"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    card_view:cardElevation="3dp"
+    android:layout_marginLeft="@dimen/card_margin"
+    android:layout_marginTop="@dimen/card_margin"
+    android:layout_marginRight="@dimen/card_margin"
+    android:layout_marginBottom="@dimen/card_margin"
+    android:clickable="true">
+
+    <LinearLayout
+        android:orientation="vertical"
+        style="@style/Widget.CardContent.Stacked.Skinny"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="@dimen/headline"
+            android:layout_marginBottom="@dimen/stacked_card_margin"
+            android:layout_marginLeft="@dimen/stacked_card_margin"
+            android:layout_marginRight="@dimen/stacked_card_margin"
+            android:textColor="@color/dark_primary_text"
+            android:textStyle="bold"
+            android:textAllCaps="true"
+            android:text="Book One"
+            android:id="@+id/source_translation_heading"
+            android:visibility="gone" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="@dimen/headline"
+            android:layout_marginBottom="@dimen/stacked_card_margin"
+            android:layout_marginLeft="@dimen/stacked_card_margin"
+            android:layout_marginRight="@dimen/stacked_card_margin"
+            android:textColor="@color/dark_primary_text"
+            android:textStyle="bold"
+            android:text="John 1"
+            android:id="@+id/source_translation_title" />
+
+        <TextView
+            android:layout_marginLeft="@dimen/stacked_card_margin"
+            android:layout_marginRight="@dimen/stacked_card_margin"
+            android:id="@+id/source_translation_body"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="this is the top ca\nsdf\nsdf\ndf\nsdfrd\nlsjdflkjsd\nlksjdflksjdflksd\nlkjsdlfkjsdlkjsfdl\nlksjdlfkjsd"
+            android:textSize="@dimen/body"
+            android:textColor="@color/dark_primary_text"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
+    </LinearLayout>
+</android.support.v7.widget.CardView>
+
+</FrameLayout>

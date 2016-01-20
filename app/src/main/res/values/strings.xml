@@ -282,7 +282,7 @@
     <string name="download_confirmation">You are about to download a potentially large amount of data, continue?</string>
     <string name="action_cancel_edit_projects">Stop Editing Projects</string>
     <string name="import_draft">Import Draft</string>
-    <string name="import_draft_confirmation">Replace existing translation in this target language?</string>
+    <string name="import_draft_confirmation">Replace existing translation with this draft?</string>
     <string name="action_search">Search</string>
     <string name="transfer_from_device">Transfer from device</string>
     <string name="transfer_from_device_description">Transfer from nearby device over the network</string>
@@ -600,7 +600,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="publish_status_not">Not Published</string>
     <string name="publish_status_current">Published</string>
     <string name="publish_status_not_current">Not Current</string>
-    <string name="publish_status_error">Error</string>
+    <string name="error">Error</string>
     <string name="enable_sd_card_access_title">Enable SD Card Access</string>
     <string name="enable_sd_card_access">
 <![CDATA[
@@ -629,4 +629,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="import_failed">Failed Import from:</string>
     <string name="backup_success">Success Backing up to:</string>
     <string name="import_success">Success Importing from:</string>
+    <string name="view_available_drafts">View available drafts</string>
+    <string name="preview">Preview</string>
+    <string name="importing_draft">Importing draft</string>
+    <string name="draft_translation_exists">A draft of this translation is available</string>
 </resources>

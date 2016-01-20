@@ -7,10 +7,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
+import android.support.annotation.Nullable;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Profile;
+import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Util;
@@ -35,6 +37,7 @@ public class AppContext {
     private static final String PREFERENCES_NAME = "com.door43.translationstudio.general";
     private static final String DEFAULT_LIBRARY_ZIP = "library.zip";
     private static final String TARGET_TRANSLATIONS_DIR = "translations";
+
     public static final String PROFILES_DIR = "profiles";
     public static final String TRANSLATION_STUDIO = "translationStudio";
     public static final String LAST_VIEW_MODE = "last_view_mode_";
@@ -44,6 +47,13 @@ public class AppContext {
     public static final String SELECTED_SOURCE_TRANSLATION = "selected_source_translation_";
     public static final String LAST_CHECKED_SERVER_FOR_UPDATES = "last_checked_server_for_updates";
     public static final String LAST_TRANSLATION = "last_translation";
+    public static final String EXTRA_SOURCE_DRAFT_TRANSLATION_ID = "extra_source_translation_id";
+    public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
+    public static final String EXTRA_CHAPTER_ID = "extra_chapter_id";
+    public static final String EXTRA_FRAME_ID = "extra_frame_id";
+    public static final String EXTRA_VIEW_MODE = "extra_view_mode_id";
+
+    public static final String TAG = AppContext.class.toString();
     private static MainApplication mContext;
     public static final Bundle args = new Bundle();
     private static boolean loaded;
@@ -62,6 +72,7 @@ public class AppContext {
      * Returns an instance of the library
      * @return
      */
+    @Nullable
     public static Library getLibrary() {
         // NOTE: rather than keeping the library around we rebuild it so that changes to the user settings will work
         String server = mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, mContext.getResources().getString(R.string.pref_default_media_server));
@@ -69,7 +80,7 @@ public class AppContext {
         try {
             return new Library(mContext, rootApiUrl);
         } catch (IOException e) {
-            Logger.e(AppContext.class.getName(), "Failed to create the library", e);
+            Logger.e(TAG, "Failed to create the library", e);
         }
         return null;
     }
@@ -460,6 +471,7 @@ public class AppContext {
      * Returns the alias to be displayed when others see this device on the network
      * @return
      */
+    @Nullable
     public static String getDeviceNetworkAlias() {
         String name = getUserString(SettingsActivity.KEY_PREF_DEVICE_ALIAS, "");
         if(name.isEmpty()) {
@@ -477,6 +489,7 @@ public class AppContext {
      *
      * @return A list of {@link Profile} objects; or an empty list if not set, or on error.
      */
+    @Nullable
     public static List<Profile> getProfiles() {
         try {
             String profilesEncoded = getUserString(SettingsActivity.KEY_PREF_PROFILES, null);
@@ -488,7 +501,7 @@ public class AppContext {
         catch (Exception e) {
             // There are lots of ways for this to fail, none of which are particularly serious.
             // In this case, log the result but allow the data to be lost.
-            Logger.e("", "getProfiles: Failed to parse profile data", e);
+            Logger.e(TAG, "getProfiles: Failed to parse profile data", e);
         }
         return new ArrayList<Profile>();
     }
@@ -509,7 +522,7 @@ public class AppContext {
         }
         catch (JSONException e) {
             // Failures to save are not particularly severe. Log and continue.
-            Logger.e("", "setProfiles: Failed to encode profile data", e);
+            Logger.e(TAG, "setProfiles: Failed to encode profile data", e);
         }
     }
 

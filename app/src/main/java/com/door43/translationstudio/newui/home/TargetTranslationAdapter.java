@@ -25,7 +25,6 @@ import java.util.Locale;
  * Created by joel on 9/3/2015.
  */
 public class TargetTranslationAdapter extends BaseAdapter {
-
     private final Context mContext;
     private TargetTranslation[] mTranslations;
     private OnInfoClickListener mInfoClickListener = null;
@@ -69,7 +68,7 @@ public class TargetTranslationAdapter extends BaseAdapter {
     @Override
     public View getView(final int position, View convertView, final ViewGroup parent) {
         View v = convertView;
-        ViewHolder holder;
+        final ViewHolder holder;
 
         if(convertView == null) {
             v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_target_translation_list_item, null);
@@ -138,8 +137,6 @@ public class TargetTranslationAdapter extends BaseAdapter {
                 }
             }
         });
-
-
         return v;
     }
 

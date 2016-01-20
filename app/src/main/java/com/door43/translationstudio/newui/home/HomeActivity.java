@@ -5,6 +5,7 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.os.Bundle;
@@ -14,11 +15,18 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.core.Chapter;
+import com.door43.translationstudio.core.ChapterTranslation;
+import com.door43.translationstudio.core.Frame;
+import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
+import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
@@ -32,11 +40,13 @@ import com.door43.widget.ViewUtil;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Locale;
 
 public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
     private static final int REQUEST_CODE_STORAGE_ACCESS = 42;
     private static final int NEW_TARGET_TRANSLATION_REQUEST = 1;
+    public static final String TAG = HomeActivity.class.getSimpleName();
     private Library mLibrary;
     private Translator mTranslator;
     private Fragment mFragment;
@@ -151,7 +161,6 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                 return;
             }
         }
-
     }
 
     /**
@@ -178,7 +187,6 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
         super.onResume();
 
         int numTranslations = mTranslator.getTargetTranslations().length;
-
         if(numTranslations > 0 && mFragment instanceof WelcomeFragment) {
             // display target translations list
             mFragment = new TargetTranslationListFragment();
@@ -199,6 +207,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
      * get last project opened and make sure it is still present
      * @return
      */
+    @Nullable
     private TargetTranslation getLastOpened() {
         String lastTarget = AppContext.getLastFocusTargetTranslation();
         if (lastTarget != null) {
@@ -225,9 +234,10 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                 .show("ExitConfirm");
     }
 
-   public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == NEW_TARGET_TRANSLATION_REQUEST) {
-            if(resultCode == RESULT_OK) {
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(NEW_TARGET_TRANSLATION_REQUEST == requestCode ) {
+            if(RESULT_OK == resultCode ) {
                 if(mFragment instanceof WelcomeFragment) {
                     // display target translations list
                     mFragment = new TargetTranslationListFragment();
@@ -238,9 +248,9 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                 }
 
                 Intent intent = new Intent(HomeActivity.this, TargetTranslationActivity.class);
-                intent.putExtra(TargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID, data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID));
+                intent.putExtra(AppContext.EXTRA_TARGET_TRANSLATION_ID, data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID));
                 startActivity(intent);
-            } else if(resultCode == NewTargetTranslationActivity.RESULT_DUPLICATE) {
+            } else if( NewTargetTranslationActivity.RESULT_DUPLICATE == resultCode ) {
                 // display duplicate notice to user
                 String targetTranslationId = data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID);
                 TargetTranslation existingTranslation = mTranslator.getTargetTranslation(targetTranslationId);
@@ -289,7 +299,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
             snack.show();
         } else {
             Intent intent = new Intent(HomeActivity.this, TargetTranslationActivity.class);
-            intent.putExtra(TargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
+            intent.putExtra(AppContext.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
             startActivity(intent);
         }
     }

@@ -17,6 +17,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import javax.xml.transform.Source;
+
 /**
  * Created by joel on 8/29/2015.
  */
@@ -24,6 +26,7 @@ public class Library {
     private static final int MIN_CHECKING_LEVEL = 3; // the minimum level to be considered a source translation
     private static final String DEFAULT_RESOURCE_SLUG = "ulb";
     private static final String IMAGES_DIR = "images";
+    public static final String TAG = Library.class.toString();
     private final Indexer mAppIndex;
     public static String DATABASE_NAME = "app";
     private final Context mContext;
@@ -193,7 +196,7 @@ public class Library {
 
                     boolean downloadSuccess = startSourceTranslationDownload(sourceTranslation, sourceTranslationListener);
                     if(!downloadSuccess) {
-                        Logger.w(this.getClass().getName(), "Failed to download " + sourceTranslation.getId());
+                        Logger.w(TAG, "Failed to download " + sourceTranslation.getId());
                         success = false;
                     }
                 }
@@ -282,6 +285,7 @@ public class Library {
      * @param destDir the directory where the library will be exported
      * @return the path to the exported file
      */
+    @Nullable
     public File export(File destDir) {
         SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
         String date = s.format(new Date());
@@ -292,7 +296,7 @@ public class Library {
 //            Tar.tar(mContext.getDatabasePath(getActiveIndex().getIndexId()).getPath(), destFile.getPath());
             Zip.zip(mContext.getDatabasePath(getActiveIndex().getIndexId()).getPath(), destFile.getPath());
         } catch (IOException e) {
-            Logger.e(this.getClass().getName(), "Failed to export the library", e);
+            Logger.e(TAG, "Failed to export the library", e);
             return null;
         }
         return destFile;
@@ -384,11 +388,12 @@ public class Library {
      * @param sourceLanguageSlug
      * @return null if no source langauges exist for the project
      */
+    @Nullable
     public SourceLanguage getPreferredSourceLanguage(String projectId, String sourceLanguageSlug) {
         // preferred language
         SourceLanguage sourceLanguage = getActiveIndex().getSourceLanguage(projectId, sourceLanguageSlug);
         // try to use default (en)
-        if(sourceLanguage == null || (!sourceLanguage.code.equals(sourceLanguageSlug) && !sourceLanguageSlug.equals("en"))) {
+        if (sourceLanguage == null || (!sourceLanguage.code.equals(sourceLanguageSlug) && !sourceLanguageSlug.equals("en"))) {
             sourceLanguage = getActiveIndex().getSourceLanguage(projectId, "en");
         }
         return sourceLanguage;
@@ -462,7 +467,7 @@ public class Library {
                 return 0;
             }
         } else {
-            Logger.w(this.getClass().getName(), "Cannot get progress of " + targetTranslation.getId() + " because a source language does not exist");
+            Logger.w(TAG, "Cannot get progress of " + targetTranslation.getId() + " because a source language does not exist");
             return 0;
         }
     }
@@ -560,6 +565,7 @@ public class Library {
      * @param sourceTranslationId
      * @return null if the source translation does not exist
      */
+    @Nullable
     public SourceTranslation getSourceTranslation(String sourceTranslationId) {
         if(sourceTranslationId != null) {
             String projectId = SourceTranslation.getProjectIdFromId(sourceTranslationId);
@@ -577,6 +583,7 @@ public class Library {
      * @param resourceSlug
      * @return null if the source translation does not exist
      */
+    @Nullable
     public SourceTranslation getSourceTranslation(String projectSlug, String sourceLanguageSlug, String resourceSlug) {
         return getActiveIndex().getSourceTranslation(projectSlug, sourceLanguageSlug, resourceSlug);
     }
@@ -589,6 +596,7 @@ public class Library {
      * @param sourceLanguageSlug
      * @return null if the source translation does not exist
      */
+    @Nullable
     public SourceTranslation getDefaultSourceTranslation(String projectSlug, String sourceLanguageSlug) {
         SourceTranslation sourceTranslation = mAppIndex.getSourceTranslation(projectSlug, sourceLanguageSlug, DEFAULT_RESOURCE_SLUG);
         if(sourceTranslation == null) {
@@ -624,22 +632,66 @@ public class Library {
 
     /**
      * Returns an array of source translations in a project that have not yet met the minimum checking level
+     *
      * @param projectId
      */
     public SourceTranslation[] getDraftTranslations(String projectId) {
-        // TODO: 10/20/2015 write query for this
         List<SourceTranslation> draftTranslations = new ArrayList<>();
         String[] sourceLanguageIds = getActiveIndex().getSourceLanguageSlugs(projectId);
         for(String sourceLanguageId:sourceLanguageIds) {
-            String[] resourceIds = getActiveIndex().getResourceSlugs(projectId, sourceLanguageId);
-            for(String resourceId:resourceIds) {
-                SourceTranslation sourceTranslation = getSourceTranslation(projectId, sourceLanguageId, resourceId);
-                if(sourceTranslation != null && sourceTranslation.getCheckingLevel() < MIN_CHECKING_LEVEL) {
-                    draftTranslations.add(sourceTranslation);
-                }
-            }
+            draftTranslations.addAll(getDraftTranslations(projectId, sourceLanguageId));
         }
         return draftTranslations.toArray(new SourceTranslation[draftTranslations.size()]);
+    }
+
+    /**
+     * Returns an array of source translations in a project and source language that have not yet met the minimum checking level
+     *
+     * @param projectId
+     * @param sourceLanguageId
+     * @return
+     */
+    public List<SourceTranslation> getDraftTranslations(String projectId, String sourceLanguageId) {
+        List<SourceTranslation> draftTranslations = new ArrayList<>();
+        String[] resourceIds = getActiveIndex().getResourceSlugs(projectId, sourceLanguageId);
+        for(String resourceId:resourceIds) {
+            SourceTranslation sourceTranslation = getDraftTranslation(projectId, sourceLanguageId, resourceId);
+            if(sourceTranslation != null) {
+                draftTranslations.add(sourceTranslation);
+            }
+        }
+        return draftTranslations;
+    }
+
+    /**
+     * Returns a source translation that has not yet met the minimum checking level.
+     *
+     * @param projectId
+     * @param sourceLanguageId
+     * @param resourceId
+     * @return
+     */
+    public SourceTranslation getDraftTranslation(String projectId, String sourceLanguageId, String resourceId) {
+        SourceTranslation sourceTranslation = getSourceTranslation(projectId, sourceLanguageId, resourceId);
+        if(sourceTranslation != null && sourceTranslation.getCheckingLevel() < MIN_CHECKING_LEVEL) {
+            return sourceTranslation;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the source translation that has not yet met the minimum checking level
+     * @param sourceTranslationId
+     * @return
+     */
+    public SourceTranslation getDraftTranslation(String sourceTranslationId) {
+        SourceTranslation sourceTranslation = getSourceTranslation(sourceTranslationId);
+        if(sourceTranslation != null && sourceTranslation.getCheckingLevel() < MIN_CHECKING_LEVEL) {
+            return sourceTranslation;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -753,12 +805,20 @@ public class Library {
     public boolean sourceLanguageHasSource(String projectId, String sourceLanguageId) {
         String[] resourceIds = getActiveIndex().getResourceSlugs(projectId, sourceLanguageId);
         for(String resourceId:resourceIds) {
-            String[] chapterIds = getActiveIndex().getChapterSlugs(SourceTranslation.simple(projectId, sourceLanguageId, resourceId));
-            if(chapterIds.length > 0) {
+            if(sourceTranslationHasSource(SourceTranslation.simple(projectId, sourceLanguageId, resourceId))) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Checks if the source translation has any source downloaded
+     * @param sourceTranslation
+     * @return
+     */
+    public boolean sourceTranslationHasSource(SourceTranslation sourceTranslation) {
+        return getActiveIndex().getChapterSlugs(sourceTranslation).length > 0;
     }
 
     /**

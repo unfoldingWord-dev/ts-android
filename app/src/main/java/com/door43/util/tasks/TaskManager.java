@@ -196,6 +196,7 @@ public class TaskManager {
     /**
      * Removes a completed task from the manager.
      * If the task has not finished it will not be removed.
+     * You should generally call this after a task has been finished in order to keep things clean.
      * @param task the task to be removed
      */
     public static void clearTask(ManagedTask task) {
