@@ -1,10 +1,13 @@
 package com.door43.translationstudio.newui;
 
+import android.app.AlertDialog;
 import android.app.DialogFragment;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
 import android.view.LayoutInflater;
@@ -18,12 +21,18 @@ import android.widget.TextView;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.Downloader;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
+import com.door43.translationstudio.tasks.DownloadImagesTask;
+import com.door43.util.tasks.ManagedTask;
+import com.door43.util.tasks.TaskManager;
 import com.door43.widget.ViewUtil;
 
 import java.io.File;
@@ -38,6 +47,8 @@ public class PrintDialog extends DialogFragment {
     public static final String ARG_TARGET_TRANSLATION_ID = "arg_target_translation_id";
     public static final String STATE_INCLUDE_IMAGES = "include_images";
     public static final String STATE_INCLUDE_INCOMPLETE = "include_incomplete";
+    public static final String DOWNLOAD_IMAGES_TASK_KEY = "download_images_task";
+    public static final String DOWNLOAD_IMAGES_TASK_GROUP = "download_images_task";
     private Translator translator;
     private TargetTranslation mTargetTranslation;
     private Library library;
@@ -98,12 +109,26 @@ public class PrintDialog extends DialogFragment {
             public void onClick(View v) {
                 includeImages = includeImagesCheckBox.isChecked();
                 includeIncompleteFrames = includeIncompleteCheckBox.isChecked();
-                includeImagesCheckBox.setEnabled(false);
-                includeIncompleteCheckBox.setEnabled(false);
-                printButton.setEnabled(false);
-                if(includeImages) {
+                enableInteraction(false);
+                if(includeImages && !AppContext.getLibrary().imagesPresent()) {
                     // TODO: 11/16/2015 check if all the images have been downloaded for this project
-                    print();
+                    CustomAlertDialog
+                            .Create(getActivity())
+                            .setTitle(R.string.use_internet_confirmation)
+                            .setMessage(R.string.image_large_download)
+                            .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    enableInteraction(true);
+                                }
+                            })
+                            .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    downloadImagesAndPrint();
+                                }
+                            })
+                            .show("print-download-images-confirmation");
                 } else {
                     print();
                 }
@@ -117,6 +142,70 @@ public class PrintDialog extends DialogFragment {
         return v;
     }
 
+    private void downloadImagesAndPrint() {
+        final ProgressDialog progressDialog = new ProgressDialog(getActivity());
+        progressDialog.setTitle(R.string.downloading_images);
+        progressDialog.setMessage(getResources().getString(R.string.downloading_images));
+        progressDialog.setCancelable(false); // TODO: 01/11/2016 make the download cancelable
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        progressDialog.setProgressNumberFormat("");
+        progressDialog.show();
+
+        final DownloadImagesTask task = new DownloadImagesTask();
+        task.addOnProgressListener(new ManagedTask.OnProgressListener() {
+            @Override
+            public void onProgress(ManagedTask task, double progress, String message, boolean secondary) {
+                if (progress < 0) {
+                    progressDialog.setMessage(getResources().getString(R.string.connecting_to_server));
+                } else {
+                    double mbDownloaded = progress * task.maxProgress();
+                    progressDialog.setMax(task.maxProgress());
+                    progressDialog.setProgress((int) mbDownloaded);
+                    String m = String.format("%2.2f %s %2.2f %s",
+                            mbDownloaded / (1024. * 1024.),
+                            getResources().getString(R.string.out_of),
+                            task.maxProgress() / (1024. * 1024.),
+                            getResources().getString(R.string.mb_downloaded));
+                    progressDialog.setMessage(m);
+                }
+            }
+        });
+        task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
+            @Override
+            public void onFinished(ManagedTask t) {
+                TaskManager.clearTask(t);
+                progressDialog.dismiss();
+
+                if (task.getSuccess()) {
+                    new Handler(getActivity().getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            print();
+                        }
+                    });
+                } else {
+                    CustomAlertDialog
+                            .Create(getActivity())
+                            .setTitle(R.string.download_failed)
+                            .setMessage(R.string.downloading_images_for_print_failed)
+                            .setPositiveButton(R.string.label_ok, null)
+                            .show("print-download-images-failed");
+
+                    enableInteraction(true);
+                }
+            }
+        });
+        TaskManager.addTask(task, DOWNLOAD_IMAGES_TASK_KEY);
+        TaskManager.groupTask(task, DOWNLOAD_IMAGES_TASK_GROUP);
+        // TODO 11/16/2015: Extract the files
+    }
+
+    private void enableInteraction(boolean enabled) {
+        includeImagesCheckBox.setEnabled(enabled);
+        includeIncompleteCheckBox.setEnabled(enabled);
+        printButton.setEnabled(enabled);
+    }
+
     /**
      * Begins printing the translation
      */
@@ -125,7 +214,6 @@ public class PrintDialog extends DialogFragment {
         File exportFile = new File(AppContext.getSharingDir(), mTargetTranslation.getId() + ".pdf");
         try {
             SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(mTargetTranslation.getProjectId(), "en");
-            // TODO: 11/18/2015 provide path to images dir
             File imagesDir = library.getImagesDir();
             this.translator.exportPdf(library, mTargetTranslation, sourceTranslation.getFormat(), Typography.getAssetPath(getActivity()), imagesDir, includeImages, includeIncompleteFrames, exportFile);
             if (exportFile.exists()) {
@@ -146,9 +234,7 @@ public class PrintDialog extends DialogFragment {
             snack.show();
         }
         // TODO: 11/16/2015 enable form controls again
-        includeImagesCheckBox.setEnabled(true);
-        includeIncompleteCheckBox.setEnabled(true);
-        printButton.setEnabled(true);
+        enableInteraction(true);
     }
 
     @Override

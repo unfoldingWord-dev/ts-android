@@ -4,11 +4,13 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -27,6 +29,7 @@ public class Library {
     private static final String DEFAULT_RESOURCE_SLUG = "ulb";
     private static final String IMAGES_DIR = "images";
     public static final String TAG = Library.class.toString();
+    private static final String IMAGES_DOWNLOADED_TAG = "images_downloaded_and_extracted";
     private final Indexer mAppIndex;
     public static String DATABASE_NAME = "app";
     private final Context mContext;
@@ -277,7 +280,36 @@ public class Library {
             listener.onProgress(5, 5);
         }
 
+        // Images are not downloaded here; rather, fetched on demand since they're large.
+
         return success;
+    }
+
+    /**
+     * Downloads images from the server
+     * @param listener
+     * @return
+     */
+    public Boolean downloadImages(OnProgressListener listener) {
+        AppContext.setUserString(IMAGES_DOWNLOADED_TAG, Boolean.toString(false));
+
+        mAppIndex.beginTransaction();
+        boolean success = mDownloader.downloadImages(listener);
+        mAppIndex.endTransaction(success);
+
+        AppContext.setUserString(IMAGES_DOWNLOADED_TAG, Boolean.toString(success));
+        return success;
+    }
+
+    /**
+     * Indicates whether the imagery download is complete and extraction was successful.
+     *
+     * <p>If any part of the process was not complete, this returns false. This method makes no
+     * statement as to the freshness of the information downloaded.</p>
+     * @return true if the download is complete
+     */
+    public boolean imagesPresent() {
+        return Boolean.valueOf(AppContext.getUserString(IMAGES_DOWNLOADED_TAG, "false"));
     }
 
     /**
