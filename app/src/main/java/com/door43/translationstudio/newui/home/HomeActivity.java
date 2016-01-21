@@ -25,6 +25,7 @@ import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.SourceTranslation;
+import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Translator;
@@ -153,8 +154,8 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
             }
         });
 
-        boolean initialOpen = (null==savedInstanceState);
-        if(initialOpen) { // on startup open last project
+        // open last project when starting the first time
+        if(savedInstanceState == null) {
             TargetTranslation targetTranslation = getLastOpened();
             if (targetTranslation != null) {
                 onItemClick(targetTranslation);
@@ -286,7 +287,9 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
     public void onItemClick(TargetTranslation targetTranslation) {
         // validate project (make sure it was downloaded)
         Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
-        if(project == null) {
+        TargetLanguage targetLanguage = AppContext.getLibrary().getTargetLanguage(targetTranslation.getTargetLanguageId());
+
+        if(project == null || targetLanguage == null || !AppContext.getLibrary().projectHasSource(project.getId())) {
             Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.missing_project, Snackbar.LENGTH_LONG);
             snack.setAction(R.string.download, new View.OnClickListener() {
                 @Override

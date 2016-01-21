@@ -28,7 +28,7 @@ public class BaseFragment extends Fragment {
             // check if we crashed or if we need to reload
             File dir = new File(getActivity().getExternalCacheDir(), AppContext.context().STACKTRACE_DIR);
             String[] crashFiles = GlobalExceptionHandler.getStacktraces(dir);
-            if (crashFiles.length > 0 || !AppContext.getLibrary().exists() || AppContext.getLibrary().getTargetLanguagesLength() == 0) {
+            if (crashFiles.length > 0) {
                 // restart
                 Intent intent = new Intent(getActivity(), SplashScreenActivity.class);
                 startActivity(intent);

@@ -113,6 +113,22 @@ public class Indexer {
     }
 
     /**
+     * Removes a resource from the index
+     * @param resourceId
+     */
+    public synchronized void deleteResource(long resourceId) {
+        mDatabaseHelper.deleteResource(mDatabase, resourceId);
+    }
+
+    /**
+     * Saves a resource to the index
+     * @param resource
+     */
+    public void saveResource(Resource resource, long sourceLanguageId) {
+        mDatabaseHelper.addResource(mDatabase, resource, sourceLanguageId);
+    }
+
+    /**
      * Returns the index id
      * @return
      */

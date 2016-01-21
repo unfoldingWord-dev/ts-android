@@ -227,6 +227,13 @@
     <string name="import_project">Import Project</string>
     <string name="no_projects_available_on_server">No projects available on server</string>
     <string name="downloading">Downloading</string>
+    <string name="downloading_images">Downloading images</string>
+    <string name="connecting_to_server">Connecting to remote server...</string>
+    <string name="downloading_images_for_print_failed">The download failed to complete. Try printing without images.</string>
+    <!-- as in "23 out of 46 MB downloaded" -->
+    <string name="out_of">out of</string>
+    <string name="mb_downloaded">MB downloaded</string>
+    <string name="image_large_download">Downloading images will take several megabytes. Are you sure you want to include images?</string>
     <string name="confirm_import">Please confirm import data</string>
     <string name="waiting_for_device">Waiting for device</string>
     <string name="label_back">Back</string>
@@ -307,6 +314,7 @@
     <string name="complete_required_fields">Please complete all required fields</string>
     <string name="required_field"><xliff:g id="marker">*</xliff:g> required</string>
     <string name="upload_failed">Upload failed</string>
+    <string name="download_failed">Download failed</string>
     <string name="publishing_translation">Publishing translation</string>
     <string name="backing_up_translation">Backing up translation</string>
     <string name="review_all_checking_questions">Please review all questions</string>
@@ -633,4 +641,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="preview">Preview</string>
     <string name="importing_draft">Importing draft</string>
     <string name="draft_translation_exists">A draft of this translation is available</string>
+    <string name="print_failed">Failed to print</string>
+    <string name="printing">Printing</string>
 </resources>

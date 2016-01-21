@@ -9,24 +9,9 @@ import com.door43.util.tasks.ManagedTask;
  * Gets a list of projects that are available for download from the server
  */
 public class GetLibraryUpdatesTask extends ManagedTask {
-
     public static final String TASK_ID  = "get_available_source_translations_task";
-    private static final long CACHE_TTL = 1000 * 60 * 60; // the cache will last 1 hour
-    private final boolean ignoreCache;
     private int mMaxProgress = 100;
     private LibraryUpdates mUpdates = null;
-
-    public GetLibraryUpdatesTask() {
-        this.ignoreCache = false;
-    }
-
-    /**
-     *
-     * @param ignoreCache if true we will always check again.
-     */
-    public GetLibraryUpdatesTask(boolean ignoreCache) {
-        this.ignoreCache = ignoreCache;
-    }
 
     @Override
     public void start() {
@@ -34,28 +19,27 @@ public class GetLibraryUpdatesTask extends ManagedTask {
 
         Library library = AppContext.getLibrary();
         if(library != null) {
-            if (ignoreCache || System.currentTimeMillis() - AppContext.getLastCheckedForUpdates() > CACHE_TTL) {
-                mUpdates = library.checkServerForUpdates(new Library.OnProgressListener() {
-                    @Override
-                    public boolean onProgress(int progress, int max) {
-                        mMaxProgress = max;
-                        publishProgress(progress, "");
-                        return !isCanceled();
-                    }
-
-                    @Override
-                    public boolean onIndeterminate() {
-                        publishProgress(-1, "");
-                        return !isCanceled();
-                    }
-                });
-                if(!isCanceled()) {
-                    AppContext.setLastCheckedForUpdates(System.currentTimeMillis());
+            mUpdates = library.checkServerForUpdates(new Library.OnProgressListener() {
+                @Override
+                public boolean onProgress(int progress, int max) {
+                    mMaxProgress = max;
+                    publishProgress(progress, "");
+                    return !isCanceled();
                 }
-            } else {
-                mUpdates = library.getAvailableUpdates();
+
+                @Override
+                public boolean onIndeterminate() {
+                    publishProgress(-1, "");
+                    return !isCanceled();
+                }
+            });
+            if(!isCanceled()) {
+                AppContext.setLastCheckedForUpdates(System.currentTimeMillis());
             }
         }
+
+        // make sure we have the most recent target languages
+        library.downloadTargetLanguages();
     }
 
     @Override

@@ -33,6 +33,7 @@ public class Resource {
     private final String academyCatalogUrl = "";
     private final int academyDateModified = 0;
     private final int academyServerDateModified = 0;
+    private long sourceLanguageDBId = -1;
 
     public Resource(String name, String slug, int checkingLevel, String version, boolean isDownloaded, int dateModified,
                     String sourceCatalogUrl, int sourceDateModified, int sourceServerDateModified,
@@ -184,6 +185,22 @@ public class Resource {
         return sourceDateModified;
     }
 
+    private static final String IMAGES_URL = "https://cdn.unfoldingword.org/obs/jpg/obs-images-360px.zip";
+
+    public static String getImagesCatalogUrl() {
+        return IMAGES_URL;
+    }
+
+    /**
+     * The size of the images archive. This is from a snapshot in time, and should only be used
+     * for purposes where an approximate value is appropriate (such as status reporting).
+     *
+     * @return The size, in bytes.
+     */
+    public static long getImagesCatalogSize() {
+        return 37620940;
+    }
+
     public String getNotesCatalogUrl() {
         return notesCatalogUrl;
     }
@@ -284,5 +301,13 @@ public class Resource {
 
     public int getAcademyServerDateModified() {
         return academyServerDateModified;
+    }
+
+    public void setSourceLanguageDBId(long id) {
+        this.sourceLanguageDBId = id;
+    }
+
+    public long getSourceLanguageDBId() {
+        return this.sourceLanguageDBId;
     }
 }

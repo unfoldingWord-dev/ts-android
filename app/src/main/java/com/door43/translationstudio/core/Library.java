@@ -4,11 +4,14 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -27,6 +30,7 @@ public class Library {
     private static final String DEFAULT_RESOURCE_SLUG = "ulb";
     private static final String IMAGES_DIR = "images";
     public static final String TAG = Library.class.toString();
+//    private static final String IMAGES_DOWNLOADED_TAG = "images_downloaded_and_extracted";
     private final Indexer mAppIndex;
     public static String DATABASE_NAME = "app";
     private final Context mContext;
@@ -69,7 +73,9 @@ public class Library {
      * @return
      */
     public File getImagesDir() {
-        return new File(mContext.getFilesDir(), IMAGES_DIR);
+        File file = new File(mContext.getFilesDir(), IMAGES_DIR);
+        file.mkdirs();
+        return file;
     }
 
     /**
@@ -146,7 +152,7 @@ public class Library {
     /**
      * Generates the available library updates from the server and app index.
      * The network is not used durring this operation.
-     * Only project with downloaded source are considered eligible for updates.
+     * Only projects with downloaded source are considered eligible for updates.
      * @return
      */
     public LibraryUpdates getAvailableUpdates() {
@@ -277,7 +283,39 @@ public class Library {
             listener.onProgress(5, 5);
         }
 
+        // Images are not downloaded here; rather, fetched on demand since they're large.
+
         return success;
+    }
+
+    /**
+     * Downloads images from the server
+     * @param listener
+     * @return
+     */
+    public Boolean downloadImages(OnProgressListener listener) {
+        boolean success = mDownloader.downloadImages(listener);
+        if(!success) {
+            FileUtils.deleteQuietly(AppContext.getLibrary().getImagesDir());
+        }
+        return success;
+    }
+
+    /**
+     * Indicates whether the imagery download is complete and extraction was successful.
+     *
+     * <p>If any part of the process was not complete, this returns false. This method makes no
+     * statement as to the freshness of the information downloaded.</p>
+     * @return true if the download is complete
+     */
+    public boolean imagesPresent() {
+        String[] names =  AppContext.getLibrary().getImagesDir().list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String filename) {
+                return !new File(dir, filename).isDirectory();
+            }
+        });
+        return names != null && names.length > 0;
     }
 
     /**
@@ -826,12 +864,19 @@ public class Library {
      * @param projectId
      */
     public void deleteProject(String projectId) {
-        // TODO: we can delete everything with one query if cascade on delete is set up.
         String[] sourceLanguageIds = mAppIndex.getSourceLanguageSlugs(projectId);
+        mAppIndex.beginTransaction();
         for(String sourceLanguageId:sourceLanguageIds) {
-            mAppIndex.deleteSourceLanguage(projectId, sourceLanguageId);
+            Resource[] resources = mAppIndex.getResources(projectId, sourceLanguageId);
+            for(Resource r:resources) {
+                mAppIndex.deleteResource(r.getDBId());
+                // restore resource after cascade delete
+                mAppIndex.saveResource(r, r.getSourceLanguageDBId());
+            }
+//            mAppIndex.deleteSourceLanguage(projectId, sourceLanguageId);
         }
-        mAppIndex.deleteProject(projectId);
+        mAppIndex.endTransaction(true);
+//        mAppIndex.deleteProject(projectId);
     }
 
     /**
@@ -903,6 +948,21 @@ public class Library {
      */
     public TargetLanguage findTargetLanguageByName(String name) {
         return getActiveIndex().getTargetLanguageByName(name);
+    }
+
+    /**
+     * This is a temporary method so we can index tA.
+     * tA is not currently available in the api so we bundle it and index it manually
+     * @param sourceTranslation
+     * @param catalog
+     * @return
+     * @deprecated you probably shouldn't use this method
+     */
+    public boolean manuallyIndexTranslationAcademy(SourceTranslation sourceTranslation, String catalog) {
+        getActiveIndex().beginTransaction();
+        boolean success = getActiveIndex().indexTranslationAcademy(sourceTranslation, catalog);
+        getActiveIndex().endTransaction(success);
+        return success;
     }
 
     public interface OnProgressListener {

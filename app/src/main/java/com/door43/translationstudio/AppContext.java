@@ -56,7 +56,6 @@ public class AppContext {
     public static final String TAG = AppContext.class.toString();
     private static MainApplication mContext;
     public static final Bundle args = new Bundle();
-    private static boolean loaded;
 
     /**
      * Initializes the basic functions context.
@@ -203,18 +202,6 @@ public class AppContext {
         File dir = new File(Environment.getExternalStorageDirectory(), TRANSLATION_STUDIO);
         dir.mkdirs();
         return dir;
-    }
-
-    /**
-     * Checks if the app
-     * @return
-     */
-    public static boolean isLoaded() {
-        return loaded;
-    }
-
-    public static void setLoaded(boolean loaded) {
-        AppContext.loaded = loaded;
     }
 
     /**

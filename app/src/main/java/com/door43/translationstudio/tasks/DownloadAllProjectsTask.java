@@ -23,7 +23,6 @@ public class DownloadAllProjectsTask extends ManagedTask {
 
         Library library = AppContext.getLibrary();
         try {
-            library.downloadTargetLanguages();
             library.downloadAllProjects(new Library.OnProgressListener() {
                 @Override
                 public boolean onProgress(int progress, int max) {
