@@ -481,10 +481,12 @@ public class ReviewModeFragment extends ViewModeFragment {
                         }
                     } else if(span instanceof PassageLinkSpan) {
                         PassageLinkSpan link = (PassageLinkSpan)span;
-                        Frame frame = library.getFrame(sourceTranslation, link.getChapterId(), link.getFrameId());
-                        String title = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(link.getChapterId()) + ":" + frame.getTitle();
+                        String chapterID = link.getChapterId();
+                        Frame frame = library.getFrame(sourceTranslation, chapterID, link.getFrameId());
+                        String chapter = (chapterID != null) ? String.valueOf(Integer.parseInt(chapterID)) : ""; // handle null chapter ID
+                        String title = sourceTranslation.getProjectTitle() + " " + chapter + ":" + frame.getTitle();
                         link.setTitle(title);
-                        return library.getFrame(sourceTranslation, link.getChapterId(), link.getFrameId()) != null;
+                        return library.getFrame(sourceTranslation, chapterID, link.getFrameId()) != null;
                     }
                     return true;
                 }
