@@ -2,12 +2,14 @@ package com.door43.translationstudio.newui;
 
 import android.app.AlertDialog;
 import android.app.DialogFragment;
+import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
 import android.view.LayoutInflater;
@@ -31,6 +33,7 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.DownloadImagesTask;
+import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 import com.door43.widget.ViewUtil;
@@ -42,7 +45,7 @@ import java.util.Locale;
 /**
  * Created by joel on 11/16/2015.
  */
-public class PrintDialog extends DialogFragment {
+public class PrintDialog extends DialogFragment implements GenericTaskWatcher.OnFinishedListener, GenericTaskWatcher.OnCanceledListener {
 
     public static final String ARG_TARGET_TRANSLATION_ID = "arg_target_translation_id";
     public static final String STATE_INCLUDE_IMAGES = "include_images";
@@ -57,6 +60,15 @@ public class PrintDialog extends DialogFragment {
     private Button printButton;
     private CheckBox includeImagesCheckBox;
     private CheckBox includeIncompleteCheckBox;
+    private GenericTaskWatcher taskWatcher;
+
+    @Override
+    public void onDestroyView() {
+        taskWatcher.stop();
+        taskWatcher.setOnCanceledListener(null);
+        taskWatcher.setOnFinishedListener(null);
+        super.onDestroyView();
+    }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -75,6 +87,10 @@ public class PrintDialog extends DialogFragment {
                 throw new InvalidParameterException("The target translation '" + targetTranslationId + "' is invalid");
             }
         }
+
+        taskWatcher = new GenericTaskWatcher(getActivity(), R.string.downloading_images);
+        taskWatcher.setOnFinishedListener(this);
+        taskWatcher.setOnCanceledListener(this);
 
         if(savedInstanceState != null) {
             includeImages = savedInstanceState.getBoolean(STATE_INCLUDE_IMAGES, includeImages);
@@ -109,101 +125,36 @@ public class PrintDialog extends DialogFragment {
             public void onClick(View v) {
                 includeImages = includeImagesCheckBox.isChecked();
                 includeIncompleteFrames = includeIncompleteCheckBox.isChecked();
-                enableInteraction(false);
                 if(includeImages && !AppContext.getLibrary().imagesPresent()) {
-                    // TODO: 11/16/2015 check if all the images have been downloaded for this project
                     CustomAlertDialog
                             .Create(getActivity())
                             .setTitle(R.string.use_internet_confirmation)
                             .setMessage(R.string.image_large_download)
-                            .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    enableInteraction(true);
-                                }
-                            })
+                            .setNegativeButton(R.string.title_cancel, null)
                             .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    downloadImagesAndPrint();
+                                    DownloadImagesTask task = new DownloadImagesTask();
+                                    taskWatcher.watch(task);
+                                    TaskManager.addTask(task, DownloadImagesTask.TASK_ID);
                                 }
                             })
                             .show("print-download-images-confirmation");
                 } else {
-                    print();
+                    // TODO: 1/20/2016 start print task
+//                    print();
                 }
             }
         });
 
-        // TODO: 11/16/2015  attach to existing print process.
-        // TODO: 11/16/2015 attach to existing download process (for images)
-        // TODO: 11/16/2015 disable print button and check boxes if another process is running
+        // re-attach to tasks
+        ManagedTask downloadTask = TaskManager.getTask(DownloadImagesTask.TASK_ID);
+//        ManagedTask printTask = TaskManager.getTask(PrintPDFTask.TASK_ID);
+        if(downloadTask != null) {
+            taskWatcher.watch(downloadTask);
+        }
 
         return v;
-    }
-
-    private void downloadImagesAndPrint() {
-        final ProgressDialog progressDialog = new ProgressDialog(getActivity());
-        progressDialog.setTitle(R.string.downloading_images);
-        progressDialog.setMessage(getResources().getString(R.string.downloading_images));
-        progressDialog.setCancelable(false); // TODO: 01/11/2016 make the download cancelable
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        progressDialog.setProgressNumberFormat("");
-        progressDialog.show();
-
-        final DownloadImagesTask task = new DownloadImagesTask();
-        task.addOnProgressListener(new ManagedTask.OnProgressListener() {
-            @Override
-            public void onProgress(ManagedTask task, double progress, String message, boolean secondary) {
-                if (progress < 0) {
-                    progressDialog.setMessage(getResources().getString(R.string.connecting_to_server));
-                } else {
-                    double mbDownloaded = progress * task.maxProgress();
-                    progressDialog.setMax(task.maxProgress());
-                    progressDialog.setProgress((int) mbDownloaded);
-                    String m = String.format("%2.2f %s %2.2f %s",
-                            mbDownloaded / (1024. * 1024.),
-                            getResources().getString(R.string.out_of),
-                            task.maxProgress() / (1024. * 1024.),
-                            getResources().getString(R.string.mb_downloaded));
-                    progressDialog.setMessage(m);
-                }
-            }
-        });
-        task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
-            @Override
-            public void onFinished(ManagedTask t) {
-                TaskManager.clearTask(t);
-                progressDialog.dismiss();
-
-                if (task.getSuccess()) {
-                    new Handler(getActivity().getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            print();
-                        }
-                    });
-                } else {
-                    CustomAlertDialog
-                            .Create(getActivity())
-                            .setTitle(R.string.download_failed)
-                            .setMessage(R.string.downloading_images_for_print_failed)
-                            .setPositiveButton(R.string.label_ok, null)
-                            .show("print-download-images-failed");
-
-                    enableInteraction(true);
-                }
-            }
-        });
-        TaskManager.addTask(task, DOWNLOAD_IMAGES_TASK_KEY);
-        TaskManager.groupTask(task, DOWNLOAD_IMAGES_TASK_GROUP);
-        // TODO 11/16/2015: Extract the files
-    }
-
-    private void enableInteraction(boolean enabled) {
-        includeImagesCheckBox.setEnabled(enabled);
-        includeIncompleteCheckBox.setEnabled(enabled);
-        printButton.setEnabled(enabled);
     }
 
     /**
@@ -233,8 +184,6 @@ public class PrintDialog extends DialogFragment {
             ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
             snack.show();
         }
-        // TODO: 11/16/2015 enable form controls again
-        enableInteraction(true);
     }
 
     @Override
@@ -244,15 +193,40 @@ public class PrintDialog extends DialogFragment {
         super.onSaveInstanceState(out);
     }
 
+//    @Override
+//    public void onDestroy() {
+//        taskWatcher.stop();
+//        super.onDestroy();
+//    }
+
     @Override
-    public void onDismiss(DialogInterface dialog) {
-        // TODO: 11/16/2015 stop any pending tasks
-        super.onDismiss(dialog);
+    public void onFinished(ManagedTask task) {
+        taskWatcher.stop();
+        TaskManager.clearTask(task);
+
+        if(task instanceof DownloadImagesTask) {
+            if (((DownloadImagesTask) task).getSuccess()) {
+                // TODO: 1/20/2016 start print task
+            } else {
+                // download failed
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        CustomAlertDialog
+                                .Create(getActivity())
+                                .setTitle(R.string.download_failed)
+                                .setMessage(R.string.downloading_images_for_print_failed)
+                                .setPositiveButton(R.string.label_ok, null)
+                                .show("print-download-images-failed");
+                    }
+                });
+            }
+        }
     }
 
     @Override
-    public void onDestroy() {
-        // TODO: 11/16/2015 disconnect from any pending tasks
-        super.onDestroy();
+    public void onCanceled(ManagedTask task) {
+        // try to stop downloading if the user cancels the download
+        task.stop();
     }
 }

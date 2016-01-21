@@ -1,6 +1,7 @@
 package com.door43.translationstudio.tasks;
 
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.util.tasks.ManagedTask;
 
@@ -9,10 +10,10 @@ import com.door43.util.tasks.ManagedTask;
  */
 public class DownloadImagesTask extends ManagedTask {
 
-    public static final String TASK_ID = "download_images_id";
+    public static final String TASK_ID = "download_images_task";
 
     private final Library mLibrary;
-    private int mMaxProgress = 1;
+    private int mMaxProgress = 100;
     private boolean mSuccess;
 
     public DownloadImagesTask() {
@@ -26,7 +27,12 @@ public class DownloadImagesTask extends ManagedTask {
             @Override
             public boolean onProgress(int progress, int max) {
                 mMaxProgress = max;
-                publishProgress((float)progress / max, "");
+                String message = String.format("%2.2f %s %2.2f %s",
+                        progress / (1024f * 1024f),
+                        AppContext.context().getResources().getString(R.string.out_of),
+                        max / (1024f * 1024f),
+                        AppContext.context().getResources().getString(R.string.mb_downloaded));
+                publishProgress((float)progress / (float)max, message);
                 return !isCanceled();
             }
 
@@ -37,7 +43,7 @@ public class DownloadImagesTask extends ManagedTask {
             }
         });
 
-        publishProgress(1., "Finished.");
+        publishProgress(1f, "");
     }
 
     @Override
