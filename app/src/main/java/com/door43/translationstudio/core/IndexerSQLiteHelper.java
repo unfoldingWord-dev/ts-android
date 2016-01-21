@@ -1442,7 +1442,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         values.put("name", name);
         values.put("direction", direction);
         values.put("region", region);
-        return db.replace("target_language", null, values);
+        return db.insertWithOnConflict("target_language", null, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
     /**

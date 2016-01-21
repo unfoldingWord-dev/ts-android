@@ -94,7 +94,8 @@ CREATE TABLE `target_language` (
   `slug` TEXT NOT NULL,
   `name` TEXT NOT NULL,
   `direction` TEXT NOT NULL,
-  `region` TEXT NOT NULL
+  `region` TEXT NOT NULL,
+  UNIQUE (`slug`)
 );
 
 -- ---

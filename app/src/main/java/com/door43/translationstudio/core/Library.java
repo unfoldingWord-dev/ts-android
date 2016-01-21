@@ -944,6 +944,21 @@ public class Library {
         return getActiveIndex().getTargetLanguageByName(name);
     }
 
+    /**
+     * This is a temporary method so we can index tA.
+     * tA is not currently available in the api so we bundle it and index it manually
+     * @param sourceTranslation
+     * @param catalog
+     * @return
+     * @deprecated you probably shouldn't use this method
+     */
+    public boolean manuallyIndexTranslationAcademy(SourceTranslation sourceTranslation, String catalog) {
+        getActiveIndex().beginTransaction();
+        boolean success = getActiveIndex().indexTranslationAcademy(sourceTranslation, catalog);
+        getActiveIndex().endTransaction(success);
+        return success;
+    }
+
     public interface OnProgressListener {
         /**
          * Progress the progress on an operation between 0 and max
