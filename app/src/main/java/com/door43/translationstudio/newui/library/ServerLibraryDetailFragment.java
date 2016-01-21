@@ -124,7 +124,6 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
                                         public void onClick(View v) {
                                             AppContext.getLibrary().deleteProject(mProject.getId());
                                             mListener.onProjectDeleted(mProject.getId());
-                                            rebuildLayout();
                                         }
                                     })
                                     .setNegativeButton(R.string.no, null)

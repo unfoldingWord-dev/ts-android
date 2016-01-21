@@ -53,22 +53,18 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
     public void onResume() {
         super.onResume();
 
-        if(!AppContext.isLoaded()) {
-            // connect to tasks
-            boolean isWorking = false;
-            isWorking = connectToTask(LoadTargetLanguagesTask.TASK_ID) ? true : isWorking;
-            isWorking = connectToTask(InitializeLibraryTask.TASK_ID) ? true : isWorking;
-            isWorking = connectToTask(UpdateAppTask.TASK_ID) ? true : isWorking;
+        // connect to tasks
+        boolean isWorking = false;
+        isWorking = connectToTask(LoadTargetLanguagesTask.TASK_ID) ? true : isWorking;
+        isWorking = connectToTask(InitializeLibraryTask.TASK_ID) ? true : isWorking;
+        isWorking = connectToTask(UpdateAppTask.TASK_ID) ? true : isWorking;
 
-            // start new task
-            if (!isWorking) {
-                UpdateAppTask updateTask = new UpdateAppTask(AppContext.context());
-                updateTask.addOnFinishedListener(this);
-                updateTask.addOnStartListener(this);
-                TaskManager.addTask(updateTask, UpdateAppTask.TASK_ID);
-            }
-        } else {
-            openMainActivity();
+        // start new task
+        if (!isWorking) {
+            UpdateAppTask updateTask = new UpdateAppTask(AppContext.context());
+            updateTask.addOnFinishedListener(this);
+            updateTask.addOnStartListener(this);
+            TaskManager.addTask(updateTask, UpdateAppTask.TASK_ID);
         }
     }
 
@@ -150,7 +146,6 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
     }
 
     private void openMainActivity() {
-        AppContext.setLoaded(true);
         Intent intent = new Intent(this, ProfileActivity.class);
         startActivity(intent);
         finish();

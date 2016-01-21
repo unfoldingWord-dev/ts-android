@@ -193,12 +193,6 @@ public class PrintDialog extends DialogFragment implements GenericTaskWatcher.On
         super.onSaveInstanceState(out);
     }
 
-//    @Override
-//    public void onDestroy() {
-//        taskWatcher.stop();
-//        super.onDestroy();
-//    }
-
     @Override
     public void onFinished(ManagedTask task) {
         taskWatcher.stop();

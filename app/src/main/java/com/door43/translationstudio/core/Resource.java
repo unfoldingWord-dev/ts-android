@@ -33,6 +33,7 @@ public class Resource {
     private final String academyCatalogUrl = "";
     private final int academyDateModified = 0;
     private final int academyServerDateModified = 0;
+    private long sourceLanguageDBId = -1;
 
     public Resource(String name, String slug, int checkingLevel, String version, boolean isDownloaded, int dateModified,
                     String sourceCatalogUrl, int sourceDateModified, int sourceServerDateModified,
@@ -300,5 +301,13 @@ public class Resource {
 
     public int getAcademyServerDateModified() {
         return academyServerDateModified;
+    }
+
+    public void setSourceLanguageDBId(long id) {
+        this.sourceLanguageDBId = id;
+    }
+
+    public long getSourceLanguageDBId() {
+        return this.sourceLanguageDBId;
     }
 }

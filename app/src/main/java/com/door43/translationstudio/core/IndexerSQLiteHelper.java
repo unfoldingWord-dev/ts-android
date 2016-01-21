@@ -271,9 +271,12 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param projectSlug
      */
     public void deleteSourceLanguage(SQLiteDatabase db, String sourceLanguageSlug, String projectSlug) {
-        db.execSQL("DELETE FROM `source_language` AS `sl`"
-                + " LEFT JOIN `project` AS `p` ON `p`.`id`=`sl`.`project_id`"
-                + " WHERE `sl`.`slug`=? AND `p`.`slug`=?", new String[]{sourceLanguageSlug, projectSlug});
+        db.execSQL("DELETE FROM `source_language`"
+                   + " WHERE `id` IN ("
+                   + "  SELECT `sl`.`id` from `source_language` AS `sl`"
+                   + "  LEFT JOIN `project` AS `p` ON `p`.`id`=`sl`.`project_id`"
+                   + "  WHERE `sl`.`slug`=? AND `p`.`slug`=?"
+                   + " )", new String[]{sourceLanguageSlug, projectSlug});
     }
 
     /**
@@ -345,6 +348,45 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
                 + " LEFT JOIN `source_language` AS `sl` ON `sl`.`id`=`r`.`source_language_id`"
                 + " LEFT JOIN `project` AS `p` ON `p`.`id`=`sl`.`project_id`"
                 + " WHERE `r`.`slug`=? AND `sl`.`slug`=? AND `p`.`slug`=?", new String[]{resourceSlug, sourceLanguageSlug, projectSlug});
+    }
+
+    /**
+     * Removes a resource
+     * @param db
+     * @param resourceId
+     */
+    public void deleteResource(SQLiteDatabase db, long resourceId) {
+        db.delete("resource", "id=" + resourceId, null);
+    }
+
+    /**
+     * Adds a resource
+     * if the resource exists it will be updated
+     * @param db
+     * @param resource
+     */
+    public void addResource(SQLiteDatabase db, Resource resource, long sourceLanguageId) {
+        ContentValues values = new ContentValues();
+        if(resource.getDBId() > 0) {
+            values.put("id", resource.getDBId());
+        }
+        values.put("slug", resource.getId());
+        values.put("source_language_id", sourceLanguageId);
+        values.put("name", resource.getTitle());
+        values.put("checking_level", resource.getCheckingLevel());
+        values.put("version", resource.getVersion());
+        values.put("modified_at", resource.getDateModified());
+        values.put("source_catalog_url", resource.getSourceCatalogUrl());
+        values.put("source_catalog_server_modified_at", resource.getSourceServerDateModified());
+        values.put("translation_notes_catalog_url", resource.getNotesCatalogUrl());
+        values.put("translation_notes_catalog_server_modified_at", resource.getNotesServerDateModified());
+        values.put("translation_words_catalog_url", resource.getWordsCatalogUrl());
+        values.put("translation_words_catalog_server_modified_at", resource.getWordsServerDateModified());
+        values.put("translation_word_assignments_catalog_url", resource.getWordAssignmentsCatalogUrl());
+        values.put("translation_word_assignments_catalog_server_modified_at", resource.getWordAssignmentsServerDateModified());
+        values.put("checking_questions_catalog_url", resource.getQuestionsCatalogUrl());
+        values.put("checking_questions_catalog_server_modified_at", resource.getQuestionsServerDateModified());
+        db.insertWithOnConflict("resource", null, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
     /**
@@ -1184,7 +1226,9 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
                 + " `r`.`translation_words_catalog_url`, `r`.`translation_words_catalog_local_modified_at`, `r`.`translation_words_catalog_server_modified_at`,"
                 + " `r`.`translation_word_assignments_catalog_url`, `r`.`translation_word_assignments_catalog_local_modified_at`, `r`.`translation_word_assignments_catalog_server_modified_at`,"
                 + " `r`.`checking_questions_catalog_url`, `r`.`checking_questions_catalog_local_modified_at`, `r`.`checking_questions_catalog_server_modified_at`,"
-                + " `r`.`id`, CASE WHEN `content`.`count` > 0 THEN 1 ELSE 0 END AS `is_downloaded` FROM `resource` AS `r`"
+                + " `r`.`id`, CASE WHEN `content`.`count` > 0 THEN 1 ELSE 0 END AS `is_downloaded`,"
+                + " `r`.`source_language_id`"
+                + " FROM `resource` AS `r`"
                 + " LEFT JOIN `source_language` AS `sl` ON `sl`.`id`=`r`.`source_language_id`"
                 + " LEFT JOIN `project` AS `p` ON `p`.`id` = `sl`.`project_id`"
                 + " LEFT JOIN ("
@@ -1225,6 +1269,9 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             long resourceId = cursor.getLong(19);
 
             boolean isDownloaded = cursor.getInt(20) > 0;
+
+            long sourceLanguageDBId = cursor.getLong(21);
+
             resource = new Resource(resourceName, resourceSlug, checkingLevel, version, isDownloaded, dateModified,
                     sourceCatalog, sourceCatalogModified, sourceCatalogServerModified,
                     notesCatalog, notesCatalogModified, notesCatalogServerModified,
@@ -1232,6 +1279,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
                     termAssignmentsCatalog, termAssignmentsCatalogModified, termAssignmentsCatalogServerModified,
                     questionsCatalog, questionsCatalogModified, questionsCatalogServerModified);
             resource.setDBId(resourceId);
+            resource.setSourceLanguageDBId(sourceLanguageDBId);
         }
         cursor.close();
         return resource;
@@ -1252,7 +1300,9 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
                 + " `r`.`translation_words_catalog_url`, `r`.`translation_words_catalog_local_modified_at`, `r`.`translation_words_catalog_server_modified_at`,"
                 + " `r`.`translation_word_assignments_catalog_url`, `r`.`translation_word_assignments_catalog_local_modified_at`, `r`.`translation_word_assignments_catalog_server_modified_at`,"
                 + " `r`.`checking_questions_catalog_url`, `r`.`checking_questions_catalog_local_modified_at`, `r`.`checking_questions_catalog_server_modified_at`,"
-                + " `r`.`id`, CASE WHEN `content`.`count` > 0 THEN 1 ELSE 0 END AS `is_downloaded`, `r`.`slug` FROM `resource` AS `r`"
+                + " `r`.`id`, CASE WHEN `content`.`count` > 0 THEN 1 ELSE 0 END AS `is_downloaded`, `r`.`slug`,"
+                + " `r`.`source_language_id`"
+                + " FROM `resource` AS `r`"
                 + " LEFT JOIN `source_language` AS `sl` ON `sl`.`id`=`r`.`source_language_id`"
                 + " LEFT JOIN `project` AS `p` ON `p`.`id` = `sl`.`project_id`"
                 + " LEFT JOIN ("
@@ -1295,6 +1345,8 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
 
             String resourceSlug = cursor.getString(21);
 
+            long sourceLanguageDBId = cursor.getLong(22);
+
             Resource resource = new Resource(resourceName, resourceSlug, checkingLevel, version, isDownloaded, dateModified,
                     sourceCatalog, sourceCatalogModified, sourceCatalogServerModified,
                     notesCatalog, notesCatalogModified, notesCatalogServerModified,
@@ -1302,6 +1354,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
                     termAssignmentsCatalog, termAssignmentsCatalogModified, termAssignmentsCatalogServerModified,
                     questionsCatalog, questionsCatalogModified, questionsCatalogServerModified);
             resource.setDBId(resourceId);
+            resource.setSourceLanguageDBId(sourceLanguageDBId);
             resources.add(resource);
             cursor.moveToNext();
         }

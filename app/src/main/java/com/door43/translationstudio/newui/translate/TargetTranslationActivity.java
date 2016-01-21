@@ -331,10 +331,15 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         if(draftTranslations == null) {
             draftTranslations = AppContext.getLibrary().getDraftTranslations(mTargetTranslation.getProjectId(), mTargetTranslation.getTargetLanguageId());
         }
-        return draftTranslations.size() > 0;
+        for(SourceTranslation st:draftTranslations) {
+            if(AppContext.getLibrary().sourceTranslationHasSource(st)) {
+                return true;
+            }
+        }
+        return false;
         // TODO: 1/20/2016 once users are forced to specify a resource they are translating into we'll use this to check
 //        for(SourceTranslation st:draftTranslations) {
-//            if(st.resourceSlug.equals(mTargetTranslation.resourceSlug)) {
+//            if(st.resourceSlug.equals(mTargetTranslation.resourceSlug) && AppContext.getLibrary().sourceTranslationHasSource(st)) {
 //                return true;
 //            }
 //        }

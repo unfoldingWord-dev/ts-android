@@ -149,7 +149,7 @@ public class Library {
     /**
      * Generates the available library updates from the server and app index.
      * The network is not used durring this operation.
-     * Only project with downloaded source are considered eligible for updates.
+     * Only projects with downloaded source are considered eligible for updates.
      * @return
      */
     public LibraryUpdates getAvailableUpdates() {
@@ -858,12 +858,19 @@ public class Library {
      * @param projectId
      */
     public void deleteProject(String projectId) {
-        // TODO: we can delete everything with one query if cascade on delete is set up.
         String[] sourceLanguageIds = mAppIndex.getSourceLanguageSlugs(projectId);
+        mAppIndex.beginTransaction();
         for(String sourceLanguageId:sourceLanguageIds) {
-            mAppIndex.deleteSourceLanguage(projectId, sourceLanguageId);
+            Resource[] resources = mAppIndex.getResources(projectId, sourceLanguageId);
+            for(Resource r:resources) {
+                mAppIndex.deleteResource(r.getDBId());
+                // restore resource after cascade delete
+                mAppIndex.saveResource(r, r.getSourceLanguageDBId());
+            }
+//            mAppIndex.deleteSourceLanguage(projectId, sourceLanguageId);
         }
-        mAppIndex.deleteProject(projectId);
+        mAppIndex.endTransaction(true);
+//        mAppIndex.deleteProject(projectId);
     }
 
     /**
