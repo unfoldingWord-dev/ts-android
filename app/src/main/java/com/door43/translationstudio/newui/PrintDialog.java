@@ -33,6 +33,7 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.DownloadImagesTask;
+import com.door43.translationstudio.tasks.PrintPDFTask;
 import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
@@ -61,6 +62,7 @@ public class PrintDialog extends DialogFragment implements GenericTaskWatcher.On
     private CheckBox includeImagesCheckBox;
     private CheckBox includeIncompleteCheckBox;
     private GenericTaskWatcher taskWatcher;
+    private File mExportFile;
 
     @Override
     public void onDestroyView() {
@@ -88,7 +90,7 @@ public class PrintDialog extends DialogFragment implements GenericTaskWatcher.On
             }
         }
 
-        taskWatcher = new GenericTaskWatcher(getActivity(), R.string.downloading_images);
+        taskWatcher = new GenericTaskWatcher(getActivity(), R.string.loading);
         taskWatcher.setOnFinishedListener(this);
         taskWatcher.setOnCanceledListener(this);
 
@@ -111,6 +113,8 @@ public class PrintDialog extends DialogFragment implements GenericTaskWatcher.On
         includeIncompleteCheckBox.setEnabled(true);
         includeImagesCheckBox.setChecked(includeImages);
         includeIncompleteCheckBox.setChecked(includeIncompleteFrames);
+
+        mExportFile = new File(AppContext.getSharingDir(), mTargetTranslation.getId() + ".pdf");
 
         Button cancelButton  = (Button)v.findViewById(R.id.cancel_button);
         cancelButton.setOnClickListener(new View.OnClickListener() {
@@ -141,17 +145,20 @@ public class PrintDialog extends DialogFragment implements GenericTaskWatcher.On
                             })
                             .show("print-download-images-confirmation");
                 } else {
-                    // TODO: 1/20/2016 start print task
-//                    print();
+                    PrintPDFTask task = new PrintPDFTask(mTargetTranslation.getId(), mExportFile, includeImages, includeIncompleteFrames);
+                    taskWatcher.watch(task);
+                    TaskManager.addTask(task, PrintPDFTask.TASK_ID);
                 }
             }
         });
 
         // re-attach to tasks
         ManagedTask downloadTask = TaskManager.getTask(DownloadImagesTask.TASK_ID);
-//        ManagedTask printTask = TaskManager.getTask(PrintPDFTask.TASK_ID);
+        ManagedTask printTask = TaskManager.getTask(PrintPDFTask.TASK_ID);
         if(downloadTask != null) {
             taskWatcher.watch(downloadTask);
+        } else if(printTask != null) {
+            taskWatcher.watch(printTask);
         }
 
         return v;
@@ -160,31 +167,31 @@ public class PrintDialog extends DialogFragment implements GenericTaskWatcher.On
     /**
      * Begins printing the translation
      */
-    private void print() {
-        // TODO: 11/16/2015 place the actual print operation within a task
-        File exportFile = new File(AppContext.getSharingDir(), mTargetTranslation.getId() + ".pdf");
-        try {
-            SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(mTargetTranslation.getProjectId(), "en");
-            File imagesDir = library.getImagesDir();
-            this.translator.exportPdf(library, mTargetTranslation, sourceTranslation.getFormat(), Typography.getAssetPath(getActivity()), imagesDir, includeImages, includeIncompleteFrames, exportFile);
-            if (exportFile.exists()) {
-                Uri u = FileProvider.getUriForFile(getActivity(), "com.door43.translationstudio.fileprovider", exportFile);
-                Intent i = new Intent(Intent.ACTION_SEND);
-                i.setType("application/pdf");
-                i.putExtra(Intent.EXTRA_STREAM, u);
-                startActivity(Intent.createChooser(i, "Print:"));
-            } else {
-                Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_export_failed, Snackbar.LENGTH_LONG);
-                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                snack.show();
-            }
-        } catch (Exception e) {
-            Logger.e(PrintDialog.class.getName(), "Failed to export as pdf " + mTargetTranslation.getId(), e);
-            Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_export_failed, Snackbar.LENGTH_LONG);
-            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-            snack.show();
-        }
-    }
+//    private void print() {
+//        // TODO: 11/16/2015 place the actual print operation within a task
+//        File exportFile = new File(AppContext.getSharingDir(), mTargetTranslation.getId() + ".pdf");
+//        try {
+//            SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(mTargetTranslation.getProjectId(), "en");
+//            File imagesDir = library.getImagesDir();
+//            this.translator.exportPdf(library, mTargetTranslation, sourceTranslation.getFormat(), Typography.getAssetPath(getActivity()), imagesDir, includeImages, includeIncompleteFrames, exportFile);
+//            if (exportFile.exists()) {
+//                Uri u = FileProvider.getUriForFile(getActivity(), "com.door43.translationstudio.fileprovider", exportFile);
+//                Intent i = new Intent(Intent.ACTION_SEND);
+//                i.setType("application/pdf");
+//                i.putExtra(Intent.EXTRA_STREAM, u);
+//                startActivity(Intent.createChooser(i, "Print:"));
+//            } else {
+//                Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_export_failed, Snackbar.LENGTH_LONG);
+//                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+//                snack.show();
+//            }
+//        } catch (Exception e) {
+//            Logger.e(PrintDialog.class.getName(), "Failed to export as pdf " + mTargetTranslation.getId(), e);
+//            Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_export_failed, Snackbar.LENGTH_LONG);
+//            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+//            snack.show();
+//        }
+//    }
 
     @Override
     public void onSaveInstanceState(Bundle out) {
@@ -200,7 +207,9 @@ public class PrintDialog extends DialogFragment implements GenericTaskWatcher.On
 
         if(task instanceof DownloadImagesTask) {
             if (((DownloadImagesTask) task).getSuccess()) {
-                // TODO: 1/20/2016 start print task
+                PrintPDFTask printTask = new PrintPDFTask(mTargetTranslation.getId(), mExportFile, includeImages, includeIncompleteFrames);
+                taskWatcher.watch(printTask);
+                TaskManager.addTask(printTask, PrintPDFTask.TASK_ID);
             } else {
                 // download failed
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -214,6 +223,22 @@ public class PrintDialog extends DialogFragment implements GenericTaskWatcher.On
                                 .show("print-download-images-failed");
                     }
                 });
+            }
+        } else if(task instanceof PrintPDFTask) {
+            if(((PrintPDFTask)task).isSuccess()) {
+                // send to print provider
+                Uri u = FileProvider.getUriForFile(AppContext.context(), "com.door43.translationstudio.fileprovider", mExportFile);
+                Intent i = new Intent(Intent.ACTION_SEND);
+                i.setType("application/pdf");
+                i.putExtra(Intent.EXTRA_STREAM, u);
+                startActivity(Intent.createChooser(i, "Print:"));
+            } else {
+                CustomAlertDialog
+                        .Create(getActivity())
+                        .setTitle(R.string.error)
+                        .setMessage(R.string.print_failed)
+                        .setPositiveButton(R.string.dismiss, null)
+                        .show("print-pdf-failed");
             }
         }
     }

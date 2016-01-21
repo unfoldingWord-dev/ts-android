@@ -2,9 +2,11 @@ package com.door43.translationstudio.core;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.newui.home.ImportDialog;
 import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.http.util.ByteArrayBuffer;
 
 import java.io.BufferedInputStream;
@@ -265,6 +267,9 @@ public class Downloader {
     }
 
     public boolean downloadImages(Library.OnProgressListener listener) {
+        // TODO: 1/21/2016 we need to be sure to download images for the correct project. right now only obs has images
+        // eventually the api will be updated so we can easily download the correct images.
+
         String url = Resource.getImagesCatalogUrl();
         String filename = url.replaceAll(".*/", "");
         File imagesDir = AppContext.getLibrary().getImagesDir();
@@ -276,11 +281,24 @@ public class Downloader {
 
         if (success) {
             try {
-                Zip.unzip(fullPath, imagesDir);
+                File tempDir = new File(imagesDir, "temp");
+                tempDir.mkdirs();
+                Zip.unzip(fullPath, tempDir);
                 success = true;
                 fullPath.delete();
-            }
-            catch (IOException e) {
+                // move files out of dir
+                File[] extractedFiles = tempDir.listFiles();
+                if(extractedFiles != null) {
+                    for (File dir:extractedFiles) {
+                        if(dir.isDirectory()) {
+                            for(File f:dir.listFiles()) {
+                                FileUtils.moveFile(f, new File(imagesDir, f.getName()));
+                            }
+                        }
+                    }
+                }
+                FileUtils.deleteQuietly(tempDir);
+            } catch (IOException e) {
                 success = false;
             }
         }
