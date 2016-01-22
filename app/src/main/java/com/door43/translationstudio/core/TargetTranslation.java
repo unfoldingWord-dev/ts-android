@@ -38,6 +38,7 @@ import java.util.Timer;
  */
 public class TargetTranslation {
     private static final int PACKAGE_VERSION = 3; // the version of the manifest
+    public static final String PARENT_DRAFT_RESOURCE_ID = "parent_draft_resource_id";
     private final String mTargetLanguageId;
     private final String mProjectId;
     private static final String GLOBAL_PROJECT_ID = "uw";
@@ -1088,6 +1089,26 @@ public class TargetTranslation {
         }
 
         return PublishStatus.QUERY_ERROR;
+    }
+
+    /**
+     * Sets the draft that is a parent of this target translation
+     * @param draftTranslation
+     */
+    public void setParentDraft(SourceTranslation draftTranslation) {
+        mManifest.put(PARENT_DRAFT_RESOURCE_ID, draftTranslation.resourceSlug);
+    }
+
+    /**
+     * Returns the draft translation that is a parent of this target translation
+     */
+    public SourceTranslation getParentDraft () {
+        String resourceSlug = mManifest.getString(PARENT_DRAFT_RESOURCE_ID);
+        if(!resourceSlug.isEmpty()) {
+            return SourceTranslation.simple(getProjectId(), getTargetLanguageId(), resourceSlug);
+        } else {
+            return null;
+        }
     }
 
     public enum PublishStatus {

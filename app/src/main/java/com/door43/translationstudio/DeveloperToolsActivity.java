@@ -20,6 +20,11 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.core.Project;
+import com.door43.translationstudio.core.Resource;
+import com.door43.translationstudio.core.SourceLanguage;
+import com.door43.translationstudio.core.SourceTranslation;
+import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.dialogs.ErrorLogDialog;
 import com.door43.translationstudio.newui.BaseActivity;
@@ -29,14 +34,20 @@ import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
 import com.door43.translationstudio.util.ToolAdapter;
 import com.door43.translationstudio.util.ToolItem;
 import com.door43.util.StringUtilities;
+import com.door43.util.Zip;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 import com.door43.util.tasks.ThreadableUI;
 import com.door43.widget.ViewUtil;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+
+import javax.xml.transform.Source;
 
 public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.OnProgressListener, ManagedTask.OnFinishedListener, DialogInterface.OnCancelListener {
 
@@ -178,7 +189,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                             @Override
                             public void onClick(View v) {
                                 // create new prep task
-                                GetLibraryUpdatesTask task = new GetLibraryUpdatesTask(true);
+                                GetLibraryUpdatesTask task = new GetLibraryUpdatesTask();
                                 task.addOnProgressListener(DeveloperToolsActivity.this);
                                 task.addOnFinishedListener(DeveloperToolsActivity.this);
                                 TaskManager.addTask(task, GetLibraryUpdatesTask.TASK_ID);
@@ -186,6 +197,51 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                         })
                         .setNegativeButton(R.string.no, null)
                         .show("DownldAll");
+            }
+        }));
+        mDeveloperTools.add(new ToolItem("Index tA", "Indexes the bundled tA json", 0, new ToolItem.ToolAction() {
+            @Override
+            public void run() {
+                ThreadableUI thread = new ThreadableUI(DeveloperToolsActivity.this) {
+                    @Override
+                    public void onStop() {
+
+                    }
+
+                    @Override
+                    public void run() {
+                        // TRICKY: for now tA is only in english
+                        Project[] projects = AppContext.getLibrary().getProjects("en");
+                        String catalog = null;
+                        try {
+                            catalog = Util.readStream(getAssets().open("ta.json"));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        if(catalog != null) {
+                            for (Project p : projects) {
+                                Resource[] resources = AppContext.getLibrary().getResources(p.getId(), "en");
+                                for (Resource r : resources) {
+                                    SourceTranslation sourceTranslation = SourceTranslation.simple(p.getId(), "en", r.getId());
+                                    AppContext.getLibrary().manuallyIndexTranslationAcademy(sourceTranslation, catalog);
+                                }
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onPostExecute() {
+                        CustomAlertDialog.Create(DeveloperToolsActivity.this)
+                                .setTitle(R.string.success)
+                                .setMessage("tA has been indexed")
+                                .setNeutralButton(R.string.dismiss, null)
+                                .show("ta-index-success");
+                    }
+                };
+                thread.start();
+                Snackbar snack = Snackbar.make(findViewById(android.R.id.content), "indexing tA...", Snackbar.LENGTH_LONG);
+                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                snack.show();
             }
         }));
         mDeveloperTools.add(new ToolItem(getResources().getString(R.string.export_source), getResources().getString(R.string.export_source_description), 0, new ToolItem.ToolAction() {

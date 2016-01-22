@@ -172,7 +172,7 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
                 // because we may have to go back and forth and don't want to fill up the stack
                 Intent intent = new Intent(this, TargetTranslationActivity.class);
                 Bundle args = new Bundle();
-                args.putString(TargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                args.putString(AppContext.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
                 intent.putExtras(args);
                 startActivity(intent);
             }
@@ -188,7 +188,7 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
         if(mCallingActivity == ACTIVITY_TRANSLATION) {
             Intent intent = new Intent(this, TargetTranslationActivity.class);
             Bundle args = new Bundle();
-            args.putString(TargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+            args.putString(AppContext.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
             intent.putExtras(args);
             startActivity(intent);
         }

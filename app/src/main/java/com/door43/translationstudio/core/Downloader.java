@@ -1,15 +1,24 @@
 package com.door43.translationstudio.core;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.newui.home.ImportDialog;
+import com.door43.util.FileUtilities;
+import com.door43.util.Zip;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.http.util.ByteArrayBuffer;
 
 import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 
 /**
  * Created by joel on 8/27/2015.
@@ -55,6 +64,47 @@ public class Downloader {
         } catch(IOException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    private boolean requestToFile(String apiUrl, File outputFile, long expectedSize, Library.OnProgressListener listener) {
+        if(apiUrl.trim().isEmpty()) {
+            return false;
+        }
+        URL url;
+        try {
+            url = new URL(apiUrl);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        try {
+            URLConnection conn = url.openConnection();
+            conn.setReadTimeout(5000);
+            conn.setConnectTimeout(5000);
+
+            ReadableByteChannel channel = Channels.newChannel(conn.getInputStream());
+            FileOutputStream os = new FileOutputStream(outputFile);
+
+            long listenerInterval = 1048 * 10; // how much must be downloaded before each listener update
+            long bytesRead;
+            long pos = 0;
+            long lastUpdate = 0;
+            do {
+                bytesRead = os.getChannel().transferFrom(channel, pos, expectedSize);
+                pos += bytesRead;
+                if(pos - lastUpdate >= listenerInterval) {
+                    lastUpdate = pos;
+                    listener.onProgress((int) pos, (int) expectedSize);
+                }
+            } while (bytesRead > 0);
+            listener.onProgress((int)pos, (int) expectedSize);
+
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
@@ -214,6 +264,45 @@ public class Downloader {
             }
         }
         return true;
+    }
+
+    public boolean downloadImages(Library.OnProgressListener listener) {
+        // TODO: 1/21/2016 we need to be sure to download images for the correct project. right now only obs has images
+        // eventually the api will be updated so we can easily download the correct images.
+
+        String url = Resource.getImagesCatalogUrl();
+        String filename = url.replaceAll(".*/", "");
+        File imagesDir = AppContext.getLibrary().getImagesDir();
+        File fullPath = new File(String.format("%s/%s", imagesDir, filename));
+        if (!(imagesDir.isDirectory() || imagesDir.mkdirs())) {
+            return false;
+        }
+        boolean success = requestToFile(url, fullPath, Resource.getImagesCatalogSize(), listener);
+
+        if (success) {
+            try {
+                File tempDir = new File(imagesDir, "temp");
+                tempDir.mkdirs();
+                Zip.unzip(fullPath, tempDir);
+                success = true;
+                fullPath.delete();
+                // move files out of dir
+                File[] extractedFiles = tempDir.listFiles();
+                if(extractedFiles != null) {
+                    for (File dir:extractedFiles) {
+                        if(dir.isDirectory()) {
+                            for(File f:dir.listFiles()) {
+                                FileUtils.moveFile(f, new File(imagesDir, f.getName()));
+                            }
+                        }
+                    }
+                }
+                FileUtils.deleteQuietly(tempDir);
+            } catch (IOException e) {
+                success = false;
+            }
+        }
+        return success;
     }
 
     /**

@@ -227,6 +227,13 @@
     <string name="import_project">Import Project</string>
     <string name="no_projects_available_on_server">No projects available on server</string>
     <string name="downloading">Downloading</string>
+    <string name="downloading_images">Downloading images</string>
+    <string name="connecting_to_server">Connecting to remote server...</string>
+    <string name="downloading_images_for_print_failed">The download failed to complete. Try printing without images.</string>
+    <!-- as in "23 out of 46 MB downloaded" -->
+    <string name="out_of">out of</string>
+    <string name="mb_downloaded">MB downloaded</string>
+    <string name="image_large_download">Downloading images will take several megabytes. Are you sure you want to include images?</string>
     <string name="confirm_import">Please confirm import data</string>
     <string name="waiting_for_device">Waiting for device</string>
     <string name="label_back">Back</string>
@@ -282,7 +289,7 @@
     <string name="download_confirmation">You are about to download a potentially large amount of data, continue?</string>
     <string name="action_cancel_edit_projects">Stop Editing Projects</string>
     <string name="import_draft">Import Draft</string>
-    <string name="import_draft_confirmation">Replace existing translation in this target language?</string>
+    <string name="import_draft_confirmation">Replace existing translation with this draft?</string>
     <string name="action_search">Search</string>
     <string name="transfer_from_device">Transfer from device</string>
     <string name="transfer_from_device_description">Transfer from nearby device over the network</string>
@@ -307,6 +314,7 @@
     <string name="complete_required_fields">Please complete all required fields</string>
     <string name="required_field"><xliff:g id="marker">*</xliff:g> required</string>
     <string name="upload_failed">Upload failed</string>
+    <string name="download_failed">Download failed</string>
     <string name="publishing_translation">Publishing translation</string>
     <string name="backing_up_translation">Backing up translation</string>
     <string name="review_all_checking_questions">Please review all questions</string>
@@ -600,7 +608,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="publish_status_not">Not Published</string>
     <string name="publish_status_current">Published</string>
     <string name="publish_status_not_current">Not Current</string>
-    <string name="publish_status_error">Error</string>
+    <string name="error">Error</string>
     <string name="enable_sd_card_access_title">Enable SD Card Access</string>
     <string name="enable_sd_card_access">
 <![CDATA[
@@ -629,14 +637,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="import_failed">Failed Import from:</string>
     <string name="backup_success">Success Backing up to:</string>
     <string name="import_success">Success Importing from:</string>
-    <string name="title_add_footnote">Add Footnote</string>
-    <string name="add_footnote_title">Title:</string>
-    <string name="add_footnote">Footnote:</string>
-    <string name="add_footnote_title_prompt">Enter Title</string>
-    <string name="add_footnote_prompt">Enter Footnote</string>
-    <string name="title_footnote_invalid">Invalid Footnote</string>
-    <string name="footnote_confirm_delete">Are you sure you want to delete footnote?</string>
-    <string name="footnote_label">Footnote</string>
-    <string name="footnote_title_empty">Footnote Title cannot be empty</string>
-    <string name="footnote_message_empty">Footnote cannot be empty</string>
+    <string name="view_available_drafts">View available drafts</string>
+    <string name="preview">Preview</string>
+    <string name="importing_draft">Importing draft</string>
+    <string name="draft_translation_exists">A draft of this translation is available</string>
+    <string name="print_failed">Failed to print</string>
+    <string name="printing">Printing</string>
 </resources>

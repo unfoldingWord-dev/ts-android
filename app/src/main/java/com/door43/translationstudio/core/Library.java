@@ -4,11 +4,14 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -17,6 +20,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import javax.xml.transform.Source;
+
 /**
  * Created by joel on 8/29/2015.
  */
@@ -24,6 +29,8 @@ public class Library {
     private static final int MIN_CHECKING_LEVEL = 3; // the minimum level to be considered a source translation
     private static final String DEFAULT_RESOURCE_SLUG = "ulb";
     private static final String IMAGES_DIR = "images";
+    public static final String TAG = Library.class.toString();
+//    private static final String IMAGES_DOWNLOADED_TAG = "images_downloaded_and_extracted";
     private final Indexer mAppIndex;
     public static String DATABASE_NAME = "app";
     private final Context mContext;
@@ -66,7 +73,9 @@ public class Library {
      * @return
      */
     public File getImagesDir() {
-        return new File(mContext.getFilesDir(), IMAGES_DIR);
+        File file = new File(mContext.getFilesDir(), IMAGES_DIR);
+        file.mkdirs();
+        return file;
     }
 
     /**
@@ -143,7 +152,7 @@ public class Library {
     /**
      * Generates the available library updates from the server and app index.
      * The network is not used durring this operation.
-     * Only project with downloaded source are considered eligible for updates.
+     * Only projects with downloaded source are considered eligible for updates.
      * @return
      */
     public LibraryUpdates getAvailableUpdates() {
@@ -193,7 +202,7 @@ public class Library {
 
                     boolean downloadSuccess = startSourceTranslationDownload(sourceTranslation, sourceTranslationListener);
                     if(!downloadSuccess) {
-                        Logger.w(this.getClass().getName(), "Failed to download " + sourceTranslation.getId());
+                        Logger.w(TAG, "Failed to download " + sourceTranslation.getId());
                         success = false;
                     }
                 }
@@ -274,7 +283,39 @@ public class Library {
             listener.onProgress(5, 5);
         }
 
+        // Images are not downloaded here; rather, fetched on demand since they're large.
+
         return success;
+    }
+
+    /**
+     * Downloads images from the server
+     * @param listener
+     * @return
+     */
+    public Boolean downloadImages(OnProgressListener listener) {
+        boolean success = mDownloader.downloadImages(listener);
+        if(!success) {
+            FileUtils.deleteQuietly(AppContext.getLibrary().getImagesDir());
+        }
+        return success;
+    }
+
+    /**
+     * Indicates whether the imagery download is complete and extraction was successful.
+     *
+     * <p>If any part of the process was not complete, this returns false. This method makes no
+     * statement as to the freshness of the information downloaded.</p>
+     * @return true if the download is complete
+     */
+    public boolean imagesPresent() {
+        String[] names =  AppContext.getLibrary().getImagesDir().list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String filename) {
+                return !new File(dir, filename).isDirectory();
+            }
+        });
+        return names != null && names.length > 0;
     }
 
     /**
@@ -282,6 +323,7 @@ public class Library {
      * @param destDir the directory where the library will be exported
      * @return the path to the exported file
      */
+    @Nullable
     public File export(File destDir) {
         SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
         String date = s.format(new Date());
@@ -292,7 +334,7 @@ public class Library {
 //            Tar.tar(mContext.getDatabasePath(getActiveIndex().getIndexId()).getPath(), destFile.getPath());
             Zip.zip(mContext.getDatabasePath(getActiveIndex().getIndexId()).getPath(), destFile.getPath());
         } catch (IOException e) {
-            Logger.e(this.getClass().getName(), "Failed to export the library", e);
+            Logger.e(TAG, "Failed to export the library", e);
             return null;
         }
         return destFile;
@@ -384,11 +426,12 @@ public class Library {
      * @param sourceLanguageSlug
      * @return null if no source langauges exist for the project
      */
+    @Nullable
     public SourceLanguage getPreferredSourceLanguage(String projectId, String sourceLanguageSlug) {
         // preferred language
         SourceLanguage sourceLanguage = getActiveIndex().getSourceLanguage(projectId, sourceLanguageSlug);
         // try to use default (en)
-        if(sourceLanguage == null || (!sourceLanguage.code.equals(sourceLanguageSlug) && !sourceLanguageSlug.equals("en"))) {
+        if (sourceLanguage == null || (!sourceLanguage.code.equals(sourceLanguageSlug) && !sourceLanguageSlug.equals("en"))) {
             sourceLanguage = getActiveIndex().getSourceLanguage(projectId, "en");
         }
         return sourceLanguage;
@@ -462,7 +505,7 @@ public class Library {
                 return 0;
             }
         } else {
-            Logger.w(this.getClass().getName(), "Cannot get progress of " + targetTranslation.getId() + " because a source language does not exist");
+            Logger.w(TAG, "Cannot get progress of " + targetTranslation.getId() + " because a source language does not exist");
             return 0;
         }
     }
@@ -560,6 +603,7 @@ public class Library {
      * @param sourceTranslationId
      * @return null if the source translation does not exist
      */
+    @Nullable
     public SourceTranslation getSourceTranslation(String sourceTranslationId) {
         if(sourceTranslationId != null) {
             String projectId = SourceTranslation.getProjectIdFromId(sourceTranslationId);
@@ -577,6 +621,7 @@ public class Library {
      * @param resourceSlug
      * @return null if the source translation does not exist
      */
+    @Nullable
     public SourceTranslation getSourceTranslation(String projectSlug, String sourceLanguageSlug, String resourceSlug) {
         return getActiveIndex().getSourceTranslation(projectSlug, sourceLanguageSlug, resourceSlug);
     }
@@ -589,6 +634,7 @@ public class Library {
      * @param sourceLanguageSlug
      * @return null if the source translation does not exist
      */
+    @Nullable
     public SourceTranslation getDefaultSourceTranslation(String projectSlug, String sourceLanguageSlug) {
         SourceTranslation sourceTranslation = mAppIndex.getSourceTranslation(projectSlug, sourceLanguageSlug, DEFAULT_RESOURCE_SLUG);
         if(sourceTranslation == null) {
@@ -624,22 +670,66 @@ public class Library {
 
     /**
      * Returns an array of source translations in a project that have not yet met the minimum checking level
+     *
      * @param projectId
      */
     public SourceTranslation[] getDraftTranslations(String projectId) {
-        // TODO: 10/20/2015 write query for this
         List<SourceTranslation> draftTranslations = new ArrayList<>();
         String[] sourceLanguageIds = getActiveIndex().getSourceLanguageSlugs(projectId);
         for(String sourceLanguageId:sourceLanguageIds) {
-            String[] resourceIds = getActiveIndex().getResourceSlugs(projectId, sourceLanguageId);
-            for(String resourceId:resourceIds) {
-                SourceTranslation sourceTranslation = getSourceTranslation(projectId, sourceLanguageId, resourceId);
-                if(sourceTranslation != null && sourceTranslation.getCheckingLevel() < MIN_CHECKING_LEVEL) {
-                    draftTranslations.add(sourceTranslation);
-                }
-            }
+            draftTranslations.addAll(getDraftTranslations(projectId, sourceLanguageId));
         }
         return draftTranslations.toArray(new SourceTranslation[draftTranslations.size()]);
+    }
+
+    /**
+     * Returns an array of source translations in a project and source language that have not yet met the minimum checking level
+     *
+     * @param projectId
+     * @param sourceLanguageId
+     * @return
+     */
+    public List<SourceTranslation> getDraftTranslations(String projectId, String sourceLanguageId) {
+        List<SourceTranslation> draftTranslations = new ArrayList<>();
+        String[] resourceIds = getActiveIndex().getResourceSlugs(projectId, sourceLanguageId);
+        for(String resourceId:resourceIds) {
+            SourceTranslation sourceTranslation = getDraftTranslation(projectId, sourceLanguageId, resourceId);
+            if(sourceTranslation != null) {
+                draftTranslations.add(sourceTranslation);
+            }
+        }
+        return draftTranslations;
+    }
+
+    /**
+     * Returns a source translation that has not yet met the minimum checking level.
+     *
+     * @param projectId
+     * @param sourceLanguageId
+     * @param resourceId
+     * @return
+     */
+    public SourceTranslation getDraftTranslation(String projectId, String sourceLanguageId, String resourceId) {
+        SourceTranslation sourceTranslation = getSourceTranslation(projectId, sourceLanguageId, resourceId);
+        if(sourceTranslation != null && sourceTranslation.getCheckingLevel() < MIN_CHECKING_LEVEL) {
+            return sourceTranslation;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the source translation that has not yet met the minimum checking level
+     * @param sourceTranslationId
+     * @return
+     */
+    public SourceTranslation getDraftTranslation(String sourceTranslationId) {
+        SourceTranslation sourceTranslation = getSourceTranslation(sourceTranslationId);
+        if(sourceTranslation != null && sourceTranslation.getCheckingLevel() < MIN_CHECKING_LEVEL) {
+            return sourceTranslation;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -753,8 +843,7 @@ public class Library {
     public boolean sourceLanguageHasSource(String projectId, String sourceLanguageId) {
         String[] resourceIds = getActiveIndex().getResourceSlugs(projectId, sourceLanguageId);
         for(String resourceId:resourceIds) {
-            String[] chapterIds = getActiveIndex().getChapterSlugs(SourceTranslation.simple(projectId, sourceLanguageId, resourceId));
-            if(chapterIds.length > 0) {
+            if(sourceTranslationHasSource(SourceTranslation.simple(projectId, sourceLanguageId, resourceId))) {
                 return true;
             }
         }
@@ -762,16 +851,32 @@ public class Library {
     }
 
     /**
+     * Checks if the source translation has any source downloaded
+     * @param sourceTranslation
+     * @return
+     */
+    public boolean sourceTranslationHasSource(SourceTranslation sourceTranslation) {
+        return getActiveIndex().getChapterSlugs(sourceTranslation).length > 0;
+    }
+
+    /**
      * Deletes a project from the library
      * @param projectId
      */
     public void deleteProject(String projectId) {
-        // TODO: we can delete everything with one query if cascade on delete is set up.
         String[] sourceLanguageIds = mAppIndex.getSourceLanguageSlugs(projectId);
+        mAppIndex.beginTransaction();
         for(String sourceLanguageId:sourceLanguageIds) {
-            mAppIndex.deleteSourceLanguage(projectId, sourceLanguageId);
+            Resource[] resources = mAppIndex.getResources(projectId, sourceLanguageId);
+            for(Resource r:resources) {
+                mAppIndex.deleteResource(r.getDBId());
+                // restore resource after cascade delete
+                mAppIndex.saveResource(r, r.getSourceLanguageDBId());
+            }
+//            mAppIndex.deleteSourceLanguage(projectId, sourceLanguageId);
         }
-        mAppIndex.deleteProject(projectId);
+        mAppIndex.endTransaction(true);
+//        mAppIndex.deleteProject(projectId);
     }
 
     /**
@@ -843,6 +948,21 @@ public class Library {
      */
     public TargetLanguage findTargetLanguageByName(String name) {
         return getActiveIndex().getTargetLanguageByName(name);
+    }
+
+    /**
+     * This is a temporary method so we can index tA.
+     * tA is not currently available in the api so we bundle it and index it manually
+     * @param sourceTranslation
+     * @param catalog
+     * @return
+     * @deprecated you probably shouldn't use this method
+     */
+    public boolean manuallyIndexTranslationAcademy(SourceTranslation sourceTranslation, String catalog) {
+        getActiveIndex().beginTransaction();
+        boolean success = getActiveIndex().indexTranslationAcademy(sourceTranslation, catalog);
+        getActiveIndex().endTransaction(success);
+        return success;
     }
 
     public interface OnProgressListener {

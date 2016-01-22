@@ -9,8 +9,14 @@
         android:icon="@drawable/ic_library_books_black_24dp"
         app:showAsAction="never" />
 
-    <item android:id="@+id/action_translate_resources"
-        android:title="@string/action_translate_resources"
+    <!--<item android:id="@+id/action_translate_resources"-->
+        <!--android:title="@string/action_translate_resources"-->
+        <!--android:orderInCategory="120"-->
+        <!--android:icon="@drawable/ic_translate_black_24dp"-->
+        <!--app:showAsAction="never" />-->
+
+    <item android:id="@+id/action_drafts_available"
+        android:title="@string/view_available_drafts"
         android:orderInCategory="120"
         android:icon="@drawable/ic_translate_black_24dp"
         app:showAsAction="never" />

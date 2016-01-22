@@ -17,7 +17,6 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
-import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.AppContext;
@@ -44,7 +43,7 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
         mLibrary = AppContext.getLibrary();
 
         Bundle args = getArguments();
-        final String targetTranslationId = args.getString(TargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID, null);
+        final String targetTranslationId = args.getString(AppContext.EXTRA_TARGET_TRANSLATION_ID, null);
         TargetTranslation targetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         if(targetTranslation == null) {
             throw new InvalidParameterException("a valid target translation id is required");

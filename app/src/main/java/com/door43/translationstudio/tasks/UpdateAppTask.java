@@ -97,6 +97,9 @@ public class UpdateAppTask extends ManagedTask {
         if(lastVersion < 111) {
             upgradePre111();
         }
+        if(lastVersion < 112) {
+            upgradePre112();
+        }
 
         updateBuildNumbers();
     }
@@ -115,6 +118,13 @@ public class UpdateAppTask extends ManagedTask {
         }
     }
 
+    /**
+     * We made some updates to the db schema and updated the source.
+     */
+    private void upgradePre112() {
+        AppContext.context().deleteDatabase(Library.DATABASE_NAME);
+    }
+    
     /**
      * We moved the target translations to the public files directory so that they persist when the
      * app is uninstalled

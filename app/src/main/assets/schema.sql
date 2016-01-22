@@ -15,7 +15,7 @@ CREATE TABLE `translation_note` (
   `frame_slug` TEXT NOT NULL,
   `title` TEXT NOT NULL,
   `body` TEXT NOT NULL,
-  FOREIGN KEY (frame_id) REFERENCES `frame` (`id`)
+  FOREIGN KEY (frame_id) REFERENCES `frame` (`id`) ON DELETE CASCADE
 );
 
 -- ---
@@ -65,7 +65,7 @@ CREATE TABLE `resource` (
   `checking_questions_catalog_local_modified_at` INTEGER NOT NULL DEFAULT 0,
   `checking_questions_catalog_server_modified_at` INTEGER NOT NULL DEFAULT 0,
   UNIQUE (`slug`, `source_language_id`),
-  FOREIGN KEY (source_language_id) REFERENCES `source_language` (`id`)
+  FOREIGN KEY (source_language_id) REFERENCES `source_language` (`id`) ON DELETE CASCADE
 );
 
 -- ---
@@ -79,8 +79,8 @@ CREATE TABLE `resource__translation_word` (
   `resource_id` INTEGER NOT NULL,
   `translation_word_id` INTEGER NOT NULL,
   UNIQUE (`resource_id`, `translation_word_id`),
-  FOREIGN KEY (resource_id) REFERENCES `resource` (`id`),
-  FOREIGN KEY (translation_word_id) REFERENCES `translation_word` (`id`)
+  FOREIGN KEY (resource_id) REFERENCES `resource` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (translation_word_id) REFERENCES `translation_word` (`id`) ON DELETE CASCADE
 );
 
 -- ---
@@ -94,7 +94,8 @@ CREATE TABLE `target_language` (
   `slug` TEXT NOT NULL,
   `name` TEXT NOT NULL,
   `direction` TEXT NOT NULL,
-  `region` TEXT NOT NULL
+  `region` TEXT NOT NULL,
+  UNIQUE (`slug`)
 );
 
 -- ---
@@ -132,7 +133,7 @@ CREATE TABLE `source_language` (
   `resource_catalog_local_modified_at` INTEGER NOT NULL DEFAULT 0,
   `resource_catalog_server_modified_at` INTEGER NOT NULL DEFAULT 0,
   UNIQUE (`slug`, `project_id`),
-  FOREIGN KEY (project_id) REFERENCES `project` (`id`)
+  FOREIGN KEY (project_id) REFERENCES `project` (`id`) ON DELETE CASCADE
 );
 
 -- ---
@@ -164,7 +165,7 @@ CREATE TABLE `chapter` (
   `title` TEXT NULL DEFAULT NULL,
   `sort` INTEGER NOT NULL DEFAULT 0,
   UNIQUE (`resource_id`, `slug`),
-  FOREIGN KEY (resource_id) REFERENCES `resource` (`id`)
+  FOREIGN KEY (resource_id) REFERENCES `resource` (`id`) ON DELETE CASCADE
 );
 
 -- ---
@@ -182,7 +183,7 @@ CREATE TABLE `frame` (
   `image_url` TEXT NULL DEFAULT NULL,
   `sort` INTEGER NOT NULL DEFAULT 0,
   UNIQUE (`chapter_id`, `slug`),
-  FOREIGN KEY (chapter_id) REFERENCES `chapter` (`id`)
+  FOREIGN KEY (chapter_id) REFERENCES `chapter` (`id`) ON DELETE CASCADE
 );
 
 -- ---
@@ -209,8 +210,8 @@ CREATE TABLE `project__category` (
   `project_id` INTEGER NOT NULL,
   `category_id` INTEGER NOT NULL,
   UNIQUE (`project_id`, `category_id`),
-  FOREIGN KEY (project_id) REFERENCES `project` (`id`),
-  FOREIGN KEY (category_id) REFERENCES `category` (`id`)
+  FOREIGN KEY (project_id) REFERENCES `project` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (category_id) REFERENCES `category` (`id`) ON DELETE CASCADE
 );
 
 -- ---
@@ -225,8 +226,8 @@ CREATE TABLE `source_language__category` (
   `category_id` INTEGER NOT NULL,
   `category_name` TEXT NOT NULL,
   UNIQUE (`source_language_id`, `category_id`),
-  FOREIGN KEY (source_language_id) REFERENCES `source_language` (`id`),
-  FOREIGN KEY (category_id) REFERENCES `category` (`id`)
+  FOREIGN KEY (source_language_id) REFERENCES `source_language` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (category_id) REFERENCES `category` (`id`) ON DELETE CASCADE
 );
 
 -- ---
@@ -244,8 +245,8 @@ CREATE TABLE `frame__checking_question` (
   `resource_slug` TEXT NOT NULL,
   `chapter_slug` TEXT NOT NULL,
   `frame_slug` TEXT NOT NULL,
-  FOREIGN KEY (frame_id) REFERENCES `frame` (`id`),
-  FOREIGN KEY (checking_question_id) REFERENCES `checking_question` (`id`)
+  FOREIGN KEY (frame_id) REFERENCES `frame` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (checking_question_id) REFERENCES `checking_question` (`id`) ON DELETE CASCADE
 );
 
 -- ---
@@ -259,7 +260,7 @@ CREATE TABLE `translation_word_related` (
   `translation_word_id` INTEGER NOT NULL,
   `slug` TEXT NOT NULL,
   UNIQUE (`slug`, `translation_word_id`),
-  FOREIGN KEY (translation_word_id) REFERENCES `translation_word` (`id`)
+  FOREIGN KEY (translation_word_id) REFERENCES `translation_word` (`id`) ON DELETE CASCADE
 );
 
 -- ---
@@ -275,7 +276,7 @@ CREATE TABLE `translation_word_example` (
   `chapter_slug` TEXT NOT NULL,
   `body` TEXT NOT NULL,
   UNIQUE (`translation_word_id`, `chapter_slug`, `frame_slug`)
-  FOREIGN KEY (translation_word_id) REFERENCES `translation_word` (`id`)
+  FOREIGN KEY (translation_word_id) REFERENCES `translation_word` (`id`) ON DELETE CASCADE
 );
 
 -- ---
@@ -289,7 +290,7 @@ CREATE TABLE `translation_word_alias` (
   `translation_word_id` INTEGER NOT NULL,
   `term` TEXT NOT NULL,
   UNIQUE (`term`, `translation_word_id`),
-  FOREIGN KEY (translation_word_id) REFERENCES `translation_word` (`id`)
+  FOREIGN KEY (translation_word_id) REFERENCES `translation_word` (`id`) ON DELETE CASCADE
 );
 
 -- ---
@@ -308,8 +309,8 @@ CREATE TABLE `frame__translation_word` (
   `chapter_slug` TEXT NOT NULL,
   `frame_slug` TEXT NOT NULL,
   UNIQUE (`frame_id`, `translation_word_id`),
-  FOREIGN KEY (frame_id) REFERENCES `frame` (`id`),
-  FOREIGN KEY (translation_word_id) REFERENCES `translation_word` (`id`)
+  FOREIGN KEY (frame_id) REFERENCES `frame` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (translation_word_id) REFERENCES `translation_word` (`id`) ON DELETE CASCADE
 );
 
 -- ---
@@ -353,7 +354,7 @@ CREATE TABLE `translation_academy_manual` (
   `translation_academy_volume_id` INTEGER NOT NULL,
   `title` TEXT NOT NULL,
   UNIQUE (`slug`, `translation_academy_volume_id`),
-  FOREIGN KEY (translation_academy_volume_id) REFERENCES `translation_academy_volume` (`id`)
+  FOREIGN KEY (translation_academy_volume_id) REFERENCES `translation_academy_volume` (`id`) ON DELETE CASCADE
 );
 
 -- ---
@@ -371,7 +372,7 @@ CREATE TABLE `translation_academy_article` (
   `text` TEXT NOT NULL,
   `reference` TEXT NOT NULL,
   UNIQUE (`slug`, `translation_academy_manual_id`),
-  FOREIGN KEY (translation_academy_manual_id) REFERENCES `translation_academy_manual` (`id`)
+  FOREIGN KEY (translation_academy_manual_id) REFERENCES `translation_academy_manual` (`id`) ON DELETE CASCADE
 );
 
 -- ---
@@ -386,8 +387,8 @@ CREATE TABLE `resource__translation_academy_volume` (
   `resource_id` INTEGER NOT NULL,
   `translation_academy_volume_id` INTEGER NOT NULL,
   UNIQUE (`resource_id`, `translation_academy_volume_id`),
-  FOREIGN KEY (resource_id) REFERENCES `resource` (`id`),
-  FOREIGN KEY (translation_academy_volume_id) REFERENCES `translation_academy_volume` (`id`)
+  FOREIGN KEY (resource_id) REFERENCES `resource` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (translation_academy_volume_id) REFERENCES `translation_academy_volume` (`id`) ON DELETE CASCADE
 );
 
 -- ---

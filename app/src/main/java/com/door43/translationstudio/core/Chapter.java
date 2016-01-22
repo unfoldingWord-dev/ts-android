@@ -1,7 +1,5 @@
 package com.door43.translationstudio.core;
 
-import android.support.v7.internal.widget.DialogTitle;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 

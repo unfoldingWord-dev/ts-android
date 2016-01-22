@@ -452,6 +452,8 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
 
     @Override
     public void onProjectDeleted(String projectId) {
+        invalidateOptionsMenu();
         mListFragment.reload(false);
+        onProjectSelected(projectId);
     }
 }
