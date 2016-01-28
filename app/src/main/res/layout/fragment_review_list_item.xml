@@ -120,24 +120,46 @@
                     android:layout_marginRight="@dimen/card_margin"
                     android:padding="0dp" >
 
-                    <TextView
+                    <LinearLayout
+                        android:orientation="horizontal"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:padding="0dp" >
+
+                        <Spinner
+                            android:id="@+id/edit_options"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="left|center_vertical"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_list_black_24dp"
+                            android:layout_weight="0" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
                         android:textSize="@dimen/title"
-                        android:layout_gravity="left|center"
-                        android:layout_marginLeft="0dp"
-                        android:layout_marginRight="@dimen/dialog_content_margin"
+                            android:layout_gravity="left|center_vertical"
+                            android:layout_marginLeft="@dimen/dialog_controls_margin"
+                            android:layout_marginRight="@dimen/dialog_controls_margin"
                         android:textColor="@color/dark_secondary_text"
                         android:text="John 1:1-3 - Afaraf"
-                        android:id="@+id/target_translation_title" />
+                            android:id="@+id/target_translation_title"
+                            android:layout_weight="1"
+                            android:gravity="center_vertical" />
 
                     <ImageButton
                         android:id="@+id/edit_translation_button"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="right|center"
+                            android:layout_gravity="center_vertical|right"
                         android:background="?attr/selectableItemBackgroundBorderless"
-                        android:src="@drawable/ic_mode_edit_black_24dp"/>
+                            android:src="@drawable/ic_mode_edit_black_24dp"
+                            android:adjustViewBounds="false"
+                            android:layout_weight="0" />
+
+                    </LinearLayout>
                 </FrameLayout>
 
                 <com.door43.widget.KeyboardlessEditText
@@ -168,6 +190,7 @@
                     android:layout_marginLeft="@dimen/card_margin"
                     android:layout_marginRight="@dimen/card_margin"
                     android:textColor="@color/dark_primary_text" />
+
             </LinearLayout>
 
             <LinearLayout

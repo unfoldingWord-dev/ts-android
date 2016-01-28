@@ -24,11 +24,14 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -60,7 +63,6 @@ import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.VersePinSpan;
 import com.door43.widget.ViewUtil;
-import org.sufficientlysecure.htmltextview.HtmlTextView;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -73,10 +75,13 @@ import java.util.regex.Pattern;
  * Created by joel on 9/18/2015.
  */
 public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHolder> {
+    private static final String TAG = ReviewModeAdapter.class.getSimpleName();
 
     private static final int TAB_NOTES = 0;
     private static final int TAB_WORDS = 1;
     private static final int TAB_QUESTIONS = 2;
+    public static final String UNDO = "Undo";
+    public static final String REDO = "Redo";
     private final Library mLibrary;
     private final Translator mTranslator;
     private final Activity mContext;
@@ -519,6 +524,38 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
         }
 
+        // Spinner click listener
+        holder.mEditOptions.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    // On selecting a spinner item
+                    String item = parent.getItemAtPosition(position).toString();
+                    if(UNDO.equals(item)) {
+                        Logger.i(TAG, "Undo");
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+
+                }
+            }
+        );
+
+        // Spinner Drop down elements
+        List<String> categories = new ArrayList<String>();
+        categories.add(UNDO);
+        categories.add(REDO);
+
+        // Creating adapter for spinner
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(mContext, android.R.layout.simple_spinner_item, categories);
+
+        // Drop down layout style - list view with radio button
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        // attaching data adapter to spinner
+        holder.mEditOptions.setAdapter(dataAdapter);
+
         // editing button
         final GestureDetector detector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
             @Override
@@ -527,6 +564,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 if(item.isEditing) {
                     // open editing mode
                     holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
+                    holder.mEditOptions.setVisibility(View.VISIBLE);
                     holder.mTargetBody.setVisibility(View.GONE);
                     holder.mTargetEditableBody.setVisibility(View.VISIBLE);
                     holder.mTargetEditableBody.requestFocus();
@@ -544,6 +582,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 } else {
                     // close editing mode
                     holder.mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
+                    holder.mEditOptions.setVisibility(View.GONE);
                     holder.mTargetBody.setVisibility(View.VISIBLE);
                     holder.mTargetEditableBody.setVisibility(View.GONE);
                     holder.mTargetInnerCard.setBackgroundResource(R.color.white);
@@ -563,6 +602,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 return true;
             }
         });
+
         holder.mEditButton.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -570,15 +610,18 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         });
 
+
         // display verse/editing mode
         if(item.isEditing) {
             holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
+            holder.mEditOptions.setVisibility(View.VISIBLE);
             holder.mTargetBody.setVisibility(View.GONE);
             holder.mTargetEditableBody.setVisibility(View.VISIBLE);
             holder.mTargetEditableBody.setEnableLines(true);
             holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         } else {
             holder.mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
+            holder.mEditOptions.setVisibility(View.GONE);
             holder.mTargetBody.setVisibility(View.VISIBLE);
             holder.mTargetEditableBody.setVisibility(View.GONE);
             holder.mTargetEditableBody.setEnableLines(false);
@@ -591,6 +634,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // display as finished
         if(item.isTranslationFinished) {
             holder.mEditButton.setVisibility(View.GONE);
+            holder.mEditOptions.setVisibility(View.GONE);
             holder.mDoneSwitch.setChecked(true);
             holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         } else {
@@ -1143,6 +1187,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        public final Spinner mEditOptions;
         public final ImageButton mEditButton;
         public final CardView mResourceCard;
         public final LinearLayout mMainContent;
@@ -1161,6 +1206,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public final TabLayout mTranslationTabs;
         public final ImageButton mNewTabButton;
         public TextView mSourceBody;
+
         public ViewHolder(Context context, View v) {
             super(v);
             mMainContent = (LinearLayout)v.findViewById(R.id.main_content);
@@ -1178,6 +1224,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             mTargetEditableBody = (LinedEditText)v.findViewById(R.id.target_translation_editable_body);
             mTranslationTabs = (TabLayout)v.findViewById(R.id.source_translation_tabs);
             mEditButton = (ImageButton)v.findViewById(R.id.edit_translation_button);
+            mEditOptions = (Spinner)v.findViewById(R.id.edit_options);
             mDoneSwitch = (Switch)v.findViewById(R.id.done_button);
             mTranslationTabs.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
             mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);
