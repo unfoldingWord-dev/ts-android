@@ -17,6 +17,7 @@ import org.eclipse.jgit.api.ListTagCommand;
 import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.TagCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -37,6 +38,7 @@ import java.util.Timer;
  * Created by joel on 8/29/2015.
  */
 public class TargetTranslation {
+    private static final String TAG = TargetTranslation.class.getSimpleName();
     private static final int PACKAGE_VERSION = 3; // the version of the manifest
     public static final String PARENT_DRAFT_RESOURCE_ID = "parent_draft_resource_id";
     private final String mTargetLanguageId;
@@ -1023,7 +1025,7 @@ public class TargetTranslation {
     }
 
     /**
-     * sets publish tag in the repository
+     * gets last publish tag in the repository
      * @return true if successful
      */
     public RevCommit getLastPublishTag() throws IOException, GitAPIException {
@@ -1059,6 +1061,41 @@ public class TargetTranslation {
             throw e;
         }
         return null;
+    }
+
+    /**
+     * get list of commits
+     * @return
+     * @throws IOException
+     * @throws GitAPIException
+     */
+    public RevCommit[] getCommitList(File file) throws IOException, GitAPIException {
+        try {
+            Git git = getRepo().getGit();
+            Repository repository = git.getRepository();
+            ObjectId recovery = repository.resolve("HEAD");
+            LogCommand log = git.log();
+            log.add(recovery);
+            if(file != null) {
+                log.addPath(file.toString());
+            }
+            Iterable<RevCommit> logs = log.call();
+            int count = 0;
+            ArrayList<RevCommit> revs = new ArrayList<>();
+            for (RevCommit rev : logs) {
+                Logger.i(TAG,"Commit: " + rev + ", time: " + rev.getCommitTime() );
+                count++;
+                revs.add(rev);
+            }
+            Logger.i(TAG, "Had " + count + " commits overall on test-branch");
+
+            return revs.toArray(new RevCommit[revs.size()]);
+
+        } catch (GitAPIException|IOException e) {
+            Logger.w(this.getClass().toString(), "error setting commit list", e);
+            throw e;
+        }
+
     }
 
     /**

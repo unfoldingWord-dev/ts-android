@@ -82,6 +82,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private static final int TAB_QUESTIONS = 2;
     public static final String UNDO = "Undo";
     public static final String REDO = "Redo";
+    public static final String OPTIONS = "Options";
     private final Library mLibrary;
     private final Translator mTranslator;
     private final Activity mContext;
@@ -525,13 +526,18 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
 
         // Spinner click listener
-        holder.mEditOptions.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        final AdapterView.OnItemSelectedListener optionsListener = new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                     // On selecting a spinner item
                     String item = parent.getItemAtPosition(position).toString();
                     if(UNDO.equals(item)) {
                         Logger.i(TAG, "Undo");
+                        try {
+                            mTargetTranslation.getCommitList(null);
+                        } catch (Exception e) {
+                            Logger.w(TAG, "error");
+                        }
                     }
                 }
 
@@ -539,11 +545,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 public void onNothingSelected(AdapterView<?> parent) {
 
                 }
-            }
-        );
+            };
+
 
         // Spinner Drop down elements
         List<String> categories = new ArrayList<String>();
+        categories.add(OPTIONS);
         categories.add(UNDO);
         categories.add(REDO);
 
@@ -565,6 +572,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     // open editing mode
                     holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
                     holder.mEditOptions.setVisibility(View.VISIBLE);
+                    holder.mEditOptions.setOnItemSelectedListener(optionsListener);
                     holder.mTargetBody.setVisibility(View.GONE);
                     holder.mTargetEditableBody.setVisibility(View.VISIBLE);
                     holder.mTargetEditableBody.requestFocus();
@@ -583,6 +591,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     // close editing mode
                     holder.mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
                     holder.mEditOptions.setVisibility(View.GONE);
+                    holder.mEditOptions.setOnItemSelectedListener(null);
                     holder.mTargetBody.setVisibility(View.VISIBLE);
                     holder.mTargetEditableBody.setVisibility(View.GONE);
                     holder.mTargetInnerCard.setBackgroundResource(R.color.white);
@@ -615,6 +624,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         if(item.isEditing) {
             holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
             holder.mEditOptions.setVisibility(View.VISIBLE);
+            holder.mEditOptions.setOnItemSelectedListener(optionsListener);
             holder.mTargetBody.setVisibility(View.GONE);
             holder.mTargetEditableBody.setVisibility(View.VISIBLE);
             holder.mTargetEditableBody.setEnableLines(true);
@@ -622,6 +632,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         } else {
             holder.mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
             holder.mEditOptions.setVisibility(View.GONE);
+            holder.mEditOptions.setOnItemSelectedListener(null);
             holder.mTargetBody.setVisibility(View.VISIBLE);
             holder.mTargetEditableBody.setVisibility(View.GONE);
             holder.mTargetEditableBody.setEnableLines(false);
@@ -635,10 +646,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         if(item.isTranslationFinished) {
             holder.mEditButton.setVisibility(View.GONE);
             holder.mEditOptions.setVisibility(View.GONE);
+            holder.mEditOptions.setOnItemSelectedListener(optionsListener);
             holder.mDoneSwitch.setChecked(true);
             holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         } else {
             holder.mEditButton.setVisibility(View.VISIBLE);
+            holder.mEditOptions.setOnItemSelectedListener(null);
             holder.mDoneSwitch.setChecked(false);
         }
 
