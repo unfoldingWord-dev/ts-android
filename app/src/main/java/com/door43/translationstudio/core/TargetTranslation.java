@@ -564,7 +564,7 @@ public class TargetTranslation {
      * @param frameId
      * @return
      */
-    private File getFrameFile(String chapterId, String frameId) {
+    public File getFrameFile(String chapterId, String frameId) {
         return new File(mTargetTranslationDirectory, chapterId + "/" + frameId + ".txt");
     }
 
@@ -573,7 +573,7 @@ public class TargetTranslation {
      * @param chapterId
      * @return
      */
-    private File getChapterReferenceFile(String chapterId) {
+    public File getChapterReferenceFile(String chapterId) {
         return new File(mTargetTranslationDirectory, chapterId + "/reference.txt");
     }
 
@@ -582,7 +582,7 @@ public class TargetTranslation {
      * @param chapterId
      * @return
      */
-    private File getChapterTitleFile(String chapterId) {
+    public File getChapterTitleFile(String chapterId) {
         return new File(mTargetTranslationDirectory, chapterId + "/title.txt");
     }
 
@@ -590,7 +590,7 @@ public class TargetTranslation {
      * Returns the project title file
      * @return
      */
-    private File getProjectTitleFile() {
+    public File getProjectTitleFile() {
         return new File(mTargetTranslationDirectory, "title.txt");
     }
 
@@ -1084,21 +1084,19 @@ public class TargetTranslation {
                 log.addPath(file.toString());
             }
             Iterable<RevCommit> logs = log.call();
-            int count = 0;
             ArrayList<RevCommit> revs = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
+//            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
             for (RevCommit commit : logs) {
-                Date commitTime = new Date(commit.getCommitTime() * 1000L);
-                Logger.i(TAG,"Commit: " + commit + ", time: " + sdf.format(commitTime) );
-                count++;
+//                Date commitTime = new Date(commit.getCommitTime() * 1000L);
+//                Logger.i(TAG,"Commit: " + commit + ", time: " + sdf.format(commitTime) );
                 revs.add(commit);
             }
-            Logger.i(TAG, "Had " + count + " commits overall on " + file);
+            Logger.i(TAG, "Found " + revs.size() + " commits overall on " + file);
 
             return revs.toArray(new RevCommit[revs.size()]);
 
         } catch (GitAPIException|IOException e) {
-            Logger.w(this.getClass().toString(), "error setting commit list", e);
+            Logger.w(this.getClass().toString(), "error getting commit list", e);
             throw e;
         }
 

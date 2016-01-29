@@ -64,6 +64,9 @@ import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.VersePinSpan;
 import com.door43.widget.ViewUtil;
 
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.revwalk.RevCommit;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -531,14 +534,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                     // On selecting a spinner item
-                    String item = parent.getItemAtPosition(position).toString();
-                    if(UNDO.equals(item)) {
-                        Logger.i(TAG, "Undo");
-                        try {
-                            mTargetTranslation.getCommitList(new File("01/01.txt"));
-                        } catch (Exception e) {
-                            Logger.w(TAG, "error");
-                        }
+                    String options = parent.getItemAtPosition(position).toString();
+                    if(UNDO.equals(options)) {
+                        Logger.i(TAG, "Undo selected");
+                        doUndo(item);
                     }
                 }
 
@@ -708,6 +707,42 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
             }
         });
+    }
+
+    private void doUndo(ListItem item) {
+        RevCommit[] commits = getCommitList(item);
+        if(null != commits) {
+            // TODO: 1/29/16 - need to select previous commit and restore text.  also need to keep track
+            //                  of current undo level (commit) for serial undo as well as redo operations
+        }
+    }
+
+    private RevCommit[] getCommitList(ListItem item) {
+        RevCommit[] commits = null;
+        try {
+            File file = getFileForItem(item);
+            if(null != file) {
+                commits = mTargetTranslation.getCommitList(file);
+            }
+        } catch (Exception e) {
+            Logger.w(TAG, "error getting commit list");
+        }
+        return commits;
+    }
+
+    private File getFileForItem(ListItem item) {
+        File file = null;
+
+        if(item.isChapterReference) {
+            file = mTargetTranslation.getChapterReferenceFile(item.frameTranslation.getChapterId());
+        } else if(item.isChapterTitle) {
+            file = mTargetTranslation.getChapterTitleFile(item.frameTranslation.getChapterId());
+        } else if(item.isProjectTitle) {
+            file = mTargetTranslation.getProjectTitleFile();
+        } else if(item.isFrame()) {
+            file = mTargetTranslation.getFrameFile(item.frameTranslation.getChapterId(), item.frameTranslation.getId());
+        }
+        return file;
     }
 
     private static final Pattern CONSECUTIVE_VERSE_MARKERS =
