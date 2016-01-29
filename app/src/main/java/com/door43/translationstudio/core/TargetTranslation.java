@@ -29,9 +29,12 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Timer;
 
 /**
@@ -1064,7 +1067,8 @@ public class TargetTranslation {
     }
 
     /**
-     * get list of commits
+     * get list of commits,  file format example: 02/03.txt
+     * @param file
      * @return
      * @throws IOException
      * @throws GitAPIException
@@ -1082,12 +1086,14 @@ public class TargetTranslation {
             Iterable<RevCommit> logs = log.call();
             int count = 0;
             ArrayList<RevCommit> revs = new ArrayList<>();
-            for (RevCommit rev : logs) {
-                Logger.i(TAG,"Commit: " + rev + ", time: " + rev.getCommitTime() );
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
+            for (RevCommit commit : logs) {
+                Date commitTime = new Date(commit.getCommitTime() * 1000L);
+                Logger.i(TAG,"Commit: " + commit + ", time: " + sdf.format(commitTime) );
                 count++;
-                revs.add(rev);
+                revs.add(commit);
             }
-            Logger.i(TAG, "Had " + count + " commits overall on test-branch");
+            Logger.i(TAG, "Had " + count + " commits overall on " + file);
 
             return revs.toArray(new RevCommit[revs.size()]);
 

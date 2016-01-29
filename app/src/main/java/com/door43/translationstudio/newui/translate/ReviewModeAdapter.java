@@ -64,6 +64,7 @@ import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.VersePinSpan;
 import com.door43.widget.ViewUtil;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -534,7 +535,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     if(UNDO.equals(item)) {
                         Logger.i(TAG, "Undo");
                         try {
-                            mTargetTranslation.getCommitList(null);
+                            mTargetTranslation.getCommitList(new File("01/01.txt"));
                         } catch (Exception e) {
                             Logger.w(TAG, "error");
                         }
