@@ -531,21 +531,26 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         // Spinner click listener
         final AdapterView.OnItemSelectedListener optionsListener = new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                    // On selecting a spinner item
-                    String options = parent.getItemAtPosition(position).toString();
-                    if(UNDO.equals(options)) {
-                        Logger.i(TAG, "Undo selected");
-                        doUndo(item);
-                    }
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                // On selecting a spinner item
+                String options = parent.getItemAtPosition(position).toString();
+                if(UNDO.equals(options)) {
+                    Logger.i(TAG, "Undo selected");
+                    doUndo(item);
+                }
+                else if(REDO.equals(options)) {
+                    Logger.i(TAG, "Redo selected");
+                    doRedo(item);
                 }
 
-                @Override
-                public void onNothingSelected(AdapterView<?> parent) {
+                parent.setSelection(0); // reset selection
+            }
 
-                }
-            };
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        };
 
 
         // Spinner Drop down elements
@@ -709,25 +714,24 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         });
     }
 
-    private void doUndo(ListItem item) {
-        RevCommit[] commits = getCommitList(item);
-        if(null != commits) {
-            // TODO: 1/29/16 - need to select previous commit and restore text.  also need to keep track
+    private void doUndo(final ListItem item) {
+        File file = getFileForItem(item);
+        RevCommit commit = mTargetTranslation.getUndoCommit(file, item.currentCommit);
+        if(null != commit) {
+            // TODO: 1/29/16 - need to retrieve previous commit and restore text.  also need to keep track
             //                  of current undo level (commit) for serial undo as well as redo operations
         }
+        item.currentCommit = commit;
     }
 
-    private RevCommit[] getCommitList(ListItem item) {
-        RevCommit[] commits = null;
-        try {
-            File file = getFileForItem(item);
-            if(null != file) {
-                commits = mTargetTranslation.getCommitList(file);
-            }
-        } catch (Exception e) {
-            Logger.w(TAG, "error getting commit list");
+    private void doRedo(final ListItem item) {
+        File file = getFileForItem(item);
+        RevCommit commit = mTargetTranslation.getRedoCommit(file, item.currentCommit);
+        if(null != commit) {
+            // TODO: 1/29/16 - need to retrieve later commit and restore text.  also need to keep track
+            //                  of current undo level (commit) for serial undo as well as redo operations
         }
-        return commits;
+        item.currentCommit = commit;
     }
 
     private File getFileForItem(ListItem item) {
@@ -741,6 +745,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             file = mTargetTranslation.getProjectTitleFile();
         } else if(item.isFrame()) {
             file = mTargetTranslation.getFrameFile(item.frameTranslation.getChapterId(), item.frameTranslation.getId());
+        }
+        if(file != null) { // get relative path
+            String path = file.toString();
+            String folder = mTargetTranslation.getPath().toString();
+            int pos = path.indexOf(folder);
+            if(pos >= 0) {
+                String subPath = path.substring(pos + folder.length() + 1);
+                file = new File(subPath);
+            }
         }
         return file;
     }
@@ -1298,7 +1311,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         private final String chapterSlug;
         private boolean isChapterReference = false;
         private boolean isChapterTitle = false;
-        public boolean isProjectTitle = false;
+        private boolean isProjectTitle = false;
         private boolean isEditing = false;
         private CharSequence renderedSourceBody;
         private CharSequence renderedTargetBody;
@@ -1307,8 +1320,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         private boolean isTranslationFinished;
         private String bodySource;
         private FrameTranslation frameTranslation;
-        public ChapterTranslation chapterTranslation;
+        private ChapterTranslation chapterTranslation;
         private ProjectTranslation projectTranslation;
+        private RevCommit currentCommit = null;
 
         public ListItem(String frameSlug, String chapterSlug) {
             this.frameSlug = frameSlug;
