@@ -722,10 +722,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             RevCommit commit = mTargetTranslation.getUndoCommit(git, file, item.currentCommit);
             if(null != commit) {
                 String text = mTargetTranslation.getCommittedFileContents(git, file, commit);
-                // TODO: 1/29/16 - need to restore text.  also need to keep track
-                //                  of current undo level (commit) for serial undo as well as redo operations
+                // TODO: 1/29/16 - need to restore text.
+                item.currentCommit = commit;
             }
-            item.currentCommit = commit;
         } catch (Exception e) {
             Logger.w(TAG, "error getting commit list",e);
         }
@@ -738,10 +737,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             RevCommit commit = mTargetTranslation.getRedoCommit(git, file, item.currentCommit);
             if(null != commit) {
                 String text = mTargetTranslation.getCommittedFileContents(git, file, commit);
-                // TODO: 1/29/16 - need to restore text.  also need to keep track
-                //                  of current undo level (commit) for serial undo as well as redo operations
+                // TODO: 1/29/16 - need to restore text.
+                item.currentCommit = commit;
             }
-            item.currentCommit = commit;
+
         } catch (Exception e) {
             Logger.w(TAG, "error getting commit list",e);
         }
