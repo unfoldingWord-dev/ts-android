@@ -3,7 +3,7 @@
 translationStudio Android
 --
 
-A tool to translate the Bible and [Open Bible Stories](http://distantshores.org/openbiblestories) into your own language. You can read more about the purpose of this project at [unfoldingWord](https://unfoldingword.org/apps/#tS).
+A tool to translate the Bible and [Open Bible Stories](https://unfoldingword.org/stories) into your own language. You can read more about the purpose of this project at [unfoldingWord](https://unfoldingword.org/apps/#tS).
 
 ##Requirements
 The official development requirements are available at
@@ -18,7 +18,7 @@ If you would like to contribute to this project please read the [Contributing](h
 First make sure you have all the dependencies installed
 
 * [Android Studio](http://developer.android.com/sdk/index.html)
-* [Virtual Box](https://www.virtualbox.org/)
+* [Virtual Box](https://www.virtualbox.org/) (you may skip this and the rest of these steps if using a physical device)
 * [Genymotion](http://www.genymotion.com/)
 * [Genymotion Android Studio Plugin](https://cloud.genymotion.com/page/doc/#collapse-intellij)
 

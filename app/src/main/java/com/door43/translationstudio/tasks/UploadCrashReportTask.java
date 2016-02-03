@@ -26,8 +26,8 @@ public class UploadCrashReportTask extends ManagedTask {
 
     @Override
     public void start() {
-        File stacktraceDir = new File(AppContext.context().getExternalCacheDir(), AppContext.context().STACKTRACE_DIR);
-        File logFile = new File(AppContext.context().getExternalCacheDir(), "log.txt");
+        File stacktraceDir = new File(AppContext.getPublicDirectory(), AppContext.context().STACKTRACE_DIR);
+        File logFile = new File(AppContext.getPublicDirectory(), "log.txt");
         int githubTokenIdentifier = AppContext.context().getResources().getIdentifier("github_oauth2", "string", AppContext.context().getPackageName());
         String githubUrl = AppContext.context().getResources().getString(R.string.github_bug_report_repo);
 

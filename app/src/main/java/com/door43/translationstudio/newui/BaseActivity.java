@@ -28,7 +28,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                 && this instanceof SplashScreenActivity == false
                 && this instanceof CrashReporterActivity == false) {
             // check if we crashed or if we need to reload
-            File dir = new File(getExternalCacheDir(), AppContext.context().STACKTRACE_DIR);
+            File dir = new File(AppContext.getPublicDirectory(), AppContext.context().STACKTRACE_DIR);
             String[] crashFiles = GlobalExceptionHandler.getStacktraces(dir);
             if (crashFiles.length > 0) {
                 // restart

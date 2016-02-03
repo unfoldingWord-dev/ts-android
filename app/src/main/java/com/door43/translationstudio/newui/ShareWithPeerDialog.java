@@ -189,8 +189,13 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
 
         if(operationMode == MODE_SERVER) {
             title.setText(getResources().getString(R.string.backup_to_friend));
-            SourceTranslation sourceTranslatiohn = AppContext.getLibrary().getDefaultSourceTranslation(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
-            subTitle.setText(sourceTranslatiohn.getProjectTitle() + " - " + targetTranslation.getTargetLanguageName());
+            SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+            if(sourceTranslation != null) {
+                subTitle.setText(sourceTranslation.getProjectTitle() + " - " + targetTranslation.getTargetLanguageName());
+            } else {
+                Logger.w(this.getClass().getName(), "Could not find a default source translation for " + targetTranslation.getProjectId());
+                subTitle.setText(targetTranslation.getProjectId() + " - " + targetTranslation.getTargetLanguageName());
+            }
         } else {
             title.setText(getResources().getString(R.string.import_from_friend));
             subTitle.setText("");
