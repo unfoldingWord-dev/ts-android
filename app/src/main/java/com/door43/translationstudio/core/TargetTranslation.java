@@ -1236,8 +1236,13 @@ public class TargetTranslation {
                 return pathname.isDirectory() && !pathname.getName().equals(".git") && !pathname.getName().equals("manifest.json");
             }
         });
-        for(File dir:chapterDirs) {
-            numFiles += dir.list().length;
+        if(chapterDirs != null) {
+            for (File dir : chapterDirs) {
+                String[] files = dir.list();
+                if (files != null) {
+                    numFiles += files.length;
+                }
+            }
         }
         return numFiles;
     }
