@@ -64,6 +64,7 @@ import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.VersePinSpan;
 import com.door43.widget.ViewUtil;
 
+import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 
@@ -715,23 +716,35 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     private void doUndo(final ListItem item) {
-        File file = getFileForItem(item);
-        RevCommit commit = mTargetTranslation.getUndoCommit(file, item.currentCommit);
-        if(null != commit) {
-            // TODO: 1/29/16 - need to retrieve previous commit and restore text.  also need to keep track
-            //                  of current undo level (commit) for serial undo as well as redo operations
+        try {
+            final Git git = mTargetTranslation.getGit();
+            File file = getFileForItem(item);
+            RevCommit commit = mTargetTranslation.getUndoCommit(git, file, item.currentCommit);
+            if(null != commit) {
+                String text = mTargetTranslation.getCommittedFileContents(git, file, commit);
+                // TODO: 1/29/16 - need to restore text.  also need to keep track
+                //                  of current undo level (commit) for serial undo as well as redo operations
+            }
+            item.currentCommit = commit;
+        } catch (Exception e) {
+            Logger.w(TAG, "error getting commit list",e);
         }
-        item.currentCommit = commit;
     }
 
     private void doRedo(final ListItem item) {
-        File file = getFileForItem(item);
-        RevCommit commit = mTargetTranslation.getRedoCommit(file, item.currentCommit);
-        if(null != commit) {
-            // TODO: 1/29/16 - need to retrieve later commit and restore text.  also need to keep track
-            //                  of current undo level (commit) for serial undo as well as redo operations
+        try {
+            final Git git = mTargetTranslation.getGit();
+            File file = getFileForItem(item);
+            RevCommit commit = mTargetTranslation.getRedoCommit(git, file, item.currentCommit);
+            if(null != commit) {
+                String text = mTargetTranslation.getCommittedFileContents(git, file, commit);
+                // TODO: 1/29/16 - need to restore text.  also need to keep track
+                //                  of current undo level (commit) for serial undo as well as redo operations
+            }
+            item.currentCommit = commit;
+        } catch (Exception e) {
+            Logger.w(TAG, "error getting commit list",e);
         }
-        item.currentCommit = commit;
     }
 
     private File getFileForItem(ListItem item) {

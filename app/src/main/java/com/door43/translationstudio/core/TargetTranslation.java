@@ -18,9 +18,13 @@ import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.TagCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevTree;
+import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -72,7 +76,7 @@ public class TargetTranslation {
         LanguageDirection direction = LanguageDirection.LeftToRight;
         try {
             direction = LanguageDirection.get(mManifest.getJSONObject("target_language").getString("direction"));
-            if(direction == null) {
+            if (direction == null) {
                 direction = LanguageDirection.LeftToRight;
             }
         } catch (JSONException e) {
@@ -135,14 +139,14 @@ public class TargetTranslation {
      * If the target translation already exists the existing one will be returned
      *
      * @param targetLanguage the target language the project will be translated into
-     * @param projectId the id of the project that will be translated
-     * @param rootDir the parent directory in which the target translation directory will be created
+     * @param projectId      the id of the project that will be translated
+     * @param rootDir        the parent directory in which the target translation directory will be created
      * @return
      */
     public static TargetTranslation create(Context context, TargetLanguage targetLanguage, String projectId, File rootDir) throws Exception {
         // generate new target translation if it does not exist
         File translationDir = generateTargetTranslationDir(generateTargetTranslationId(targetLanguage.getId(), projectId), rootDir);
-        if(!translationDir.exists()) {
+        if (!translationDir.exists()) {
             // build new manifest
             Manifest manifest = Manifest.generate(translationDir);
             manifest.put("project_id", projectId);
@@ -173,7 +177,7 @@ public class TargetTranslation {
      * @param targetTranslation
      * @throws Exception
      */
-    public static void updateGenerator(Context context, TargetTranslation targetTranslation) throws Exception{
+    public static void updateGenerator(Context context, TargetTranslation targetTranslation) throws Exception {
         JSONObject generatorJson = new JSONObject();
         generatorJson.put("name", "ts-android");
         PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
@@ -198,7 +202,7 @@ public class TargetTranslation {
      */
     public static String getProjectIdFromId(String targetTranslationId) throws StringIndexOutOfBoundsException {
         String[] complexId = targetTranslationId.split("-", 3);
-        if(complexId.length == 3) {
+        if (complexId.length == 3) {
             return complexId[1];
         } else {
             throw new StringIndexOutOfBoundsException("malformed target translation id " + targetTranslationId);
@@ -212,10 +216,10 @@ public class TargetTranslation {
      */
     public static String getTargetLanguageIdFromId(String targetTranslationId) throws StringIndexOutOfBoundsException {
         String[] complexId = targetTranslationId.split("-");
-        if(complexId.length >= 3) {
+        if (complexId.length >= 3) {
             // TRICKY: target language id's can have dashes in them.
             String targetLanguageId = complexId[2];
-            for(int i = 3; i < complexId.length; i ++) {
+            for (int i = 3; i < complexId.length; i++) {
                 targetLanguageId += "-" + complexId[i];
             }
             return targetLanguageId;
@@ -228,7 +232,7 @@ public class TargetTranslation {
      * Generates the file to the directory where the target translation is located
      *
      * @param targetTranslationId the language to which the project is being translated
-     * @param rootDir the directory where the target translations are stored
+     * @param rootDir             the directory where the target translations are stored
      * @return
      */
     public static File generateTargetTranslationDir(String targetTranslationId, File rootDir) {
@@ -260,7 +264,7 @@ public class TargetTranslation {
         ArrayList<NativeSpeaker> translators = getTranslators();
 
         int foundAt = getTranslatorByName(translator.name);
-        if(foundAt >= 0) { // if found, update data
+        if (foundAt >= 0) { // if found, update data
             translators.set(foundAt, translator);
         } else { // if new translator then add
             translators.add(translator);
@@ -276,14 +280,14 @@ public class TargetTranslation {
     public boolean removeTranslator(String name) {
         ArrayList<NativeSpeaker> translators = getTranslators();
 
-            int foundAt = getTranslatorByName(name);
-            if(foundAt < 0) { // if not found, skip
-                return false;
-            } else { // if new translator then add
-                translators.remove(foundAt);
-            }
+        int foundAt = getTranslatorByName(name);
+        if (foundAt < 0) { // if not found, skip
+            return false;
+        } else { // if new translator then add
+            translators.remove(foundAt);
+        }
 
-            return saveTranslators(translators);
+        return saveTranslators(translators);
     }
 
     /**
@@ -294,7 +298,7 @@ public class TargetTranslation {
 
         try {
             JSONArray translatorsJson = encodeTranslators(translators);
-            mManifest.put(TRANSLATORS,translatorsJson);
+            mManifest.put(TRANSLATORS, translatorsJson);
         } catch (Exception e) {
             Logger.e(TargetTranslation.class.getName(), "failed save translators", e);
             return false;
@@ -312,12 +316,12 @@ public class TargetTranslation {
     private static JSONArray encodeTranslators(List<NativeSpeaker> translators) throws JSONException {
         JSONArray translatorsJson = new JSONArray();
 
-        for(int i = 0; i < translators.size(); i++) {
+        for (int i = 0; i < translators.size(); i++) {
             JSONObject translatorJSON = new JSONObject();
             NativeSpeaker currentTranslator = translators.get(i);
-            translatorJSON.put(NAME,currentTranslator.name);
-            translatorJSON.put(EMAIL,currentTranslator.email);
-            translatorJSON.put(PHONE,currentTranslator.phone);
+            translatorJSON.put(NAME, currentTranslator.name);
+            translatorJSON.put(EMAIL, currentTranslator.email);
+            translatorJSON.put(PHONE, currentTranslator.phone);
 
             translatorsJson.put(translatorJSON);
         }
@@ -351,7 +355,7 @@ public class TargetTranslation {
 
         ArrayList<NativeSpeaker> translators = new ArrayList<>();
 
-        if(translatorsJson.length() > 0) {
+        if (translatorsJson.length() > 0) {
 
             try {
                 for (int i = 0; i < translatorsJson.length(); i++) {
@@ -393,7 +397,7 @@ public class TargetTranslation {
      * @return
      */
     public FrameTranslation getFrameTranslation(Frame frame) {
-        if(frame == null) {
+        if (frame == null) {
             return null;
         }
         return getFrameTranslation(frame.getChapterId(), frame.getId(), frame.getFormat());
@@ -408,7 +412,7 @@ public class TargetTranslation {
      */
     public FrameTranslation getFrameTranslation(String chapterId, String frameId, TranslationFormat format) {
         File frameFile = getFrameFile(chapterId, frameId);
-        if(frameFile.exists()) {
+        if (frameFile.exists()) {
             try {
                 String body = FileUtils.readFileToString(frameFile);
                 return new FrameTranslation(frameId, chapterId, body, format, isFrameFinished(chapterId + "-" + frameId));
@@ -428,7 +432,7 @@ public class TargetTranslation {
      * @return
      */
     public ChapterTranslation getChapterTranslation(Chapter chapter) {
-        if(chapter == null) {
+        if (chapter == null) {
             return null;
         }
         return getChapterTranslation(chapter.getId());
@@ -444,14 +448,14 @@ public class TargetTranslation {
         File titleFile = getChapterTitleFile(chapterSlug);
         String reference = "";
         String title = "";
-        if(referenceFile.exists()) {
+        if (referenceFile.exists()) {
             try {
                 reference = FileUtils.readFileToString(referenceFile);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        if(titleFile.exists()) {
+        if (titleFile.exists()) {
             try {
                 title = FileUtils.readFileToString(titleFile);
             } catch (IOException e) {
@@ -470,7 +474,7 @@ public class TargetTranslation {
     public ProjectTranslation getProjectTranslation() {
         File titleFile = getProjectTitleFile();
         String title = "";
-        if(titleFile.exists()) {
+        if (titleFile.exists()) {
             try {
                 title = FileUtils.readFileToString(titleFile);
             } catch (IOException e) {
@@ -500,7 +504,7 @@ public class TargetTranslation {
      */
     public void applyProjectTitleTranslation(String translatedText) throws IOException {
         File titleFile = getProjectTitleFile();
-        if(translatedText.isEmpty()) {
+        if (translatedText.isEmpty()) {
             titleFile.delete();
         } else {
             titleFile.getParentFile().mkdirs();
@@ -516,7 +520,7 @@ public class TargetTranslation {
      */
     private void saveFrameTranslation(FrameTranslation frameTranslation, String translatedText) throws IOException {
         File frameFile = getFrameFile(frameTranslation.getChapterId(), frameTranslation.getId());
-        if(translatedText.isEmpty()) {
+        if (translatedText.isEmpty()) {
             frameFile.delete();
         } else {
             frameFile.getParentFile().mkdirs();
@@ -533,7 +537,7 @@ public class TargetTranslation {
      */
     private void saveChapterReferenceTranslation(ChapterTranslation chapterTranslation, String translatedText) throws IOException {
         File chapterReferenceFile = getChapterReferenceFile(chapterTranslation.getId());
-        if(translatedText.isEmpty()) {
+        if (translatedText.isEmpty()) {
             chapterReferenceFile.delete();
         } else {
             chapterReferenceFile.getParentFile().mkdirs();
@@ -550,7 +554,7 @@ public class TargetTranslation {
      */
     private void saveChapterTitleTranslation(ChapterTranslation chapterTranslation, String translatedText) throws IOException {
         File chapterTitleFile = getChapterTitleFile(chapterTranslation.getId());
-        if(translatedText.isEmpty()) {
+        if (translatedText.isEmpty()) {
             chapterTitleFile.delete();
         } else {
             chapterTitleFile.getParentFile().mkdirs();
@@ -600,7 +604,7 @@ public class TargetTranslation {
      */
     public boolean finishProjectTitle() {
         File file = getProjectTitleFile();
-        if(file.exists()) {
+        if (file.exists()) {
             return finishProjectComponent("title");
         }
         return false;
@@ -623,7 +627,7 @@ public class TargetTranslation {
         JSONArray finishedProjectComponents = mManifest.getJSONArray("finished_project_components");
         try {
             for (int i = 0; i < finishedProjectComponents.length(); i++) {
-                if(finishedProjectComponents.getString(i).equals(component)) {
+                if (finishedProjectComponents.getString(i).equals(component)) {
                     return true;
                 }
             }
@@ -644,7 +648,7 @@ public class TargetTranslation {
         try {
             for (int i = 0; i < finishedProjectComponents.length(); i++) {
                 String finishedComponent = finishedProjectComponents.getString(i);
-                if(!finishedComponent.equals(component)) {
+                if (!finishedComponent.equals(component)) {
                     updatedComponents.put(finishedProjectComponents.getString(i));
                 }
             }
@@ -667,7 +671,7 @@ public class TargetTranslation {
         try {
             for (int i = 0; i < finishedProjectComponents.length(); i++) {
                 String completedComponent = finishedProjectComponents.getString(i);
-                if(completedComponent.equals(component)) {
+                if (completedComponent.equals(component)) {
                     isFinished = true;
                     break;
                 }
@@ -675,7 +679,7 @@ public class TargetTranslation {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        if(!isFinished) {
+        if (!isFinished) {
             finishedProjectComponents.put(component);
             mManifest.put("finished_project_components", finishedProjectComponents);
         }
@@ -689,13 +693,13 @@ public class TargetTranslation {
      */
     public boolean finishChapterTitle(Chapter chapter) {
         File file = getChapterTitleFile(chapter.getId());
-        if(file.exists()) {
+        if (file.exists()) {
             JSONArray finishedTitles = mManifest.getJSONArray(Manifest.FINISHED_TITLES);
             boolean isFinished = false;
             try {
                 for (int i = 0; i < finishedTitles.length(); i++) {
                     String chapterSlug = finishedTitles.getString(i);
-                    if(chapterSlug.equals(chapter.getId())) {
+                    if (chapterSlug.equals(chapter.getId())) {
                         isFinished = true;
                         break;
                     }
@@ -703,7 +707,7 @@ public class TargetTranslation {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            if(!isFinished) {
+            if (!isFinished) {
                 finishedTitles.put(chapter.getId());
                 mManifest.put(Manifest.FINISHED_TITLES, finishedTitles);
             }
@@ -723,7 +727,7 @@ public class TargetTranslation {
         try {
             for (int i = 0; i < finishedTitles.length(); i++) {
                 String chapterSlug = finishedTitles.getString(i);
-                if(!chapterSlug.equals(chapter.getId())) {
+                if (!chapterSlug.equals(chapter.getId())) {
                     updatedTitles.put(finishedTitles.getString(i));
                 }
             }
@@ -753,7 +757,7 @@ public class TargetTranslation {
         JSONArray finishedTitles = mManifest.getJSONArray(Manifest.FINISHED_TITLES);
         try {
             for (int i = 0; i < finishedTitles.length(); i++) {
-                if(finishedTitles.getString(i).equals(chapterSlug)) {
+                if (finishedTitles.getString(i).equals(chapterSlug)) {
                     return true;
                 }
             }
@@ -770,13 +774,13 @@ public class TargetTranslation {
      */
     public boolean finishChapterReference(Chapter chapter) {
         File file = getChapterReferenceFile(chapter.getId());
-        if(file.exists()) {
+        if (file.exists()) {
             JSONArray finishedReferences = mManifest.getJSONArray(Manifest.FINISHED_REFERENCES);
             boolean isFinished = false;
             try {
                 for (int i = 0; i < finishedReferences.length(); i++) {
                     String chapterSlug = finishedReferences.getString(i);
-                    if(chapterSlug.equals(chapter.getId())) {
+                    if (chapterSlug.equals(chapter.getId())) {
                         isFinished = true;
                         break;
                     }
@@ -784,7 +788,7 @@ public class TargetTranslation {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            if(!isFinished) {
+            if (!isFinished) {
                 finishedReferences.put(chapter.getId());
                 mManifest.put(Manifest.FINISHED_REFERENCES, finishedReferences);
             }
@@ -804,7 +808,7 @@ public class TargetTranslation {
         try {
             for (int i = 0; i < finishedReferences.length(); i++) {
                 String chapterSlug = finishedReferences.getString(i);
-                if(!chapterSlug.equals(chapter.getId())) {
+                if (!chapterSlug.equals(chapter.getId())) {
                     updatedReferences.put(finishedReferences.getString(i));
                 }
             }
@@ -834,7 +838,7 @@ public class TargetTranslation {
         JSONArray finishedReferences = mManifest.getJSONArray(Manifest.FINISHED_REFERENCES);
         try {
             for (int i = 0; i < finishedReferences.length(); i++) {
-                if(finishedReferences.getString(i).equals(chapterSlug)) {
+                if (finishedReferences.getString(i).equals(chapterSlug)) {
                     return true;
                 }
             }
@@ -851,13 +855,13 @@ public class TargetTranslation {
      */
     public boolean finishFrame(Frame frame) {
         File file = getFrameFile(frame.getChapterId(), frame.getId());
-        if(file.exists()) {
+        if (file.exists()) {
             JSONArray finishedFrames = mManifest.getJSONArray(Manifest.FINISHED_FRAMES);
             boolean isFinished = false;
             try {
                 for (int i = 0; i < finishedFrames.length(); i++) {
                     String complexSlug = finishedFrames.getString(i);
-                    if(complexSlug.equals(frame.getComplexId())) {
+                    if (complexSlug.equals(frame.getComplexId())) {
                         isFinished = true;
                         break;
                     }
@@ -865,7 +869,7 @@ public class TargetTranslation {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            if(!isFinished) {
+            if (!isFinished) {
                 finishedFrames.put(frame.getComplexId());
                 mManifest.put(Manifest.FINISHED_FRAMES, finishedFrames);
             }
@@ -885,7 +889,7 @@ public class TargetTranslation {
         try {
             for (int i = 0; i < finishedFrames.length(); i++) {
                 String complexSlug = finishedFrames.getString(i);
-                if(!complexSlug.equals(frame.getComplexId())) {
+                if (!complexSlug.equals(frame.getComplexId())) {
                     updatedFrames.put(finishedFrames.getString(i));
                 }
             }
@@ -915,7 +919,7 @@ public class TargetTranslation {
         JSONArray finishedFrames = mManifest.getJSONArray(Manifest.FINISHED_FRAMES);
         try {
             for (int i = 0; i < finishedFrames.length(); i++) {
-                if(finishedFrames.getString(i).equals(frameComplexId)) {
+                if (finishedFrames.getString(i).equals(frameComplexId)) {
                     return true;
                 }
             }
@@ -951,8 +955,8 @@ public class TargetTranslation {
 
         // check if dirty
         try {
-            if(git.status().call().isClean()) {
-                if(listener != null) {
+            if (git.status().call().isClean()) {
+                if (listener != null) {
                     listener.onCommit(true);
                 }
                 return;
@@ -976,12 +980,12 @@ public class TargetTranslation {
             public void run() {
                 try {
                     commit.call();
-                    if(listener != null) {
+                    if (listener != null) {
                         listener.onCommit(true);
                     }
                 } catch (Exception e) {
                     Logger.e(TargetTranslation.class.getName(), "Failed to commit changes", e);
-                    if(listener != null) {
+                    if (listener != null) {
                         listener.onCommit(false);
                     }
                 }
@@ -994,7 +998,7 @@ public class TargetTranslation {
      * sets publish tag in the repository
      * @return true if successful
      */
-    public void setPublishTag(final OnTagListener listener)  {
+    public void setPublishTag(final OnTagListener listener) {
         try {
             Git git = getRepo().getGit();
             final TagCommand tag = git.tag();
@@ -1006,12 +1010,12 @@ public class TargetTranslation {
                 public void run() {
                     try {
                         tag.call();
-                        if(listener != null) {
+                        if (listener != null) {
                             listener.onTag(true);
                         }
                     } catch (Exception e) {
                         Logger.e(TargetTranslation.class.getName(), "Failed to commit changes", e);
-                        if(listener != null) {
+                        if (listener != null) {
                             listener.onTag(false);
                         }
                     }
@@ -1021,7 +1025,7 @@ public class TargetTranslation {
 
         } catch (Exception e) {
             Logger.e(this.getClass().toString(), "error setting publish tag", e);
-            if(listener != null) {
+            if (listener != null) {
                 listener.onTag(false);
             }
         }
@@ -1037,7 +1041,7 @@ public class TargetTranslation {
             Repository repository = git.getRepository();
             ListTagCommand tags = git.tagList();
             List<Ref> refs = tags.call();
-            for (int i=refs.size()-1; i >= 0; i--) {
+            for (int i = refs.size() - 1; i >= 0; i--) {
                 Ref ref = refs.get(i);
                 Logger.i(this.getClass().toString(), "Tag: " + ref + " " + ref.getName() + " " + ref.getObjectId().getName());
 
@@ -1046,7 +1050,7 @@ public class TargetTranslation {
                 log.setMaxCount(1);
 
                 Ref peeledRef = repository.peel(ref);
-                if(peeledRef.getPeeledObjectId() != null) {
+                if (peeledRef.getPeeledObjectId() != null) {
                     log.add(peeledRef.getPeeledObjectId());
                 } else {
                     log.add(ref.getObjectId());
@@ -1059,7 +1063,7 @@ public class TargetTranslation {
                 }
             }
 
-        } catch (GitAPIException|IOException e) {
+        } catch (GitAPIException | IOException e) {
             Logger.w(this.getClass().toString(), "error setting publish tag", e);
             throw e;
         }
@@ -1067,16 +1071,54 @@ public class TargetTranslation {
     }
 
     /**
+     * retrieve file contents as String from specified commit
+     * @param git
+     * @param file
+     * @param currentCommit
+     * @return
+     */
+    public String getCommittedFileContents(final Git git, final File file, final RevCommit currentCommit) {
+
+        try {
+            Repository repository = git.getRepository();
+
+            RevTree tree = currentCommit.getTree();
+            Logger.i(TAG, "Having tree: " + tree);
+
+            // now try to find a specific file
+            TreeWalk treeWalk = new TreeWalk(repository);
+            treeWalk.addTree(tree);
+            treeWalk.setRecursive(true);
+            treeWalk.setFilter(PathFilter.create(file.toString()));
+            if (!treeWalk.next()) {
+                throw new IllegalStateException("Did not find expected file 'README.md'");
+            }
+
+            ObjectId objectId = treeWalk.getObjectId(0);
+            ObjectLoader loader = repository.open(objectId);
+
+            byte[] bytes = loader.getBytes();
+            String text = new String(bytes, "UTF-8");
+            return text;
+
+        } catch (Exception e) {
+            Logger.w(TAG, "error getting commit list",e);
+        }
+        return null;
+    }
+
+    /**
      * get the commit before specified commit
+     * @param git
      * @param file - specific file to check commit history
      * @param currentCommit
      * @return
      */
-    public RevCommit getUndoCommit(File file, RevCommit currentCommit) {
+    public RevCommit getUndoCommit(final Git git, final File file, RevCommit currentCommit) {
         RevCommit[] commits = null;
         try {
             if(null != file) {
-                commits = getCommitList(file);
+                commits = getCommitList(git, file);
                 if((commits != null) && (commits.length > 0)) {
                     if (null == currentCommit) { // if not yet set, use latest
                         currentCommit = commits[0];
@@ -1096,18 +1138,19 @@ public class TargetTranslation {
                 }
             }
         } catch (Exception e) {
-            Logger.w(TAG, "error getting commit list");
+            Logger.w(TAG, "error getting commit list",e);
         }
         return null;
     }
 
     /**
      * get the commit after specified commit
+     * @param git
      * @param file - specific file to check commit history
      * @param currentCommit
      * @return
      */
-    public RevCommit getRedoCommit(File file, RevCommit currentCommit) {
+    public RevCommit getRedoCommit(final Git git, final File file, final RevCommit currentCommit) {
         RevCommit[] commits = null;
         try {
             if(null != file) {
@@ -1117,7 +1160,7 @@ public class TargetTranslation {
 
                 final int commitTime = currentCommit.getCommitTime();
 
-                commits = getCommitList(file);
+                commits = getCommitList(git, file);
                 if((commits != null) && (commits.length > 0)) {
 
                     RevCommit nextCommit = null;
@@ -1133,21 +1176,21 @@ public class TargetTranslation {
                 }
             }
         } catch (Exception e) {
-            Logger.w(TAG, "error getting commit list");
+            Logger.w(TAG, "error getting commit list", e);
         }
         return null;
     }
 
     /**
      * get list of commits,  file format example: 02/03.txt
+     * @param git
      * @param file
      * @return
      * @throws IOException
      * @throws GitAPIException
      */
-    public RevCommit[] getCommitList(File file) throws IOException, GitAPIException {
+    public RevCommit[] getCommitList(final Git git, final File file) throws IOException, GitAPIException {
         try {
-            Git git = getRepo().getGit();
             Repository repository = git.getRepository();
             ObjectId recovery = repository.resolve("HEAD");
             LogCommand log = git.log();
@@ -1168,10 +1211,20 @@ public class TargetTranslation {
             return revs.toArray(new RevCommit[revs.size()]);
 
         } catch (GitAPIException|IOException e) {
-            Logger.w(this.getClass().toString(), "error getting commit list", e);
+            Logger.w(TAG, "error getting commit list", e);
             throw e;
         }
 
+    }
+
+    /**
+     * convenience method for getting an instance of Git.  For performance it is better to call getGit()
+     * just once as it has overhead
+     * @return
+     * @throws IOException
+     */
+    public Git getGit() throws IOException {
+        return getRepo().getGit();
     }
 
     /**
