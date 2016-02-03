@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.multidex.MultiDex;
 import android.text.TextUtils;
@@ -50,7 +51,7 @@ public class MainApplication extends Application {
     private static Activity mMainActivity;
 //    private Term mSelectedKeyTerm;
     private boolean mShowImportantTerms;
-    public static final String STACKTRACE_DIR = "stacktrace";
+    public static final String STACKTRACE_DIR = "crashes";
     private boolean mClosingProgressDialog = false;
 
     @Override
@@ -66,7 +67,7 @@ public class MainApplication extends Application {
         // initialize basic functions with link to main application
         new AppContext(this);
 
-        File dir = new File(getExternalCacheDir(), STACKTRACE_DIR);
+        File dir = new File(AppContext.getPublicDirectory(), STACKTRACE_DIR);
         GlobalExceptionHandler.register(dir);
 
         // configure logger
@@ -86,7 +87,7 @@ public class MainApplication extends Application {
     }
 
     public void configureLogger(int minLogLevel) {
-        Logger.configure(new File(getExternalCacheDir(), "log.txt"), Logger.Level.getLevel(minLogLevel));
+        Logger.configure(new File(AppContext.getPublicDirectory(), "log.txt"), Logger.Level.getLevel(minLogLevel));
     }
 
 //    /**

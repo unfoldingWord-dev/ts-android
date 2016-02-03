@@ -40,7 +40,7 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
         }
 
         // check if we crashed
-        File dir = new File(getExternalCacheDir(), AppContext.context().STACKTRACE_DIR);
+        File dir = new File(AppContext.getPublicDirectory(), AppContext.context().STACKTRACE_DIR);
         String[] files = GlobalExceptionHandler.getStacktraces(dir);
         if (files.length > 0) {
             Intent intent = new Intent(this, CrashReporterActivity.class);
