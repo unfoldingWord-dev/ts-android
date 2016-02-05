@@ -483,21 +483,21 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 // save
                 String translation = Translator.compileTranslation((Editable)s);
-                if(item.isChapterReference) {
+                if (item.isChapterReference) {
                     mTargetTranslation.applyChapterReferenceTranslation(item.chapterTranslation, translation);
-                } else if(item.isChapterTitle) {
+                } else if (item.isChapterTitle) {
                     mTargetTranslation.applyChapterTitleTranslation(item.chapterTranslation, translation);
-                } else if(item.isProjectTitle) {
+                } else if (item.isProjectTitle) {
                     try {
                         mTargetTranslation.applyProjectTitleTranslation(s.toString());
                     } catch (IOException e) {
                         Logger.e(ReviewModeAdapter.class.getName(), "Failed to save the project title translation", e);
                     }
-                } else if(item.isFrame()) {
+                } else if (item.isFrame()) {
                     mTargetTranslation.applyFrameTranslation(item.frameTranslation, translation);
                 }
                 item.renderedTargetBody = renderSourceText(translation, item.translationFormat);
-
+                item.currentCommit = null; // clears undo position
 
                 // update view if pasting text
                 // TRICKY: anything worth rendering will need to change by at least 7 characters
@@ -538,11 +538,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 String options = parent.getItemAtPosition(position).toString();
                 if(UNDO.equals(options)) {
                     Logger.i(TAG, "Undo selected");
-                    doUndo(item);
+                    doUndo(holder, item);
                 }
                 else if(REDO.equals(options)) {
                     Logger.i(TAG, "Redo selected");
-                    doRedo(item);
+                    doRedo(holder, item);
                 }
 
                 parent.setSelection(0); // reset selection
@@ -552,7 +552,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             public void onNothingSelected(AdapterView<?> parent) {
             }
         };
-
 
         // Spinner Drop down elements
         List<String> categories = new ArrayList<String>();
@@ -715,32 +714,55 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         });
     }
 
-    private void doUndo(final ListItem item) {
+    /**
+     * restore the text from previous commit for fragment
+     * @param holder
+     * @param item
+     */
+    private void doUndo(final ViewHolder holder, final ListItem item) {
         try {
             final Git git = mTargetTranslation.getGit();
             File file = getFileForItem(item);
             RevCommit commit = mTargetTranslation.getUndoCommit(git, file, item.currentCommit);
-            if(null != commit) {
-                String text = mTargetTranslation.getCommittedFileContents(git, file, commit);
-                // TODO: 1/29/16 - need to restore text.
-                item.currentCommit = commit;
-            }
+            restoreCommitText(holder, item, git, file, commit);
         } catch (Exception e) {
             Logger.w(TAG, "error getting commit list",e);
         }
     }
 
-    private void doRedo(final ListItem item) {
+    /**
+     * restore commited file contents to current fragment
+     * @param holder
+     * @param item
+     * @param git
+     * @param file
+     * @param commit
+     */
+    private void restoreCommitText(final ViewHolder holder, final ListItem item, final Git git, final File file, final RevCommit commit) {
+        if(null != commit) {
+
+            String committedText = mTargetTranslation.getCommittedFileContents(git, file, commit);
+            item.currentCommit = commit;
+            item.renderedTargetBody = renderSourceText(committedText, item.translationFormat);
+            holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
+            holder.mTargetEditableBody.setText(item.renderedTargetBody);
+            holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
+        } else {
+            Logger.w(TAG, "restore commit not found");
+        }
+    }
+
+    /**
+     * restore the text from later commit for fragment
+     * @param holder
+     * @param item
+     */
+    private void doRedo(final ViewHolder holder, final ListItem item) {
         try {
             final Git git = mTargetTranslation.getGit();
             File file = getFileForItem(item);
             RevCommit commit = mTargetTranslation.getRedoCommit(git, file, item.currentCommit);
-            if(null != commit) {
-                String text = mTargetTranslation.getCommittedFileContents(git, file, commit);
-                // TODO: 1/29/16 - need to restore text.
-                item.currentCommit = commit;
-            }
-
+            restoreCommitText(holder, item, git, file, commit);
         } catch (Exception e) {
             Logger.w(TAG, "error getting commit list",e);
         }
@@ -1089,6 +1111,16 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
     }
 
+    /**
+     * generate spannable for target text.  Will add click listener for notes and verses if USX
+     * @param text
+     * @param format
+     * @param frame
+     * @param frameTranslation
+     * @param holder
+     * @param item
+     * @return
+     */
     private CharSequence renderTargetText(String text, TranslationFormat format, final Frame frame, final FrameTranslation frameTranslation, final ViewHolder holder, final ListItem item) {
         RenderingGroup renderingGroup = new RenderingGroup();
         if(format == TranslationFormat.USX && frame != null) {
@@ -1198,6 +1230,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
     }
 
+    /**
+     * generate spannable for source text.  Will add click listener for notes if USX
+     * @param text
+     * @param format
+     * @return
+     */
     private CharSequence renderSourceText(String text, TranslationFormat format) {
         RenderingGroup renderingGroup = new RenderingGroup();
         if (format == TranslationFormat.USX) {
@@ -1334,7 +1372,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         private FrameTranslation frameTranslation;
         private ChapterTranslation chapterTranslation;
         private ProjectTranslation projectTranslation;
-        private RevCommit currentCommit = null;
+        private RevCommit currentCommit = null; //keeps track of undo position
 
         public ListItem(String frameSlug, String chapterSlug) {
             this.frameSlug = frameSlug;
