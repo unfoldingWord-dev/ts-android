@@ -127,14 +127,27 @@
                         android:layout_gravity="center"
                         android:padding="0dp" >
 
-                        <Spinner
-                            android:id="@+id/edit_options"
+                        <ImageButton
+                            android:id="@+id/undo_button"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="left|center_vertical"
                             android:background="?attr/selectableItemBackgroundBorderless"
-                            android:src="@drawable/ic_list_black_24dp"
-                            android:layout_weight="0" />
+                            android:src="@drawable/ic_undo_black_24dp"
+                            android:layout_weight="0"
+                            android:paddingLeft="@dimen/dialog_controls_margin"
+                            android:paddingRight="@dimen/dialog_controls_margin" />
+
+                        <ImageButton
+                            android:id="@+id/redo_button"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="left|center_vertical"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_redo_black_24dp"
+                            android:layout_weight="0"
+                            android:paddingLeft="@dimen/dialog_controls_margin"
+                            android:paddingRight="@dimen/dialog_controls_margin" />
 
                         <TextView
                             android:layout_width="match_parent"
@@ -157,7 +170,9 @@
                         android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_mode_edit_black_24dp"
                             android:adjustViewBounds="false"
-                            android:layout_weight="0" />
+                            android:layout_weight="0"
+                        android:paddingLeft="@dimen/dialog_controls_margin"
+                        android:paddingRight="@dimen/dialog_controls_margin" />
 
                     </LinearLayout>
                 </FrameLayout>

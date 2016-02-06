@@ -643,4 +643,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="draft_translation_exists">A draft of this translation is available</string>
     <string name="print_failed">Failed to print</string>
     <string name="printing">Printing</string>
+    <string name="label_undo">Undo</string>
+    <string name="label_redo">Redo</string>
+    <string name="restoring_time">Restoring %s</string>
+    <string name="restoring_end">Reached End of Archive</string>
 </resources>

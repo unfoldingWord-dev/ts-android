@@ -19,6 +19,7 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.DragEvent;
 import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -34,6 +35,7 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
@@ -65,14 +67,16 @@ import com.door43.translationstudio.spannables.VersePinSpan;
 import com.door43.widget.ViewUtil;
 
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -530,43 +534,18 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
         }
 
-        // Spinner click listener
-        final AdapterView.OnItemSelectedListener optionsListener = new AdapterView.OnItemSelectedListener() {
+        holder.mUndoButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                // On selecting a spinner item
-                String options = parent.getItemAtPosition(position).toString();
-                if(UNDO.equals(options)) {
-                    Logger.i(TAG, "Undo selected");
-                    doUndo(holder, item);
-                }
-                else if(REDO.equals(options)) {
-                    Logger.i(TAG, "Redo selected");
-                    doRedo(holder, item);
-                }
-
-                parent.setSelection(0); // reset selection
+            public void onClick(View v) {
+                doUndo(holder, item);
             }
-
+        });
+        holder.mRedoButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
+            public void onClick(View v) {
+                doRedo(holder, item);
             }
-        };
-
-        // Spinner Drop down elements
-        List<String> categories = new ArrayList<String>();
-        categories.add(OPTIONS);
-        categories.add(UNDO);
-        categories.add(REDO);
-
-        // Creating adapter for spinner
-        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(mContext, android.R.layout.simple_spinner_item, categories);
-
-        // Drop down layout style - list view with radio button
-        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-        // attaching data adapter to spinner
-        holder.mEditOptions.setAdapter(dataAdapter);
+        });
 
         // editing button
         final GestureDetector detector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
@@ -576,8 +555,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 if(item.isEditing) {
                     // open editing mode
                     holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
-                    holder.mEditOptions.setVisibility(View.VISIBLE);
-                    holder.mEditOptions.setOnItemSelectedListener(optionsListener);
+                    holder.mUndoButton.setVisibility(View.VISIBLE);
+                    holder.mRedoButton.setVisibility(View.VISIBLE);
                     holder.mTargetBody.setVisibility(View.GONE);
                     holder.mTargetEditableBody.setVisibility(View.VISIBLE);
                     holder.mTargetEditableBody.requestFocus();
@@ -595,8 +574,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 } else {
                     // close editing mode
                     holder.mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
-                    holder.mEditOptions.setVisibility(View.GONE);
-                    holder.mEditOptions.setOnItemSelectedListener(null);
+                    holder.mUndoButton.setVisibility(View.GONE);
+                    holder.mRedoButton.setVisibility(View.GONE);
                     holder.mTargetBody.setVisibility(View.VISIBLE);
                     holder.mTargetEditableBody.setVisibility(View.GONE);
                     holder.mTargetInnerCard.setBackgroundResource(R.color.white);
@@ -628,16 +607,16 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // display verse/editing mode
         if(item.isEditing) {
             holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
-            holder.mEditOptions.setVisibility(View.VISIBLE);
-            holder.mEditOptions.setOnItemSelectedListener(optionsListener);
+            holder.mUndoButton.setVisibility(View.VISIBLE);
+            holder.mRedoButton.setVisibility(View.VISIBLE);
             holder.mTargetBody.setVisibility(View.GONE);
             holder.mTargetEditableBody.setVisibility(View.VISIBLE);
             holder.mTargetEditableBody.setEnableLines(true);
             holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         } else {
             holder.mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
-            holder.mEditOptions.setVisibility(View.GONE);
-            holder.mEditOptions.setOnItemSelectedListener(null);
+            holder.mUndoButton.setVisibility(View.GONE);
+            holder.mRedoButton.setVisibility(View.GONE);
             holder.mTargetBody.setVisibility(View.VISIBLE);
             holder.mTargetEditableBody.setVisibility(View.GONE);
             holder.mTargetEditableBody.setEnableLines(false);
@@ -650,13 +629,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // display as finished
         if(item.isTranslationFinished) {
             holder.mEditButton.setVisibility(View.GONE);
-            holder.mEditOptions.setVisibility(View.GONE);
-            holder.mEditOptions.setOnItemSelectedListener(optionsListener);
+            holder.mUndoButton.setVisibility(View.GONE);
+            holder.mRedoButton.setVisibility(View.GONE);
             holder.mDoneSwitch.setChecked(true);
             holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         } else {
             holder.mEditButton.setVisibility(View.VISIBLE);
-            holder.mEditOptions.setOnItemSelectedListener(null);
             holder.mDoneSwitch.setChecked(false);
         }
 
@@ -739,8 +717,24 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param commit
      */
     private void restoreCommitText(final ViewHolder holder, final ListItem item, final Git git, final File file, final RevCommit commit) {
-        if(null != commit) {
 
+        String message = null;
+
+        if(commit != null) {
+            Locale current = mContext.getResources().getConfiguration().locale;
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", current);
+            Date commitTime = new Date(commit.getCommitTime() * 1000L);
+            String restoreTimeFormat = mContext.getResources().getString(R.string.restoring_time);
+            message = String.format(restoreTimeFormat, sdf.format(commitTime));
+        } else {
+            message = mContext.getResources().getString(R.string.restoring_end);
+        }
+
+        Toast toast = Toast.makeText(mContext, message, Toast.LENGTH_LONG);
+        toast.setGravity(Gravity.TOP, 0, 0);
+        toast.show();
+
+        if(null != commit) {
             String committedText = mTargetTranslation.getCommittedFileContents(git, file, commit);
             item.currentCommit = commit;
             item.renderedTargetBody = renderSourceText(committedText, item.translationFormat);
@@ -748,7 +742,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             holder.mTargetEditableBody.setText(item.renderedTargetBody);
             holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
         } else {
-            Logger.w(TAG, "restore commit not found");
+            Logger.i(TAG, "restore commit not found");
         }
     }
 
@@ -1299,7 +1293,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public final Spinner mEditOptions;
+        public final ImageButton mUndoButton;
+        public final ImageButton mRedoButton;
         public final ImageButton mEditButton;
         public final CardView mResourceCard;
         public final LinearLayout mMainContent;
@@ -1336,7 +1331,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             mTargetEditableBody = (LinedEditText)v.findViewById(R.id.target_translation_editable_body);
             mTranslationTabs = (TabLayout)v.findViewById(R.id.source_translation_tabs);
             mEditButton = (ImageButton)v.findViewById(R.id.edit_translation_button);
-            mEditOptions = (Spinner)v.findViewById(R.id.edit_options);
+            mUndoButton = (ImageButton)v.findViewById(R.id.undo_button);
+            mRedoButton = (ImageButton)v.findViewById(R.id.redo_button);
             mDoneSwitch = (Switch)v.findViewById(R.id.done_button);
             mTranslationTabs.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
             mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);
