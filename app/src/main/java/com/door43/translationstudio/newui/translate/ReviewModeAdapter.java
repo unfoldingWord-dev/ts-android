@@ -483,7 +483,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String translation = applyChangedText(s, item);
-                item.currentCommit = null; // clears undo position
+                clearCurrentCommit(holder, item);
 
                 // update view if pasting text
                 // TRICKY: anything worth rendering will need to change by at least 7 characters
@@ -678,6 +678,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         });
     }
 
+    public void clearCurrentCommit(ViewHolder holder, ListItem item) {
+        item.currentCommit = null; // clears undo position
+        holder.mCurrentCommitItem = null;
+    }
+
     /**
      * check if user has restored old text.  If so then save it
      * @param holder
@@ -687,8 +692,29 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         if(item.currentCommit != null) {
             CharSequence s = holder.mTargetEditableBody.getText();
             applyChangedText(s, item);
-            item.currentCommit = null; // clear restore point
+            clearCurrentCommit(holder, item);
         }
+    }
+
+    /**
+     * check if user has restored old text.  If so then save it
+     * @param holder
+     */
+    public void saveRestoredText(ViewHolder holder) {
+        ListItem item = holder.mCurrentCommitItem;
+        if(item != null) {
+            saveRestoredText(holder, item);
+        }
+    }
+
+    @Override
+    public void onViewRecycled (ViewHolder holder) {
+        saveRestoredText(holder);
+    }
+
+    @Override
+    public void onViewDetachedFromWindow (ViewHolder holder) {
+        saveRestoredText(holder);
     }
 
     /**
@@ -757,6 +783,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         if(null != commit) {
             String committedText = mTargetTranslation.getCommittedFileContents(git, file, commit);
             item.currentCommit = commit;
+            holder.mCurrentCommitItem = item;
             item.renderedTargetBody = renderSourceText(committedText, item.translationFormat);
             holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
             holder.mTargetEditableBody.setText(item.renderedTargetBody);
@@ -1337,6 +1364,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public final TabLayout mTranslationTabs;
         public final ImageButton mNewTabButton;
         public TextView mSourceBody;
+        private ListItem mCurrentCommitItem = null;
 
         public ViewHolder(Context context, View v) {
             super(v);
