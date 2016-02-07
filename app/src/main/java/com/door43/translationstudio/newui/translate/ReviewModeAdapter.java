@@ -485,22 +485,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // save
-                String translation = Translator.compileTranslation((Editable)s);
-                if (item.isChapterReference) {
-                    mTargetTranslation.applyChapterReferenceTranslation(item.chapterTranslation, translation);
-                } else if (item.isChapterTitle) {
-                    mTargetTranslation.applyChapterTitleTranslation(item.chapterTranslation, translation);
-                } else if (item.isProjectTitle) {
-                    try {
-                        mTargetTranslation.applyProjectTitleTranslation(s.toString());
-                    } catch (IOException e) {
-                        Logger.e(ReviewModeAdapter.class.getName(), "Failed to save the project title translation", e);
-                    }
-                } else if (item.isFrame()) {
-                    mTargetTranslation.applyFrameTranslation(item.frameTranslation, translation);
-                }
-                item.renderedTargetBody = renderSourceText(translation, item.translationFormat);
+                String translation = applyChangedText(s, item);
                 item.currentCommit = null; // clears undo position
 
                 // update view if pasting text
@@ -573,6 +558,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
                 } else {
                     // close editing mode
+                    saveRestoredText( holder, item);
                     holder.mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
                     holder.mUndoButton.setVisibility(View.GONE);
                     holder.mRedoButton.setVisibility(View.GONE);
@@ -657,6 +643,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                                 item.renderedTargetBody = holder.mTargetEditableBody.getText();
                                             }
                                             boolean success = onConfirmChunk(item, chapter, frame);
+                                            if(success) {
+                                                saveRestoredText( holder, item);
+                                            }
                                             holder.mDoneSwitch.setChecked(success);
                                         }
                                     }
@@ -690,6 +679,44 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
             }
         });
+    }
+
+    /**
+     * check if user has restored old text.  If so then save it
+     * @param holder
+     * @param item
+     */
+    private void saveRestoredText(ViewHolder holder, ListItem item) {
+        if(item.currentCommit != null) {
+            CharSequence s = holder.mTargetEditableBody.getText();
+            applyChangedText(s, item);
+            item.currentCommit = null; // clear restore point
+        }
+    }
+
+    /**
+     * save changed text
+     * @param s
+     * @param item
+     * @return
+     */
+    private String applyChangedText(CharSequence s, ListItem item) {
+        String translation = Translator.compileTranslation((Editable) s);
+        if (item.isChapterReference) {
+            mTargetTranslation.applyChapterReferenceTranslation(item.chapterTranslation, translation);
+        } else if (item.isChapterTitle) {
+            mTargetTranslation.applyChapterTitleTranslation(item.chapterTranslation, translation);
+        } else if (item.isProjectTitle) {
+            try {
+                mTargetTranslation.applyProjectTitleTranslation(s.toString());
+            } catch (IOException e) {
+                Logger.e(ReviewModeAdapter.class.getName(), "Failed to save the project title translation", e);
+            }
+        } else if (item.isFrame()) {
+            mTargetTranslation.applyFrameTranslation(item.frameTranslation, translation);
+        }
+        item.renderedTargetBody = renderSourceText(translation, item.translationFormat);
+        return translation;
     }
 
     /**
