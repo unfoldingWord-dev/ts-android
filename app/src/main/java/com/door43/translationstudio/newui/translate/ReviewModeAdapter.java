@@ -7,6 +7,7 @@ import android.content.ClipData;
 import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
@@ -748,14 +749,54 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param item
      */
     private void doUndo(final ViewHolder holder, final ListItem item) {
-        try {
-            final Git git = mTargetTranslation.getGit();
-            File file = getFileForItem(item);
-            RevCommit commit = mTargetTranslation.getUndoCommit(git, file, item.currentCommit);
-            restoreCommitText(holder, item, git, file, commit);
-        } catch (Exception e) {
-            Logger.w(TAG, "error getting commit list",e);
-        }
+        holder.mUndoButton.setVisibility(View.INVISIBLE);
+        holder.mRedoButton.setVisibility(View.INVISIBLE);
+
+        Toast toast = Toast.makeText(mContext, R.string.label_undo, Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.TOP, 0, 0);
+        toast.show();
+
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final Git git = mTargetTranslation.getGit();
+                    File file = getFileForItem(item);
+                    RevCommit commit = mTargetTranslation.getUndoCommit(git, file, item.currentCommit);
+                    restoreCommitText(holder, item, git, file, commit);
+                } catch (Exception e) {
+                    Logger.w(TAG, "error getting commit list", e);
+                }
+            }
+        });
+    }
+
+    /**
+     * restore the text from later commit for fragment
+     * @param holder
+     * @param item
+     */
+    private void doRedo(final ViewHolder holder, final ListItem item) {
+        holder.mUndoButton.setVisibility(View.INVISIBLE);
+        holder.mRedoButton.setVisibility(View.INVISIBLE);
+
+        Toast toast = Toast.makeText(mContext, R.string.label_redo, Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.TOP, 0, 0);
+        toast.show();
+
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final Git git = mTargetTranslation.getGit();
+                    File file = getFileForItem(item);
+                    RevCommit commit = mTargetTranslation.getRedoCommit(git, file, item.currentCommit);
+                    restoreCommitText(holder, item, git, file, commit);
+                } catch (Exception e) {
+                    Logger.w(TAG, "error getting commit list", e);
+                }
+            }
+        });
     }
 
     /**
@@ -770,7 +811,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         String message = null;
 
-        if(commit != null) {
+        if (commit != null) {
             Locale current = mContext.getResources().getConfiguration().locale;
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", current);
             Date commitTime = new Date(commit.getCommitTime() * 1000L);
@@ -780,37 +821,36 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             message = mContext.getResources().getString(R.string.restoring_end);
         }
 
-        if(null != commit) {
-            String committedText = mTargetTranslation.getCommittedFileContents(git, file, commit);
+        final String finalMessage = message;
+        String committedText = null;
+
+        if (null != commit) {
+            committedText = mTargetTranslation.getCommittedFileContents(git, file, commit);
             item.currentCommit = commit;
             holder.mCurrentCommitItem = item;
-            item.renderedTargetBody = renderSourceText(committedText, item.translationFormat);
-            holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
-            holder.mTargetEditableBody.setText(item.renderedTargetBody);
-            holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
         } else {
             Logger.i(TAG, "restore commit not found");
         }
 
-        Toast toast = Toast.makeText(mContext, message, Toast.LENGTH_LONG);
-        toast.setGravity(Gravity.TOP, 0, 0);
-        toast.show();
-    }
+        final String finalCommittedText = committedText;
 
-    /**
-     * restore the text from later commit for fragment
-     * @param holder
-     * @param item
-     */
-    private void doRedo(final ViewHolder holder, final ListItem item) {
-        try {
-            final Git git = mTargetTranslation.getGit();
-            File file = getFileForItem(item);
-            RevCommit commit = mTargetTranslation.getRedoCommit(git, file, item.currentCommit);
-            restoreCommitText(holder, item, git, file, commit);
-        } catch (Exception e) {
-            Logger.w(TAG, "error getting commit list",e);
-        }
+        mContext.runOnUiThread(new Runnable() {
+            public void run() {
+                if (null != commit) {
+                    item.renderedTargetBody = renderSourceText(finalCommittedText, item.translationFormat);
+                    holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
+                    holder.mTargetEditableBody.setText(item.renderedTargetBody);
+                    holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
+                }
+
+                holder.mUndoButton.setVisibility(View.VISIBLE);
+                holder.mRedoButton.setVisibility(View.VISIBLE);
+
+                Toast toast = Toast.makeText(mContext, finalMessage, Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.TOP, 0, 0);
+                toast.show();
+            }
+        });
     }
 
     private File getFileForItem(ListItem item) {
