@@ -25,14 +25,11 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -751,15 +748,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             Locale current = mContext.getResources().getConfiguration().locale;
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", current);
             Date commitTime = new Date(commit.getCommitTime() * 1000L);
-            String restoreTimeFormat = mContext.getResources().getString(R.string.restoring_time);
+            String restoreTimeFormat = mContext.getResources().getString(R.string.restored_to_time);
             message = String.format(restoreTimeFormat, sdf.format(commitTime));
         } else {
             message = mContext.getResources().getString(R.string.restoring_end);
         }
-
-        Toast toast = Toast.makeText(mContext, message, Toast.LENGTH_LONG);
-        toast.setGravity(Gravity.TOP, 0, 0);
-        toast.show();
 
         if(null != commit) {
             String committedText = mTargetTranslation.getCommittedFileContents(git, file, commit);
@@ -771,6 +764,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         } else {
             Logger.i(TAG, "restore commit not found");
         }
+
+        Toast toast = Toast.makeText(mContext, message, Toast.LENGTH_LONG);
+        toast.setGravity(Gravity.TOP, 0, 0);
+        toast.show();
     }
 
     /**
