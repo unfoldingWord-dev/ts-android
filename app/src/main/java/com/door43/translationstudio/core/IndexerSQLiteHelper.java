@@ -695,7 +695,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @return
      */
     public String[] getTranslationNoteSlugs(SQLiteDatabase db, long frameId) {
-        Cursor cursor = db.rawQuery("SELECT `slug` FROM `translation_note` WHERE `frame_id`=" + frameId + " ORDER BY `title` ASC", null);
+        Cursor cursor = db.rawQuery("SELECT `slug` FROM `translation_note` WHERE `frame_id`=" + frameId, null);
         cursor.moveToFirst();
         List<String> slugs = new ArrayList<>();
         while(!cursor.isAfterLast()) {
