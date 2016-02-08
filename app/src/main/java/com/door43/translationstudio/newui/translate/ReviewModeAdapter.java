@@ -65,6 +65,7 @@ import com.door43.translationstudio.spannables.VersePinSpan;
 import com.door43.widget.ViewUtil;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.io.File;
@@ -681,6 +682,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     public void clearCurrentCommit(ViewHolder holder, ListItem item) {
         item.currentCommit = null; // clears undo position
+        item.commits = null;
         holder.mCurrentCommitItem = null;
     }
 
@@ -762,7 +764,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 try {
                     final Git git = mTargetTranslation.getGit();
                     File file = getFileForItem(item);
-                    RevCommit commit = mTargetTranslation.getUndoCommit(git, file, item.currentCommit);
+                    fetchCommitList(git, file, item);
+                    RevCommit commit = mTargetTranslation.getUndoCommit(item.commits, item.currentCommit);
                     restoreCommitText(holder, item, git, file, commit);
                 } catch (Exception e) {
                     Logger.w(TAG, "error getting commit list", e);
@@ -790,13 +793,20 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 try {
                     final Git git = mTargetTranslation.getGit();
                     File file = getFileForItem(item);
-                    RevCommit commit = mTargetTranslation.getRedoCommit(git, file, item.currentCommit);
+                    fetchCommitList(git, file, item);
+                    RevCommit commit = mTargetTranslation.getRedoCommit(item.commits, item.currentCommit);
                     restoreCommitText(holder, item, git, file, commit);
                 } catch (Exception e) {
                     Logger.w(TAG, "error getting commit list", e);
                 }
             }
         });
+    }
+
+    public void fetchCommitList(Git git, File file, ListItem item) throws IOException, GitAPIException {
+        if(null == item.commits) {
+            item.commits = mTargetTranslation.getCommitList(git, file);
+        }
     }
 
     /**
@@ -1461,6 +1471,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         private ChapterTranslation chapterTranslation;
         private ProjectTranslation projectTranslation;
         private RevCommit currentCommit = null; //keeps track of undo position
+        private RevCommit[] commits = null; //cache commit history
 
         public ListItem(String frameSlug, String chapterSlug) {
             this.frameSlug = frameSlug;

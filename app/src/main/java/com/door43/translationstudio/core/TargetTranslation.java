@@ -1109,33 +1109,28 @@ public class TargetTranslation {
 
     /**
      * get the commit before specified commit
-     * @param git
-     * @param file - specific file to check commit history
+     * @param commitList
      * @param currentCommit
      * @return
      */
-    public RevCommit getUndoCommit(final Git git, final File file, RevCommit currentCommit) {
-        RevCommit[] commits = null;
+    public RevCommit getUndoCommit(final RevCommit[] commitList, RevCommit currentCommit) {
         try {
-            if(null != file) {
-                commits = getCommitList(git, file);
-                if((commits != null) && (commits.length > 0)) {
-                    if (null == currentCommit) { // if not yet set, use latest
-                        currentCommit = commits[0];
-                    }
-
-                    final int commitTime = currentCommit.getCommitTime();
-
-                    RevCommit previousCommit = null;
-                    for(int i = 0; i < commits.length; i++) {
-                        RevCommit commit = commits[i];
-                        previousCommit = commit;
-                        if(commit.getCommitTime() < commitTime) {
-                            break;
-                        }
-                    }
-                    return previousCommit;
+            if((commitList != null) && (commitList.length > 0)) {
+                if (null == currentCommit) { // if not yet set, use latest
+                    currentCommit = commitList[0];
                 }
+
+                final int commitTime = currentCommit.getCommitTime();
+
+                RevCommit previousCommit = null;
+                for(int i = 0; i < commitList.length; i++) {
+                    RevCommit commit = commitList[i];
+                    previousCommit = commit;
+                    if(commit.getCommitTime() < commitTime) {
+                        break;
+                    }
+                }
+                return previousCommit;
             }
         } catch (Exception e) {
             Logger.w(TAG, "error getting commit list",e);
@@ -1145,35 +1140,30 @@ public class TargetTranslation {
 
     /**
      * get the commit after specified commit
-     * @param git
-     * @param file - specific file to check commit history
+     * @param commitList
      * @param currentCommit
      * @return
      */
-    public RevCommit getRedoCommit(final Git git, final File file, final RevCommit currentCommit) {
-        RevCommit[] commits = null;
+    public RevCommit getRedoCommit(final RevCommit[] commitList, final RevCommit currentCommit) {
         try {
-            if(null != file) {
-                if (null  == currentCommit) { // if not yet set, treat as using latest and there is no redo
-                    return null;
-                }
+            if (null  == currentCommit) { // if not yet set, treat as using latest and there is no redo
+                return null;
+            }
 
-                final int commitTime = currentCommit.getCommitTime();
+            final int commitTime = currentCommit.getCommitTime();
 
-                commits = getCommitList(git, file);
-                if((commits != null) && (commits.length > 0)) {
+            if((commitList != null) && (commitList.length > 0)) {
 
-                    RevCommit nextCommit = null;
-                    for(int i = 0; i < commits.length; i++) {
-                        RevCommit commit = commits[i];
-                        if(commit.getCommitTime() <= commitTime) {
-                            break;
-                        }
-                        nextCommit = commit;
+                RevCommit nextCommit = null;
+                for(int i = 0; i < commitList.length; i++) {
+                    RevCommit commit = commitList[i];
+                    if(commit.getCommitTime() <= commitTime) {
+                        break;
                     }
-
-                    return nextCommit;
+                    nextCommit = commit;
                 }
+
+                return nextCommit;
             }
         } catch (Exception e) {
             Logger.w(TAG, "error getting commit list", e);
