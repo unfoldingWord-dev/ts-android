@@ -754,9 +754,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mUndoButton.setVisibility(View.INVISIBLE);
         holder.mRedoButton.setVisibility(View.INVISIBLE);
 
-        Toast toast = Toast.makeText(mContext, R.string.label_undo, Toast.LENGTH_SHORT);
-        toast.setGravity(Gravity.TOP, 0, 0);
-        toast.show();
+        showRestoreMessage(item, R.string.label_undo);
 
         AsyncTask.execute(new Runnable() {
             @Override
@@ -783,9 +781,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mUndoButton.setVisibility(View.INVISIBLE);
         holder.mRedoButton.setVisibility(View.INVISIBLE);
 
-        Toast toast = Toast.makeText(mContext, R.string.label_redo, Toast.LENGTH_SHORT);
-        toast.setGravity(Gravity.TOP, 0, 0);
-        toast.show();
+        showRestoreMessage(item, R.string.label_redo);
 
         AsyncTask.execute(new Runnable() {
             @Override
@@ -801,6 +797,22 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
             }
         });
+    }
+
+    private void showRestoreMessage(final ListItem item, final String message) {
+        if(item.restoreMsg != null) {
+            item.restoreMsg.cancel(); // remove previous message
+        }
+
+        //create new message to display
+        item.restoreMsg = Toast.makeText(mContext, message, Toast.LENGTH_LONG);
+        item.restoreMsg.setGravity(Gravity.TOP, 0, 0);
+        item.restoreMsg.show();
+    }
+
+    private void showRestoreMessage(ListItem item, int resId) {
+        String message = mContext.getResources().getString(resId);
+        showRestoreMessage(item, message);
     }
 
     public void fetchCommitList(Git git, File file, ListItem item) throws IOException, GitAPIException {
@@ -856,9 +868,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 holder.mUndoButton.setVisibility(View.VISIBLE);
                 holder.mRedoButton.setVisibility(View.VISIBLE);
 
-                Toast toast = Toast.makeText(mContext, finalMessage, Toast.LENGTH_LONG);
-                toast.setGravity(Gravity.TOP, 0, 0);
-                toast.show();
+                showRestoreMessage(item, finalMessage);
             }
         });
     }
@@ -1472,6 +1482,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         private ProjectTranslation projectTranslation;
         private RevCommit currentCommit = null; //keeps track of undo position
         private RevCommit[] commits = null; //cache commit history
+        private Toast restoreMsg = null;
 
         public ListItem(String frameSlug, String chapterSlug) {
             this.frameSlug = frameSlug;
