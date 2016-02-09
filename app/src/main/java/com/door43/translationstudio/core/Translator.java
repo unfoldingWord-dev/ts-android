@@ -338,37 +338,32 @@ public class Translator {
                     targetTranslation.commit();
                 }
 
-                // clean out local translation (retaining history)
-                // TODO: 12/1/2015 there should be an option to discard local changes (though not it's history)
-//                    File[] oldFiles = localDir.listFiles(new FilenameFilter() {
+                    // copy files into existing translation
+                // TODO: 2/9/2016  perform a git merge --no-ff
+                try {
+                    targetTranslation.merge(newDir);
+                } catch(Exception e) {
+                    e.printStackTrace();
+                    continue;
+                }
+//                    File[] newFiles = newDir.listFiles(new FilenameFilter() {
 //                        @Override
 //                        public boolean accept(File dir, String filename) {
 //                            return !filename.equals(".git");
 //                        }
 //                    });
-//                    for(File f:oldFiles) {
-//                        FileUtils.deleteQuietly(f);
+//                    for(File importedFile:newFiles) {
+//                        File localFile = new File(localDir, importedFile.getName());
+//                        if(importedFile.getName().equals("manifest.json")) {
+//                            JSONObject localManifest = new JSONObject(FileUtils.readFileToString(localFile));
+//                            JSONObject importedManifest = new JSONObject(FileUtils.readFileToString(importedFile));
+//                            JSONObject mergedManifest = mergeManifests(localManifest, importedManifest);
+//                            FileUtils.writeStringToFile(localFile, mergedManifest.toString(), false);
+//                        } else {
+//                            // merge the files
+//                            mergeRecursively(importedFile, localFile);
+//                        }
 //                    }
-
-                    // copy files into existing translation
-                    File[] newFiles = newDir.listFiles(new FilenameFilter() {
-                        @Override
-                        public boolean accept(File dir, String filename) {
-                            return !filename.equals(".git");
-                        }
-                    });
-                    for(File importedFile:newFiles) {
-                        File localFile = new File(localDir, importedFile.getName());
-                        if(importedFile.getName().equals("manifest.json")) {
-                            JSONObject localManifest = new JSONObject(FileUtils.readFileToString(localFile));
-                            JSONObject importedManifest = new JSONObject(FileUtils.readFileToString(importedFile));
-                            JSONObject mergedManifest = mergeManifests(localManifest, importedManifest);
-                            FileUtils.writeStringToFile(localFile, mergedManifest.toString(), false);
-                        } else {
-                            // merge the files
-                            mergeRecursively(importedFile, localFile);
-                        }
-                    }
                 } else {
                     // import new translation
                     FileUtils.moveDirectory(newDir, localDir);

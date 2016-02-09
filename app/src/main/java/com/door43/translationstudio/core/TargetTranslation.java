@@ -12,14 +12,21 @@ import com.door43.util.Manifest;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
+import org.eclipse.jgit.api.CreateBranchCommand;
+import org.eclipse.jgit.api.DeleteBranchCommand;
+import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.ListTagCommand;
 import org.eclipse.jgit.api.LogCommand;
+import org.eclipse.jgit.api.MergeCommand;
+import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.TagCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.transport.FetchResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -1074,7 +1081,7 @@ public class TargetTranslation {
                 return PublishStatus.NOT_PUBLISHED;
             }
 
-            RevCommit head = getGitHead();
+            RevCommit head = getGitHead(getRepo());
             if(null == head) {
                 return PublishStatus.QUERY_ERROR;
             }
@@ -1112,6 +1119,47 @@ public class TargetTranslation {
         }
     }
 
+    /**
+     * Merges a local repository into this one
+     * @param newDir
+     * @return boolean false if there were merge conflicts
+     * @throws Exception
+     */
+    public boolean merge(File newDir) throws Exception {
+        // TODO: 2/9/2016 retain original manifest and merge manually
+//        Repo newRepo = new Repo(newDir.getAbsolutePath());
+        Repo repo = getRepo();
+
+        // attach remote
+        repo.deleteRemote("new");
+        repo.setRemote("new", newDir.getAbsolutePath());
+        FetchCommand fetch = repo.getGit().fetch();
+        fetch.setRemote("new");
+        FetchResult fetchResult = fetch.call();
+
+        // create branch for new changes
+        DeleteBranchCommand deleteBranch = repo.getGit().branchDelete();
+        deleteBranch.setBranchNames("new");
+        deleteBranch.setForce(true);
+        deleteBranch.call();
+        CreateBranchCommand branch = repo.getGit().branchCreate();
+        branch.setName("new");
+        branch.setStartPoint("new/master");
+        branch.call();
+
+        // perform merge
+        MergeCommand merge = repo.getGit().merge();
+        merge.setFastForward(MergeCommand.FastForwardMode.NO_FF);
+        merge.include(repo.getGit().getRepository().getRef("new"));
+
+        MergeResult result = merge.call();
+        if (result.getMergeStatus().equals(MergeResult.MergeStatus.CONFLICTING)) {
+            System.out.println(result.getConflicts().toString());
+            return false;
+        }
+        return true;
+    }
+
     public enum PublishStatus {
         IS_CURRENT,
         NOT_CURRENT,
@@ -1134,7 +1182,7 @@ public class TargetTranslation {
      */
     public String getCommitHash() throws Exception {
         String tag = null;
-        RevCommit commit = getGitHead();
+        RevCommit commit = getGitHead(getRepo());
         if(commit != null) {
             String[] pieces = commit.toString().split(" ");
             tag = pieces[1];
@@ -1147,12 +1195,12 @@ public class TargetTranslation {
 
     /**
      * Returns the commit HEAD
+     * @param repo the repository who's HEAD is returned
      * @return
      * @throws GitAPIException, IOException
      */
     @Nullable
-    private RevCommit getGitHead() throws GitAPIException, IOException {
-        Repo repo = getRepo();
+    private RevCommit getGitHead(Repo repo) throws GitAPIException, IOException {
         Iterable<RevCommit> commits = repo.getGit().log().setMaxCount(1).call();
         RevCommit commit = null;
         for(RevCommit c : commits) {
