@@ -37,11 +37,13 @@ import java.util.Collection;
  */
 public class UploadTargetTranslationTask extends ManagedTask {
     public static final String TASK_ID = "upload_target_translation";
+    public static final String AUTH_FAIL = "Auth fail";
     private final TargetTranslation mTargetTranslation;
     private final String mAuthServer;
     private final int mAuthServerPort;
     private String mResponse = "";
     private boolean mUploadSucceeded = true;
+    private boolean mUploadAuthFailure = false;
 
     public UploadTargetTranslationTask(TargetTranslation targetTranslation) {
         setThreadPriority(android.os.Process.THREAD_PRIORITY_DEFAULT);
@@ -53,6 +55,7 @@ public class UploadTargetTranslationTask extends ManagedTask {
     @Override
     public void start() {
         mUploadSucceeded = true;
+        mUploadAuthFailure = false;
         if(AppContext.context().isNetworkAvailable()) {
             publishProgress(-1, AppContext.context().getResources().getString(R.string.loading));
             if(!AppContext.context().hasRegisteredKeys()) {
@@ -80,6 +83,10 @@ public class UploadTargetTranslationTask extends ManagedTask {
 
     public boolean uploadSucceeded() {
         return mUploadSucceeded;
+    }
+
+    public boolean uploadAuthFailure() {
+        return mUploadAuthFailure;
     }
 
     /**
@@ -137,6 +144,16 @@ public class UploadTargetTranslationTask extends ManagedTask {
             return response.toString();
         } catch (TransportException e) {
             Logger.e(this.getClass().getName(), e.getMessage(), e);
+            Throwable cause = e.getCause();
+            if(cause != null) {
+                Throwable subException = cause.getCause();
+                if(subException != null) {
+                    String detail = subException.getMessage();
+                    if (AUTH_FAIL.equals(detail)) {
+                        mUploadAuthFailure = true; // we do special handling for auth failure
+                    }
+                }
+            }
             mUploadSucceeded = false;
             return null;
         } catch (Exception e) {
