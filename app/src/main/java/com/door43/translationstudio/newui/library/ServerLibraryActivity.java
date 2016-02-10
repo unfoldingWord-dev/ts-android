@@ -74,22 +74,15 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
 
         if(savedInstanceState == null) {
             // check for available updates
-//            if(ServerLibraryCache.isExpired()) {
-                GetLibraryUpdatesTask getUpdatesTask = new GetLibraryUpdatesTask();
-                getUpdatesTask.addOnFinishedListener(this);
-                getUpdatesTask.addOnProgressListener(this);
-                TaskManager.addTask(getUpdatesTask, GetLibraryUpdatesTask.TASK_ID);
-//            } else {
-//                // load the cached data
-//                Library serverLibrary = AppContext.getLibrary();
-//                Project[] projects = serverLibrary.getProjects(Locale.getDefault().getLanguage());
-//                mListFragment.setData(ServerLibraryCache.getAvailableUpdates(), projects);
-//            }
+            GetLibraryUpdatesTask getUpdatesTask = new GetLibraryUpdatesTask();
+            getUpdatesTask.addOnFinishedListener(this);
+            getUpdatesTask.addOnProgressListener(this);
+            TaskManager.addTask(getUpdatesTask, GetLibraryUpdatesTask.TASK_ID);
         } else {
             // populated cached data
             Library serverLibrary = AppContext.getLibrary();
             Project[] projects = serverLibrary.getProjects(Locale.getDefault().getLanguage());
-            mListFragment.setData(ServerLibraryCache.getAvailableUpdates(), projects);
+            mListFragment.setData(serverLibrary.getAvailableUpdates(), projects);
 
             // connect to tasks
             DownloadAllProjectsTask downloadAllTask = (DownloadAllProjectsTask)TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
@@ -198,7 +191,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
         });
         searchViewAction.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         // display download updates
-        if(ServerLibraryCache.getAvailableUpdates() != null && ServerLibraryCache.getAvailableUpdates().numSourceTranslationUpdates() > 0) {
+        if(AppContext.getLibrary().getAvailableUpdates().numSourceTranslationUpdates() > 0) {
             menu.findItem(R.id.action_download_updates).setVisible(true);
         } else {
             menu.findItem(R.id.action_download_updates).setVisible(false);
@@ -243,7 +236,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                                 DownloadUpdatesTask task = (DownloadUpdatesTask)TaskManager.getTask(DownloadUpdatesTask.TASK_ID);
                                 if(task == null) {
                                     // start new task
-                                    task = new DownloadUpdatesTask(ServerLibraryCache.getAvailableUpdates());
+                                    task = new DownloadUpdatesTask(AppContext.getLibrary().getAvailableUpdates());
                                     task.addOnProgressListener(ServerLibraryActivity.this);
                                     task.addOnFinishedListener(ServerLibraryActivity.this);
                                     TaskManager.addTask(task, DownloadUpdatesTask.TASK_ID);
@@ -327,13 +320,6 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
     public void onFinished(final ManagedTask task) {
         TaskManager.clearTask(task);
 
-        if(task instanceof GetLibraryUpdatesTask) {
-            ServerLibraryCache.setAvailableUpdates(((GetLibraryUpdatesTask) task).getUpdates());
-            if(task.isCanceled()) {
-                ServerLibraryCache.setExpired();
-            }
-        }
-
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
@@ -341,7 +327,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                 invalidateOptionsMenu();
                 Library serverLibrary = AppContext.getLibrary();
                 Project[] projects = serverLibrary.getProjects(Locale.getDefault().getLanguage());
-                mListFragment.setData(ServerLibraryCache.getAvailableUpdates(), projects);
+                mListFragment.setData(serverLibrary.getAvailableUpdates(), projects);
 
                 if(mProgressDialog != null && mProgressDialog.isShowing()) {
                     mProgressDialog.dismiss();
