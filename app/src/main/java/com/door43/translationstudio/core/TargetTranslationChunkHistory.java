@@ -44,7 +44,8 @@ public class TargetTranslationChunkHistory {
      */
     public void setChunkTypeAsChapterReference() {
         mChunkType = ChunkType.CHAPTER_REFERENCE;
-        mRepoFile = mTargetTranslation.getChapterReferenceFile(mFrameTranslation.getChapterId());
+        File file = mTargetTranslation.getChapterReferenceFile(mFrameTranslation.getChapterId());
+        mRepoFile = getRelativeFilePath(file);
     }
 
     /**
@@ -52,7 +53,8 @@ public class TargetTranslationChunkHistory {
      */
     public void setChunkTypeAsChapterTitle() {
         mChunkType = ChunkType.CHAPTER_TITLE;
-        mRepoFile = mTargetTranslation.getChapterTitleFile(mFrameTranslation.getChapterId());
+        File file = mTargetTranslation.getChapterTitleFile(mFrameTranslation.getChapterId());
+        mRepoFile = getRelativeFilePath(file);
     }
 
     /**
@@ -60,7 +62,8 @@ public class TargetTranslationChunkHistory {
      */
     public void setChunkTypeAsProjectTitle() {
         mChunkType = ChunkType.PROJECT_TITLE;
-        mRepoFile = mTargetTranslation.getProjectTitleFile();
+        File file = mTargetTranslation.getProjectTitleFile();
+        mRepoFile = getRelativeFilePath(file);
     }
 
     /**
@@ -68,7 +71,27 @@ public class TargetTranslationChunkHistory {
      */
     public void setChunkTypeAsFrame() {
         mChunkType = ChunkType.FRAME;
-        mRepoFile = mTargetTranslation.getFrameFile(mFrameTranslation.getChapterId(), mFrameTranslation.getId());
+        File file = mTargetTranslation.getFrameFile(mFrameTranslation.getChapterId(), mFrameTranslation.getId());
+        mRepoFile = getRelativeFilePath(file);
+    }
+
+    /**
+     * convert absolute file path to relative path used in repo
+     * @param file
+     * @return
+     */
+    public File getRelativeFilePath(File file) {
+        File repoFile = null;
+        if(file != null) { // get relative path
+            String path = file.toString();
+            String folder = mTargetTranslation.getPath().toString();
+            int pos = path.indexOf(folder);
+            if(pos >= 0) {
+                String subPath = path.substring(pos + folder.length() + 1);
+                repoFile = new File(subPath);
+            }
+        }
+        return repoFile;
     }
 
     /**

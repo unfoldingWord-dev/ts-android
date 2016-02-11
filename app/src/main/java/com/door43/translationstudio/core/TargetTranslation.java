@@ -1190,10 +1190,7 @@ public class TargetTranslation {
             }
             Iterable<RevCommit> logs = log.call();
             ArrayList<RevCommit> revs = new ArrayList<>();
-//            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
             for (RevCommit commit : logs) {
-//                Date commitTime = new Date(commit.getCommitTime() * 1000L);
-//                Logger.i(TAG,"Commit: " + commit + ", time: " + sdf.format(commitTime) );
                 revs.add(commit);
             }
             Logger.i(TAG, "Found " + revs.size() + " commits overall on " + file);
