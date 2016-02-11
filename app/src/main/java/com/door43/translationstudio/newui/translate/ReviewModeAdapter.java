@@ -7,7 +7,6 @@ import android.content.ClipData;
 import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
@@ -16,7 +15,6 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.Selection;
-import android.text.SpannedString;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.DragEvent;
@@ -46,6 +44,7 @@ import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.LinedEditText;
 import com.door43.translationstudio.core.ProjectTranslation;
+import com.door43.translationstudio.core.TargetTranslationChunkHistory;
 import com.door43.translationstudio.core.TranslationNote;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
@@ -65,11 +64,6 @@ import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.VersePinSpan;
 import com.door43.widget.ViewUtil;
 
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.revwalk.RevCommit;
-
-import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -92,6 +86,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     public static final String UNDO = "Undo";
     public static final String REDO = "Redo";
     public static final String OPTIONS = "Options";
+    public static final String ISO_DATE_FORMAT = "yyyy-MM-dd HH:mm";
     private final Library mLibrary;
     private final Translator mTranslator;
     private final Activity mContext;
@@ -481,7 +476,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String translation = applyChangedText(s, holder, item);
-                clearCurrentCommit(holder, item);
+                clearChunkHistory(holder, item);
 
                 // update view if pasting text
                 // TRICKY: anything worth rendering will need to change by at least 7 characters
@@ -830,10 +825,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         editText.setSelection(editText.length(), editText.length());
     }
 
-    public void clearCurrentCommit(ViewHolder holder, ListItem item) {
-        item.currentCommit = null; // clears undo position
-        item.commits = null;
-        holder.mCurrentCommitItem = null;
+    public void clearChunkHistory(ViewHolder holder, ListItem item) {
+        if(item.targetTranslationChunkHistory != null) {
+            item.targetTranslationChunkHistory.clearHistory();
+        }
     }
 
     /**
@@ -842,10 +837,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param item
      */
     private void saveRestoredText(ViewHolder holder, ListItem item) {
-        if(item.currentCommit != null) {
+        if(item.targetTranslationChunkHistory != null) {
             CharSequence s = holder.mTargetEditableBody.getText();
             applyChangedText(s, holder, item);
-            clearCurrentCommit(holder, item);
+            clearChunkHistory(holder, item);
         }
     }
 
@@ -854,7 +849,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param holder
      */
     public void saveRestoredText(ViewHolder holder) {
-        ListItem item = holder.mCurrentCommitItem;
+        ListItem item = holder.mHistoryitem;
         if(item != null) {
             saveRestoredText(holder, item);
         }
@@ -906,18 +901,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         showRestoreMessage(item, R.string.label_undo);
 
-        AsyncTask.execute(new Runnable() {
+        TargetTranslationChunkHistory chunkHistory = getTargetTranslationHistory(holder, item);
+        chunkHistory.doUndo(mContext, new TargetTranslationChunkHistory.OnRestoreFinishListener() {
             @Override
-            public void run() {
-                try {
-                    final Git git = mTargetTranslation.getGit();
-                    File file = getFileForItem(item);
-                    fetchCommitList(git, file, item);
-                    RevCommit commit = mTargetTranslation.getUndoCommit(item.commits, item.currentCommit);
-                    restoreCommitText(holder, item, git, file, commit);
-                } catch (Exception e) {
-                    Logger.w(TAG, "error getting commit list", e);
-                }
+            public void onRestoreFinish(Date restoreTime, String restoredText) {
+                restoreCommitText(holder, item, restoredText);
+                showRestoreTime(item, restoreTime);
             }
         });
     }
@@ -933,20 +922,50 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         showRestoreMessage(item, R.string.label_redo);
 
-        AsyncTask.execute(new Runnable() {
+        TargetTranslationChunkHistory chunkHistory = getTargetTranslationHistory( holder, item);
+        chunkHistory.doRedo(mContext, new TargetTranslationChunkHistory.OnRestoreFinishListener() {
             @Override
-            public void run() {
-                try {
-                    final Git git = mTargetTranslation.getGit();
-                    File file = getFileForItem(item);
-                    fetchCommitList(git, file, item);
-                    RevCommit commit = mTargetTranslation.getRedoCommit(item.commits, item.currentCommit);
-                    restoreCommitText(holder, item, git, file, commit);
-                } catch (Exception e) {
-                    Logger.w(TAG, "error getting commit list", e);
-                }
+            public void onRestoreFinish(Date restoreTime, String restoredText) {
+                restoreCommitText(holder, item, restoredText);
+                showRestoreTime(item, restoreTime);
             }
         });
+    }
+
+    /**
+     * restore commited file contents to current fragment
+     * @param holder
+     * @param item
+     * @param restoredText
+     */
+    private void restoreCommitText(final ViewHolder holder, final ListItem item, final String restoredText) {
+
+        if (null != restoredText) {
+            item.renderedTargetBody = renderSourceText(restoredText, item.translationFormat, holder, item, true);
+            holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
+            holder.mTargetEditableBody.setText(item.renderedTargetBody);
+            holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
+        }
+
+        holder.mUndoButton.setVisibility(View.VISIBLE);
+        holder.mRedoButton.setVisibility(View.VISIBLE);
+    }
+
+    private void showRestoreTime(final ListItem item, final Date restoreTime) {
+        if(item.restoreMsg != null) {
+            item.restoreMsg.cancel(); // remove previous message
+        }
+
+        String message;
+        if (restoreTime != null) {
+            Locale current = mContext.getResources().getConfiguration().locale;
+            SimpleDateFormat sdf = new SimpleDateFormat(ISO_DATE_FORMAT, current);
+            String restoreTimeFormat = mContext.getResources().getString(R.string.restored_to_time);
+            message = String.format(restoreTimeFormat, sdf.format(restoreTime));
+        } else {
+            message = mContext.getResources().getString(R.string.restoring_end);
+        }
+        showRestoreMessage(item, message);
     }
 
     private void showRestoreMessage(final ListItem item, final String message) {
@@ -965,86 +984,26 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         showRestoreMessage(item, message);
     }
 
-    public void fetchCommitList(Git git, File file, ListItem item) throws IOException, GitAPIException {
-        if(null == item.commits) {
-            item.commits = mTargetTranslation.getCommitList(git, file);
-        }
-    }
+   private TargetTranslationChunkHistory getTargetTranslationHistory(ViewHolder holder, ListItem item) {
+       holder.mHistoryitem = item;
 
-    /**
-     * restore commited file contents to current fragment
-     * @param holder
-     * @param item
-     * @param git
-     * @param file
-     * @param commit
-     */
-    private void restoreCommitText(final ViewHolder holder, final ListItem item, final Git git, final File file, final RevCommit commit) {
+       if(item.targetTranslationChunkHistory != null) {
+           return item.targetTranslationChunkHistory;
+       }
 
-        String message = null;
-
-        if (commit != null) {
-            Locale current = mContext.getResources().getConfiguration().locale;
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", current);
-            Date commitTime = new Date(commit.getCommitTime() * 1000L);
-            String restoreTimeFormat = mContext.getResources().getString(R.string.restored_to_time);
-            message = String.format(restoreTimeFormat, sdf.format(commitTime));
-        } else {
-            message = mContext.getResources().getString(R.string.restoring_end);
-        }
-
-        final String finalMessage = message;
-        String committedText = null;
-
-        if (null != commit) {
-            committedText = mTargetTranslation.getCommittedFileContents(git, file, commit);
-            item.currentCommit = commit;
-            holder.mCurrentCommitItem = item;
-        } else {
-            Logger.i(TAG, "restore commit not found");
-        }
-
-        final String finalCommittedText = committedText;
-
-        mContext.runOnUiThread(new Runnable() {
-            public void run() {
-                if (null != commit) {
-                    item.renderedTargetBody = renderSourceText(finalCommittedText, item.translationFormat, holder, item, true);
-                    holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
-                    holder.mTargetEditableBody.setText(item.renderedTargetBody);
-                    holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
-                }
-
-                holder.mUndoButton.setVisibility(View.VISIBLE);
-                holder.mRedoButton.setVisibility(View.VISIBLE);
-
-                showRestoreMessage(item, finalMessage);
-            }
-        });
-    }
-
-    private File getFileForItem(ListItem item) {
-        File file = null;
+       TargetTranslationChunkHistory targetTranslationHistory = new TargetTranslationChunkHistory(mTargetTranslation, item.frameTranslation);
 
         if(item.isChapterReference) {
-            file = mTargetTranslation.getChapterReferenceFile(item.frameTranslation.getChapterId());
+            targetTranslationHistory.setChunkTypeAsChapterReference();
         } else if(item.isChapterTitle) {
-            file = mTargetTranslation.getChapterTitleFile(item.frameTranslation.getChapterId());
+            targetTranslationHistory.setChunkTypeAsChapterTitle();
         } else if(item.isProjectTitle) {
-            file = mTargetTranslation.getProjectTitleFile();
+            targetTranslationHistory.setChunkTypeAsProjectTitle();
         } else if(item.isFrame()) {
-            file = mTargetTranslation.getFrameFile(item.frameTranslation.getChapterId(), item.frameTranslation.getId());
+            targetTranslationHistory.setChunkTypeAsFrame();
         }
-        if(file != null) { // get relative path
-            String path = file.toString();
-            String folder = mTargetTranslation.getPath().toString();
-            int pos = path.indexOf(folder);
-            if(pos >= 0) {
-                String subPath = path.substring(pos + folder.length() + 1);
-                file = new File(subPath);
-            }
-        }
-        return file;
+        item.targetTranslationChunkHistory = targetTranslationHistory;
+        return targetTranslationHistory;
     }
 
     private static final Pattern CONSECUTIVE_VERSE_MARKERS =
@@ -1667,7 +1626,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public final TabLayout mTranslationTabs;
         public final ImageButton mNewTabButton;
         public TextView mSourceBody;
-        private ListItem mCurrentCommitItem = null;
+        public ListItem mHistoryitem;
 
         public ViewHolder(Context context, View v) {
             super(v);
@@ -1724,9 +1683,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         private FrameTranslation frameTranslation;
         private ChapterTranslation chapterTranslation;
         private ProjectTranslation projectTranslation;
-        private RevCommit currentCommit = null; //keeps track of undo position
-        private RevCommit[] commits = null; //cache commit history
         private Toast restoreMsg = null;
+        private TargetTranslationChunkHistory targetTranslationChunkHistory = null;
 
         public ListItem(String frameSlug, String chapterSlug) {
             this.frameSlug = frameSlug;
