@@ -39,32 +39,54 @@ public class TargetTranslationChunkHistory {
         mFrameTranslation = frameTranslation;
     }
 
+    /**
+     * identify this chunk as being for a chapter reference
+     */
     public void setChunkTypeAsChapterReference() {
         mChunkType = ChunkType.CHAPTER_REFERENCE;
         mRepoFile = mTargetTranslation.getChapterReferenceFile(mFrameTranslation.getChapterId());
     }
 
+    /**
+     * identify this chunk as being for a chapter title
+     */
     public void setChunkTypeAsChapterTitle() {
         mChunkType = ChunkType.CHAPTER_TITLE;
         mRepoFile = mTargetTranslation.getChapterTitleFile(mFrameTranslation.getChapterId());
     }
 
+    /**
+     * identify this chunk as being for a project title
+     */
     public void setChunkTypeAsProjectTitle() {
         mChunkType = ChunkType.PROJECT_TITLE;
         mRepoFile = mTargetTranslation.getProjectTitleFile();
     }
 
+    /**
+     * identify this chunk as being for a frame
+     */
     public void setChunkTypeAsFrame() {
         mChunkType = ChunkType.FRAME;
         mRepoFile = mTargetTranslation.getFrameFile(mFrameTranslation.getChapterId(), mFrameTranslation.getId());
     }
 
+    /**
+     * clears the commit history and position
+     */
     public void clearHistory() {
         mCurrentCommit = null; // clears undo position
         mCommitHistory = null;
     }
 
-    public void fetchCommitList(Git git, File file) throws IOException, GitAPIException {
+    /**
+     * get commit history for chunk if not cached
+     * @param git
+     * @param file
+     * @throws IOException
+     * @throws GitAPIException
+     */
+    public void getCommitHistory(Git git, File file) throws IOException, GitAPIException {
         if(null == mCommitHistory) {
             mCommitHistory = mTargetTranslation.getCommitList(git, file);
         }
@@ -72,6 +94,7 @@ public class TargetTranslationChunkHistory {
 
     /**
      * restore the text from previous commit for fragment
+     * @param activity
      * @param listener
      */
     public void doUndo(final Activity activity, final OnRestoreFinishListener listener) {
@@ -81,7 +104,7 @@ public class TargetTranslationChunkHistory {
             public void run() {
                 try {
                     final Git git = mTargetTranslation.getGit();
-                    fetchCommitList(git, mRepoFile);
+                    getCommitHistory(git, mRepoFile);
                     RevCommit commit = mTargetTranslation.getUndoCommit(mCommitHistory, mCurrentCommit);
                     restoreCommitText(activity, git, listener, commit);
                 } catch (Exception e) {
@@ -93,6 +116,7 @@ public class TargetTranslationChunkHistory {
 
     /**
      * restore the text from later commit for fragment
+     * @param activity
      * @param listener
      */
     public void doRedo(final Activity activity, final OnRestoreFinishListener listener) {
@@ -102,7 +126,7 @@ public class TargetTranslationChunkHistory {
             public void run() {
                 try {
                     final Git git = mTargetTranslation.getGit();
-                    fetchCommitList(git, mRepoFile);
+                    getCommitHistory(git, mRepoFile);
                     RevCommit commit = mTargetTranslation.getRedoCommit(mCommitHistory, mCurrentCommit);
                     restoreCommitText(activity, git, listener, commit);
                 } catch (Exception e) {
@@ -114,8 +138,9 @@ public class TargetTranslationChunkHistory {
 
     /**
      * restore commited file contents to current fragment
+     * @param activity
+     * @param git
      * @param listener
-     * * @param git
      * @param commit
      */
     private void restoreCommitText(final Activity activity, final Git git, final OnRestoreFinishListener listener, final RevCommit commit) {
@@ -144,6 +169,9 @@ public class TargetTranslationChunkHistory {
         });
     }
 
+    /**
+     * callback interface for when undo/redo operation is completed
+     */
     public interface OnRestoreFinishListener {
         /**
          * Called when a view has been clicked.
@@ -151,6 +179,4 @@ public class TargetTranslationChunkHistory {
          */
         void onRestoreFinish(Date restoreTime, String restoredText);
     }
-
-
 }

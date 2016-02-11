@@ -476,7 +476,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String translation = applyChangedText(s, holder, item);
-                clearChunkHistory(holder, item);
+                clearChunkHistory(item);
 
                 // update view if pasting text
                 // TRICKY: anything worth rendering will need to change by at least 7 characters
@@ -825,7 +825,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         editText.setSelection(editText.length(), editText.length());
     }
 
-    public void clearChunkHistory(ViewHolder holder, ListItem item) {
+    /**
+     * clear chunk history
+     * @param item
+     */
+    public void clearChunkHistory(ListItem item) {
         if(item.targetTranslationChunkHistory != null) {
             item.targetTranslationChunkHistory.clearHistory();
         }
@@ -840,7 +844,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         if(item.targetTranslationChunkHistory != null) {
             CharSequence s = holder.mTargetEditableBody.getText();
             applyChangedText(s, holder, item);
-            clearChunkHistory(holder, item);
+            clearChunkHistory(item);
         }
     }
 
@@ -899,9 +903,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mUndoButton.setVisibility(View.INVISIBLE);
         holder.mRedoButton.setVisibility(View.INVISIBLE);
 
-        showRestoreMessage(item, R.string.label_undo);
+        showToastMessage(item, R.string.label_undo);
 
-        TargetTranslationChunkHistory chunkHistory = getTargetTranslationHistory(holder, item);
+        TargetTranslationChunkHistory chunkHistory = getTargetTranslationChunkHistory(holder, item);
         chunkHistory.doUndo(mContext, new TargetTranslationChunkHistory.OnRestoreFinishListener() {
             @Override
             public void onRestoreFinish(Date restoreTime, String restoredText) {
@@ -920,9 +924,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mUndoButton.setVisibility(View.INVISIBLE);
         holder.mRedoButton.setVisibility(View.INVISIBLE);
 
-        showRestoreMessage(item, R.string.label_redo);
+        showToastMessage(item, R.string.label_redo);
 
-        TargetTranslationChunkHistory chunkHistory = getTargetTranslationHistory( holder, item);
+        TargetTranslationChunkHistory chunkHistory = getTargetTranslationChunkHistory(holder, item);
         chunkHistory.doRedo(mContext, new TargetTranslationChunkHistory.OnRestoreFinishListener() {
             @Override
             public void onRestoreFinish(Date restoreTime, String restoredText) {
@@ -951,6 +955,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mRedoButton.setVisibility(View.VISIBLE);
     }
 
+    /**
+     * show the restored time as a toast popup
+     * @param item
+     * @param restoreTime
+     */
     private void showRestoreTime(final ListItem item, final Date restoreTime) {
         if(item.restoreMsg != null) {
             item.restoreMsg.cancel(); // remove previous message
@@ -965,10 +974,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         } else {
             message = mContext.getResources().getString(R.string.restoring_end);
         }
-        showRestoreMessage(item, message);
+        showToastMessage(item, message);
     }
 
-    private void showRestoreMessage(final ListItem item, final String message) {
+    /**
+     * show message as toast
+     * @param item
+     * @param message
+     */
+    private void showToastMessage(final ListItem item, final String message) {
         if(item.restoreMsg != null) {
             item.restoreMsg.cancel(); // remove previous message
         }
@@ -979,12 +993,24 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         item.restoreMsg.show();
     }
 
-    private void showRestoreMessage(ListItem item, int resId) {
+    /**
+     * show message as toast
+     * @param item
+     * @param resId
+     */
+    private void showToastMessage(ListItem item, int resId) {
         String message = mContext.getResources().getString(resId);
-        showRestoreMessage(item, message);
+        showToastMessage(item, message);
     }
 
-   private TargetTranslationChunkHistory getTargetTranslationHistory(ViewHolder holder, ListItem item) {
+    /**
+     * gets target translation history object for this chunk.  If not already created then a new
+     * instance is created with for this chunk type
+     * @param holder
+     * @param item
+     * @return
+     */
+   private TargetTranslationChunkHistory getTargetTranslationChunkHistory(ViewHolder holder, ListItem item) {
        holder.mHistoryitem = item;
 
        if(item.targetTranslationChunkHistory != null) {
