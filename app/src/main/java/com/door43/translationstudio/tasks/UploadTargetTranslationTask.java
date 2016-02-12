@@ -52,6 +52,10 @@ public class UploadTargetTranslationTask extends ManagedTask {
         mAuthServerPort = Integer.parseInt(AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER_PORT, AppContext.context().getResources().getString(R.string.pref_default_auth_server_port)));
     }
 
+    public boolean getAuthFailure() {
+        return mUploadAuthFailure;
+    }
+
     @Override
     public void start() {
         mUploadSucceeded = true;
@@ -63,7 +67,7 @@ public class UploadTargetTranslationTask extends ManagedTask {
                 if(AppContext.context().hasKeys()) {
                     // open tcp connection with server
                     publishProgress(-1, AppContext.context().getResources().getString(R.string.submitting_security_keys));
-                    registerKeys();
+                    registerKeysAndUpload();
                 } else {
                     Logger.w(this.getClass().getName(), "The ssh keys have not been generated");
                     mUploadSucceeded = false;
@@ -247,9 +251,9 @@ public class UploadTargetTranslationTask extends ManagedTask {
     }
 
     /**
-     * Submits the device public ssh key to the server
+     * Submits the device public ssh key to the server, and if successful starts upload
      */
-    private void registerKeys() {
+    private void registerKeysAndUpload() {
         Logger.i(this.getClass().getName(), "Registering ssh key with " + mAuthServer);
         // open tcp connection with server
         try {

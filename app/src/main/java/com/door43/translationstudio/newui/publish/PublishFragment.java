@@ -199,7 +199,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
     }
 
     @Override
-    public void onFinished(ManagedTask task) {
+    public void onFinished(final ManagedTask task) {
         mTaskWatcher.stop();
 
         if(((UploadTargetTranslationTask)task).uploadSucceeded()) {
@@ -228,9 +228,34 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 }
             });
         } else {
-            TargetTranslation targetTranslation = ((UploadTargetTranslationTask)task).getTargetTranslation();
-            notifyPublishFailed(targetTranslation);
+            boolean authFailure = ((UploadTargetTranslationTask)task).getAuthFailure();
+            if(authFailure) {
+                showAuthFailure((UploadTargetTranslationTask) task);
+            } else {
+                TargetTranslation targetTranslation = ((UploadTargetTranslationTask) task).getTargetTranslation();
+                notifyPublishFailed(targetTranslation);
+            }
         }
+    }
+
+    public void showAuthFailure(final UploadTargetTranslationTask task) {
+        CustomAlertDialog.Create(getActivity())
+                .setTitle(R.string.upload_failed).setMessage(R.string.auth_failure_retry)
+                .setPositiveButton(R.string.yes, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        AppContext.context().generateKeys();
+                        mUploadButton.callOnClick();
+                    }
+                })
+                .setNegativeButton(R.string.no, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        TargetTranslation targetTranslation = task.getTargetTranslation();
+                        notifyPublishFailed(targetTranslation);
+                    }
+                })
+                .show("PubAuthFailure");
     }
 
     /**

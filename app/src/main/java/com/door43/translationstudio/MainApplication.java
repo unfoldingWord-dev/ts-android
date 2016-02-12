@@ -430,7 +430,7 @@ public class MainApplication extends Application {
     }
 
     /**
-     * Generates a new RSA key pair for use with ssh
+     * Generates a new RSA key pair for use with ssh, this also unregisters the keys
      * TODO: this should not be done on the main thread
      */
     public void generateKeys() {

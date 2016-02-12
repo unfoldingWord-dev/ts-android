@@ -653,4 +653,5 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="footnote_label">Footnote</string>
     <string name="footnote_title_empty">Footnote Title cannot be empty</string>
     <string name="footnote_message_empty">Footnote cannot be empty</string>
+    <string name="auth_failure_retry">Authentication Failure.  Retry?</string>
 </resources>
