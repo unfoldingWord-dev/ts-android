@@ -97,7 +97,7 @@ public class TargetTranslationChunkHistory {
     /**
      * clears the commit history and position
      */
-    public void clearHistory() {
+    public void clearCachedHistory() {
         mCurrentCommit = null; // clears undo position
         mCommitHistory = null;
     }
@@ -111,7 +111,7 @@ public class TargetTranslationChunkHistory {
      */
     public void getCommitHistory(Git git, File file) throws IOException, GitAPIException {
         if(null == mCommitHistory) {
-            mCommitHistory = mTargetTranslation.getCommitList(git, file);
+            mCommitHistory = mTargetTranslation.getCommitHistory(git, file);
         }
     }
 
@@ -120,7 +120,7 @@ public class TargetTranslationChunkHistory {
      * @param activity
      * @param listener
      */
-    public void doUndo(final Activity activity, final OnRestoreFinishListener listener) {
+    public void getUndoText(final Activity activity, final OnRestoreFinishListener listener) {
 
         AsyncTask.execute(new Runnable() {
             @Override
@@ -142,7 +142,7 @@ public class TargetTranslationChunkHistory {
      * @param activity
      * @param listener
      */
-    public void doRedo(final Activity activity, final OnRestoreFinishListener listener) {
+    public void getRedoText(final Activity activity, final OnRestoreFinishListener listener) {
 
         AsyncTask.execute(new Runnable() {
             @Override

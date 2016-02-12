@@ -1172,14 +1172,14 @@ public class TargetTranslation {
     }
 
     /**
-     * get list of commits,  file format example: 02/03.txt
+     * get list of commit history,  file format example: 02/03.txt
      * @param git
      * @param file
      * @return
      * @throws IOException
      * @throws GitAPIException
      */
-    public RevCommit[] getCommitList(final Git git, final File file) throws IOException, GitAPIException {
+    public RevCommit[] getCommitHistory(final Git git, final File file) throws IOException, GitAPIException {
         try {
             Repository repository = git.getRepository();
             ObjectId recovery = repository.resolve("HEAD");

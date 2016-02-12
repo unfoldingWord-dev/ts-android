@@ -443,6 +443,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             ViewUtil.makeLinksClickable(holder.mTargetBody);
         }
 
+        clearCachedChunkHistory(holder, item);
+
         // render title
         String targetTitle = "";
         if(item.isChapter()) {
@@ -476,7 +478,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String translation = applyChangedText(s, holder, item);
-                clearChunkHistory(item);
 
                 // update view if pasting text
                 // TRICKY: anything worth rendering will need to change by at least 7 characters
@@ -512,13 +513,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mUndoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                doUndo(holder, item);
+                undoTextInTarget(holder, item);
             }
         });
         holder.mRedoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                doRedo(holder, item);
+                redoTextInTarget(holder, item);
             }
         });
 
@@ -829,14 +830,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * clear chunk history
      * @param item
      */
-    public void clearChunkHistory(ListItem item) {
+    public void clearCachedChunkHistory(ViewHolder holder, ListItem item) {
+        holder.mHistoryitem = null;
         if(item.targetTranslationChunkHistory != null) {
-            item.targetTranslationChunkHistory.clearHistory();
+            item.targetTranslationChunkHistory.clearCachedHistory();
         }
     }
 
     /**
-     * check if user has restored old text.  If so then save it
+     * check if user has restored old text (undo).  If so then save it
      * @param holder
      * @param item
      */
@@ -844,12 +846,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         if(item.targetTranslationChunkHistory != null) {
             CharSequence s = holder.mTargetEditableBody.getText();
             applyChangedText(s, holder, item);
-            clearChunkHistory(item);
         }
     }
 
     /**
-     * check if user has restored old text.  If so then save it
+     * check if user has restored old text (undo).  If so then save it
      * @param holder
      */
     public void saveRestoredText(ViewHolder holder) {
@@ -876,6 +877,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @return
      */
     private String applyChangedText(CharSequence s, ViewHolder holder, ListItem item) {
+        clearCachedChunkHistory(holder, item);
         String translation = Translator.compileTranslation((Editable) s);
         if (item.isChapterReference) {
             mTargetTranslation.applyChapterReferenceTranslation(item.chapterTranslation, translation);
@@ -899,14 +901,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param holder
      * @param item
      */
-    private void doUndo(final ViewHolder holder, final ListItem item) {
+    private void undoTextInTarget(final ViewHolder holder, final ListItem item) {
         holder.mUndoButton.setVisibility(View.INVISIBLE);
         holder.mRedoButton.setVisibility(View.INVISIBLE);
 
         showToastMessage(item, R.string.label_undo);
 
         TargetTranslationChunkHistory chunkHistory = getTargetTranslationChunkHistory(holder, item);
-        chunkHistory.doUndo(mContext, new TargetTranslationChunkHistory.OnRestoreFinishListener() {
+        chunkHistory.getUndoText(mContext, new TargetTranslationChunkHistory.OnRestoreFinishListener() {
             @Override
             public void onRestoreFinish(Date restoreTime, String restoredText) {
                 restoreCommitText(holder, item, restoredText);
@@ -920,14 +922,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param holder
      * @param item
      */
-    private void doRedo(final ViewHolder holder, final ListItem item) {
+    private void redoTextInTarget(final ViewHolder holder, final ListItem item) {
         holder.mUndoButton.setVisibility(View.INVISIBLE);
         holder.mRedoButton.setVisibility(View.INVISIBLE);
 
         showToastMessage(item, R.string.label_redo);
 
         TargetTranslationChunkHistory chunkHistory = getTargetTranslationChunkHistory(holder, item);
-        chunkHistory.doRedo(mContext, new TargetTranslationChunkHistory.OnRestoreFinishListener() {
+        chunkHistory.getRedoText(mContext, new TargetTranslationChunkHistory.OnRestoreFinishListener() {
             @Override
             public void onRestoreFinish(Date restoreTime, String restoredText) {
                 restoreCommitText(holder, item, restoredText);
