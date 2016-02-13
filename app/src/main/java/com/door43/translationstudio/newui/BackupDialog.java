@@ -381,7 +381,7 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
                 }
             });
         } else {
-            boolean authFailure = ((UploadTargetTranslationTask)task).getAuthFailure();
+            boolean authFailure = ((UploadTargetTranslationTask)task).uploadAuthFailure();
             if(authFailure) {
                 showAuthFailure((UploadTargetTranslationTask) task);
             } else {

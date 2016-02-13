@@ -52,10 +52,6 @@ public class UploadTargetTranslationTask extends ManagedTask {
         mAuthServerPort = Integer.parseInt(AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER_PORT, AppContext.context().getResources().getString(R.string.pref_default_auth_server_port)));
     }
 
-    public boolean getAuthFailure() {
-        return mUploadAuthFailure;
-    }
-
     @Override
     public void start() {
         mUploadSucceeded = true;

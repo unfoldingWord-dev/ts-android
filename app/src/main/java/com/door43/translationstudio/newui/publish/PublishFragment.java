@@ -228,7 +228,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 }
             });
         } else {
-            boolean authFailure = ((UploadTargetTranslationTask)task).getAuthFailure();
+            boolean authFailure = ((UploadTargetTranslationTask)task).uploadSucceeded();
             if(authFailure) {
                 showAuthFailure((UploadTargetTranslationTask) task);
             } else {
