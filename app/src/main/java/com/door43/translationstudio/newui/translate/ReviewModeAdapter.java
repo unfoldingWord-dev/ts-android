@@ -15,11 +15,11 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.Selection;
-import android.text.SpannedString;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.DragEvent;
 import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -32,6 +32,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
@@ -43,6 +44,7 @@ import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.LinedEditText;
 import com.door43.translationstudio.core.ProjectTranslation;
+import com.door43.translationstudio.core.TargetTranslationChunkHistory;
 import com.door43.translationstudio.core.TranslationNote;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
@@ -63,9 +65,12 @@ import com.door43.translationstudio.spannables.VersePinSpan;
 import com.door43.widget.ViewUtil;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -73,10 +78,15 @@ import java.util.regex.Pattern;
  * Created by joel on 9/18/2015.
  */
 public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHolder> {
+    private static final String TAG = ReviewModeAdapter.class.getSimpleName();
 
     private static final int TAB_NOTES = 0;
     private static final int TAB_WORDS = 1;
     private static final int TAB_QUESTIONS = 2;
+    public static final String UNDO = "Undo";
+    public static final String REDO = "Redo";
+    public static final String OPTIONS = "Options";
+    public static final String ISO_DATE_FORMAT = "yyyy-MM-dd HH:mm";
     private final Library mLibrary;
     private final Translator mTranslator;
     private final Activity mContext;
@@ -433,6 +443,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             ViewUtil.makeLinksClickable(holder.mTargetBody);
         }
 
+        clearCachedChunkHistory(holder, item);
+
         // render title
         String targetTitle = "";
         if(item.isChapter()) {
@@ -465,22 +477,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // save
-                String translation = Translator.compileTranslation((Editable)s);
-                if(item.isChapterReference) {
-                    mTargetTranslation.applyChapterReferenceTranslation(item.chapterTranslation, translation);
-                } else if(item.isChapterTitle) {
-                    mTargetTranslation.applyChapterTitleTranslation(item.chapterTranslation, translation);
-                } else if(item.isProjectTitle) {
-                    try {
-                        mTargetTranslation.applyProjectTitleTranslation(s.toString());
-                    } catch (IOException e) {
-                        Logger.e(ReviewModeAdapter.class.getName(), "Failed to save the project title translation", e);
-                    }
-                } else if(item.isFrame()) {
-                    mTargetTranslation.applyFrameTranslation(item.frameTranslation, translation);
-                }
-                item.renderedTargetBody = renderSourceText(translation, item.translationFormat, holder, item, true);
+                String translation = applyChangedText(s, holder, item);
 
                 // update view if pasting text
                 // TRICKY: anything worth rendering will need to change by at least 7 characters
@@ -513,6 +510,19 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
         }
 
+        holder.mUndoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                undoTextInTarget(holder, item);
+            }
+        });
+        holder.mRedoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                redoTextInTarget(holder, item);
+            }
+        });
+
         // editing button
         final GestureDetector detector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
             @Override
@@ -522,6 +532,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     // open editing mode
                     holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
                     holder.mAddNoteButton.setVisibility(View.VISIBLE);
+                    holder.mUndoButton.setVisibility(View.VISIBLE);
+                    holder.mRedoButton.setVisibility(View.VISIBLE);
                     holder.mTargetBody.setVisibility(View.GONE);
                     holder.mTargetEditableBody.setVisibility(View.VISIBLE);
                     holder.mTargetEditableBody.requestFocus();
@@ -538,7 +550,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
                 } else {
                     // close editing mode
+                    saveRestoredText( holder, item);
                     holder.mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
+                    holder.mUndoButton.setVisibility(View.GONE);
+                    holder.mRedoButton.setVisibility(View.GONE);
                     holder.mAddNoteButton.setVisibility(View.GONE);
                     holder.mTargetBody.setVisibility(View.VISIBLE);
                     holder.mTargetEditableBody.setVisibility(View.GONE);
@@ -559,6 +574,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 return true;
             }
         });
+
         holder.mEditButton.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -577,12 +593,16 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         if(item.isEditing) {
             holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
             holder.mAddNoteButton.setVisibility(View.VISIBLE);
+            holder.mUndoButton.setVisibility(View.VISIBLE);
+            holder.mRedoButton.setVisibility(View.VISIBLE);
             holder.mTargetBody.setVisibility(View.GONE);
             holder.mTargetEditableBody.setVisibility(View.VISIBLE);
             holder.mTargetEditableBody.setEnableLines(true);
             holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         } else {
             holder.mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
+            holder.mUndoButton.setVisibility(View.GONE);
+            holder.mRedoButton.setVisibility(View.GONE);
             holder.mAddNoteButton.setVisibility(View.GONE);
             holder.mTargetBody.setVisibility(View.VISIBLE);
             holder.mTargetEditableBody.setVisibility(View.GONE);
@@ -596,6 +616,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // display as finished
         if(item.isTranslationFinished) {
             holder.mEditButton.setVisibility(View.GONE);
+            holder.mUndoButton.setVisibility(View.GONE);
+            holder.mRedoButton.setVisibility(View.GONE);
             holder.mAddNoteButton.setVisibility(View.GONE);
             holder.mDoneSwitch.setChecked(true);
             holder.mTargetInnerCard.setBackgroundResource(R.color.white);
@@ -623,6 +645,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                                 item.renderedTargetBody = holder.mTargetEditableBody.getText();
                                             }
                                             boolean success = onConfirmChunk(item, chapter, frame);
+                                            if(success) {
+                                                saveRestoredText( holder, item);
+                                            }
                                             holder.mDoneSwitch.setChecked(success);
                                         }
                                     }
@@ -799,6 +824,214 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         renderTargetBody(item, holder, frame); // generate spannable again adding
         editText.setText(item.renderedTargetBody);
         editText.setSelection(editText.length(), editText.length());
+    }
+
+    /**
+     * clear chunk history
+     * @param item
+     */
+    public void clearCachedChunkHistory(ViewHolder holder, ListItem item) {
+        holder.mHistoryitem = null;
+        if(item.targetTranslationChunkHistory != null) {
+            item.targetTranslationChunkHistory.clearCachedHistory();
+        }
+    }
+
+    /**
+     * check if user has restored old text (undo).  If so then save it
+     * @param holder
+     * @param item
+     */
+    private void saveRestoredText(ViewHolder holder, ListItem item) {
+        if(item.targetTranslationChunkHistory != null) {
+            CharSequence s = holder.mTargetEditableBody.getText();
+            applyChangedText(s, holder, item);
+        }
+    }
+
+    /**
+     * check if user has restored old text (undo).  If so then save it
+     * @param holder
+     */
+    public void saveRestoredText(ViewHolder holder) {
+        ListItem item = holder.mHistoryitem;
+        if(item != null) {
+            saveRestoredText(holder, item);
+        }
+    }
+
+    @Override
+    public void onViewRecycled (ViewHolder holder) {
+        saveRestoredText(holder);
+    }
+
+    @Override
+    public void onViewDetachedFromWindow (ViewHolder holder) {
+        saveRestoredText(holder);
+    }
+
+    /**
+     * save changed text
+     * @param s
+     * @param item
+     * @return
+     */
+    private String applyChangedText(CharSequence s, ViewHolder holder, ListItem item) {
+        clearCachedChunkHistory(holder, item);
+        String translation = Translator.compileTranslation((Editable) s);
+        if (item.isChapterReference) {
+            mTargetTranslation.applyChapterReferenceTranslation(item.chapterTranslation, translation);
+        } else if (item.isChapterTitle) {
+            mTargetTranslation.applyChapterTitleTranslation(item.chapterTranslation, translation);
+        } else if (item.isProjectTitle) {
+            try {
+                mTargetTranslation.applyProjectTitleTranslation(s.toString());
+            } catch (IOException e) {
+                Logger.e(ReviewModeAdapter.class.getName(), "Failed to save the project title translation", e);
+            }
+        } else if (item.isFrame()) {
+            mTargetTranslation.applyFrameTranslation(item.frameTranslation, translation);
+        }
+        item.renderedTargetBody = renderSourceText(translation, item.translationFormat, holder, item, true);
+        return translation;
+    }
+
+    /**
+     * restore the text from previous commit for fragment
+     * @param holder
+     * @param item
+     */
+    private void undoTextInTarget(final ViewHolder holder, final ListItem item) {
+        holder.mUndoButton.setVisibility(View.INVISIBLE);
+        holder.mRedoButton.setVisibility(View.INVISIBLE);
+
+        showToastMessage(item, R.string.label_undo);
+
+        TargetTranslationChunkHistory chunkHistory = getTargetTranslationChunkHistory(holder, item);
+        chunkHistory.getUndoText(mContext, new TargetTranslationChunkHistory.OnRestoreFinishListener() {
+            @Override
+            public void onRestoreFinish(Date restoreTime, String restoredText) {
+                restoreCommitText(holder, item, restoredText);
+                showRestoreTime(item, restoreTime);
+            }
+        });
+    }
+
+    /**
+     * restore the text from later commit for fragment
+     * @param holder
+     * @param item
+     */
+    private void redoTextInTarget(final ViewHolder holder, final ListItem item) {
+        holder.mUndoButton.setVisibility(View.INVISIBLE);
+        holder.mRedoButton.setVisibility(View.INVISIBLE);
+
+        showToastMessage(item, R.string.label_redo);
+
+        TargetTranslationChunkHistory chunkHistory = getTargetTranslationChunkHistory(holder, item);
+        chunkHistory.getRedoText(mContext, new TargetTranslationChunkHistory.OnRestoreFinishListener() {
+            @Override
+            public void onRestoreFinish(Date restoreTime, String restoredText) {
+                restoreCommitText(holder, item, restoredText);
+                showRestoreTime(item, restoreTime);
+            }
+        });
+    }
+
+    /**
+     * restore commited file contents to current fragment
+     * @param holder
+     * @param item
+     * @param restoredText
+     */
+    private void restoreCommitText(final ViewHolder holder, final ListItem item, final String restoredText) {
+
+        if (null != restoredText) {
+            item.renderedTargetBody = renderSourceText(restoredText, item.translationFormat, holder, item, true);
+            holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
+            holder.mTargetEditableBody.setText(item.renderedTargetBody);
+            holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
+        }
+
+        holder.mUndoButton.setVisibility(View.VISIBLE);
+        holder.mRedoButton.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * show the restored time as a toast popup
+     * @param item
+     * @param restoreTime
+     */
+    private void showRestoreTime(final ListItem item, final Date restoreTime) {
+        if(item.restoreMsg != null) {
+            item.restoreMsg.cancel(); // remove previous message
+        }
+
+        String message;
+        if (restoreTime != null) {
+            Locale current = mContext.getResources().getConfiguration().locale;
+            SimpleDateFormat sdf = new SimpleDateFormat(ISO_DATE_FORMAT, current);
+            String restoreTimeFormat = mContext.getResources().getString(R.string.restored_to_time);
+            message = String.format(restoreTimeFormat, sdf.format(restoreTime));
+        } else {
+            message = mContext.getResources().getString(R.string.restoring_end);
+        }
+        showToastMessage(item, message);
+    }
+
+    /**
+     * show message as toast
+     * @param item
+     * @param message
+     */
+    private void showToastMessage(final ListItem item, final String message) {
+        if(item.restoreMsg != null) {
+            item.restoreMsg.cancel(); // remove previous message
+        }
+
+        //create new message to display
+        item.restoreMsg = Toast.makeText(mContext, message, Toast.LENGTH_LONG);
+        item.restoreMsg.setGravity(Gravity.TOP, 0, 0);
+        item.restoreMsg.show();
+    }
+
+    /**
+     * show message as toast
+     * @param item
+     * @param resId
+     */
+    private void showToastMessage(ListItem item, int resId) {
+        String message = mContext.getResources().getString(resId);
+        showToastMessage(item, message);
+    }
+
+    /**
+     * gets target translation history object for this chunk.  If not already created then a new
+     * instance is created with for this chunk type
+     * @param holder
+     * @param item
+     * @return
+     */
+   private TargetTranslationChunkHistory getTargetTranslationChunkHistory(ViewHolder holder, ListItem item) {
+       holder.mHistoryitem = item;
+
+       if(item.targetTranslationChunkHistory != null) {
+           return item.targetTranslationChunkHistory;
+       }
+
+       TargetTranslationChunkHistory targetTranslationHistory = new TargetTranslationChunkHistory(mTargetTranslation, item.frameTranslation);
+
+        if(item.isChapterReference) {
+            targetTranslationHistory.setChunkTypeAsChapterReference();
+        } else if(item.isChapterTitle) {
+            targetTranslationHistory.setChunkTypeAsChapterTitle();
+        } else if(item.isProjectTitle) {
+            targetTranslationHistory.setChunkTypeAsProjectTitle();
+        } else if(item.isFrame()) {
+            targetTranslationHistory.setChunkTypeAsFrame();
+        }
+        item.targetTranslationChunkHistory = targetTranslationHistory;
+        return targetTranslationHistory;
     }
 
     private static final Pattern CONSECUTIVE_VERSE_MARKERS =
@@ -1401,6 +1634,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public final ImageButton mAddNoteButton;
+        public final ImageButton mUndoButton;
+        public final ImageButton mRedoButton;
         public final ImageButton mEditButton;
         public final CardView mResourceCard;
         public final LinearLayout mMainContent;
@@ -1419,6 +1654,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public final TabLayout mTranslationTabs;
         public final ImageButton mNewTabButton;
         public TextView mSourceBody;
+        public ListItem mHistoryitem;
 
         public ViewHolder(Context context, View v) {
             super(v);
@@ -1438,6 +1674,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             mTranslationTabs = (TabLayout)v.findViewById(R.id.source_translation_tabs);
             mEditButton = (ImageButton)v.findViewById(R.id.edit_translation_button);
             mAddNoteButton = (ImageButton)v.findViewById(R.id.add_note_button);
+            mUndoButton = (ImageButton)v.findViewById(R.id.undo_button);
+            mRedoButton = (ImageButton)v.findViewById(R.id.redo_button);
             mDoneSwitch = (Switch)v.findViewById(R.id.done_button);
             mTranslationTabs.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
             mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);
@@ -1462,7 +1700,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         private final String chapterSlug;
         private boolean isChapterReference = false;
         private boolean isChapterTitle = false;
-        public boolean isProjectTitle = false;
+        private boolean isProjectTitle = false;
         private boolean isEditing = false;
         private CharSequence renderedSourceBody;
         private CharSequence renderedTargetBody;
@@ -1471,8 +1709,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         private boolean isTranslationFinished;
         private String bodySource;
         private FrameTranslation frameTranslation;
-        public ChapterTranslation chapterTranslation;
+        private ChapterTranslation chapterTranslation;
         private ProjectTranslation projectTranslation;
+        private Toast restoreMsg = null;
+        private TargetTranslationChunkHistory targetTranslationChunkHistory = null;
 
         public ListItem(String frameSlug, String chapterSlug) {
             this.frameSlug = frameSlug;
