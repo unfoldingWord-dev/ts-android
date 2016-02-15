@@ -19,7 +19,6 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.DragEvent;
 import android.view.GestureDetector;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -69,12 +68,9 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -669,7 +665,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     private void prepareTranslationUI(final ViewHolder holder, ListItem item) {
         if(item.isEditing) {
-            final FileHistory history = getChunkHistory(item);
+            final FileHistory history = getFileHistory(item);
             ThreadableUI thread = new ThreadableUI(mContext) {
                 @Override
                 public void onStop() {
@@ -905,9 +901,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mUndoButton.setVisibility(View.INVISIBLE);
         holder.mRedoButton.setVisibility(View.INVISIBLE);
 
-        showToastMessage(item, R.string.label_undo);
-
-        final FileHistory history = getChunkHistory(item);
+        final FileHistory history = getFileHistory(item);
         ThreadableUI thread = new ThreadableUI(mContext) {
             RevCommit commit = null;
             @Override
@@ -964,11 +958,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param item
      */
     private void redoTextInTarget(final ViewHolder holder, final ListItem item) {
-        // TODO: 2/15/2016 place loading icon in place of buttons
         holder.mUndoButton.setVisibility(View.INVISIBLE);
         holder.mRedoButton.setVisibility(View.INVISIBLE);
 
-        final FileHistory history = getChunkHistory(item);
+        final FileHistory history = getFileHistory(item);
         ThreadableUI thread = new ThreadableUI(mContext) {
             RevCommit commit = null;
             @Override
@@ -1020,59 +1013,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     * show the restored time as a toast popup
-     * @param item
-     * @param restoreTime
-     */
-    private void showRestoreTime(final ListItem item, final Date restoreTime) {
-        if(item.restoreMsg != null) {
-            item.restoreMsg.cancel(); // remove previous message
-        }
-
-        String message;
-        if (restoreTime != null) {
-            Locale current = mContext.getResources().getConfiguration().locale;
-            SimpleDateFormat sdf = new SimpleDateFormat(ISO_DATE_FORMAT, current);
-            String restoreTimeFormat = mContext.getResources().getString(R.string.restored_to_time);
-            message = String.format(restoreTimeFormat, sdf.format(restoreTime));
-        } else {
-            message = mContext.getResources().getString(R.string.restoring_end);
-        }
-        showToastMessage(item, message);
-    }
-
-    /**
-     * show message as toast
-     * @param item
-     * @param message
-     */
-    private void showToastMessage(final ListItem item, final String message) {
-        if(item.restoreMsg != null) {
-            item.restoreMsg.cancel(); // remove previous message
-        }
-
-        //create new message to display
-        item.restoreMsg = Toast.makeText(mContext, message, Toast.LENGTH_LONG);
-        item.restoreMsg.setGravity(Gravity.TOP, 0, 0);
-        item.restoreMsg.show();
-    }
-
-    /**
-     * show message as toast
-     * @param item
-     * @param resId
-     */
-    private void showToastMessage(ListItem item, int resId) {
-        String message = mContext.getResources().getString(resId);
-        showToastMessage(item, message);
-    }
-
-    /**
      * Loads the file history of the chunk
      * @param item
      * @return
      */
-   private FileHistory getChunkHistory(ListItem item) {
+   private FileHistory getFileHistory(ListItem item) {
        if(item.fileHistory != null) {
            return item.fileHistory;
        }
@@ -1767,7 +1712,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         private FrameTranslation frameTranslation;
         private ChapterTranslation chapterTranslation;
         private ProjectTranslation projectTranslation;
-        private Toast restoreMsg = null;
         private FileHistory fileHistory = null;
 
         public ListItem(String frameSlug, String chapterSlug) {
