@@ -17,14 +17,9 @@ import org.eclipse.jgit.api.ListTagCommand;
 import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.TagCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevTree;
-import org.eclipse.jgit.treewalk.TreeWalk;
-import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,12 +28,9 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Timer;
 
 /**
@@ -1071,150 +1063,6 @@ public class TargetTranslation {
     }
 
     /**
-     * retrieve file contents as String from specified commit
-     * @param git
-     * @param file
-     * @param currentCommit
-     * @return
-     */
-    public String getCommittedFileContents(final Git git, final File file, final RevCommit currentCommit) {
-
-        try {
-            Repository repository = git.getRepository();
-
-            RevTree tree = currentCommit.getTree();
-            Logger.i(TAG, "Having tree: " + tree);
-
-            // now try to find a specific file
-            TreeWalk treeWalk = new TreeWalk(repository);
-            treeWalk.addTree(tree);
-            treeWalk.setRecursive(true);
-            treeWalk.setFilter(PathFilter.create(file.toString()));
-            if (!treeWalk.next()) {
-                throw new IllegalStateException("Did not find expected file 'README.md'");
-            }
-
-            ObjectId objectId = treeWalk.getObjectId(0);
-            ObjectLoader loader = repository.open(objectId);
-
-            byte[] bytes = loader.getBytes();
-            String text = new String(bytes, "UTF-8");
-            return text;
-
-        } catch (Exception e) {
-            Logger.w(TAG, "error getting commit list",e);
-        }
-        return null;
-    }
-
-    /**
-     * get the commit before specified commit
-     * @param commitList
-     * @param currentCommit
-     * @return
-     */
-    public RevCommit getUndoCommit(final RevCommit[] commitList, RevCommit currentCommit) {
-        try {
-            if((commitList != null) && (commitList.length > 0)) {
-                if (null == currentCommit) { // if not yet set, use latest
-                    currentCommit = commitList[0];
-                }
-
-                final int commitTime = currentCommit.getCommitTime();
-
-                RevCommit previousCommit = null;
-                for(int i = 0; i < commitList.length; i++) {
-                    RevCommit commit = commitList[i];
-                    previousCommit = commit;
-                    if(commit.getCommitTime() < commitTime) {
-                        break;
-                    }
-                }
-                return previousCommit;
-            }
-        } catch (Exception e) {
-            Logger.w(TAG, "error getting commit list",e);
-        }
-        return null;
-    }
-
-    /**
-     * get the commit after specified commit
-     * @param commitList
-     * @param currentCommit
-     * @return
-     */
-    public RevCommit getRedoCommit(final RevCommit[] commitList, final RevCommit currentCommit) {
-        try {
-            if (null  == currentCommit) { // if not yet set, treat as using latest and there is no redo
-                return null;
-            }
-
-            final int commitTime = currentCommit.getCommitTime();
-
-            if((commitList != null) && (commitList.length > 0)) {
-
-                RevCommit nextCommit = null;
-                for(int i = 0; i < commitList.length; i++) {
-                    RevCommit commit = commitList[i];
-                    if(commit.getCommitTime() <= commitTime) {
-                        break;
-                    }
-                    nextCommit = commit;
-                }
-
-                return nextCommit;
-            }
-        } catch (Exception e) {
-            Logger.w(TAG, "error getting commit list", e);
-        }
-        return null;
-    }
-
-    /**
-     * get list of commit history,  file format example: 02/03.txt
-     * @param git
-     * @param file
-     * @return
-     * @throws IOException
-     * @throws GitAPIException
-     */
-    public RevCommit[] getCommitHistory(final Git git, final File file) throws IOException, GitAPIException {
-        try {
-            Repository repository = git.getRepository();
-            ObjectId recovery = repository.resolve("HEAD");
-            LogCommand log = git.log();
-            log.add(recovery);
-            if(file != null) {
-                log.addPath(file.toString());
-            }
-            Iterable<RevCommit> logs = log.call();
-            ArrayList<RevCommit> revs = new ArrayList<>();
-            for (RevCommit commit : logs) {
-                revs.add(commit);
-            }
-            Logger.i(TAG, "Found " + revs.size() + " commits overall on " + file);
-
-            return revs.toArray(new RevCommit[revs.size()]);
-
-        } catch (GitAPIException|IOException e) {
-            Logger.w(TAG, "error getting commit list", e);
-            throw e;
-        }
-
-    }
-
-    /**
-     * convenience method for getting an instance of Git.  For performance it is better to call getGit()
-     * just once as it has overhead
-     * @return
-     * @throws IOException
-     */
-    public Git getGit() throws IOException {
-        return getRepo().getGit();
-    }
-
-    /**
      * sets publish tag in the repository
      * @return true if successful
      */
@@ -1433,6 +1281,44 @@ public class TargetTranslation {
             }
         }
         return chapterTranslations.toArray(new ChapterTranslation[chapterTranslations.size()]);
+    }
+
+    // TODO: 2/15/2016 Once the new api (v3) is built we can base all the translatable items off a ChunkTranslation object so we just need one method in place of the 4 below
+
+    public FileHistory getFrameHistory(FrameTranslation frameTranslation) {
+        try {
+            return new FileHistory(getRepo(), getFrameFile(frameTranslation.getChapterId(), frameTranslation.getId()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public FileHistory getChapterTitleHistory(ChapterTranslation chapterTranslation) {
+        try {
+            return new FileHistory(getRepo(), getChapterTitleFile(chapterTranslation.getId()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public FileHistory getChapterReferenceHistory(ChapterTranslation chapterTranslation) {
+        try {
+            return new FileHistory(getRepo(), getChapterReferenceFile(chapterTranslation.getId()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public FileHistory getProjectTitleHistory() {
+        try {
+            return new FileHistory(getRepo(), getProjectTitleFile());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
