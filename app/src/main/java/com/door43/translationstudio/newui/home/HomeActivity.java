@@ -278,6 +278,10 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                     ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                     snack.show();
                 }
+            } else if( NewTargetTranslationActivity.RESULT_ERROR == resultCode) {
+                Snackbar snack = Snackbar.make(findViewById(android.R.id.content), getResources().getString(R.string.error), Snackbar.LENGTH_LONG);
+                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                snack.show();
             }
         }
     }

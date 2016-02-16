@@ -145,7 +145,8 @@ public class TargetTranslation {
     public static TargetTranslation create(Context context, TargetLanguage targetLanguage, String projectId, File rootDir) throws Exception {
         // generate new target translation if it does not exist
         File translationDir = generateTargetTranslationDir(generateTargetTranslationId(targetLanguage.getId(), projectId), rootDir);
-        if(!translationDir.exists()) {
+        if(!translationDir.isDirectory()) {
+            translationDir.mkdirs();
             // build new manifest
             Manifest manifest = Manifest.generate(translationDir);
             manifest.put("project_id", projectId);
@@ -1126,7 +1127,6 @@ public class TargetTranslation {
      * @throws Exception
      */
     public boolean merge(File newDir) throws Exception {
-        // TODO: 2/9/2016 retain original manifest and merge manually
         Manifest importedManifest = Manifest.generate(newDir);
         Repo repo = getRepo();
 
@@ -1154,7 +1154,12 @@ public class TargetTranslation {
         MergeResult result = merge.call();
 
         // merge manifests
-        // TODO: mManifest, importedManifest
+        mManifest.join(importedManifest.getJSONArray("translators"), "translators");
+        mManifest.join(importedManifest.getJSONArray("finished_frames"), "finished_frames");
+        mManifest.join(importedManifest.getJSONArray("finished_titles"), "finished_titles");
+        mManifest.join(importedManifest.getJSONArray("finished_references"), "finished_references");
+        mManifest.join(importedManifest.getJSONArray("finished_project_components"), "finished_project_components");
+        mManifest.join(importedManifest.getJSONObject("source_translations"), "source_translations");
 
         if (result.getMergeStatus().equals(MergeResult.MergeStatus.CONFLICTING)) {
             System.out.println(result.getConflicts().toString());

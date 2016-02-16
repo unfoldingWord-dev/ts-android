@@ -62,25 +62,29 @@ public class FileHistory {
             // load history
             Repository repository = this.git.getRepository();
             ObjectId head = repository.resolve("HEAD");
-            LogCommand log = this.git.log();
-            log.add(head);
-            log.addPath(this.file.toString());
-            Iterable<RevCommit> commits = log.call();
-            ArrayList<RevCommit> historyList = new ArrayList<>();
-            for(RevCommit commit:commits) {
-                historyList.add(commit);
+            if(head != null) {
+                LogCommand log = this.git.log();
+                log.add(head);
+                log.addPath(this.file.toString());
+                Iterable<RevCommit> commits = log.call();
+                ArrayList<RevCommit> historyList = new ArrayList<>();
+                for (RevCommit commit : commits) {
+                    historyList.add(commit);
 
-                // restore current position
-                if(currentCommit != null) {
-                    String hash = commit.toString().split(" ")[1];
-                    String currentHash = currentCommit.toString().split(" ")[1];
-                    if(hash.equals(currentHash)) {
-                        index = historyList.size() - 1;
-                        currentCommit = null;
+                    // restore current position
+                    if (currentCommit != null) {
+                        String hash = commit.toString().split(" ")[1];
+                        String currentHash = currentCommit.toString().split(" ")[1];
+                        if (hash.equals(currentHash)) {
+                            index = historyList.size() - 1;
+                            currentCommit = null;
+                        }
                     }
                 }
+                this.history = historyList.toArray(new RevCommit[historyList.size()]);
+            } else {
+                this.history = new RevCommit[0];
             }
-            this.history = historyList.toArray(new RevCommit[historyList.size()]);
         } else {
             this.history = new RevCommit[0];
         }
