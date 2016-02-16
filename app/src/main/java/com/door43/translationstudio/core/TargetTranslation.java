@@ -1127,7 +1127,7 @@ public class TargetTranslation {
      */
     public boolean merge(File newDir) throws Exception {
         // TODO: 2/9/2016 retain original manifest and merge manually
-//        Repo newRepo = new Repo(newDir.getAbsolutePath());
+        Manifest importedManifest = Manifest.generate(newDir);
         Repo repo = getRepo();
 
         // attach remote
@@ -1151,8 +1151,11 @@ public class TargetTranslation {
         MergeCommand merge = repo.getGit().merge();
         merge.setFastForward(MergeCommand.FastForwardMode.NO_FF);
         merge.include(repo.getGit().getRepository().getRef("new"));
-
         MergeResult result = merge.call();
+
+        // merge manifests
+        // TODO: mManifest, importedManifest
+
         if (result.getMergeStatus().equals(MergeResult.MergeStatus.CONFLICTING)) {
             System.out.println(result.getConflicts().toString());
             return false;
