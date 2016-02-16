@@ -242,6 +242,7 @@ public class Manifest {
                     }
                     mManifest.put(key, array);
                 }
+                save();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -269,6 +270,7 @@ public class Manifest {
                     }
                     mManifest.put(key, obj);
                 }
+                save();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
