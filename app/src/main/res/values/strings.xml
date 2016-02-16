@@ -653,7 +653,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="footnote_label">Footnote</string>
     <string name="footnote_title_empty">Footnote Title cannot be empty</string>
     <string name="footnote_message_empty">Footnote cannot be empty</string>
+    <string name="registration_success_retry">Registration Succeeded.  Try Importing from cloud again</string>
+    <string name="registration_failure">Registration Failure.  Likely problem with Internet connection</string>
     <string name="auth_failure_retry">Authentication Failure.  Retry?</string>
+    <string name="auth_failure_reregister">Authentication Failure.  Do you want to try to reregister with server?</string>
     <string name="invalidate_keys" translatable="false">Invalidate SSH Keys</string>
     <string name="invalidate_keys_description" translatable="false">Sets keys invalid for auth testing</string>
 

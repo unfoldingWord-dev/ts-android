@@ -22,6 +22,7 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.CloneTargetTranslationTask;
 import com.door43.translationstudio.tasks.GetCloudBackupsTask;
+import com.door43.translationstudio.tasks.KeyRegistration;
 import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
@@ -133,28 +134,29 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
     }
 
     @Override
-    public void onFinished(ManagedTask task) {
+    public void onFinished(final ManagedTask task) {
         taskWatcher.stop();
         TaskManager.clearTask(task);
 
         if(task instanceof GetCloudBackupsTask) {
-            targetTranslationSlugs = ((GetCloudBackupsTask) task).getTargetTranslationSlugs();
-            Handler hand = new Handler(Looper.getMainLooper());
-            hand.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (targetTranslationSlugs.length > 0) {
-                        adapter.setTargetTranslations(targetTranslationSlugs);
-                    } else {
-                        CustomAlertDialog.Create(getActivity())
-                                .setTitle(R.string.import_from_online)
-                                .setMessage(R.string.no_backups_online)
-                                .setNeutralButton(R.string.dismiss, null)
-                                .show("NoBackups");
-                        dismiss();
+            if(!((GetCloudBackupsTask)task).uploadAuthFailure()) {
+
+                targetTranslationSlugs = ((GetCloudBackupsTask) task).getTargetTranslationSlugs();
+                Handler hand = new Handler(Looper.getMainLooper());
+                hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (targetTranslationSlugs.length > 0) {
+                            adapter.setTargetTranslations(targetTranslationSlugs);
+                        } else {
+                            notifyReadOnlineBackupsFailed();
+                            dismiss();
+                        }
                     }
-                }
-            });
+                });
+            } else {
+                showAuthFailure();
+            }
         } else if(task instanceof CloneTargetTranslationTask) {
             final String targetTranslationSlug = ((CloneTargetTranslationTask)task).getTargetTranslationSlug();
             if(restoreHEAD) {
@@ -222,6 +224,49 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
             });
         }
     }
+
+    public void notifyReadOnlineBackupsFailed() {
+        CustomAlertDialog.Create(getActivity())
+                .setTitle(R.string.import_from_online)
+                .setMessage(R.string.no_backups_online)
+                .setNeutralButton(R.string.dismiss, null)
+                .show("NoBackups");
+    }
+
+    public void showRegistrationResults(boolean success) {
+        CustomAlertDialog.Create(getActivity())
+                .setTitle(R.string.import_from_online)
+                .setMessage(success ? R.string.registration_success_retry : R.string.registration_failure)
+                .setNeutralButton(R.string.dismiss, null)
+                .show("NoBackups");
+    }
+
+    public void showAuthFailure() {
+        CustomAlertDialog.Create(getActivity())
+                .setTitle(R.string.import_from_online).setMessage(R.string.auth_failure_reregister)
+                .setPositiveButton(R.string.yes, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        AppContext.context().generateKeys();
+                        KeyRegistration keyReg = new KeyRegistration();
+                        keyReg.registerKeys(new KeyRegistration.OnRegistrationFinishedListener() {
+                            @Override
+                            public void onRestoreFinish(boolean registrationSuccess) {
+                                showRegistrationResults(registrationSuccess);
+                            }
+                        });
+                    }
+                })
+                .setNegativeButton(R.string.no, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        notifyReadOnlineBackupsFailed();
+                    }
+                })
+                .show("PubAuthFailure");
+    }
+
+
 
     @Override
     public void onSaveInstanceState(Bundle out) {
