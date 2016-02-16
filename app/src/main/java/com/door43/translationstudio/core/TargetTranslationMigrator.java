@@ -37,12 +37,45 @@ public class TargetTranslationMigrator {
                         return v2(manifest, manifestFile);
                     case 3:
                         return v3(manifest, manifestFile);
+                    case 4:
+                        return v4(manifest, manifestFile);
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return false;
+    }
+
+    /**
+     * latest version
+     * @param manifest
+     * @param path
+     * @return
+     */
+    private static boolean v4(JSONObject manifest, File path) {
+        return true;
+    }
+
+    /**
+     * We changed how the translator information is stored
+     * we no longer store sensitive information like email and phone number
+     * @param manifest
+     * @param path
+     * @return
+     */
+    private static boolean v3(JSONObject manifest, File path) throws Exception {
+        if(manifest.has("translators")) {
+            JSONArray legacyTranslators = manifest.getJSONArray("translators");
+            JSONArray translators = new JSONArray();
+            for(int i = 0; i < legacyTranslators.length(); i ++) {
+                JSONObject obj = legacyTranslators.getJSONObject(i);
+                translators.put(obj.getString("name"));
+            }
+            manifest.put("translators", translators);
+            FileUtils.write(path, manifest.toString());
+        }
+        return true;
     }
 
     /**
@@ -115,16 +148,6 @@ public class TargetTranslationMigrator {
         }
 
         FileUtils.write(path, manifest.toString());
-        return true;
-    }
-
-    /**
-     * Currently latest version.
-     * @param manifest
-     * @param path
-     * @return
-     */
-    private static boolean v3(JSONObject manifest, File path) {
         return true;
     }
 
