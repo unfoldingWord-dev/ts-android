@@ -18,6 +18,7 @@ import com.door43.util.FileUtilities;
 import com.door43.util.tasks.ManagedTask;
 
 import org.apache.commons.io.FileUtils;
+import org.eclipse.jgit.errors.IllegalTodoFileModification;
 
 import java.io.File;
 import java.io.IOException;
@@ -101,7 +102,27 @@ public class UpdateAppTask extends ManagedTask {
             upgradePre112();
         }
 
+        updateTargetTranslations();
         updateBuildNumbers();
+    }
+
+    /**
+     * Updates the target translations
+     * NOTE: we used to do this manually but now we run this every time so we don't have to manually
+     * add a new migration path each time
+     */
+    private void updateTargetTranslations() {
+        TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
+        for(TargetTranslation tt:targetTranslations) {
+            if(!TargetTranslationMigrator.migrate(tt.getPath())) {
+                Logger.w(this.getClass().getName(), "Failed to migrate the target translation " + tt.getId());
+            }
+            try {
+                tt.commit();
+            } catch (Exception e) {
+                Logger.e(this.getClass().getName(), "Failed to commit migration changes to target translation " + tt.getId());
+            }
+        }
     }
 
     /**
