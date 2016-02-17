@@ -64,6 +64,7 @@ public class TargetTranslation {
         mTargetLanguageId = targetLanguageId;
         mProjectId = projectId;
         mTargetTranslationDirectory = generateTargetTranslationDir(generateTargetTranslationId(targetLanguageId, projectId), rootDir);
+        mTargetTranslationDirectory.mkdirs();
         mManifest = Manifest.generate(mTargetTranslationDirectory);
         String name = targetLanguageId;
         try {

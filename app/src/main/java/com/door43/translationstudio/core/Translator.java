@@ -114,7 +114,7 @@ public class Translator {
                 String targetLanguageId = TargetTranslation.getTargetLanguageIdFromId(targetTranslationId);
 
                 File dir = TargetTranslation.generateTargetTranslationDir(targetTranslationId, mRootDir);
-                if(dir.exists()) {
+                if(dir.isDirectory()) {
                     return new TargetTranslation(targetLanguageId, projectId, mRootDir);
                 } else {
                     return null;

@@ -55,6 +55,7 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.rendering.DefaultRenderer;
+import com.door43.translationstudio.rendering.MergeConflictRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.AppContext;
@@ -1481,6 +1482,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
         }
+        renderingGroup.addEngine(new MergeConflictRenderer());
         if(!text.trim().isEmpty()) {
             renderingGroup.init(text);
             return renderingGroup.start();
@@ -1597,6 +1599,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
         }
+        renderingGroup.addEngine(new MergeConflictRenderer());
         renderingGroup.init(text);
         return renderingGroup.start();
     }
