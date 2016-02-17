@@ -46,15 +46,9 @@ public class GetCloudBackupsTask extends ManagedTask {
         } catch (Exception e) {
             Logger.e(this.getClass().getName(), "Failed to retrieve the list of backups on the server", e);
             mUploadSucceeded = false;
-            Throwable cause = e.getCause();
-            if(cause != null) {
-                Throwable subException = cause.getCause();
-                if(subException != null) {
-                    String detail = subException.getMessage();
-                    if (AUTH_FAIL.equals(detail)) {
-                        mUploadAuthFailure = true; // we do special handling for auth failure
-                    }
-                }
+            String detail = e.getMessage();
+            if (AUTH_FAIL.equals(detail)) {
+                mUploadAuthFailure = true; // we do special handling for auth failure
             }
         }
     }

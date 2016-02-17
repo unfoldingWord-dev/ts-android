@@ -1,5 +1,6 @@
 package com.door43.translationstudio.newui.home;
 
+import android.app.Activity;
 import android.app.DialogFragment;
 import android.os.Bundle;
 import android.os.Handler;
@@ -155,6 +156,7 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
                     }
                 });
             } else {
+                dismiss();
                 showAuthFailure();
             }
         } else if(task instanceof CloneTargetTranslationTask) {
@@ -233,28 +235,41 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
                 .show("NoBackups");
     }
 
-    public void showRegistrationResults(boolean success) {
-        CustomAlertDialog.Create(getActivity())
+    public void showRegistrationResults(final Activity activity, boolean success) {
+        CustomAlertDialog.Create(activity)
                 .setTitle(R.string.import_from_online)
                 .setMessage(success ? R.string.registration_success_retry : R.string.registration_failure)
                 .setNeutralButton(R.string.dismiss, null)
-                .show("NoBackups");
+                .show("RegistrationResults");
     }
 
     public void showAuthFailure() {
-        CustomAlertDialog.Create(getActivity())
+        final Activity activity = getActivity();
+        CustomAlertDialog.Create(activity)
                 .setTitle(R.string.import_from_online).setMessage(R.string.auth_failure_reregister)
                 .setPositiveButton(R.string.yes, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         AppContext.context().generateKeys();
-                        KeyRegistration keyReg = new KeyRegistration();
-                        keyReg.registerKeys(new KeyRegistration.OnRegistrationFinishedListener() {
+                        final Handler hand = new Handler(Looper.getMainLooper());
+                        Thread thread = new Thread() {
                             @Override
-                            public void onRestoreFinish(boolean registrationSuccess) {
-                                showRegistrationResults(registrationSuccess);
+                            public void run() {
+                                KeyRegistration keyReg = new KeyRegistration();
+                                keyReg.registerKeys(new KeyRegistration.OnRegistrationFinishedListener() {
+                                    @Override
+                                    public void onRestoreFinish(final boolean registrationSuccess) {
+                                        hand.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                showRegistrationResults(activity, registrationSuccess);
+                                            }
+                                        });
+                                    }
+                                });
                             }
-                        });
+                        };
+                        thread.start();
                     }
                 })
                 .setNegativeButton(R.string.no, new View.OnClickListener() {
@@ -265,8 +280,6 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
                 })
                 .show("PubAuthFailure");
     }
-
-
 
     @Override
     public void onSaveInstanceState(Bundle out) {

@@ -26,6 +26,7 @@ public class KeyRegistration {
     private String mAuthServer;
     private int mAuthServerPort;
     private OnRegistrationFinishedListener mListener = null;
+    static private String TAG = KeyRegistration.class.getSimpleName();
 
     public void registerKeys(OnRegistrationFinishedListener listener) {
         mListener = listener;
@@ -33,7 +34,7 @@ public class KeyRegistration {
         mAuthServer = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER, AppContext.context().getResources().getString(R.string.pref_default_auth_server));
         mAuthServerPort = Integer.parseInt(AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER_PORT, AppContext.context().getResources().getString(R.string.pref_default_auth_server_port)));
 
-        Logger.i(this.getClass().getName(), "Registering ssh key with " + mAuthServer);
+        Logger.i(TAG, "Registering ssh key with " + mAuthServer);
         // open tcp connection with server
         try {
             InetAddress serverAddr = InetAddress.getByName(mAuthServer);
@@ -64,7 +65,7 @@ public class KeyRegistration {
                         try {
                             read = in.read(buffer, 0, 4096);
                         } catch (IOException e) {
-                            Logger.e(this.getClass().getName(), "Could not read response from server while registering keys", e);
+                            Logger.e(TAG, "Could not read response from server while registering keys", e);
                             mUploadSucceeded = false;
                             break;
                         }
@@ -85,11 +86,11 @@ public class KeyRegistration {
                         serverMessage = null;
                     }
                 } catch (JSONException e) {
-                    Logger.e(this.getClass().getName(), "Failed to build key registration request", e);
+                    Logger.e(TAG, "Failed to build key registration request", e);
                     mUploadSucceeded = false;
                 }
             } catch (Exception e) {
-                Logger.e(this.getClass().getName(), "Failed to submit the key registration request to the server", e);
+                Logger.e(TAG, "Failed to submit the key registration request to the server", e);
                 mUploadSucceeded = false;
             } finally {
                 socket.close();
@@ -99,7 +100,7 @@ public class KeyRegistration {
                     try {
                         in.close();
                     } catch (IOException e) {
-                        Logger.e(this.getClass().getName(), "Failed to close tcp connection with key server", e);
+                        Logger.e(TAG, "Failed to close tcp connection with key server", e);
                         mUploadSucceeded = false;
                     }
                 }
@@ -108,8 +109,14 @@ public class KeyRegistration {
                 }
             }
         } catch (Exception e) {
-            Logger.e(this.getClass().getName(), "Failed to open a tcp connection with the key server", e);
+            Logger.e(TAG, "Failed to open a tcp connection with the key server", e);
             mUploadSucceeded = false;
+        }
+
+        if(!mUploadSucceeded) {  // report error to listener
+            if(mListener != null) {
+                mListener.onRestoreFinish(mUploadSucceeded);
+            }
         }
     }
 
@@ -123,11 +130,11 @@ public class KeyRegistration {
             if (json.has("ok")) {
                 AppContext.context().setHasRegisteredKeys(true);
             } else {
-                Logger.e(this.getClass().getName(), "Key registration was refused", new Exception(json.getString("error")));
+                Logger.e(TAG, "Key registration was refused", new Exception(json.getString("error")));
                 mUploadSucceeded = false;
             }
         } catch (JSONException e) {
-            Logger.e(this.getClass().getName(), "Failed to parse response from keys server", e);
+            Logger.e(TAG, "Failed to parse response from keys server", e);
             mUploadSucceeded = false;
         }
 
