@@ -119,7 +119,22 @@
         <activity
             android:name=".newui.home.HomeActivity"
             android:label="@string/title_activity_target_translations"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar" >
+            <!-- this does not work to register file extension -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="file" />
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+                <data android:scheme="ftp" />
+                <data android:scheme="content" />
+                <data android:mimeType="*/*" />
+                <data android:pathPattern=".*\\.tstudio" />
+                <data android:host="*" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".newui.newtranslation.NewTargetTranslationActivity"
             android:label="@string/title_activity_new_target_translation"

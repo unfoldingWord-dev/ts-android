@@ -169,6 +169,11 @@ public class Repo {
         }
     }
 
+    public void deleteRemote(String remote) throws IOException {
+        StoredConfig config = getStoredConfig();
+        config.unsetSection("remote", remote);
+    }
+
     public StoredConfig getStoredConfig() throws IOException {
         if (mStoredConfig == null) {
             mStoredConfig = getGit().getRepository().getConfig();

@@ -12,14 +12,21 @@ import com.door43.util.Manifest;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
+import org.eclipse.jgit.api.CreateBranchCommand;
+import org.eclipse.jgit.api.DeleteBranchCommand;
+import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.ListTagCommand;
 import org.eclipse.jgit.api.LogCommand;
+import org.eclipse.jgit.api.MergeCommand;
+import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.TagCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.transport.FetchResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,6 +44,7 @@ import java.util.Timer;
  * Created by joel on 8/29/2015.
  */
 public class TargetTranslation {
+    private static final String TAG = TargetTranslation.class.getSimpleName();
     private static final int PACKAGE_VERSION = 3; // the version of the manifest
     public static final String PARENT_DRAFT_RESOURCE_ID = "parent_draft_resource_id";
     private final String mTargetLanguageId;
@@ -137,7 +145,8 @@ public class TargetTranslation {
     public static TargetTranslation create(Context context, TargetLanguage targetLanguage, String projectId, File rootDir) throws Exception {
         // generate new target translation if it does not exist
         File translationDir = generateTargetTranslationDir(generateTargetTranslationId(targetLanguage.getId(), projectId), rootDir);
-        if(!translationDir.exists()) {
+        if(!translationDir.isDirectory()) {
+            translationDir.mkdirs();
             // build new manifest
             Manifest manifest = Manifest.generate(translationDir);
             manifest.put("project_id", projectId);
@@ -559,7 +568,7 @@ public class TargetTranslation {
      * @param frameId
      * @return
      */
-    private File getFrameFile(String chapterId, String frameId) {
+    public File getFrameFile(String chapterId, String frameId) {
         return new File(mTargetTranslationDirectory, chapterId + "/" + frameId + ".txt");
     }
 
@@ -568,7 +577,7 @@ public class TargetTranslation {
      * @param chapterId
      * @return
      */
-    private File getChapterReferenceFile(String chapterId) {
+    public File getChapterReferenceFile(String chapterId) {
         return new File(mTargetTranslationDirectory, chapterId + "/reference.txt");
     }
 
@@ -577,7 +586,7 @@ public class TargetTranslation {
      * @param chapterId
      * @return
      */
-    private File getChapterTitleFile(String chapterId) {
+    public File getChapterTitleFile(String chapterId) {
         return new File(mTargetTranslationDirectory, chapterId + "/title.txt");
     }
 
@@ -585,7 +594,7 @@ public class TargetTranslation {
      * Returns the project title file
      * @return
      */
-    private File getProjectTitleFile() {
+    public File getProjectTitleFile() {
         return new File(mTargetTranslationDirectory, "title.txt");
     }
 
@@ -1023,7 +1032,7 @@ public class TargetTranslation {
     }
 
     /**
-     * sets publish tag in the repository
+     * gets last publish tag in the repository
      * @return true if successful
      */
     public RevCommit getLastPublishTag() throws IOException, GitAPIException {
@@ -1073,7 +1082,7 @@ public class TargetTranslation {
                 return PublishStatus.NOT_PUBLISHED;
             }
 
-            RevCommit head = getGitHead();
+            RevCommit head = getGitHead(getRepo());
             if(null == head) {
                 return PublishStatus.QUERY_ERROR;
             }
@@ -1111,6 +1120,54 @@ public class TargetTranslation {
         }
     }
 
+    /**
+     * Merges a local repository into this one
+     * @param newDir
+     * @return boolean false if there were merge conflicts
+     * @throws Exception
+     */
+    public boolean merge(File newDir) throws Exception {
+        Manifest importedManifest = Manifest.generate(newDir);
+        Repo repo = getRepo();
+
+        // attach remote
+        repo.deleteRemote("new");
+        repo.setRemote("new", newDir.getAbsolutePath());
+        FetchCommand fetch = repo.getGit().fetch();
+        fetch.setRemote("new");
+        FetchResult fetchResult = fetch.call();
+
+        // create branch for new changes
+        DeleteBranchCommand deleteBranch = repo.getGit().branchDelete();
+        deleteBranch.setBranchNames("new");
+        deleteBranch.setForce(true);
+        deleteBranch.call();
+        CreateBranchCommand branch = repo.getGit().branchCreate();
+        branch.setName("new");
+        branch.setStartPoint("new/master");
+        branch.call();
+
+        // perform merge
+        MergeCommand merge = repo.getGit().merge();
+        merge.setFastForward(MergeCommand.FastForwardMode.NO_FF);
+        merge.include(repo.getGit().getRepository().getRef("new"));
+        MergeResult result = merge.call();
+
+        // merge manifests
+        mManifest.join(importedManifest.getJSONArray("translators"), "translators");
+        mManifest.join(importedManifest.getJSONArray("finished_frames"), "finished_frames");
+        mManifest.join(importedManifest.getJSONArray("finished_titles"), "finished_titles");
+        mManifest.join(importedManifest.getJSONArray("finished_references"), "finished_references");
+        mManifest.join(importedManifest.getJSONArray("finished_project_components"), "finished_project_components");
+        mManifest.join(importedManifest.getJSONObject("source_translations"), "source_translations");
+
+        if (result.getMergeStatus().equals(MergeResult.MergeStatus.CONFLICTING)) {
+            System.out.println(result.getConflicts().toString());
+            return false;
+        }
+        return true;
+    }
+
     public enum PublishStatus {
         IS_CURRENT,
         NOT_CURRENT,
@@ -1133,7 +1190,7 @@ public class TargetTranslation {
      */
     public String getCommitHash() throws Exception {
         String tag = null;
-        RevCommit commit = getGitHead();
+        RevCommit commit = getGitHead(getRepo());
         if(commit != null) {
             String[] pieces = commit.toString().split(" ");
             tag = pieces[1];
@@ -1146,12 +1203,12 @@ public class TargetTranslation {
 
     /**
      * Returns the commit HEAD
+     * @param repo the repository who's HEAD is returned
      * @return
      * @throws GitAPIException, IOException
      */
     @Nullable
-    private RevCommit getGitHead() throws GitAPIException, IOException {
-        Repo repo = getRepo();
+    private RevCommit getGitHead(Repo repo) throws GitAPIException, IOException {
         Iterable<RevCommit> commits = repo.getGit().log().setMaxCount(1).call();
         RevCommit commit = null;
         for(RevCommit c : commits) {
@@ -1280,6 +1337,44 @@ public class TargetTranslation {
             }
         }
         return chapterTranslations.toArray(new ChapterTranslation[chapterTranslations.size()]);
+    }
+
+    // TODO: 2/15/2016 Once the new api (v3) is built we can base all the translatable items off a ChunkTranslation object so we just need one method in place of the 4 below
+
+    public FileHistory getFrameHistory(FrameTranslation frameTranslation) {
+        try {
+            return new FileHistory(getRepo(), getFrameFile(frameTranslation.getChapterId(), frameTranslation.getId()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public FileHistory getChapterTitleHistory(ChapterTranslation chapterTranslation) {
+        try {
+            return new FileHistory(getRepo(), getChapterTitleFile(chapterTranslation.getId()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public FileHistory getChapterReferenceHistory(ChapterTranslation chapterTranslation) {
+        try {
+            return new FileHistory(getRepo(), getChapterReferenceFile(chapterTranslation.getId()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public FileHistory getProjectTitleHistory() {
+        try {
+            return new FileHistory(getRepo(), getProjectTitleFile());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
