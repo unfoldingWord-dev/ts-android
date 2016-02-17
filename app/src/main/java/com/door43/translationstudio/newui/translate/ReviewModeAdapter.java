@@ -1482,7 +1482,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
         }
-        renderingGroup.addEngine(new MergeConflictRenderer());
         if(!text.trim().isEmpty()) {
             renderingGroup.init(text);
             return renderingGroup.start();
@@ -1599,7 +1598,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
         }
-        renderingGroup.addEngine(new MergeConflictRenderer());
         renderingGroup.init(text);
         return renderingGroup.start();
     }

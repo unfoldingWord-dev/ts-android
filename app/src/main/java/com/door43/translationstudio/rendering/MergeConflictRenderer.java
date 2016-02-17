@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 
 /**
  * Created by joel on 2/16/2016.
+ * This cannot be used because our current rendering implimentation is insufficient.
  */
 public class MergeConflictRenderer extends RenderingEngine {
 
