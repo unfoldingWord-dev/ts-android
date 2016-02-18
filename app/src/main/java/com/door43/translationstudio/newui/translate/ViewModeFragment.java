@@ -417,6 +417,13 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         mListener.openTranslationMode(mode, extras);
     }
 
+    /**
+     * Restarts the auto commit timer
+     */
+    public void restartAutoCommitTimer() {
+        mListener.restartAutoCommitTimer();
+    }
+
     public void setRememberLastPosition(boolean rememberLastPosition) {
         this.mRememberLastPosition = rememberLastPosition;
     }
@@ -447,5 +454,10 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
          * @param mode
          */
         void openTranslationMode(TranslationViewMode mode, Bundle extras);
+
+        /**
+         * Restarts the timer to auto commit changes
+         */
+        void restartAutoCommitTimer();
     }
 }

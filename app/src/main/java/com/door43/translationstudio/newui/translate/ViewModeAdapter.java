@@ -115,6 +115,13 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
     public abstract int getItemPosition(String chapterId, String frameId);
 
     /**
+     * Restarts the auto commit timer
+     */
+    public void restartAutoCommitTimer() {
+        mListener.restartAutoCommitTimer();
+    }
+
+    /**
      * Notifies the adpater that it needs to reload all it's data.
      */
     public abstract void reload();
@@ -129,5 +136,6 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
         void onTranslationNoteClick(String chapterId, String frameId, String translationNoteId, int width);
         void onCheckingQuestionClick(String chapterId, String frameId, String checkingQuestionId, int width);
         void scrollToFrame(String chapterSlug, String frameSlug);
+        void restartAutoCommitTimer();
     }
 }

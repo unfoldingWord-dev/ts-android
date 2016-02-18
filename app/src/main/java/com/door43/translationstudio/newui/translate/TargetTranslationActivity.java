@@ -198,17 +198,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             }
         });
 
-        // schedule translation commits
-        mCommitTimer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    mTargetTranslation.commit();
-                } catch (Exception e) {
-                    Logger.e(TargetTranslationActivity.class.getName(), "Failed to commit the latest translation of " + targetTranslationId, e);
-                }
-            }
-        }, COMMIT_INTERVAL, COMMIT_INTERVAL);
+        restartAutoCommitTimer();
     }
 
     private void buildMenu() {
@@ -549,6 +539,29 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 break;
         }
 
+    }
+
+    /**
+     * Restart scheduled translation commits
+     */
+    public void restartAutoCommitTimer() {
+        mCommitTimer.cancel();
+        mCommitTimer = new Timer();
+        mCommitTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                if(mTargetTranslation != null) {
+                    try {
+                        mTargetTranslation.commit();
+                    } catch (Exception e) {
+                        Logger.e(TargetTranslationActivity.class.getName(), "Failed to commit the latest translation of " + mTargetTranslation.getId(), e);
+                    }
+                } else {
+                    Logger.w(TAG, "cannot auto commit target translation. The target translation is null.");
+                    mCommitTimer.cancel();
+                }
+            }
+        }, COMMIT_INTERVAL, COMMIT_INTERVAL);
     }
 
     @Override

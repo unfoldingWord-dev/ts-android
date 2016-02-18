@@ -939,6 +939,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         String text = history.read(commit);
                         // save and update ui
                         if (text != null) {
+                            // TRICKY: prevent history from getting rolled back soon after the user views it
+                            restartAutoCommitTimer();
                             applyChangedText(text, holder, item);
                             holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
                             holder.mTargetEditableBody.setText(item.renderedTargetBody);
@@ -992,6 +994,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         String text = history.read(commit);
                         // save and update ui
                         if (text != null) {
+                            // TRICKY: prevent history from getting rolled back soon after the user views it
+                            restartAutoCommitTimer();
                             applyChangedText(text, holder, item);
                             holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
                             holder.mTargetEditableBody.setText(item.renderedTargetBody);
