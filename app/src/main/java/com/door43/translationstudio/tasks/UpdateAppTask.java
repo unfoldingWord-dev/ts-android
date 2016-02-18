@@ -118,7 +118,7 @@ public class UpdateAppTask extends ManagedTask {
                 Logger.w(this.getClass().getName(), "Failed to migrate the target translation " + tt.getId());
             }
             try {
-                tt.commit();
+                tt.commitSync();
             } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "Failed to commit migration changes to target translation " + tt.getId());
             }
@@ -222,7 +222,7 @@ public class UpdateAppTask extends ManagedTask {
                 Logger.w(this.getClass().getName(), "Failed to migrate the target translation " + tt.getId());
             }
             try {
-                tt.commit();
+                tt.commitSync();
             } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "Failed to commit migration changes to target translation " + tt.getId());
             }

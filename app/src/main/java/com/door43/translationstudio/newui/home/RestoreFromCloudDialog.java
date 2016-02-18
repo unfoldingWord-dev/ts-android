@@ -199,7 +199,7 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
                     });
                     // commit changes
                     try {
-                        targetTranslation.commit();
+                        targetTranslation.commitSync();
                     } catch (Exception e) {
                         Logger.e(RestoreFromCloudDialog.class.getName(), "Failed to commit changes after restoring backup", e);
                     }
