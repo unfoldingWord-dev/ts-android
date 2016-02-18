@@ -190,9 +190,9 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
                 public void onTabSelected(TabLayout.Tab tab) {
                     mSelectedTab = (String) tab.getTag();
                     if(mSelectedTab.equals(TAB_DRAFT_LANGUAGES)) {
-                        mHolder.mAdapter.changeDataSet(mProject.getId(), ServerLibraryCache.getAvailableUpdates(), draftLanguages);
+                        mHolder.mAdapter.changeDataSet(mProject.getId(), mServerLibrary.getAvailableUpdates(), draftLanguages);
                     } else {
-                        mHolder.mAdapter.changeDataSet(mProject.getId(), ServerLibraryCache.getAvailableUpdates(), sourceLanguages);
+                        mHolder.mAdapter.changeDataSet(mProject.getId(), mServerLibrary.getAvailableUpdates(), sourceLanguages);
                     }
                 }
 
@@ -209,9 +209,9 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
 
             // load languages
             if(mSelectedTab.equals(TAB_DRAFT_LANGUAGES)) {
-                mHolder.mAdapter.changeDataSet(mProject.getId(), ServerLibraryCache.getAvailableUpdates(), draftLanguages);
+                mHolder.mAdapter.changeDataSet(mProject.getId(), mServerLibrary.getAvailableUpdates(), draftLanguages);
             } else {
-                mHolder.mAdapter.changeDataSet(mProject.getId(), ServerLibraryCache.getAvailableUpdates(), sourceLanguages);
+                mHolder.mAdapter.changeDataSet(mProject.getId(), mServerLibrary.getAvailableUpdates(), sourceLanguages);
             }
 
             // list
@@ -326,7 +326,6 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
                 public void run() {
                     rebuildLayout();
                     if (((DownloadSourceLanguageTask) task).getSuccess()) {
-                        ServerLibraryCache.getAvailableUpdates().removeSourceLanguageUpdate(((DownloadSourceLanguageTask) task).getProjectId(), ((DownloadSourceLanguageTask) task).getSourceLanguageId());
                         mListener.onSourceLanguageDownloaded(((DownloadSourceLanguageTask) task).getProjectId(), ((DownloadSourceLanguageTask) task).getSourceLanguageId());
                     }
                 }

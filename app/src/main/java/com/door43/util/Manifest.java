@@ -7,6 +7,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 
 /**
  * This class handles the management of a manifest file.
@@ -219,5 +220,81 @@ public class Manifest {
                 mManifest = new JSONObject();
             }
         }
+    }
+
+    /**
+     * Uniquely merges the values of the array into the manifest
+     * @param newArray
+     * @param key
+     */
+    public void join(JSONArray newArray, String key) {
+        if(newArray != null && key != null) {
+            try {
+                if (!mManifest.has(key)) {
+                    mManifest.put(key, newArray);
+                } else {
+                    JSONArray array = mManifest.getJSONArray(key);
+                    for (int i = 0; i < newArray.length(); i++) {
+                        Object obj = newArray.get(i);
+                        if (!hasValueInArray(array, obj)) {
+                            array.put(obj);
+                        }
+                    }
+                    mManifest.put(key, array);
+                }
+                save();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Uniquely merges the keys of the object into the manifest
+     * @param newObj
+     * @param key
+     */
+    public void join(JSONObject newObj, String key) {
+        if(newObj != null && key != null) {
+            try {
+                if (!mManifest.has(key)) {
+                    mManifest.put(key, newObj);
+                } else {
+                    JSONObject obj = mManifest.getJSONObject(key);
+                    Iterator<String> newKeys = newObj.keys();
+                    while(newKeys.hasNext()) {
+                        String newObjKey = newKeys.next();
+                        if(!obj.has(newObjKey)) {
+                            obj.put(newObjKey, newObj.get(newObjKey));
+                        }
+                    }
+                    mManifest.put(key, obj);
+                }
+                save();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Checks if a value exists in the array
+     * @param array
+     * @param value
+     * @return
+     */
+    private static boolean hasValueInArray(JSONArray array, Object value) {
+        if(value != null  && array != null) {
+            try {
+                for (int i = 0; i < array.length(); i++) {
+                    if (value.equals(array.get(i))) {
+                        return true;
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
     }
 }

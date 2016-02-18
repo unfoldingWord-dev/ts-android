@@ -105,7 +105,7 @@ public class BackupService extends Service {
 
             // commit pending changes
             try {
-                t.commit();
+                t.commitSync();
             } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "Failed to commit changes before backing up", e);
                 continue;

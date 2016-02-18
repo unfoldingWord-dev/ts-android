@@ -31,6 +31,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     public static final int RESULT_DUPLICATE = 2;
     private static final String STATE_TARGET_TRANSLATION_ID = "state_target_translation_id";
     private static final String STATE_TARGET_LANGUAGE_ID = "state_target_language_id";
+    public static final int RESULT_ERROR = 3;
     private TargetLanguage mSelectedTargetLanguage = null;
     private Searchable mFragment;
     private String mNewTargetTranslationId = null;
@@ -89,12 +90,19 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
         if(existingTranslation == null) {
             // create new target translation
             TargetTranslation targetTranslation = AppContext.getTranslator().createTargetTranslation(mSelectedTargetLanguage, projectId);
-            mNewTargetTranslationId = targetTranslation.getId();
+            if(targetTranslation != null) {
+                mNewTargetTranslationId = targetTranslation.getId();
 
-            Intent data = new Intent();
-            data.putExtra(EXTRA_TARGET_TRANSLATION_ID, mNewTargetTranslationId);
-            setResult(RESULT_OK, data);
-            finish();
+                Intent data = new Intent();
+                data.putExtra(EXTRA_TARGET_TRANSLATION_ID, mNewTargetTranslationId);
+                setResult(RESULT_OK, data);
+                finish();
+            } else {
+                AppContext.getTranslator().deleteTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId));
+                Intent data = new Intent();
+                setResult(RESULT_ERROR, data);
+                finish();
+            }
         } else {
             // that translation already exists
             Intent data = new Intent();

@@ -137,6 +137,7 @@ public class UploadTargetTranslationTask extends ManagedTask {
             return response.toString();
         } catch (TransportException e) {
             Logger.e(this.getClass().getName(), e.getMessage(), e);
+            Logger.i(this.getClass().getName(), e.getCause().getCause().toString());
             mUploadSucceeded = false;
             return null;
         } catch (Exception e) {

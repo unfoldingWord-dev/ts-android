@@ -98,10 +98,12 @@ public class LibraryUpdates implements Serializable {
      */
     public void removeSourceLanguageUpdate(String projectId, String sourceLanguageId) {
         if(mUpdates.containsKey(projectId)) {
-            numSourceTranslationUpdates -= mUpdates.get(projectId).get(sourceLanguageId).size();
-            mUpdates.get(projectId).remove(sourceLanguageId);
-            if(mUpdates.get(projectId).size() == 0) {
-                mUpdates.remove(projectId);
+            if(mUpdates.get(projectId) != null && mUpdates.get(projectId).get(sourceLanguageId) != null) {
+                numSourceTranslationUpdates -= mUpdates.get(projectId).get(sourceLanguageId).size();
+                mUpdates.get(projectId).remove(sourceLanguageId);
+                if (mUpdates.get(projectId).size() == 0) {
+                    mUpdates.remove(projectId);
+                }
             }
         }
     }

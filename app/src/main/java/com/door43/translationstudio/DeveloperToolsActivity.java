@@ -22,19 +22,16 @@ import android.widget.TextView;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.Resource;
-import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.dialogs.ErrorLogDialog;
 import com.door43.translationstudio.newui.BaseActivity;
-import com.door43.translationstudio.newui.library.ServerLibraryCache;
 import com.door43.translationstudio.tasks.GetLibraryUpdatesTask;
 import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
 import com.door43.translationstudio.util.ToolAdapter;
 import com.door43.translationstudio.util.ToolItem;
 import com.door43.util.StringUtilities;
-import com.door43.util.Zip;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 import com.door43.util.tasks.ThreadableUI;
@@ -43,11 +40,7 @@ import com.door43.widget.ViewUtil;
 import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-
-import javax.xml.transform.Source;
 
 public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.OnProgressListener, ManagedTask.OnFinishedListener, DialogInterface.OnCancelListener {
 
@@ -308,7 +301,6 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
             @Override
             public void run() {
                 AppContext.getLibrary().delete();
-                ServerLibraryCache.clear();
                 Snackbar snack = Snackbar.make(findViewById(android.R.id.content), "The library content was deleted", Snackbar.LENGTH_LONG);
                 ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                 snack.show();

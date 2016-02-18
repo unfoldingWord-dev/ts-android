@@ -2,6 +2,7 @@ package com.door43.translationstudio.newui.home;
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
@@ -154,8 +155,24 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
             }
         });
 
+        Intent intent = getIntent();
+        if(intent != null) {
+            String action = intent.getAction();
+            if(action != null) {
+                if (action.compareTo(Intent.ACTION_VIEW) == 0 || action.compareTo(Intent.ACTION_DEFAULT) == 0) {
+                    String scheme = intent.getScheme();
+                    ContentResolver resolver = getContentResolver();
+
+                    if (scheme.compareTo(ContentResolver.SCHEME_FILE) == 0) {
+                        // TODO: 2/10/2016 confirm with user that they want to import the file
+                    }
+                }
+                return;
+            }
+        }
+
         // open last project when starting the first time
-        if(savedInstanceState == null) {
+        if (savedInstanceState == null) {
             TargetTranslation targetTranslation = getLastOpened();
             if (targetTranslation != null) {
                 onItemClick(targetTranslation);
@@ -261,6 +278,10 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                     ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                     snack.show();
                 }
+            } else if( NewTargetTranslationActivity.RESULT_ERROR == resultCode) {
+                Snackbar snack = Snackbar.make(findViewById(android.R.id.content), getResources().getString(R.string.error), Snackbar.LENGTH_LONG);
+                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                snack.show();
             }
         }
     }

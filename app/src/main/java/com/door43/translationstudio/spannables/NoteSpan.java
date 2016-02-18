@@ -55,9 +55,6 @@ public class NoteSpan extends Span {
     private SpannableStringBuilder mSpannable;
     public static final String PATTERN = "<note ((?!>).)*>((?!</note>).)*</note>";
 
-    // custom usx styles
-    public static final String STYLE_USERNOTE = "u";
-
     /**
      * @param style the note style
      * @param caller the note caller
@@ -88,8 +85,6 @@ public class NoteSpan extends Span {
             spanTitle = passageText;
         } else if(!TextUtils.isEmpty(quotation)) {
             spanTitle = quotation;
-        } else {
-            spanTitle = "[note]";
         }
 
         init(spanTitle, generateTag(style, caller, spanTitle, chars));
@@ -105,7 +100,7 @@ public class NoteSpan extends Span {
         if(mSpannable == null) {
             mSpannable = super.render();
             // apply custom styles
-            if(getHumanReadable().toString().equals("[note]")) {
+            if(getHumanReadable().toString().isEmpty()) {
                 Bitmap image = BitmapFactory.decodeResource(AppContext.context().getResources(), R.drawable.ic_description_black_24dp);
                 BitmapDrawable background = new BitmapDrawable(AppContext.context().getResources(), image);
                 background.setBounds(0, 0, background.getMinimumWidth(), background.getMinimumHeight());
@@ -144,26 +139,12 @@ public class NoteSpan extends Span {
         document.appendChild(rootElement);
 
         // add chars
-//        Element noteElement = document.createElement(TAG_CHAR);
-//        noteElement.setAttribute("style", NOTE_TEXT_STYLE);
-
         for(Char c:chars) {
             Element element = document.createElement("char");
             element.setAttribute("style", c.style);
             element.setTextContent(c.value.toString().replace("\n", "\\n"));
             rootElement.appendChild(element);
         }
-        // TRICKY: spannables render incorrectly when there are newlines within the content.
-//        noteElement.setTextContent(notes.replace("\n", "\\n"));
-//        rootElement.appendChild(noteElement);
-
-        // add user note data
-//        if(type == NoteType.UserNote) {
-//            Element userNoteElement = document.createElement(TAG_CHAR);
-//            userNoteElement.setAttribute("style", STYLE_CHAR_PASSAGE_TEXT);
-//            userNoteElement.setTextContent(title);
-//            rootElement.appendChild(userNoteElement);
-//        }
 
         // generate
         DOMSource domSource = new DOMSource(document.getDocumentElement());
@@ -189,9 +170,6 @@ public class NoteSpan extends Span {
         }
 
         String tag = output.toString();
-        if(style.equals("f")) {
-            tag = title + tag;
-        }
         return tag;
     }
 
@@ -233,16 +211,14 @@ public class NoteSpan extends Span {
     }
 
     /**
-     * Generates a new user note span
-     * @param passageText the passage on which the node is made
+     * Generates a footnote span
      * @param note the note
      * @return
      */
-    public static NoteSpan generateUserNote(CharSequence passageText, CharSequence note) {
+    public static NoteSpan generateFootnote(CharSequence note) {
         List<Char> chars = new ArrayList<>();
-        chars.add(new Char(Char.STYLE_PASSAGE_TEXT, passageText));
         chars.add(new Char(Char.STYLE_FOOTNOTE_TEXT, note));
-        return new NoteSpan(STYLE_USERNOTE, DEFAULT_CALLER, chars);
+        return new NoteSpan("f", DEFAULT_CALLER, chars);
     }
 
     /**
@@ -283,16 +259,6 @@ public class NoteSpan extends Span {
 
         // load attributes
         String style = parser.getAttributeValue("","style");
-//        if(style != null) {
-//            if(style.equals(STYLE_FOOTNOTE)) {
-//                noteType = NoteType.Footnote;
-//            } else {
-//                // by default everything is a user note
-//                noteType = NoteType.UserNote;
-//            }
-//        } else {
-//            noteType = NoteType.UserNote;
-//        }
 
         String caller = parser.getAttributeValue("", "caller");
         if(caller == null) {
@@ -312,16 +278,6 @@ public class NoteSpan extends Span {
                 String charText = parser.nextText();
 
                 chars.add(new Char(charStyle, charText));
-//                if(charStyle.equals(NOTE_TEXT_STYLE)) {
-//                    // TRICKY: add back the newlines that were removed to preserve spannable rendering
-//                    TextUtils.concat(note, charText.replace("\\n", "\n"));
-//                } else if(charStyle.equals(STYLE_CHAR_PASSAGE_TEXT)) {
-//                    passageText = charText;
-//                }
-//
-//                if(charStyle.equals(STYLE_FOOTNOTE)) {
-//                    passageText = "footnote";
-//                }
             }
             eventType = parser.next();
         }

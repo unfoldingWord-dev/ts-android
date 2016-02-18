@@ -37,7 +37,7 @@
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:padding="16dp"
-            android:src="@drawable/ic_assignment_turned_in_inactive_24dp"
+            android:src="@drawable/icon_check_inactive"
             android:background="?attr/selectableItemBackground"
             android:layout_gravity="center" />
     </LinearLayout>

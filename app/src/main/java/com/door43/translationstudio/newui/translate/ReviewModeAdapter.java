@@ -37,6 +37,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.CheckingQuestion;
+import com.door43.translationstudio.core.FileHistory;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.Library;
@@ -59,8 +60,11 @@ import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.VersePinSpan;
+import com.door43.util.tasks.ThreadableUI;
 import com.door43.widget.ViewUtil;
-import org.sufficientlysecure.htmltextview.HtmlTextView;
+
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -73,10 +77,15 @@ import java.util.regex.Pattern;
  * Created by joel on 9/18/2015.
  */
 public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHolder> {
+    private static final String TAG = ReviewModeAdapter.class.getSimpleName();
 
     private static final int TAB_NOTES = 0;
     private static final int TAB_WORDS = 1;
     private static final int TAB_QUESTIONS = 2;
+    public static final String UNDO = "Undo";
+    public static final String REDO = "Redo";
+    public static final String OPTIONS = "Options";
+    public static final String ISO_DATE_FORMAT = "yyyy-MM-dd HH:mm";
     private final Library mLibrary;
     private final Translator mTranslator;
     private final Activity mContext;
@@ -387,7 +396,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private void renderSourceCard(int position, final ListItem item, ViewHolder holder) {
         // render
         if(item.renderedSourceBody == null) {
-            item.renderedSourceBody = renderSourceText(item.bodySource, item.translationFormat);
+            item.renderedSourceBody = renderSourceText(item.bodySource, item.translationFormat, holder, item, false);
         }
         holder.mSourceBody.setText(item.renderedSourceBody);
     }
@@ -411,13 +420,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
         }
 
-        // render body
         if(item.renderedTargetBody == null) {
-            if(item.isTranslationFinished || item.isEditing) {
-                item.renderedTargetBody = renderSourceText(item.bodyTranslation, item.translationFormat);
-            } else {
-                item.renderedTargetBody = renderTargetText(item.bodyTranslation, item.translationFormat, frame, item.frameTranslation, holder, item);
-            }
+            renderTargetBody(item, holder, frame);
         }
 
         // insert rendered text
@@ -470,23 +474,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // save
-                String translation = Translator.compileTranslation((Editable)s);
-                if(item.isChapterReference) {
-                    mTargetTranslation.applyChapterReferenceTranslation(item.chapterTranslation, translation);
-                } else if(item.isChapterTitle) {
-                    mTargetTranslation.applyChapterTitleTranslation(item.chapterTranslation, translation);
-                } else if(item.isProjectTitle) {
-                    try {
-                        mTargetTranslation.applyProjectTitleTranslation(s.toString());
-                    } catch (IOException e) {
-                        Logger.e(ReviewModeAdapter.class.getName(), "Failed to save the project title translation", e);
-                    }
-                } else if(item.isFrame()) {
-                    mTargetTranslation.applyFrameTranslation(item.frameTranslation, translation);
-                }
-                item.renderedTargetBody = renderSourceText(translation, item.translationFormat);
+                String translation = applyChangedText(s, holder, item);
 
+                // commit immediately if editing history
+                FileHistory history = item.getFileHistory(mTargetTranslation);
+                if(!history.isAtHead()) {
+                    history.reset();
+                    prepareTranslationUI(holder, item);
+                }
 
                 // update view if pasting text
                 // TRICKY: anything worth rendering will need to change by at least 7 characters
@@ -519,35 +514,39 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
         }
 
+        holder.mUndoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                undoTextInTarget(holder, item);
+            }
+        });
+        holder.mRedoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                redoTextInTarget(holder, item);
+            }
+        });
+
         // editing button
         final GestureDetector detector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onSingleTapUp(MotionEvent e) {
                 item.isEditing = !item.isEditing;
+                prepareTranslationUI(holder, item);
+
                 if(item.isEditing) {
-                    // open editing mode
-                    holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
-                    holder.mTargetBody.setVisibility(View.GONE);
-                    holder.mTargetEditableBody.setVisibility(View.VISIBLE);
                     holder.mTargetEditableBody.requestFocus();
-                    holder.mTargetInnerCard.setBackgroundResource(R.color.white);
-                    holder.mTargetEditableBody.setEnableLines(true);
                     InputMethodManager mgr = (InputMethodManager)mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
                     mgr.showSoftInput(holder.mTargetEditableBody, InputMethodManager.SHOW_IMPLICIT);
 
                     // TRICKY: there may be changes to translation
                     item.loadTranslations(mSourceTranslation, mTargetTranslation, chapter, frame);
+
                     // re-render for editing mode
-                    item.renderedTargetBody = renderSourceText(item.bodyTranslation, item.translationFormat);
+                    item.renderedTargetBody = renderSourceText(item.bodyTranslation, item.translationFormat, holder, item, true);
                     holder.mTargetEditableBody.setText(item.renderedTargetBody);
                     holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
                 } else {
-                    // close editing mode
-                    holder.mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
-                    holder.mTargetBody.setVisibility(View.VISIBLE);
-                    holder.mTargetEditableBody.setVisibility(View.GONE);
-                    holder.mTargetInnerCard.setBackgroundResource(R.color.white);
-                    holder.mTargetEditableBody.setEnableLines(false);
                     if(holder.mEditableTextWatcher != null) {
                         holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
                     }
@@ -563,6 +562,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 return true;
             }
         });
+
         holder.mEditButton.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -570,20 +570,34 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         });
 
+        holder.mAddNoteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                createFootnoteAtSelection(holder, item);
+            }
+        });
+
+        prepareTranslationUI(holder, item);
         // display verse/editing mode
-        if(item.isEditing) {
-            holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
-            holder.mTargetBody.setVisibility(View.GONE);
-            holder.mTargetEditableBody.setVisibility(View.VISIBLE);
-            holder.mTargetEditableBody.setEnableLines(true);
-            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
-        } else {
-            holder.mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
-            holder.mTargetBody.setVisibility(View.VISIBLE);
-            holder.mTargetEditableBody.setVisibility(View.GONE);
-            holder.mTargetEditableBody.setEnableLines(false);
-            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
-        }
+//        if(item.isEditing) {
+//            holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
+//            holder.mAddNoteButton.setVisibility(View.VISIBLE);
+//            holder.mUndoButton.setVisibility(View.VISIBLE);
+//            holder.mRedoButton.setVisibility(View.VISIBLE);
+//            holder.mTargetBody.setVisibility(View.GONE);
+//            holder.mTargetEditableBody.setVisibility(View.VISIBLE);
+//            holder.mTargetEditableBody.setEnableLines(true);
+//            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
+//        } else {
+//            holder.mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
+//            holder.mUndoButton.setVisibility(View.GONE);
+//            holder.mRedoButton.setVisibility(View.GONE);
+//            holder.mAddNoteButton.setVisibility(View.GONE);
+//            holder.mTargetBody.setVisibility(View.VISIBLE);
+//            holder.mTargetEditableBody.setVisibility(View.GONE);
+//            holder.mTargetEditableBody.setEnableLines(false);
+//            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
+//        }
 
         // disable listener
         holder.mDoneSwitch.setOnCheckedChangeListener(null);
@@ -591,6 +605,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // display as finished
         if(item.isTranslationFinished) {
             holder.mEditButton.setVisibility(View.GONE);
+            holder.mUndoButton.setVisibility(View.GONE);
+            holder.mRedoButton.setVisibility(View.GONE);
+            holder.mAddNoteButton.setVisibility(View.GONE);
             holder.mDoneSwitch.setChecked(true);
             holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         } else {
@@ -650,6 +667,357 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
             }
         });
+    }
+
+    private void prepareTranslationUI(final ViewHolder holder, ListItem item) {
+        if(item.isEditing) {
+            final FileHistory history = item.getFileHistory(mTargetTranslation);
+            ThreadableUI thread = new ThreadableUI(mContext) {
+                @Override
+                public void onStop() {
+
+                }
+
+                @Override
+                public void run() {
+                    try {
+                        history.loadCommits();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (GitAPIException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onPostExecute() {
+                    if(history.hasNext()) {
+                        holder.mRedoButton.setVisibility(View.VISIBLE);
+                    } else {
+                        holder.mRedoButton.setVisibility(View.GONE);
+                    }
+                    if(history.hasPrevious()) {
+                        holder.mUndoButton.setVisibility(View.VISIBLE);
+                    } else {
+                        holder.mUndoButton.setVisibility(View.GONE);
+                    }
+                }
+            };
+            thread.start();
+            holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
+            holder.mAddNoteButton.setVisibility(View.VISIBLE);
+            holder.mUndoButton.setVisibility(View.GONE);
+            holder.mRedoButton.setVisibility(View.GONE);
+            holder.mTargetBody.setVisibility(View.GONE);
+            holder.mTargetEditableBody.setVisibility(View.VISIBLE);
+            holder.mTargetEditableBody.setEnableLines(true);
+            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
+        } else {
+            holder.mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
+            holder.mUndoButton.setVisibility(View.GONE);
+            holder.mRedoButton.setVisibility(View.GONE);
+            holder.mAddNoteButton.setVisibility(View.GONE);
+            holder.mTargetBody.setVisibility(View.VISIBLE);
+            holder.mTargetEditableBody.setVisibility(View.GONE);
+            holder.mTargetEditableBody.setEnableLines(false);
+            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
+        }
+    }
+
+    private void renderTargetBody(ListItem item, ViewHolder holder, Frame frame) {
+        // render body
+        if(item.isTranslationFinished || item.isEditing) {
+            item.renderedTargetBody = renderSourceText(item.bodyTranslation, item.translationFormat, holder, item, true);
+        } else {
+            item.renderedTargetBody = renderTargetText(item.bodyTranslation, item.translationFormat, frame, item.frameTranslation, holder, item);
+        }
+    }
+
+    /**
+     * create a new footnote at selected position in target text.  Displays an edit dialog to enter footnote data.
+     * @param holder
+     * @param item
+     */
+    private void createFootnoteAtSelection(final ViewHolder holder, final ListItem item) {
+        final EditText editText = getEditText(holder, item);
+        int endPos = editText.getSelectionEnd();
+        if (endPos < 0) {
+            endPos = 0;
+        }
+        final int insertPos = endPos;
+        editFootnote("", holder, item, insertPos, insertPos);
+    }
+
+    /**
+     * edit contents of footnote at specified position
+     * @param initialNote
+     * @param holder
+     * @param item
+     * @param footnotePos
+     * @param footnoteEndPos
+     */
+    private void editFootnote(CharSequence initialNote, final ViewHolder holder, final ListItem item, final int footnotePos, final int footnoteEndPos ) {
+        final EditText editText = getEditText(holder, item);
+        final CharSequence original = editText.getText();
+
+        LayoutInflater inflater = LayoutInflater.from(mContext);
+        final View footnoteFragment = inflater.inflate(R.layout.fragment_footnote_prompt, null);
+        if(footnoteFragment != null) {
+            final EditText footnoteText = (EditText) footnoteFragment.findViewById(R.id.footnote_text);
+            if ((footnoteText != null)) {
+                footnoteText.setText(initialNote);
+
+                // pop up note prompt
+                final CustomAlertDialog dialog = CustomAlertDialog.Create(mContext);
+                dialog.setTitle(R.string.title_add_footnote)
+                        .setAutoDismiss(false)
+                        .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+
+                                CharSequence footnote = footnoteText.getText();
+                                boolean validated = verifyAndReplaceFootnote(footnote, original, footnotePos, footnoteEndPos, holder, item, editText);
+                                if(validated) {
+                                    dialog.dismiss();
+                                }
+                            }
+                        })
+                        .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                dialog.dismiss();
+                            }
+                        })
+                        .setView(footnoteFragment)
+                        .show("add-footnote");
+            }
+        }
+    }
+
+    /**
+     * insert footnote into EditText or remove footnote from EditText if both footnote and
+     *      footnoteTitleText are null
+     * @param footnote
+     * @param original
+     * @param insertPos
+     * @param insertEndPos
+     * @param item
+     * @param editText
+     */
+    private boolean verifyAndReplaceFootnote(CharSequence footnote, CharSequence original, int insertPos, final int insertEndPos, final ViewHolder holder, final ListItem item, EditText editText) {
+        // sanity checks
+        if ((null == footnote) || (footnote.length() <= 0)) {
+            warnDialog(R.string.title_footnote_invalid, R.string.footnote_message_empty);
+            return false;
+        }
+
+        placeFootnote(footnote, original, insertPos, insertEndPos, holder, item, editText);
+        return true;
+    }
+
+    /**
+     * display warning dialog
+     * @param titleID
+     * @param messageID
+     */
+    private void warnDialog(int titleID, int messageID) {
+        final CustomAlertDialog dialog = CustomAlertDialog.Create(mContext);
+        dialog.setTitle(titleID)
+                .setMessage(messageID)
+                .setPositiveButton(R.string.dismiss, null)
+                .show("warn-dialog");
+    }
+
+    /**
+     * insert footnote into EditText or remove footnote from EditText if both footnote and
+     *      footnoteTitleText are null
+     * @param footnote
+     * @param original
+     * @param start
+     * @param end
+     * @param item
+     * @param editText
+     */
+    private void placeFootnote(CharSequence footnote, CharSequence original, int start, final int end, final ViewHolder holder, final ListItem item, EditText editText) {
+        CharSequence footnotecode = "";
+        if(footnote != null) {
+            // sanity checks
+            if ((null == footnote) || (footnote.length() <= 0)) {
+                footnote = mContext.getResources().getString(R.string.footnote_label);
+            }
+
+            NoteSpan footnoteSpannable = NoteSpan.generateFootnote(footnote);
+            footnotecode = footnoteSpannable.getMachineReadable();
+        }
+
+        CharSequence newText = TextUtils.concat(original.subSequence(0, start), footnotecode, original.subSequence(end, original.length()));
+        editText.setText(newText);
+
+        item.renderedTargetBody = newText;
+        item.bodyTranslation = Translator.compileTranslation(editText.getText()); // get XML for footnote
+        mTargetTranslation.applyFrameTranslation(item.frameTranslation, item.bodyTranslation); // save change
+
+        Frame frame = null;
+        if(item.isFrame()) {
+            frame  = loadFrame(item.chapterSlug, item.frameSlug);
+        }
+
+        renderTargetBody(item, holder, frame); // generate spannable again adding
+        editText.setText(item.renderedTargetBody);
+        editText.setSelection(editText.length(), editText.length());
+    }
+
+    /**
+     * save changed text
+     * @param s A string or editable
+     * @param item
+     * @return
+     */
+    private String applyChangedText(CharSequence s, ViewHolder holder, ListItem item) {
+        String translation;
+        if(s instanceof Editable) {
+            translation = Translator.compileTranslation((Editable) s);
+        } else {
+            translation = s.toString();
+        }
+
+        if (item.isChapterReference) {
+            mTargetTranslation.applyChapterReferenceTranslation(item.chapterTranslation, translation);
+        } else if (item.isChapterTitle) {
+            mTargetTranslation.applyChapterTitleTranslation(item.chapterTranslation, translation);
+        } else if (item.isProjectTitle) {
+            try {
+                mTargetTranslation.applyProjectTitleTranslation(s.toString());
+            } catch (IOException e) {
+                Logger.e(ReviewModeAdapter.class.getName(), "Failed to save the project title translation", e);
+            }
+        } else if (item.isFrame()) {
+            mTargetTranslation.applyFrameTranslation(item.frameTranslation, translation);
+        }
+        item.renderedTargetBody = renderSourceText(translation, item.translationFormat, holder, item, true);
+        return translation;
+    }
+
+    /**
+     * restore the text from previous commit for fragment
+     * @param holder
+     * @param item
+     */
+    private void undoTextInTarget(final ViewHolder holder, final ListItem item) {
+        holder.mUndoButton.setVisibility(View.INVISIBLE);
+        holder.mRedoButton.setVisibility(View.INVISIBLE);
+
+        final FileHistory history = item.getFileHistory(mTargetTranslation);
+        ThreadableUI thread = new ThreadableUI(mContext) {
+            RevCommit commit = null;
+            @Override
+            public void onStop() {
+
+            }
+
+            @Override
+            public void run() {
+                // commit changes before viewing history
+                if(history.isAtHead()) {
+                    if(!mTargetTranslation.isClean()) {
+                        try {
+                            mTargetTranslation.commitSync();
+                            history.loadCommits();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                // get previous
+                commit = history.previous();
+            }
+
+            @Override
+            public void onPostExecute() {
+                try {
+                    if(commit != null) {
+                        String text = history.read(commit);
+                        // save and update ui
+                        if (text != null) {
+                            // TRICKY: prevent history from getting rolled back soon after the user views it
+                            restartAutoCommitTimer();
+                            applyChangedText(text, holder, item);
+                            holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
+                            holder.mTargetEditableBody.setText(item.renderedTargetBody);
+                            holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if(history.hasNext()) {
+                    holder.mRedoButton.setVisibility(View.VISIBLE);
+                } else {
+                    holder.mRedoButton.setVisibility(View.GONE);
+                }
+                if(history.hasPrevious()) {
+                    holder.mUndoButton.setVisibility(View.VISIBLE);
+                } else {
+                    holder.mUndoButton.setVisibility(View.GONE);
+                }
+            }
+        };
+        thread.start();
+    }
+
+    /**
+     * restore the text from later commit for fragment
+     * @param holder
+     * @param item
+     */
+    private void redoTextInTarget(final ViewHolder holder, final ListItem item) {
+        holder.mUndoButton.setVisibility(View.INVISIBLE);
+        holder.mRedoButton.setVisibility(View.INVISIBLE);
+
+        final FileHistory history = item.getFileHistory(mTargetTranslation);
+        ThreadableUI thread = new ThreadableUI(mContext) {
+            RevCommit commit = null;
+            @Override
+            public void onStop() {
+
+            }
+
+            @Override
+            public void run() {
+                commit = history.next();
+            }
+
+            @Override
+            public void onPostExecute() {
+                try {
+                    if(commit != null) {
+                        String text = history.read(commit);
+                        // save and update ui
+                        if (text != null) {
+                            // TRICKY: prevent history from getting rolled back soon after the user views it
+                            restartAutoCommitTimer();
+                            applyChangedText(text, holder, item);
+                            holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
+                            holder.mTargetEditableBody.setText(item.renderedTargetBody);
+                            holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if(history.hasNext()) {
+                    holder.mRedoButton.setVisibility(View.VISIBLE);
+                } else {
+                    holder.mRedoButton.setVisibility(View.GONE);
+                }
+                if(history.hasPrevious()) {
+                    holder.mUndoButton.setVisibility(View.VISIBLE);
+                } else {
+                    holder.mUndoButton.setVisibility(View.GONE);
+                }
+            }
+        };
+        thread.start();
     }
 
     private static final Pattern CONSECUTIVE_VERSE_MARKERS =
@@ -726,6 +1094,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         // Wrap up.
         if (success) {
+            try {
+                mTargetTranslation.commit();
+            } catch (Exception e) {
+                Logger.e(TAG, "Failed to commit translation of " + mTargetTranslation.getId() + ":" + frame.getComplexId(), e);
+            }
             item.isEditing = false;
             item.renderedTargetBody = null;
             notifyDataSetChanged();
@@ -971,6 +1344,16 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
     }
 
+    /**
+     * generate spannable for target text.  Will add click listener for notes and verses if USX
+     * @param text
+     * @param format
+     * @param frame
+     * @param frameTranslation
+     * @param holder
+     * @param item
+     * @return
+     */
     private CharSequence renderTargetText(String text, TranslationFormat format, final Frame frame, final FrameTranslation frameTranslation, final ViewHolder holder, final ListItem item) {
         RenderingGroup renderingGroup = new RenderingGroup();
         if(format == TranslationFormat.USX && frame != null) {
@@ -1065,7 +1448,22 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     });
                 }
             };
-            USXRenderer usxRenderer = new USXRenderer(verseClickListener, null);
+
+            Span.OnClickListener noteClickListener = new Span.OnClickListener() {
+                @Override
+                public void onClick(View view, Span span, int start, int end) {
+                    if (span instanceof NoteSpan) {
+                        showFootnote(holder, item, (NoteSpan) span, start, end, true);
+                    }
+                }
+
+                @Override
+                public void onLongClick(View view, Span span, int start, int end) {
+
+                }
+            };
+
+            USXRenderer usxRenderer = new USXRenderer(verseClickListener, noteClickListener);
             usxRenderer.setPopulateVerseMarkers(frame.getVerseRange());
             renderingGroup.addEngine(usxRenderer);
         } else {
@@ -1080,19 +1478,102 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
     }
 
-    private CharSequence renderSourceText(String text, TranslationFormat format) {
+    /**
+     * display selected footnote in dialog.  If editable, then it adds options to delete and edit
+     *      the footnote
+     * @param holder
+     * @param item
+     * @param span
+     * @param editable
+     */
+    private void showFootnote(final ViewHolder holder, final ListItem item, final NoteSpan span, final int start, final int end, boolean editable) {
+        CharSequence marker = span.getPassage();
+        CharSequence title = mContext.getResources().getText(R.string.title_note);
+        if(!marker.toString().isEmpty()) {
+            title = title + ": " + marker;
+        }
+        CharSequence message = span.getNotes();
+
+        CustomAlertDialog dlg = CustomAlertDialog.Create(mContext);
+        dlg.setTitle(title)
+           .setMessage(message)
+           .setPositiveButton(R.string.dismiss, null);
+        if(editable && !item.isTranslationFinished) {
+            dlg.setNeutralButton(R.string.edit, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    editFootnote(span.getNotes(), holder, item, start, end);
+                }
+            });
+
+            dlg.setNegativeButton(R.string.label_delete, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    deleteFootnote(span.getNotes(), holder, item, start, end);
+                }
+            });
+        }
+        dlg.show("viewNote");
+    }
+
+    /**
+     * prompt to confirm removal of specific footnote at position
+     * @param note
+     * @param holder
+     * @param item
+     * @param start
+     * @param end
+     */
+    private void deleteFootnote(CharSequence note, final ViewHolder holder, final ListItem item, final int start, final int end ) {
+        final EditText editText = getEditText(holder, item);
+        final CharSequence original = editText.getText();
+
+        // pop up delete prompt
+        final CustomAlertDialog dialog = CustomAlertDialog.Create(mContext);
+        dialog.setTitle(R.string.footnote_confirm_delete)
+                .setMessage(note)
+                .setPositiveButton(R.string.label_delete, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        placeFootnote(null, original, start, end, holder, item, editText);
+                    }
+                })
+                .setNegativeButton(R.string.title_cancel, null)
+                .show("add-footnote");
+    }
+
+    /**
+     * get appropriate edit text - it is different when editing versus viewing
+     * @param holder
+     * @param item
+     * @return
+     */
+    private EditText getEditText(final ViewHolder holder, final ListItem item) {
+        if (!item.isEditing) {
+            return holder.mTargetBody;
+        } else {
+            return holder.mTargetEditableBody;
+        }
+    }
+
+    /**
+     * generate spannable for source text.  Will add click listener for notes if USX
+     * @param text
+     * @param format
+     * @param holder
+     * @param item
+     * @param editable
+     * @return
+     */
+    private CharSequence renderSourceText(String text, TranslationFormat format, final ViewHolder holder, final ListItem item, final boolean editable) {
         RenderingGroup renderingGroup = new RenderingGroup();
         if (format == TranslationFormat.USX) {
-            // TODO: add click listeners for verses and notes
+            // TODO: add click listeners for verses
             renderingGroup.addEngine(new USXRenderer(null, new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
                     if(span instanceof NoteSpan) {
-                        CustomAlertDialog.Create(mContext)
-                                .setTitle(R.string.title_note)
-                                .setMessage(((NoteSpan)span).getNotes())
-                                .setPositiveButton(R.string.dismiss, null)
-                                .show("note");
+                        showFootnote(holder, item, (NoteSpan) span, start, end, editable);
                     }
                 }
 
@@ -1143,6 +1624,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        public final ImageButton mAddNoteButton;
+        public final ImageButton mUndoButton;
+        public final ImageButton mRedoButton;
         public final ImageButton mEditButton;
         public final CardView mResourceCard;
         public final LinearLayout mMainContent;
@@ -1161,6 +1645,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public final TabLayout mTranslationTabs;
         public final ImageButton mNewTabButton;
         public TextView mSourceBody;
+
         public ViewHolder(Context context, View v) {
             super(v);
             mMainContent = (LinearLayout)v.findViewById(R.id.main_content);
@@ -1178,6 +1663,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             mTargetEditableBody = (LinedEditText)v.findViewById(R.id.target_translation_editable_body);
             mTranslationTabs = (TabLayout)v.findViewById(R.id.source_translation_tabs);
             mEditButton = (ImageButton)v.findViewById(R.id.edit_translation_button);
+            mAddNoteButton = (ImageButton)v.findViewById(R.id.add_note_button);
+            mUndoButton = (ImageButton)v.findViewById(R.id.undo_button);
+            mRedoButton = (ImageButton)v.findViewById(R.id.redo_button);
             mDoneSwitch = (Switch)v.findViewById(R.id.done_button);
             mTranslationTabs.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
             mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);
@@ -1202,7 +1690,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         private final String chapterSlug;
         private boolean isChapterReference = false;
         private boolean isChapterTitle = false;
-        public boolean isProjectTitle = false;
+        private boolean isProjectTitle = false;
         private boolean isEditing = false;
         private CharSequence renderedSourceBody;
         private CharSequence renderedTargetBody;
@@ -1211,8 +1699,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         private boolean isTranslationFinished;
         private String bodySource;
         private FrameTranslation frameTranslation;
-        public ChapterTranslation chapterTranslation;
+        private ChapterTranslation chapterTranslation;
         private ProjectTranslation projectTranslation;
+        private FileHistory fileHistory = null;
 
         public ListItem(String frameSlug, String chapterSlug) {
             this.frameSlug = frameSlug;
@@ -1225,6 +1714,30 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         public boolean isChapter() {
             return this.frameSlug == null && this.chapterSlug != null;
+        }
+
+        /**
+         * Loads the file history or returns it from the cache
+         * @param targetTranslation
+         * @return
+         */
+        public FileHistory getFileHistory(TargetTranslation targetTranslation) {
+            if(this.fileHistory != null) {
+                return this.fileHistory;
+            }
+
+            FileHistory history = null;
+            if(this.isChapterReference) {
+                history = targetTranslation.getChapterReferenceHistory(this.chapterTranslation);
+            } else if(this.isChapterTitle) {
+                history = targetTranslation.getChapterTitleHistory(this.chapterTranslation);
+            } else if(this.isProjectTitle) {
+                history = targetTranslation.getProjectTitleHistory();
+            } else if(this.isFrame()) {
+                history = targetTranslation.getFrameHistory(this.frameTranslation);
+            }
+            this.fileHistory = history;
+            return history;
         }
 
         /**
