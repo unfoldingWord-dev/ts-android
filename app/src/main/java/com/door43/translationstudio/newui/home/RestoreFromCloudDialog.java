@@ -46,6 +46,7 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
     private Translator translator;
     private Library library;
     private boolean restoreHEAD;
+    private OnAuthRetryListener mListener;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -235,47 +236,59 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
                 .show("NoBackups");
     }
 
-    public void showRegistrationResults(final Activity activity, boolean success) {
-        CustomAlertDialog.Create(activity)
-                .setTitle(R.string.import_from_online)
-                .setMessage(success ? R.string.registration_success_retry : R.string.registration_failure)
-                .setNeutralButton(R.string.dismiss, null)
-                .show("RegistrationResults");
+    public void handleRegistrationResults(final Activity activity, boolean success) {
+
+        if(success) {
+            if(mListener != null) {
+                mListener.onAuthRetry();
+            }
+
+        } else {
+            CustomAlertDialog.Create(activity)
+                    .setTitle(R.string.import_from_online)
+                    .setMessage(R.string.registration_failure)
+                    .setNeutralButton(R.string.dismiss, null)
+                    .show("RegistrationResults");
+        }
     }
 
     public void showAuthFailure() {
         final Activity activity = getActivity();
-        CustomAlertDialog.Create(activity)
-                .setTitle(R.string.import_from_online).setMessage(R.string.auth_failure_reregister)
-                .setPositiveButton(R.string.yes, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        AppContext.context().generateKeys();
-                        final Handler hand = new Handler(Looper.getMainLooper());
-                        Thread thread = new Thread() {
-                            @Override
-                            public void run() {
-                                KeyRegistration keyReg = new KeyRegistration();
-                                keyReg.registerKeys(new KeyRegistration.OnRegistrationFinishedListener() {
-                                    @Override
-                                    public void onRestoreFinish(final boolean registrationSuccess) {
-                                        hand.post(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                showRegistrationResults(activity, registrationSuccess);
-                                            }
-                                        });
-                                    }
-                                });
-                            }
-                        };
-                        thread.start();
-                    }
-                })
+        final CustomAlertDialog dlg = CustomAlertDialog.Create(activity);
+        dlg.setTitle(R.string.import_from_online)
+            .setMessage(R.string.auth_failure_reregister)
+            .setAutoDismiss(false)
+            .setPositiveButton(R.string.yes, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    AppContext.context().generateKeys();
+                    final Handler hand = new Handler(Looper.getMainLooper());
+                    Thread thread = new Thread() {
+                        @Override
+                        public void run() {
+                            KeyRegistration keyReg = new KeyRegistration();
+                            keyReg.registerKeys(new KeyRegistration.OnRegistrationFinishedListener() {
+                                @Override
+                                public void onRestoreFinish(final boolean registrationSuccess) {
+                                    hand.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            handleRegistrationResults(activity, registrationSuccess);
+                                            dlg.dismiss();
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    };
+                    thread.start();
+                }
+            })
                 .setNegativeButton(R.string.no, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         notifyReadOnlineBackupsFailed();
+                        dlg.dismiss();
                     }
                 })
                 .show("PubAuthFailure");
@@ -292,5 +305,17 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
     public void onDestroy() {
         taskWatcher.stop();
         super.onDestroy();
+    }
+
+    /**
+     * Sets the listener that will be triggered when the dialog is submitted.
+     * @param listener
+     */
+    public void setAuthRetryListener(OnAuthRetryListener listener) {
+        mListener = listener;
+    }
+
+    public static interface OnAuthRetryListener {
+        public void onAuthRetry();
     }
 }

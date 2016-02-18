@@ -54,7 +54,7 @@ public class ImportDialog extends DialogFragment {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         View v = inflater.inflate(R.layout.dialog_import, container, false);
 
-        Button importCloudButton = (Button)v.findViewById(R.id.import_from_cloud);
+        final Button importCloudButton = (Button)v.findViewById(R.id.import_from_cloud);
         Button importFromSDButton = (Button)v.findViewById(R.id.import_from_sd);
         Button importFromFriend = (Button)v.findViewById(R.id.import_from_friend);
 
@@ -74,6 +74,12 @@ public class ImportDialog extends DialogFragment {
                 ft.addToBackStack(null);
 
                 RestoreFromCloudDialog dialog = new RestoreFromCloudDialog();
+                dialog.setAuthRetryListener(new RestoreFromCloudDialog.OnAuthRetryListener() {
+                    @Override
+                    public void onAuthRetry() {
+                        importCloudButton.callOnClick();
+                    }
+                });
                 dialog.show(ft, ImportDialog.TAG);
             }
         });
