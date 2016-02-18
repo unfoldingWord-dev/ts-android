@@ -622,7 +622,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
 
         // Set the non-highlighted icons by default.
-        mReviewButton.setImageResource(R.drawable.ic_assignment_turned_in_inactive_24dp);
+        mReviewButton.setImageResource(R.drawable.icon_check_inactive);
         mChunkButton.setImageResource(R.drawable.icon_frame_inactive);
         mReadButton.setImageResource(R.drawable.icon_study_inactive);
 
@@ -647,7 +647,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 mChunkButton.setBackgroundColor(backgroundColor);
                 break;
             case REVIEW:
-                mReviewButton.setImageResource(R.drawable.ic_assignment_turned_in_white_24dp);
+                mReviewButton.setImageResource(R.drawable.icon_check_active);
                 mReviewButton.setBackgroundColor(backgroundColor);
                 break;
         }
