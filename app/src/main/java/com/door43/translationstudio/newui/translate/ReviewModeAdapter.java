@@ -55,6 +55,7 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.rendering.DefaultRenderer;
+import com.door43.translationstudio.rendering.MergeConflictRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.AppContext;

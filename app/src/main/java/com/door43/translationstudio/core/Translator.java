@@ -114,7 +114,7 @@ public class Translator {
                 String targetLanguageId = TargetTranslation.getTargetLanguageIdFromId(targetTranslationId);
 
                 File dir = TargetTranslation.generateTargetTranslationDir(targetTranslationId, mRootDir);
-                if(dir.exists()) {
+                if(dir.isDirectory()) {
                     return new TargetTranslation(targetLanguageId, projectId, mRootDir);
                 } else {
                     return null;
@@ -134,7 +134,17 @@ public class Translator {
         if(targetTranslationId != null) {
             try {
                 File dir = TargetTranslation.generateTargetTranslationDir(targetTranslationId, mRootDir);
-                FileUtils.deleteQuietly(dir);
+                // TRICKY: due do issues with FAT32 on some devices we must rename before deleting to prevent
+                // conflicts when creating the directory later. see http://stackoverflow.com/questions/11539657/open-failed-ebusy-device-or-resource-busy#11776458
+                File temp = new File(getLocalCacheDir(), dir.getName() + "." + System.currentTimeMillis() + ".trash");
+                dir.renameTo(temp);
+                try {
+                    FileUtils.moveDirectoryToDirectory(dir, temp, true);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    // try to just delete quietly.. beware.. this may cause problems when creating this dir again later
+                    FileUtils.deleteQuietly(dir);
+                }
             } catch (StringIndexOutOfBoundsException e) {
                 e.printStackTrace();
             }
@@ -229,7 +239,7 @@ public class Translator {
             throw new Exception("Not a translationStudio archive");
         }
 
-        targetTranslation.commit();
+        targetTranslation.commitSync();
 
         JSONObject manifestJson = buildManifest(targetTranslation);
         File tempCache = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
@@ -261,7 +271,7 @@ public class Translator {
         try {
             if (t != null) {
                 // commit local changes to history
-                t.commit();
+                t.commitSync();
 
                 // begin import
                 t.applyProjectTitleTranslation(draftTranslation.getProjectTitle());
@@ -274,7 +284,7 @@ public class Translator {
                     }
                 }
                 t.setParentDraft(draftTranslation);
-                t.commit();
+                t.commitSync();
             }
         } catch (IOException e) {
             Logger.e(this.getClass().getName(), "Failed to import target translation", e);
@@ -335,7 +345,7 @@ public class Translator {
                 // commit local changes to history
                 TargetTranslation targetTranslation = getTargetTranslation(localDir.getName());
                 if(targetTranslation != null) {
-                    targetTranslation.commit();
+                    targetTranslation.commitSync();
                 }
 
                 // merge translations

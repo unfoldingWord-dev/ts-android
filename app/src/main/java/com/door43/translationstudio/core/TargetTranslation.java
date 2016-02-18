@@ -64,6 +64,7 @@ public class TargetTranslation {
         mTargetLanguageId = targetLanguageId;
         mProjectId = projectId;
         mTargetTranslationDirectory = generateTargetTranslationDir(generateTargetTranslationId(targetLanguageId, projectId), rootDir);
+        mTargetTranslationDirectory.mkdirs();
         mManifest = Manifest.generate(mTargetTranslationDirectory);
         String name = targetLanguageId;
         try {
@@ -929,6 +930,40 @@ public class TargetTranslation {
         return false;
     }
 
+    public boolean commitSync() throws Exception {
+        return commitSync(".");
+    }
+
+    public boolean commitSync(String filePattern) throws Exception {
+        Git git = getRepo().getGit();
+
+        // check if dirty
+        try {
+            if(git.status().call().isClean()) {
+                return true;
+            }
+        } catch (GitAPIException e) {
+            e.printStackTrace();
+        }
+
+        // stage changes
+        AddCommand add = git.add();
+        add.addFilepattern(filePattern).call();
+
+        // commit changes
+        final CommitCommand commit = git.commit();
+        commit.setAll(true);
+        commit.setMessage("auto save");
+
+        try {
+            commit.call();
+        } catch (Exception e) {
+            Logger.e(TargetTranslation.class.getName(), "Failed to commit changes", e);
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Stages and commits changes to the repository
      * @throws Exception
@@ -950,41 +985,17 @@ public class TargetTranslation {
      * Stages and commits changes to the repository
      * @param filePattern the file pattern that will be used to match files for staging
      */
-    private void commit(String filePattern, final OnCommitListener listener) throws Exception {
-        Git git = getRepo().getGit();
-
-        // check if dirty
-        try {
-            if(git.status().call().isClean()) {
-                if(listener != null) {
-                    listener.onCommit(true);
-                }
-                return;
-            }
-        } catch (GitAPIException e) {
-            e.printStackTrace();
-        }
-
-        // stage changes
-        AddCommand add = git.add();
-        add.addFilepattern(filePattern).call();
-
-        // commit changes
-        final CommitCommand commit = git.commit();
-        commit.setAll(true);
-        commit.setMessage("auto save");
-
+    private void commit(final String filePattern, final OnCommitListener listener) throws Exception {
 
         Thread thread = new Thread() {
             @Override
             public void run() {
                 try {
-                    commit.call();
+                    boolean result = commitSync(filePattern);
                     if(listener != null) {
-                        listener.onCommit(true);
+                        listener.onCommit(result);
                     }
                 } catch (Exception e) {
-                    Logger.e(TargetTranslation.class.getName(), "Failed to commit changes", e);
                     if(listener != null) {
                         listener.onCommit(false);
                     }

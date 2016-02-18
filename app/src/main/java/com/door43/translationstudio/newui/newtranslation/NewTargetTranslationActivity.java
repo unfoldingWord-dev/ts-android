@@ -98,6 +98,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                 setResult(RESULT_OK, data);
                 finish();
             } else {
+                AppContext.getTranslator().deleteTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId));
                 Intent data = new Intent();
                 setResult(RESULT_ERROR, data);
                 finish();
