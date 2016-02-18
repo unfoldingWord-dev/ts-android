@@ -934,16 +934,27 @@ public class TargetTranslation {
         return commitSync(".");
     }
 
+    /**
+     * Checks if there are any non-committed changes in the repo
+     * @return
+     * @throws Exception
+     */
+    public boolean isClean() {
+        try {
+            Git git = getRepo().getGit();
+            return git.status().call().isClean();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public boolean commitSync(String filePattern) throws Exception {
         Git git = getRepo().getGit();
 
         // check if dirty
-        try {
-            if(git.status().call().isClean()) {
-                return true;
-            }
-        } catch (GitAPIException e) {
-            e.printStackTrace();
+        if(isClean()) {
+            return true;
         }
 
         // stage changes

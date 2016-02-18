@@ -31,7 +31,6 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
@@ -55,7 +54,6 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.rendering.DefaultRenderer;
-import com.door43.translationstudio.rendering.MergeConflictRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.AppContext;
@@ -478,6 +476,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String translation = applyChangedText(s, holder, item);
 
+                // commit immediately if editing history
+                FileHistory history = item.getFileHistory(mTargetTranslation);
+                if(!history.isAtHead()) {
+                    history.reset();
+                    prepareTranslationUI(holder, item);
+                }
+
                 // update view if pasting text
                 // TRICKY: anything worth rendering will need to change by at least 7 characters
                 // <a></a> <-- at least 7 characters are required to create a tag for rendering.
@@ -666,7 +671,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     private void prepareTranslationUI(final ViewHolder holder, ListItem item) {
         if(item.isEditing) {
-            final FileHistory history = getFileHistory(item);
+            final FileHistory history = item.getFileHistory(mTargetTranslation);
             ThreadableUI thread = new ThreadableUI(mContext) {
                 @Override
                 public void onStop() {
@@ -676,7 +681,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 @Override
                 public void run() {
                     try {
-                        history.loadHistory();
+                        history.loadCommits();
                     } catch (IOException e) {
                         e.printStackTrace();
                     } catch (GitAPIException e) {
@@ -902,7 +907,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mUndoButton.setVisibility(View.INVISIBLE);
         holder.mRedoButton.setVisibility(View.INVISIBLE);
 
-        final FileHistory history = getFileHistory(item);
+        final FileHistory history = item.getFileHistory(mTargetTranslation);
         ThreadableUI thread = new ThreadableUI(mContext) {
             RevCommit commit = null;
             @Override
@@ -912,13 +917,18 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             @Override
             public void run() {
-                try {
-                    history.loadHistory();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (GitAPIException e) {
-                    e.printStackTrace();
+                // commit changes before viewing history
+                if(history.isAtHead()) {
+                    if(!mTargetTranslation.isClean()) {
+                        try {
+                            mTargetTranslation.commitSync();
+                            history.loadCommits();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
+                // get previous
                 commit = history.previous();
             }
 
@@ -962,7 +972,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mUndoButton.setVisibility(View.INVISIBLE);
         holder.mRedoButton.setVisibility(View.INVISIBLE);
 
-        final FileHistory history = getFileHistory(item);
+        final FileHistory history = item.getFileHistory(mTargetTranslation);
         ThreadableUI thread = new ThreadableUI(mContext) {
             RevCommit commit = null;
             @Override
@@ -972,13 +982,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             @Override
             public void run() {
-                try {
-                    history.loadHistory();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (GitAPIException e) {
-                    e.printStackTrace();
-                }
                 commit = history.next();
             }
 
@@ -1011,30 +1014,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         };
         thread.start();
-    }
-
-    /**
-     * Loads the file history of the chunk
-     * @param item
-     * @return
-     */
-   private FileHistory getFileHistory(ListItem item) {
-       if(item.fileHistory != null) {
-           return item.fileHistory;
-       }
-
-       FileHistory history = null;
-       if(item.isChapterReference) {
-           history = mTargetTranslation.getChapterReferenceHistory(item.chapterTranslation);
-        } else if(item.isChapterTitle) {
-           history = mTargetTranslation.getChapterTitleHistory(item.chapterTranslation);
-        } else if(item.isProjectTitle) {
-           history = mTargetTranslation.getProjectTitleHistory();
-        } else if(item.isFrame()) {
-            history = mTargetTranslation.getFrameHistory(item.frameTranslation);
-        }
-        item.fileHistory = history;
-        return history;
     }
 
     private static final Pattern CONSECUTIVE_VERSE_MARKERS =
@@ -1111,6 +1090,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         // Wrap up.
         if (success) {
+            try {
+                mTargetTranslation.commit();
+            } catch (Exception e) {
+                Logger.e(TAG, "Failed to commit translation of " + mTargetTranslation.getId() + ":" + frame.getComplexId(), e);
+            }
             item.isEditing = false;
             item.renderedTargetBody = null;
             notifyDataSetChanged();
@@ -1726,6 +1710,30 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         public boolean isChapter() {
             return this.frameSlug == null && this.chapterSlug != null;
+        }
+
+        /**
+         * Loads the file history or returns it from the cache
+         * @param targetTranslation
+         * @return
+         */
+        public FileHistory getFileHistory(TargetTranslation targetTranslation) {
+            if(this.fileHistory != null) {
+                return this.fileHistory;
+            }
+
+            FileHistory history = null;
+            if(this.isChapterReference) {
+                history = targetTranslation.getChapterReferenceHistory(this.chapterTranslation);
+            } else if(this.isChapterTitle) {
+                history = targetTranslation.getChapterTitleHistory(this.chapterTranslation);
+            } else if(this.isProjectTitle) {
+                history = targetTranslation.getProjectTitleHistory();
+            } else if(this.isFrame()) {
+                history = targetTranslation.getFrameHistory(this.frameTranslation);
+            }
+            this.fileHistory = history;
+            return history;
         }
 
         /**
