@@ -51,7 +51,7 @@ public class FileHistory {
     /**
      * Reloads the commit history
      */
-    public void loadHistory() throws IOException, GitAPIException {
+    public void loadCommits() throws IOException, GitAPIException {
         if(this.file != null) {
             // preserve current position if not at HEAD
             RevCommit currentCommit = null;
@@ -190,5 +190,13 @@ public class FileHistory {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Checks if the history cursor is currently at the HEAD
+     * @return
+     */
+    public boolean isAtHead() {
+        return this.index == 0;
     }
 }

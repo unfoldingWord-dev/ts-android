@@ -198,17 +198,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             }
         });
 
-        // schedule translation commits
-        mCommitTimer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    mTargetTranslation.commit();
-                } catch (Exception e) {
-                    Logger.e(TargetTranslationActivity.class.getName(), "Failed to commit the latest translation of " + targetTranslationId, e);
-                }
-            }
-        }, COMMIT_INTERVAL, COMMIT_INTERVAL);
+        restartAutoCommitTimer();
     }
 
     private void buildMenu() {
@@ -551,6 +541,29 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     }
 
+    /**
+     * Restart scheduled translation commits
+     */
+    public void restartAutoCommitTimer() {
+        mCommitTimer.cancel();
+        mCommitTimer = new Timer();
+        mCommitTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                if(mTargetTranslation != null) {
+                    try {
+                        mTargetTranslation.commit();
+                    } catch (Exception e) {
+                        Logger.e(TargetTranslationActivity.class.getName(), "Failed to commit the latest translation of " + mTargetTranslation.getId(), e);
+                    }
+                } else {
+                    Logger.w(TAG, "cannot auto commit target translation. The target translation is null.");
+                    mCommitTimer.cancel();
+                }
+            }
+        }, COMMIT_INTERVAL, COMMIT_INTERVAL);
+    }
+
     @Override
     public void onHasSourceTranslations() {
         TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
@@ -609,7 +622,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
 
         // Set the non-highlighted icons by default.
-        mReviewButton.setImageResource(R.drawable.ic_assignment_turned_in_inactive_24dp);
+        mReviewButton.setImageResource(R.drawable.icon_check_inactive);
         mChunkButton.setImageResource(R.drawable.icon_frame_inactive);
         mReadButton.setImageResource(R.drawable.icon_study_inactive);
 
@@ -634,7 +647,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 mChunkButton.setBackgroundColor(backgroundColor);
                 break;
             case REVIEW:
-                mReviewButton.setImageResource(R.drawable.ic_assignment_turned_in_white_24dp);
+                mReviewButton.setImageResource(R.drawable.icon_check_active);
                 mReviewButton.setBackgroundColor(backgroundColor);
                 break;
         }
