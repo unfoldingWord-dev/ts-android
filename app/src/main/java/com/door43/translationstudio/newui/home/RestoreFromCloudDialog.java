@@ -46,7 +46,7 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
     private Translator translator;
     private Library library;
     private boolean restoreHEAD;
-    private OnAuthRetryListener mListener;
+    private OnNewKeyRegistrationListener mListener;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -237,12 +237,10 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
     }
 
     public void handleRegistrationResults(final Activity activity, boolean success) {
-
         if(success) {
             if(mListener != null) {
-                mListener.onAuthRetry();
+                mListener.onNewKeyRegistration();
             }
-
         } else {
             CustomAlertDialog.Create(activity)
                     .setTitle(R.string.import_from_online)
@@ -308,14 +306,14 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
     }
 
     /**
-     * Sets the listener that will be triggered when the dialog is submitted.
+     * Sets the listener that will be called when new keys have been successfully registered.
      * @param listener
      */
-    public void setAuthRetryListener(OnAuthRetryListener listener) {
+    public void setNewKeyRegistrationListener(OnNewKeyRegistrationListener listener) {
         mListener = listener;
     }
 
-    public static interface OnAuthRetryListener {
-        public void onAuthRetry();
+    public static interface OnNewKeyRegistrationListener {
+        public void onNewKeyRegistration();
     }
 }

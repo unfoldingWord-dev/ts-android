@@ -74,9 +74,9 @@ public class ImportDialog extends DialogFragment {
                 ft.addToBackStack(null);
 
                 RestoreFromCloudDialog dialog = new RestoreFromCloudDialog();
-                dialog.setAuthRetryListener(new RestoreFromCloudDialog.OnAuthRetryListener() {
+                dialog.setNewKeyRegistrationListener(new RestoreFromCloudDialog.OnNewKeyRegistrationListener() {
                     @Override
-                    public void onAuthRetry() {
+                    public void onNewKeyRegistration() {
                         importCloudButton.callOnClick();
                     }
                 });
