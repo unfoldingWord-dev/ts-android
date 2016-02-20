@@ -136,7 +136,7 @@ public class PdfPrinter extends PdfPageEventHelper {
         ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
         document.addTitle(projectTranslation.getTitle());
         document.addSubject(projectTranslation.getDescription());
-        for(NativeSpeaker ns:targetTranslation.getTranslators()) {
+        for(NativeSpeaker ns:targetTranslation.getContributors()) {
             document.addAuthor(ns.name);
             document.addCreator(ns.name);
         }

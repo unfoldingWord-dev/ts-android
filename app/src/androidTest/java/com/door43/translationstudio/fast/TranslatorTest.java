@@ -6,6 +6,7 @@ import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.NativeSpeaker;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
@@ -48,8 +49,9 @@ public class TranslatorTest extends InstrumentationTestCase {
         TargetLanguage[] targetLanguages = library.getTargetLanguages();
         assertTrue(targetLanguages.length > 0);
         int numTargetTranslations  = 5;
+        NativeSpeaker speaker = new NativeSpeaker("me");
         for(int i = 0; i < numTargetTranslations; i ++) {
-            mTranslator.createTargetTranslation(targetLanguages[i], "obs");
+            mTranslator.createTargetTranslation(speaker, targetLanguages[i], "obs");
         }
         assertEquals(numTargetTranslations, mTranslator.getTargetTranslations().length);
     }

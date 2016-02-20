@@ -76,4 +76,12 @@ public class Profile implements Serializable {
         }
         return profiles;
     }
+
+    /**
+     * Returns a native speaker version of this profile
+     * @return
+     */
+    public NativeSpeaker getNativeSpeaker() {
+        return new NativeSpeaker(this.name);
+    }
 }

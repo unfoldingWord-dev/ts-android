@@ -102,7 +102,7 @@ public class TargetTranslationMigrator {
                 }
             }
             manifest.remove("frames");
-            manifest.put(Manifest.FINISHED_FRAMES, finishedFrames);
+            manifest.put("finished_frames", finishedFrames);
         }
         // fix finished chapter titles and references
         if(manifest.has("chapters")) {

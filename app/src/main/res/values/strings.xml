@@ -382,7 +382,7 @@
     <string name="enter_profile_defaults">Enter default profile information</string>
     <string name="project_title_complex">Project: <xliff:g example="Genesis" id="project">%1$s</xliff:g></string>
     <!-- A warning shown, when publishing, indicating that names/pseudonyms (but not email or phone number) are published in the catealog -->
-    <string name="publishing_privacy_notice">Your name or pseudonym will be published along with your translation in the unfoldingWord catalog. We do not publish your email address or phone number.</string>
+    <string name="publishing_privacy_notice">Your name or pseudonym will be published along with your translation in the unfoldingWord catalog.</string>
     <string name="publish_to_unfoldingword">Publish your project directly to unfoldingWord</string>
     <string name="checking_for_updates">Checking for updates</string>
     <string name="download">Download</string>
@@ -657,4 +657,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="footnote_label">Footnote</string>
     <string name="footnote_title_empty">Footnote Title cannot be empty</string>
     <string name="footnote_message_empty">Footnote cannot be empty</string>
+    <string name="who_translated_notice">Who contributed to this translation?</string>
+    <string name="privacy_notice">Privacy Notice</string>
+    <string name="need_translator_notice">Please add a contributor</string>
+    <string name="duplicate_native_speaker">A contributor with that name has already been added</string>
+    <string name="edit_contributor">Edit Contributor</string>
 </resources>

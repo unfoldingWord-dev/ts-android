@@ -494,6 +494,20 @@ public class AppContext {
     }
 
     /**
+     * Returns the currently opened user profile
+     * @return
+     */
+    public static Profile getProfile() {
+        // TODO: 2/19/2016 we need to fix profiles
+        List<Profile> profiles = getProfiles();
+        if(profiles.size() > 0) {
+            return getProfiles().get(0);
+        } else {
+            return new Profile("test", "test", "test");
+        }
+    }
+
+    /**
      * Set the user's default profile, used to populate translator information when creating a new
      * translation.
      *

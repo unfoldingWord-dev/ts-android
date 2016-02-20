@@ -1,33 +1,23 @@
 package com.door43.translationstudio.core;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
- * Created by joel on 11/12/2015.
+ * Represents a single native speaker.
+ * A native speaker understands at least one gateway language in addition to their native language
+ *
+ * note: this is parse for now, but keeping it in a class for potential future addition of properties
  */
 public class NativeSpeaker {
     public final String name;
-    public final String email;
-    public final String phone;
 
-    public NativeSpeaker(String name, String email, String phone) {
+    public NativeSpeaker(String name) {
         this.name = name;
-        this.email = email;
-        this.phone = phone;
     }
 
-    public NativeSpeaker(Profile p) {
-        this.name = p.name;
-        this.email = p.email;
-        this.phone = p.phone;
-    }
-
-    public static List<NativeSpeaker> nativeSpeakersFromProfiles(List<Profile> profiles) {
-        ArrayList<NativeSpeaker> a = new ArrayList<>(profiles.size());
-        for (Profile p : profiles) {
-            a.add(new NativeSpeaker(p));
-        }
-        return a;
+    @Override
+    public String toString() {
+        return name;
     }
 }

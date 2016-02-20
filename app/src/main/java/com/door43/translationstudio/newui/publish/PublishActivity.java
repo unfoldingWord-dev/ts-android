@@ -290,7 +290,7 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
         updateIndicatorsForStep(mCurrentStep);
         switch(mCurrentStep) {
             case STEP_PROFILE:
-                mFragment = new ProfileFragment();
+                mFragment = new TranslatorsFragment();
                 break;
             case STEP_REVIEW:
                 mFragment = new ReviewFragment();

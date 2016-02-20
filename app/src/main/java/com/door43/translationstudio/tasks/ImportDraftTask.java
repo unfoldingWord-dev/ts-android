@@ -24,7 +24,7 @@ public class ImportDraftTask extends ManagedTask {
     public void start() {
         publishProgress(-1, AppContext.context().getResources().getString(R.string.importing_draft));
         if(draftTranslation != null) {
-            this.targetTranslation = AppContext.getTranslator().importDraftTranslation(draftTranslation, AppContext.getLibrary());
+            this.targetTranslation = AppContext.getTranslator().importDraftTranslation(AppContext.getProfile().getNativeSpeaker(), draftTranslation, AppContext.getLibrary());
         }
     }
 

@@ -33,7 +33,6 @@ public class ValidationTask extends ManagedTask {
 
     @Override
     public void start() {
-        // TODO: perform some real validation here
         Library library = AppContext.getLibrary();
         Translator translator = AppContext.getTranslator();
 
