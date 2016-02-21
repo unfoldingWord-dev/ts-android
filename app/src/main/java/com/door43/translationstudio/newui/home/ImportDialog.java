@@ -81,6 +81,7 @@ public class ImportDialog extends DialogFragment {
                     }
                 });
                 dialog.show(ft, ImportDialog.TAG);
+                dismiss();
             }
         });
         importFromSDButton.setOnClickListener(new View.OnClickListener() {
