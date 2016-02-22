@@ -297,7 +297,7 @@ public class ServerService extends NetworkService {
                 TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationSlug);
                 if(targetTranslation != null) {
                     try {
-                        targetTranslation.applyDefaultTranslatorsIfNoneSpecified();
+                        targetTranslation.setDefaultContributor(AppContext.getProfile().getNativeSpeaker());
                         translator.exportArchive(targetTranslation, exportFile);
                         if(exportFile.exists()) {
                             ServerSocket fileSocket = openWriteSocket(new OnSocketEventListener() {

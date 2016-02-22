@@ -5,7 +5,6 @@ import android.content.pm.PackageInfo;
 import android.support.annotation.Nullable;
 
 import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.git.Repo;
 import com.door43.util.Manifest;
 
@@ -16,7 +15,6 @@ import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.DeleteBranchCommand;
 import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.ListTagCommand;
 import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.MergeCommand;
@@ -45,12 +43,15 @@ import java.util.Timer;
  */
 public class TargetTranslation {
     private static final String TAG = TargetTranslation.class.getSimpleName();
-    private static final int PACKAGE_VERSION = 3; // the version of the manifest
+    private static final int PACKAGE_VERSION = 4; // the version of the manifest
     public static final String PARENT_DRAFT_RESOURCE_ID = "parent_draft_resource_id";
+    private static final String FIELD_FINISHED_REFERENCES = "finished_references";
+    private static final String FIELD_FINISHED_TITLES = "finished_titles";
+    private static final String FIELD_FINISHED_FRAMES = "finished_frames";
     private final String mTargetLanguageId;
     private final String mProjectId;
     private static final String GLOBAL_PROJECT_ID = "uw";
-    public static final String TRANSLATORS = "translators";
+    private static final String FIELD_TRANSLATORS = "translators";
     public static final String NAME = "name";
     public static final String PHONE = "phone";
     public static final String EMAIL = "email";
@@ -138,12 +139,14 @@ public class TargetTranslation {
      *
      * If the target translation already exists the existing one will be returned
      *
+     * @param context
+     * @param translator the native speaker that is starting this translation
      * @param targetLanguage the target language the project will be translated into
      * @param projectId the id of the project that will be translated
      * @param rootDir the parent directory in which the target translation directory will be created
      * @return
      */
-    public static TargetTranslation create(Context context, TargetLanguage targetLanguage, String projectId, File rootDir) throws Exception {
+    public static TargetTranslation create(Context context, NativeSpeaker translator, TargetLanguage targetLanguage, String projectId, File rootDir) throws Exception {
         // generate new target translation if it does not exist
         File translationDir = generateTargetTranslationDir(generateTargetTranslationId(targetLanguage.getId(), projectId), rootDir);
         if(!translationDir.isDirectory()) {
@@ -157,19 +160,12 @@ public class TargetTranslation {
             generatorJson.put("build", pInfo.versionCode);
             manifest.put("generator", generatorJson);
             manifest.put("package_version", PACKAGE_VERSION);
-            JSONObject targetLangaugeJson = new JSONObject();
-            targetLangaugeJson.put("direction", targetLanguage.direction.toString());
-            targetLangaugeJson.put("id", targetLanguage.code);
-            targetLangaugeJson.put("name", targetLanguage.name);
-            // TODO: we should restructure this output to match what we see in the api. if we do we'll need to migrate all the old manifest files.
-            // also the target language should have a toJson method that will do all of this.
-            manifest.put("target_language", targetLangaugeJson);
-            // TODO: 1/5/2016 we should only add the open profile (e.g. the current user) as a translator
-            JSONArray translatorsJson = encodeTranslators(NativeSpeaker.nativeSpeakersFromProfiles(AppContext.getProfiles()));
-            manifest.put(TRANSLATORS, translatorsJson);
+            manifest.put("target_language", targetLanguage.toJson());
         }
         // load the target translation (new or otherwise)
-        return new TargetTranslation(targetLanguage.getId(), projectId, rootDir);
+        TargetTranslation targetTranslation = new TargetTranslation(targetLanguage.getId(), projectId, rootDir);
+        targetTranslation.addContributor(translator);
+        return targetTranslation;
     }
 
     /**
@@ -259,134 +255,88 @@ public class TargetTranslation {
 
     /**
      * Adds a native speaker as a translator
-     * @param translator
+     * This will replace contributors with the same name
+     * @param speaker
      */
-    public boolean addTranslator(NativeSpeaker translator) {
-        ArrayList<NativeSpeaker> translators = getTranslators();
-
-        int foundAt = getTranslatorByName(translator.name);
-        if(foundAt >= 0) { // if found, update data
-            translators.set(foundAt, translator);
-        } else { // if new translator then add
-            translators.add(translator);
+    public void addContributor(NativeSpeaker speaker) {
+        if(speaker != null) {
+            removeContributor(speaker);
+            JSONArray translatorsJson = mManifest.getJSONArray(FIELD_TRANSLATORS);
+            translatorsJson.put(speaker.name);
+            mManifest.put(FIELD_TRANSLATORS, translatorsJson);
         }
-
-        return saveTranslators(translators);
     }
 
     /**
-     * remove a translator
-     * @param name
+     * Removes a native speaker from the list of translators
+     * This will remove all contributors with the same name as the given speaker
+     * @param speaker
      */
-    public boolean removeTranslator(String name) {
-        ArrayList<NativeSpeaker> translators = getTranslators();
-
-            int foundAt = getTranslatorByName(name);
-            if(foundAt < 0) { // if not found, skip
-                return false;
-            } else { // if new translator then add
-                translators.remove(foundAt);
+    public void removeContributor(NativeSpeaker speaker) {
+        if(speaker != null) {
+            JSONArray translatorsJson = mManifest.getJSONArray(FIELD_TRANSLATORS);
+            JSONArray updatedTranslatorsJson = new JSONArray();
+            for (int i = 0; i < translatorsJson.length(); i++) {
+                try {
+                    String name = translatorsJson.getString(i);
+                    if (!name.equals(speaker.name)) {
+                        updatedTranslatorsJson.put(name);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
-
-            return saveTranslators(translators);
-    }
-
-    /**
-     * save updated list of translators
-     * @param translators
-     */
-    public boolean saveTranslators(ArrayList<NativeSpeaker> translators) {
-
-        try {
-            JSONArray translatorsJson = encodeTranslators(translators);
-            mManifest.put(TRANSLATORS,translatorsJson);
-        } catch (Exception e) {
-            Logger.e(TargetTranslation.class.getName(), "failed save translators", e);
-            return false;
+            mManifest.put(FIELD_TRANSLATORS, updatedTranslatorsJson);
         }
-
-        return true;
     }
 
     /**
-     * Encodes the native speakers into json
-     * @param translators
-     * @return
-     * @throws JSONException
-     */
-    private static JSONArray encodeTranslators(List<NativeSpeaker> translators) throws JSONException {
-        JSONArray translatorsJson = new JSONArray();
-
-        for(int i = 0; i < translators.size(); i++) {
-            JSONObject translatorJSON = new JSONObject();
-            NativeSpeaker currentTranslator = translators.get(i);
-            translatorJSON.put(NAME,currentTranslator.name);
-            translatorJSON.put(EMAIL,currentTranslator.email);
-            translatorJSON.put(PHONE,currentTranslator.phone);
-
-            translatorsJson.put(translatorJSON);
-        }
-        return translatorsJson;
-    }
-
-    /**
-     * Finds index of translator with name match
+     * Returns the contributor that has the given name
      * @param name
+     * @return null if no contributor was found
      */
-    public int getTranslatorByName(String name) {
-        ArrayList<NativeSpeaker> translators = getTranslators();
-
-        for (int i = 0; i < translators.size(); i++) {
-            NativeSpeaker speaker = translators.get(i);
+    public NativeSpeaker getContributor(String name) {
+        mManifest.load();
+        ArrayList<NativeSpeaker> translators = getContributors();
+        for (NativeSpeaker speaker:translators) {
             if (speaker.name.equals(name)) {
-                return i;
+                return speaker;
             }
         }
-
-        return -1;
+        return null;
     }
 
     /**
-     * Returns an array of native speakers who have worked on this translation
+     * Returns an array of native speakers who have worked on this translation.
+     * This will look into the "translators" field in the manifest and check in the commit history.
      * @return
      */
-    public ArrayList<NativeSpeaker> getTranslators() {
-
-        JSONArray translatorsJson = mManifest.getJSONArray(Manifest.TRANSLATORS);
-
+    public ArrayList<NativeSpeaker> getContributors() {
+        mManifest.load();
+        JSONArray translatorsJson = mManifest.getJSONArray(FIELD_TRANSLATORS);
         ArrayList<NativeSpeaker> translators = new ArrayList<>();
 
-        if(translatorsJson.length() > 0) {
-
+        for(int i = 0; i < translatorsJson.length(); i ++) {
             try {
-                for (int i = 0; i < translatorsJson.length(); i++) {
-                    JSONObject contact = translatorsJson.getJSONObject(i);
-                    if (contact.has(NAME)) {
-                        NativeSpeaker profile = new NativeSpeaker(contact.getString(NAME),
-                                contact.getString(EMAIL), contact.getString(PHONE));
-
-                        translators.add(profile);
-                    }
+                String name = translatorsJson.getString(i);
+                if(!name.isEmpty()) {
+                    translators.add(new NativeSpeaker(name));
                 }
-            } catch (Exception e) {
-                Logger.e(TargetTranslation.class.getName(), "failed to fetch translators", e);
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
         }
-
         return translators;
     }
 
     /**
-     * If there are no translators specified from a project, this sets them from the defaults.
-     * If there are translators specified, this does nothing.
+     * This will add the default translator if no other translator has been recorded
+     * @param speaker
      */
-    public void applyDefaultTranslatorsIfNoneSpecified() {
-        if (getTranslators().isEmpty()) {
-            // TODO: 1/7/2016 we should only add the open profile (e.g. the current user) as a translator
-            List<Profile> profiles = AppContext.getProfiles();
-            List<NativeSpeaker> translators = NativeSpeaker.nativeSpeakersFromProfiles(profiles);
-            for (NativeSpeaker translator : translators) {
-                addTranslator(translator);
+    public void setDefaultContributor(NativeSpeaker speaker) {
+        if(speaker != null) {
+            if (getContributors().isEmpty()) {
+                addContributor(speaker);
             }
         }
     }
@@ -695,7 +645,7 @@ public class TargetTranslation {
     public boolean finishChapterTitle(Chapter chapter) {
         File file = getChapterTitleFile(chapter.getId());
         if(file.exists()) {
-            JSONArray finishedTitles = mManifest.getJSONArray(Manifest.FINISHED_TITLES);
+            JSONArray finishedTitles = mManifest.getJSONArray(FIELD_FINISHED_TITLES);
             boolean isFinished = false;
             try {
                 for (int i = 0; i < finishedTitles.length(); i++) {
@@ -710,7 +660,7 @@ public class TargetTranslation {
             }
             if(!isFinished) {
                 finishedTitles.put(chapter.getId());
-                mManifest.put(Manifest.FINISHED_TITLES, finishedTitles);
+                mManifest.put(FIELD_FINISHED_TITLES, finishedTitles);
             }
             return true;
         }
@@ -723,7 +673,7 @@ public class TargetTranslation {
      * @return
      */
     public boolean reopenChapterTitle(Chapter chapter) {
-        JSONArray finishedTitles = mManifest.getJSONArray(Manifest.FINISHED_TITLES);
+        JSONArray finishedTitles = mManifest.getJSONArray(FIELD_FINISHED_TITLES);
         JSONArray updatedTitles = new JSONArray();
         try {
             for (int i = 0; i < finishedTitles.length(); i++) {
@@ -732,7 +682,7 @@ public class TargetTranslation {
                     updatedTitles.put(finishedTitles.getString(i));
                 }
             }
-            mManifest.put(Manifest.FINISHED_TITLES, updatedTitles);
+            mManifest.put(FIELD_FINISHED_TITLES, updatedTitles);
             return true;
         } catch (JSONException e) {
             e.printStackTrace();
@@ -755,7 +705,7 @@ public class TargetTranslation {
      * @return
      */
     private boolean isChapterTitleFinished(String chapterSlug) {
-        JSONArray finishedTitles = mManifest.getJSONArray(Manifest.FINISHED_TITLES);
+        JSONArray finishedTitles = mManifest.getJSONArray(FIELD_FINISHED_TITLES);
         try {
             for (int i = 0; i < finishedTitles.length(); i++) {
                 if(finishedTitles.getString(i).equals(chapterSlug)) {
@@ -776,7 +726,7 @@ public class TargetTranslation {
     public boolean finishChapterReference(Chapter chapter) {
         File file = getChapterReferenceFile(chapter.getId());
         if(file.exists()) {
-            JSONArray finishedReferences = mManifest.getJSONArray(Manifest.FINISHED_REFERENCES);
+            JSONArray finishedReferences = mManifest.getJSONArray(FIELD_FINISHED_REFERENCES);
             boolean isFinished = false;
             try {
                 for (int i = 0; i < finishedReferences.length(); i++) {
@@ -791,7 +741,7 @@ public class TargetTranslation {
             }
             if(!isFinished) {
                 finishedReferences.put(chapter.getId());
-                mManifest.put(Manifest.FINISHED_REFERENCES, finishedReferences);
+                mManifest.put(FIELD_FINISHED_REFERENCES, finishedReferences);
             }
             return true;
         }
@@ -804,7 +754,7 @@ public class TargetTranslation {
      * @return
      */
     public boolean reopenChapterReference(Chapter chapter) {
-        JSONArray finishedReferences = mManifest.getJSONArray(Manifest.FINISHED_REFERENCES);
+        JSONArray finishedReferences = mManifest.getJSONArray(FIELD_FINISHED_REFERENCES);
         JSONArray updatedReferences = new JSONArray();
         try {
             for (int i = 0; i < finishedReferences.length(); i++) {
@@ -813,7 +763,7 @@ public class TargetTranslation {
                     updatedReferences.put(finishedReferences.getString(i));
                 }
             }
-            mManifest.put(Manifest.FINISHED_REFERENCES, updatedReferences);
+            mManifest.put(FIELD_FINISHED_REFERENCES, updatedReferences);
             return true;
         } catch (JSONException e) {
             e.printStackTrace();
@@ -836,7 +786,7 @@ public class TargetTranslation {
      * @return
      */
     private boolean isChapterReferenceFinished(String chapterSlug) {
-        JSONArray finishedReferences = mManifest.getJSONArray(Manifest.FINISHED_REFERENCES);
+        JSONArray finishedReferences = mManifest.getJSONArray(FIELD_FINISHED_REFERENCES);
         try {
             for (int i = 0; i < finishedReferences.length(); i++) {
                 if(finishedReferences.getString(i).equals(chapterSlug)) {
@@ -857,7 +807,7 @@ public class TargetTranslation {
     public boolean finishFrame(Frame frame) {
         File file = getFrameFile(frame.getChapterId(), frame.getId());
         if(file.exists()) {
-            JSONArray finishedFrames = mManifest.getJSONArray(Manifest.FINISHED_FRAMES);
+            JSONArray finishedFrames = mManifest.getJSONArray(FIELD_FINISHED_FRAMES);
             boolean isFinished = false;
             try {
                 for (int i = 0; i < finishedFrames.length(); i++) {
@@ -872,7 +822,7 @@ public class TargetTranslation {
             }
             if(!isFinished) {
                 finishedFrames.put(frame.getComplexId());
-                mManifest.put(Manifest.FINISHED_FRAMES, finishedFrames);
+                mManifest.put(FIELD_FINISHED_FRAMES, finishedFrames);
             }
             return true;
         }
@@ -885,7 +835,7 @@ public class TargetTranslation {
      * @return
      */
     public boolean reopenFrame(Frame frame) {
-        JSONArray finishedFrames = mManifest.getJSONArray(Manifest.FINISHED_FRAMES);
+        JSONArray finishedFrames = mManifest.getJSONArray(FIELD_FINISHED_FRAMES);
         JSONArray updatedFrames = new JSONArray();
         try {
             for (int i = 0; i < finishedFrames.length(); i++) {
@@ -894,7 +844,7 @@ public class TargetTranslation {
                     updatedFrames.put(finishedFrames.getString(i));
                 }
             }
-            mManifest.put(Manifest.FINISHED_FRAMES, updatedFrames);
+            mManifest.put(FIELD_FINISHED_FRAMES, updatedFrames);
             return true;
         } catch (JSONException e) {
             e.printStackTrace();
@@ -917,7 +867,7 @@ public class TargetTranslation {
      * @return
      */
     private boolean isFrameFinished(String frameComplexId) {
-        JSONArray finishedFrames = mManifest.getJSONArray(Manifest.FINISHED_FRAMES);
+        JSONArray finishedFrames = mManifest.getJSONArray(FIELD_FINISHED_FRAMES);
         try {
             for (int i = 0; i < finishedFrames.length(); i++) {
                 if(finishedFrames.getString(i).equals(frameComplexId)) {
@@ -1331,9 +1281,9 @@ public class TargetTranslation {
      * @return
      */
     public int numFinished() {
-        JSONArray finishedFrames = mManifest.getJSONArray(Manifest.FINISHED_FRAMES);
-        JSONArray finishedTitles = mManifest.getJSONArray(Manifest.FINISHED_TITLES);
-        JSONArray finishedReferences = mManifest.getJSONArray(Manifest.FINISHED_REFERENCES);
+        JSONArray finishedFrames = mManifest.getJSONArray(FIELD_FINISHED_FRAMES);
+        JSONArray finishedTitles = mManifest.getJSONArray(FIELD_FINISHED_TITLES);
+        JSONArray finishedReferences = mManifest.getJSONArray(FIELD_FINISHED_REFERENCES);
         return finishedFrames.length() + finishedTitles.length() + finishedReferences.length();
     }
 

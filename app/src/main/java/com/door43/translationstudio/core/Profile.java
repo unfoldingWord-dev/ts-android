@@ -14,13 +14,17 @@ import java.util.List;
  * Created by jshuma on 1/4/16.
  */
 public class Profile implements Serializable {
-    @Nullable public final String name;
-    @Nullable public final String email;
-    @Nullable public final String phone;
+    public final String name;
+    @Nullable public String email = null;
+    @Nullable public String phone = null;
 
     private static final String TAG_NAME = "name";
     private static final String TAG_PHONE = "phone";
     private static final String TAG_EMAIL = "email";
+
+    public Profile(String name) {
+        this.name = name;
+    }
 
     public Profile(String name, String email, String phone) {
         this.name = name;
@@ -36,7 +40,7 @@ public class Profile implements Serializable {
      * @return true if valid, otherwise false
      */
     public boolean isValid() {
-        return name != null && !name.isEmpty() && email != null && !email.isEmpty();
+        return name != null && !name.isEmpty();
     }
 
     public JSONObject encodeJsonObject() throws JSONException {
@@ -75,5 +79,13 @@ public class Profile implements Serializable {
             profiles.add(Profile.decodeJsonObject((JSONObject) a.get(i)));
         }
         return profiles;
+    }
+
+    /**
+     * Returns a native speaker version of this profile
+     * @return
+     */
+    public NativeSpeaker getNativeSpeaker() {
+        return new NativeSpeaker(this.name);
     }
 }

@@ -490,7 +490,21 @@ public class AppContext {
             // In this case, log the result but allow the data to be lost.
             Logger.e(TAG, "getProfiles: Failed to parse profile data", e);
         }
-        return new ArrayList<Profile>();
+        return new ArrayList<>();
+    }
+
+    /**
+     * Returns the currently opened user profile
+     * @return
+     */
+    public static Profile getProfile() {
+        // TODO: 2/19/2016 we need to fix profiles
+        List<Profile> profiles = getProfiles();
+        if(profiles.size() > 0) {
+            return getProfiles().get(0);
+        } else {
+            return new Profile("test", "test", "test");
+        }
     }
 
     /**

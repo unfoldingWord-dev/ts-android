@@ -225,7 +225,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
      */
     public String getTranslaterNames(String between) {
 
-        ArrayList<NativeSpeaker> nameList = mTargetTranslation.getTranslators();
+        ArrayList<NativeSpeaker> nameList = mTargetTranslation.getContributors();
 
         if(null != nameList) {
             String listString = "";

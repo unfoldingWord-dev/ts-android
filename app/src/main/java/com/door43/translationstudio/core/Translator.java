@@ -89,13 +89,14 @@ public class Translator {
 
     /**
      * Initializes a new target translation
+     * @param translator
      * @param targetLanguage the target language the project will be translated into
      * @param projectId the id of the project that will be translated
      * @return
      */
-    public TargetTranslation createTargetTranslation(TargetLanguage targetLanguage, String projectId) {
+    public TargetTranslation createTargetTranslation(NativeSpeaker translator, TargetLanguage targetLanguage, String projectId) {
         try {
-            return TargetTranslation.create(mContext, targetLanguage, projectId, mRootDir);
+            return TargetTranslation.create(mContext, translator, targetLanguage, projectId, mRootDir);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -265,9 +266,9 @@ public class Translator {
      * @param library
      * @return
      */
-    public TargetTranslation importDraftTranslation(SourceTranslation draftTranslation, Library library) {
+    public TargetTranslation importDraftTranslation(NativeSpeaker translator, SourceTranslation draftTranslation, Library library) {
         TargetLanguage targetLanguage = library.getTargetLanguage(draftTranslation.sourceLanguageSlug);
-        TargetTranslation t = createTargetTranslation(targetLanguage, draftTranslation.projectSlug);
+        TargetTranslation t = createTargetTranslation(translator, targetLanguage, draftTranslation.projectSlug);
         try {
             if (t != null) {
                 // commit local changes to history
@@ -379,7 +380,7 @@ public class Translator {
 //
 //        try {
 //            JSONObject mergedManifest = new JSONObject(importedManifest.toString());
-//            mergeManifestsObjectArray(mergedManifest, localManifest, Manifest.TRANSLATORS);
+//            mergeManifestsObjectArray(mergedManifest, localManifest, Manifest.FIELD_TRANSLATORS);
 //            mergeManifestsStringArray(mergedManifest, localManifest, Manifest.FINISHED_FRAMES);
 //            mergeManifestsStringArray(mergedManifest, localManifest, Manifest.FINISHED_TITLES);
 //            mergeManifestsStringArray(mergedManifest, localManifest, Manifest.FINISHED_REFERENCES);

@@ -17,10 +17,6 @@ public class Manifest {
     private final File mManifestFile;
     private JSONObject mManifest = new JSONObject();
     public static final String MANIFEST_JSON = "manifest.json";
-    public static final String FINISHED_FRAMES = "finished_frames";
-    public static final String FINISHED_TITLES = "finished_titles";
-    public static final String FINISHED_REFERENCES = "finished_references";
-    public static final String TRANSLATORS = "translators";
 
     /**
      * Creates a new manifest object representing a file on the disk
@@ -203,7 +199,7 @@ public class Manifest {
     /**
      * Reads the manifest file from the disk
      */
-    private void load() {
+    public void load() {
         String contents = "";
         try {
             contents = FileUtils.readFileToString(mManifestFile);

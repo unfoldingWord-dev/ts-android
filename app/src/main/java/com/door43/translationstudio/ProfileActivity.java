@@ -2,6 +2,7 @@ package com.door43.translationstudio;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.view.View;
 import android.widget.EditText;
 
@@ -16,37 +17,42 @@ import java.util.List;
 public class ProfileActivity extends BaseActivity {
 
     private EditText mName;
-    private EditText mEmail;
-    private EditText mPhone;
+    private View mPrivacyNotice;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
+        mPrivacyNotice = findViewById(R.id.privacy_notice);
         mName = (EditText)findViewById(R.id.name_edittext);
-        mEmail = (EditText)findViewById(R.id.email_edittext);
-        mPhone = (EditText)findViewById(R.id.phone_edittext);
 
+        mPrivacyNotice.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showPrivacyNotice(null);
+            }
+        });
         findViewById(R.id.ok_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: Support multiple profiles.
-                Profile profile = new Profile(
-                        mName.getText().toString(),
-                        mEmail.getText().toString(),
-                        mPhone.getText().toString());
-
+                final Profile profile = new Profile(mName.getText().toString());
                 if (profile.isValid()) {
-                    List<Profile> profiles = new ArrayList<>();
-                    profiles.add(profile);
-                    AppContext.setProfiles(profiles);
-                    openMainActivity();
+                    // confirm
+                    showPrivacyNotice(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            List<Profile> profiles = new ArrayList<>();
+                            profiles.add(profile);
+                            AppContext.setProfiles(profiles);
+                            openMainActivity();
+                        }
+                    });
                 } else {
                     CustomAlertDialog.Create(ProfileActivity.this)
-                            .setMessage(R.string.profile_information_required)
+                            .setMessage(R.string.complete_required_fields)
                             .setPositiveButton(R.string.label_ok, null)
-                            .show("Profile");
+                            .show("missing-fields");
                 }
             }
         });
@@ -62,7 +68,8 @@ public class ProfileActivity extends BaseActivity {
     public void onResume() {
         super.onResume();
 
-        if (AppContext.getProfiles() != null) {
+        List<Profile> profiles = AppContext.getProfiles();
+        if (profiles != null && profiles.size() > 0) {
             openMainActivity();
         }
     }
@@ -71,5 +78,24 @@ public class ProfileActivity extends BaseActivity {
         Intent intent = new Intent(this, HomeActivity.class);
         startActivity(intent);
         finish();
+    }
+
+    /**
+     * Displays the privacy notice
+     * @param listener if set the dialog will become a confirmation dialog
+     */
+    public void showPrivacyNotice(View.OnClickListener listener) {
+        CustomAlertDialog privacy = CustomAlertDialog.Create(this)
+                .setTitle(R.string.privacy_notice)
+                .setIcon(R.drawable.ic_info_black_24dp)
+                .setMessage(R.string.publishing_privacy_notice);
+
+        if(listener != null) {
+            privacy.setPositiveButton(R.string.label_continue, listener);
+            privacy.setNegativeButton(R.string.title_cancel, null);
+        } else {
+            privacy.setPositiveButton(R.string.dismiss, null);
+        }
+        privacy.show("privacy-notice");
     }
 }
