@@ -2,6 +2,7 @@ package com.door43.translationstudio.newui.home;
 
 import android.app.Activity;
 import android.app.DialogFragment;
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -136,7 +137,7 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
     }
 
     @Override
-    public void onFinished(final ManagedTask task) {
+    public void onFinished(ManagedTask task) {
         taskWatcher.stop();
         TaskManager.clearTask(task);
 
@@ -152,7 +153,6 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
                             adapter.setTargetTranslations(targetTranslationSlugs);
                         } else {
                             notifyReadOnlineBackupsFailed();
-                            dismiss();
                         }
                     }
                 });
@@ -232,8 +232,13 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
         CustomAlertDialog.Create(getActivity())
                 .setTitle(R.string.import_from_online)
                 .setMessage(R.string.no_backups_online)
-                .setNeutralButton(R.string.dismiss, null)
-                .show("NoBackups");
+                .setNeutralButton(R.string.dismiss, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dismiss();
+                    }
+                })
+                .show(this.getFragmentManager(), "NoBackups");
     }
 
     public void handleRegistrationResults(final Activity activity, boolean success) {
@@ -259,37 +264,51 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
             .setPositiveButton(R.string.yes, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    AppContext.context().generateKeys();
-                    final Handler hand = new Handler(Looper.getMainLooper());
-                    Thread thread = new Thread() {
-                        @Override
-                        public void run() {
-                            KeyRegistration keyReg = new KeyRegistration();
-                            keyReg.registerKeys(new KeyRegistration.OnRegistrationFinishedListener() {
-                                @Override
-                                public void onRestoreFinish(final boolean registrationSuccess) {
-                                    hand.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            handleRegistrationResults(activity, registrationSuccess);
-                                            dlg.dismiss();
-                                        }
-                                    });
-                                }
-                            });
-                        }
-                    };
-                    thread.start();
+                    doKeyRegistration(activity, dlg);
                 }
             })
-                .setNegativeButton(R.string.no, new View.OnClickListener() {
+            .setNegativeButton(R.string.no, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    notifyReadOnlineBackupsFailed();
+                    dlg.dismiss();
+                }
+            })
+            .show("PubAuthFailure");
+    }
+
+    public void doKeyRegistration(final Activity activity, final CustomAlertDialog dlg) {
+
+        final ProgressDialog progressDialog = new ProgressDialog(activity);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        progressDialog.setCancelable(false);
+        progressDialog.setCanceledOnTouchOutside(false);
+        progressDialog.setTitle(R.string.registering_keys);
+        progressDialog.setMessage("");
+        progressDialog.show();
+
+        AppContext.context().generateKeys();
+        final Handler hand = new Handler(Looper.getMainLooper());
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                KeyRegistration keyReg = new KeyRegistration();
+                keyReg.registerKeys(new KeyRegistration.OnRegistrationFinishedListener() {
                     @Override
-                    public void onClick(View v) {
-                        notifyReadOnlineBackupsFailed();
-                        dlg.dismiss();
+                    public void onRestoreFinish(final boolean registrationSuccess) {
+                        hand.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                progressDialog.dismiss();
+                                dlg.dismiss();
+                                handleRegistrationResults(activity, registrationSuccess);
+                            }
+                        });
                     }
-                })
-                .show("PubAuthFailure");
+                });
+            }
+        };
+        thread.start();
     }
 
     @Override
