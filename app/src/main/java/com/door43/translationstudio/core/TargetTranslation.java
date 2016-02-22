@@ -291,11 +291,12 @@ public class TargetTranslation {
     }
 
     /**
-     * Searches for a contributor by their name
+     * Returns the contributor that has the given name
      * @param name
-     * @return an array list of translators that have the given name
+     * @return null if no contributor was found
      */
     public NativeSpeaker getContributor(String name) {
+        mManifest.load();
         ArrayList<NativeSpeaker> translators = getContributors();
         for (NativeSpeaker speaker:translators) {
             if (speaker.name.equals(name)) {
@@ -311,6 +312,7 @@ public class TargetTranslation {
      * @return
      */
     public ArrayList<NativeSpeaker> getContributors() {
+        mManifest.load();
         JSONArray translatorsJson = mManifest.getJSONArray(FIELD_TRANSLATORS);
         ArrayList<NativeSpeaker> translators = new ArrayList<>();
 

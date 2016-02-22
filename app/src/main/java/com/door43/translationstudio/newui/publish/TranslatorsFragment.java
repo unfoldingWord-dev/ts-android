@@ -28,6 +28,7 @@ public class TranslatorsFragment extends PublishStepFragment implements NativeSp
     private TargetTranslation mTargetTranslation;
     private RecyclerView mRecylerView;
     private NativeSpeakerAdapter mNativeSpeakerAdapter;
+    private View.OnClickListener mOnNativeSpeakerDialogClick;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_publish_translators, container, false);
@@ -43,60 +44,26 @@ public class TranslatorsFragment extends PublishStepFragment implements NativeSp
         mRecylerView.setLayoutManager(linearLayoutManager);
         mRecylerView.setItemAnimator(new DefaultItemAnimator());
         mNativeSpeakerAdapter = new NativeSpeakerAdapter();
-        mNativeSpeakerAdapter.setTranslators(mTargetTranslation.getContributors());
+        mNativeSpeakerAdapter.setContributors(mTargetTranslation.getContributors());
         mNativeSpeakerAdapter.setOnClickListener(this);
         mRecylerView.setAdapter(mNativeSpeakerAdapter);
-//        mNameText = (EditText)rootView.findViewById(R.id.name_edittext);
-//        mEmailText = (EditText)rootView.findViewById(R.id.email_edittext);
-//        mPhoneText = (EditText)rootView.findViewById(R.id.phone_edittext);
 
-        // buttons
-//        ImageButton nameInfoButton = (ImageButton)rootView.findViewById(R.id.name_info_button);
-//        ViewUtil.tintViewDrawable(nameInfoButton, getResources().getColor(R.color.dark_secondary_text));
-//        ImageButton emailInfoButton = (ImageButton)rootView.findViewById(R.id.email_info_button);
-//        ViewUtil.tintViewDrawable(emailInfoButton, getResources().getColor(R.color.dark_secondary_text));
-//        ImageButton phoneInfoButton = (ImageButton)rootView.findViewById(R.id.phone_info_button);
-//        ViewUtil.tintViewDrawable(phoneInfoButton, getResources().getColor(R.color.dark_secondary_text));
+        mOnNativeSpeakerDialogClick = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mNativeSpeakerAdapter.setContributors(mTargetTranslation.getContributors());
+            }
+        };
 
-//        mContributor = (View) rootView.findViewById(R.id.contributor_button);
-//        mContributorToggle = (TextView) rootView.findViewById(R.id.toggle_contributor);
-
-//        mContributorToggle.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                getNextTranslator();
-//            }
-//        });
-
-//        nameInfoButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                showPrivacyNotice(rootView, true);
-//            }
-//        });
-//        emailInfoButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                showPrivacyNotice(rootView, true);
-//            }
-//        });
-//        phoneInfoButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                showPrivacyNotice(rootView, true);
-//            }
-//        });
-
-//        Button addContributorButton = (Button)rootView.findViewById(R.id.add_contributor_button);
-//        addContributorButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                NativeSpeaker translator = saveCurrentTranslator();
-//                showTranslator(translator.name);
-//            }
-//        });
-
-//        addContributorButton.setVisibility(View.GONE); //TODO remove to re-enable support for multiple contributors
+        // re-attach to dialogs
+        Fragment prevEditDialog = getFragmentManager().findFragmentByTag("edit-native-speaker");
+        if(prevEditDialog != null) {
+            ((NativeSpeakerDialog)prevEditDialog).setOnClickListener(mOnNativeSpeakerDialogClick);
+        }
+        Fragment prevAddDialog = getFragmentManager().findFragmentByTag("add-native-speaker");
+        if(prevAddDialog != null) {
+            ((NativeSpeakerDialog)prevAddDialog).setOnClickListener(mOnNativeSpeakerDialogClick);
+        }
 
 //        ImageButton deleteContributorButton = (ImageButton)rootView.findViewById(R.id.delete_contributor_button);
 //        deleteContributorButton.setOnClickListener(new View.OnClickListener() {
@@ -126,23 +93,6 @@ public class TranslatorsFragment extends PublishStepFragment implements NativeSp
 //            }
 //        });
 
-//        Button nextButton = (Button)rootView.findViewById(R.id.next_button);
-//        nextButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                if(mNameText.getText().toString().isEmpty() || mEmailText.getText().toString().isEmpty()) {
-//                    Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.complete_required_fields, Snackbar.LENGTH_SHORT);
-//                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-//                    snack.show();
-//                } else {
-//                    showPrivacyNotice(rootView, false);
-//                }
-//            }
-//        });
-
-//        mTargetTranslation.setDefaultContributor(AppContext.getProfile().getNativeSpeaker());
-//        updateTranslator();
-
         return view;
     }
 
@@ -160,7 +110,7 @@ public class TranslatorsFragment extends PublishStepFragment implements NativeSp
         args.putString(NativeSpeakerDialog.ARG_TARGET_TRANSLATION, mTargetTranslation.getId());
         args.putString(NativeSpeakerDialog.ARG_NATIVE_SPEAKER, speaker.name);
         dialog.setArguments(args);
-        // TODO: 2/19/2016 add listener to reload
+        dialog.setOnClickListener(mOnNativeSpeakerDialogClick);
         dialog.show(ft, "edit-native-speaker");
     }
 
@@ -203,7 +153,7 @@ public class TranslatorsFragment extends PublishStepFragment implements NativeSp
         Bundle args = new Bundle();
         args.putString(NativeSpeakerDialog.ARG_TARGET_TRANSLATION, mTargetTranslation.getId());
         dialog.setArguments(args);
-        // TODO: 2/19/2016 add listener to reload
+        dialog.setOnClickListener(mOnNativeSpeakerDialogClick);
         dialog.show(ft, "add-native-speaker");
     }
 

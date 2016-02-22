@@ -199,7 +199,7 @@ public class Manifest {
     /**
      * Reads the manifest file from the disk
      */
-    private void load() {
+    public void load() {
         String contents = "";
         try {
             contents = FileUtils.readFileToString(mManifestFile);

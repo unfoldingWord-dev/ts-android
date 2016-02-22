@@ -15,6 +15,7 @@ import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NativeSpeaker;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.widget.ViewUtil;
 
 import java.security.InvalidParameterException;
@@ -31,6 +32,8 @@ public class NativeSpeakerDialog extends DialogFragment {
     private TargetTranslation mTargetTranslation = null;
     private NativeSpeaker mNativeSpeaker = null;
     private TextView mTitleView;
+    private View.OnClickListener mListener;
+    private Button mDeleteButton;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -54,15 +57,38 @@ public class NativeSpeakerDialog extends DialogFragment {
         mNameView = (EditText)v.findViewById(R.id.name);
         mCancelButton = (Button)v.findViewById(R.id.cancel_button);
         mSaveButton = (Button)v.findViewById(R.id.save_button);
-        // TODO: 2/19/2016 we need a delete button
+        mDeleteButton = (Button)v.findViewById(R.id.delete_button);
 
         if(mNativeSpeaker != null) {
             mNameView.setText(mNativeSpeaker.name);
             mTitleView.setText(R.string.edit_contributor);
+            mDeleteButton.setVisibility(View.VISIBLE);
         } else {
             mTitleView.setText(R.string.add_contributor);
+            mDeleteButton.setVisibility(View.GONE);
         }
 
+        mDeleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                CustomAlertDialog.Create(getActivity())
+                    .setTitle(R.string.delete_translator_title)
+                    .setMessageHtml(R.string.confirm_delete_translator)
+                    .setPositiveButton(R.string.confirm, new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    mTargetTranslation.removeContributor(mNativeSpeaker);
+                                    if(mListener != null) {
+                                        mListener.onClick(v);
+                                    }
+                                    dismiss();
+                                }
+                            }
+                    )
+                        .setNegativeButton(R.string.title_cancel, null)
+                    .show("confirm-delete");
+            }
+        });
         mCancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -75,16 +101,33 @@ public class NativeSpeakerDialog extends DialogFragment {
                 String name = mNameView.getText().toString();
                 NativeSpeaker duplicate = mTargetTranslation.getContributor(name);
                 if(duplicate != null) {
-                    Snackbar snack = Snackbar.make(v, R.string.duplicate_native_speaker, Snackbar.LENGTH_SHORT);
-                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.white));
-                    snack.show();
+                    if(mNativeSpeaker != null && mNativeSpeaker.equals(duplicate)) {
+                        // no change
+                        dismiss();
+                    } else {
+                        Snackbar snack = Snackbar.make(v, R.string.duplicate_native_speaker, Snackbar.LENGTH_SHORT);
+                        ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.white));
+                        snack.show();
+                    }
                 } else {
+                    mTargetTranslation.removeContributor(mNativeSpeaker); // remove old name
                     mTargetTranslation.addContributor(new NativeSpeaker(name));
+                    if(mListener != null) {
+                        mListener.onClick(v);
+                    }
+                    dismiss();
                 }
-                dismiss();
             }
         });
 
         return v;
+    }
+
+    /**
+     * Sets the listener to be called when the dialog is submitted
+     * @param listener
+     */
+    public void setOnClickListener(View.OnClickListener listener) {
+        mListener = listener;
     }
 }

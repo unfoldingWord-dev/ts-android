@@ -29,7 +29,7 @@ public class NativeSpeakerAdapter extends RecyclerView.Adapter<NativeSpeakerAdap
      * Loads a new set of native speakers
      * @param speakers
      */
-    public void setTranslators(List<NativeSpeaker> speakers) {
+    public void setContributors(List<NativeSpeaker> speakers) {
         mData = speakers;
         notifyDataSetChanged();
     }

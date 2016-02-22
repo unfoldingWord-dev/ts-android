@@ -1,5 +1,6 @@
 package com.door43.translationstudio.core;
 
+import org.eclipse.jgit.lib.ObjectLoader;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -19,5 +20,13 @@ public class NativeSpeaker {
     @Override
     public String toString() {
         return name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(o != null && o instanceof NativeSpeaker) {
+            return ((NativeSpeaker)o).name.equals(this.name);
+        }
+        return false;
     }
 }
