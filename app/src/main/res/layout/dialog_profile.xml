@@ -26,13 +26,6 @@ android:animateLayoutChanges="true">
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/profile_information_required"
-            android:layout_marginBottom="@dimen/dialog_content_margin"
-            android:textSize="@dimen/body"/>
-
         <GridLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

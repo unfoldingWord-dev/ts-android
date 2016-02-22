@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NativeSpeaker;
+import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
@@ -38,6 +39,11 @@ public class TranslatorsFragment extends PublishStepFragment implements NativeSp
         Translator translator = AppContext.getTranslator();
         mTargetTranslation = translator.getTargetTranslation(targetTranslationId);
 
+        // auto add profile
+        Profile profile = AppContext.getProfile();
+        if(profile != null) {
+            mTargetTranslation.addContributor(profile.getNativeSpeaker());
+        }
 
         mRecylerView = (RecyclerView)view.findViewById(R.id.recycler_view);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
@@ -64,35 +70,6 @@ public class TranslatorsFragment extends PublishStepFragment implements NativeSp
         if(prevAddDialog != null) {
             ((NativeSpeakerDialog)prevAddDialog).setOnClickListener(mOnNativeSpeakerDialogClick);
         }
-
-//        ImageButton deleteContributorButton = (ImageButton)rootView.findViewById(R.id.delete_contributor_button);
-//        deleteContributorButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//
-//                final CustomAlertDialog dlg = CustomAlertDialog.Create(getActivity());
-//                dlg.setTitle(R.string.delete_translator_title)
-//                        .setMessageHtml(R.string.confirm_delete_translator)
-//                        .setPositiveButton(R.string.confirm, new View.OnClickListener() {
-//                                    @Override
-//                                    public void onClick(View v) {
-//
-//                                        String name = mContributorToggle.getText().toString();
-//                                        List<NativeSpeaker> speakers = mTargetTranslation.getContributor(name);
-//                                        if(speakers.size() > 0) {
-//                                            mTargetTranslation.removeTranslator(speakers.get(0));
-//                                        }
-//                                        updateTranslator();
-//
-//                                        dlg.dismiss();
-//                                    }
-//                                }
-//                        )
-//                        .setNegativeButton(R.string.title_cancel, null)
-//                        .show("DeleteTrans");
-//            }
-//        });
-
         return view;
     }
 

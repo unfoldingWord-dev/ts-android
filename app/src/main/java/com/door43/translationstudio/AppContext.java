@@ -490,7 +490,7 @@ public class AppContext {
             // In this case, log the result but allow the data to be lost.
             Logger.e(TAG, "getProfiles: Failed to parse profile data", e);
         }
-        return new ArrayList<Profile>();
+        return new ArrayList<>();
     }
 
     /**

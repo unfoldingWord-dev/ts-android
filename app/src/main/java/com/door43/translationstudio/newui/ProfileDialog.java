@@ -20,6 +20,7 @@ import java.util.List;
 
 /**
  * Created by jshuma on 1/27/2015.
+ * TODO: 2/22/2016 we are not collecting email and phone numbers right now.
  */
 public class ProfileDialog extends DialogFragment {
 
@@ -85,7 +86,7 @@ public class ProfileDialog extends DialogFragment {
 
         if (!profile.isValid()) {
             CustomAlertDialog.Create(getActivity())
-                    .setMessage(R.string.profile_information_required)
+                    .setMessage(R.string.complete_required_fields)
                     .setPositiveButton(R.string.label_ok, null)
                     .show("Profile");
             return false;
