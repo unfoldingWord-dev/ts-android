@@ -2,6 +2,7 @@ package com.door43.translationstudio.newui.home;
 
 import android.app.Activity;
 import android.app.DialogFragment;
+import android.app.FragmentManager;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.os.Handler;
@@ -152,7 +153,7 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
                         if (targetTranslationSlugs.length > 0) {
                             adapter.setTargetTranslations(targetTranslationSlugs);
                         } else {
-                            notifyReadOnlineBackupsFailed();
+                            notifyReadOnlineBackupsFailed(getActivity());
                         }
                     }
                 });
@@ -228,8 +229,12 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
         }
     }
 
-    public void notifyReadOnlineBackupsFailed() {
-        CustomAlertDialog.Create(getActivity())
+    public void notifyReadOnlineBackupsFailed(Activity activity) {
+        FragmentManager fm = this.getFragmentManager();
+        if(null == fm) {
+            fm = activity.getFragmentManager();
+        }
+        CustomAlertDialog.Create(activity)
                 .setTitle(R.string.import_from_online)
                 .setMessage(R.string.no_backups_online)
                 .setNeutralButton(R.string.dismiss, new View.OnClickListener() {
@@ -238,7 +243,7 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
                         dismiss();
                     }
                 })
-                .show(this.getFragmentManager(), "NoBackups");
+                .show(fm, "NoBackups");
     }
 
     public void handleRegistrationResults(final Activity activity, boolean success) {
@@ -270,7 +275,7 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
             .setNegativeButton(R.string.no, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    notifyReadOnlineBackupsFailed();
+                    notifyReadOnlineBackupsFailed(activity);
                     dlg.dismiss();
                 }
             })
@@ -314,7 +319,7 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
     @Override
     public void onSaveInstanceState(Bundle out) {
         out.putStringArray(STATE_TARGET_TRANSLATIONS, this.targetTranslationSlugs);
-        out.putBoolean(STATE_RESTORE_HEAD, this.restoreHEAD );
+        out.putBoolean(STATE_RESTORE_HEAD, this.restoreHEAD);
         super.onSaveInstanceState(out);
     }
 
