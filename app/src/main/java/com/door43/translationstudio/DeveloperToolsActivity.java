@@ -158,6 +158,47 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                 }.start();
             }
         }));
+
+        mDeveloperTools.add(new ToolItem(getResources().getString(R.string.invalidate_keys), getResources().getString(R.string.invalidate_keys_description), 0, new ToolItem.ToolAction() {
+            @Override
+            public void run() {
+                final ProgressDialog dialog = new ProgressDialog(DeveloperToolsActivity.this);
+                dialog.setMessage(getResources().getString(R.string.loading));
+                dialog.setCancelable(false);
+                dialog.setCanceledOnTouchOutside(false);
+                dialog.show();
+                final Handler handle = new Handler(Looper.getMainLooper());
+                new ThreadableUI(DeveloperToolsActivity.this) {
+
+                    @Override
+                    public void onStop() {
+                        handle.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                dialog.dismiss();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void run() {
+                        // disable screen rotation so we don't break things
+    //                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+                        AppContext.context().generateKeys();
+                        AppContext.context().setHasRegisteredKeys(true);
+                    }
+
+                    @Override
+                    public void onPostExecute() {
+                        dialog.dismiss();
+                        // re-enable screen rotation
+    //                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+                        AppContext.context().showToastMessage(R.string.success);
+                    }
+                }.start();
+            }
+        }));
+
         mDeveloperTools.add(new ToolItem(getResources().getString(R.string.read_debugging_log), getResources().getString(R.string.read_debugging_log_description), 0, new ToolItem.ToolAction() {
             @Override
             public void run() {

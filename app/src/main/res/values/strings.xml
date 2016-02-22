@@ -658,4 +658,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="need_translator_notice">Please add a contributor</string>
     <string name="duplicate_native_speaker">A contributor with that name has already been added</string>
     <string name="edit_contributor">Edit Contributor</string>
+    <string name="registration_failure">Registration Failed. PLease check your internet connection</string>
+    <string name="auth_failure_retry">Authentication Failed. Retry?</string>
+    <string name="registering_keys">Registering with server</string>
+    <string name="invalidate_keys" translatable="false">Invalidate SSH Keys</string>
+    <string name="invalidate_keys_description" translatable="false">Sets keys invalid for auth testing</string>
 </resources>
