@@ -657,4 +657,15 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="footnote_label">Footnote</string>
     <string name="footnote_title_empty">Footnote Title cannot be empty</string>
     <string name="footnote_message_empty">Footnote cannot be empty</string>
+    <string name="language_title_name">Name</string>
+    <string name="language_title_understanding">Understanding</string>
+    <string name="language_title_dialects">Dialects</string>
+    <string name="language_title_gateway">Gateway</string>
+    <string name="invalid_entry_title">Invalid Entry</string>
+    <string name="answers_missing_title">Answers Missing</string>
+    <string name="answer_required_for">Need answer for question:\n%s</string>
+    <string name="answers_missing_continue">Answers are missing for questions.\nContinue anyway</string>
+    <string name="language_name_called">1. What do you call your language?</string>
+    <string name="language_name_meaning">1.1  Does that have a special meaning?</string>
+    <string name="language_name_alternates">1.2  Do you have other names for your language?</string>
 </resources>
