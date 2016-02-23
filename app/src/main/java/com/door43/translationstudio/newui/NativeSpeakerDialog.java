@@ -1,6 +1,7 @@
 package com.door43.translationstudio.newui;
 
 import android.app.DialogFragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
@@ -18,6 +19,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NativeSpeaker;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
+import com.door43.translationstudio.newui.legal.LegalDocumentActivity;
 import com.door43.widget.ViewUtil;
 
 import java.security.InvalidParameterException;
@@ -37,6 +39,10 @@ public class NativeSpeakerDialog extends DialogFragment {
     private View.OnClickListener mListener;
     private Button mDeleteButton;
     private CheckBox mAgreementCheck;
+    private View mLicenseGroup;
+    private Button mLicenseAgreementButton;
+    private Button mStatementOfFaithButton;
+    private Button mTranslationGuidelinesButton;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -62,6 +68,10 @@ public class NativeSpeakerDialog extends DialogFragment {
         mSaveButton = (Button)v.findViewById(R.id.save_button);
         mDeleteButton = (Button)v.findViewById(R.id.delete_button);
         mAgreementCheck = (CheckBox)v.findViewById(R.id.agreement_check);
+        mLicenseGroup = v.findViewById(R.id.license_group);
+        mLicenseAgreementButton = (Button)v.findViewById(R.id.license_agreement_btn);
+        mStatementOfFaithButton = (Button)v.findViewById(R.id.statement_of_faith_btn);
+        mTranslationGuidelinesButton = (Button)v.findViewById(R.id.translation_guidelines_btn);
 
         if(mNativeSpeaker != null) {
             mNameView.setText(mNativeSpeaker.name);
@@ -69,13 +79,39 @@ public class NativeSpeakerDialog extends DialogFragment {
             mDeleteButton.setVisibility(View.VISIBLE);
             mAgreementCheck.setEnabled(false);
             mAgreementCheck.setChecked(true);
+            mLicenseGroup.setVisibility(View.GONE);
         } else {
             mTitleView.setText(R.string.add_contributor);
             mDeleteButton.setVisibility(View.GONE);
             mAgreementCheck.setEnabled(true);
             mAgreementCheck.setChecked(false);
+            mLicenseGroup.setVisibility(View.VISIBLE);
         }
 
+        mLicenseAgreementButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), LegalDocumentActivity.class);
+                intent.putExtra(LegalDocumentActivity.ARG_RESOURCE, R.string.license);
+                startActivity(intent);
+            }
+        });
+        mStatementOfFaithButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), LegalDocumentActivity.class);
+                intent.putExtra(LegalDocumentActivity.ARG_RESOURCE, R.string.statement_of_faith);
+                startActivity(intent);
+            }
+        });
+        mTranslationGuidelinesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), LegalDocumentActivity.class);
+                intent.putExtra(LegalDocumentActivity.ARG_RESOURCE, R.string.translation_guidlines);
+                startActivity(intent);
+            }
+        });
         mDeleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

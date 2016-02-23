@@ -35,6 +35,34 @@
             android:textColor="@color/dark_primary_text"
             android:text="@string/person_agrees_with_licenses"
             android:id="@+id/agreement_check" />
+
+        <org.apmem.tools.layouts.FlowLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/license_group"
+            android:layout_marginBottom="@dimen/card_margin">
+            <Button
+                android:id="@+id/license_agreement_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/pref_title_license_agreement"
+                style="@style/Widget.Button.Tag"/>
+
+            <Button
+                android:id="@+id/statement_of_faith_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/pref_title_statement_of_faith"
+                style="@style/Widget.Button.Tag"/>
+
+            <Button
+                android:id="@+id/translation_guidelines_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/pref_title_translation_guidelines"
+                style="@style/Widget.Button.Tag"/>
+        </org.apmem.tools.layouts.FlowLayout>
     </LinearLayout>
 
 
