@@ -12,16 +12,31 @@
         android:textColor="@color/dark_primary_text"
         android:layout_margin="@dimen/dialog_content_margin"/>
 
-    <EditText
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_margin="@dimen/dialog_content_margin"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/name"
-        android:maxLines="1"
-        android:background="@drawable/edit_text"
-        android:paddingBottom="16dp"
-        android:layout_marginBottom="16dp"
-        android:id="@+id/name" />
+        android:layout_height="wrap_content">
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/name"
+            android:maxLines="1"
+            android:background="@drawable/edit_text"
+            android:paddingBottom="16dp"
+            android:layout_marginBottom="16dp"
+            android:id="@+id/name" />
+
+        <CheckBox
+            android:layout_marginTop="@dimen/dialog_content_margin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/body"
+            android:textColor="@color/dark_primary_text"
+            android:text="@string/person_agrees_with_licenses"
+            android:id="@+id/agreement_check" />
+    </LinearLayout>
+
 
     <LinearLayout
         android:layout_width="match_parent"

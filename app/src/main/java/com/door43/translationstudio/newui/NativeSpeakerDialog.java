@@ -8,6 +8,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -34,6 +36,7 @@ public class NativeSpeakerDialog extends DialogFragment {
     private TextView mTitleView;
     private View.OnClickListener mListener;
     private Button mDeleteButton;
+    private CheckBox mAgreementCheck;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -58,14 +61,19 @@ public class NativeSpeakerDialog extends DialogFragment {
         mCancelButton = (Button)v.findViewById(R.id.cancel_button);
         mSaveButton = (Button)v.findViewById(R.id.save_button);
         mDeleteButton = (Button)v.findViewById(R.id.delete_button);
+        mAgreementCheck = (CheckBox)v.findViewById(R.id.agreement_check);
 
         if(mNativeSpeaker != null) {
             mNameView.setText(mNativeSpeaker.name);
             mTitleView.setText(R.string.edit_contributor);
             mDeleteButton.setVisibility(View.VISIBLE);
+            mAgreementCheck.setEnabled(false);
+            mAgreementCheck.setChecked(true);
         } else {
             mTitleView.setText(R.string.add_contributor);
             mDeleteButton.setVisibility(View.GONE);
+            mAgreementCheck.setEnabled(true);
+            mAgreementCheck.setChecked(false);
         }
 
         mDeleteButton.setOnClickListener(new View.OnClickListener() {
@@ -99,23 +107,29 @@ public class NativeSpeakerDialog extends DialogFragment {
             @Override
             public void onClick(View v) {
                 String name = mNameView.getText().toString();
-                NativeSpeaker duplicate = mTargetTranslation.getContributor(name);
-                if(duplicate != null) {
-                    if(mNativeSpeaker != null && mNativeSpeaker.equals(duplicate)) {
-                        // no change
-                        dismiss();
+                if(mAgreementCheck.isChecked() && !name.isEmpty()) {
+                    NativeSpeaker duplicate = mTargetTranslation.getContributor(name);
+                    if (duplicate != null) {
+                        if (mNativeSpeaker != null && mNativeSpeaker.equals(duplicate)) {
+                            // no change
+                            dismiss();
+                        } else {
+                            Snackbar snack = Snackbar.make(v, R.string.duplicate_native_speaker, Snackbar.LENGTH_SHORT);
+                            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.white));
+                            snack.show();
+                        }
                     } else {
-                        Snackbar snack = Snackbar.make(v, R.string.duplicate_native_speaker, Snackbar.LENGTH_SHORT);
-                        ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.white));
-                        snack.show();
+                        mTargetTranslation.removeContributor(mNativeSpeaker); // remove old name
+                        mTargetTranslation.addContributor(new NativeSpeaker(name));
+                        if (mListener != null) {
+                            mListener.onClick(v);
+                        }
+                        dismiss();
                     }
                 } else {
-                    mTargetTranslation.removeContributor(mNativeSpeaker); // remove old name
-                    mTargetTranslation.addContributor(new NativeSpeaker(name));
-                    if(mListener != null) {
-                        mListener.onClick(v);
-                    }
-                    dismiss();
+                    Snackbar snack = Snackbar.make(v, R.string.complete_required_fields, Snackbar.LENGTH_SHORT);
+                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.white));
+                    snack.show();
                 }
             }
         });
