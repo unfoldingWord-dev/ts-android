@@ -1,9 +1,8 @@
-package com.door43.translationstudio.newui.publish;
+package com.door43.translationstudio.newui;
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -18,15 +17,14 @@ import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
-import com.door43.translationstudio.newui.ContributorsAdapter;
-import com.door43.translationstudio.newui.ContributorDialog;
-import com.door43.widget.ViewUtil;
 
 /**
- * Created by joel on 9/20/2015.
+ * Displays a list of contributors for the target translation
+ * and provides controls for editing them
  */
-public class TranslatorsFragment extends PublishStepFragment implements ContributorsAdapter.OnClickListener {
+public class ContributorsFragment extends BaseFragment implements ContributorsAdapter.OnClickListener  {
 
+    public static final String EXTRA_TARGET_TRANSLATION_ID = "target_translation_id";
     private TargetTranslation mTargetTranslation;
     private RecyclerView mRecylerView;
     private ContributorsAdapter mContributorsAdapter;
@@ -36,7 +34,7 @@ public class TranslatorsFragment extends PublishStepFragment implements Contribu
         final View view = inflater.inflate(R.layout.fragment_contributors, container, false);
 
         Bundle args = getArguments();
-        String targetTranslationId = args.getString(PublishActivity.EXTRA_TARGET_TRANSLATION_ID);
+        String targetTranslationId = args.getString(ContributorsFragment.EXTRA_TARGET_TRANSLATION_ID);
         Translator translator = AppContext.getTranslator();
         mTargetTranslation = translator.getTargetTranslation(targetTranslationId);
 
@@ -51,6 +49,7 @@ public class TranslatorsFragment extends PublishStepFragment implements Contribu
         mRecylerView.setLayoutManager(linearLayoutManager);
         mRecylerView.setItemAnimator(new DefaultItemAnimator());
         mContributorsAdapter = new ContributorsAdapter();
+        mContributorsAdapter.setDisplayNext(false);
         mContributorsAdapter.setContributors(mTargetTranslation.getContributors());
         mContributorsAdapter.setOnClickListener(this);
         mRecylerView.setAdapter(mContributorsAdapter);
@@ -99,19 +98,7 @@ public class TranslatorsFragment extends PublishStepFragment implements Contribu
 
     @Override
     public void onClickNext() {
-        if(mTargetTranslation.getContributors().size() > 0) {
-            getListener().nextStep();
-        } else {
-            Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.need_translator_notice, Snackbar.LENGTH_LONG);
-            snack.setAction(R.string.add_contributor, new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    showAddNativeSpeakerDialog();
-                }
-            });
-            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.white));
-            snack.show();
-        }
+
     }
 
     @Override
@@ -141,9 +128,9 @@ public class TranslatorsFragment extends PublishStepFragment implements Contribu
      */
     public void showPrivacyNotice(View.OnClickListener listener) {
         CustomAlertDialog privacy = CustomAlertDialog.Create(getActivity())
-            .setTitle(R.string.privacy_notice)
-            .setIcon(R.drawable.ic_info_black_24dp)
-            .setMessage(R.string.publishing_privacy_notice);
+                .setTitle(R.string.privacy_notice)
+                .setIcon(R.drawable.ic_info_black_24dp)
+                .setMessage(R.string.publishing_privacy_notice);
 
         if(listener != null) {
             privacy.setPositiveButton(R.string.label_continue, listener);

@@ -30,6 +30,8 @@
                 <LinearLayout
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
+                    android:paddingTop="@dimen/dialog_controls_margin"
+                    android:paddingBottom="@dimen/dialog_controls_margin"
                     android:layout_height="wrap_content">
                     <TextView
                         android:layout_width="wrap_content"
@@ -50,6 +52,8 @@
                 <LinearLayout
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
+                    android:paddingTop="@dimen/dialog_controls_margin"
+                    android:paddingBottom="@dimen/dialog_controls_margin"
                     android:layout_height="wrap_content">
                     <TextView
                         android:layout_width="wrap_content"
@@ -70,6 +74,8 @@
                 <LinearLayout
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
+                    android:paddingTop="@dimen/dialog_controls_margin"
+                    android:paddingBottom="@dimen/dialog_controls_margin"
                     android:layout_height="wrap_content">
                     <TextView
                         android:layout_width="wrap_content"
@@ -88,8 +94,11 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/contributors_group"
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
+                    android:paddingTop="@dimen/dialog_controls_margin"
+                    android:paddingBottom="@dimen/dialog_controls_margin"
                     android:layout_height="wrap_content">
                     <TextView
                         android:layout_width="wrap_content"
@@ -102,7 +111,7 @@
                         android:id="@+id/translators"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/dark_primary_text"
+                        android:textColor="@color/accent_dark"
                         android:textSize="@dimen/body"
                         android:text="Joel Lonbeck"/>
                 </LinearLayout>
@@ -110,6 +119,8 @@
                 <LinearLayout
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
+                    android:paddingTop="@dimen/dialog_controls_margin"
+                    android:paddingBottom="@dimen/dialog_controls_margin"
                     android:layout_height="wrap_content">
                     <TextView
                         android:layout_width="wrap_content"

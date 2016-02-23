@@ -27,7 +27,7 @@ import java.security.InvalidParameterException;
 /**
  * Created by joel on 2/19/2016.
  */
-public class NativeSpeakerDialog extends DialogFragment {
+public class ContributorDialog extends DialogFragment {
     public static final java.lang.String ARG_NATIVE_SPEAKER = "native_speaker_name";
     public static final java.lang.String ARG_TARGET_TRANSLATION = "target_translation_id";
     private EditText mNameView;

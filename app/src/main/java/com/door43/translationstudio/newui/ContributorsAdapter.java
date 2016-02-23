@@ -1,5 +1,6 @@
-package com.door43.translationstudio.newui.publish;
+package com.door43.translationstudio.newui;
 
+import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,13 +18,15 @@ import java.util.List;
 /**
  * Created by joel on 2/19/2016.
  */
-public class NativeSpeakerAdapter extends RecyclerView.Adapter<NativeSpeakerAdapter.GenericViewHolder> {
+public class ContributorsAdapter extends RecyclerView.Adapter<ContributorsAdapter.GenericViewHolder> {
 
     private static final int TYPE_SECURITY_NOTICE = 0;
     private static final int TYPE_SPEAKER = 1;
     private static final int TYPE_CONTROLS = 2;
+    public static final String EXTRA_DISPLAY_NEXT = "display_next";
     private List<NativeSpeaker> mData = new ArrayList<>();
     private OnClickListener mListener;
+    private boolean mDisplayNext = true;
 
     /**
      * Loads a new set of native speakers
@@ -64,6 +67,9 @@ public class NativeSpeakerAdapter extends RecyclerView.Adapter<NativeSpeakerAdap
     @Override
     public void onBindViewHolder(GenericViewHolder holder, int position) {
         // TRICKY: only the Native Speaker holder uses the position so we must account for the privacy notice
+        Bundle extras = new Bundle();
+        extras.putBoolean(EXTRA_DISPLAY_NEXT, mDisplayNext);
+        holder.putExtras(extras);
         holder.loadView(mData, position - 1, mListener);
     }
 
@@ -80,6 +86,14 @@ public class NativeSpeakerAdapter extends RecyclerView.Adapter<NativeSpeakerAdap
         mListener = listener;
     }
 
+    /**
+     * Specifies if the next button should be displayed
+     * @param display
+     */
+    public void setDisplayNext(boolean display) {
+        mDisplayNext = display;
+    }
+
     public interface OnClickListener {
         void onEditNativeSpeaker(NativeSpeaker speaker);
         void onClickAddNativeSpeaker();
@@ -94,6 +108,8 @@ public class NativeSpeakerAdapter extends RecyclerView.Adapter<NativeSpeakerAdap
         }
 
         public abstract void loadView(List<NativeSpeaker> speakers, int position, OnClickListener listener);
+
+        public abstract void putExtras(Bundle extras);
     }
 
     public static class ViewHolderNotice extends GenericViewHolder {
@@ -111,6 +127,11 @@ public class NativeSpeakerAdapter extends RecyclerView.Adapter<NativeSpeakerAdap
                     listener.onClickPrivacyNotice();
                 }
             });
+        }
+
+        @Override
+        public void putExtras(Bundle extras) {
+
         }
     }
 
@@ -146,12 +167,18 @@ public class NativeSpeakerAdapter extends RecyclerView.Adapter<NativeSpeakerAdap
                 });
             }
         }
+
+        @Override
+        public void putExtras(Bundle extras) {
+
+        }
     }
 
     public static class ViewHolderControls extends GenericViewHolder {
 
         private final Button mNextButton;
         private final Button mAddButton;
+        private boolean displayNext = true;
 
         public ViewHolderControls(View v) {
             super(v);
@@ -162,6 +189,11 @@ public class NativeSpeakerAdapter extends RecyclerView.Adapter<NativeSpeakerAdap
 
         @Override
         public void loadView(List<NativeSpeaker> speakers, int position, final OnClickListener listener) {
+            if(displayNext) {
+                mNextButton.setVisibility(View.VISIBLE);
+            } else {
+                mNextButton.setVisibility(View.GONE);
+            }
             mNextButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -174,6 +206,11 @@ public class NativeSpeakerAdapter extends RecyclerView.Adapter<NativeSpeakerAdap
                     listener.onClickAddNativeSpeaker();
                 }
             });
+        }
+
+        @Override
+        public void putExtras(Bundle extras) {
+            this.displayNext = extras.getBoolean(EXTRA_DISPLAY_NEXT, true);
         }
     }
 }

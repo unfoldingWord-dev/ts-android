@@ -1,9 +1,9 @@
-package com.door43.translationstudio.newui.publish;
+package com.door43.translationstudio.newui.home;
 
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -20,27 +20,37 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.ContributorsAdapter;
 import com.door43.translationstudio.newui.ContributorDialog;
-import com.door43.widget.ViewUtil;
+import com.door43.translationstudio.newui.ContributorsFragment;
 
 /**
- * Created by joel on 9/20/2015.
+ * Created by joel on 2/22/2016.
  */
-public class TranslatorsFragment extends PublishStepFragment implements ContributorsAdapter.OnClickListener {
+public class ManageContributorsDialog extends DialogFragment implements ContributorsAdapter.OnClickListener  {
 
+    public static final String EXTRA_TARGET_TRANSLATION_ID = "target_translation_id";
     private TargetTranslation mTargetTranslation;
     private RecyclerView mRecylerView;
     private ContributorsAdapter mContributorsAdapter;
     private View.OnClickListener mOnNativeSpeakerDialogClick;
 
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.fragment_contributors, container, false);
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        int style = DialogFragment.STYLE_NO_TITLE, theme = 0;
+        setStyle(style, theme);
+    }
 
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Bundle args = getArguments();
-        String targetTranslationId = args.getString(PublishActivity.EXTRA_TARGET_TRANSLATION_ID);
+        View view = inflater.inflate(R.layout.fragment_contributors, container, false);
+
+        String targetTranslationId = args.getString(ManageContributorsDialog.EXTRA_TARGET_TRANSLATION_ID);
+
         Translator translator = AppContext.getTranslator();
         mTargetTranslation = translator.getTargetTranslation(targetTranslationId);
 
-        // auto add profile
+//         auto add profile
         Profile profile = AppContext.getProfile();
         if(profile != null) {
             mTargetTranslation.addContributor(profile.getNativeSpeaker());
@@ -51,6 +61,7 @@ public class TranslatorsFragment extends PublishStepFragment implements Contribu
         mRecylerView.setLayoutManager(linearLayoutManager);
         mRecylerView.setItemAnimator(new DefaultItemAnimator());
         mContributorsAdapter = new ContributorsAdapter();
+        mContributorsAdapter.setDisplayNext(false);
         mContributorsAdapter.setContributors(mTargetTranslation.getContributors());
         mContributorsAdapter.setOnClickListener(this);
         mRecylerView.setAdapter(mContributorsAdapter);
@@ -71,6 +82,7 @@ public class TranslatorsFragment extends PublishStepFragment implements Contribu
         if(prevAddDialog != null) {
             ((ContributorDialog)prevAddDialog).setOnClickListener(mOnNativeSpeakerDialogClick);
         }
+
         return view;
     }
 
@@ -99,19 +111,7 @@ public class TranslatorsFragment extends PublishStepFragment implements Contribu
 
     @Override
     public void onClickNext() {
-        if(mTargetTranslation.getContributors().size() > 0) {
-            getListener().nextStep();
-        } else {
-            Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.need_translator_notice, Snackbar.LENGTH_LONG);
-            snack.setAction(R.string.add_contributor, new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    showAddNativeSpeakerDialog();
-                }
-            });
-            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.white));
-            snack.show();
-        }
+
     }
 
     @Override
@@ -141,9 +141,9 @@ public class TranslatorsFragment extends PublishStepFragment implements Contribu
      */
     public void showPrivacyNotice(View.OnClickListener listener) {
         CustomAlertDialog privacy = CustomAlertDialog.Create(getActivity())
-            .setTitle(R.string.privacy_notice)
-            .setIcon(R.drawable.ic_info_black_24dp)
-            .setMessage(R.string.publishing_privacy_notice);
+                .setTitle(R.string.privacy_notice)
+                .setIcon(R.drawable.ic_info_black_24dp)
+                .setMessage(R.string.publishing_privacy_notice);
 
         if(listener != null) {
             privacy.setPositiveButton(R.string.label_continue, listener);
