@@ -82,7 +82,7 @@
                     android:layout_weight="1"
                     android:background="@drawable/edit_text"
                     android:hint="@string/language_where_slightly_different_gone"
-                    android:id="@+id/where_slightly_different_gone_checkBox"
+                    android:id="@+id/where_slightly_different_gone_edittext"
                     android:layout_marginLeft="@dimen/dialog_content_margin"
                     android:textSize="@dimen/title" />
 
@@ -110,7 +110,7 @@
                     android:layout_weight="1"
                     android:background="@drawable/edit_text"
                     android:hint="@string/language_where_slightly_different_come"
-                    android:id="@+id/where_slightly_different_come_checkBox"
+                    android:id="@+id/where_slightly_different_come_edittext"
                     android:layout_marginLeft="@dimen/dialog_content_margin"
                     android:textSize="@dimen/title" />
 
@@ -151,6 +151,16 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_vertical|right">
+
+            <Button
+                android:id="@+id/previous_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                style="@style/Widget.Button.Blue"
+                android:text="@string/previous_step"
+                android:layout_marginRight="@dimen/dialog_controls_margin"
+                android:layout_marginLeft="@dimen/dialog_controls_margin" />
 
             <Button
                 android:id="@+id/next_button"

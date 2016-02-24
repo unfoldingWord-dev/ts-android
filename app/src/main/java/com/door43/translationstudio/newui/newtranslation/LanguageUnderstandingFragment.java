@@ -1,6 +1,5 @@
 package com.door43.translationstudio.newui.newtranslation;
 
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -8,13 +7,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 
 import org.json.JSONObject;
 
@@ -34,6 +31,12 @@ public class LanguageUnderstandingFragment  extends RequestNewLanguageStepFragme
     private TextView mContributorToggle;
     private JSONObject mAnswers;
     private View mRootView;
+    private String mWhereElseSpoken = mWhereElseSpokenText.getText().toString();
+    private String mWhereSlightlyDifferent = mWhereSlightlyDifferentText.getText().toString();
+    private String mWhereSlightlyDifferentName = mWhereSlightlyDifferentNameText.getText().toString();
+    private String mWhereSlightlyDifferentGone = mWhereSLightlyDifferentGoneCheck.getText().toString();
+    private String mWhereSlightlyDifferentCome = mWhereSLightlyDifferentComeCheck.getText().toString();
+
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_new_language_understanding, container, false);
@@ -63,19 +66,28 @@ public class LanguageUnderstandingFragment  extends RequestNewLanguageStepFragme
         });
 
         mWhereSlightlyDifferentNameText = (EditText) mRootView.findViewById(R.id.where_slightly_different_name_edittext);
-        initEdit(mWhereSlightlyDifferentNameText, mAnswers, RequestNewLanguage.TAG_WHERE_SLIGHTLY_DIFFERENT);
+        initEdit(mWhereSlightlyDifferentNameText, mAnswers, RequestNewLanguage.TAG_WHERE_SLIGHTLY_DIFFERENT_NAME);
 
-        mWhereSLightlyDifferentGoneCheck = (EditText) mRootView.findViewById(R.id.where_slightly_different_gone_checkBox);
-        initEdit(mWhereSLightlyDifferentGoneCheck, mAnswers, RequestNewLanguage.TAG_NAME_OTHERS);
+        mWhereSLightlyDifferentGoneCheck = (EditText) mRootView.findViewById(R.id.where_slightly_different_gone_edittext);
+        initEdit(mWhereSLightlyDifferentGoneCheck, mAnswers, RequestNewLanguage.TAG_WHERE_SLIGHTLY_DIFFERENT_GONE);
 
-        mWhereSLightlyDifferentComeCheck = (EditText) mRootView.findViewById(R.id.where_slightly_different_come_checkBox);
-        initEdit(mWhereSLightlyDifferentComeCheck, mAnswers, RequestNewLanguage.TAG_NAME_OTHERS);
+        mWhereSLightlyDifferentComeCheck = (EditText) mRootView.findViewById(R.id.where_slightly_different_come_edittext);
+        initEdit(mWhereSLightlyDifferentComeCheck, mAnswers, RequestNewLanguage.TAG_WHERE_SLIGHTLY_DIFFERENT_COME);
 
         Button nextButton = (Button) mRootView.findViewById(R.id.next_button);
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 validateAnswers();
+            }
+        });
+
+        Button previousButton = (Button) mRootView.findViewById(R.id.previous_button);
+        previousButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveAnswers();
+                getListener().previousStep(mAnswers.toString());
             }
         });
 
@@ -97,46 +109,50 @@ public class LanguageUnderstandingFragment  extends RequestNewLanguageStepFragme
 
     private void setVisible(int resID, Boolean enable) {
         View view = (View) mRootView.findViewById(resID);
-        if(null != view) {
+        if (null != view) {
             view.setVisibility(enable ? View.VISIBLE : View.GONE);
         }
     }
 
     private void validateAnswers() {
 
-        String whereElseSpoken = mWhereElseSpokenText.getText().toString();
-        String whereSlightlyDifferent = mWhereSlightlyDifferentText.getText().toString();
-        String whereSlightlyDifferentName = mWhereSlightlyDifferentNameText.getText().toString();
-        String whereSlightlyDifferentGone = mWhereSLightlyDifferentGoneCheck.getText().toString();
-        String whereSlightlyDifferentCome = mWhereSLightlyDifferentComeCheck.getText().toString();
+        saveAnswers();
 
-        try {
-            mAnswers.put(RequestNewLanguage.TAG_WHERE_ELSE_SPOKEN, whereElseSpoken);
-            mAnswers.put(RequestNewLanguage.TAG_WHERE_SLIGHTLY_DIFFERENT, whereSlightlyDifferent);
-            mAnswers.put(RequestNewLanguage.TAG_WHERE_SLIGHTLY_DIFFERENT_NAME, whereSlightlyDifferentName);
-            mAnswers.put(RequestNewLanguage.TAG_WHERE_SLIGHTLY_DIFFERENT_GONE, whereSlightlyDifferentGone);
-            mAnswers.put(RequestNewLanguage.TAG_WHERE_SLIGHTLY_DIFFERENT_COME, whereSlightlyDifferentCome);
-
-        } catch (Exception e) {
-            Logger.w(TAG, "could not save answers", e);
-        }
-
-        if(whereElseSpoken.isEmpty()) {
+        if(mWhereElseSpoken.isEmpty()) {
             showAnswerRequiredBlocked(R.string.language_where_else_spoken);
 
-        } else if( !whereSlightlyDifferent.isEmpty()
-                && (whereSlightlyDifferentName.isEmpty() || whereSlightlyDifferentGone.isEmpty() || whereSlightlyDifferentGone.isEmpty()  )) {
+        } else if( !mWhereSlightlyDifferent.isEmpty()
+                && (mWhereSlightlyDifferentName.isEmpty() || mWhereSlightlyDifferentGone.isEmpty() || mWhereSlightlyDifferentGone.isEmpty()  )) {
 
             warnBeforeCOntinue(R.string.answers_missing_continue, new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            getListener().nextStep(mAnswers.toString());
-                        }
-                    });
+                @Override
+                public void onClick(View v) {
+                    getListener().nextStep(mAnswers.toString());
+                }
+            });
 
         } else
         {
             getListener().nextStep(mAnswers.toString());
+        }
+    }
+
+    private void saveAnswers() {
+        mWhereElseSpoken = mWhereElseSpokenText.getText().toString();
+        mWhereSlightlyDifferent = mWhereSlightlyDifferentText.getText().toString();
+        mWhereSlightlyDifferentName = mWhereSlightlyDifferentNameText.getText().toString();
+        mWhereSlightlyDifferentGone = mWhereSLightlyDifferentGoneCheck.getText().toString();
+        mWhereSlightlyDifferentCome = mWhereSLightlyDifferentComeCheck.getText().toString();
+
+        try {
+            mAnswers.put(RequestNewLanguage.TAG_WHERE_ELSE_SPOKEN, mWhereElseSpoken);
+            mAnswers.put(RequestNewLanguage.TAG_WHERE_SLIGHTLY_DIFFERENT, mWhereSlightlyDifferent);
+            mAnswers.put(RequestNewLanguage.TAG_WHERE_SLIGHTLY_DIFFERENT_NAME, mWhereSlightlyDifferentName);
+            mAnswers.put(RequestNewLanguage.TAG_WHERE_SLIGHTLY_DIFFERENT_GONE, mWhereSlightlyDifferentGone);
+            mAnswers.put(RequestNewLanguage.TAG_WHERE_SLIGHTLY_DIFFERENT_COME, mWhereSlightlyDifferentCome);
+
+        } catch (Exception e) {
+            Logger.w(TAG, "could not save answers", e);
         }
     }
 }
