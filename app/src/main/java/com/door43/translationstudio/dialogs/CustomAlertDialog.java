@@ -61,7 +61,7 @@ public class CustomAlertDialog extends DialogFragment {
 
     private Activity mContext;
 
-    private boolean autoDismiss = true;
+    private boolean mAutoDismiss = true;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -127,7 +127,7 @@ public class CustomAlertDialog extends DialogFragment {
                     mPositiveListener.onClick(v);
                 }
 
-                if(autoDismiss) {
+                if(mAutoDismiss) {
                     dismiss();
                 }
             }
@@ -141,7 +141,7 @@ public class CustomAlertDialog extends DialogFragment {
                     mNegativeListener.onClick(v);
                 }
 
-                if(autoDismiss) {
+                if(mAutoDismiss) {
                     dismiss();
                 }
             }
@@ -155,7 +155,7 @@ public class CustomAlertDialog extends DialogFragment {
                     mNeutralListener.onClick(v);
                 }
 
-                if(autoDismiss) {
+                if(mAutoDismiss) {
                     dismiss();
                 }
             }
@@ -350,7 +350,7 @@ public class CustomAlertDialog extends DialogFragment {
      * @return
      */
     public CustomAlertDialog setAutoDismiss(boolean autoDismiss) {
-        this.autoDismiss = autoDismiss;
+        this.mAutoDismiss = autoDismiss;
         return this;
     }
 

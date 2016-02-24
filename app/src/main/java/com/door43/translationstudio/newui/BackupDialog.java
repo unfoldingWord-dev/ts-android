@@ -49,6 +49,7 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
     private TargetTranslation mTargetTranslation;
     private GenericTaskWatcher mTaskWatcher;
     private boolean settingDeviceAlias = false;
+    private Button mBackupToCloudButton = null;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -73,9 +74,9 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
             throw new InvalidParameterException("The target translation id was not specified");
         }
 
-        mTargetTranslation.applyDefaultTranslatorsIfNoneSpecified();
+        mTargetTranslation.setDefaultContributor(AppContext.getProfile().getNativeSpeaker());
 
-        Button backupToCloudButton = (Button)v.findViewById(R.id.backup_to_cloud);
+        mBackupToCloudButton = (Button)v.findViewById(R.id.backup_to_cloud);
         Button backupToSDButton = (Button)v.findViewById(R.id.backup_to_sd);
         Button backupToAppButton = (Button)v.findViewById(R.id.backup_to_app);
         Button backupToDeviceButton = (Button)v.findViewById(R.id.backup_to_device);
@@ -133,7 +134,7 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
         });
 
         // backup buttons
-        backupToCloudButton.setOnClickListener(new View.OnClickListener() {
+        mBackupToCloudButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(AppContext.context().isNetworkAvailable()) {
@@ -380,9 +381,34 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
                 }
             });
         } else {
-            TargetTranslation targetTranslation = ((UploadTargetTranslationTask)task).getTargetTranslation();
-            notifyBackupFailed(targetTranslation);
+            boolean authFailure = ((UploadTargetTranslationTask)task).uploadAuthFailure();
+            if(authFailure) {
+                showAuthFailure((UploadTargetTranslationTask) task);
+            } else {
+                TargetTranslation targetTranslation = ((UploadTargetTranslationTask) task).getTargetTranslation();
+                notifyBackupFailed(targetTranslation);
+            }
         }
+    }
+
+    public void showAuthFailure(final UploadTargetTranslationTask task) {
+        CustomAlertDialog.Create(getActivity())
+                .setTitle(R.string.upload_failed).setMessage(R.string.auth_failure_retry)
+                .setPositiveButton(R.string.yes, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        AppContext.context().generateKeys();
+                        mBackupToCloudButton.callOnClick();
+                    }
+                })
+                .setNegativeButton(R.string.no, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        TargetTranslation targetTranslation = task.getTargetTranslation();
+                        notifyBackupFailed(targetTranslation);
+                    }
+                })
+                .show("PubAuthFailure");
     }
 
     @Override

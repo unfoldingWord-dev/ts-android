@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
@@ -205,6 +206,28 @@ public class TargetTranslationInfoDialog extends DialogFragment {
                 printDialog.show(printFt, "printDialog");
             }
         });
+
+        View contributorsGroup = v.findViewById(R.id.contributors_group);
+        contributorsGroup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FragmentTransaction ft = getActivity().getFragmentManager().beginTransaction();
+                Fragment prev = getActivity().getFragmentManager().findFragmentByTag("manage-contributors");
+                if (prev != null) {
+                    ft.remove(prev);
+                }
+                ft.addToBackStack(null);
+
+                ManageContributorsDialog dialog = new ManageContributorsDialog();
+                Bundle args = new Bundle();
+                args.putString(ManageContributorsDialog.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                dialog.setArguments(args);
+                dialog.show(ft, "manage-contributors");
+            }
+        });
+
+        // TODO: re-connect to dialogs
+
         return v;
     }
 
@@ -225,7 +248,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
      */
     public String getTranslaterNames(String between) {
 
-        ArrayList<NativeSpeaker> nameList = mTargetTranslation.getTranslators();
+        ArrayList<NativeSpeaker> nameList = mTargetTranslation.getContributors();
 
         if(null != nameList) {
             String listString = "";

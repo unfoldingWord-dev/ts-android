@@ -135,7 +135,7 @@ public class BackupService extends Service {
                         // peform backup
                         File archive = new File(AppContext.getPublicDownloadsDirectory(), t.getId() + ".temp." + Translator.ARCHIVE_EXTENSION);
                         try {
-                            t.applyDefaultTranslatorsIfNoneSpecified();
+                            t.setDefaultContributor(AppContext.getProfile().getNativeSpeaker());
                             translator.exportArchive(t, archive);
                         } catch (Exception e) {
                             Logger.e(this.getClass().getName(), "Failed to export the target translation " + t.getId(), e);

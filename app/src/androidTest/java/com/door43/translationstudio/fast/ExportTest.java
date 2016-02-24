@@ -45,7 +45,7 @@ public class ExportTest extends InstrumentationTestCase {
         File output = new File(testsDir, "archive." + Translator.ARCHIVE_EXTENSION);
         if(output.exists()) output.delete();
         assertTrue(!output.exists());
-        targetTranslation.applyDefaultTranslatorsIfNoneSpecified();
+//        targetTranslation.setDefaultContributor();
         this.translator.exportArchive(targetTranslation, output);
         assertTrue(output.exists());
 

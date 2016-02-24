@@ -128,7 +128,7 @@
                     android:layout_marginLeft="5dp"
                     android:textAllCaps="true"
                     android:id="@+id/profile_title"
-                    android:text="profile"/>
+                    android:text="translators"/>
             </LinearLayout>
 
             <LinearLayout

@@ -20,6 +20,9 @@ import java.util.List;
 public class GetCloudBackupsTask extends ManagedTask {
     public static final String TASK_ID = "get_target_translation_backups";
     private List<String> targetTranslationSlugs = new ArrayList<>();
+    public static final String AUTH_FAIL = "Auth fail";
+    private boolean mUploadSucceeded = true;
+    private boolean mUploadAuthFailure = false;
 
     @Override
     public void start() {
@@ -42,10 +45,23 @@ public class GetCloudBackupsTask extends ManagedTask {
             }
         } catch (Exception e) {
             Logger.e(this.getClass().getName(), "Failed to retrieve the list of backups on the server", e);
+            mUploadSucceeded = false;
+            String detail = e.getMessage();
+            if (AUTH_FAIL.equals(detail)) {
+                mUploadAuthFailure = true; // we do special handling for auth failure
+            }
         }
     }
 
     public String[] getTargetTranslationSlugs() {
         return targetTranslationSlugs.toArray(new String[targetTranslationSlugs.size()]);
+    }
+
+    public boolean uploadSucceeded() {
+        return mUploadSucceeded;
+    }
+
+    public boolean uploadAuthFailure() {
+        return mUploadAuthFailure;
     }
 }
