@@ -675,4 +675,14 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="language_name_called">1. What do you call your language?</string>
     <string name="language_name_meaning">1.1  Does that have a special meaning?</string>
     <string name="language_name_alternates">1.2  Do you have other names for your language?</string>
+    <string name="title_activity_new_language">New Language Request</string>
+    <string name="language_others_name">2. Other people have a different name for your language?</string>
+    <string name="language_others_called">2.1. What do they call it?</string>
+    <string name="language_others_who">2.2. Who calls it that?</string>
+    <string name="language_others_meaning">2.3. Does that have a special meaning?</string>
+    <string name="language_where_else_spoken">3. Where else do people speak just the same way as you do?</string>
+    <string name="language_where_slightly_different">4. Where do people speak just a little bit differently?</string>
+    <string name="language_where_slightly_different_gone">4.1. Have you yourself gone to these places?</string>
+    <string name="language_where_slightly_different_come">4.2. Do people from there also come here?</string>
+    <string name="language_where_slightly_different_name">4.3. Do you have a name for this other dialect in your own language?</string>
 </resources>

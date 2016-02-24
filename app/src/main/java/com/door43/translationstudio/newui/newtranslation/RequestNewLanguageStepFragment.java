@@ -2,11 +2,17 @@ package com.door43.translationstudio.newui.newtranslation;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.CheckBox;
+import android.widget.EditText;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TranslationViewMode;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 
@@ -53,10 +59,57 @@ public abstract class RequestNewLanguageStepFragment extends BaseFragment {
         return answers;
     }
 
+    protected void initEdit(EditText edit, JSONObject answers, String key) {
+        if(null != edit) {
+            try {
+                String text = answers.getString(key);
+                edit.setText(text);
+            } catch (Exception e) {
+                edit.setText("");
+            }
+        }
+    }
+
+    protected Boolean initCheckbox(CheckBox checkBox, JSONObject answers, String key) {
+        Boolean checked = false;
+
+        try {
+            checked = answers.getBoolean(key);
+        } catch (Exception e) {
+            checked = false;
+        }
+
+        if(null != checkBox) {
+            checkBox.setChecked(checked);
+        }
+        return checked;
+    }
+
     protected JSONObject getAnswersFromArgs(Bundle args) {
         String answersJson = args.getString(RequestNewLanguage.EXTRA_NEW_LANGUAGE_ANSWERS);
         JSONObject answers = parseAnswers(answersJson);
         return answers;
+    }
+
+
+    protected void showAnswerRequiredBlocked(int answerID) {
+        Resources res = getActivity().getResources();
+        String message = String.format(res.getString(R.string.answer_required_for),
+                res.getString(answerID));
+        CustomAlertDialog.Create(getActivity())
+                .setTitle(R.string.invalid_entry_title)
+                .setMessage(message)
+                .setPositiveButton(R.string.label_ok, null)
+                .show(getFragmentManager(), "MissingAnswer");
+    }
+
+    protected void warnBeforeCOntinue(int answerID, View.OnClickListener listener) {
+        CustomAlertDialog.Create(getActivity())
+                .setTitle(R.string.answers_missing_title)
+                .setMessage(R.string.answers_missing_continue)
+                .setPositiveButton(R.string.yes, listener)
+                .setNegativeButton(R.string.no, null)
+                .show(getFragmentManager(),"MissingAnswers");
     }
 }
 

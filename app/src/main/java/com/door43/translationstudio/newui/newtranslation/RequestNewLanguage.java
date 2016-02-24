@@ -38,6 +38,17 @@ public class RequestNewLanguage extends BaseActivity implements RequestNewLangua
     public static final String EXTRA_CALLING_ACTIVITY = "extra_calling_activity";
     public static final String EXTRA_NEW_LANGUAGE_ANSWERS = "extra_new_language_answers";
     public static final String TAG_NAME_CALLED = "name_called";
+    public static final String TAG_NAME_MEANING = "name_meaning";
+    public static final String TAG_NAME_ALTERNATES = "name_alternates";
+    public static final String TAG_NAME_OTHERS = "name_others";
+    public static final String TAG_NAME_OTHERS_CALLED = "name_others_called";
+    public static final String TAG_NAME_OTHERS_WHO = "name_others_who";
+    public static final String TAG_NAME_OTHERS_MEANING = "name_others_meaning";
+    public static final String TAG_WHERE_ELSE_SPOKEN = "where_else_spoken";
+    public static final String TAG_WHERE_SLIGHTLY_DIFFERENT = "where_slighly_different";
+    public static final String TAG_WHERE_SLIGHTLY_DIFFERENT_NAME = "where_slighly_different_name";
+    public static final String TAG_WHERE_SLIGHTLY_DIFFERENT_GONE = "where_slighly_different_gone";
+    public static final String TAG_WHERE_SLIGHTLY_DIFFERENT_COME = "where_slighly_different_come";
     private Translator mTranslator;
     private TargetTranslation mTargetTranslation;
     private int mCurrentStep = 0;
@@ -83,9 +94,7 @@ public class RequestNewLanguage extends BaseActivity implements RequestNewLangua
             if(savedInstanceState != null) {
                 mFragment = (BaseFragment)getFragmentManager().findFragmentById(R.id.fragment_container);
             } else {
-                mFragment = new BaseFragment();
-//                    mFragment.setArguments(args);
-                getFragmentManager().beginTransaction().add(R.id.fragment_container, mFragment).commit();
+                doStep(STEP_NAME,mAnswers.toString());
             }
         }
      }
@@ -146,7 +155,7 @@ public class RequestNewLanguage extends BaseActivity implements RequestNewLangua
 
         switch(mCurrentStep) {
             case STEP_UNDERSTANDING:
-//                    mFragment = new ProfileFragment();
+                mFragment = new LanguageUnderstandingFragment();
                 break;
             case STEP_DIALECTS:
 //                    mFragment = new ReviewFragment();
@@ -156,15 +165,15 @@ public class RequestNewLanguage extends BaseActivity implements RequestNewLangua
                 break;
             case STEP_NAME:
             default:
-                mFragment = new NameFragment();
+                mFragment = new LanguageNameFragment();
                 break;
         }
 
         Bundle args = getIntent().getExtras();
         args.putBoolean(RequestNewLanguageStepFragment.ARG_NEW_LANG_FINISHED, mLanguageFinished);
+        args.putString(RequestNewLanguage.EXTRA_NEW_LANGUAGE_ANSWERS, mAnswers.toString());
         mFragment.setArguments(args);
         getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
-        // TODO: animate
     }
 
     private class ViewHolder {
