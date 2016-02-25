@@ -45,7 +45,7 @@ public abstract class RequestNewLanguageStepFragment extends BaseFragment {
 
         void previousStep(String answersJson);
 
-        void finishLanguageRequest();
+        void finishLanguageRequest(String answersJson);
     }
 
     protected JSONObject parseAnswers(String answersJson) {
@@ -103,7 +103,19 @@ public abstract class RequestNewLanguageStepFragment extends BaseFragment {
                 .show(getFragmentManager(), "MissingAnswer");
     }
 
-    protected void warnBeforeCOntinue(int answerID, View.OnClickListener listener) {
+    protected void warnAnswerMissingBeforeContinue(int answerID, View.OnClickListener listener) {
+        Resources res = getActivity().getResources();
+        String message = String.format(res.getString(R.string.answer_missing_for),
+                res.getString(answerID));
+        CustomAlertDialog.Create(getActivity())
+                .setTitle(R.string.answers_missing_title)
+                .setMessage(message)
+                .setPositiveButton(R.string.yes, listener)
+                .setNegativeButton(R.string.no, null)
+                .show(getFragmentManager(),"MissingAnswers");
+    }
+
+    protected void warnAnswersMissingBeforeContinue(int answerID, View.OnClickListener listener) {
         CustomAlertDialog.Create(getActivity())
                 .setTitle(R.string.answers_missing_title)
                 .setMessage(R.string.answers_missing_continue)

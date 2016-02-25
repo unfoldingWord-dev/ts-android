@@ -49,6 +49,26 @@ public class RequestNewLanguage extends BaseActivity implements RequestNewLangua
     public static final String TAG_WHERE_SLIGHTLY_DIFFERENT_NAME = "where_slighly_different_name";
     public static final String TAG_WHERE_SLIGHTLY_DIFFERENT_GONE = "where_slighly_different_gone";
     public static final String TAG_WHERE_SLIGHTLY_DIFFERENT_COME = "where_slighly_different_come";
+    public static final String TAG_WHERE_DIFFERENT = "where_different";
+    public static final String TAG_WHERE_DIFFERENT_UNDERSTAND = "where_different_understand";
+    public static final String TAG_WHERE_DIFFERENT_GONE = "where_different_gone";
+    public static final String TAG_WHERE_DIFFERENT_COME = "where_different_come";
+    public static final String TAG_WHERE_DIFFERENT_NAME = "where_different_name";
+    public static final String TAG_WHERE_PURE = "where_pure";
+    public static final String TAG_WHERE_PURE_WHY = "where_pure_why";
+    public static final String TAG_WHERE_PURE_GONE = "where_pure_gone";
+    public static final String TAG_WHERE_PURE_COME = "where_pure_come";
+    public static final String TAG_WHERE_SPOKEN_BADLY = "where_spoken_badly";
+    public static final String TAG_WHERE_SPOKEN_BADLY_WHY = "where_spoken_badly_why";
+    public static final String TAG_WHERE_SPOKEN_BADLY_GONE = "where_spoken_badly_gone";
+    public static final String TAG_WHERE_SPOKEN_BADLY_COME = "where_spoken_badly_come";
+    public static final String TAG_GATEWAY_NAME = "gateway_name";
+    public static final String TAG_GATEWAY_UNDERSTAND = "gateway_understand";
+    public static final String TAG_GATEWAY_UNDERSTAND_COME = "gateway_understand_come";
+    public static final String TAG_GATEWAY_UNDERSTAND_COME_CHILDREN = "gateway_understand_come_children";
+    public static final String TAG_WHERE_TRAVEL = "where_travel";
+    public static final String TAG_TOURISTS_COME = "tourists_come";
+
     private Translator mTranslator;
     private TargetTranslation mTargetTranslation;
     private int mCurrentStep = 0;
@@ -134,7 +154,8 @@ public class RequestNewLanguage extends BaseActivity implements RequestNewLangua
     }
 
     @Override
-    public void finishLanguageRequest() {
+    public void finishLanguageRequest(String answersJson) {
+        parseAnswers(answersJson);
         mLanguageFinished = true;
     }
 
@@ -158,10 +179,10 @@ public class RequestNewLanguage extends BaseActivity implements RequestNewLangua
                 mFragment = new LanguageUnderstandingFragment();
                 break;
             case STEP_DIALECTS:
-//                    mFragment = new ReviewFragment();
+                mFragment = new LanguageDialectsFragment();
                 break;
             case STEP_GATEWAY:
-//                    mFragment = new PublishFragment();
+                mFragment = new LanguageGatewayFragment();
                 break;
             case STEP_NAME:
             default:

@@ -661,8 +661,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="registration_failure">Registration Failed. PLease check your internet connection</string>
     <string name="auth_failure_retry">Authentication Failed. Retry?</string>
     <string name="registering_keys">Registering with server</string>
-    <string name="invalidate_keys" translatable="false">Invalidate SSH Keys</string>
-    <string name="invalidate_keys_description" translatable="false">Sets keys invalid for auth testing</string>
+    <string name="invalidate_keys">Invalidate SSH Keys</string>
+    <string name="invalidate_keys_description">Sets keys invalid for auth testing</string>
     <string name="person_agrees_with_licenses">This person has agreed to the License Agreement, Statement of Faith, and Translation Guidelines</string>
     <string name="language_title_name">Name</string>
     <string name="language_title_understanding">Understanding</string>
@@ -671,19 +671,41 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="invalid_entry_title">Invalid Entry</string>
     <string name="answers_missing_title">Answers Missing</string>
     <string name="answer_required_for">Need answer for question:\n%s</string>
+    <string name="answer_missing_for">Missing answer for question:\n%s</string>
     <string name="answers_missing_continue">Answers are missing for questions.\nContinue anyway?</string>
+    <string name="previous_step">Previous step</string>
+    <string name="enter_answer">(Enter Answer Here)</string>
+    <string name="title_activity_new_language">New Language Request</string>
     <string name="language_name_called">1. What do you call your language?</string>
     <string name="language_name_meaning">1.1  Does that have a special meaning?</string>
     <string name="language_name_alternates">1.2  Do you have other names for your language?</string>
-    <string name="title_activity_new_language">New Language Request</string>
     <string name="language_others_name">2. Other people have a different name for your language?</string>
     <string name="language_others_called">2.1. What do they call it?</string>
     <string name="language_others_who">2.2. Who calls it that?</string>
-    <string name="language_others_meaning">2.3. Does that have a special meaning?</string>
+    <string name="language_others_meaning">2.3. Does that have a special meaning?  What does it mean?</string>
     <string name="language_where_else_spoken">3. Where else do people speak just the same way as you do?</string>
     <string name="language_where_slightly_different">4. Where do people speak just a little bit differently?</string>
     <string name="language_where_slightly_different_gone">4.1. Have you yourself gone to these places?</string>
     <string name="language_where_slightly_different_come">4.2. Do people from there also come here?</string>
     <string name="language_where_slightly_different_name">4.3. Do you have a name for this other dialect in your own language?</string>
-    <string name="previous_step">Previous step</string>
+    <string name="language_where_different">5. Where do people speak very differently?</string>
+    <string name="language_where_different_understand">5.1. How much of their speech do you understand? (few words, main ideas, most, all)</string>
+    <string name="language_where_different_gone">5.2. Have you yourself gone to these places?</string>
+    <string name="language_where_different_come">5.3. Do people from there come here?</string>
+    <string name="language_where_different_name">5.4. Do you have a name for this other dialect in your own language?</string>
+    <string name="language_where_most_pure">6. Where do people speak your own language the most purely?</string>
+    <string name="language_where_most_pure_why">6.1. Why do you say that is the most pure?</string>
+    <string name="language_where_most_pure_gone">6.2. Have you yourself gone to these places?</string>
+    <string name="language_where_most_pure_come">6.3. Do people from there come here?</string>
+    <string name="language_where_spoken_badly">7. Where is your language spoken badly?</string>
+    <string name="language_where_spoken_badly_why">7.1. Why do you say that it is spoken badly?</string>
+    <string name="language_where_spoken_badly_gone">7.2. Have you yourself gone to these places?</string>
+    <string name="language_where_spoken_badly_come">7.3. Have people from there come here?</string>
+    <string name="language_gateway_name">8.	What do you call the language people speak in [large place, 1-2  day’s march distance]?</string>
+    <string name="language_gateway_understand">8.1. Do people understand you when you speak your language there?</string>
+    <string name="language_gateway_understand_come">8.2. If a man from there come here, can everybody understand his speech?</string>
+    <string name="language_gateway_understand_children_come">8.3. Even the women and children?</string>
+    <string name="language_where_travel">9.	What other places do you travel to?</string>
+    <string name="language_tourists">10. Do many people travel outside from here?</string>
+
 </resources>

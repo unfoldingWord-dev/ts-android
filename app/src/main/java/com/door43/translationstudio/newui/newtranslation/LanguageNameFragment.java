@@ -1,6 +1,5 @@
 package com.door43.translationstudio.newui.newtranslation;
 
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +11,6 @@ import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 
 import org.json.JSONObject;
 
@@ -118,10 +116,10 @@ public class LanguageNameFragment extends RequestNewLanguageStepFragment {
 
         } else if( meaning.isEmpty() || alternates.isEmpty() ) {
 
-            warnBeforeCOntinue(R.string.answers_missing_continue, new View.OnClickListener() {
+            warnAnswersMissingBeforeContinue(R.string.answers_missing_continue, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    getListener().nextStep(mAnswers.toString());
+                    gotoNextStep();
                 }
             });
 
@@ -130,8 +128,12 @@ public class LanguageNameFragment extends RequestNewLanguageStepFragment {
         }
         else
         {
-            getListener().nextStep(mAnswers.toString());
+            gotoNextStep();
         }
+    }
+
+    private void gotoNextStep() {
+        getListener().nextStep(mAnswers.toString());
     }
 }
 
