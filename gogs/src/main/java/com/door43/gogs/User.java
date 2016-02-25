@@ -10,7 +10,7 @@ public class User {
 
     private String username = "";
     private String password = "";
-    private String email = "";
+    public String email = "";
     private String fullName = "";
     private String avatarUrl = "";
     private Token token = null;
@@ -54,4 +54,5 @@ public class User {
     public String getPassword() {
         return password;
     }
+
 }
