@@ -16,7 +16,7 @@ import org.json.JSONObject;
 
 /**
  * Created by blm on 2/23/16.
- * fragment used in RequestNewLanguage
+ * fragment used in RequestNewLanguageActivity
  */
 public class LanguageNameFragment extends RequestNewLanguageStepFragment {
 
@@ -40,14 +40,14 @@ public class LanguageNameFragment extends RequestNewLanguageStepFragment {
         mAnswers = getAnswersFromArgs(args);
 
         mCalledText = (EditText) mRootView.findViewById(R.id.name_called_edittext);
-        initEdit(mCalledText, mAnswers, RequestNewLanguage.TAG_NAME_CALLED);
+        initEdit(mCalledText, mAnswers, RequestNewLanguageActivity.TAG_NAME_CALLED);
         mMeaningText = (EditText) mRootView.findViewById(R.id.name_meaning_edittext);
-        initEdit(mMeaningText, mAnswers, RequestNewLanguage.TAG_NAME_MEANING);
+        initEdit(mMeaningText, mAnswers, RequestNewLanguageActivity.TAG_NAME_MEANING);
         mAlternatesText = (EditText) mRootView.findViewById(R.id.name_alternates_edittext);
-        initEdit(mAlternatesText, mAnswers, RequestNewLanguage.TAG_NAME_ALTERNATES);
+        initEdit(mAlternatesText, mAnswers, RequestNewLanguageActivity.TAG_NAME_ALTERNATES);
 
         mOthersHaveNameCheck = (CheckBox) mRootView.findViewById(R.id.name_others_checkBox);
-        Boolean othersHaveNameChecked = initCheckbox(mOthersHaveNameCheck, mAnswers, RequestNewLanguage.TAG_NAME_OTHERS);
+        Boolean othersHaveNameChecked = initCheckbox(mOthersHaveNameCheck, mAnswers, RequestNewLanguageActivity.TAG_NAME_OTHERS);
         mOthersHaveNameCheck.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -57,11 +57,11 @@ public class LanguageNameFragment extends RequestNewLanguageStepFragment {
         });
 
         mOthersCalledText = (EditText) mRootView.findViewById(R.id.name_others_called_edittext);
-        initEdit(mOthersCalledText, mAnswers, RequestNewLanguage.TAG_NAME_OTHERS_CALLED);
+        initEdit(mOthersCalledText, mAnswers, RequestNewLanguageActivity.TAG_NAME_OTHERS_CALLED);
         mOthersWhoText = (EditText) mRootView.findViewById(R.id.name_others_who_edittext);
-        initEdit(mOthersWhoText, mAnswers, RequestNewLanguage.TAG_NAME_OTHERS_WHO);
+        initEdit(mOthersWhoText, mAnswers, RequestNewLanguageActivity.TAG_NAME_OTHERS_WHO);
         mOthersMeaningText = (EditText) mRootView.findViewById(R.id.name_others_meaning_edittext);
-        initEdit(mOthersMeaningText, mAnswers, RequestNewLanguage.TAG_NAME_OTHERS_MEANING);
+        initEdit(mOthersMeaningText, mAnswers, RequestNewLanguageActivity.TAG_NAME_OTHERS_MEANING);
 
         Button nextButton = (Button) mRootView.findViewById(R.id.next_button);
         nextButton.setOnClickListener(new View.OnClickListener() {
@@ -99,13 +99,13 @@ public class LanguageNameFragment extends RequestNewLanguageStepFragment {
         String othersMeaning = mOthersMeaningText.getText().toString();
 
         try {
-            mAnswers.put(RequestNewLanguage.TAG_NAME_CALLED, called);
-            mAnswers.put(RequestNewLanguage.TAG_NAME_MEANING, meaning);
-            mAnswers.put(RequestNewLanguage.TAG_NAME_ALTERNATES, alternates);
-            mAnswers.put(RequestNewLanguage.TAG_NAME_OTHERS, othersName.booleanValue());
-            mAnswers.put(RequestNewLanguage.TAG_NAME_OTHERS_CALLED, othersCalled);
-            mAnswers.put(RequestNewLanguage.TAG_NAME_OTHERS_WHO, othersWho);
-            mAnswers.put(RequestNewLanguage.TAG_NAME_OTHERS_MEANING, othersMeaning);
+            mAnswers.put(RequestNewLanguageActivity.TAG_NAME_CALLED, called);
+            mAnswers.put(RequestNewLanguageActivity.TAG_NAME_MEANING, meaning);
+            mAnswers.put(RequestNewLanguageActivity.TAG_NAME_ALTERNATES, alternates);
+            mAnswers.put(RequestNewLanguageActivity.TAG_NAME_OTHERS, othersName.booleanValue());
+            mAnswers.put(RequestNewLanguageActivity.TAG_NAME_OTHERS_CALLED, othersCalled);
+            mAnswers.put(RequestNewLanguageActivity.TAG_NAME_OTHERS_WHO, othersWho);
+            mAnswers.put(RequestNewLanguageActivity.TAG_NAME_OTHERS_MEANING, othersMeaning);
 
         } catch (Exception e) {
             Logger.w(TAG, "could not save answers", e);

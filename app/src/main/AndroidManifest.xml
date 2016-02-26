@@ -157,7 +157,7 @@
             android:label="@string/title_activity_publish"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".newui.newtranslation.RequestNewLanguage"
+            android:name=".newui.newtranslation.RequestNewLanguageActivity"
             android:label="@string/title_activity_new_language"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity

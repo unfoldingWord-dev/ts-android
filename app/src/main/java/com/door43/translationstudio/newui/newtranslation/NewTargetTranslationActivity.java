@@ -9,6 +9,7 @@ import android.support.v7.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
@@ -36,6 +37,19 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_target_translation);
+
+        ImageButton newLanguage = (ImageButton) findViewById(R.id.newLanguageRequest);
+        if (null != newLanguage) {
+            newLanguage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent requestNewLangaugeIntent = new Intent(NewTargetTranslationActivity.this,
+                            RequestNewLanguageActivity.class);
+                    requestNewLangaugeIntent.putExtra(RequestNewLanguageActivity.EXTRA_CALLING_ACTIVITY, RequestNewLanguageActivity.ACTIVITY_HOME);
+                    startActivity(requestNewLangaugeIntent);
+                }
+            });
+        }
 
         if(findViewById(R.id.fragment_container) != null) {
             if(savedInstanceState != null) {

@@ -17,7 +17,7 @@ import org.json.JSONObject;
 
 /**
  * Created by blm on 2/23/16.
- * fragment used in RequestNewLanguage
+ * fragment used in RequestNewLanguageActivity
  */
 public class LanguageUnderstandingFragment  extends RequestNewLanguageStepFragment {
 
@@ -45,9 +45,9 @@ public class LanguageUnderstandingFragment  extends RequestNewLanguageStepFragme
         mAnswers = getAnswersFromArgs(args);
 
         mWhereElseSpokenText = (EditText) mRootView.findViewById(R.id.where_else_spoken_edittext);
-        initEdit(mWhereElseSpokenText, mAnswers, RequestNewLanguage.TAG_WHERE_ELSE_SPOKEN);
+        initEdit(mWhereElseSpokenText, mAnswers, RequestNewLanguageActivity.TAG_WHERE_ELSE_SPOKEN);
         mWhereSlightlyDifferentText = (EditText) mRootView.findViewById(R.id.where_slightly_different_edittext);
-        initEdit(mWhereSlightlyDifferentText, mAnswers, RequestNewLanguage.TAG_WHERE_SLIGHTLY_DIFFERENT);
+        initEdit(mWhereSlightlyDifferentText, mAnswers, RequestNewLanguageActivity.TAG_WHERE_SLIGHTLY_DIFFERENT);
         mWhereSlightlyDifferentText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -66,13 +66,13 @@ public class LanguageUnderstandingFragment  extends RequestNewLanguageStepFragme
         });
 
         mWhereSlightlyDifferentNameText = (EditText) mRootView.findViewById(R.id.where_slightly_different_name_edittext);
-        initEdit(mWhereSlightlyDifferentNameText, mAnswers, RequestNewLanguage.TAG_WHERE_SLIGHTLY_DIFFERENT_NAME);
+        initEdit(mWhereSlightlyDifferentNameText, mAnswers, RequestNewLanguageActivity.TAG_WHERE_SLIGHTLY_DIFFERENT_NAME);
 
         mWhereSLightlyDifferentGoneText = (EditText) mRootView.findViewById(R.id.where_slightly_different_gone_edittext);
-        initEdit(mWhereSLightlyDifferentGoneText, mAnswers, RequestNewLanguage.TAG_WHERE_SLIGHTLY_DIFFERENT_GONE);
+        initEdit(mWhereSLightlyDifferentGoneText, mAnswers, RequestNewLanguageActivity.TAG_WHERE_SLIGHTLY_DIFFERENT_GONE);
 
         mWhereSLightlyDifferentComeText = (EditText) mRootView.findViewById(R.id.where_slightly_different_come_edittext);
-        initEdit(mWhereSLightlyDifferentComeText, mAnswers, RequestNewLanguage.TAG_WHERE_SLIGHTLY_DIFFERENT_COME);
+        initEdit(mWhereSLightlyDifferentComeText, mAnswers, RequestNewLanguageActivity.TAG_WHERE_SLIGHTLY_DIFFERENT_COME);
 
         Button nextButton = (Button) mRootView.findViewById(R.id.next_button);
         nextButton.setOnClickListener(new View.OnClickListener() {
@@ -149,11 +149,11 @@ public class LanguageUnderstandingFragment  extends RequestNewLanguageStepFragme
         mWhereSlightlyDifferentCome = mWhereSLightlyDifferentComeText.getText().toString();
 
         try {
-            mAnswers.put(RequestNewLanguage.TAG_WHERE_ELSE_SPOKEN, mWhereElseSpoken);
-            mAnswers.put(RequestNewLanguage.TAG_WHERE_SLIGHTLY_DIFFERENT, mWhereSlightlyDifferent);
-            mAnswers.put(RequestNewLanguage.TAG_WHERE_SLIGHTLY_DIFFERENT_NAME, mWhereSlightlyDifferentName);
-            mAnswers.put(RequestNewLanguage.TAG_WHERE_SLIGHTLY_DIFFERENT_GONE, mWhereSlightlyDifferentGone);
-            mAnswers.put(RequestNewLanguage.TAG_WHERE_SLIGHTLY_DIFFERENT_COME, mWhereSlightlyDifferentCome);
+            mAnswers.put(RequestNewLanguageActivity.TAG_WHERE_ELSE_SPOKEN, mWhereElseSpoken);
+            mAnswers.put(RequestNewLanguageActivity.TAG_WHERE_SLIGHTLY_DIFFERENT, mWhereSlightlyDifferent);
+            mAnswers.put(RequestNewLanguageActivity.TAG_WHERE_SLIGHTLY_DIFFERENT_NAME, mWhereSlightlyDifferentName);
+            mAnswers.put(RequestNewLanguageActivity.TAG_WHERE_SLIGHTLY_DIFFERENT_GONE, mWhereSlightlyDifferentGone);
+            mAnswers.put(RequestNewLanguageActivity.TAG_WHERE_SLIGHTLY_DIFFERENT_COME, mWhereSlightlyDifferentCome);
 
         } catch (Exception e) {
             Logger.w(TAG, "could not save answers", e);

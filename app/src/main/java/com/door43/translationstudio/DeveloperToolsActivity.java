@@ -27,7 +27,6 @@ import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.dialogs.ErrorLogDialog;
 import com.door43.translationstudio.newui.BaseActivity;
-import com.door43.translationstudio.newui.newtranslation.RequestNewLanguage;
 import com.door43.translationstudio.tasks.GetLibraryUpdatesTask;
 import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
 import com.door43.translationstudio.util.ToolAdapter;
@@ -200,40 +199,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
             }
         }));
 
-        // TODO: 2/24/16 remove
-        if (BuildConfig.DEBUG) { // only shown if debug build
-            mDeveloperTools.add(new ToolItem("Create New Language", "Create New Language", 0, new ToolItem.ToolAction() {
-                @Override
-                public void run() {
-                    final Handler handle = new Handler(Looper.getMainLooper());
-                    new ThreadableUI(DeveloperToolsActivity.this) {
-
-                        @Override
-                        public void onStop() {
-                            handle.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                }
-                            });
-                        }
-
-                        @Override
-                        public void run() {
-                            Intent requestNewLangaugeIntent = new Intent(DeveloperToolsActivity.this,
-                                    RequestNewLanguage.class);
-                            requestNewLangaugeIntent.putExtra(RequestNewLanguage.EXTRA_CALLING_ACTIVITY, RequestNewLanguage.ACTIVITY_HOME);
-                            startActivity(requestNewLangaugeIntent);
-                        }
-
-                        @Override
-                        public void onPostExecute() {
-                        }
-                    }.start();
-                }
-            }));
-        }
-
-            mDeveloperTools.add(new ToolItem(getResources().getString(R.string.read_debugging_log), getResources().getString(R.string.read_debugging_log_description), 0, new ToolItem.ToolAction() {
+        mDeveloperTools.add(new ToolItem(getResources().getString(R.string.read_debugging_log), getResources().getString(R.string.read_debugging_log_description), 0, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 ErrorLogDialog dialog = new ErrorLogDialog();

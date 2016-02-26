@@ -17,7 +17,7 @@ import org.json.JSONObject;
 
 /**
  * Created by blm on 2/23/16.
- * fragment used in RequestNewLanguage
+ * fragment used in RequestNewLanguageActivity
  */
 public class LanguageDialectsFragment extends RequestNewLanguageStepFragment {
 
@@ -57,7 +57,7 @@ public class LanguageDialectsFragment extends RequestNewLanguageStepFragment {
         mAnswers = getAnswersFromArgs(args);
 
         mWhereDifferentText = (EditText) mRootView.findViewById(R.id.where_different_edittext);
-        initEdit(mWhereDifferentText, mAnswers, RequestNewLanguage.TAG_WHERE_DIFFERENT);
+        initEdit(mWhereDifferentText, mAnswers, RequestNewLanguageActivity.TAG_WHERE_DIFFERENT);
         mWhereDifferentText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -76,17 +76,17 @@ public class LanguageDialectsFragment extends RequestNewLanguageStepFragment {
         });
 
         mWhereDifferentUnderstandText = (EditText) mRootView.findViewById(R.id.where_different_understand_edittext);
-        initEdit(mWhereDifferentUnderstandText, mAnswers, RequestNewLanguage.TAG_WHERE_DIFFERENT_UNDERSTAND);
+        initEdit(mWhereDifferentUnderstandText, mAnswers, RequestNewLanguageActivity.TAG_WHERE_DIFFERENT_UNDERSTAND);
         mWhereDifferentGoneText = (EditText) mRootView.findViewById(R.id.where_different_gone_edittext);
-        initEdit(mWhereDifferentGoneText, mAnswers, RequestNewLanguage.TAG_WHERE_DIFFERENT_GONE);
+        initEdit(mWhereDifferentGoneText, mAnswers, RequestNewLanguageActivity.TAG_WHERE_DIFFERENT_GONE);
         mWhereDifferentComeText = (EditText) mRootView.findViewById(R.id.where_different_come_edittext);
-        initEdit(mWhereDifferentComeText, mAnswers, RequestNewLanguage.TAG_WHERE_DIFFERENT_COME);
+        initEdit(mWhereDifferentComeText, mAnswers, RequestNewLanguageActivity.TAG_WHERE_DIFFERENT_COME);
         mWhereDifferentNameText = (EditText) mRootView.findViewById(R.id.where_different_name_edittext);
-        initEdit(mWhereDifferentNameText, mAnswers, RequestNewLanguage.TAG_WHERE_DIFFERENT_NAME);
+        initEdit(mWhereDifferentNameText, mAnswers, RequestNewLanguageActivity.TAG_WHERE_DIFFERENT_NAME);
 
 
         mWherePureText = (EditText) mRootView.findViewById(R.id.where_most_pure_edittext);
-        initEdit(mWherePureText, mAnswers, RequestNewLanguage.TAG_WHERE_PURE);
+        initEdit(mWherePureText, mAnswers, RequestNewLanguageActivity.TAG_WHERE_PURE);
         mWherePureText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -105,11 +105,11 @@ public class LanguageDialectsFragment extends RequestNewLanguageStepFragment {
         });
 
         mWherePureWhyText = (EditText) mRootView.findViewById(R.id.where_most_pure_why_edittext);
-        initEdit(mWherePureWhyText, mAnswers, RequestNewLanguage.TAG_WHERE_PURE_WHY);
+        initEdit(mWherePureWhyText, mAnswers, RequestNewLanguageActivity.TAG_WHERE_PURE_WHY);
         mWherePureGoneText = (EditText) mRootView.findViewById(R.id.where_most_pure_gone_edittext);
-        initEdit(mWherePureGoneText, mAnswers, RequestNewLanguage.TAG_WHERE_PURE_GONE);
+        initEdit(mWherePureGoneText, mAnswers, RequestNewLanguageActivity.TAG_WHERE_PURE_GONE);
         mWherePureComeText = (EditText) mRootView.findViewById(R.id.where_most_pure_gone_edittext);
-        initEdit(mWherePureComeText, mAnswers, RequestNewLanguage.TAG_WHERE_PURE_COME);
+        initEdit(mWherePureComeText, mAnswers, RequestNewLanguageActivity.TAG_WHERE_PURE_COME);
 
         Button nextButton = (Button) mRootView.findViewById(R.id.next_button);
         nextButton.setOnClickListener(new View.OnClickListener() {
@@ -214,16 +214,16 @@ public class LanguageDialectsFragment extends RequestNewLanguageStepFragment {
         mWherePureWhy = mWherePureWhyText.getText().toString();
 
         try {
-            mAnswers.put(RequestNewLanguage.TAG_WHERE_DIFFERENT, mWhereDifferent);
-            mAnswers.put(RequestNewLanguage.TAG_WHERE_DIFFERENT_UNDERSTAND, mWhereDifferentUnderstand);
-            mAnswers.put(RequestNewLanguage.TAG_WHERE_DIFFERENT_GONE, mWhereDifferentGone);
-            mAnswers.put(RequestNewLanguage.TAG_WHERE_DIFFERENT_COME, mWhereDifferentCome);
-            mAnswers.put(RequestNewLanguage.TAG_WHERE_DIFFERENT_NAME, mWhereDifferentName);
+            mAnswers.put(RequestNewLanguageActivity.TAG_WHERE_DIFFERENT, mWhereDifferent);
+            mAnswers.put(RequestNewLanguageActivity.TAG_WHERE_DIFFERENT_UNDERSTAND, mWhereDifferentUnderstand);
+            mAnswers.put(RequestNewLanguageActivity.TAG_WHERE_DIFFERENT_GONE, mWhereDifferentGone);
+            mAnswers.put(RequestNewLanguageActivity.TAG_WHERE_DIFFERENT_COME, mWhereDifferentCome);
+            mAnswers.put(RequestNewLanguageActivity.TAG_WHERE_DIFFERENT_NAME, mWhereDifferentName);
 
-            mAnswers.put(RequestNewLanguage.TAG_WHERE_PURE, mWherePure);
-            mAnswers.put(RequestNewLanguage.TAG_WHERE_PURE_GONE, mWherePureGone);
-            mAnswers.put(RequestNewLanguage.TAG_WHERE_PURE_COME, mWherePureCome);
-            mAnswers.put(RequestNewLanguage.TAG_WHERE_PURE_WHY, mWherePureWhy);
+            mAnswers.put(RequestNewLanguageActivity.TAG_WHERE_PURE, mWherePure);
+            mAnswers.put(RequestNewLanguageActivity.TAG_WHERE_PURE_GONE, mWherePureGone);
+            mAnswers.put(RequestNewLanguageActivity.TAG_WHERE_PURE_COME, mWherePureCome);
+            mAnswers.put(RequestNewLanguageActivity.TAG_WHERE_PURE_WHY, mWherePureWhy);
 
         } catch (Exception e) {
             Logger.w(TAG, "could not save answers", e);

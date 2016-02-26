@@ -17,7 +17,7 @@ import org.json.JSONObject;
 
 /**
  * Created by blm on 2/23/16.
- * fragment used in RequestNewLanguage
+ * fragment used in RequestNewLanguageActivity
  */
 public class LanguageGatewayFragment extends RequestNewLanguageStepFragment {
 
@@ -62,7 +62,7 @@ public class LanguageGatewayFragment extends RequestNewLanguageStepFragment {
         mAnswers = getAnswersFromArgs(args);
 
         mWhereSpokenBadlyText = (EditText) mRootView.findViewById(R.id.where_spoken_badly_edittext);
-        initEdit(mWhereSpokenBadlyText, mAnswers, RequestNewLanguage.TAG_WHERE_SPOKEN_BADLY);
+        initEdit(mWhereSpokenBadlyText, mAnswers, RequestNewLanguageActivity.TAG_WHERE_SPOKEN_BADLY);
         mWhereSpokenBadlyText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -81,15 +81,15 @@ public class LanguageGatewayFragment extends RequestNewLanguageStepFragment {
         });
 
         mWhereSpokenBadlyWhyText = (EditText) mRootView.findViewById(R.id.where_spoken_badly_why_edittext);
-        initEdit(mWhereSpokenBadlyWhyText, mAnswers, RequestNewLanguage.TAG_WHERE_SPOKEN_BADLY_WHY);
+        initEdit(mWhereSpokenBadlyWhyText, mAnswers, RequestNewLanguageActivity.TAG_WHERE_SPOKEN_BADLY_WHY);
         mWhereSpokenBadlyGoneText = (EditText) mRootView.findViewById(R.id.where_spoken_badly_gone_edittext);
-        initEdit(mWhereSpokenBadlyGoneText, mAnswers, RequestNewLanguage.TAG_WHERE_SPOKEN_BADLY_GONE);
+        initEdit(mWhereSpokenBadlyGoneText, mAnswers, RequestNewLanguageActivity.TAG_WHERE_SPOKEN_BADLY_GONE);
         mWhereSpokenBadlyComeText = (EditText) mRootView.findViewById(R.id.where_spoken_badly_come_edittext);
-        initEdit(mWhereSpokenBadlyComeText, mAnswers, RequestNewLanguage.TAG_WHERE_SPOKEN_BADLY_COME);
+        initEdit(mWhereSpokenBadlyComeText, mAnswers, RequestNewLanguageActivity.TAG_WHERE_SPOKEN_BADLY_COME);
 
 
         mGatewayNameText = (EditText) mRootView.findViewById(R.id.gateway_name_edittext);
-        initEdit(mGatewayNameText, mAnswers, RequestNewLanguage.TAG_GATEWAY_NAME);
+        initEdit(mGatewayNameText, mAnswers, RequestNewLanguageActivity.TAG_GATEWAY_NAME);
         mGatewayNameText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -108,16 +108,16 @@ public class LanguageGatewayFragment extends RequestNewLanguageStepFragment {
         });
 
         mGatewayUnderstandText = (EditText) mRootView.findViewById(R.id.gateway_understand_edittext);
-        initEdit(mGatewayUnderstandText, mAnswers, RequestNewLanguage.TAG_GATEWAY_UNDERSTAND);
+        initEdit(mGatewayUnderstandText, mAnswers, RequestNewLanguageActivity.TAG_GATEWAY_UNDERSTAND);
         mGatewayUnderstandComeText = (EditText) mRootView.findViewById(R.id.gateway_understand_come_edittext);
-        initEdit(mGatewayUnderstandComeText, mAnswers, RequestNewLanguage.TAG_GATEWAY_UNDERSTAND_COME);
+        initEdit(mGatewayUnderstandComeText, mAnswers, RequestNewLanguageActivity.TAG_GATEWAY_UNDERSTAND_COME);
         mGatewayUnderstandComeChildrenText = (EditText) mRootView.findViewById(R.id.gateway_understand_children_come_edittext);
-        initEdit(mGatewayUnderstandComeChildrenText, mAnswers, RequestNewLanguage.TAG_GATEWAY_UNDERSTAND_COME_CHILDREN);
+        initEdit(mGatewayUnderstandComeChildrenText, mAnswers, RequestNewLanguageActivity.TAG_GATEWAY_UNDERSTAND_COME_CHILDREN);
 
         mTravelText = (EditText) mRootView.findViewById(R.id.where_travel_edittext);
-        initEdit(mTravelText, mAnswers, RequestNewLanguage.TAG_WHERE_TRAVEL);
+        initEdit(mTravelText, mAnswers, RequestNewLanguageActivity.TAG_WHERE_TRAVEL);
         mTouristsText = (EditText) mRootView.findViewById(R.id.tourists_edittext);
-        initEdit(mTouristsText, mAnswers, RequestNewLanguage.TAG_TOURISTS_COME);
+        initEdit(mTouristsText, mAnswers, RequestNewLanguageActivity.TAG_TOURISTS_COME);
 
         Button doneButton = (Button) mRootView.findViewById(R.id.done_button);
         doneButton.setOnClickListener(new View.OnClickListener() {
@@ -229,18 +229,18 @@ public class LanguageGatewayFragment extends RequestNewLanguageStepFragment {
         mTourists = mTouristsText.getText().toString();
 
         try {
-            mAnswers.put(RequestNewLanguage.TAG_WHERE_SPOKEN_BADLY, mWhereSpokenBadly);
-            mAnswers.put(RequestNewLanguage.TAG_WHERE_SPOKEN_BADLY_WHY, mWhereSpokenBadlyWhy);
-            mAnswers.put(RequestNewLanguage.TAG_WHERE_SPOKEN_BADLY_GONE, mWhereSpokenBadlyGone);
-            mAnswers.put(RequestNewLanguage.TAG_WHERE_SPOKEN_BADLY_COME, mWhereSpokenBadlyCome);
+            mAnswers.put(RequestNewLanguageActivity.TAG_WHERE_SPOKEN_BADLY, mWhereSpokenBadly);
+            mAnswers.put(RequestNewLanguageActivity.TAG_WHERE_SPOKEN_BADLY_WHY, mWhereSpokenBadlyWhy);
+            mAnswers.put(RequestNewLanguageActivity.TAG_WHERE_SPOKEN_BADLY_GONE, mWhereSpokenBadlyGone);
+            mAnswers.put(RequestNewLanguageActivity.TAG_WHERE_SPOKEN_BADLY_COME, mWhereSpokenBadlyCome);
 
-            mAnswers.put(RequestNewLanguage.TAG_GATEWAY_NAME, mGatewayName);
-            mAnswers.put(RequestNewLanguage.TAG_GATEWAY_UNDERSTAND_COME_CHILDREN, mGatewayUnderstandComeChildren);
-            mAnswers.put(RequestNewLanguage.TAG_GATEWAY_UNDERSTAND_COME, mGatewayUnderstandCome);
-            mAnswers.put(RequestNewLanguage.TAG_GATEWAY_UNDERSTAND, mGatewayUnderstand);
+            mAnswers.put(RequestNewLanguageActivity.TAG_GATEWAY_NAME, mGatewayName);
+            mAnswers.put(RequestNewLanguageActivity.TAG_GATEWAY_UNDERSTAND_COME_CHILDREN, mGatewayUnderstandComeChildren);
+            mAnswers.put(RequestNewLanguageActivity.TAG_GATEWAY_UNDERSTAND_COME, mGatewayUnderstandCome);
+            mAnswers.put(RequestNewLanguageActivity.TAG_GATEWAY_UNDERSTAND, mGatewayUnderstand);
 
-            mAnswers.put(RequestNewLanguage.TAG_WHERE_TRAVEL, mTravel);
-            mAnswers.put(RequestNewLanguage.TAG_TOURISTS_COME, mTourists);
+            mAnswers.put(RequestNewLanguageActivity.TAG_WHERE_TRAVEL, mTravel);
+            mAnswers.put(RequestNewLanguageActivity.TAG_TOURISTS_COME, mTourists);
         } catch (Exception e) {
             Logger.w(TAG, "could not save answers", e);
         }

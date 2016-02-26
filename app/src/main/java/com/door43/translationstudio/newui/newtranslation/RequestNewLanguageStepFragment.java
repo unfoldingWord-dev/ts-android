@@ -1,7 +1,6 @@
 package com.door43.translationstudio.newui.newtranslation;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.view.View;
@@ -9,12 +8,9 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 
 import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BaseFragment;
-import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 
 import org.json.JSONObject;
 
@@ -86,7 +82,7 @@ public abstract class RequestNewLanguageStepFragment extends BaseFragment {
     }
 
     protected JSONObject getAnswersFromArgs(Bundle args) {
-        String answersJson = args.getString(RequestNewLanguage.EXTRA_NEW_LANGUAGE_ANSWERS);
+        String answersJson = args.getString(RequestNewLanguageActivity.EXTRA_NEW_LANGUAGE_ANSWERS);
         JSONObject answers = parseAnswers(answersJson);
         return answers;
     }

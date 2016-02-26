@@ -23,18 +23,19 @@ import java.security.InvalidParameterException;
 /**
  * Created by blm on 2/23/16.
  */
-public class RequestNewLanguage extends BaseActivity implements RequestNewLanguageStepFragment.OnEventListener {
+public class RequestNewLanguageActivity extends BaseActivity implements RequestNewLanguageStepFragment.OnEventListener {
 
-    public static final String TAG = RequestNewLanguage.class.getSimpleName();
+    public static final String TAG = RequestNewLanguageActivity.class.getSimpleName();
     public static final int STEP_NAME = 0;
     public static final int STEP_UNDERSTANDING = 1;
     public static final int STEP_DIALECTS = 2;
     public static final int STEP_GATEWAY = 3;
     public static final int STEP_LAST = STEP_GATEWAY;
-    public static final int STEP_COUNT = STEP_LAST+1;
+
     private static final String STATE_LANGUAGE_STEP = "state_language_step";
     private static final String STATE_NEW_LANGUAGE_FINISHED = "state_new_language_finished";
     private static final String STATE_NEW_LANGUAGE_ANSWERS = "state_new_language_answers";
+
     public static final String EXTRA_CALLING_ACTIVITY = "extra_calling_activity";
     public static final String EXTRA_NEW_LANGUAGE_ANSWERS = "extra_new_language_answers";
     public static final String TAG_NAME_CALLED = "name_called";
@@ -104,7 +105,7 @@ public class RequestNewLanguage extends BaseActivity implements RequestNewLangua
             mCurrentStep = savedInstanceState.getInt(STATE_LANGUAGE_STEP, 0);
             mLanguageFinished = savedInstanceState.getBoolean(STATE_NEW_LANGUAGE_FINISHED, false);
             String answers = savedInstanceState.getString(STATE_NEW_LANGUAGE_ANSWERS);
-            parseAnswers(answers);
+            mAnswers = parseAnswers(answers);
         } else {
             mAnswers = new JSONObject();
         }
@@ -119,13 +120,15 @@ public class RequestNewLanguage extends BaseActivity implements RequestNewLangua
         }
      }
 
-    private void parseAnswers(String answers) {
+    private JSONObject parseAnswers(String answersJson) {
+        JSONObject answers;
         try {
-            mAnswers = new JSONObject(answers);
+            answers = new JSONObject(answersJson);
         } catch (Exception e) {
             Logger.w(TAG, "could not parse answers", e);
-            mAnswers = new JSONObject();
+            answers = new JSONObject();
         }
+        return answers;
     }
 
     @Override
@@ -155,7 +158,7 @@ public class RequestNewLanguage extends BaseActivity implements RequestNewLangua
 
     @Override
     public void finishLanguageRequest(String answersJson) {
-        parseAnswers(answersJson);
+        mAnswers = parseAnswers(answersJson);
         mLanguageFinished = true;
     }
 
@@ -172,7 +175,7 @@ public class RequestNewLanguage extends BaseActivity implements RequestNewLangua
             mCurrentStep = step;
         }
 
-        parseAnswers(answersJson);
+        mAnswers = parseAnswers(answersJson);
 
         switch(mCurrentStep) {
             case STEP_UNDERSTANDING:
@@ -192,7 +195,7 @@ public class RequestNewLanguage extends BaseActivity implements RequestNewLangua
 
         Bundle args = getIntent().getExtras();
         args.putBoolean(RequestNewLanguageStepFragment.ARG_NEW_LANG_FINISHED, mLanguageFinished);
-        args.putString(RequestNewLanguage.EXTRA_NEW_LANGUAGE_ANSWERS, mAnswers.toString());
+        args.putString(RequestNewLanguageActivity.EXTRA_NEW_LANGUAGE_ANSWERS, mAnswers.toString());
         mFragment.setArguments(args);
         getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
     }
