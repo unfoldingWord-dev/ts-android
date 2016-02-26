@@ -68,4 +68,28 @@ public class Repository {
     public String getFullName() {
         return fullName;
     }
+
+    public int getId() {
+        return id;
+    }
+
+    public boolean isFork() {
+        return fork;
+    }
+
+    public String getHtmlUrl() {
+        return htmlUrl;
+    }
+
+    public String getCloneUrl() {
+        return cloneUrl;
+    }
+
+    public String getSshUrl() {
+        return sshUrl;
+    }
+
+    public User getOwner() {
+        return owner;
+    }
 }

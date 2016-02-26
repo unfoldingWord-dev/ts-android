@@ -55,4 +55,11 @@ public class User {
         return password;
     }
 
+    public String getFullName() {
+        return fullName;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
 }
