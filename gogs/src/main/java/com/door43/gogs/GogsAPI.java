@@ -120,10 +120,10 @@ public class GogsAPI {
             }
 
             response = new Response(conn.getResponseCode(), responseData);
-            this.lastResponse = response;
         } catch (Exception e) {
             e.printStackTrace();
         }
+        this.lastResponse = response;
         return response;
     }
 
@@ -242,12 +242,13 @@ public class GogsAPI {
 
     /**
      * Deletes a user
-     * @param user
-     * @return true if the request did not encouter an error
+     * @param user the user to delete. We just need the username
+     * @param authUser the user to authenticate as. Users cannot delete themselves
+     * @return true if the request did not encounter an error
      */
-    public boolean deleteUser(User user) {
-        if(user != null) {
-            Response response = request(String.format("/admin/users/%s", user.getUsername()), user, null, "DELETE");
+    public boolean deleteUser(User user, User authUser) {
+        if(user != null && authUser != null && !user.getUsername().equals(authUser.getUsername())) {
+            Response response = request(String.format("/admin/users/%s", user.getUsername()), authUser, null, "DELETE");
             if(response != null) {
                 return true;
             }
@@ -335,6 +336,22 @@ public class GogsAPI {
     }
 
     /**
+     * Deletes a repository from the user
+     * @param repo
+     * @param user
+     * @return true if the request did not encounter an error
+     */
+    public boolean deleteRepo(Repository repo, User user) {
+        if(repo != null && user != null) {
+            Response response = request(String.format("/repos/%s/%s", user.getUsername(), repo.getName()), user, null, "DELETE");
+            if(response != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Returns a list of tokens the user has
      * @param user
      * @return
@@ -380,5 +397,90 @@ public class GogsAPI {
             }
         }
         return null;
+    }
+
+    /**
+     * Lists the public keys the user has
+     * @param user
+     * @return
+     */
+    public List<PublicKey> listPublicKeys(User user) {
+        List<PublicKey> keys = new ArrayList<>();
+        if(user != null) {
+            Response response = request(String.format("/users/%s/keys", user.getUsername()), user, null);
+            if(response != null) {
+                try {
+                    JSONArray data = new JSONArray(response.getData());
+                    for(int i = 0; i < data.length(); i ++) {
+                        PublicKey key = PublicKey.parse(data.getJSONObject(i));
+                        if(key != null) {
+                            keys.add(key);
+                        }
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return keys;
+    }
+
+    /**
+     * Creates a public key for the user
+     * @param key the key to be created
+     * @param user
+     * @return
+     */
+    public PublicKey createPublicKey(PublicKey key, User user) {
+        if(key != null && user != null) {
+            JSONObject json = new JSONObject();
+            try {
+                json.put("title", key.getTitle());
+                json.put("key", key.getKey());
+                Response response = request("/user/keys", user, json.toString());
+                if (response != null) {
+                    return PublicKey.parse(new JSONObject(response.getData()));
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the full details for a public key
+     * @param key the key that will be retrieved. We need the id
+     * @param user
+     * @return
+     */
+    public PublicKey getPublicKey(PublicKey key, User user) {
+        if(key != null && user != null) {
+            Response response = request(String.format("/user/keys/%d", key.getId()), user, null);
+            if(response != null) {
+                try {
+                    return PublicKey.parse(new JSONObject(response.getData()));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Deletes a public key from the user
+     * @param key the key that will be deleted. We need the id
+     * @param user
+     * @return
+     */
+    public boolean deletePublicKey(PublicKey key, User user) {
+        if(key != null && user != null) {
+            Response response = request(String.format("/user/keys/%s", key.getId()), user, null, "DELETE");
+            if(response != null) {
+                return true;
+            }
+        }
+        return false;
     }
 }
