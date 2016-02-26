@@ -21,6 +21,15 @@ public class TargetLanguageFilter  extends Filter {
     OnPublishResultsListener mResultsListener;
 
     TargetLanguageFilter(List<TargetLanguage> targetLanguagesList) {
+        init(targetLanguagesList);
+    }
+
+    TargetLanguageFilter(TargetLanguage[] targetLanguages) {
+        List<TargetLanguage> targetLanguagesList = Arrays.asList(targetLanguages);
+        init(targetLanguagesList);
+    }
+
+    private void init(List<TargetLanguage> targetLanguagesList) {
         Collections.sort(targetLanguagesList);
         mTargetLanguages = targetLanguagesList.toArray(new TargetLanguage[targetLanguagesList.size()]);
         mFilteredTargetLanguages = mTargetLanguages;

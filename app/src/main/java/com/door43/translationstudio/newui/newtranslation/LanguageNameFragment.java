@@ -10,7 +10,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.TargetLanguage;
 
 import org.json.JSONObject;
 
@@ -32,6 +34,7 @@ public class LanguageNameFragment extends RequestNewLanguageStepFragment {
     private TextView mContributorToggle;
     private JSONObject mAnswers;
     private View mRootView;
+    private TargetLanguage[] mTargetLanguages;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_new_language_name, container, false);
@@ -67,7 +70,7 @@ public class LanguageNameFragment extends RequestNewLanguageStepFragment {
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                validateAnswers();
+                doSmartSearch();
             }
         });
 
@@ -86,6 +89,45 @@ public class LanguageNameFragment extends RequestNewLanguageStepFragment {
         if(null != view) {
             view.setVisibility(enable ? View.VISIBLE : View.GONE);
         }
+    }
+
+    private TargetLanguage[] getTargetLanguages() {
+        if(null == mTargetLanguages) {
+            mTargetLanguages = AppContext.getLibrary().getTargetLanguages();
+        }
+        return mTargetLanguages;
+    }
+
+    private TargetLanguageFilter getTargetFilter() {
+        TargetLanguageFilter targetLanguageFilter = new TargetLanguageFilter(getTargetLanguages());
+        return targetLanguageFilter;
+    }
+
+    private void doSmartSearch() {
+        String called = mCalledText.getText().toString();
+        if(!called.isEmpty()) {
+            TargetLanguageFilter targetLanguageFilter = getTargetFilter();
+            targetLanguageFilter.setResultsListener(new TargetLanguageFilter.OnPublishResultsListener() {
+                @Override
+                public void onFinish(TargetLanguage[] filteredTargetLanguages) {
+                    if(filteredTargetLanguages.length > 0) {
+                        promptUser(filteredTargetLanguages);
+                    }
+                    else {
+                        validateAnswers();
+                    }
+                }
+            });
+            targetLanguageFilter.filter(called);
+        }
+        else {
+            validateAnswers();
+        }
+//        String othersCalled = mOthersCalledText.getText().toString();
+    }
+
+    private void promptUser(TargetLanguage[] filteredTargetLanguages) {
+        validateAnswers(); // TODO: 2/26/16 - need a prompt to allow user to select
     }
 
     private void validateAnswers() {
