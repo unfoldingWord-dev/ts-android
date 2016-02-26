@@ -106,20 +106,40 @@ public class GogsAPI {
                 dos.close();
             }
 
-            InputStream is = conn.getInputStream();
-            BufferedInputStream bis = new BufferedInputStream(is);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            int current;
-            while ((current = bis.read()) != -1) {
-                baos.write((byte) current);
+            String responseData = "";
+            if(isRequestMethodReadable(conn.getRequestMethod())) {
+                // read response
+                InputStream is = conn.getInputStream();
+                BufferedInputStream bis = new BufferedInputStream(is);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                int current;
+                while ((current = bis.read()) != -1) {
+                    baos.write((byte) current);
+                }
+                responseData = baos.toString("UTF-8");
             }
-            String responseData = baos.toString("UTF-8");
+
             response = new Response(conn.getResponseCode(), responseData);
             this.lastResponse = response;
         } catch (Exception e) {
             e.printStackTrace();
         }
         return response;
+    }
+
+    /**
+     * Checks if the request method is one that will return content
+     * @param method
+     * @return
+     */
+    private boolean isRequestMethodReadable(String method) {
+        switch(method.toUpperCase()) {
+            case "DELETE":
+            case "PUT":
+                return false;
+            default:
+                return true;
+        }
     }
 
     /**
@@ -223,9 +243,16 @@ public class GogsAPI {
     /**
      * Deletes a user
      * @param user
+     * @return true if the request did not encouter an error
      */
-    public void deleteUser(User user) {
-
+    public boolean deleteUser(User user) {
+        if(user != null) {
+            Response response = request(String.format("/admin/users/%s", user.getUsername()), user, null, "DELETE");
+            if(response != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -340,6 +367,18 @@ public class GogsAPI {
      * @return
      */
     public Token createToken(Token token, User user) {
+        if(token != null && user != null) {
+            JSONObject json = new JSONObject();
+            try {
+                json.put("name", token.getName());
+                Response response = request(String.format("/users/%s/tokens", user.getUsername()), user, json.toString());
+                if(response != null) {
+                    return Token.parse(new JSONObject(response.getData()));
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
         return null;
     }
 }

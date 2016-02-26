@@ -115,4 +115,28 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
         User badUser = api.createUser(anotherNewUser, null, false);
         assertNull(badUser);
     }
+
+    public void test8CreateToken() throws Exception {
+        GogsAPI api = new GogsAPI(API_ROOT);
+        Token newToken = new Token("demo-token");
+        if(ENABLE_AUTH_CHECK) {
+            User user = new User(AUTH_USER, AUTH_PASS);
+            Token token = api.createToken(newToken, user);
+            assertNotNull(token);
+            assertEquals(token.getName(), token.getName());
+        }
+
+        Token token = api.createToken(newToken, null);
+        assertNull(token);
+    }
+
+    public void test9DeleteUser() throws Exception {
+        GogsAPI api = new GogsAPI(API_ROOT);
+        User user = new User("joel-demo", "joel-demo");
+        assertTrue(api.deleteUser(user));
+
+        // unknown users is not an error on delete
+        User fakeUser = new User("fake", "fake");
+        assertTrue(api.deleteUser(fakeUser));
+    }
 }
