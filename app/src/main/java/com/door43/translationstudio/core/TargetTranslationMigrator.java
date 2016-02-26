@@ -6,17 +6,17 @@ import com.door43.util.Manifest;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 
 /**
  * Created by joel on 11/4/2015.
  */
 public class TargetTranslationMigrator {
-
-    private static final String CHUNK_MERGE_MARKER = "\n----------\n";
 
     private TargetTranslationMigrator() {
 
@@ -28,43 +28,47 @@ public class TargetTranslationMigrator {
      * @return
      */
     public static boolean migrate(File targetTranslationDir) {
+        boolean success = false;
         try {
             File manifestFile = new File(targetTranslationDir, "manifest.json");
             if (manifestFile.exists()) {
                 JSONObject manifest = new JSONObject(FileUtils.readFileToString(manifestFile));
                 switch (manifest.getInt("package_version")) {
                     case 2:
-                        return v2(manifest, manifestFile);
+                        success = v2(manifestFile);
+                        if(!success) break;
                     case 3:
-                        return v3(manifest, manifestFile);
+                        success = v3(manifestFile);
+                        if(!success) break;
                     case 4:
-                        return v4(manifest, manifestFile);
+                        success = v4(manifestFile);
+                        if(!success) break;
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return false;
+        return success;
     }
 
     /**
      * latest version
-     * @param manifest
      * @param path
      * @return
      */
-    private static boolean v4(JSONObject manifest, File path) {
+    private static boolean v4(File path) {
+
         return true;
     }
 
     /**
      * We changed how the translator information is stored
      * we no longer store sensitive information like email and phone number
-     * @param manifest
      * @param path
      * @return
      */
-    private static boolean v3(JSONObject manifest, File path) throws Exception {
+    private static boolean v3(File path) throws Exception {
+        JSONObject manifest = new JSONObject(FileUtils.readFileToString(path));
         if(manifest.has("translators")) {
             JSONArray legacyTranslators = manifest.getJSONArray("translators");
             JSONArray translators = new JSONArray();
@@ -73,6 +77,7 @@ public class TargetTranslationMigrator {
                 translators.put(obj.getString("name"));
             }
             manifest.put("translators", translators);
+            manifest.put("package_version", 3);
             FileUtils.write(path, manifest.toString());
         }
         return true;
@@ -80,11 +85,11 @@ public class TargetTranslationMigrator {
 
     /**
      * upgrade from v2
-     * @param manifest
      * @param path
      * @return
      */
-    private static boolean v2(JSONObject manifest, File path) throws Exception {
+    private static boolean v2( File path) throws Exception {
+        JSONObject manifest = new JSONObject(FileUtils.readFileToString(path));
         // fix finished frames
         if(manifest.has("frames")) {
             JSONObject legacyFrames = manifest.getJSONObject("frames");
@@ -147,6 +152,7 @@ public class TargetTranslationMigrator {
             manifest.put("target_language", targetLanguage);
         }
 
+        manifest.put("package_version", 2);
         FileUtils.write(path, manifest.toString());
         return true;
     }
@@ -229,6 +235,7 @@ public class TargetTranslationMigrator {
      */
     private static boolean mergeInvalidChunksInChapter(final Library library, final SourceTranslation sourceTranslation, final TargetTranslation targetTranslation, final Chapter chapter) {
         boolean success = true;
+        final String chunkMergeMarker = "\n----------\n";
         Logger.i(TargetTranslationMigrator.class.getName(), "Searching chapter " + chapter.getId() + " for invalid chunks ");
         // TRICKY: the translation format doesn't matter for migrating
         FrameTranslation[] frameTranslations = targetTranslation.getFrameTranslations(chapter.getId(), TranslationFormat.DEFAULT);
@@ -247,10 +254,10 @@ public class TargetTranslationMigrator {
             } else if(!frameTranslation.body.trim().isEmpty()) {
                 if(lastValidFrame == null) {
                     // collect invalid frame
-                    invalidChunks += frameTranslation.body + CHUNK_MERGE_MARKER;
+                    invalidChunks += frameTranslation.body + chunkMergeMarker;
                 } else { // if last frame is not null, then append invalid chunk to it
                     FrameTranslation lastFrameTranslation = targetTranslation.getFrameTranslation(lastValidFrame);
-                    targetTranslation.applyFrameTranslation(lastFrameTranslation, lastFrameTranslation.body + CHUNK_MERGE_MARKER + frameTranslation.body );
+                    targetTranslation.applyFrameTranslation(lastFrameTranslation, lastFrameTranslation.body + chunkMergeMarker + frameTranslation.body );
                     targetTranslation.reopenFrame(lastValidFrame);
                 }
                 targetTranslation.applyFrameTranslation(frameTranslation, "" ); // clear out old data
@@ -270,7 +277,7 @@ public class TargetTranslationMigrator {
 
             if(lastValidFrame != null) {
                 FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(lastValidFrame);
-                targetTranslation.applyFrameTranslation(frameTranslation, invalidChunks + CHUNK_MERGE_MARKER + frameTranslation.body);
+                targetTranslation.applyFrameTranslation(frameTranslation, invalidChunks + chunkMergeMarker + frameTranslation.body);
                 targetTranslation.reopenFrame(lastValidFrame);
             }
         }

@@ -43,7 +43,7 @@ import java.util.Timer;
  */
 public class TargetTranslation {
     private static final String TAG = TargetTranslation.class.getSimpleName();
-    private static final int PACKAGE_VERSION = 4; // the version of the manifest
+    public static final int PACKAGE_VERSION = 4; // the version of the manifest
     public static final String PARENT_DRAFT_RESOURCE_ID = "parent_draft_resource_id";
     private static final String FIELD_FINISHED_REFERENCES = "finished_references";
     private static final String FIELD_FINISHED_TITLES = "finished_titles";
