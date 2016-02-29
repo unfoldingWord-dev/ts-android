@@ -13,9 +13,9 @@ import java.util.regex.Pattern;
 
 /**
  * Created by joel on 1/27/2015.
- * TODO: we need to provide support for rendering with a range of verses as well as provide accessor methods to the rangeed verse numbers
+ * TODO: we need to provide support for rendering with a range of verses as well as provide accessor methods to the ranged verse numbers
  */
-public class VerseSpan extends Span {
+public class USXVerseSpan extends Span {
     public static final String PATTERN = "<verse\\s+number=\"(\\d+(-\\d+)?)\"\\s+style=\"v\"\\s*/>";
     private int mStartVerseNumber = 0;
     private int mEndVerseNumber = 0;
@@ -26,7 +26,7 @@ public class VerseSpan extends Span {
      * Creates a new verse span of either a single verse or range of verses
      * @param verse
      */
-    public VerseSpan(String verse) {
+    public USXVerseSpan(String verse) {
         super(verse, "<verse number=\""+verse+"\" style=\"v\" />");
         String[] verses = verse.split("-");
         if(verses.length == 2) {
@@ -43,7 +43,7 @@ public class VerseSpan extends Span {
      * Creates a new verse span
      * @param verse
      */
-    public VerseSpan(int verse) {
+    public USXVerseSpan(int verse) {
         super(verse+"", "<verse number=\""+verse+"\" style=\"v\" />");
         mStartVerseNumber = verse;
     }
@@ -53,7 +53,7 @@ public class VerseSpan extends Span {
      * @param startVerse
      * @param endVerse
      */
-    public VerseSpan(int startVerse, int endVerse) {
+    public USXVerseSpan(int startVerse, int endVerse) {
         super(startVerse+"-"+endVerse, "<verse number=\""+startVerse+"-"+endVerse+"\" style=\"v\" />");
         mStartVerseNumber = startVerse;
         mEndVerseNumber = endVerse;
@@ -96,11 +96,11 @@ public class VerseSpan extends Span {
      * @param usx
      * @return
      */
-    public static VerseSpan parseVerse(String usx) {
+    public static USXVerseSpan parseVerse(String usx) {
         Pattern pattern = Pattern.compile(PATTERN);
         Matcher matcher = pattern.matcher(usx);
         while(matcher.find()) {
-            return new VerseSpan(matcher.group(1));
+            return new USXVerseSpan(matcher.group(1));
         }
         return null;
     }

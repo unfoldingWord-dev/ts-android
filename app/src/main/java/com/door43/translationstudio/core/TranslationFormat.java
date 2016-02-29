@@ -5,7 +5,8 @@ package com.door43.translationstudio.core;
  */
 public enum TranslationFormat {
     DEFAULT("default"),
-    USX("usx");
+    USX("usx"),
+    USFM("usfm");
 
     TranslationFormat(String s) {
         mName = s;

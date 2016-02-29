@@ -3,17 +3,13 @@ package com.door43.translationstudio.spannables;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
-import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.ImageSpan;
 import android.text.style.RelativeSizeSpan;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -24,15 +20,15 @@ import com.door43.widget.ViewUtil;
 /**
  * Created by joel on 10/1/2015.
  */
-public class VersePinSpan extends VerseSpan {
+public class USFMVersePinSpan extends USFMVerseSpan {
 
     private SpannableStringBuilder mSpannable;
 
-    public VersePinSpan(String verse) {
+    public USFMVersePinSpan(String verse) {
         super(verse);
     }
 
-    public VersePinSpan(int verse) {
+    public USFMVersePinSpan(int verse) {
         super(verse);
     }
 
@@ -61,3 +57,4 @@ public class VersePinSpan extends VerseSpan {
         return mSpannable;
     }
 }
+

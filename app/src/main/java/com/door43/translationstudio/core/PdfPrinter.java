@@ -6,7 +6,7 @@ import android.graphics.BitmapFactory;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.spannables.Span;
-import com.door43.translationstudio.spannables.VerseSpan;
+import com.door43.translationstudio.spannables.USXVerseSpan;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfContentByte;
@@ -274,7 +274,7 @@ public class PdfPrinter extends PdfPageEventHelper {
     }
 
     private void addUSX(Paragraph paragraph, String usx) {
-        Pattern pattern = Pattern.compile(VerseSpan.PATTERN);
+        Pattern pattern = Pattern.compile(USXVerseSpan.PATTERN);
         Matcher matcher = pattern.matcher(usx);
         int lastIndex = 0;
         while(matcher.find()) {
@@ -282,7 +282,7 @@ public class PdfPrinter extends PdfPageEventHelper {
             paragraph.add(usx.substring(lastIndex, matcher.start()));
 
             // add verse
-            Span verse = new VerseSpan(matcher.group(1));
+            Span verse = new USXVerseSpan(matcher.group(1));
             Chunk chunk = new Chunk();
             chunk.setFont(superScriptFont);
             chunk.setTextRise(5f);

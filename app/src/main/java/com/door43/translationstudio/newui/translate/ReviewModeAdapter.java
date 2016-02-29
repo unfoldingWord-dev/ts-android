@@ -55,11 +55,13 @@ import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
+import com.door43.translationstudio.rendering.USFMRenderer;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.rendering.VerseRenderingEngine;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.Span;
-import com.door43.translationstudio.spannables.VersePinSpan;
+import com.door43.translationstudio.spannables.USXVersePinSpan;
 import com.door43.util.tasks.ThreadableUI;
 import com.door43.widget.ViewUtil;
 
@@ -1345,7 +1347,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     * generate spannable for target text.  Will add click listener for notes and verses if USX
+     * generate spannable for target text.  Will add click listener for notes and verses if they are supported
      * @param text
      * @param format
      * @param frame
@@ -1356,7 +1358,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      */
     private CharSequence renderTargetText(String text, TranslationFormat format, final Frame frame, final FrameTranslation frameTranslation, final ViewHolder holder, final ListItem item) {
         RenderingGroup renderingGroup = new RenderingGroup();
-        if(format == TranslationFormat.USX && frame != null) {
+        if(isFormatWithVerses(format) && frame != null) {
             Span.OnClickListener verseClickListener = new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
@@ -1369,7 +1371,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 @Override
                 public void onLongClick(final View view, Span span, int start, int end) {
                     ClipData dragData = ClipData.newPlainText(frame.getComplexId(), span.getMachineReadable());
-                    final VersePinSpan pin = ((VersePinSpan) span);
+                    final USXVersePinSpan pin = ((USXVersePinSpan) span);
 
                     // create drag shadow
                     LayoutInflater inflater = (LayoutInflater)AppContext.context().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -1463,9 +1465,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
             };
 
-            USXRenderer usxRenderer = new USXRenderer(verseClickListener, noteClickListener);
-            usxRenderer.setPopulateVerseMarkers(frame.getVerseRange());
-            renderingGroup.addEngine(usxRenderer);
+            VerseRenderingEngine renderer = setupRenderingGroup(format, renderingGroup, verseClickListener, noteClickListener);
+            renderer.setPopulateVerseMarkers(frame.getVerseRange());
+
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
@@ -1476,6 +1478,21 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         } else {
             return "";
         }
+    }
+
+    private VerseRenderingEngine setupRenderingGroup(TranslationFormat format, RenderingGroup renderingGroup, Span.OnClickListener verseClickListener, Span.OnClickListener noteClickListener) {
+        VerseRenderingEngine renderer;
+        if(format == TranslationFormat.USFM) {
+            renderer = new USFMRenderer(verseClickListener, noteClickListener);
+        } else { // default to legacy USX
+            renderer = new USXRenderer(verseClickListener, noteClickListener);
+        }
+        renderingGroup.addEngine(renderer);
+        return renderer;
+    }
+
+    private boolean isFormatWithVerses(TranslationFormat format) {
+        return (format == TranslationFormat.USX) || (format == TranslationFormat.USFM);
     }
 
     /**
@@ -1557,7 +1574,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     * generate spannable for source text.  Will add click listener for notes if USX
+     * generate spannable for source text.  Will add click listener for notes if supported
      * @param text
      * @param format
      * @param holder
@@ -1567,9 +1584,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      */
     private CharSequence renderSourceText(String text, TranslationFormat format, final ViewHolder holder, final ListItem item, final boolean editable) {
         RenderingGroup renderingGroup = new RenderingGroup();
-        if (format == TranslationFormat.USX) {
+        if (isFormatWithVerses(format)) {
             // TODO: add click listeners for verses
-            renderingGroup.addEngine(new USXRenderer(null, new Span.OnClickListener() {
+            Span.OnClickListener noteClickListener = new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
                     if(span instanceof NoteSpan) {
@@ -1581,7 +1598,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 public void onLongClick(View view, Span span, int start, int end) {
 
                 }
-            }));
+            };
+            setupRenderingGroup(format, renderingGroup, null, noteClickListener);
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));

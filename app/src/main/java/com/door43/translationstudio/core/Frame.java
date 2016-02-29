@@ -1,6 +1,6 @@
 package com.door43.translationstudio.core;
 
-import com.door43.translationstudio.spannables.VerseSpan;
+import com.door43.translationstudio.spannables.USXVerseSpan;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -172,14 +172,14 @@ public class Frame {
      */
     public static int[] getVerseRange(CharSequence text) {
         // locate verse range
-        Pattern pattern = Pattern.compile(VerseSpan.PATTERN);
+        Pattern pattern = Pattern.compile(USXVerseSpan.PATTERN);
         Matcher matcher = pattern.matcher(text);
         int numVerses = 0;
         int startVerse = 0;
         int endVerse = 0;
-        VerseSpan verse = null;
+        USXVerseSpan verse = null;
         while(matcher.find()) {
-            verse = new VerseSpan(matcher.group(1));
+            verse = new USXVerseSpan(matcher.group(1));
 
             if(numVerses == 0) {
                 // first verse
