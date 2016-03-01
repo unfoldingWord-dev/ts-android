@@ -39,7 +39,7 @@ import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.AppContext;
-import com.door43.translationstudio.spannables.NoteSpan;
+import com.door43.translationstudio.spannables.USXNoteSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.widget.ViewUtil;
 
@@ -256,10 +256,10 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
                 USXRenderer renderer = new USXRenderer(null, new Span.OnClickListener() {
                     @Override
                     public void onClick(View view, Span span, int start, int end) {
-                        if(span instanceof NoteSpan) {
+                        if(span instanceof USXNoteSpan) {
                             CustomAlertDialog.Create(mContext)
                                     .setTitle(R.string.title_note)
-                                    .setMessage(((NoteSpan)span).getNotes())
+                                    .setMessage(((USXNoteSpan)span).getNotes())
                                     .setPositiveButton(R.string.dismiss, null)
                                     .show("note");
                         }

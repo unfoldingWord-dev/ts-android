@@ -153,7 +153,8 @@ public class Translator {
     }
 
     /**
-     * Compiles all the spans within the text into machine readable strings (XML)
+     * Compiles all the editable text back into source that could be either USX or USFM.  It replaces
+     *   the displayed text in spans with their mark-ups.
      * @param text
      * @return
      */

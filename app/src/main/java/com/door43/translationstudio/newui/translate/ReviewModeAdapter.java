@@ -59,7 +59,7 @@ import com.door43.translationstudio.rendering.USFMRenderer;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.rendering.VerseRenderingEngine;
-import com.door43.translationstudio.spannables.NoteSpan;
+import com.door43.translationstudio.spannables.USXNoteSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.USXVersePinSpan;
 import com.door43.util.tasks.ThreadableUI;
@@ -848,7 +848,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 footnote = mContext.getResources().getString(R.string.footnote_label);
             }
 
-            NoteSpan footnoteSpannable = NoteSpan.generateFootnote(footnote);
+            USXNoteSpan footnoteSpannable = USXNoteSpan.generateFootnote(footnote);
             footnotecode = footnoteSpannable.getMachineReadable();
         }
 
@@ -1454,8 +1454,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             Span.OnClickListener noteClickListener = new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
-                    if (span instanceof NoteSpan) {
-                        showFootnote(holder, item, (NoteSpan) span, start, end, true);
+                    if (span instanceof USXNoteSpan) {
+                        showFootnote(holder, item, (USXNoteSpan) span, start, end, true);
                     }
                 }
 
@@ -1503,7 +1503,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param span
      * @param editable
      */
-    private void showFootnote(final ViewHolder holder, final ListItem item, final NoteSpan span, final int start, final int end, boolean editable) {
+    private void showFootnote(final ViewHolder holder, final ListItem item, final USXNoteSpan span, final int start, final int end, boolean editable) {
         CharSequence marker = span.getPassage();
         CharSequence title = mContext.getResources().getText(R.string.title_note);
         if(!marker.toString().isEmpty()) {
@@ -1589,8 +1589,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             Span.OnClickListener noteClickListener = new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
-                    if(span instanceof NoteSpan) {
-                        showFootnote(holder, item, (NoteSpan) span, start, end, editable);
+                    if(span instanceof USXNoteSpan) {
+                        showFootnote(holder, item, (USXNoteSpan) span, start, end, editable);
                     }
                 }
 

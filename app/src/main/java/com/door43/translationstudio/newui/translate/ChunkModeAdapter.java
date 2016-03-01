@@ -3,12 +3,10 @@ package com.door43.translationstudio.newui.translate;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.TabLayout;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -42,13 +40,11 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
-import com.door43.translationstudio.newui.library.ServerLibraryActivity;
-import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.AppContext;
-import com.door43.translationstudio.spannables.NoteSpan;
+import com.door43.translationstudio.spannables.USXNoteSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.widget.ViewUtil;
 
@@ -789,10 +785,10 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             USXRenderer usxRenderer = new USXRenderer(null, new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
-                    if(span instanceof NoteSpan) {
+                    if(span instanceof USXNoteSpan) {
                         CustomAlertDialog.Create(mContext)
                                 .setTitle(R.string.title_note)
-                                .setMessage(((NoteSpan)span).getNotes())
+                                .setMessage(((USXNoteSpan)span).getNotes())
                                 .setPositiveButton(R.string.dismiss, null)
                                 .show("note");
                     }

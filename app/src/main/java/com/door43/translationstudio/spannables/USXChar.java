@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
  * Represents a char element according to the usx specification
  * See http://dbl.ubs-icap.org:8090/display/DBLDOCS/USX#USX-char
  */
-public class Char {
+public class USXChar {
     // passage styles (custom tag not defined in USX)
     public static final String STYLE_PASSAGE_TEXT = "pt";
 
@@ -27,7 +27,7 @@ public class Char {
     public final String style;
     public final CharSequence value;
 
-    public Char(String style, CharSequence value) {
+    public USXChar(String style, CharSequence value) {
         this.style = style.trim().toLowerCase();
         this.value = value;
     }

@@ -19,7 +19,6 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.AppContext;
 
 import org.apache.commons.io.input.CharSequenceReader;
-import org.spongycastle.pqc.math.linearalgebra.CharUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xmlpull.v1.XmlPullParser;
@@ -46,7 +45,7 @@ import javax.xml.transform.stream.StreamResult;
 /**
  * Created by joel on 10/28/2014.
  */
-public class NoteSpan extends Span {
+public class USXNoteSpan extends Span {
     private final CharSequence mNotes;
     private final CharSequence mPassage;
     private final String mCaller;
@@ -60,19 +59,19 @@ public class NoteSpan extends Span {
      * @param caller the note caller
      * @param chars a list of char elements that make up the note
      */
-    public NoteSpan(String style, String caller, List<Char> chars) {
+    public USXNoteSpan(String style, String caller, List<USXChar> chars) {
         super();
         CharSequence spanTitle = "";
         CharSequence note = "";
         CharSequence quotation = "";
         CharSequence altQuotation = "";
         CharSequence passageText = "";
-        for(Char c:chars) {
-            if(c.style.equals(Char.STYLE_PASSAGE_TEXT)) {
+        for(USXChar c:chars) {
+            if(c.style.equals(USXChar.STYLE_PASSAGE_TEXT)) {
                 passageText = c.value;
-            } else if(c.style.equals(Char.STYLE_FOOTNOTE_QUOTATION)) {
+            } else if(c.style.equals(USXChar.STYLE_FOOTNOTE_QUOTATION)) {
                 quotation = c.value;
-            } else if(c.style.equals(Char.STYLE_FOOTNOTE_ALT_QUOTATION)) {
+            } else if(c.style.equals(USXChar.STYLE_FOOTNOTE_ALT_QUOTATION)) {
                 altQuotation = c.value;
             } else {
                 // TODO: implement better. We may need to format the values
@@ -122,7 +121,7 @@ public class NoteSpan extends Span {
      * @param chars
      * @return
      */
-    public static CharSequence generateTag(String style, String caller, CharSequence title, List<Char> chars) {
+    public static CharSequence generateTag(String style, String caller, CharSequence title, List<USXChar> chars) {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db;
         try {
@@ -139,7 +138,7 @@ public class NoteSpan extends Span {
         document.appendChild(rootElement);
 
         // add chars
-        for(Char c:chars) {
+        for(USXChar c:chars) {
             Element element = document.createElement("char");
             element.setAttribute("style", c.style);
             element.setTextContent(c.value.toString().replace("\n", "\\n"));
@@ -166,7 +165,7 @@ public class NoteSpan extends Span {
         } catch (TransformerConfigurationException e) {
             return title;
         } catch (TransformerException e) {
-            Logger.e(NoteSpan.class.getName(), "failed to transform the the span text", e);
+            Logger.e(USXNoteSpan.class.getName(), "failed to transform the the span text", e);
         }
 
         String tag = output.toString();
@@ -215,10 +214,10 @@ public class NoteSpan extends Span {
      * @param note the note
      * @return
      */
-    public static NoteSpan generateFootnote(CharSequence note) {
-        List<Char> chars = new ArrayList<>();
-        chars.add(new Char(Char.STYLE_FOOTNOTE_TEXT, note));
-        return new NoteSpan("f", DEFAULT_CALLER, chars);
+    public static USXNoteSpan generateFootnote(CharSequence note) {
+        List<USXChar> chars = new ArrayList<>();
+        chars.add(new USXChar(USXChar.STYLE_FOOTNOTE_TEXT, note));
+        return new USXNoteSpan("f", DEFAULT_CALLER, chars);
     }
 
     /**
@@ -229,7 +228,7 @@ public class NoteSpan extends Span {
      * @param usx
      * @return
      */
-    public static NoteSpan parseNote(CharSequence usx) {
+    public static USXNoteSpan parseNote(CharSequence usx) {
         XmlPullParser parser = Xml.newPullParser();
         try {
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
@@ -237,7 +236,7 @@ public class NoteSpan extends Span {
             parser.nextTag();
             return readXML(parser);
         } catch (XmlPullParserException e) {
-            Logger.e(NoteSpan.class.getName(), "Failed to parse note", e);
+            Logger.e(USXNoteSpan.class.getName(), "Failed to parse note", e);
             return null;
         } catch(IOException e) {
             return null;
@@ -250,7 +249,7 @@ public class NoteSpan extends Span {
      * @return
      * @throws XmlPullParserException
      */
-    private static NoteSpan readXML(XmlPullParser parser) throws XmlPullParserException, IOException {
+    private static USXNoteSpan readXML(XmlPullParser parser) throws XmlPullParserException, IOException {
 //        NoteType noteType;
 //        String notes = "";
 //        String passageText = "";
@@ -270,18 +269,18 @@ public class NoteSpan extends Span {
 
         // load char's
 //        CharSequence note = "";
-        List<Char> chars = new ArrayList<>();
+        List<USXChar> chars = new ArrayList<>();
         while(eventType != XmlPullParser.END_DOCUMENT) {
             if(eventType == XmlPullParser.START_TAG){
                 parser.require(XmlPullParser.START_TAG, null, "char");
                 String charStyle = parser.getAttributeValue("", "style");
                 String charText = parser.nextText();
 
-                chars.add(new Char(charStyle, charText));
+                chars.add(new USXChar(charStyle, charText));
             }
             eventType = parser.next();
         }
 
-        return new NoteSpan(style, caller.trim(), chars);
+        return new USXNoteSpan(style, caller.trim(), chars);
     }
 }

@@ -10,8 +10,8 @@ import android.text.TextUtils;
 import android.text.style.AlignmentSpan;
 import android.text.style.StyleSpan;
 
-import com.door43.translationstudio.spannables.Char;
-import com.door43.translationstudio.spannables.NoteSpan;
+import com.door43.translationstudio.spannables.USXChar;
+import com.door43.translationstudio.spannables.USXNoteSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.USXVersePinSpan;
 import com.door43.translationstudio.spannables.USXVerseSpan;
@@ -114,7 +114,7 @@ public class USXRenderer extends VerseRenderingEngine {
      */
     private CharSequence renderSelah(CharSequence in) {
         CharSequence out = "";
-        Pattern pattern = Char.getPattern(Char.STYLE_SELAH);
+        Pattern pattern = USXChar.getPattern(USXChar.STYLE_SELAH);
         Matcher matcher = pattern.matcher(in);
         int lastIndex = 0;
         while(matcher.find()) {
@@ -245,12 +245,12 @@ public class USXRenderer extends VerseRenderingEngine {
      */
     public CharSequence renderNote(CharSequence in) {
         CharSequence out = "";
-        Pattern pattern = Pattern.compile(NoteSpan.PATTERN);
+        Pattern pattern = Pattern.compile(USXNoteSpan.PATTERN);
         Matcher matcher = pattern.matcher(in);
         int lastIndex = 0;
         while(matcher.find()) {
             if(isStopped()) return in;
-            NoteSpan note = NoteSpan.parseNote(matcher.group());
+            USXNoteSpan note = USXNoteSpan.parseNote(matcher.group());
             if(note != null) {
                 note.setOnClickListener(mNoteListener);
                 out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), note.toCharSequence());

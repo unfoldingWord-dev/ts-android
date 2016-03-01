@@ -10,8 +10,8 @@ import android.text.TextUtils;
 import android.text.style.AlignmentSpan;
 import android.text.style.StyleSpan;
 
-import com.door43.translationstudio.spannables.Char;
-import com.door43.translationstudio.spannables.NoteSpan;
+import com.door43.translationstudio.spannables.USXChar;
+import com.door43.translationstudio.spannables.USFMNoteSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.USFMVersePinSpan;
 import com.door43.translationstudio.spannables.USFMVerseSpan;
@@ -114,7 +114,7 @@ public class USFMRenderer extends VerseRenderingEngine {
      */
     private CharSequence renderSelah(CharSequence in) {
         CharSequence out = "";
-        Pattern pattern = Char.getPattern(Char.STYLE_SELAH);
+        Pattern pattern = USXChar.getPattern(USXChar.STYLE_SELAH);
         Matcher matcher = pattern.matcher(in);
         int lastIndex = 0;
         while(matcher.find()) {
@@ -245,12 +245,12 @@ public class USFMRenderer extends VerseRenderingEngine {
      */
     public CharSequence renderNote(CharSequence in) {
         CharSequence out = "";
-        Pattern pattern = Pattern.compile(NoteSpan.PATTERN);
+        Pattern pattern = Pattern.compile(USFMNoteSpan.PATTERN);
         Matcher matcher = pattern.matcher(in);
         int lastIndex = 0;
         while(matcher.find()) {
             if(isStopped()) return in;
-            NoteSpan note = NoteSpan.parseNote(matcher.group());
+            USFMNoteSpan note = USFMNoteSpan.parseNote(matcher.group(0),matcher.group(1));
             if(note != null) {
                 note.setOnClickListener(mNoteListener);
                 out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), note.toCharSequence());
@@ -529,7 +529,6 @@ public class USFMRenderer extends VerseRenderingEngine {
         return out;
     }
 
-    // TODO: 2/29/16 update this javadoc
     /**
      * Return the leading section heading, if any. Non-leading major section headings, and leading
      * headings of other types, are not included.
@@ -537,7 +536,7 @@ public class USFMRenderer extends VerseRenderingEngine {
      * <p>As this is a static helper method, behavior is unaffected by the value of
      * {@link mSuppressLeadingMajorSectionHeadings}.</p>
      *
-     * @see http://digitalbiblelibrary.org/static/docs/usx/parastyles.html
+     * @see http://ubs-icap.org/chm/usfm/2.4/paragraphs.htm
      * @param in The string to examine for a leading major section heading.
      * @return The leading major section heading; or the empty string if there is none.
      */
@@ -558,7 +557,7 @@ public class USFMRenderer extends VerseRenderingEngine {
      * @return
      */
     private static Pattern paraPattern(String style) {
-        return Pattern.compile("<para\\s+style=\""+style+"\"\\s*>\\s*(((?!</para>).)*)</para>", Pattern.DOTALL);
+        return Pattern.compile("<para\\s+style=\""+style+"\"\\s*>\\s*(((?!</para>).)*)</para>", Pattern.DOTALL);  // TODO: 3/1/16 need to upgrade to USFM
     }
 
     /**
@@ -567,7 +566,7 @@ public class USFMRenderer extends VerseRenderingEngine {
      * @return
      */
     private static Pattern paraShortPattern(String style) {
-        return Pattern.compile("<para\\s+style=\""+style+"\"\\s*/>", Pattern.DOTALL);
+        return Pattern.compile("<para\\s+style=\""+style+"\"\\s*/>", Pattern.DOTALL); // TODO: 3/1/16 need to upgrade to USFM
     }
 }
 
