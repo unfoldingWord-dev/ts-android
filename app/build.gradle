@@ -19,7 +19,7 @@ android {
         applicationId "com.translationstudio.androidapp"
         minSdkVersion 15
         targetSdkVersion 23
-        versionCode 113
+        versionCode 114
         versionName "3.3"
         multiDexEnabled = true
     }
@@ -68,7 +68,7 @@ dependencies {
     compile 'org.apmem.tools:layouts:1.10'
     compile 'com.itextpdf:itextpdf:5.5.7'
     compile 'com.facebook.rebound:rebound:0.3.8'
-    compile 'org.unfoldingword.tools:gogs-client:1.0.0'
+    compile 'org.unfoldingword.tools:gogs-client:1.1.0'
     compile project(':html-textview')
     compile project(':com.door43.tools.reporting')
     compile project(':com.door43.tools.security')
