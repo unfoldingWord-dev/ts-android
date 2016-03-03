@@ -36,30 +36,27 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Timer;
 
 /**
  * Created by joel on 8/29/2015.
  */
 public class TargetTranslation {
-    private static final String TAG = TargetTranslation.class.getSimpleName();
-    public static final int PACKAGE_VERSION = 4; // the version of the manifest
-    public static final String PARENT_DRAFT_RESOURCE_ID = "parent_draft_resource_id";
+    public static final int PACKAGE_VERSION = 5; // the version of the manifest
+    public static final String PARENT_DRAFT_STATUS = "parent_draft_status";
     private static final String FIELD_FINISHED_REFERENCES = "finished_references";
     private static final String FIELD_FINISHED_TITLES = "finished_titles";
     private static final String FIELD_FINISHED_FRAMES = "finished_frames";
+    private static final String FIELD_TRANSLATORS = "translators";
+    public static final String FIELD_TARGET_LANGUAGE = "target_language";
+    private static final String GLOBAL_PROJECT_ID = "uw";
+    private static final String FIELD_FORMAT = "format";
+    private static final String FIELD_RESOURCE = "resource";
     private final String mTargetLanguageId;
     private final String mProjectId;
-    private static final String GLOBAL_PROJECT_ID = "uw";
-    private static final String FIELD_TRANSLATORS = "translators";
-    public static final String NAME = "name";
-    public static final String PHONE = "phone";
-    public static final String EMAIL = "email";
     private final File mTargetTranslationDirectory;
     private final Manifest mManifest;
     private final String mTargetTranslationName;
     private final LanguageDirection mDirection;
-    private Timer mApplyFrameTimer;
 
     public TargetTranslation(String targetLanguageId, String projectId, File rootDir) {
         mTargetLanguageId = targetLanguageId;
@@ -69,14 +66,14 @@ public class TargetTranslation {
         mManifest = Manifest.generate(mTargetTranslationDirectory);
         String name = targetLanguageId;
         try {
-            name = mManifest.getJSONObject("target_language").getString("name");
+            name = mManifest.getJSONObject(FIELD_TARGET_LANGUAGE).getString("name");
         } catch (JSONException e) {
             e.printStackTrace();
         }
         mTargetTranslationName = name;
         LanguageDirection direction = LanguageDirection.LeftToRight;
         try {
-            direction = LanguageDirection.get(mManifest.getJSONObject("target_language").getString("direction"));
+            direction = LanguageDirection.get(mManifest.getJSONObject(FIELD_TARGET_LANGUAGE).getString("direction"));
             if(direction == null) {
                 direction = LanguageDirection.LeftToRight;
             }
@@ -143,24 +140,33 @@ public class TargetTranslation {
      * @param translator the native speaker that is starting this translation
      * @param targetLanguage the target language the project will be translated into
      * @param projectId the id of the project that will be translated
+     * @param translationType the type of project that is being translated
+     * @param resourceType  the type of resource the user is creating
      * @param rootDir the parent directory in which the target translation directory will be created
      * @return
      */
-    public static TargetTranslation create(Context context, NativeSpeaker translator, TargetLanguage targetLanguage, String projectId, File rootDir) throws Exception {
+    public static TargetTranslation create(Context context, NativeSpeaker translator, TargetLanguage targetLanguage, String projectId, TranslationType translationType, Resource.Type resourceType, TranslationFormat translationFormat, File rootDir) throws Exception {
         // generate new target translation if it does not exist
         File translationDir = generateTargetTranslationDir(generateTargetTranslationId(targetLanguage.getId(), projectId), rootDir);
         if(!translationDir.isDirectory()) {
             translationDir.mkdirs();
             // build new manifest
             Manifest manifest = Manifest.generate(translationDir);
-            manifest.put("project_id", projectId);
+            JSONObject projectJson = new JSONObject();
+            projectJson.put("id", projectId);
+            projectJson.put("type", translationType);
+            manifest.put("project", projectJson);
             JSONObject generatorJson = new JSONObject();
             generatorJson.put("name", "ts-android");
             PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
             generatorJson.put("build", pInfo.versionCode);
             manifest.put("generator", generatorJson);
             manifest.put("package_version", PACKAGE_VERSION);
-            manifest.put("target_language", targetLanguage.toJson());
+            manifest.put(FIELD_TARGET_LANGUAGE, targetLanguage.toJson());
+            manifest.put(FIELD_FORMAT, translationFormat);
+            JSONObject resourceJson = new JSONObject();
+            resourceJson.put("id", resourceType);
+            manifest.put(FIELD_RESOURCE, resourceJson);
         }
         // load the target translation (new or otherwise)
         TargetTranslation targetTranslation = new TargetTranslation(targetLanguage.getId(), projectId, rootDir);
@@ -1077,14 +1083,22 @@ public class TargetTranslation {
      * @param draftTranslation
      */
     public void setParentDraft(SourceTranslation draftTranslation) {
-        mManifest.put(PARENT_DRAFT_RESOURCE_ID, draftTranslation.resourceSlug);
+        JSONObject draftStatus = new JSONObject();
+        try {
+            draftStatus.put("checking_level", draftTranslation.getCheckingLevel());
+            draftStatus.put("version", draftTranslation.getVersion());
+            // TODO: 3/2/2016 need to update resource object to collect all info from api
+            mManifest.put(PARENT_DRAFT_STATUS, draftStatus);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * Returns the draft translation that is a parent of this target translation
      */
     public SourceTranslation getParentDraft () {
-        String resourceSlug = mManifest.getString(PARENT_DRAFT_RESOURCE_ID);
+        String resourceSlug = mManifest.getString(PARENT_DRAFT_STATUS);
         if(!resourceSlug.isEmpty()) {
             return SourceTranslation.simple(getProjectId(), getTargetLanguageId(), resourceSlug);
         } else {

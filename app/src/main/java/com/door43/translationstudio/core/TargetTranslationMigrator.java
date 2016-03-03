@@ -211,7 +211,7 @@ public class TargetTranslationMigrator {
         // update package version
         manifest.put("package_version", 5);
 
-//        FileUtils.write(path, manifest.toString(2));
+        FileUtils.write(path, manifest.toString(2));
         return true;
     }
 

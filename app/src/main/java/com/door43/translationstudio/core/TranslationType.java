@@ -1,17 +1,15 @@
 package com.door43.translationstudio.core;
 
 /**
- * Represents different text formats
+ * Represents different translation types
  */
-public enum TranslationFormat {
-    USFM("usfm"),
-    MARKDOWN("markdown"),
-    @Deprecated
-    DEFAULT("default"),
-    @Deprecated
-    USX("usx");
+public enum TranslationType {
+    TEXT("text"),
+    TRANSLATION_NOTE("tn"),
+    TRANSLATION_QUESTION("tq"),
+    TRANSLATION_WORD("tw");
 
-    TranslationFormat(String s) {
+    TranslationType(String s) {
         mName = s;
     }
 
@@ -31,9 +29,9 @@ public enum TranslationFormat {
      * @param name
      * @return
      */
-    public static TranslationFormat get(String name) {
+    public static TranslationType get(String name) {
         if(name != null) {
-            for (TranslationFormat f : TranslationFormat.values()) {
+            for (TranslationType f : TranslationType.values()) {
                 if (f.getName().equals(name.toLowerCase())) {
                     return f;
                 }

@@ -471,7 +471,7 @@ public class Library {
      * @param sourceTranslation
      * @return
      */
-    private Resource getResource(SourceTranslation sourceTranslation) {
+    public Resource getResource(SourceTranslation sourceTranslation) {
         return getActiveIndex().getResource(SourceTranslation.simple(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug));
     }
 

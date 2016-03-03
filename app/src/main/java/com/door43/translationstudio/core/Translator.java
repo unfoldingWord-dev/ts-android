@@ -7,14 +7,12 @@ import android.text.SpannedString;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.util.FileUtilities;
-import com.door43.util.Manifest;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -90,13 +88,23 @@ public class Translator {
     /**
      * Initializes a new target translation
      * @param translator
-     * @param targetLanguage the target language the project will be translated into
-     * @param projectId the id of the project that will be translated
+     * @param targetLanguage
+     * @param projectId
+     * @param translationType
+     * @param resourceType
+     * @param translationFormat
      * @return
      */
-    public TargetTranslation createTargetTranslation(NativeSpeaker translator, TargetLanguage targetLanguage, String projectId) {
+    public TargetTranslation createTargetTranslation(NativeSpeaker translator, TargetLanguage targetLanguage, String projectId, TranslationType translationType, Resource.Type resourceType, TranslationFormat translationFormat) {
+        // TRICKY: force deprecated formats to use new formats
+        if(translationFormat == TranslationFormat.USX) {
+            translationFormat = TranslationFormat.USFM;
+        } else if(translationFormat == TranslationFormat.DEFAULT) {
+            translationFormat = TranslationFormat.MARKDOWN;
+        }
+
         try {
-            return TargetTranslation.create(mContext, translator, targetLanguage, projectId, mRootDir);
+            return TargetTranslation.create(mContext, translator, targetLanguage, projectId, translationType, resourceType, translationFormat, mRootDir);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -268,7 +276,8 @@ public class Translator {
      */
     public TargetTranslation importDraftTranslation(NativeSpeaker translator, SourceTranslation draftTranslation, Library library) {
         TargetLanguage targetLanguage = library.getTargetLanguage(draftTranslation.sourceLanguageSlug);
-        TargetTranslation t = createTargetTranslation(translator, targetLanguage, draftTranslation.projectSlug);
+        // TRICKY: android only supports "regular" "text" translations
+        TargetTranslation t = createTargetTranslation(translator, targetLanguage, draftTranslation.projectSlug, TranslationType.TEXT, Resource.Type.REGULAR, draftTranslation.getFormat());
         try {
             if (t != null) {
                 // commit local changes to history

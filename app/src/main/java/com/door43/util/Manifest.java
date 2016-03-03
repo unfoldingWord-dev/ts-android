@@ -128,6 +128,20 @@ public class Manifest {
     /**
      * Adds an element to the manifest
      * @param key
+     * @param obj
+     */
+    public void put(String key, Object obj) {
+        try {
+            mManifest.put(key, obj);
+            save();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Adds an element to the manifest
+     * @param key
      * @param json
      */
     public void put(String key, JSONArray json) {
