@@ -58,6 +58,7 @@ import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.rendering.ClickableRenderingEngine;
 import com.door43.translationstudio.rendering.ClickableRenderingEngineFactory;
+import com.door43.translationstudio.rendering.USXtoUSFMConverter;
 import com.door43.translationstudio.spannables.USXNoteSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.USXVersePinSpan;
@@ -1792,6 +1793,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 bodySource = frame.body;
                 isTranslationFinished = frameTranslation.isFinished();
             }
+
+            // TODO: 3/3/16 remove - for testing
+            CharSequence out = USXtoUSFMConverter.doConversion(bodyTranslation);
+//            System.out.print(out);
+            Logger.i(TAG,"converted from: " + bodyTranslation);
+            Logger.i(TAG,"converted to: " + out);
         }
 
     }

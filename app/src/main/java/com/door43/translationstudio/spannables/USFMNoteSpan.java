@@ -120,53 +120,19 @@ public class USFMNoteSpan extends Span {
      * @return
      */
     public static CharSequence generateTag(String style, String caller, CharSequence title, List<USFMChar> chars) {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        DocumentBuilder db;
-        try {
-            db = dbf.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            return title;
+
+        String tag = "\\f " + caller + " ";
+        for(USFMChar c: chars) {
+            switch(c.style) {
+                case USFMChar.STYLE_FOOTNOTE_VERSE:
+                    tag += "\\fv " + c.value + "\\fv*";
+                    break;
+                default:
+                    tag += "\\" + c.style + " " + c.value + " ";
+                    break;
+            }
         }
-        Document document = db.newDocument();
-
-        // build root
-        Element rootElement = document.createElement("note");
-        rootElement.setAttribute("style", style);
-        rootElement.setAttribute("caller", caller);
-        document.appendChild(rootElement);
-
-        // add chars
-        for(USFMChar c:chars) {
-            Element element = document.createElement("char");
-            element.setAttribute("style", c.style);
-            element.setTextContent(c.value.toString().replace("\n", "\\n"));
-            rootElement.appendChild(element);
-        }
-
-        // generate
-        DOMSource domSource = new DOMSource(document.getDocumentElement());
-        OutputStream output = new ByteArrayOutputStream();
-        StreamResult result = new StreamResult(output);
-
-        TransformerFactory factory = TransformerFactory.newInstance();
-        Transformer transformer;
-        try {
-            transformer = factory.newTransformer();
-            Properties outFormat = new Properties();
-            outFormat.setProperty(OutputKeys.INDENT, "no");
-            outFormat.setProperty(OutputKeys.METHOD, "xml");
-            outFormat.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            outFormat.setProperty(OutputKeys.VERSION, "1.0");
-            outFormat.setProperty(OutputKeys.ENCODING, "UTF-8");
-            transformer.setOutputProperties(outFormat);
-            transformer.transform(domSource, result);
-        } catch (TransformerConfigurationException e) {
-            return title;
-        } catch (TransformerException e) {
-            Logger.e(USFMNoteSpan.class.getName(), "failed to transform the the span text", e);
-        }
-
-        String tag = output.toString();
+        tag += "\\f*";
         return tag;
     }
 

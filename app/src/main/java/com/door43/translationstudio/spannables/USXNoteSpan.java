@@ -49,6 +49,7 @@ public class USXNoteSpan extends Span {
     private final CharSequence mNotes;
     private final CharSequence mPassage;
     private final String mCaller;
+    private List<USXChar> mChars;
     private static final String DEFAULT_CALLER = "+";
     private String mStyle;
     private SpannableStringBuilder mSpannable;
@@ -86,6 +87,7 @@ public class USXNoteSpan extends Span {
             spanTitle = quotation;
         }
 
+        mChars = chars;
         init(spanTitle, generateTag(style, caller, spanTitle, chars));
 
         mCaller = caller;
@@ -282,5 +284,9 @@ public class USXNoteSpan extends Span {
         }
 
         return new USXNoteSpan(style, caller.trim(), chars);
+    }
+
+    public List<USXChar> getChars() {
+        return mChars;
     }
 }
