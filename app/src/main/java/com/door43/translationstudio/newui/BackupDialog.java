@@ -140,10 +140,10 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
                 if(AppContext.context().isNetworkAvailable()) {
                     try {
                         final Handler hand = new Handler(Looper.getMainLooper());
-                        mTargetTranslation.setPublishable(false, new TargetTranslation.OnCommitListener() {
+                        mTargetTranslation.setLegacyPublished(false, new TargetTranslation.OnCommitListener() {
                             @Override
                             public void onCommit(boolean success) {
-                                if(!success) {
+                                if (!success) {
                                     hand.post(new Runnable() {
                                         @Override
                                         public void run() {

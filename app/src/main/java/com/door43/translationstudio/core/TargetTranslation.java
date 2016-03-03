@@ -33,9 +33,12 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by joel on 8/29/2015.
@@ -45,12 +48,13 @@ public class TargetTranslation {
     public static final String PARENT_DRAFT_STATUS = "parent_draft_status";
     private static final String FIELD_FINISHED_REFERENCES = "finished_references";
     private static final String FIELD_FINISHED_TITLES = "finished_titles";
-    private static final String FIELD_FINISHED_FRAMES = "finished_frames";
+    private static final String FIELD_FINISHED_CHUNKS = "finished_chunks";
     private static final String FIELD_TRANSLATORS = "translators";
     public static final String FIELD_TARGET_LANGUAGE = "target_language";
     private static final String GLOBAL_PROJECT_ID = "uw";
     private static final String FIELD_FORMAT = "format";
     private static final String FIELD_RESOURCE = "resource";
+    public static final String FIELD_SOURCE_TRANSLATIONS = "source_translations";
     private final String mTargetLanguageId;
     private final String mProjectId;
     private final File mTargetTranslationDirectory;
@@ -250,13 +254,26 @@ public class TargetTranslation {
      * @throws JSONException
      */
     public void addSourceTranslation(SourceTranslation sourceTranslation) throws JSONException {
-        JSONObject sourceTranslationsJson = mManifest.getJSONObject("source_translations");
-        JSONObject translationJson = new JSONObject();
-        translationJson.put("checking_level", sourceTranslation.getCheckingLevel());
-        translationJson.put("date_modified", sourceTranslation.getDateModified());
-        translationJson.put("version", sourceTranslation.getVersion());
-        sourceTranslationsJson.put(sourceTranslation.getId(), translationJson);
-        mManifest.put("source_translations", sourceTranslationsJson);
+        JSONArray sourceTranslationsJson = mManifest.getJSONArray(FIELD_SOURCE_TRANSLATIONS);
+        // check for duplicate
+        boolean foundDuplicate = false;
+        for(int i = 0; i < sourceTranslationsJson.length(); i ++) {
+            JSONObject obj = sourceTranslationsJson.getJSONObject(i);
+            if(obj.getString("language_id").equals(sourceTranslation.sourceLanguageSlug) && obj.getString("resource_id").equals(sourceTranslation.resourceSlug)) {
+                foundDuplicate = true;
+                break;
+            }
+        }
+        if(!foundDuplicate) {
+            JSONObject translationJson = new JSONObject();
+            translationJson.put("language_id", sourceTranslation.sourceLanguageSlug);
+            translationJson.put("resource_id", sourceTranslation.resourceSlug);
+            translationJson.put("checking_level", sourceTranslation.getCheckingLevel());
+            translationJson.put("date_modified", sourceTranslation.getDateModified());
+            translationJson.put("version", sourceTranslation.getVersion());
+            sourceTranslationsJson.put(translationJson);
+            mManifest.put(FIELD_SOURCE_TRANSLATIONS, sourceTranslationsJson);
+        }
     }
 
     /**
@@ -552,14 +569,14 @@ public class TargetTranslation {
      * @return
      */
     public File getProjectTitleFile() {
-        return new File(mTargetTranslationDirectory, "title.txt");
+        return new File(mTargetTranslationDirectory, "00/title.txt");
     }
 
     /**
      * Marks the project title as finished
      * @return
      */
-    public boolean finishProjectTitle() {
+    public boolean closeProjectTitle() {
         File file = getProjectTitleFile();
         if(file.exists()) {
             return finishProjectComponent("title");
@@ -571,8 +588,8 @@ public class TargetTranslation {
      * Marks the project title as not finished
      * @return
      */
-    public boolean reopenProjectTitle() {
-        return reopenProjectComponent("title");
+    public boolean openProjectTitle() {
+        return openProjectComponent("title");
     }
 
     /**
@@ -581,17 +598,7 @@ public class TargetTranslation {
      * @return
      */
     private boolean isProjectComponentFinished(String component) {
-        JSONArray finishedProjectComponents = mManifest.getJSONArray("finished_project_components");
-        try {
-            for (int i = 0; i < finishedProjectComponents.length(); i++) {
-                if(finishedProjectComponents.getString(i).equals(component)) {
-                    return true;
-                }
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return false;
+        return isChunkClosed("00-" + component);
     }
 
     /**
@@ -599,22 +606,8 @@ public class TargetTranslation {
      * @param component
      * @return
      */
-    private boolean reopenProjectComponent(String component) {
-        JSONArray finishedProjectComponents = mManifest.getJSONArray("finished_project_components");
-        JSONArray updatedComponents = new JSONArray();
-        try {
-            for (int i = 0; i < finishedProjectComponents.length(); i++) {
-                String finishedComponent = finishedProjectComponents.getString(i);
-                if(!finishedComponent.equals(component)) {
-                    updatedComponents.put(finishedProjectComponents.getString(i));
-                }
-            }
-            mManifest.put("finished_project_components", updatedComponents);
-            return true;
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return false;
+    private boolean openProjectComponent(String component) {
+        return openChunk("00-" + component);
     }
 
     /**
@@ -623,24 +616,7 @@ public class TargetTranslation {
      * @return
      */
     private boolean finishProjectComponent(String component) {
-        JSONArray finishedProjectComponents = mManifest.getJSONArray("finished_project_components");
-        boolean isFinished = false;
-        try {
-            for (int i = 0; i < finishedProjectComponents.length(); i++) {
-                String completedComponent = finishedProjectComponents.getString(i);
-                if(completedComponent.equals(component)) {
-                    isFinished = true;
-                    break;
-                }
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        if(!isFinished) {
-            finishedProjectComponents.put(component);
-            mManifest.put("finished_project_components", finishedProjectComponents);
-        }
-        return true;
+        return closeChunk("00-" + component);
     }
 
     /**
@@ -651,24 +627,7 @@ public class TargetTranslation {
     public boolean finishChapterTitle(Chapter chapter) {
         File file = getChapterTitleFile(chapter.getId());
         if(file.exists()) {
-            JSONArray finishedTitles = mManifest.getJSONArray(FIELD_FINISHED_TITLES);
-            boolean isFinished = false;
-            try {
-                for (int i = 0; i < finishedTitles.length(); i++) {
-                    String chapterSlug = finishedTitles.getString(i);
-                    if(chapterSlug.equals(chapter.getId())) {
-                        isFinished = true;
-                        break;
-                    }
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            if(!isFinished) {
-                finishedTitles.put(chapter.getId());
-                mManifest.put(FIELD_FINISHED_TITLES, finishedTitles);
-            }
-            return true;
+            return closeChunk(chapter.getId() + "-title");
         }
         return false;
     }
@@ -679,30 +638,7 @@ public class TargetTranslation {
      * @return
      */
     public boolean reopenChapterTitle(Chapter chapter) {
-        JSONArray finishedTitles = mManifest.getJSONArray(FIELD_FINISHED_TITLES);
-        JSONArray updatedTitles = new JSONArray();
-        try {
-            for (int i = 0; i < finishedTitles.length(); i++) {
-                String chapterSlug = finishedTitles.getString(i);
-                if(!chapterSlug.equals(chapter.getId())) {
-                    updatedTitles.put(finishedTitles.getString(i));
-                }
-            }
-            mManifest.put(FIELD_FINISHED_TITLES, updatedTitles);
-            return true;
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    /**
-     * Checks if the translation of a chapter title has been marked as done
-     * @param chapter
-     * @return
-     */
-    private boolean isChapterTitleFinished(Chapter chapter) {
-        return isChapterTitleFinished(chapter.getId());
+        return openChunk(chapter.getId() + "-title");
     }
 
     /**
@@ -711,17 +647,7 @@ public class TargetTranslation {
      * @return
      */
     private boolean isChapterTitleFinished(String chapterSlug) {
-        JSONArray finishedTitles = mManifest.getJSONArray(FIELD_FINISHED_TITLES);
-        try {
-            for (int i = 0; i < finishedTitles.length(); i++) {
-                if(finishedTitles.getString(i).equals(chapterSlug)) {
-                    return true;
-                }
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return false;
+        return isChunkClosed(chapterSlug + "-title");
     }
 
     /**
@@ -732,24 +658,7 @@ public class TargetTranslation {
     public boolean finishChapterReference(Chapter chapter) {
         File file = getChapterReferenceFile(chapter.getId());
         if(file.exists()) {
-            JSONArray finishedReferences = mManifest.getJSONArray(FIELD_FINISHED_REFERENCES);
-            boolean isFinished = false;
-            try {
-                for (int i = 0; i < finishedReferences.length(); i++) {
-                    String chapterSlug = finishedReferences.getString(i);
-                    if(chapterSlug.equals(chapter.getId())) {
-                        isFinished = true;
-                        break;
-                    }
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            if(!isFinished) {
-                finishedReferences.put(chapter.getId());
-                mManifest.put(FIELD_FINISHED_REFERENCES, finishedReferences);
-            }
-            return true;
+            return closeChunk(chapter.getId() + "-reference");
         }
         return false;
     }
@@ -760,49 +669,16 @@ public class TargetTranslation {
      * @return
      */
     public boolean reopenChapterReference(Chapter chapter) {
-        JSONArray finishedReferences = mManifest.getJSONArray(FIELD_FINISHED_REFERENCES);
-        JSONArray updatedReferences = new JSONArray();
-        try {
-            for (int i = 0; i < finishedReferences.length(); i++) {
-                String chapterSlug = finishedReferences.getString(i);
-                if(!chapterSlug.equals(chapter.getId())) {
-                    updatedReferences.put(finishedReferences.getString(i));
-                }
-            }
-            mManifest.put(FIELD_FINISHED_REFERENCES, updatedReferences);
-            return true;
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return false;
+        return openChunk(chapter.getId() + "-reference");
     }
 
     /**
-     * Checks if the translation of a chapter title has been marked as done
-     * @param chapter
-     * @return
-     */
-    private boolean isChapterReferenceFinished(Chapter chapter) {
-        return isChapterReferenceFinished(chapter.getId());
-    }
-
-    /**
-     * Checks if the translation of a chapter title has been marked as done
+     * Checks if the translation of a chapter reference has been marked as done
      * @param chapterSlug
      * @return
      */
     private boolean isChapterReferenceFinished(String chapterSlug) {
-        JSONArray finishedReferences = mManifest.getJSONArray(FIELD_FINISHED_REFERENCES);
-        try {
-            for (int i = 0; i < finishedReferences.length(); i++) {
-                if(finishedReferences.getString(i).equals(chapterSlug)) {
-                    return true;
-                }
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return false;
+        return isChunkClosed(chapterSlug + "-reference");
     }
 
     /**
@@ -813,24 +689,7 @@ public class TargetTranslation {
     public boolean finishFrame(Frame frame) {
         File file = getFrameFile(frame.getChapterId(), frame.getId());
         if(file.exists()) {
-            JSONArray finishedFrames = mManifest.getJSONArray(FIELD_FINISHED_FRAMES);
-            boolean isFinished = false;
-            try {
-                for (int i = 0; i < finishedFrames.length(); i++) {
-                    String complexSlug = finishedFrames.getString(i);
-                    if(complexSlug.equals(frame.getComplexId())) {
-                        isFinished = true;
-                        break;
-                    }
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            if(!isFinished) {
-                finishedFrames.put(frame.getComplexId());
-                mManifest.put(FIELD_FINISHED_FRAMES, finishedFrames);
-            }
-            return true;
+            return closeChunk(frame.getComplexId());
         }
         return false;
     }
@@ -841,30 +700,7 @@ public class TargetTranslation {
      * @return
      */
     public boolean reopenFrame(Frame frame) {
-        JSONArray finishedFrames = mManifest.getJSONArray(FIELD_FINISHED_FRAMES);
-        JSONArray updatedFrames = new JSONArray();
-        try {
-            for (int i = 0; i < finishedFrames.length(); i++) {
-                String complexSlug = finishedFrames.getString(i);
-                if(!complexSlug.equals(frame.getComplexId())) {
-                    updatedFrames.put(finishedFrames.getString(i));
-                }
-            }
-            mManifest.put(FIELD_FINISHED_FRAMES, updatedFrames);
-            return true;
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    /**
-     * Checks if the translation of a frame has been marked as done
-     * @param frame
-     * @return
-     */
-    private boolean isFrameFinished(Frame frame) {
-        return isFrameFinished(frame.getComplexId());
+        return openChunk(frame.getComplexId());
     }
 
     /**
@@ -873,10 +709,56 @@ public class TargetTranslation {
      * @return
      */
     private boolean isFrameFinished(String frameComplexId) {
-        JSONArray finishedFrames = mManifest.getJSONArray(FIELD_FINISHED_FRAMES);
+        return isChunkClosed(frameComplexId);
+    }
+
+    /**
+     * Closes a chunk from editing. e.g. marks as finished
+     * @param complexId the chapter + chunk id e.g. `01-05`, or `01-title`
+     * @return
+     */
+    private boolean closeChunk(String complexId) {
+        if(!isChunkClosed(complexId)) {
+            JSONArray finishedChunks = mManifest.getJSONArray(FIELD_FINISHED_CHUNKS);
+            finishedChunks.put(complexId);
+            mManifest.put(FIELD_FINISHED_CHUNKS, finishedChunks);
+        }
+        return true;
+    }
+
+    /**
+     * Opens a chunk for editing. e.g. marks as not finished
+     * @param complexId the chapter + chunk id e.g. `01-05`, or `01-title`
+     * @return
+     */
+    private boolean openChunk(String complexId) {
+        JSONArray finishedChunks = mManifest.getJSONArray(FIELD_FINISHED_CHUNKS);
+        JSONArray updatedChunks = new JSONArray();
         try {
-            for (int i = 0; i < finishedFrames.length(); i++) {
-                if(finishedFrames.getString(i).equals(frameComplexId)) {
+            for (int i = 0; i < finishedChunks.length(); i++) {
+                String currId = finishedChunks.getString(i);
+                if(!currId.equals(complexId)) {
+                    updatedChunks.put(finishedChunks.getString(i));
+                }
+            }
+            mManifest.put(FIELD_FINISHED_CHUNKS, updatedChunks);
+            return true;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Checks if a chunk has been closed. e.g. has been marked as finished
+     * @param complexId the chapter + chunk id e.g. `01-05`, or `01-title`
+     * @return
+     */
+    private boolean isChunkClosed(String complexId) {
+        JSONArray finishedChunks = mManifest.getJSONArray(FIELD_FINISHED_CHUNKS);
+        try {
+            for (int i = 0; i < finishedChunks.length(); i++) {
+                if(finishedChunks.getString(i).equals(complexId)) {
                     return true;
                 }
             }
@@ -951,6 +833,7 @@ public class TargetTranslation {
     /**
      * Stages and commits changes to the repository
      * @param filePattern the file pattern that will be used to match files for staging
+     * @param listener the listener that will be called when finished
      */
     private void commit(final String filePattern, final OnCommitListener listener) throws Exception {
 
@@ -973,28 +856,31 @@ public class TargetTranslation {
     }
 
     /**
-     * sets publish tag in the repository
+     * Marks the current HEAD of the translation repo as published
      * @return true if successful
      */
-    public void setPublishTag(final OnTagListener listener)  {
+    public void setPublished(final OnPublishedListener listener)  {
         try {
             Git git = getRepo().getGit();
             final TagCommand tag = git.tag();
-            String name = "published-" + System.currentTimeMillis();
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss", Locale.US);
+            String name = "Published=" + format.format(new Date());
             tag.setName(name);
 
             Thread thread = new Thread() {
                 @Override
                 public void run() {
                     try {
-                        tag.call();
-                        if(listener != null) {
-                            listener.onTag(true);
+                        // don't tag if already tagged
+                        if(getPublishedStatus() != PublishStatus.IS_CURRENT) {
+                            tag.call();
+                            if (listener != null) {
+                                listener.onSuccess();
+                            }
                         }
                     } catch (Exception e) {
-                        Logger.e(TargetTranslation.class.getName(), "Failed to commit changes", e);
                         if(listener != null) {
-                            listener.onTag(false);
+                            listener.onFailed(e);
                         }
                     }
                 }
@@ -1002,60 +888,50 @@ public class TargetTranslation {
             thread.start();
 
         } catch (Exception e) {
-            Logger.e(this.getClass().toString(), "error setting publish tag", e);
             if(listener != null) {
-                listener.onTag(false);
+                listener.onFailed(e);
             }
         }
     }
 
     /**
-     * gets last publish tag in the repository
-     * @return true if successful
+     * Returns the most recent published tag
+     * @return
      */
-    public RevCommit getLastPublishTag() throws IOException, GitAPIException {
-        try {
-            Git git = getRepo().getGit();
-            Repository repository = git.getRepository();
-            ListTagCommand tags = git.tagList();
-            List<Ref> refs = tags.call();
-            for (int i=refs.size()-1; i >= 0; i--) {
-                Ref ref = refs.get(i);
-                Logger.i(this.getClass().toString(), "Tag: " + ref + " " + ref.getName() + " " + ref.getObjectId().getName());
+    public RevCommit getLastPublishedTag() throws Exception {
+        Git git = getRepo().getGit();
+        Repository repository = git.getRepository();
+        ListTagCommand tags = git.tagList();
+        List<Ref> refs = tags.call();
+        for (int i=refs.size()-1; i >= 0; i--) {
+            Ref ref = refs.get(i);
 
-                // fetch all commits for this tag
-                LogCommand log = git.log();
-                log.setMaxCount(1);
+            // fetch all commits for this tag
+            LogCommand log = git.log();
+            log.setMaxCount(1);
 
-                Ref peeledRef = repository.peel(ref);
-                if(peeledRef.getPeeledObjectId() != null) {
-                    log.add(peeledRef.getPeeledObjectId());
-                } else {
-                    log.add(ref.getObjectId());
-                }
-
-                Iterable<RevCommit> logs = log.call();
-                for (RevCommit rev : logs) {
-                    Logger.i(this.getClass().toString(), "....Commit: " + rev /* + ", name: " + rev.getName() + ", id: " + rev.getId().getName() */);
-                    return rev;
-                }
+            Ref peeledRef = repository.peel(ref);
+            if(peeledRef.getPeeledObjectId() != null) {
+                log.add(peeledRef.getPeeledObjectId());
+            } else {
+                log.add(ref.getObjectId());
             }
 
-        } catch (GitAPIException|IOException e) {
-            Logger.w(this.getClass().toString(), "error setting publish tag", e);
-            throw e;
+            Iterable<RevCommit> logs = log.call();
+            for (RevCommit rev : logs) {
+                return rev;
+            }
         }
         return null;
     }
 
     /**
-     * sets publish tag in the repository
-     * @return true if successful
+     * Returns the status of the this target translation's published state
+     * @return
      */
-    public PublishStatus getPublishStatus()  {
-
+    public PublishStatus getPublishedStatus()  {
         try {
-            RevCommit lastTag = getLastPublishTag();
+            RevCommit lastTag = getLastPublishedTag();
             if(null == lastTag) {
                 return PublishStatus.NOT_PUBLISHED;
             }
@@ -1072,7 +948,7 @@ public class TargetTranslation {
             return PublishStatus.IS_CURRENT;
 
         } catch (Exception e) {
-            Logger.w(this.getClass().toString(), "error setting publish tag", e);
+            Logger.w(this.getClass().toString(), "Error checking published status", e);
         }
 
         return PublishStatus.QUERY_ERROR;
@@ -1087,7 +963,7 @@ public class TargetTranslation {
         try {
             draftStatus.put("checking_level", draftTranslation.getCheckingLevel());
             draftStatus.put("version", draftTranslation.getVersion());
-            // TODO: 3/2/2016 need to update resource object to collect all info from api
+            // TODO: 3/2/2016 need to update resource object to collect all info from api so we can include more detail her
             mManifest.put(PARENT_DRAFT_STATUS, draftStatus);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -1095,15 +971,26 @@ public class TargetTranslation {
     }
 
     /**
-     * Returns the draft translation that is a parent of this target translation
+     * Returns the draft translation that is a parent of this target translation.
      */
     public SourceTranslation getParentDraft () {
-        String resourceSlug = mManifest.getString(PARENT_DRAFT_STATUS);
-        if(!resourceSlug.isEmpty()) {
-            return SourceTranslation.simple(getProjectId(), getTargetLanguageId(), resourceSlug);
-        } else {
-            return null;
+        try {
+            JSONObject parentDraftStatus = mManifest.getJSONObject(PARENT_DRAFT_STATUS);
+            if(parentDraftStatus.has("version") && !parentDraftStatus.getString("version").isEmpty()) {
+                // parent drafts have the same resource id as the target translation
+                JSONObject resourceJson = mManifest.getJSONObject(FIELD_RESOURCE);
+                if (resourceJson.has("id")) {
+                    String id = resourceJson.getString("id");
+                    if (!id.isEmpty()) {
+                        // TODO: it would be handy to include the version of the actual parent draft so we can see if the one pulled has updates
+                        return SourceTranslation.simple(getProjectId(), getTargetLanguageId(), id);
+                    }
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
+        return null;
     }
 
     /**
@@ -1140,12 +1027,9 @@ public class TargetTranslation {
         MergeResult result = merge.call();
 
         // merge manifests
-        mManifest.join(importedManifest.getJSONArray("translators"), "translators");
-        mManifest.join(importedManifest.getJSONArray("finished_frames"), "finished_frames");
-        mManifest.join(importedManifest.getJSONArray("finished_titles"), "finished_titles");
-        mManifest.join(importedManifest.getJSONArray("finished_references"), "finished_references");
-        mManifest.join(importedManifest.getJSONArray("finished_project_components"), "finished_project_components");
-        mManifest.join(importedManifest.getJSONObject("source_translations"), "source_translations");
+        mManifest.join(importedManifest.getJSONArray(FIELD_TRANSLATORS), FIELD_TRANSLATORS);
+        mManifest.join(importedManifest.getJSONArray(FIELD_FINISHED_CHUNKS), FIELD_FINISHED_CHUNKS);
+        mManifest.join(importedManifest.getJSONObject(FIELD_SOURCE_TRANSLATIONS), FIELD_SOURCE_TRANSLATIONS);
 
         if (result.getMergeStatus().equals(MergeResult.MergeStatus.CONFLICTING)) {
             System.out.println(result.getConflicts().toString());
@@ -1206,19 +1090,11 @@ public class TargetTranslation {
     /**
      * Sets whether or not this target translation is publishable
      * @param publishable
-     * @throws Exception
-     */
-    public void setPublishable(boolean publishable) throws Exception {
-        setPublishable(publishable, null);
-    }
-
-    /**
-     * Sets whether or not this target translation is publishable
-     * @param publishable
      * @param listener
      * @throws Exception
+     * @deprecated this will go away after moving to gogs. Use setLegacyPublished(OnPublishedListener) instead
      */
-    public void setPublishable(boolean publishable, OnCommitListener listener) throws Exception {
+    public void setLegacyPublished(boolean publishable, OnCommitListener listener) throws Exception {
         File readyFile = new File(mTargetTranslationDirectory, "READY");
         if(publishable) {
             try {
@@ -1230,15 +1106,6 @@ public class TargetTranslation {
             readyFile.delete();
         }
         commit(listener);
-    }
-
-    /**
-     * Checks if this target translation is publishable
-     * @return
-     */
-    public boolean getPublishable() {
-        File readyFile = new File(mTargetTranslationDirectory, "READY");
-        return readyFile.exists();
     }
 
     /**
@@ -1295,10 +1162,8 @@ public class TargetTranslation {
      * @return
      */
     public int numFinished() {
-        JSONArray finishedFrames = mManifest.getJSONArray(FIELD_FINISHED_FRAMES);
-        JSONArray finishedTitles = mManifest.getJSONArray(FIELD_FINISHED_TITLES);
-        JSONArray finishedReferences = mManifest.getJSONArray(FIELD_FINISHED_REFERENCES);
-        return finishedFrames.length() + finishedTitles.length() + finishedReferences.length();
+        JSONArray finishedFrames = mManifest.getJSONArray(FIELD_FINISHED_CHUNKS);
+        return finishedFrames.length();
     }
 
     /**
@@ -1395,7 +1260,8 @@ public class TargetTranslation {
         void onCommit(boolean success);
     }
 
-    public interface OnTagListener {
-        void onTag(boolean success);
+    public interface OnPublishedListener {
+        void onSuccess();
+        void onFailed(Exception e);
     }
 }
