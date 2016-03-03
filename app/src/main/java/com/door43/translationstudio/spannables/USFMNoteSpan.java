@@ -25,6 +25,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -48,6 +50,7 @@ public class USFMNoteSpan extends Span {
     private String mStyle;
     private SpannableStringBuilder mSpannable;
     public static final String PATTERN = "\\\\f\\s\\S\\s(.+)\\\\f\\*";
+    public static final String CHAR_PATTERN = "\\\\f([^\\*\\s])+\\s([^\\\\]+)(?:\\\\f\\1\\*)*";
 
     /**
      * @param style the note style
@@ -216,17 +219,34 @@ public class USFMNoteSpan extends Span {
     }
 
     /**
-     * Generates a new note span from the supplied xml and returns it.
+     * Generates a new note span from the enclosed text and returns it.
      * Don't forget to set the click listener!
      * we are using usfm for footnotes and our own variant for user notes
      * http://ubs-icap.org/chm/usfm/2.4/index.html
-     * @param usfm
+     * @param caller
+     * @param noteText
      * @return
      */
-    public static USFMNoteSpan parseNote(CharSequence caller, CharSequence text) {
-// TODO: 3/1/16 search for styles
-        return null;
+    public static USFMNoteSpan parseNote(CharSequence caller, CharSequence noteText) {
+        List<USFMChar> chars = new ArrayList<>();
+
+        Pattern pattern = Pattern.compile(CHAR_PATTERN);
+        Matcher matcher = pattern.matcher(noteText);
+        int lastIndex = 0;
+        CharSequence note = "";
+
+        while(matcher.find()) {
+
+            int start = matcher.start();
+            if (start > lastIndex) {
+                note = TextUtils.concat(note, noteText.subSequence(lastIndex, start));
+            }
+
+            chars.add (new USFMChar(matcher.group(0),matcher.group(1)));
+            lastIndex = matcher.end();
+        }
+        note = TextUtils.concat(note, noteText.subSequence(lastIndex, noteText.length()));
+        chars.add (new USFMChar(USFMChar.STYLE_PASSAGE_TEXT,note));
+        return new USFMNoteSpan("f", caller.toString(), chars);
     }
-
-
 }
