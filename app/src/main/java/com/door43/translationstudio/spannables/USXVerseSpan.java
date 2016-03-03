@@ -104,4 +104,47 @@ public class USXVerseSpan extends Span {
         }
         return null;
     }
+
+    /**
+     * Returns the range of verses that a chunk of text spans
+     *
+     * @param text
+     * @return int[0] if no verses, int[1] if one verse, int[2] if a range of verses
+     */
+    public static int[] getVerseRange(CharSequence text) {
+        // locate verse range
+        Pattern pattern = Pattern.compile(USXVerseSpan.PATTERN);
+        Matcher matcher = pattern.matcher(text);
+        int numVerses = 0;
+        int startVerse = 0;
+        int endVerse = 0;
+        USXVerseSpan verse = null;
+        while(matcher.find()) {
+            verse = new USXVerseSpan(matcher.group(1));
+
+            if(numVerses == 0) {
+                // first verse
+                startVerse = verse.getStartVerseNumber();
+                endVerse = verse.getEndVerseNumber();
+            }
+            numVerses ++;
+        }
+        if(verse != null) {
+            if(verse.getEndVerseNumber() > 0) {
+                endVerse = verse.getEndVerseNumber();
+            } else {
+                endVerse = verse.getStartVerseNumber();
+            }
+        }
+        if(startVerse <= 0 || endVerse <= 0) {
+            // no verse range
+            return new int[0];
+        } else if(startVerse == endVerse) {
+            // single verse
+            return new int[]{startVerse};
+        } else {
+            // verse range
+            return new int[]{startVerse, endVerse};
+        }
+    }
 }

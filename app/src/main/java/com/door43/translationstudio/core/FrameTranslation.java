@@ -25,20 +25,16 @@ public class FrameTranslation {
      * @return
      */
     public String getTitle() {
-        if(mFormat == TranslationFormat.USX) {
-            // get verse range
-            mVerses = Frame.getVerseRange(body);
-            if(mVerses.length == 1) {
-                mTitle = mVerses[0] + "";
-            } else if(mVerses.length == 2) {
-                mTitle = mVerses[0] + "-" + mVerses[1];
-            } else {
-                mTitle = Integer.parseInt(mId) + "";
-            }
-            return mTitle;
+        // get verse range
+        mVerses = Frame.getVerseRange(body, mFormat);
+        if (mVerses.length == 1) {
+            mTitle = mVerses[0] + "";
+        } else if (mVerses.length == 2) {
+            mTitle = mVerses[0] + "-" + mVerses[1];
         } else {
-            return Integer.parseInt(mId) + "";
+            mTitle = Integer.parseInt(mId) + "";
         }
+        return mTitle;
     }
 
     /**

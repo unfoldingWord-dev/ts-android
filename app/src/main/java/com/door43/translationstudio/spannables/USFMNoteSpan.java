@@ -50,7 +50,7 @@ public class USFMNoteSpan extends Span {
     private String mStyle;
     private SpannableStringBuilder mSpannable;
     public static final String PATTERN = "\\\\f\\s\\S\\s(.+)\\\\f\\*";
-    public static final String CHAR_PATTERN = "\\\\f([^\\*\\s])+\\s([^\\\\]+)(?:\\\\f\\1\\*)*";
+    public static final String CHAR_PATTERN = "\\\\f([^\\*\\s]+)\\s([^\\\\]+)(?:\\\\f\\1\\*)?";
 
     /**
      * @param style the note style
