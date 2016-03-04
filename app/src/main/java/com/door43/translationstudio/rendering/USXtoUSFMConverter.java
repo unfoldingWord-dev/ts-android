@@ -42,7 +42,7 @@ public class USXtoUSFMConverter  {
 
     public static CharSequence doConversion(CharSequence in) {
         USXtoUSFMConverter converter = new USXtoUSFMConverter();
-        return converter.render(in);
+        return converter.convert(in);
     }
 
     /**
@@ -50,7 +50,7 @@ public class USXtoUSFMConverter  {
      * @param in the raw input string
      * @return
      */
-    public CharSequence render(CharSequence in) {
+    public CharSequence convert(CharSequence in) {
         CharSequence out = in;
 
         out = trimWhitespace(out);

@@ -250,7 +250,7 @@ public class USFMRenderer extends ClickableRenderingEngine {
         int lastIndex = 0;
         while(matcher.find()) {
             if(isStopped()) return in;
-            USFMNoteSpan note = USFMNoteSpan.parseNote(matcher.group(0),matcher.group(1));
+            USFMNoteSpan note = USFMNoteSpan.parseNote(matcher.group(1),matcher.group(2));
             if(note != null) {
                 note.setOnClickListener(mNoteListener);
                 out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), note.toCharSequence());

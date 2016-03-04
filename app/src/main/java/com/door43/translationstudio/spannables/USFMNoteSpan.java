@@ -49,7 +49,7 @@ public class USFMNoteSpan extends Span {
     private static final String DEFAULT_CALLER = "+";
     private String mStyle;
     private SpannableStringBuilder mSpannable;
-    public static final String PATTERN = "\\\\f\\s\\S\\s(.+)\\\\f\\*";
+    public static final String PATTERN = "\\\\f\\s(\\S)\\s(.+)\\\\f\\*";
     public static final String CHAR_PATTERN = "\\\\f([^\\*\\s]+)\\s([^\\\\]+)(?:\\\\f\\1\\*)?";
 
     /**
@@ -208,11 +208,14 @@ public class USFMNoteSpan extends Span {
                 note = TextUtils.concat(note, noteText.subSequence(lastIndex, start));
             }
 
-            chars.add (new USFMChar(matcher.group(0),matcher.group(1)));
+            chars.add (new USFMChar("f" + matcher.group(1),matcher.group(2)));
             lastIndex = matcher.end();
         }
-        note = TextUtils.concat(note, noteText.subSequence(lastIndex, noteText.length()));
-        chars.add (new USFMChar(USFMChar.STYLE_PASSAGE_TEXT,note));
+
+        if(lastIndex < noteText.length()) { // if extra text, add it
+            note = TextUtils.concat(note, noteText.subSequence(lastIndex, noteText.length()));
+            chars.add (new USFMChar(USFMChar.STYLE_PASSAGE_TEXT,note));
+        }
         return new USFMNoteSpan("f", caller.toString(), chars);
     }
 }

@@ -10,6 +10,7 @@ public class ChapterTranslation {
     private final String mId;
     private final boolean titleFinished;
     private final boolean referenceFinished;
+    private TranslationFormat mTranslationFormat;
 
     public ChapterTranslation(String title, String reference, String chapterId, boolean titleFinished, boolean referenceFinished) {
         this.title = title;
@@ -17,6 +18,7 @@ public class ChapterTranslation {
         mId = chapterId;
         this.titleFinished = titleFinished;
         this.referenceFinished = referenceFinished;
+        mTranslationFormat = TranslationFormat.DEFAULT;
     }
 
     /**
@@ -44,10 +46,18 @@ public class ChapterTranslation {
     }
 
     /**
+     * sets the translation format for the chapter title and reference
+     * @param translationFormat
+     */
+    public void setFormat(TranslationFormat translationFormat) {
+        this.mTranslationFormat = translationFormat;
+    }
+
+    /**
      * Returns the translation format for the chapter title and reference
      * @return
      */
     public TranslationFormat getFormat() {
-        return TranslationFormat.DEFAULT;
+        return mTranslationFormat;
     }
 }

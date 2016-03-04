@@ -398,7 +398,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private void renderSourceCard(int position, final ListItem item, ViewHolder holder) {
         // render
         if(item.renderedSourceBody == null) {
-            item.renderedSourceBody = renderSourceText(item.bodySource, item.translationFormat, holder, item, false);
+            item.renderedSourceBody = renderSourceText(item.bodySource, mSourceTranslation.getFormat(), holder, item, false);
         }
         holder.mSourceBody.setText(item.renderedSourceBody);
     }
@@ -1795,10 +1795,17 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
 
             // TODO: 3/3/16 remove - for testing
-            CharSequence out = USXtoUSFMConverter.doConversion(bodyTranslation);
-//            System.out.print(out);
             Logger.i(TAG,"converted from: " + bodyTranslation);
-            Logger.i(TAG,"converted to: " + out);
+            bodyTranslation = USXtoUSFMConverter.doConversion(bodyTranslation).toString();
+            translationFormat = TranslationFormat.USFM;
+            if(frameTranslation != null) {
+                frameTranslation.setFormat(translationFormat);
+            }
+            if(chapterTranslation != null) {
+                chapterTranslation.setFormat(translationFormat);
+            }
+//            System.out.print(out);
+            Logger.i(TAG,"converted to: " + bodyTranslation);
         }
 
     }

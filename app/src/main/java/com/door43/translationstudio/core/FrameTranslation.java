@@ -62,6 +62,14 @@ public class FrameTranslation {
     }
 
     /**
+     * apply format for text
+     * @param mFormat
+     */
+    public void setFormat(TranslationFormat mFormat) {
+        this.mFormat = mFormat;
+    }
+
+    /**
      * Returns the format of the text
      * @return
      */
