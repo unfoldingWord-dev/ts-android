@@ -235,6 +235,14 @@ public class TargetTranslationMigrator {
         // update package version
         manifest.put("package_version", 5);
 
+        // update where project title is saved.
+        File oldProjectTitle = new File(path.getParentFile(), "title.txt");
+        File newProjectTitle = new File(path.getParentFile(), "00/title.txt");
+        if(oldProjectTitle.exists()) {
+            newProjectTitle.getParentFile().mkdirs();
+            FileUtils.moveFile(oldProjectTitle, newProjectTitle);
+        }
+
         FileUtils.write(path, manifest.toString(2));
         return true;
     }
