@@ -6,7 +6,9 @@ import android.test.InstrumentationTestCase;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.Util;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.Translator;
 
 import java.io.File;
@@ -37,7 +39,7 @@ public class ExportTest extends InstrumentationTestCase {
         this.translator.deleteTargetTranslation("uw-obs-aa");
         Util.copyStreamToCache(this.context, this.context.getAssets().open("exports/3.0.1_uw-obs-aa.tstudio"), file);
         this.translator.importArchive(file);
-        TargetTranslation targetTranslation = this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs"));
+        TargetTranslation targetTranslation = this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.Type.REGULAR));
         assertNotNull(targetTranslation);
         assertTrue(targetTranslation.getChapterTranslations().length > 0);
 
@@ -64,7 +66,7 @@ public class ExportTest extends InstrumentationTestCase {
         file.getParentFile().mkdirs();
         Util.copyStreamToCache(this.context, this.context.getAssets().open("exports/3.0.1_uw-obs-aa.tstudio"), file);
         this.translator.importArchive(file);
-        TargetTranslation targetTranslation = this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs"));
+        TargetTranslation targetTranslation = this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.Type.REGULAR));
         assertNotNull(targetTranslation);
         assertTrue(targetTranslation.getChapterTranslations().length > 0);
 

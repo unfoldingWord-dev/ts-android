@@ -6,7 +6,9 @@ import android.test.InstrumentationTestCase;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.Util;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.Translator;
 
 import java.io.File;
@@ -31,29 +33,29 @@ public class ImportTest extends InstrumentationTestCase {
     }
 
     public void test01ImportMultiLanguageDokuWikiFile() throws Exception {
-        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs"));
-        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs"));
-        assertNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs")));
-        assertNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs")));
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs", TranslationType.TEXT, Resource.Type.REGULAR));
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.Type.REGULAR));
+        assertNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs", TranslationType.TEXT, Resource.Type.REGULAR)));
+        assertNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.Type.REGULAR)));
         File file = new File(this.testsDir, "multilanguage.txt");
         file.getParentFile().mkdirs();
         Util.copyStreamToCache(this.context, this.context.getAssets().open("exports/1.0_afaraf_deutsch.txt"), file);
         this.translator.importDokuWiki(this.library, file);
-        assertNotNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs")));
-        assertNotNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs")));
-        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs"));
-        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs"));
+        assertNotNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs", TranslationType.TEXT, Resource.Type.REGULAR)));
+        assertNotNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.Type.REGULAR)));
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs", TranslationType.TEXT, Resource.Type.REGULAR));
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.Type.REGULAR));
     }
 
     public void test02ImportDokuWikiFile() throws Exception {
-        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs"));
-        assertNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs")));
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs", TranslationType.TEXT, Resource.Type.REGULAR));
+        assertNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs", TranslationType.TEXT, Resource.Type.REGULAR)));
         File file = new File(this.testsDir, "singlelanguage.txt");
         file.getParentFile().mkdirs();
         Util.copyStreamToCache(this.context, this.context.getAssets().open("exports/1.0_deutsch.txt"), file);
         this.translator.importDokuWiki(this.library, file);
-        assertNotNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs")));
-        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs"));
+        assertNotNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs", TranslationType.TEXT, Resource.Type.REGULAR)));
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs", TranslationType.TEXT, Resource.Type.REGULAR));
     }
 
     public void test03ImportLegacyArchive() throws Exception {
@@ -87,13 +89,13 @@ public class ImportTest extends InstrumentationTestCase {
     }
 
     public void test07ImportV2Archive() throws Exception {
-        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs"));
-        assertNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs")));
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.Type.REGULAR));
+        assertNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.Type.REGULAR)));
         File file = new File(this.testsDir, "3.0.1_uw-obs-aa.tstudio");
         file.getParentFile().mkdirs();
         Util.copyStreamToCache(this.context, this.context.getAssets().open("exports/3.0.1_uw-obs-aa.tstudio"), file);
         this.translator.importArchive(file);
-        assertNotNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs")));
-        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs"));
+        assertNotNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.Type.REGULAR)));
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.Type.REGULAR));
     }
 }

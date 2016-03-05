@@ -62,7 +62,7 @@ public class TranslatorTest extends InstrumentationTestCase {
     public void test03GetTargetTranslation() throws Exception {
         TargetLanguage[] targetLanguages = library.getTargetLanguages();
         TargetLanguage targetLanguage = targetLanguages[0];
-        TargetTranslation targetTranslation = mTranslator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), "obs"));
+        TargetTranslation targetTranslation = mTranslator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), "obs", TranslationType.TEXT, Resource.Type.REGULAR));
         assertEquals("obs", targetTranslation.getProjectId());
         assertEquals(targetLanguage.getId(), targetTranslation.getTargetLanguageId());
         assertEquals(targetLanguage.name, targetTranslation.getTargetLanguageName());
@@ -74,7 +74,7 @@ public class TranslatorTest extends InstrumentationTestCase {
     public void test04DeleteTargetTranslation() throws Exception {
         TargetLanguage[] targetLanguages = library.getTargetLanguages();
         TargetLanguage targetLanguage = targetLanguages[0];
-        TargetTranslation targetTranslation = mTranslator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), "obs"));
+        TargetTranslation targetTranslation = mTranslator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), "obs", TranslationType.TEXT, Resource.Type.REGULAR));
         TargetTranslation[] targetTranslations = mTranslator.getTargetTranslations();
 
         mTranslator.deleteTargetTranslation(targetTranslation.getId());
@@ -89,7 +89,7 @@ public class TranslatorTest extends InstrumentationTestCase {
     public void test05AddSourceTranslation() throws Exception {
         TargetLanguage[] targetLanguages = library.getTargetLanguages();
         TargetLanguage targetLanguage = targetLanguages[1];
-        TargetTranslation targetTranslation = mTranslator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), "obs"));
+        TargetTranslation targetTranslation = mTranslator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), "obs", TranslationType.TEXT, Resource.Type.REGULAR));
 
         SourceTranslation[] sourceTranslations = library.getSourceTranslations(targetTranslation.getProjectId());
 
@@ -110,7 +110,7 @@ public class TranslatorTest extends InstrumentationTestCase {
     public void test06RemoveSourceTranslation() throws Exception {
         TargetLanguage[] targetLanguages = library.getTargetLanguages();
         TargetLanguage targetLanguage = targetLanguages[1];
-        TargetTranslation targetTranslation = mTranslator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), "obs"));
+        TargetTranslation targetTranslation = mTranslator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), "obs", TranslationType.TEXT, Resource.Type.REGULAR));
 
         String selectedSourceTranslationId = AppContext.getSelectedSourceTranslationId(targetTranslation.getId());
         String[] sourceTranslationIds = AppContext.getOpenSourceTranslationIds(targetTranslation.getId());
@@ -140,7 +140,7 @@ public class TranslatorTest extends InstrumentationTestCase {
     public void test07SetSelectedSourceTranslation() throws Exception {
         TargetLanguage[] targetLanguages = library.getTargetLanguages();
         TargetLanguage targetLanguage = targetLanguages[1];
-        TargetTranslation targetTranslation = mTranslator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), "obs"));
+        TargetTranslation targetTranslation = mTranslator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), "obs", TranslationType.TEXT, Resource.Type.REGULAR));
 
         String selectedSourceTranslationid = AppContext.getSelectedSourceTranslationId(targetTranslation.getId());
         assertNull(selectedSourceTranslationid);
