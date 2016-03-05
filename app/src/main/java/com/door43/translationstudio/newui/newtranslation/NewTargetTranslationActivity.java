@@ -88,7 +88,8 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     @Override
     public void onItemClick(String projectId) {
         Translator translator = AppContext.getTranslator();
-        TargetTranslation existingTranslation = translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId));
+        // TRICKY: android only supports translating regular text projects
+        TargetTranslation existingTranslation = translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId, TranslationType.TEXT, Resource.Type.REGULAR));
         if(existingTranslation == null) {
             // create new target translation
             SourceLanguage sourceLanguage = AppContext.getLibrary().getPreferredSourceLanguage(projectId, Locale.getDefault().getLanguage()); // get project name
@@ -105,7 +106,8 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                 setResult(RESULT_OK, data);
                 finish();
             } else {
-                AppContext.getTranslator().deleteTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId));
+                // TRICKY: android only supports translating regular text projects
+                AppContext.getTranslator().deleteTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId, TranslationType.TEXT, Resource.Type.REGULAR));
                 Intent data = new Intent();
                 setResult(RESULT_ERROR, data);
                 finish();

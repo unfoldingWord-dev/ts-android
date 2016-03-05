@@ -307,4 +307,30 @@ public class Manifest {
         }
         return false;
     }
+
+    /**
+     * Checks if a value exist for the key
+     * @param json
+     * @param key
+     * @return
+     */
+    public static boolean valueExists(JSONObject json, String key) {
+        try {
+            if (json.has(key)) {
+                Object obj = json.get(key);
+                if(obj instanceof String) {
+                    return !((String) obj).isEmpty();
+                } else if(obj instanceof JSONArray) {
+                    return ((JSONArray)obj).length() > 0;
+                } else if(obj instanceof JSONObject) {
+                    return ((JSONObject)obj).keys().hasNext();
+                } else {
+                    return true;
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

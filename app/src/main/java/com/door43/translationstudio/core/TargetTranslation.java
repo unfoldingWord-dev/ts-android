@@ -44,7 +44,7 @@ import java.util.Locale;
  * Created by joel on 8/29/2015.
  */
 public class TargetTranslation {
-    public static final int PACKAGE_VERSION = 5; // the version of the manifest
+    public static final int PACKAGE_VERSION = 5; // the version of the target translation implementation
     public static final String PARENT_DRAFT_STATUS = "parent_draft_status";
     private static final String FIELD_FINISHED_CHUNKS = "finished_chunks";
     private static final String FIELD_TRANSLATORS = "translators";
@@ -53,52 +53,53 @@ public class TargetTranslation {
     private static final String FIELD_FORMAT = "format";
     private static final String FIELD_RESOURCE = "resource";
     public static final String FIELD_SOURCE_TRANSLATIONS = "source_translations";
-    private final String mTargetLanguageId;
-    private final String mProjectId;
-    private final File mTargetTranslationDirectory;
-    private final Manifest mManifest;
-    private final String mTargetTranslationName;
-    private final LanguageDirection mDirection;
+    public static final String FIELD_PACKAGE_VERSION = "package_version";
+    public static final String FIELD_PROJECT = "project";
+    public static final String FIELD_GENERATOR = "generator";
 
-    public TargetTranslation(String targetLanguageId, String projectId, File rootDir) {
-        mTargetLanguageId = targetLanguageId;
-        mProjectId = projectId;
-        mTargetTranslationDirectory = generateTargetTranslationDir(generateTargetTranslationId(targetLanguageId, projectId), rootDir);
-        mTargetTranslationDirectory.mkdirs();
-        mManifest = Manifest.generate(mTargetTranslationDirectory);
-        String name = targetLanguageId;
-        try {
-            name = mManifest.getJSONObject(FIELD_TARGET_LANGUAGE).getString("name");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        mTargetTranslationName = name;
-        LanguageDirection direction = LanguageDirection.LeftToRight;
-        try {
-            direction = LanguageDirection.get(mManifest.getJSONObject(FIELD_TARGET_LANGUAGE).getString("direction"));
-            if(direction == null) {
-                direction = LanguageDirection.LeftToRight;
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        mDirection = direction;
-    }
+    private final File targetTranslationDir;
+    private final Manifest manifest;
+    private final String targetLanguageId;
+    private final String targetLanguageName;
+    private final LanguageDirection targetLanguageDirection;
+    private final String projectId;
+    private final String projectName;
+    private final TranslationType translationType;
+    private final String translationTypeName;
+
+    private Resource.Type resourceType = null;
+    private String resourceTypeName = null;
 
     /**
-     * Returns the directory to this target translation
-     * @return
+     * Creates a new instance of the target translation
+     * @param targetTranslationDir
      */
-    public File getPath() {
-        return mTargetTranslationDirectory;
-    }
+    private TargetTranslation(File targetTranslationDir) throws Exception {
+        this.targetTranslationDir = targetTranslationDir;
+        this.manifest = Manifest.generate(targetTranslationDir);
 
-    /**
-     * Returns the language direction of the target language
-     * @return
-     */
-    public LanguageDirection getTargetLanguageDirection() {
-        return mDirection;
+        // target language
+        JSONObject targetLanguageJson = this.manifest.getJSONObject(FIELD_TARGET_LANGUAGE);
+        this.targetLanguageId = targetLanguageJson.getString("id");
+        this.targetLanguageName = Manifest.valueExists(targetLanguageJson, "name") ? targetLanguageJson.getString("name") : this.targetLanguageId.toUpperCase();
+        this.targetLanguageDirection = LanguageDirection.get(targetLanguageJson.getString("direction"));
+
+        // project
+        JSONObject projectJson = this.manifest.getJSONObject(FIELD_PROJECT);
+        this.projectId = projectJson.getString("id");
+        this.projectName = Manifest.valueExists(projectJson, "name") ? projectJson.getString("name") : this.projectId.toUpperCase();
+
+        // translation type
+        JSONObject typeJson = this.manifest.getJSONObject("type");
+        this.translationType = TranslationType.get(typeJson.getString("id"));
+        this.translationTypeName = Manifest.valueExists(typeJson, "name") ? typeJson.getString("name") : this.translationType.toString().toUpperCase();
+
+        if(this.translationType == TranslationType.TEXT) {
+            // resource
+            JSONObject resourceJson = this.manifest.getJSONObject("resource");
+            this.resourceType = Resource.Type.get(resourceJson.getString("id"));
+            this.resourceTypeName = Manifest.valueExists(resourceJson, "name") ? resourceJson.getString("name") : this.resourceType.toString().toUpperCase();
+        }
     }
 
     /**
@@ -106,7 +107,49 @@ public class TargetTranslation {
      * @return
      */
     public String getId() {
-        return generateTargetTranslationId(mTargetLanguageId, mProjectId);
+        return generateTargetTranslationId(this.targetLanguageId, this.projectId, this.translationType, this.resourceType);
+    }
+
+    /**
+     * Returns a properly formatted target translation id
+     * @param targetLanguageId
+     * @param projectId
+     * @param translationType
+     * @param resourceType
+     * @return
+     */
+    public static String generateTargetTranslationId(String targetLanguageId, String projectId, TranslationType translationType, Resource.Type resourceType) {
+        if(translationType == TranslationType.TEXT) {
+            if(resourceType == Resource.Type.UNLOCKED_DYNAMIC_BIBLE) {
+                // udb
+                return GLOBAL_PROJECT_ID + "-" + projectId + "_" + resourceType + "-" + targetLanguageId;
+            } else {
+                // ulb, reg
+                return GLOBAL_PROJECT_ID + "-" + projectId + "-" + targetLanguageId;
+            }
+        } else if(translationType == TranslationType.TRANSLATION_ACADEMY) {
+            // ta
+            return GLOBAL_PROJECT_ID + "-" + projectId + "-" + targetLanguageId;
+        } else {
+            // tn, tq, tw
+            return GLOBAL_PROJECT_ID + "-" + projectId + "_" + resourceType + "-" + targetLanguageId;
+        }
+    }
+
+    /**
+     * Returns the directory to this target translation
+     * @return
+     */
+    public File getPath() {
+        return targetTranslationDir;
+    }
+
+    /**
+     * Returns the language direction of the target language
+     * @return
+     */
+    public LanguageDirection getTargetLanguageDirection() {
+        return targetLanguageDirection;
     }
 
     /**
@@ -114,7 +157,7 @@ public class TargetTranslation {
      * @return
      */
     public String getTargetLanguageName() {
-        return mTargetTranslationName;
+        return targetLanguageName;
     }
 
     /**
@@ -122,7 +165,7 @@ public class TargetTranslation {
      * @return
      */
     public String getProjectId() {
-        return mProjectId;
+        return projectId;
     }
 
     /**
@@ -130,52 +173,73 @@ public class TargetTranslation {
      * @return
      */
     public String getTargetLanguageId() {
-        return mTargetLanguageId;
+        return targetLanguageId;
+    }
+
+    /**
+     * Opens an existing target translation.
+     * @param targetTranslationDir
+     * @return null if the directory does not exist or the manifest is invalid
+     */
+    public static TargetTranslation open(File targetTranslationDir) {
+        File manifestFile = new File(targetTranslationDir, "manifest.json");
+        if(manifestFile.exists()) {
+            try {
+                JSONObject manifest = new JSONObject(FileUtils.readFileToString(manifestFile));
+                int version = manifest.getInt(FIELD_PACKAGE_VERSION);
+                if(version == PACKAGE_VERSION) {
+                    return new TargetTranslation(targetTranslationDir);
+                } else {
+                    Logger.w(TargetTranslation.class.getName(), "Unsupported target translation version " + version + " in" + targetTranslationDir.getName());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            Logger.w(TargetTranslation.class.getName(), "Missing manifest file in target translation " + targetTranslationDir.getName());
+        }
+        return null;
     }
 
     /**
      * Creates a new target translation
-     *
-     * If the target translation already exists the existing one will be returned
-     *
-     * @param context
-     * @param translator the native speaker that is starting this translation
-     * @param targetLanguage the target language the project will be translated into
-     * @param projectId the id of the project that will be translated
-     * @param translationType the type of translation being performed
-     * @param resourceType  the type of resource the user is creating
-     * @param rootDir the parent directory in which the target translation directory will be created
+     * @param translator
+     * @param translationFormat
+     * @param targetLanguage
+     * @param projectId
+     * @param translationType
+     * @param resourceType
+     * @param packageInfo
+     * @param targetTranslationDir
      * @return
+     * @throws Exception
      */
-    public static TargetTranslation create(Context context, NativeSpeaker translator, TargetLanguage targetLanguage, String projectId, TranslationType translationType, Resource.Type resourceType, TranslationFormat translationFormat, File rootDir) throws Exception {
-        // generate new target translation if it does not exist
-        File translationDir = generateTargetTranslationDir(generateTargetTranslationId(targetLanguage.getId(), projectId), rootDir);
-        if(!translationDir.isDirectory()) {
-            translationDir.mkdirs();
-            // build new manifest
-            Manifest manifest = Manifest.generate(translationDir);
-            JSONObject projectJson = new JSONObject();
-            projectJson.put("id", projectId);
-            projectJson.put("name", "");
-            manifest.put("project", projectJson);
-            JSONObject typeJson = new JSONObject();
-            typeJson.put("id", translationType);
-            typeJson.put("name", "");
-            manifest.put("type", typeJson);
-            JSONObject generatorJson = new JSONObject();
-            generatorJson.put("name", "ts-android");
-            PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
-            generatorJson.put("build", pInfo.versionCode);
-            manifest.put("generator", generatorJson);
-            manifest.put("package_version", PACKAGE_VERSION);
-            manifest.put(FIELD_TARGET_LANGUAGE, targetLanguage.toJson());
-            manifest.put(FIELD_FORMAT, translationFormat);
-            JSONObject resourceJson = new JSONObject();
-            resourceJson.put("id", resourceType);
-            manifest.put(FIELD_RESOURCE, resourceJson);
-        }
-        // load the target translation (new or otherwise)
-        TargetTranslation targetTranslation = new TargetTranslation(targetLanguage.getId(), projectId, rootDir);
+    public static TargetTranslation create(NativeSpeaker translator, TranslationFormat translationFormat, TargetLanguage targetLanguage, String projectId, TranslationType translationType, Resource.Type resourceType, PackageInfo packageInfo, File targetTranslationDir) throws Exception {
+        targetTranslationDir.mkdirs();
+        Manifest manifest = Manifest.generate(targetTranslationDir);
+
+        // build new manifest
+        JSONObject projectJson = new JSONObject();
+        projectJson.put("id", projectId);
+        projectJson.put("name", "");
+        manifest.put(FIELD_PROJECT, projectJson);
+        JSONObject typeJson = new JSONObject();
+        typeJson.put("id", translationType);
+        typeJson.put("name", "");
+        manifest.put("type", typeJson);
+        JSONObject generatorJson = new JSONObject();
+        generatorJson.put("name", "ts-android");
+        generatorJson.put("build", packageInfo.versionCode);
+        manifest.put(FIELD_GENERATOR, generatorJson);
+        manifest.put(FIELD_PACKAGE_VERSION, PACKAGE_VERSION);
+        manifest.put(FIELD_TARGET_LANGUAGE, targetLanguage.toJson());
+        manifest.put(FIELD_FORMAT, translationFormat);
+        JSONObject resourceJson = new JSONObject();
+        resourceJson.put("id", resourceType);
+        manifest.put(FIELD_RESOURCE, resourceJson);
+
+        // return the new target translation
+        TargetTranslation targetTranslation = new TargetTranslation(targetTranslationDir);
         targetTranslation.addContributor(translator);
         return targetTranslation;
     }
@@ -191,17 +255,7 @@ public class TargetTranslation {
         generatorJson.put("name", "ts-android");
         PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
         generatorJson.put("build", pInfo.versionCode);
-        targetTranslation.mManifest.put("generator", generatorJson);
-    }
-
-    /**
-     * Returns a properly formatted target translation id
-     * @param targetLanguageId
-     * @param projectId
-     * @return
-     */
-    public static String generateTargetTranslationId(String targetLanguageId, String projectId) {
-        return GLOBAL_PROJECT_ID + "-" + projectId + "-" + targetLanguageId;
+        targetTranslation.manifest.put(FIELD_GENERATOR, generatorJson);
     }
 
     /**
@@ -256,7 +310,7 @@ public class TargetTranslation {
      * @throws JSONException
      */
     public void addSourceTranslation(SourceTranslation sourceTranslation) throws JSONException {
-        JSONArray sourceTranslationsJson = mManifest.getJSONArray(FIELD_SOURCE_TRANSLATIONS);
+        JSONArray sourceTranslationsJson = manifest.getJSONArray(FIELD_SOURCE_TRANSLATIONS);
         // check for duplicate
         boolean foundDuplicate = false;
         for(int i = 0; i < sourceTranslationsJson.length(); i ++) {
@@ -274,7 +328,7 @@ public class TargetTranslation {
             translationJson.put("date_modified", sourceTranslation.getDateModified());
             translationJson.put("version", sourceTranslation.getVersion());
             sourceTranslationsJson.put(translationJson);
-            mManifest.put(FIELD_SOURCE_TRANSLATIONS, sourceTranslationsJson);
+            manifest.put(FIELD_SOURCE_TRANSLATIONS, sourceTranslationsJson);
         }
     }
 
@@ -286,9 +340,9 @@ public class TargetTranslation {
     public void addContributor(NativeSpeaker speaker) {
         if(speaker != null) {
             removeContributor(speaker);
-            JSONArray translatorsJson = mManifest.getJSONArray(FIELD_TRANSLATORS);
+            JSONArray translatorsJson = manifest.getJSONArray(FIELD_TRANSLATORS);
             translatorsJson.put(speaker.name);
-            mManifest.put(FIELD_TRANSLATORS, translatorsJson);
+            manifest.put(FIELD_TRANSLATORS, translatorsJson);
         }
     }
 
@@ -299,7 +353,7 @@ public class TargetTranslation {
      */
     public void removeContributor(NativeSpeaker speaker) {
         if(speaker != null) {
-            JSONArray translatorsJson = mManifest.getJSONArray(FIELD_TRANSLATORS);
+            JSONArray translatorsJson = manifest.getJSONArray(FIELD_TRANSLATORS);
             JSONArray updatedTranslatorsJson = new JSONArray();
             for (int i = 0; i < translatorsJson.length(); i++) {
                 try {
@@ -311,7 +365,7 @@ public class TargetTranslation {
                     e.printStackTrace();
                 }
             }
-            mManifest.put(FIELD_TRANSLATORS, updatedTranslatorsJson);
+            manifest.put(FIELD_TRANSLATORS, updatedTranslatorsJson);
         }
     }
 
@@ -321,7 +375,7 @@ public class TargetTranslation {
      * @return null if no contributor was found
      */
     public NativeSpeaker getContributor(String name) {
-        mManifest.load();
+        manifest.load();
         ArrayList<NativeSpeaker> translators = getContributors();
         for (NativeSpeaker speaker:translators) {
             if (speaker.name.equals(name)) {
@@ -337,8 +391,8 @@ public class TargetTranslation {
      * @return
      */
     public ArrayList<NativeSpeaker> getContributors() {
-        mManifest.load();
-        JSONArray translatorsJson = mManifest.getJSONArray(FIELD_TRANSLATORS);
+        manifest.load();
+        JSONArray translatorsJson = manifest.getJSONArray(FIELD_TRANSLATORS);
         ArrayList<NativeSpeaker> translators = new ArrayList<>();
 
         for(int i = 0; i < translatorsJson.length(); i ++) {
@@ -545,7 +599,7 @@ public class TargetTranslation {
      * @return
      */
     public File getFrameFile(String chapterId, String frameId) {
-        return new File(mTargetTranslationDirectory, chapterId + "/" + frameId + ".txt");
+        return new File(targetTranslationDir, chapterId + "/" + frameId + ".txt");
     }
 
     /**
@@ -554,7 +608,7 @@ public class TargetTranslation {
      * @return
      */
     public File getChapterReferenceFile(String chapterId) {
-        return new File(mTargetTranslationDirectory, chapterId + "/reference.txt");
+        return new File(targetTranslationDir, chapterId + "/reference.txt");
     }
 
     /**
@@ -563,7 +617,7 @@ public class TargetTranslation {
      * @return
      */
     public File getChapterTitleFile(String chapterId) {
-        return new File(mTargetTranslationDirectory, chapterId + "/title.txt");
+        return new File(targetTranslationDir, chapterId + "/title.txt");
     }
 
     /**
@@ -571,7 +625,7 @@ public class TargetTranslation {
      * @return
      */
     public File getProjectTitleFile() {
-        return new File(mTargetTranslationDirectory, "00/title.txt");
+        return new File(targetTranslationDir, "00/title.txt");
     }
 
     /**
@@ -721,9 +775,9 @@ public class TargetTranslation {
      */
     private boolean closeChunk(String complexId) {
         if(!isChunkClosed(complexId)) {
-            JSONArray finishedChunks = mManifest.getJSONArray(FIELD_FINISHED_CHUNKS);
+            JSONArray finishedChunks = manifest.getJSONArray(FIELD_FINISHED_CHUNKS);
             finishedChunks.put(complexId);
-            mManifest.put(FIELD_FINISHED_CHUNKS, finishedChunks);
+            manifest.put(FIELD_FINISHED_CHUNKS, finishedChunks);
         }
         return true;
     }
@@ -734,7 +788,7 @@ public class TargetTranslation {
      * @return
      */
     private boolean openChunk(String complexId) {
-        JSONArray finishedChunks = mManifest.getJSONArray(FIELD_FINISHED_CHUNKS);
+        JSONArray finishedChunks = manifest.getJSONArray(FIELD_FINISHED_CHUNKS);
         JSONArray updatedChunks = new JSONArray();
         try {
             for (int i = 0; i < finishedChunks.length(); i++) {
@@ -743,7 +797,7 @@ public class TargetTranslation {
                     updatedChunks.put(finishedChunks.getString(i));
                 }
             }
-            mManifest.put(FIELD_FINISHED_CHUNKS, updatedChunks);
+            manifest.put(FIELD_FINISHED_CHUNKS, updatedChunks);
             return true;
         } catch (JSONException e) {
             e.printStackTrace();
@@ -757,7 +811,7 @@ public class TargetTranslation {
      * @return
      */
     private boolean isChunkClosed(String complexId) {
-        JSONArray finishedChunks = mManifest.getJSONArray(FIELD_FINISHED_CHUNKS);
+        JSONArray finishedChunks = manifest.getJSONArray(FIELD_FINISHED_CHUNKS);
         try {
             for (int i = 0; i < finishedChunks.length(); i++) {
                 if(finishedChunks.getString(i).equals(complexId)) {
@@ -966,7 +1020,7 @@ public class TargetTranslation {
             draftStatus.put("checking_level", draftTranslation.getCheckingLevel());
             draftStatus.put("version", draftTranslation.getVersion());
             // TODO: 3/2/2016 need to update resource object to collect all info from api so we can include more detail her
-            mManifest.put(PARENT_DRAFT_STATUS, draftStatus);
+            manifest.put(PARENT_DRAFT_STATUS, draftStatus);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -977,10 +1031,10 @@ public class TargetTranslation {
      */
     public SourceTranslation getParentDraft () {
         try {
-            JSONObject parentDraftStatus = mManifest.getJSONObject(PARENT_DRAFT_STATUS);
+            JSONObject parentDraftStatus = manifest.getJSONObject(PARENT_DRAFT_STATUS);
             if(parentDraftStatus.has("version") && !parentDraftStatus.getString("version").isEmpty()) {
                 // parent drafts have the same resource id as the target translation
-                JSONObject resourceJson = mManifest.getJSONObject(FIELD_RESOURCE);
+                JSONObject resourceJson = manifest.getJSONObject(FIELD_RESOURCE);
                 if (resourceJson.has("id")) {
                     String id = resourceJson.getString("id");
                     if (!id.isEmpty()) {
@@ -1029,9 +1083,9 @@ public class TargetTranslation {
         MergeResult result = merge.call();
 
         // merge manifests
-        mManifest.join(importedManifest.getJSONArray(FIELD_TRANSLATORS), FIELD_TRANSLATORS);
-        mManifest.join(importedManifest.getJSONArray(FIELD_FINISHED_CHUNKS), FIELD_FINISHED_CHUNKS);
-        mManifest.join(importedManifest.getJSONObject(FIELD_SOURCE_TRANSLATIONS), FIELD_SOURCE_TRANSLATIONS);
+        manifest.join(importedManifest.getJSONArray(FIELD_TRANSLATORS), FIELD_TRANSLATORS);
+        manifest.join(importedManifest.getJSONArray(FIELD_FINISHED_CHUNKS), FIELD_FINISHED_CHUNKS);
+        manifest.join(importedManifest.getJSONObject(FIELD_SOURCE_TRANSLATIONS), FIELD_SOURCE_TRANSLATIONS);
 
         if (result.getMergeStatus().equals(MergeResult.MergeStatus.CONFLICTING)) {
             System.out.println(result.getConflicts().toString());
@@ -1052,7 +1106,7 @@ public class TargetTranslation {
      * @return
      */
     public Repo getRepo() {
-        return new Repo(mTargetTranslationDirectory.getAbsolutePath());
+        return new Repo(targetTranslationDir.getAbsolutePath());
     }
 
     /**
@@ -1097,7 +1151,7 @@ public class TargetTranslation {
      * @deprecated this will go away after moving to gogs. Use setLegacyPublished(OnPublishedListener) instead
      */
     public void setLegacyPublished(boolean publishable, OnCommitListener listener) throws Exception {
-        File readyFile = new File(mTargetTranslationDirectory, "READY");
+        File readyFile = new File(targetTranslationDir, "READY");
         if(publishable) {
             try {
                 readyFile.createNewFile();
@@ -1142,7 +1196,7 @@ public class TargetTranslation {
      */
     public int numTranslated() {
         int numFiles = 0;
-        File[] chapterDirs = mTargetTranslationDirectory.listFiles(new FileFilter() {
+        File[] chapterDirs = targetTranslationDir.listFiles(new FileFilter() {
             @Override
             public boolean accept(File pathname) {
                 return pathname.isDirectory() && !pathname.getName().equals(".git") && !pathname.getName().equals("manifest.json");
@@ -1164,7 +1218,7 @@ public class TargetTranslation {
      * @return
      */
     public int numFinished() {
-        JSONArray finishedFrames = mManifest.getJSONArray(FIELD_FINISHED_CHUNKS);
+        JSONArray finishedFrames = manifest.getJSONArray(FIELD_FINISHED_CHUNKS);
         return finishedFrames.length();
     }
 
@@ -1173,7 +1227,7 @@ public class TargetTranslation {
      * @return
      */
     public ChapterTranslation[] getChapterTranslations() {
-        String[] chapterSlugs = mTargetTranslationDirectory.list(new FilenameFilter() {
+        String[] chapterSlugs = targetTranslationDir.list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
                 return new File(dir, filename).isDirectory() && !filename.equals(".git");
@@ -1236,7 +1290,7 @@ public class TargetTranslation {
      * @return
      */
     public FrameTranslation[] getFrameTranslations(String chapterSlug, TranslationFormat frameTranslationformat) {
-        String[] frameFileNames = new File(mTargetTranslationDirectory, chapterSlug).list(new FilenameFilter() {
+        String[] frameFileNames = new File(targetTranslationDir, chapterSlug).list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
                 return !filename.equals("reference.txt") && !filename.equals("title.txt");
