@@ -2,7 +2,7 @@
 Thank you for your help!
 
 ## Have some code?
-If you would like to contribute to this project please read [How to Contribute](https://github.com/unfoldingWord-dev/ts-requirements/wiki/How-to-Contribute) first. This covers general information for contributing to this and related [unfoldingWord](https://unfoldingword.org/) projects.
+If you would like to contribute to this project please read [How to Contribute](https://github.com/unfoldingWord-dev/ts-requirements/wiki/How-to-Contribute) first. That article covers general information for contributing to this and related [unfoldingWord](https://unfoldingword.org/) projects.
 
 When you are ready to submit your code please check the following first:
 - [ ] All unit tests pass
