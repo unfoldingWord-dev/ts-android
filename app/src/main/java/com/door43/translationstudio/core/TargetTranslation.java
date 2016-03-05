@@ -46,8 +46,6 @@ import java.util.Locale;
 public class TargetTranslation {
     public static final int PACKAGE_VERSION = 5; // the version of the manifest
     public static final String PARENT_DRAFT_STATUS = "parent_draft_status";
-    private static final String FIELD_FINISHED_REFERENCES = "finished_references";
-    private static final String FIELD_FINISHED_TITLES = "finished_titles";
     private static final String FIELD_FINISHED_CHUNKS = "finished_chunks";
     private static final String FIELD_TRANSLATORS = "translators";
     public static final String FIELD_TARGET_LANGUAGE = "target_language";
@@ -144,7 +142,7 @@ public class TargetTranslation {
      * @param translator the native speaker that is starting this translation
      * @param targetLanguage the target language the project will be translated into
      * @param projectId the id of the project that will be translated
-     * @param translationType the type of project that is being translated
+     * @param translationType the type of translation being performed
      * @param resourceType  the type of resource the user is creating
      * @param rootDir the parent directory in which the target translation directory will be created
      * @return
@@ -158,8 +156,12 @@ public class TargetTranslation {
             Manifest manifest = Manifest.generate(translationDir);
             JSONObject projectJson = new JSONObject();
             projectJson.put("id", projectId);
-            projectJson.put("type", translationType);
+            projectJson.put("name", "");
             manifest.put("project", projectJson);
+            JSONObject typeJson = new JSONObject();
+            typeJson.put("id", translationType);
+            typeJson.put("name", "");
+            manifest.put("type", typeJson);
             JSONObject generatorJson = new JSONObject();
             generatorJson.put("name", "ts-android");
             PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);

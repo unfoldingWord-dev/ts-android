@@ -29,8 +29,9 @@ public class TargetTranslationMigrator {
      */
     public static boolean migrate(File targetTranslationDir) {
         boolean success = false;
+        File manifestFile = new File(targetTranslationDir, "manifest.json");
         try {
-            File manifestFile = new File(targetTranslationDir, "manifest.json");
+
             if (manifestFile.exists()) {
                 JSONObject manifest = new JSONObject(FileUtils.readFileToString(manifestFile));
                 switch (manifest.getInt("package_version")) {
@@ -46,6 +47,10 @@ public class TargetTranslationMigrator {
                     case 5:
                         success = v5(manifestFile);
                         if(!success) break;
+                    default:
+                        if(success) {
+                            success = validateTranslationType(manifestFile);
+                        }
                 }
             }
         } catch (Exception e) {
@@ -72,6 +77,25 @@ public class TargetTranslationMigrator {
     private static boolean v4(File path) throws Exception {
         JSONObject manifest = new JSONObject(FileUtils.readFileToString(path));
 
+        // type
+        {
+            String typeId = "text";
+            if (manifest.has("project")) {
+                try {
+                    JSONObject projectJson = manifest.getJSONObject("project");
+                    typeId = projectJson.getString("type");
+                    projectJson.remove("type");
+                    manifest.put("project", projectJson);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            JSONObject typeJson = new JSONObject();
+            typeJson.put("id", typeId);
+            typeJson.put("name", "");
+            manifest.put("type", typeJson);
+        }
+
         // update project
         // NOTE: this was actually in v3 but we missed it so we need to catch it here
         if(manifest.has("project_id")) {
@@ -80,7 +104,6 @@ public class TargetTranslationMigrator {
             JSONObject projectJson = new JSONObject();
             projectJson.put("id", projectId);
             projectJson.put("name", projectId.toUpperCase()); // we don't know the full name at this point
-            projectJson.put("type", "text");
             manifest.put("project", projectJson);
         }
 
@@ -98,11 +121,12 @@ public class TargetTranslationMigrator {
                 resourceJson.put("name", resourceId.toUpperCase());
             }
             manifest.put("resource", resourceJson);
-        } else {
+        } else if(!manifest.has("resource")) {
             // add missing resource
             JSONObject resourceJson = new JSONObject();
             JSONObject projectJson = manifest.getJSONObject("project");
-            if(projectJson.getString("type").equals("text")) {
+            JSONObject typeJson = manifest.getJSONObject("type");
+            if(TranslationType.get(typeJson.getString("id")) == TranslationType.TEXT) {
                 if(projectJson.getString("id").equals("obs")) {
                     resourceJson.put("id", "obs");
                     resourceJson.put("name", "Open Bible Stories");
@@ -441,5 +465,18 @@ public class TargetTranslationMigrator {
         }
 
         return success;
+    }
+
+    /**
+     * Checks if the android app can support this translation type.
+     * Example: ts-desktop can translate tW but ts-android cannot.
+     * @param path
+     * @return
+     */
+    private static boolean validateTranslationType(File path) throws Exception{
+        JSONObject manifest = new JSONObject(FileUtils.readFileToString(path));
+        String typeId = manifest.getJSONObject("type").getString("id");
+        // android only supports TEXT translations for now
+        return TranslationType.get(typeId) == TranslationType.TEXT;
     }
 }

@@ -7,7 +7,8 @@ public enum TranslationType {
     TEXT("text"),
     TRANSLATION_NOTE("tn"),
     TRANSLATION_QUESTION("tq"),
-    TRANSLATION_WORD("tw");
+    TRANSLATION_WORD("tw"),
+    TRANSLATION_ACADEMY("ta");
 
     TranslationType(String s) {
         mName = s;
