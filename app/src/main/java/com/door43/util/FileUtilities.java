@@ -1,5 +1,7 @@
 package com.door43.util;
 
+import android.content.Context;
+
 import com.door43.tools.reporting.Logger;
 
 import org.apache.commons.io.FileUtils;
@@ -100,5 +102,27 @@ public class FileUtilities {
         return false;
     }
 
-
+    /**
+     * Deletes a file/directory by first moving it to a temporary location then deleting it.
+     * This avoids an issue with FAT32 on some devices where you cannot create a file
+     * with the same name right after deleting it
+     * @param file
+     */
+    public static void safeDelete(File file) {
+        if(file != null && file.exists()) {
+            File temp = new File(file.getParentFile(), System.currentTimeMillis() + ".trash");
+            file.renameTo(temp);
+            try {
+                if (file.isDirectory()) {
+                    FileUtils.moveDirectoryToDirectory(file, temp, true);
+                } else {
+                    FileUtils.moveFile(file, temp);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            FileUtils.deleteQuietly(file); // just in case the move failed
+            FileUtils.deleteQuietly(temp);
+        }
+    }
 }

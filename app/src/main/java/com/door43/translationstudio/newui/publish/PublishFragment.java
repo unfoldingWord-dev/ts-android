@@ -99,14 +99,16 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 if(AppContext.context().isNetworkAvailable()) {
                     try {
                         final Handler hand = new Handler(Looper.getMainLooper());
-                        targetTranslation.setPublishable(true, new TargetTranslation.OnCommitListener() {
+                        // TODO: once we switch to gogs we need to move the listener to the setPublished method.
+                        targetTranslation.setPublished(null);
+                        targetTranslation.setLegacyPublished(true, new TargetTranslation.OnCommitListener() {
                             @Override
                             public void onCommit(boolean success) {
-                                if(!success) {
+                                if (!success) {
                                     hand.post(new Runnable() {
                                         @Override
                                         public void run() {
-                                        notifyPublishFailed(targetTranslation);
+                                            notifyPublishFailed(targetTranslation);
                                         }
                                     });
                                 } else {
@@ -205,9 +207,6 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
         if(((UploadTargetTranslationTask)task).uploadSucceeded()) {
             final String response = ((UploadTargetTranslationTask)task).getResponse();
             mUploaded = true;
-            // marks the publish step as done
-            TargetTranslation targetTranslation = ((UploadTargetTranslationTask)task).getTargetTranslation();
-            targetTranslation.setPublishTag(null);
             getListener().finishPublishing();
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {

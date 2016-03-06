@@ -467,7 +467,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                 mTargetTranslation.reopenChapterTitle(chapter);
             }
         } else if(item.isProjectTitle) {
-            mTargetTranslation.reopenProjectTitle();
+            mTargetTranslation.openProjectTitle();
         } else {
             Frame frame = mLibrary.getFrame(mSourceTranslation, item.chapterSlug, item.frameSlug);
             if(null != frame) {

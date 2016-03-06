@@ -12,14 +12,20 @@ import android.view.View;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.core.Resource;
+import com.door43.translationstudio.core.SourceLanguage;
+import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.AppContext;
+
+import java.util.Locale;
 
 public class NewTargetTranslationActivity extends BaseActivity implements TargetLanguageListFragment.OnItemClickListener, ProjectListFragment.OnItemClickListener {
 
@@ -82,10 +88,16 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     @Override
     public void onItemClick(String projectId) {
         Translator translator = AppContext.getTranslator();
-        TargetTranslation existingTranslation = translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId));
+        // TRICKY: android only supports translating regular text projects
+        TargetTranslation existingTranslation = translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId, TranslationType.TEXT, Resource.Type.REGULAR));
         if(existingTranslation == null) {
             // create new target translation
-            TargetTranslation targetTranslation = AppContext.getTranslator().createTargetTranslation(AppContext.getProfile().getNativeSpeaker(), mSelectedTargetLanguage, projectId);
+            SourceLanguage sourceLanguage = AppContext.getLibrary().getPreferredSourceLanguage(projectId, Locale.getDefault().getLanguage()); // get project name
+            // TODO: 3/2/2016 eventually the format will be specified in the project
+            SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(projectId, sourceLanguage.getId());
+            Resource resource = AppContext.getLibrary().getResource(sourceTranslation);
+            // TRICKY: android only supports "regular" "text" translations
+            TargetTranslation targetTranslation = AppContext.getTranslator().createTargetTranslation(AppContext.getProfile().getNativeSpeaker(), mSelectedTargetLanguage, projectId, TranslationType.TEXT, Resource.Type.REGULAR, sourceTranslation.getFormat());
             if(targetTranslation != null) {
                 mNewTargetTranslationId = targetTranslation.getId();
 
@@ -94,7 +106,8 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                 setResult(RESULT_OK, data);
                 finish();
             } else {
-                AppContext.getTranslator().deleteTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId));
+                // TRICKY: android only supports translating regular text projects
+                AppContext.getTranslator().deleteTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId, TranslationType.TEXT, Resource.Type.REGULAR));
                 Intent data = new Intent();
                 setResult(RESULT_ERROR, data);
                 finish();

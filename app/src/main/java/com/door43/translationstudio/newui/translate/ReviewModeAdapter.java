@@ -656,7 +656,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     } else if (item.isChapterTitle) {
                         opened = mTargetTranslation.reopenChapterTitle(chapter);
                     } else if (item.isProjectTitle) {
-                        opened = mTargetTranslation.reopenProjectTitle();
+                        opened = mTargetTranslation.openProjectTitle();
                     } else {
                         opened = mTargetTranslation.reopenFrame(frame);
                     }
@@ -1081,7 +1081,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             } else if (item.isChapterTitle) {
                 success = mTargetTranslation.finishChapterTitle(chapter);
             } else if (item.isProjectTitle) {
-                success = mTargetTranslation.finishProjectTitle();
+                success = mTargetTranslation.closeProjectTitle();
             } else {
                 success = mTargetTranslation.finishFrame(frame);
             }

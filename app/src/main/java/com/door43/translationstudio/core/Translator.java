@@ -6,15 +6,14 @@ import android.text.Editable;
 import android.text.SpannedString;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.FileUtilities;
-import com.door43.util.Manifest;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -90,13 +89,26 @@ public class Translator {
     /**
      * Initializes a new target translation
      * @param translator
-     * @param targetLanguage the target language the project will be translated into
-     * @param projectId the id of the project that will be translated
+     * @param targetLanguage
+     * @param projectId
+     * @param translationType
+     * @param resourceType
+     * @param translationFormat
      * @return
      */
-    public TargetTranslation createTargetTranslation(NativeSpeaker translator, TargetLanguage targetLanguage, String projectId) {
+    public TargetTranslation createTargetTranslation(NativeSpeaker translator, TargetLanguage targetLanguage, String projectId, TranslationType translationType, Resource.Type resourceType, TranslationFormat translationFormat) {
+        // TRICKY: force deprecated formats to use new formats
+        if(translationFormat == TranslationFormat.USX) {
+            translationFormat = TranslationFormat.USFM;
+        } else if(translationFormat == TranslationFormat.DEFAULT) {
+            translationFormat = TranslationFormat.MARKDOWN;
+        }
+
+        String targetLanguageId = TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), projectId, translationType, resourceType);
+        File targetTranslationDir = new File(this.mRootDir, targetLanguageId);
         try {
-            return TargetTranslation.create(mContext, translator, targetLanguage, projectId, mRootDir);
+            PackageInfo pInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
+            return TargetTranslation.create(translator, translationFormat, targetLanguage, projectId, translationType, resourceType, pInfo, targetTranslationDir);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -110,19 +122,8 @@ public class Translator {
      */
     public TargetTranslation getTargetTranslation(String targetTranslationId) {
         if(targetTranslationId != null) {
-            try {
-                String projectId = TargetTranslation.getProjectIdFromId(targetTranslationId);
-                String targetLanguageId = TargetTranslation.getTargetLanguageIdFromId(targetTranslationId);
-
-                File dir = TargetTranslation.generateTargetTranslationDir(targetTranslationId, mRootDir);
-                if(dir.isDirectory()) {
-                    return new TargetTranslation(targetLanguageId, projectId, mRootDir);
-                } else {
-                    return null;
-                }
-            } catch (StringIndexOutOfBoundsException e) {
-                Logger.e(this.getClass().getName(), "Failed to retrieve the target translation '" + targetTranslationId + "'", e);
-            }
+            File targetTranslationDir = new File(mRootDir, targetTranslationId);
+            return TargetTranslation.open(targetTranslationDir);
         }
         return null;
     }
@@ -133,22 +134,8 @@ public class Translator {
      */
     public void deleteTargetTranslation(String targetTranslationId) {
         if(targetTranslationId != null) {
-            try {
-                File dir = TargetTranslation.generateTargetTranslationDir(targetTranslationId, mRootDir);
-                // TRICKY: due do issues with FAT32 on some devices we must rename before deleting to prevent
-                // conflicts when creating the directory later. see http://stackoverflow.com/questions/11539657/open-failed-ebusy-device-or-resource-busy#11776458
-                File temp = new File(getLocalCacheDir(), dir.getName() + "." + System.currentTimeMillis() + ".trash");
-                dir.renameTo(temp);
-                try {
-                    FileUtils.moveDirectoryToDirectory(dir, temp, true);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    // try to just delete quietly.. beware.. this may cause problems when creating this dir again later
-                    FileUtils.deleteQuietly(dir);
-                }
-            } catch (StringIndexOutOfBoundsException e) {
-                e.printStackTrace();
-            }
+            File targetTranslationDir = new File(mRootDir, targetTranslationId);
+            FileUtilities.safeDelete(targetTranslationDir);
         }
     }
 
@@ -269,7 +256,8 @@ public class Translator {
      */
     public TargetTranslation importDraftTranslation(NativeSpeaker translator, SourceTranslation draftTranslation, Library library) {
         TargetLanguage targetLanguage = library.getTargetLanguage(draftTranslation.sourceLanguageSlug);
-        TargetTranslation t = createTargetTranslation(translator, targetLanguage, draftTranslation.projectSlug);
+        // TRICKY: android only supports "regular" "text" translations
+        TargetTranslation t = createTargetTranslation(translator, targetLanguage, draftTranslation.projectSlug, TranslationType.TEXT, Resource.Type.REGULAR, draftTranslation.getFormat());
         try {
             if (t != null) {
                 // commit local changes to history
@@ -341,231 +329,41 @@ public class Translator {
     private void importArchiveFromTempCache(File tempCache, List<String> importedTargetTranslationSlugs) throws Exception {
         File[] targetTranslationDirs = ArchiveImporter.importArchive(tempCache);
         for(File newDir:targetTranslationDirs) {
+            TargetTranslation newTargetTranslation = TargetTranslation.open(newDir);
+            if(newTargetTranslation != null) {
+                // TRICKY: the correct id is pulled from the manifest to avoid propogating bad folder names
+                String targetTranslationId = newTargetTranslation.getId();
+                File localDir = new File(mRootDir, targetTranslationId);
 
-            File localDir = new File(mRootDir, newDir.getName());
-            if(localDir.exists()) {
-                // commit local changes to history
-                TargetTranslation targetTranslation = getTargetTranslation(localDir.getName());
-                if(targetTranslation != null) {
-                    targetTranslation.commitSync();
-                }
+                TargetTranslation localTargetTranslation = TargetTranslation.open(localDir);
+                if(localTargetTranslation != null) {
+                    // commit local changes to history
+                    if(localTargetTranslation != null) {
+                        localTargetTranslation.commitSync();
+                    }
 
-                // merge translations
-                try {
-                    targetTranslation.merge(newDir);
-                } catch(Exception e) {
-                    e.printStackTrace();
-                    continue;
+                    // merge translations
+                    try {
+                        localTargetTranslation.merge(newDir);
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                        continue;
+                    }
+                }  else {
+                    // import new translation
+                    FileUtilities.safeDelete(localDir); // in case local was an invalid target translation
+                    FileUtils.moveDirectory(newDir, localDir);
                 }
-            }  else {
-                // import new translation
-                FileUtils.moveDirectory(newDir, localDir);
+                // update the generator info. TRICKY: we re-open to get the updated manifest.
+                TargetTranslation.updateGenerator(mContext, TargetTranslation.open(localDir));
+
+                importedTargetTranslationSlugs.add(targetTranslationId);
             }
-            // update the generator info
-            TargetTranslation.updateGenerator(mContext, getTargetTranslation(newDir.getName()));
-
-            importedTargetTranslationSlugs.add(newDir.getName());
         }
         if(targetTranslationDirs.length == 0) {
             throw new Exception("The archive does not contain any valid target translations");
         }
     }
-
-//    /**
-//     * merges manifests
-//     * @param localManifest
-//     * @param importedManifest
-//     * @throws IOException
-//     */
-//    private JSONObject mergeManifests(final JSONObject localManifest, final JSONObject importedManifest) {
-//
-//        try {
-//            JSONObject mergedManifest = new JSONObject(importedManifest.toString());
-//            mergeManifestsObjectArray(mergedManifest, localManifest, Manifest.FIELD_TRANSLATORS);
-//            mergeManifestsStringArray(mergedManifest, localManifest, Manifest.FINISHED_FRAMES);
-//            mergeManifestsStringArray(mergedManifest, localManifest, Manifest.FINISHED_TITLES);
-//            mergeManifestsStringArray(mergedManifest, localManifest, Manifest.FINISHED_REFERENCES);
-//            return mergedManifest;
-//        } catch (JSONException e) {
-//            Logger.w(this.getClass().toString(), "mergeManifest exception", e);
-//            return importedManifest;
-//        }
-//    }
-
-//    /**
-//     * merges arrays in manifest
-//     * @param mergeManifest
-//     * @param sourceManifest
-//     * @throws IOException
-//     */
-//    private boolean mergeManifestsObjectArray(JSONObject mergeManifest, final JSONObject sourceManifest, final String key) {
-//
-//        try {
-//            JSONArray sourceArray = sourceManifest.optJSONArray(key);
-//            if(null == sourceArray) {
-//                return true; // nothing to do
-//            }
-//
-//            JSONArray mergedArray = mergeManifest.optJSONArray(key);
-//            if(null == mergedArray) {
-//                mergeManifest.put(key, sourceArray); // just copy
-//                return true;
-//            }
-//
-//            mergeObjectElementsInStringArray( mergedArray, sourceArray);
-//            return true;
-//        } catch (JSONException e) {
-//            return false;
-//        }
-//    }
-
-//    /**
-//     * merges array elements
-//     * @param mergeArray
-//     * @param sourceArray
-//     * @throws IOException
-//     */
-//    private boolean mergeObjectElementsInStringArray(JSONArray mergeArray, final JSONArray sourceArray) {
-//        try {
-//            for(int i = 0; i < sourceArray.length(); i++) {
-//                JSONObject value = sourceArray.getJSONObject(i);
-//                int position = findObjectInStringArray(mergeArray, value);
-//                if (position < 0) { // if not found, append to merge array
-//                    mergeArray.put(value);
-//                }
-//            }
-//            return true;
-//        } catch (JSONException e) {
-//            return false;
-//        }
-//    }
-
-//    /**
-//     * merges array elements
-//     * @param array
-//     * @param value
-//     * @return position of match
-//     */
-//    private int findObjectInStringArray(JSONArray array, final JSONObject value) {
-//        if(null != value) {
-//            try {
-//
-//                JSONArray valueKeys = value.names();
-//
-//                for (int i = 0; i < array.length(); i++) {
-//                    JSONObject element = array.getJSONObject(i);
-//                    JSONArray elementKeys = element.names();
-//                    if(!elementKeys.equals(valueKeys)) {
-//                        continue;
-//                    }
-//
-//                    boolean matched = true;
-//                    for(int j=0; j<elementKeys.length(); j++) {
-//                        String key = elementKeys.getString(j);
-//                        String elementValue = element.getString(key);
-//                        String valueValue = value.getString(key);
-//                        if(!elementValue.equals(valueValue)) {
-//                            matched = false;
-//                            break;
-//                        }
-//                    }
-//
-//                    if (matched) {
-//                        return i;
-//                    }
-//                }
-//            } catch (JSONException e) {}
-//        }
-//        return -1;
-//    }
-
-
-//    /**
-//     * merges arrays in manifest
-//     * @param mergeManifest
-//     * @param sourceManifest
-//     * @throws IOException
-//     */
-//    private boolean mergeManifestsStringArray(JSONObject mergeManifest, final JSONObject sourceManifest, final String key) {
-//
-//        try {
-//            JSONArray sourceArray = sourceManifest.optJSONArray(key);
-//            if(null == sourceArray) {
-//                return true; // nothing to do
-//            }
-//
-//            JSONArray mergedArray = mergeManifest.optJSONArray(key);
-//            if(null == mergedArray) {
-//                mergeManifest.put(key, sourceArray); // just copy
-//                return true;
-//            }
-//
-//            mergeElementsInStringArray( mergedArray, sourceArray);
-//            return true;
-//        } catch (JSONException e) {
-//            return false;
-//        }
-//    }
-
-//    /**
-//     * merges array elements
-//     * @param mergeArray
-//     * @param sourceArray
-//     * @throws IOException
-//     */
-//    private boolean mergeElementsInStringArray(JSONArray mergeArray, final JSONArray sourceArray) {
-//        try {
-//            for(int i = 0; i < sourceArray.length(); i++) {
-//                String value = sourceArray.getString(i);
-//                int position = findElementsInStringArray(mergeArray, value);
-//                if (position < 0) { // if not found, append to merge array
-//                    mergeArray.put(value);
-//                }
-//            }
-//            return true;
-//        } catch (JSONException e) {
-//            return false;
-//        }
-//    }
-
-//    /**
-//     * merges array elements
-//     * @param array
-//     * @param value
-//     * @return position of match
-//     */
-//    private int findElementsInStringArray(JSONArray array, final String value) {
-//        if(null != value) {
-//            try {
-//                for (int i = 0; i < array.length(); i++) {
-//                    String element = array.getString(i);
-//                    if (value.equals(element)) {
-//                        return i;
-//                    }
-//                }
-//            } catch (JSONException e) {
-//            }
-//        }
-//        return -1;
-//    }
-
-//    /**
-//     * Recursively merges a file into another
-//     * @param src
-//     * @param dest
-//     * @throws IOException
-//     */
-//    private void mergeRecursively(File src, File dest) throws IOException {
-//        if(src.isDirectory()) {
-//            File[] children = src.listFiles();
-//            for(File child:children) {
-//                mergeRecursively(child, new File(dest, child.getName()));
-//            }
-//        } else {
-//            FileUtils.deleteQuietly(dest);
-//            FileUtils.moveFile(src, dest);
-//        }
-//    }
 
     /**
      * Exports a target translation as a pdf file
@@ -696,7 +494,20 @@ public class Translator {
                         project = library.getProject(line, "en");
                         if(project == null) return null;
                         // create target translation
-                        targetTranslation = new TargetTranslation(targetLanguage.getId(), project.getId(), mRootDir);
+                        TranslationFormat format;
+                        if(project.getId() == "obs") {
+                            format = TranslationFormat.MARKDOWN;
+                        } else {
+                            format = TranslationFormat.USFM;
+                        }
+                        File targetTranslationDir = new File(mRootDir, TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), project.getId(), TranslationType.TEXT, Resource.Type.REGULAR));
+                        try {
+                            PackageInfo pInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
+                            // TRICKY: android only supports creating regular text translations
+                            targetTranslation = TargetTranslation.create(AppContext.getProfile().getNativeSpeaker(), format, targetLanguage, project.getId(), TranslationType.TEXT, Resource.Type.REGULAR, pInfo, targetTranslationDir);
+                        } catch (Exception e) {
+                            Logger.e(Translator.class.getName(), "Failed to create target translation from DokuWiki", e);
+                        }
                     } else if (!chapterId.isEmpty() && !frameId.isEmpty()) {
                         // retrieve chapter reference (end of chapter) and write chapter
                         ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(chapterId);
