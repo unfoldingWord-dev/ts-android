@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
  * Created by joel on 1/27/2015.
  * TODO: we need to provide support for rendering with a range of verses as well as provide accessor methods to the ranged verse numbers
  */
-public class USXVerseSpan extends Span {
+public class USXVerseSpan extends VerseSpan {
     public static final String PATTERN = "<verse\\s+number=\"(\\d+(-\\d+)?)\"\\s+style=\"v\"\\s*/>";
     private int mStartVerseNumber = 0;
     private int mEndVerseNumber = 0;

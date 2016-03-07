@@ -53,15 +53,15 @@ import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
+import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.rendering.ClickableRenderingEngine;
-import com.door43.translationstudio.rendering.ClickableRenderingEngineFactory;
-import com.door43.translationstudio.rendering.USXtoUSFMConverter;
-import com.door43.translationstudio.spannables.USXNoteSpan;
+import com.door43.translationstudio.spannables.NoteSpan;
+import com.door43.translationstudio.spannables.USFMNoteSpan;
 import com.door43.translationstudio.spannables.Span;
-import com.door43.translationstudio.spannables.USXVersePinSpan;
+import com.door43.translationstudio.spannables.VerseSpan;
 import com.door43.util.tasks.ThreadableUI;
 import com.door43.widget.ViewUtil;
 
@@ -848,7 +848,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 footnote = mContext.getResources().getString(R.string.footnote_label);
             }
 
-            USXNoteSpan footnoteSpannable = USXNoteSpan.generateFootnote(footnote);
+            USFMNoteSpan footnoteSpannable = USFMNoteSpan.generateFootnote(footnote);
             footnotecode = footnoteSpannable.getMachineReadable();
         }
 
@@ -1358,7 +1358,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      */
     private CharSequence renderTargetText(String text, TranslationFormat format, final Frame frame, final FrameTranslation frameTranslation, final ViewHolder holder, final ListItem item) {
         RenderingGroup renderingGroup = new RenderingGroup();
-        if(ClickableRenderingEngineFactory.isClickableFormat(format) && frame != null) {
+        if(Clickables.isClickableFormat(format) && frame != null) {
             Span.OnClickListener verseClickListener = new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
@@ -1371,7 +1371,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 @Override
                 public void onLongClick(final View view, Span span, int start, int end) {
                     ClipData dragData = ClipData.newPlainText(frame.getComplexId(), span.getMachineReadable());
-                    final USXVersePinSpan pin = ((USXVersePinSpan) span);
+                    final VerseSpan pin = ((VerseSpan) span);
 
                     // create drag shadow
                     LayoutInflater inflater = (LayoutInflater)AppContext.context().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -1454,8 +1454,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             Span.OnClickListener noteClickListener = new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
-                    if (span instanceof USXNoteSpan) {
-                        showFootnote(holder, item, (USXNoteSpan) span, start, end, true);
+                    if (span instanceof NoteSpan) {
+                        showFootnote(holder, item, (NoteSpan) span, start, end, true);
                     }
                 }
 
@@ -1465,7 +1465,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
             };
 
-            ClickableRenderingEngine renderer = setupRenderingGroup(format, renderingGroup, verseClickListener, noteClickListener, true);
+            ClickableRenderingEngine renderer = Clickables.setupRenderingGroup(format, renderingGroup, verseClickListener, noteClickListener, true);
             renderer.setPopulateVerseMarkers(frame.getVerseRange());
 
         } else {
@@ -1488,7 +1488,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param span
      * @param editable
      */
-    private void showFootnote(final ViewHolder holder, final ListItem item, final USXNoteSpan span, final int start, final int end, boolean editable) {
+    private void showFootnote(final ViewHolder holder, final ListItem item, final NoteSpan span, final int start, final int end, boolean editable) {
         CharSequence marker = span.getPassage();
         CharSequence title = mContext.getResources().getText(R.string.title_note);
         if(!marker.toString().isEmpty()) {
@@ -1569,13 +1569,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      */
     private CharSequence renderSourceText(String text, TranslationFormat format, final ViewHolder holder, final ListItem item, final boolean editable) {
         RenderingGroup renderingGroup = new RenderingGroup();
-        if (ClickableRenderingEngineFactory.isClickableFormat(format)) {
+        if (Clickables.isClickableFormat(format)) {
             // TODO: add click listeners for verses
             Span.OnClickListener noteClickListener = new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
-                    if(span instanceof USXNoteSpan) {
-                        showFootnote(holder, item, (USXNoteSpan) span, start, end, editable);
+                    if(span instanceof NoteSpan) {
+                        showFootnote(holder, item, (NoteSpan) span, start, end, editable);
                     }
                 }
 
@@ -1584,7 +1584,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
                 }
             };
-            setupRenderingGroup(format, renderingGroup, null, noteClickListener, false);
+            Clickables.setupRenderingGroup(format, renderingGroup, null, noteClickListener, false);
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));

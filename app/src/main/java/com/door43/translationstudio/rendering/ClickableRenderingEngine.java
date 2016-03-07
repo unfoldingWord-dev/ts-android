@@ -38,5 +38,6 @@ public abstract class ClickableRenderingEngine extends RenderingEngine {
      */
     public abstract CharSequence renderVerse(CharSequence in);
 
+    public abstract CharSequence getLeadingMajorSectionHeading(CharSequence in);
  }
 

@@ -41,10 +41,9 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.rendering.ClickableRenderingEngine;
-import com.door43.translationstudio.rendering.ClickableRenderingEngineFactory;
+import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
-import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.spannables.USXNoteSpan;
 import com.door43.translationstudio.spannables.Span;
@@ -784,7 +783,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
     private CharSequence renderText(String text, TranslationFormat format) {
         RenderingGroup renderingGroup = new RenderingGroup();
-        if (ClickableRenderingEngineFactory.isClickableFormat(format)) {
+        if (Clickables.isClickableFormat(format)) {
             // TODO: add click listeners for verses and notes
             Span.OnClickListener noteClickListener = new Span.OnClickListener() {
                 @Override
@@ -803,7 +802,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
                 }
             };
-            ClickableRenderingEngine renderer = setupRenderingGroup(format, renderingGroup, null, noteClickListener, true);
+            ClickableRenderingEngine renderer = Clickables.setupRenderingGroup(format, renderingGroup, null, noteClickListener, true);
             renderer.setVersesEnabled(false);
 
         } else {

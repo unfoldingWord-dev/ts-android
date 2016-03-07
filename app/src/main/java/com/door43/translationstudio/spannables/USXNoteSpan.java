@@ -45,7 +45,7 @@ import javax.xml.transform.stream.StreamResult;
 /**
  * Created by joel on 10/28/2014.
  */
-public class USXNoteSpan extends Span {
+public class USXNoteSpan extends NoteSpan {
     private final CharSequence mNotes;
     private final CharSequence mPassage;
     private final String mCaller;
@@ -183,6 +183,10 @@ public class USXNoteSpan extends Span {
         return "((ref:\""+ mPassage +"\",note:\""+ mNotes +"\"))";
     }
 
+    /**
+     * returns the caller
+     * @return
+     */
     public String getCaller() {
         return mCaller;
     }

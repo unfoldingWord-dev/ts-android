@@ -46,8 +46,6 @@ public class UpdateAppTask extends ManagedTask {
         SharedPreferences.Editor editor = settings.edit();
         int lastVersionCode = settings.getInt("last_version_code", 0);
 
-        lastVersionCode = 114; // TODO: 3/7/16 remove
-
         PackageInfo pInfo = null;
         try {
             pInfo = AppContext.context().getPackageManager().getPackageInfo(AppContext.context().getPackageName(), 0);

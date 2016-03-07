@@ -72,23 +72,6 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
     }
 
     /**
-     * setup rendering group for translation format
-     * @param format
-     * @param renderingGroup
-     * @param verseClickListener
-     * @param noteClickListener
-     * @param target - true if rendering target translations, false if source text
-     * @return
-     */
-    public ClickableRenderingEngine setupRenderingGroup(TranslationFormat format, RenderingGroup renderingGroup, Span.OnClickListener verseClickListener, Span.OnClickListener noteClickListener, boolean target) {
-
-        TranslationFormat defaultFormat = target ? TranslationFormat.USFM : TranslationFormat.USX;
-        ClickableRenderingEngine renderer = ClickableRenderingEngineFactory.create(format, defaultFormat, verseClickListener, noteClickListener);
-        renderingGroup.addEngine(renderer);
-        return renderer;
-    }
-
-    /**
      * Notifies the adapter that it should rebuild it's view holders
      */
     abstract void rebuild();

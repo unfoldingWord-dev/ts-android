@@ -33,12 +33,4 @@ public class ClickableRenderingEngineFactory {
         return renderer;
     }
 
-    /**
-     * test if this is a clickable format
-     * @param format
-     * @return
-     */
-    public static boolean isClickableFormat(TranslationFormat format) {
-        return (format == TranslationFormat.USX) || (format == TranslationFormat.USFM);
-    }
 }

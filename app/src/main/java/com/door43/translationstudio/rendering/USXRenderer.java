@@ -533,14 +533,11 @@ public class USXRenderer extends ClickableRenderingEngine {
      * Return the leading section heading, if any. Non-leading major section headings, and leading
      * headings of other types, are not included.
      *
-     * <p>As this is a static helper method, behavior is unaffected by the value of
-     * {@link mSuppressLeadingMajorSectionHeadings}.</p>
-     *
      * @see http://digitalbiblelibrary.org/static/docs/usx/parastyles.html
      * @param in The string to examine for a leading major section heading.
      * @return The leading major section heading; or the empty string if there is none.
      */
-    public static CharSequence getLeadingMajorSectionHeading(CharSequence in) {
+    public CharSequence getLeadingMajorSectionHeading(CharSequence in) {
         Pattern pattern = paraPattern("ms");
         Matcher matcher = pattern.matcher(in);
 
