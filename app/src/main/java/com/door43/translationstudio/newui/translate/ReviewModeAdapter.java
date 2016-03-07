@@ -1770,7 +1770,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             if(isChapterReference || isChapterTitle) {
                 frameTranslation = null;
                 chapterTranslation = targetTranslation.getChapterTranslation(chapter);
-                translationFormat = chapterTranslation.getFormat();
+                translationFormat = targetTranslation.getFormat();
                 if (isChapterTitle) {
                     bodyTranslation = chapterTranslation.title;
                     bodySource = chapter.title;
@@ -1788,24 +1788,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             } else {
                 chapterTranslation = null;
                 frameTranslation = targetTranslation.getFrameTranslation(frame);
-                translationFormat = frameTranslation.getFormat();
+                translationFormat = targetTranslation.getFormat();
                 bodyTranslation = frameTranslation.body;
                 bodySource = frame.body;
                 isTranslationFinished = frameTranslation.isFinished();
             }
-
-            // TODO: 3/3/16 remove - for testing
-            Logger.i(TAG,"converted from: " + bodyTranslation);
-            bodyTranslation = USXtoUSFMConverter.doConversion(bodyTranslation).toString();
-            translationFormat = TranslationFormat.USFM;
-            if(frameTranslation != null) {
-                frameTranslation.setFormat(translationFormat);
-            }
-            if(chapterTranslation != null) {
-                chapterTranslation.setFormat(translationFormat);
-            }
-//            System.out.print(out);
-            Logger.i(TAG,"converted to: " + bodyTranslation);
         }
 
     }

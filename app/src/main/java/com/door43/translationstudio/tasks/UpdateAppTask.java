@@ -13,6 +13,7 @@ import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
+import com.door43.translationstudio.core.TranslationConvertFromUSXtoUSFMformt;
 import com.door43.translationstudio.core.Translator;
 import com.door43.util.FileUtilities;
 import com.door43.util.tasks.ManagedTask;
@@ -48,6 +49,9 @@ public class UpdateAppTask extends ManagedTask {
         SharedPreferences settings = AppContext.context().getSharedPreferences(MainApplication.PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         int lastVersionCode = settings.getInt("last_version_code", 0);
+
+        lastVersionCode = 114; // TODO: 3/7/16 testing - remove
+
         PackageInfo pInfo = null;
         try {
             pInfo = AppContext.context().getPackageManager().getPackageInfo(AppContext.context().getPackageName(), 0);
@@ -149,6 +153,10 @@ public class UpdateAppTask extends ManagedTask {
      */
     private void upgradePre115() {
         AppContext.context().deleteDatabase(Library.DATABASE_NAME);
+        TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
+        for (TargetTranslation tt : targetTranslations) {
+            TranslationConvertFromUSXtoUSFMformt.convertProject(tt.getId());
+        }
     }
 
     /**
