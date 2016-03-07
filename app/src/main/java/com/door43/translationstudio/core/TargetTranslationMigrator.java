@@ -268,7 +268,7 @@ public class TargetTranslationMigrator {
             }
             manifest.put("translators", translators);
             manifest.put("package_version", 3);
-            FileUtils.write(path, manifest.toString());
+            FileUtils.write(path, manifest.toString(2));
         }
         return true;
     }
@@ -343,7 +343,7 @@ public class TargetTranslationMigrator {
         }
 
         manifest.put("package_version", 2);
-        FileUtils.write(path, manifest.toString());
+        FileUtils.write(path, manifest.toString(2));
         return true;
     }
 

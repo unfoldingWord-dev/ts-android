@@ -117,11 +117,18 @@ public class UpdateAppTask extends ManagedTask {
      * add a new migration path each time
      */
     private void updateTargetTranslations() {
-        TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
-        for(TargetTranslation tt:targetTranslations) {
-            if(!TargetTranslationMigrator.migrate(tt.getPath())) {
-                Logger.w(this.getClass().getName(), "Failed to migrate the target translation " + tt.getId());
+        // TRICKY: we manually list the target translations because they won't be viewable util updated
+        File translatorDir = AppContext.getTranslator().getPath();
+        File[] dirs = translatorDir.listFiles();
+        for(File tt:dirs) {
+            if(!TargetTranslationMigrator.migrate(tt)) {
+                Logger.w(this.getClass().getName(), "Failed to migrate the target translation " + tt.getName());
             }
+        }
+
+        // commit migration changes
+        TargetTranslation[] translations = AppContext.getTranslator().getTargetTranslations();
+        for(TargetTranslation tt:translations) {
             try {
                 tt.commitSync();
             } catch (Exception e) {
