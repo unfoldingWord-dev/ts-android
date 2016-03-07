@@ -4,9 +4,14 @@ import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
+import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.core.TranslationNote;
+import com.door43.translationstudio.rendering.ClickableRenderingEngine;
+import com.door43.translationstudio.rendering.ClickableRenderingEngineFactory;
+import com.door43.translationstudio.rendering.RenderingGroup;
+import com.door43.translationstudio.spannables.Span;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +69,23 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
      */
     public void setOnClickListener(OnEventListener listener) {
         mListener = listener;
+    }
+
+    /**
+     * setup rendering group for translation format
+     * @param format
+     * @param renderingGroup
+     * @param verseClickListener
+     * @param noteClickListener
+     * @param target - true if rendering target translations, false if source text
+     * @return
+     */
+    public ClickableRenderingEngine setupRenderingGroup(TranslationFormat format, RenderingGroup renderingGroup, Span.OnClickListener verseClickListener, Span.OnClickListener noteClickListener, boolean target) {
+
+        TranslationFormat defaultFormat = target ? TranslationFormat.USFM : TranslationFormat.USX;
+        ClickableRenderingEngine renderer = ClickableRenderingEngineFactory.create(format, defaultFormat, verseClickListener, noteClickListener);
+        renderingGroup.addEngine(renderer);
+        return renderer;
     }
 
     /**

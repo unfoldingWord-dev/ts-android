@@ -1481,23 +1481,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     * setup rendering group for translation format
-     * @param format
-     * @param renderingGroup
-     * @param verseClickListener
-     * @param noteClickListener
-     * @param target - true if rendering target translations, false if source text
-     * @return
-     */
-    private ClickableRenderingEngine setupRenderingGroup(TranslationFormat format, RenderingGroup renderingGroup, Span.OnClickListener verseClickListener, Span.OnClickListener noteClickListener, boolean target) {
-
-        TranslationFormat defaultFormat = target ? TranslationFormat.USFM : TranslationFormat.USX;
-        ClickableRenderingEngine renderer = ClickableRenderingEngineFactory.create(format, defaultFormat, verseClickListener, noteClickListener);
-        renderingGroup.addEngine(renderer);
-        return renderer;
-    }
-
-    /**
      * display selected footnote in dialog.  If editable, then it adds options to delete and edit
      *      the footnote
      * @param holder
