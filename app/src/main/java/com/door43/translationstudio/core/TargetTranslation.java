@@ -177,6 +177,31 @@ public class TargetTranslation {
     }
 
     /**
+     * apply new format to translation
+     * @param translationFormat
+     */
+    public void applyFormat(TranslationFormat translationFormat) {
+        manifest.put("format", translationFormat.toString());
+    }
+
+    /**
+     * get format of translation
+     * @return
+     */
+    public TranslationFormat getFormat() {
+        String formatStr = manifest.getString("format");
+        TranslationFormat format = TranslationFormat.get(formatStr);
+        if(null == format) {
+            if ((Resource.Type.UNLOCKED_DYNAMIC_BIBLE == resourceType) || (Resource.Type.UNLOCKED_LITERAL_BIBLE == resourceType)) {
+                return TranslationFormat.USX;
+            } else {
+                return TranslationFormat.USFM;
+            }
+        }
+        return format;
+    }
+
+    /**
      * Opens an existing target translation.
      * @param targetTranslationDir
      * @return null if the directory does not exist or the manifest is invalid
@@ -492,7 +517,7 @@ public class TargetTranslation {
                 e.printStackTrace();
             }
         }
-        return new ChapterTranslation(title, reference, chapterSlug, isChapterTitleFinished(chapterSlug), isChapterReferenceFinished(chapterSlug));
+        return new ChapterTranslation(title, reference, chapterSlug, isChapterTitleFinished(chapterSlug), isChapterReferenceFinished(chapterSlug), getFormat());
     }
 
     /**

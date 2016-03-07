@@ -12,13 +12,13 @@ public class ChapterTranslation {
     private final boolean referenceFinished;
     private TranslationFormat mTranslationFormat;
 
-    public ChapterTranslation(String title, String reference, String chapterId, boolean titleFinished, boolean referenceFinished) {
+    public ChapterTranslation(String title, String reference, String chapterId, boolean titleFinished, boolean referenceFinished, TranslationFormat translationFormat) {
         this.title = title;
         this.reference = reference;
         mId = chapterId;
         this.titleFinished = titleFinished;
         this.referenceFinished = referenceFinished;
-        mTranslationFormat = TranslationFormat.DEFAULT;
+        mTranslationFormat = translationFormat;
     }
 
     /**
