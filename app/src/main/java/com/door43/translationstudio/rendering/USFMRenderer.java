@@ -10,7 +10,7 @@ import android.text.TextUtils;
 import android.text.style.AlignmentSpan;
 import android.text.style.StyleSpan;
 
-import com.door43.translationstudio.spannables.USXChar;
+import com.door43.translationstudio.spannables.USFMChar;
 import com.door43.translationstudio.spannables.USFMNoteSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.USFMVersePinSpan;
@@ -114,7 +114,7 @@ public class USFMRenderer extends ClickableRenderingEngine {
      */
     private CharSequence renderSelah(CharSequence in) {
         CharSequence out = "";
-        Pattern pattern = USXChar.getPattern(USXChar.STYLE_SELAH);
+        Pattern pattern = USFMChar.getPattern(USFMChar.STYLE_SELAH);
         Matcher matcher = pattern.matcher(in);
         int lastIndex = 0;
         while(matcher.find()) {
