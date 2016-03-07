@@ -4,14 +4,7 @@ import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
-import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.TranslationViewMode;
-import com.door43.translationstudio.core.TranslationWord;
-import com.door43.translationstudio.core.TranslationNote;
-import com.door43.translationstudio.rendering.ClickableRenderingEngine;
-import com.door43.translationstudio.rendering.ClickableRenderingEngineFactory;
-import com.door43.translationstudio.rendering.RenderingGroup;
-import com.door43.translationstudio.spannables.Span;
 
 import java.util.ArrayList;
 import java.util.List;

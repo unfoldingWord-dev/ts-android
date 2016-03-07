@@ -3,7 +3,7 @@ package com.door43.translationstudio.spannables;
 import android.text.SpannableStringBuilder;
 
 /**
- * Created by blm on 3/7/16.
+ * abstract base class for NoteSpans
  */
 public abstract class NoteSpan extends Span {
 

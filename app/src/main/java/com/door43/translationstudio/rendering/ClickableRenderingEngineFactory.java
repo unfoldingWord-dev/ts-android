@@ -4,7 +4,7 @@ import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.spannables.Span;
 
 /**
- * Created by blm on 3/3/16.
+ * ClickableRenderingEngineFactory for creating ClickableRenderingEngine based on format
  */
 public class ClickableRenderingEngineFactory {
 

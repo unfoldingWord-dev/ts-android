@@ -43,7 +43,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 /**
- * Created by joel on 10/28/2014.
+ * Class to create NoteSpans from USX format text
  */
 public class USXNoteSpan extends NoteSpan {
     private final CharSequence mNotes;

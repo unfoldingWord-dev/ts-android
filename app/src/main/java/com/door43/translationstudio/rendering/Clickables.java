@@ -6,7 +6,7 @@ import com.door43.translationstudio.spannables.USFMNoteSpan;
 import com.door43.translationstudio.spannables.USXNoteSpan;
 
 /**
- * Created by blm on 3/7/16.
+ * Class to support clickable spans
  */
 public class Clickables {
 
