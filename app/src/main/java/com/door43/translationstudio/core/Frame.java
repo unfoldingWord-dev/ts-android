@@ -1,5 +1,6 @@
 package com.door43.translationstudio.core;
 
+import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.spannables.USFMVerseSpan;
 import com.door43.translationstudio.spannables.USXVerseSpan;
 
@@ -106,7 +107,7 @@ public class Frame {
      * @return
      */
     public String getTitle() {
-        if((mFormat == TranslationFormat.USX) || (mFormat == TranslationFormat.USFM)) {
+        if(Clickables.isClickableFormat(mFormat)) {
             // get verse range
             int[] verses = getVerseRange();
             if(verses.length == 1) {
@@ -127,7 +128,7 @@ public class Frame {
      * @return
      */
     public String getStartVerse() {
-        if((mFormat == TranslationFormat.USX) || (mFormat == TranslationFormat.USFM)) {
+        if(Clickables.isClickableFormat(mFormat)) {
             // get verse range
             int[] verses = getVerseRange();
             if(verses.length > 0) {
@@ -142,7 +143,7 @@ public class Frame {
      * @return
      */
     public String getEndVerse() {
-        if((mFormat == TranslationFormat.USX) || (mFormat == TranslationFormat.USFM)) {
+        if(Clickables.isClickableFormat(mFormat)) {
             // get verse range
             int[] verses = getVerseRange();
             if(verses.length == 1) {

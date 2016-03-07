@@ -191,12 +191,8 @@ public class TargetTranslation {
     public TranslationFormat getFormat() {
         String formatStr = manifest.getString("format");
         TranslationFormat format = TranslationFormat.get(formatStr);
-        if(null == format) {
-            if ((Resource.Type.UNLOCKED_DYNAMIC_BIBLE == resourceType) || (Resource.Type.UNLOCKED_LITERAL_BIBLE == resourceType)) {
-                return TranslationFormat.USX;
-            } else {
-                return TranslationFormat.USFM;
-            }
+        if(null == format) { // format not specified, use default of USX used in older versions
+            return TranslationFormat.USX;
         }
         return format;
     }
