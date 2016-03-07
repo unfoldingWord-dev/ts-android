@@ -13,13 +13,9 @@ import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
-import com.door43.translationstudio.core.TranslationConvertFromUSXtoUSFMformt;
-import com.door43.translationstudio.core.Translator;
-import com.door43.util.FileUtilities;
 import com.door43.util.tasks.ManagedTask;
 
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jgit.errors.IllegalTodoFileModification;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,7 +46,7 @@ public class UpdateAppTask extends ManagedTask {
         SharedPreferences.Editor editor = settings.edit();
         int lastVersionCode = settings.getInt("last_version_code", 0);
 
-        lastVersionCode = 114; // TODO: 3/7/16 testing - remove
+        lastVersionCode = 114; // TODO: 3/7/16 remove
 
         PackageInfo pInfo = null;
         try {
@@ -154,9 +150,7 @@ public class UpdateAppTask extends ManagedTask {
     private void upgradePre115() {
         AppContext.context().deleteDatabase(Library.DATABASE_NAME);
         TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
-        for (TargetTranslation tt : targetTranslations) {
-            TranslationConvertFromUSXtoUSFMformt.convertProject(tt.getId());
-        }
+        TargetTranslationMigrator.migrateFromUSXtoUSFM(targetTranslations);
     }
 
     /**

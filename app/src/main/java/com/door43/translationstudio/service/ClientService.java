@@ -361,7 +361,7 @@ public class ClientService extends NetworkService {
                                     String[] targetTranslationSlugs = translator.importArchive(file);
 
                                     TargetTranslationMigrator.migrateChunkChanges(translator, AppContext.getLibrary(), targetTranslationSlugs);
-
+                                    TargetTranslationMigrator.migrateFromUSXtoUSFM(targetTranslationSlugs);
                                     if(listener != null) {
                                         listener.onReceivedTargetTranslations(server, targetTranslationSlugs);
                                     }

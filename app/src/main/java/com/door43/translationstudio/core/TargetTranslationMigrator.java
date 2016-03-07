@@ -2,7 +2,7 @@ package com.door43.translationstudio.core;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
-import com.door43.util.Manifest;
+import com.door43.translationstudio.rendering.USXtoUSFMConverter;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
@@ -10,7 +10,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Iterator;
 
 /**
@@ -347,7 +346,66 @@ public class TargetTranslationMigrator {
         return true;
     }
 
-   /**
+    /**
+     * convert projects from USX to USFM
+     * @param targetTranslations
+     * @return
+     */
+    public static boolean migrateFromUSXtoUSFM(TargetTranslation[] targetTranslations) {
+        boolean success = true;
+        for (TargetTranslation tt : targetTranslations) {
+            success = success && migrateFromUSXtoUSFM(tt.getId());
+        }
+        return success;
+    }
+
+    /**
+     * convert projects from USX to USFM
+     * @param targetTranslations
+     * @return
+     */
+    public static boolean migrateFromUSXtoUSFM(String[] targetTranslations) {
+        boolean success = true;
+        for (String targetTranslation : targetTranslations) {
+            success = success && migrateFromUSXtoUSFM(targetTranslation);
+        }
+        return success;
+    }
+
+    /**
+     * convert project from USX to USFM
+     * @param targetTranslationId
+     * @return
+     */
+    public static boolean migrateFromUSXtoUSFM(String targetTranslationId) {
+
+        Translator translator = AppContext.getTranslator();
+        TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationId);
+
+        TranslationFormat format = targetTranslation.getFormat();
+        if(TranslationFormat.USFM == format) {
+            return true; // nothing to do
+
+        } else if(TranslationFormat.USX == format) {
+            ChapterTranslation[] chapters = targetTranslation.getChapterTranslations();
+            for (ChapterTranslation c : chapters) {
+                FrameTranslation[] frameTranslations = targetTranslation.getFrameTranslations(c.getId(), format);
+                for (FrameTranslation frameTranslation : frameTranslations) {
+
+                    String text = frameTranslation.body;
+                    String usfm = USXtoUSFMConverter.doConversion(text).toString();
+                    targetTranslation.applyFrameTranslation(frameTranslation, usfm);
+                }
+            }
+
+            targetTranslation.applyFormat(TranslationFormat.USFM); // flag that this project is all converted
+            return true;
+        } else {
+            return false; // format not supported
+        }
+    }
+
+    /**
     * Merges chunks found in the target translation projects that do not exist in the source translation
     * to a sibling chunk so that no data is lost.
     * @param library

@@ -211,6 +211,7 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
                     }
 
                     TargetTranslationMigrator.migrateChunkChanges(AppContext.getLibrary(), targetTranslation);
+                    TargetTranslationMigrator.migrateFromUSXtoUSFM(targetTranslation.getId());
                 }
 
                 FileUtils.deleteQuietly(sourcePath);

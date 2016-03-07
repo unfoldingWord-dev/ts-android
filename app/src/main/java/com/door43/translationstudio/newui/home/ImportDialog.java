@@ -196,6 +196,7 @@ public class ImportDialog extends DialogFragment {
                 final Translator translator = AppContext.getTranslator();
                 final String[] targetTranslationSlugs = translator.importArchive(file);
                 TargetTranslationMigrator.migrateChunkChanges(translator, AppContext.getLibrary(), targetTranslationSlugs);
+                TargetTranslationMigrator.migrateFromUSXtoUSFM(targetTranslationSlugs);
                 showImportResults(R.string.import_success, file.toString());
             } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "Failed to import the archive", e);
@@ -221,6 +222,7 @@ public class ImportDialog extends DialogFragment {
                 final Translator translator = AppContext.getTranslator();
                 final String[] targetTranslationSlugs = translator.importArchive(in, uri.getPath());
                 TargetTranslationMigrator.migrateChunkChanges(translator, AppContext.getLibrary(), targetTranslationSlugs);
+                TargetTranslationMigrator.migrateFromUSXtoUSFM(targetTranslationSlugs);
                 showImportResults(R.string.import_success, SdUtils.getPathString(uri.toString()));
             } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "Failed to import the archive", e);

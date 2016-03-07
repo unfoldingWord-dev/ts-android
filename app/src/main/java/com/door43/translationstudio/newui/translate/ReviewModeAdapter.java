@@ -1794,6 +1794,5 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 isTranslationFinished = frameTranslation.isFinished();
             }
         }
-
     }
 }
