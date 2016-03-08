@@ -248,10 +248,10 @@ public class TargetTranslationMigrator {
         }
 
         FileUtils.write(path, manifest.toString(2)); // flush changes before migration
-        boolean success = migrateFromUSXtoUSFM(manifest, path.getParentFile());
+        migrateFromUSXtoUSFM(manifest, path.getParentFile());
 
         FileUtils.write(path, manifest.toString(2));
-        return success;
+        return true;
     }
 
     /**
