@@ -57,6 +57,7 @@ public class TargetTranslation {
     public static final String FIELD_PROJECT = "project";
     public static final String FIELD_GENERATOR = "generator";
     public static final String TRANSLATION_TYPE = "type";
+    public static final String TRANSLATION_FORMAT = "format";
 
     private final File targetTranslationDir;
     private final Manifest manifest;
@@ -202,24 +203,28 @@ public class TargetTranslation {
      * @return
      */
     private TranslationFormat readTranslationFormat() {
-        String formatStr = manifest.getString("format");
-        TranslationFormat format = TranslationFormat.get(formatStr);
+        TranslationFormat format = fetchTranslationFormat(manifest);
         if(null == format) {
-            TranslationType translationType = fetchTranslationType();
+            TranslationType translationType = fetchTranslationType(manifest);
             if(translationType != TranslationType.TEXT) {
                 return TranslationFormat.MARKDOWN;
             } else {
-                String projectIdStr = fetchProjectID();
+                String projectIdStr = fetchProjectID(manifest);
                 if("obs".equalsIgnoreCase(projectIdStr)) {
                     return TranslationFormat.MARKDOWN;
                 }
-                return TranslationFormat.USX; // this will force an upgrade to USFM
+                return TranslationFormat.USFM;
             }
         }
         return format;
     }
 
-    private String fetchProjectID() {
+    public static TranslationFormat fetchTranslationFormat(Manifest manifest) {
+        String formatStr = manifest.getString(TRANSLATION_FORMAT);
+        return TranslationFormat.get(formatStr);
+    }
+
+    public static String fetchProjectID(Manifest manifest) {
         String projectIdStr = "";
         JSONObject projectIdJson = manifest.getJSONObject(FIELD_PROJECT);
         if(projectIdJson != null) {
@@ -232,7 +237,7 @@ public class TargetTranslation {
         return projectIdStr;
     }
 
-    private TranslationType fetchTranslationType() {
+    public static TranslationType fetchTranslationType(Manifest manifest) {
         String translationTypeStr = "";
         JSONObject typeJson = manifest.getJSONObject(TRANSLATION_TYPE);
         if(typeJson != null) {

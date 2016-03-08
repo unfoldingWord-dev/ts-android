@@ -3,6 +3,7 @@ package com.door43.translationstudio.core;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.rendering.USXtoUSFMConverter;
+import com.door43.util.Manifest;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
@@ -366,7 +367,7 @@ public class TargetTranslationMigrator {
         TargetTranslation targetTranslation = TargetTranslation.open(targetTranslationDir);
         if(null != targetTranslation) {
 
-            TranslationFormat format = targetTranslation.getFormat();
+            TranslationFormat format = readTranslationFormat(targetTranslation);
             if(TranslationFormat.USFM == format) {
                 return true; // nothing to do
 
@@ -394,6 +395,29 @@ public class TargetTranslationMigrator {
 
         }
         return false;
+    }
+
+    /**
+     * read the format of the translation
+     * @return
+     */
+    private static TranslationFormat readTranslationFormat(TargetTranslation targetTranslation) {
+        Manifest manifest = Manifest.generate(targetTranslation.getPath());
+        TranslationFormat format = TargetTranslation.fetchTranslationFormat(manifest);
+        if (null == format) {
+            TranslationType translationType = TargetTranslation.fetchTranslationType(manifest);
+            if (translationType != TranslationType.TEXT) {
+                return TranslationFormat.MARKDOWN;
+            } else {
+                String projectIdStr = TargetTranslation.fetchProjectID(manifest);
+                if ("obs".equalsIgnoreCase(projectIdStr)) {
+                    return TranslationFormat.MARKDOWN;
+                }
+                return TranslationFormat.USX; // this will force an upgrade to USFM
+            }
+        }
+
+        return format;
     }
 
     /**
