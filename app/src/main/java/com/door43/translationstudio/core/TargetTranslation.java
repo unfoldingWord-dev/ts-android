@@ -137,6 +137,14 @@ public class TargetTranslation {
     }
 
     /**
+     * Returns the resource type/slug
+     * @return
+     */
+    public Resource.Type getResourceType() {
+        return this.resourceType;
+    }
+
+    /**
      * Returns the directory to this target translation
      * @return
      */
