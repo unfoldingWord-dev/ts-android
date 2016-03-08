@@ -128,24 +128,28 @@ public class TargetTranslationMigrator {
             String resourceId = manifest.getString("resource_id");
             manifest.remove("resource_id");
             JSONObject resourceJson = new JSONObject();
-            resourceJson.put("id", resourceId);
+            // TRICKY: supported resource id's (or now types) are "reg", "ulb", and "udb".
             if (resourceId.equals("ulb")) {
                 resourceJson.put("name", "Unlocked Literal Bible");
             } else if (resourceId.equals("udb")) {
                 resourceJson.put("name", "Unlocked Dynamic Bible");
             } else {
-                resourceJson.put("name", resourceId.toUpperCase());
+                // everything else changes to "reg"
+                resourceId = "reg";
+                resourceJson.put("name", "Regular");
             }
+            resourceJson.put("id", resourceId);
             manifest.put("resource", resourceJson);
         } else if(!manifest.has("resource")) {
             // add missing resource
             JSONObject resourceJson = new JSONObject();
             JSONObject projectJson = manifest.getJSONObject("project");
             JSONObject typeJson = manifest.getJSONObject("type");
-            if(TranslationType.get(typeJson.getString("id")) == TranslationType.TEXT) {
+            if(typeJson.getString("id").equals("text")) {
                 if(projectJson.getString("id").equals("obs")) {
-                    resourceJson.put("id", "obs");
-                    resourceJson.put("name", "Open Bible Stories");
+                    // obs switches to reg
+                    resourceJson.put("id", "reg");
+                    resourceJson.put("name", "Regular");
                 } else {
                     resourceJson.put("id", "ulb");
                     resourceJson.put("name", "Unlocked Literal Bible");
@@ -287,7 +291,7 @@ public class TargetTranslationMigrator {
             }
             manifest.put("translators", translators);
             manifest.put("package_version", 3);
-            FileUtils.write(path, manifest.toString());
+            FileUtils.write(path, manifest.toString(2));
         }
         return true;
     }
@@ -362,7 +366,7 @@ public class TargetTranslationMigrator {
         }
 
         manifest.put("package_version", 2);
-        FileUtils.write(path, manifest.toString());
+        FileUtils.write(path, manifest.toString(2));
         return true;
     }
 

@@ -14,15 +14,14 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.Translator;
+import com.door43.util.FileUtilities;
 import com.door43.util.tasks.ManagedTask;
 
 import org.apache.commons.io.FileUtils;
+import org.eclipse.jgit.errors.IllegalTodoFileModification;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * This tasks performs any upgrades that need to occur between app versions
@@ -49,7 +48,6 @@ public class UpdateAppTask extends ManagedTask {
         SharedPreferences settings = AppContext.context().getSharedPreferences(MainApplication.PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         int lastVersionCode = settings.getInt("last_version_code", 0);
-
         PackageInfo pInfo = null;
         try {
             pInfo = AppContext.context().getPackageManager().getPackageInfo(AppContext.context().getPackageName(), 0);
@@ -119,59 +117,25 @@ public class UpdateAppTask extends ManagedTask {
      * add a new migration path each time
      */
     private void updateTargetTranslations() {
-        File[] targetTranslations = getTargetTranslations();
-        for(File targetFile:targetTranslations) {
-            Logger.i(this.getClass().getName(), "Migrating: " + targetFile.toString());
-            if(!TargetTranslationMigrator.migrate(targetFile)) {
-                Logger.w(this.getClass().getName(), "Failed to migrate the target translation " + targetFile);
+        // TRICKY: we manually list the target translations because they won't be viewable util updated
+        File translatorDir = AppContext.getTranslator().getPath();
+        File[] dirs = translatorDir.listFiles();
+        for(File tt:dirs) {
+            if(!TargetTranslationMigrator.migrate(tt)) {
+                Logger.w(this.getClass().getName(), "Failed to migrate the target translation " + tt.getName());
             }
+        }
+
+        // commit migration changes
+        TargetTranslation[] translations = AppContext.getTranslator().getTargetTranslations();
+        for(TargetTranslation tt:translations) {
             try {
-                TargetTranslation translation = AppContext.getTranslator().getTargetTranslation(targetFile.getName());
-                translation.commitSync();
-                Logger.i(this.getClass().getName(), "Sync Completed: " + targetFile.toString());
+                tt.commitSync();
             } catch (Exception e) {
-                Logger.e(this.getClass().getName(), "Failed to commit migration changes to target translation " + targetFile);
+                Logger.e(this.getClass().getName(), "Failed to commit migration changes to target translation " + tt.getId());
             }
         }
     }
-
-    /**
-     * Returns an array of all translations
-     * @return
-     */
-    public File[] getTargetTranslations() {
-        final Translator translator = AppContext.getTranslator();
-        final File rootDir = translator.getPath();
-        final List<File> translations = new ArrayList<>();
-        rootDir.list(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String filename) {
-                if (!filename.equalsIgnoreCase("cache") && new File(dir, filename).isDirectory()) {
-                    TargetTranslation translation = translator.getTargetTranslation(filename);
-
-                    if( null == translation) { // also get translations that need to be upgraded
-                        File targetTranslationDir = new File(rootDir, filename);
-                        File manifestFile = new File(targetTranslationDir, "manifest.json");
-                        if (manifestFile.exists()) {
-                            try {
-                                translations.add(targetTranslationDir);
-                            } catch (Exception e) {
-                            }
-                        }
-                    }
-                    else
-                    {
-                        translations.add(translation.getPath());
-                    }
-                }
-                return false;
-            }
-        });
-
-        return translations.toArray(new File[translations.size()]);
-    }
-
-
 
     /**
      * Updates the generator information for the target translations

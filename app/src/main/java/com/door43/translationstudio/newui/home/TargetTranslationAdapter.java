@@ -13,6 +13,7 @@ import android.widget.TextView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
+import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.AppContext;
 import com.door43.util.tasks.ThreadableUI;
@@ -82,7 +83,12 @@ public class TargetTranslationAdapter extends BaseAdapter {
         final Library library = AppContext.getLibrary();
         Project project = library.getProject(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
         if(project != null) {
-            holder.mTitleView.setText(project.name);
+            if(targetTranslation.getResourceType() != Resource.Type.REGULAR) {
+                // display the resource type if not a regular resource e.g. this is for a gateway language
+                holder.mTitleView.setText(project.name + " (" + targetTranslation.getResourceType() + ")");
+            } else {
+                holder.mTitleView.setText(project.name);
+            }
         } else {
             holder.mTitleView.setText(targetTranslation.getProjectId());
         }

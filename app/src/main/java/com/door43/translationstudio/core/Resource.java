@@ -312,10 +312,11 @@ public class Resource {
     }
 
     /**
-     * Represents the differnt types of resources available
+     * Represents the different types of resources available
      */
     public enum Type {
         REGULAR("reg"),
+        // the two below are specific to Gateway Languages
         UNLOCKED_LITERAL_BIBLE("ulb"),
         UNLOCKED_DYNAMIC_BIBLE("udb");
 
