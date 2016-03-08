@@ -210,7 +210,7 @@ public class TargetTranslation {
                 return TranslationFormat.MARKDOWN;
             } else {
                 String projectIdStr = fetchProjectID();
-                if("obs".equals(projectIdStr)) {
+                if("obs".equalsIgnoreCase(projectIdStr)) {
                     return TranslationFormat.MARKDOWN;
                 }
                 return TranslationFormat.USX; // this will force an upgrade to USFM
