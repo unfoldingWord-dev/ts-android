@@ -480,37 +480,6 @@ public class TargetTranslationMigrator {
         return  success;
     }
 
-//    /**
-//     * Merges chunks found in the target translation projects that do not exist in the source translation
-//     * to a sibling chunk so that no data is lost.
-//     * @param translationSlugs target translations to merge
-//     * @return
-//     */
-//    private static boolean migrateChunkChanges(final Translator translator, final String[] translationSlugs) {
-//        boolean mergeSuccess = true;
-//        for (String translationSlug : translationSlugs) {
-//            final TargetTranslation targetTranslation = translator.getTargetTranslation(translationSlug);
-//            boolean success = migrateChunkChanges(targetTranslation);
-//            mergeSuccess = mergeSuccess && success;
-//        }
-//        return mergeSuccess;
-//    }
-//
-//    /**
-//     * Merges chunks found in the target translation projects that do not exist in the source translation
-//     * to a sibling chunk so that no data is lost.
-//     * @param targetTranslations target translations to merge
-//     * @return
-//     */
-//    private static boolean migrateChunkChanges(final TargetTranslation[] targetTranslations) {
-//        boolean mergeSuccess = true;
-//        for (TargetTranslation targetTranslation : targetTranslations) {
-//            boolean success = migrateChunkChanges(targetTranslation);
-//            mergeSuccess = mergeSuccess && success;
-//        }
-//        return mergeSuccess;
-//    }
-
     /**
      * Merges chunks found in a target translation Project that do not exist in the source translation
      * to a sibling chunk so that no data is lost.
