@@ -46,6 +46,8 @@ public class UpdateAppTask extends ManagedTask {
         SharedPreferences.Editor editor = settings.edit();
         int lastVersionCode = settings.getInt("last_version_code", 0);
 
+        lastVersionCode = 114; // TODO: 3/8/16 remove
+
         PackageInfo pInfo = null;
         try {
             pInfo = AppContext.context().getPackageManager().getPackageInfo(AppContext.context().getPackageName(), 0);
@@ -147,8 +149,6 @@ public class UpdateAppTask extends ManagedTask {
      */
     private void upgradePre115() {
         AppContext.context().deleteDatabase(Library.DATABASE_NAME);
-        TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
-        TargetTranslationMigrator.migrateFromUSXtoUSFM(targetTranslations);
     }
 
     /**
@@ -210,11 +210,6 @@ public class UpdateAppTask extends ManagedTask {
         } catch (Exception e) {
             Logger.e(this.getClass().getName(), "Failed to deploy the default index", e);
         }
-
-        // migrate broken chunks
-        TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
-        TargetTranslationMigrator.migrateChunkChanges(AppContext.getLibrary(), targetTranslations);
-
     }
 
     /**

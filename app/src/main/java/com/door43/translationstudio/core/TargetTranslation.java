@@ -70,6 +70,8 @@ public class TargetTranslation {
     private Resource.Type resourceType = null;
     private String resourceTypeName = null;
 
+    private TranslationFormat mTranslationFormat;
+
     /**
      * Creates a new instance of the target translation
      * @param targetTranslationDir
@@ -100,6 +102,8 @@ public class TargetTranslation {
             this.resourceType = Resource.Type.get(resourceJson.getString("id"));
             this.resourceTypeName = Manifest.valueExists(resourceJson, "name") ? resourceJson.getString("name") : this.resourceType.toString().toUpperCase();
         }
+
+        mTranslationFormat = readTranslationFormat();
     }
 
     /**
@@ -177,22 +181,22 @@ public class TargetTranslation {
     }
 
     /**
-     * apply new format to translation
-     * @param translationFormat
-     */
-    public void applyFormat(TranslationFormat translationFormat) {
-        manifest.put("format", translationFormat.toString());
-    }
-
-    /**
      * get format of translation
      * @return
      */
     public TranslationFormat getFormat() {
+        return mTranslationFormat;
+    }
+
+    private TranslationFormat readTranslationFormat() {
         String formatStr = manifest.getString("format");
         TranslationFormat format = TranslationFormat.get(formatStr);
-        if(null == format) { // format not specified, use default of USX used in older versions
-            return TranslationFormat.USX;
+        if(null == format) {
+            if ((Resource.Type.UNLOCKED_DYNAMIC_BIBLE == resourceType) || (Resource.Type.UNLOCKED_LITERAL_BIBLE == resourceType)) {
+                return TranslationFormat.USX;
+            } else {  // open bible stories are already USFM
+                return TranslationFormat.USFM;
+            }
         }
         return format;
     }

@@ -166,6 +166,7 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
             if(restoreHEAD) {
                 // copy HEAD of the temp repo onto the existing one
                 File sourcePath = ((CloneTargetTranslationTask)task).getLocalPath();
+                boolean success = TargetTranslationMigrator.migrate(sourcePath);
                 TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationSlug);
                 if(targetTranslation != null) {
                     Logger.i(this.getClass().getName(), "Restoring HEAD in " + targetTranslationSlug + " from the cloud");
@@ -209,9 +210,6 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
                     } catch (Exception e) {
                         Logger.e(RestoreFromCloudDialog.class.getName(), "Failed to commit changes after restoring backup", e);
                     }
-
-                    TargetTranslationMigrator.migrateChunkChanges(AppContext.getLibrary(), targetTranslation);
-                    TargetTranslationMigrator.migrateFromUSXtoUSFM(targetTranslation.getId());
                 }
 
                 FileUtils.deleteQuietly(sourcePath);

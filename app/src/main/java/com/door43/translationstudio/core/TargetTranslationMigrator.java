@@ -51,11 +51,28 @@ public class TargetTranslationMigrator {
                             success = validateTranslationType(manifestFile);
                         }
                 }
+                success = success && migrateChunkChanges(targetTranslationDir);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return success;
+    }
+
+    /**
+     * Performs necessary migration operations on a target translations
+     * @param targetTranslationBaseDir
+     * @param translationSlugs
+     * @return
+     */
+    public static boolean migrate(File targetTranslationBaseDir, String[] translationSlugs) {
+        boolean overallSuccess = true;
+        for (String translationSlug : translationSlugs) {
+            File translationDir = new File(targetTranslationBaseDir, translationSlug);
+            boolean success = TargetTranslationMigrator.migrate(translationDir);
+            overallSuccess = overallSuccess && success;
+        }
+        return overallSuccess;
     }
 
     /**
@@ -242,8 +259,11 @@ public class TargetTranslationMigrator {
             FileUtils.moveFile(oldProjectTitle, newProjectTitle);
         }
 
+        FileUtils.write(path, manifest.toString(2)); // flush changes before migration
+        boolean success = migrateFromUSXtoUSFM(manifest, path.getParentFile());
+
         FileUtils.write(path, manifest.toString(2));
-        return true;
+        return success;
     }
 
     /**
@@ -346,107 +366,160 @@ public class TargetTranslationMigrator {
         return true;
     }
 
-    /**
-     * convert projects from USX to USFM
-     * @param targetTranslations
-     * @return
-     */
-    public static boolean migrateFromUSXtoUSFM(TargetTranslation[] targetTranslations) {
-        boolean success = true;
-        for (TargetTranslation tt : targetTranslations) {
-            success = success && migrateFromUSXtoUSFM(tt.getId());
-        }
-        return success;
-    }
-
-    /**
-     * convert projects from USX to USFM
-     * @param targetTranslations
-     * @return
-     */
-    public static boolean migrateFromUSXtoUSFM(String[] targetTranslations) {
-        boolean success = true;
-        for (String targetTranslation : targetTranslations) {
-            success = success && migrateFromUSXtoUSFM(targetTranslation);
-        }
-        return success;
-    }
+//    /**
+//     * convert projects from USX to USFM
+//     * @param targetTranslations
+//     * @return
+//     */
+//    private static boolean migrateFromUSXtoUSFM(TargetTranslation[] targetTranslations) {
+//        boolean success = true;
+//        for (TargetTranslation tt : targetTranslations) {
+//            success = success && migrateFromUSXtoUSFM(tt.getId());
+//        }
+//        return success;
+//    }
+//
+//    /**
+//     * convert projects from USX to USFM
+//     * @param targetTranslations
+//     * @return
+//     */
+//    private static boolean migrateFromUSXtoUSFM(String[] targetTranslations) {
+//        boolean success = true;
+//        for (String targetTranslation : targetTranslations) {
+//            success = success && migrateFromUSXtoUSFM(targetTranslation);
+//        }
+//        return success;
+//    }
+//
+//    /**
+//     * convert project from USX to USFM
+//     * @param targetTranslationId
+//     * @return
+//     */
+//    private static boolean migrateFromUSXtoUSFM(String targetTranslationId) {
+//
+//        Translator translator = AppContext.getTranslator();
+//        TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationId);
+//
+//        TranslationFormat format = targetTranslation.getFormat();
+//        if(TranslationFormat.USFM == format) {
+//            return true; // nothing to do
+//
+//        } else if(TranslationFormat.USX == format) {
+//            ChapterTranslation[] chapters = targetTranslation.getChapterTranslations();
+//            for (ChapterTranslation c : chapters) {
+//                FrameTranslation[] frameTranslations = targetTranslation.getFrameTranslations(c.getId(), format);
+//                for (FrameTranslation frameTranslation : frameTranslations) {
+//
+//                    String text = frameTranslation.body;
+//                    String usfm = USXtoUSFMConverter.doConversion(text).toString();
+//                    targetTranslation.applyFrameTranslation(frameTranslation, usfm);
+//                }
+//            }
+//
+//            targetTranslation.applyFormat(TranslationFormat.USFM); // flag that this project is all converted
+//            return true;
+//        } else {
+//            return false; // format not supported
+//        }
+//    }
 
     /**
      * convert project from USX to USFM
-     * @param targetTranslationId
+     * @param manifest
+     * @param targetTranslationDir
      * @return
      */
-    public static boolean migrateFromUSXtoUSFM(String targetTranslationId) {
+    private static boolean migrateFromUSXtoUSFM(final JSONObject manifest, final File targetTranslationDir) {
 
         Translator translator = AppContext.getTranslator();
-        TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationId);
+        TargetTranslation targetTranslation = TargetTranslation.open(targetTranslationDir);
+        if(null != targetTranslation) {
 
-        TranslationFormat format = targetTranslation.getFormat();
-        if(TranslationFormat.USFM == format) {
-            return true; // nothing to do
+            TranslationFormat format = targetTranslation.getFormat();
+            if(TranslationFormat.USFM == format) {
+                return true; // nothing to do
 
-        } else if(TranslationFormat.USX == format) {
-            ChapterTranslation[] chapters = targetTranslation.getChapterTranslations();
-            for (ChapterTranslation c : chapters) {
-                FrameTranslation[] frameTranslations = targetTranslation.getFrameTranslations(c.getId(), format);
-                for (FrameTranslation frameTranslation : frameTranslations) {
+            } else if(TranslationFormat.USX == format) {
+                ChapterTranslation[] chapters = targetTranslation.getChapterTranslations();
+                for (ChapterTranslation c : chapters) {
+                    FrameTranslation[] frameTranslations = targetTranslation.getFrameTranslations(c.getId(), format);
+                    for (FrameTranslation frameTranslation : frameTranslations) {
 
-                    String text = frameTranslation.body;
-                    String usfm = USXtoUSFMConverter.doConversion(text).toString();
-                    targetTranslation.applyFrameTranslation(frameTranslation, usfm);
+                        String text = frameTranslation.body;
+                        String usfm = USXtoUSFMConverter.doConversion(text).toString();
+                        targetTranslation.applyFrameTranslation(frameTranslation, usfm);
+                    }
                 }
+
+                try {
+                    manifest.put("format", TranslationFormat.USFM.toString()); // flag that this project is all converted to USFM
+                } catch (Exception e) {
+                    Logger.e(TargetTranslationMigrator.class.getSimpleName(),"Could not change format:", e);
+                    return false;
+                }
+
+                return true;
             }
 
-            targetTranslation.applyFormat(TranslationFormat.USFM); // flag that this project is all converted
-            return true;
-        } else {
-            return false; // format not supported
         }
-    }
-
-    /**
-    * Merges chunks found in the target translation projects that do not exist in the source translation
-    * to a sibling chunk so that no data is lost.
-    * @param library
-    * @param translationSlugs target translations to merge
-    * @return
-    */
-    public static boolean migrateChunkChanges(final Translator translator, final Library library, final String[] translationSlugs) {
-        boolean mergeSuccess = true;
-        for (String translationSlug : translationSlugs) {
-            final TargetTranslation targetTranslation = translator.getTargetTranslation(translationSlug);
-            boolean success = migrateChunkChanges(library, targetTranslation);
-            mergeSuccess = mergeSuccess && success;
-        }
-        return mergeSuccess;
+        return false;
     }
 
     /**
      * Merges chunks found in the target translation projects that do not exist in the source translation
      * to a sibling chunk so that no data is lost.
-     * @param library
-     * @param targetTranslations target translations to merge
+     * @param targetTranslationDir
      * @return
      */
-    public static boolean migrateChunkChanges(final Library library, final TargetTranslation[] targetTranslations) {
-        boolean mergeSuccess = true;
-        for (TargetTranslation targetTranslation : targetTranslations) {
-            boolean success = migrateChunkChanges(AppContext.getLibrary(), targetTranslation);
-            mergeSuccess = mergeSuccess && success;
-        }
-        return mergeSuccess;
+    private static boolean migrateChunkChanges(final File targetTranslationDir) {
+        final Translator translator = AppContext.getTranslator();
+        final TargetTranslation targetTranslation = TargetTranslation.open(targetTranslationDir);
+        boolean success = migrateChunkChanges(targetTranslation);
+        return  success;
     }
+
+//    /**
+//     * Merges chunks found in the target translation projects that do not exist in the source translation
+//     * to a sibling chunk so that no data is lost.
+//     * @param translationSlugs target translations to merge
+//     * @return
+//     */
+//    private static boolean migrateChunkChanges(final Translator translator, final String[] translationSlugs) {
+//        boolean mergeSuccess = true;
+//        for (String translationSlug : translationSlugs) {
+//            final TargetTranslation targetTranslation = translator.getTargetTranslation(translationSlug);
+//            boolean success = migrateChunkChanges(targetTranslation);
+//            mergeSuccess = mergeSuccess && success;
+//        }
+//        return mergeSuccess;
+//    }
+//
+//    /**
+//     * Merges chunks found in the target translation projects that do not exist in the source translation
+//     * to a sibling chunk so that no data is lost.
+//     * @param targetTranslations target translations to merge
+//     * @return
+//     */
+//    private static boolean migrateChunkChanges(final TargetTranslation[] targetTranslations) {
+//        boolean mergeSuccess = true;
+//        for (TargetTranslation targetTranslation : targetTranslations) {
+//            boolean success = migrateChunkChanges(targetTranslation);
+//            mergeSuccess = mergeSuccess && success;
+//        }
+//        return mergeSuccess;
+//    }
 
     /**
      * Merges chunks found in a target translation Project that do not exist in the source translation
      * to a sibling chunk so that no data is lost.
-     * @param library
      * @param targetTranslation target translation to merge
      * @return
      */
-    public static boolean migrateChunkChanges(final Library library, final TargetTranslation targetTranslation)  {
+    private static boolean migrateChunkChanges(final TargetTranslation targetTranslation)  {
         try {
+            final Library library = AppContext.getLibrary();
             Logger.i(TargetTranslationMigrator.class.getName(), "Migrating chunks in target translation " + targetTranslation.getProjectId());
             final SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(targetTranslation.getProjectId(), "en");
             if(sourceTranslation == null) {
