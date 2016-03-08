@@ -60,22 +60,6 @@ public class TargetTranslationMigrator {
     }
 
     /**
-     * Performs necessary migration operations on a target translations
-     * @param targetTranslationBaseDir
-     * @param translationSlugs
-     * @return
-     */
-    public static boolean migrate(File targetTranslationBaseDir, String[] translationSlugs) {
-        boolean overallSuccess = true;
-        for (String translationSlug : translationSlugs) {
-            File translationDir = new File(targetTranslationBaseDir, translationSlug);
-            boolean success = TargetTranslationMigrator.migrate(translationDir);
-            overallSuccess = overallSuccess && success;
-        }
-        return overallSuccess;
-    }
-
-    /**
      * latest version
      * @param path
      * @return

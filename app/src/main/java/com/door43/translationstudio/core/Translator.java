@@ -323,10 +323,7 @@ public class Translator {
             FileUtils.deleteQuietly(tempCache);
         }
 
-        String[] translationSlugs = importedTargetTranslationSlugs.toArray(new String[importedTargetTranslationSlugs.size()]);
-        boolean success = TargetTranslationMigrator.migrate(tempCache,translationSlugs);
-
-        return translationSlugs;
+        return importedTargetTranslationSlugs.toArray(new String[importedTargetTranslationSlugs.size()]);
     }
 
     private void importArchiveFromTempCache(File tempCache, List<String> importedTargetTranslationSlugs) throws Exception {

@@ -56,6 +56,7 @@ public class TargetTranslation {
     public static final String FIELD_PACKAGE_VERSION = "package_version";
     public static final String FIELD_PROJECT = "project";
     public static final String FIELD_GENERATOR = "generator";
+    public static final String TRANSLATION_TYPE = "type";
 
     private final File targetTranslationDir;
     private final Manifest manifest;
@@ -196,17 +197,52 @@ public class TargetTranslation {
         return mTranslationFormat;
     }
 
+    /**
+     * read the format of the translation
+     * @return
+     */
     private TranslationFormat readTranslationFormat() {
         String formatStr = manifest.getString("format");
         TranslationFormat format = TranslationFormat.get(formatStr);
         if(null == format) {
-            if ((Resource.Type.UNLOCKED_DYNAMIC_BIBLE == resourceType) || (Resource.Type.UNLOCKED_LITERAL_BIBLE == resourceType)) {
-                return TranslationFormat.USX;
-            } else {  // open bible stories are already USFM
-                return TranslationFormat.USFM;
+            TranslationType translationType = fetchTranslationType();
+            if(translationType != TranslationType.TEXT) {
+                return TranslationFormat.MARKDOWN;
+            } else {
+                String projectIdStr = fetchProjectID();
+                if("obs".equals(projectIdStr)) {
+                    return TranslationFormat.MARKDOWN;
+                }
+                return TranslationFormat.USX; // this will force an upgrade to USFM
             }
         }
         return format;
+    }
+
+    private String fetchProjectID() {
+        String projectIdStr = "";
+        JSONObject projectIdJson = manifest.getJSONObject(FIELD_PROJECT);
+        if(projectIdJson != null) {
+            try {
+                projectIdStr = projectIdJson.getString("id");
+            } catch(Exception e) {
+                projectIdStr = "";
+            }
+        }
+        return projectIdStr;
+    }
+
+    private TranslationType fetchTranslationType() {
+        String translationTypeStr = "";
+        JSONObject typeJson = manifest.getJSONObject(TRANSLATION_TYPE);
+        if(typeJson != null) {
+            try {
+                translationTypeStr = typeJson.getString("id");
+            } catch(Exception e) {
+                translationTypeStr = "";
+            }
+        }
+        return TranslationType.get(translationTypeStr);
     }
 
     /**
@@ -259,7 +295,7 @@ public class TargetTranslation {
         JSONObject typeJson = new JSONObject();
         typeJson.put("id", translationType);
         typeJson.put("name", "");
-        manifest.put("type", typeJson);
+        manifest.put(TRANSLATION_TYPE, typeJson);
         JSONObject generatorJson = new JSONObject();
         generatorJson.put("name", "ts-android");
         generatorJson.put("build", packageInfo.versionCode);
