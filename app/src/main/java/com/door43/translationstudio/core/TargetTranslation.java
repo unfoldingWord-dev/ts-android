@@ -124,7 +124,7 @@ public class TargetTranslation {
                 // udb
                 return GLOBAL_PROJECT_ID + "-" + projectId + "_" + resourceType + "-" + targetLanguageId;
             } else {
-                // ulb, reg
+                // ulb, obs, reg
                 return GLOBAL_PROJECT_ID + "-" + projectId + "-" + targetLanguageId;
             }
         } else if(translationType == TranslationType.TRANSLATION_ACADEMY) {

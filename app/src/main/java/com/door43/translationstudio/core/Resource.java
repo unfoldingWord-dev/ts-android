@@ -315,6 +315,7 @@ public class Resource {
      * Represents the different types of resources available
      */
     public enum Type {
+        OPEN_BIBLE_STORIES("obs"),
         REGULAR("reg"),
         // the two below are specific to Gateway Languages
         UNLOCKED_LITERAL_BIBLE("ulb"),
