@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.NewLanguageQuestion;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.BaseActivity;
@@ -16,9 +17,12 @@ import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.AppContext;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by blm on 2/23/16.
@@ -26,59 +30,23 @@ import java.security.InvalidParameterException;
 public class RequestNewLanguageActivity extends BaseActivity implements RequestNewLanguageStepFragment.OnEventListener {
 
     public static final String TAG = RequestNewLanguageActivity.class.getSimpleName();
-    public static final int STEP_NAME = 0;
-    public static final int STEP_UNDERSTANDING = 1;
-    public static final int STEP_DIALECTS = 2;
-    public static final int STEP_GATEWAY = 3;
-    public static final int STEP_LAST = STEP_GATEWAY;
 
     private static final String STATE_LANGUAGE_STEP = "state_language_step";
     private static final String STATE_NEW_LANGUAGE_FINISHED = "state_new_language_finished";
     private static final String STATE_NEW_LANGUAGE_ANSWERS = "state_new_language_answers";
 
     public static final String EXTRA_CALLING_ACTIVITY = "extra_calling_activity";
-    public static final String EXTRA_NEW_LANGUAGE_ANSWERS = "extra_new_language_answers";
-    public static final String TAG_NAME_CALLED = "name_called";
-    public static final String TAG_NAME_MEANING = "name_meaning";
-    public static final String TAG_NAME_ALTERNATES = "name_alternates";
-    public static final String TAG_NAME_OTHERS = "name_others";
-    public static final String TAG_NAME_OTHERS_CALLED = "name_others_called";
-    public static final String TAG_NAME_OTHERS_WHO = "name_others_who";
-    public static final String TAG_NAME_OTHERS_MEANING = "name_others_meaning";
-    public static final String TAG_WHERE_ELSE_SPOKEN = "where_else_spoken";
-    public static final String TAG_WHERE_SLIGHTLY_DIFFERENT = "where_slighly_different";
-    public static final String TAG_WHERE_SLIGHTLY_DIFFERENT_NAME = "where_slighly_different_name";
-    public static final String TAG_WHERE_SLIGHTLY_DIFFERENT_GONE = "where_slighly_different_gone";
-    public static final String TAG_WHERE_SLIGHTLY_DIFFERENT_COME = "where_slighly_different_come";
-    public static final String TAG_WHERE_DIFFERENT = "where_different";
-    public static final String TAG_WHERE_DIFFERENT_UNDERSTAND = "where_different_understand";
-    public static final String TAG_WHERE_DIFFERENT_GONE = "where_different_gone";
-    public static final String TAG_WHERE_DIFFERENT_COME = "where_different_come";
-    public static final String TAG_WHERE_DIFFERENT_NAME = "where_different_name";
-    public static final String TAG_WHERE_PURE = "where_pure";
-    public static final String TAG_WHERE_PURE_WHY = "where_pure_why";
-    public static final String TAG_WHERE_PURE_GONE = "where_pure_gone";
-    public static final String TAG_WHERE_PURE_COME = "where_pure_come";
-    public static final String TAG_WHERE_SPOKEN_BADLY = "where_spoken_badly";
-    public static final String TAG_WHERE_SPOKEN_BADLY_WHY = "where_spoken_badly_why";
-    public static final String TAG_WHERE_SPOKEN_BADLY_GONE = "where_spoken_badly_gone";
-    public static final String TAG_WHERE_SPOKEN_BADLY_COME = "where_spoken_badly_come";
-    public static final String TAG_GATEWAY_NAME = "gateway_name";
-    public static final String TAG_GATEWAY_UNDERSTAND = "gateway_understand";
-    public static final String TAG_GATEWAY_UNDERSTAND_COME = "gateway_understand_come";
-    public static final String TAG_GATEWAY_UNDERSTAND_COME_CHILDREN = "gateway_understand_come_children";
-    public static final String TAG_WHERE_TRAVEL = "where_travel";
-    public static final String TAG_TOURISTS_COME = "tourists_come";
+    public static final String EXTRA_NEW_LANGUAGE_QUESTIONS = "extra_new_language_questions";
 
     private Translator mTranslator;
     private TargetTranslation mTargetTranslation;
-    private int mCurrentStep = 0;
+    private int mCurrentPage = 0;
     public static final int ACTIVITY_HOME = 1001;
     public static final int ACTIVITY_TRANSLATION = 1002;
     private boolean mLanguageFinished = false;
     private int mCallingActivity;
     private BaseFragment mFragment;
-    private JSONObject mAnswers;
+    private List<List<NewLanguageQuestion>> mQuestionPages;
 
 
     @Override
@@ -102,12 +70,13 @@ public class RequestNewLanguageActivity extends BaseActivity implements RequestN
         }
 
         if(savedInstanceState != null) {
-            mCurrentStep = savedInstanceState.getInt(STATE_LANGUAGE_STEP, 0);
+            mCurrentPage = savedInstanceState.getInt(STATE_LANGUAGE_STEP, 0);
             mLanguageFinished = savedInstanceState.getBoolean(STATE_NEW_LANGUAGE_FINISHED, false);
             String answers = savedInstanceState.getString(STATE_NEW_LANGUAGE_ANSWERS);
-            mAnswers = parseAnswers(answers);
+            mQuestionPages = parseJsonStrIntoPages(answers);
         } else {
-            mAnswers = new JSONObject();
+            mQuestionPages = new ArrayList<>();
+            createQuestions();
         }
 
         // inject fragments
@@ -115,21 +84,173 @@ public class RequestNewLanguageActivity extends BaseActivity implements RequestN
             if(savedInstanceState != null) {
                 mFragment = (BaseFragment)getFragmentManager().findFragmentById(R.id.fragment_container);
             } else {
-                doStep(STEP_NAME,mAnswers.toString());
+                doPage(mCurrentPage, null);
             }
         }
      }
 
-    private JSONObject parseAnswers(String answersJson) {
-        JSONObject answers;
+    private void createQuestions() {
+        final boolean required = true;
+        final boolean not_required = false;
+
+        List<NewLanguageQuestion> page1 = new ArrayList<>();
+        page1.add(NewLanguageQuestion.generateFromResources(getApplication(), 100, R.string.language_name_called, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required ));
+        page1.add(NewLanguageQuestion.generateFromResources(getApplication(), 101, R.string.language_name_meaning, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required, 100 ));
+        page1.add(NewLanguageQuestion.generateFromResources(getApplication(), 102, R.string.language_name_alternates, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required, 100 ));
+        page1.add(NewLanguageQuestion.generateFromResources(getApplication(), 200, R.string.language_others_name, R.string.enter_answer, NewLanguageQuestion.QuestionType.CHECK_BOX, required ));
+        page1.add(NewLanguageQuestion.generateFromResources(getApplication(), 201, R.string.language_others_called, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required, 200 ));
+        page1.add(NewLanguageQuestion.generateFromResources(getApplication(), 202, R.string.language_others_who, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required, 200 ));
+        page1.add(NewLanguageQuestion.generateFromResources(getApplication(), 203, R.string.language_others_meaning, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required, 200 ));
+
+        List<NewLanguageQuestion> page2 = new ArrayList<>();
+        page2.add(NewLanguageQuestion.generateFromResources(getApplication(), 300, R.string.language_where_else_spoken, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required ));
+        page2.add(NewLanguageQuestion.generateFromResources(getApplication(), 400, R.string.language_where_slightly_different, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required ));
+        page2.add(NewLanguageQuestion.generateFromResources(getApplication(), 401, R.string.language_where_slightly_different_gone, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required, 400 ));
+        page2.add(NewLanguageQuestion.generateFromResources(getApplication(), 402, R.string.language_where_slightly_different_come, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required, 400 ));
+        page2.add(NewLanguageQuestion.generateFromResources(getApplication(), 403, R.string.language_where_slightly_different_name, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required, 400 ));
+
+        List<NewLanguageQuestion> page3 = new ArrayList<>();
+        page3.add(NewLanguageQuestion.generateFromResources(getApplication(), 500, R.string.language_where_different, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required ));
+        page3.add(NewLanguageQuestion.generateFromResources(getApplication(), 501, R.string.language_where_different_understand, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required, 500 ));
+        page3.add(NewLanguageQuestion.generateFromResources(getApplication(), 502, R.string.language_where_different_gone, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required, 500 ));
+        page3.add(NewLanguageQuestion.generateFromResources(getApplication(), 503, R.string.language_where_different_come, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required, 500 ));
+        page3.add(NewLanguageQuestion.generateFromResources(getApplication(), 504, R.string.language_where_different_name, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required, 500 ));
+
+        mQuestionPages.add(page1);
+        mQuestionPages.add(page2);
+        mQuestionPages.add(page3);
+    }
+
+    private boolean parseAnswers(String answersJson, int page) {
         try {
-            answers = new JSONObject(answersJson);
+            List<NewLanguageQuestion> mPage = mQuestionPages.get(page);
+            List<NewLanguageQuestion> answersPage = new ArrayList<>();
+
+            int length = answersPage.size();
+            for(int i = 0; i < length; i++ ) {
+                NewLanguageQuestion question = answersPage.get(i);
+                NewLanguageQuestion originalQuestion = mPage.get(i);
+                if((null == question) || (originalQuestion.id != question.id)) {
+                    return false; // response does not match original
+                } else {
+                    originalQuestion.answer = question.answer;
+                }
+            }
+
         } catch (Exception e) {
             Logger.w(TAG, "could not parse answers", e);
-            answers = new JSONObject();
+            return false;
         }
+        return true;
+    }
+
+    public static List<NewLanguageQuestion> parseJsonStrIntoQuestions(String answersJson) {
+        List<NewLanguageQuestion> page = null;
+        try {
+            JSONArray answers = new JSONArray(answersJson);
+            page = parseJsonIntoQuestions( answers);
+
+        } catch (Exception e) {
+            Logger.w(TAG, "could not parse questions", e);
+            page = null;
+        }
+
+        return page;
+    }
+
+    public static List<NewLanguageQuestion> parseJsonIntoQuestions(JSONArray answers) {
+        List<NewLanguageQuestion> page = new ArrayList<>();
+        try {
+            int length = answers.length();
+            for(int i = 0; i < length; i++ ) {
+                JSONObject questionStr = (JSONObject) answers.get(i);
+                NewLanguageQuestion question = NewLanguageQuestion.generateFromJson(questionStr);
+                if(null != question) {
+                    page.add(question);
+                }
+            }
+
+        } catch (Exception e) {
+            Logger.w(TAG, "could not parse questions", e);
+            page = null;
+        }
+
+        return page;
+    }
+
+    public static List<List<NewLanguageQuestion>> parseJsonStrIntoPages(String pagesJsonStr) {
+        List<List<NewLanguageQuestion>> pages = new ArrayList<>();
+        try {
+            JSONArray pagesJson = new JSONArray(pagesJsonStr);
+
+            int length = pagesJson.length();
+            for(int i = 0; i < length; i++ ) {
+                JSONArray pageStr = (JSONArray) pagesJson.get(i);
+                List<NewLanguageQuestion> page = parseJsonIntoQuestions(pageStr);
+                 if(null != page) {
+                    pages.add(page);
+                }
+            }
+
+        } catch (Exception e) {
+            Logger.w(TAG, "could not parse questions", e);
+            pages = null;
+        }
+
+        return pages;
+    }
+
+    private JSONArray getQuestions(int page) {
+        JSONArray answers = new JSONArray();
+        try {
+            List<NewLanguageQuestion> mPage = mQuestionPages.get(page);
+
+            return getQuestions(mPage);
+
+        } catch (Exception e) {
+            Logger.w(TAG, "could not generate questions", e);
+            answers = null;
+        }
+
         return answers;
     }
+
+    public static JSONArray getQuestions(List<NewLanguageQuestion> questions) {
+        JSONArray answers = new JSONArray();
+        if(null != questions) {
+            try {
+                for (NewLanguageQuestion question : questions) {
+                    if (null != question) {
+                        JSONObject questionJson = question.toJson();
+                        answers.put(questionJson);
+                    }
+                }
+
+            } catch (Exception e) {
+                Logger.w(TAG, "could not parse answers", e);
+                answers = null;
+            }
+        }
+
+        return answers;
+    }
+
+    private JSONArray getQuestionPages() {
+        JSONArray pages = new JSONArray();
+        try {
+            for (int i = 0; i < mQuestionPages.size(); i++) {
+                JSONArray page = getQuestions(i);
+                pages.put(page);
+            }
+
+        } catch (Exception e) {
+            Logger.w(TAG, "could not generate questions", e);
+            pages = null;
+        }
+
+        return pages;
+    }
+
 
     @Override
     public void onBackPressed() {
@@ -148,54 +269,45 @@ public class RequestNewLanguageActivity extends BaseActivity implements RequestN
 
     @Override
     public void nextStep(String answersJson) {
-        doStep(mCurrentStep + 1, answersJson);
+        doPage(mCurrentPage + 1, answersJson);
     }
 
     @Override
     public void previousStep(String answersJson) {
-        doStep(mCurrentStep - 1, answersJson);
+        doPage(mCurrentPage - 1, answersJson);
     }
 
     @Override
     public void finishLanguageRequest(String answersJson) {
-        mAnswers = parseAnswers(answersJson);
+        if(answersJson != null) {
+            parseAnswers(answersJson, mCurrentPage); // save answers from current page
+        }
         mLanguageFinished = true;
     }
 
     /**
      * Moves to the a stage in the publish process
-     * @param step
+     * @param page
      */
-    private void doStep(int step, String answersJson) {
-        if(step > STEP_LAST) {
-            mCurrentStep = STEP_LAST;
-        } else if(step < 0) {
-            mCurrentStep = 0;
+    private void doPage(int page, String answersJson) {
+
+        if(answersJson != null) {
+            parseAnswers(answersJson, mCurrentPage); // save answers from current page
+        }
+
+        if(page > mQuestionPages.size()) {
+            mCurrentPage = mQuestionPages.size() - 1;
+        } else if(page < 0) {
+            mCurrentPage = 0;
         } else{
-            mCurrentStep = step;
+            mCurrentPage = page;
         }
 
-        mAnswers = parseAnswers(answersJson);
-
-        switch(mCurrentStep) {
-            case STEP_UNDERSTANDING:
-                mFragment = new LanguageUnderstandingFragment();
-                break;
-            case STEP_DIALECTS:
-                mFragment = new LanguageDialectsFragment();
-                break;
-            case STEP_GATEWAY:
-                mFragment = new LanguageGatewayFragment();
-                break;
-            case STEP_NAME:
-            default:
-                mFragment = new LanguageNameFragment();
-                break;
-        }
+        mFragment = new RequestNewLanguageStepFragment();
 
         Bundle args = getIntent().getExtras();
         args.putBoolean(RequestNewLanguageStepFragment.ARG_NEW_LANG_FINISHED, mLanguageFinished);
-        args.putString(RequestNewLanguageActivity.EXTRA_NEW_LANGUAGE_ANSWERS, mAnswers.toString());
+        args.putString(RequestNewLanguageActivity.EXTRA_NEW_LANGUAGE_QUESTIONS, getQuestions(mCurrentPage).toString());
         mFragment.setArguments(args);
         getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
     }
@@ -220,9 +332,9 @@ public class RequestNewLanguageActivity extends BaseActivity implements RequestN
         }
 
         public void onSaveInstanceState(Bundle out) {
-            out.putInt(STATE_LANGUAGE_STEP, mCurrentStep);
+            out.putInt(STATE_LANGUAGE_STEP, mCurrentPage);
             out.putBoolean(STATE_NEW_LANGUAGE_FINISHED, mLanguageFinished);
-            out.putString(STATE_NEW_LANGUAGE_ANSWERS, mAnswers.toString());
+            out.putString(STATE_NEW_LANGUAGE_ANSWERS, getQuestionPages().toString());
         }
     }
 }

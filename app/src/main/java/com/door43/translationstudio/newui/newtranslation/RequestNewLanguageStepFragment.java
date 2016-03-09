@@ -3,33 +3,81 @@ package com.door43.translationstudio.newui.newtranslation;
 import android.app.Activity;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.NewLanguageQuestion;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
+import com.door43.translationstudio.filebrowser.DocumentFileBrowserAdapter;
 import com.door43.translationstudio.newui.BaseFragment;
 
 import org.json.JSONObject;
 
+import java.util.List;
+
 /**
  * Created by blm on 2/23/16.
  */
-public abstract class RequestNewLanguageStepFragment extends BaseFragment {
+public class RequestNewLanguageStepFragment extends BaseFragment {
     public static final String ARG_SOURCE_TRANSLATION_ID = "arg_source_translation_id";
     public static final String ARG_NEW_LANG_FINISHED = "arg_publish_finished";
     public static final String TAG = RequestNewLanguageStepFragment.class.getSimpleName();
     private OnEventListener mListener;
+    private View mRootView;
+    private List<NewLanguageQuestion> mQuestions;
+    private RequestNewLanguageStepAdapter mAdapter;
 
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            this.mListener = (OnEventListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString() + " must implement OnEventListener");
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        mRootView = inflater.inflate(R.layout.fragment_new_language, container, false);
+
+        Bundle args = getArguments();
+        mQuestions = getAnswersFromArgs(args);
+
+        final ListView layout = (ListView) mRootView.findViewById(R.id.controlsLayout);
+
+        mAdapter = new RequestNewLanguageStepAdapter();
+        layout.setAdapter(mAdapter);
+        mAdapter.loadQuestions(mQuestions);
+
+        return mRootView;
+    }
+
+     private void setVisible(int resID, Boolean enable) {
+        View view = (View) mRootView.findViewById(resID);
+        if (null != view) {
+            view.setVisibility(enable ? View.VISIBLE : View.GONE);
         }
+    }
+
+    private void validateAnswers() {
+
+        saveAnswers();
+
+        if(false) {
+
+        } else
+        {
+            doFinished();
+        }
+    }
+
+    private void doFinished() {
+        saveAnswers();
+        getListener().finishLanguageRequest(RequestNewLanguageActivity.getQuestions(mQuestions).toString());
+    }
+
+    private void saveAnswers() {
+        // nothing to do?
     }
 
     protected OnEventListener getListener() {
@@ -81,10 +129,10 @@ public abstract class RequestNewLanguageStepFragment extends BaseFragment {
         return checked;
     }
 
-    protected JSONObject getAnswersFromArgs(Bundle args) {
-        String answersJson = args.getString(RequestNewLanguageActivity.EXTRA_NEW_LANGUAGE_ANSWERS);
-        JSONObject answers = parseAnswers(answersJson);
-        return answers;
+    protected List<NewLanguageQuestion> getAnswersFromArgs(Bundle args) {
+        String questionsJson = args.getString(RequestNewLanguageActivity.EXTRA_NEW_LANGUAGE_QUESTIONS);
+        List<NewLanguageQuestion> questions = RequestNewLanguageActivity.parseJsonStrIntoQuestions(questionsJson);
+        return questions;
     }
 
 
