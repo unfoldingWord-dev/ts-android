@@ -177,10 +177,8 @@ public class TargetTranslationMigrator {
 
         // update parent draft
         if(manifest.has("parent_draft_resource_id")) {
-            manifest.remove("parent_draft_resource_id");
             JSONObject draftStatus = new JSONObject();
-            // we don't know what the draft status is so just leave blank.
-            // the app should identify this as unknown and ask the user to import again if they want
+            draftStatus.put("resource_id", manifest.getString("parent_draft_resource_id"));
             draftStatus.put("checking_entity", "");
             draftStatus.put("checking_level", "");
             draftStatus.put("comments", "The parent draft is unknown");
@@ -189,7 +187,8 @@ public class TargetTranslationMigrator {
             draftStatus.put("source_text", "");
             draftStatus.put("source_text_version", "");
             draftStatus.put("version", "");
-            manifest.put("parent_draft_status", draftStatus);
+            manifest.put("parent_draft", draftStatus);
+            manifest.remove("parent_draft_resource_id");
         }
 
         // update finished chunks
@@ -236,9 +235,6 @@ public class TargetTranslationMigrator {
             manifest.put("finished_chunks", finishedChunks);
         }
 
-        // update package version
-        manifest.put("package_version", 5);
-
         // update where project title is saved.
         File oldProjectTitle = new File(path.getParentFile(), "title.txt");
         File newProjectTitle = new File(path.getParentFile(), "00/title.txt");
@@ -246,6 +242,9 @@ public class TargetTranslationMigrator {
             newProjectTitle.getParentFile().mkdirs();
             FileUtils.moveFile(oldProjectTitle, newProjectTitle);
         }
+
+        // update package version
+        manifest.put("package_version", 5);
 
         FileUtils.write(path, manifest.toString(2));
         return true;

@@ -45,7 +45,7 @@ import java.util.Locale;
  */
 public class TargetTranslation {
     public static final int PACKAGE_VERSION = 5; // the version of the target translation implementation
-    public static final String FIELD_PARENT_DRAFT_STATUS = "parent_draft_status";
+    public static final String FIELD_PARENT_DRAFT = "parent_draft";
     private static final String FIELD_FINISHED_CHUNKS = "finished_chunks";
     private static final String FIELD_TRANSLATORS = "translators";
     public static final String FIELD_TARGET_LANGUAGE = "target_language";
@@ -1025,10 +1025,11 @@ public class TargetTranslation {
     public void setParentDraft(SourceTranslation draftTranslation) {
         JSONObject draftStatus = new JSONObject();
         try {
+            draftStatus.put("resource_id", draftTranslation.resourceSlug);
             draftStatus.put("checking_level", draftTranslation.getCheckingLevel());
             draftStatus.put("version", draftTranslation.getVersion());
-            // TODO: 3/2/2016 need to update resource object to collect all info from api so we can include more detail her
-            manifest.put(FIELD_PARENT_DRAFT_STATUS, draftStatus);
+            // TODO: 3/2/2016 need to update resource object to collect all info from api so we can include more detail here
+            manifest.put(FIELD_PARENT_DRAFT, draftStatus);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -1039,17 +1040,10 @@ public class TargetTranslation {
      */
     public SourceTranslation getParentDraft () {
         try {
-            JSONObject parentDraftStatus = manifest.getJSONObject(FIELD_PARENT_DRAFT_STATUS);
-            if(parentDraftStatus.has("version") && !parentDraftStatus.getString("version").isEmpty()) {
-                // parent drafts have the same resource id as the target translation
-                JSONObject resourceJson = manifest.getJSONObject(FIELD_RESOURCE);
-                if (resourceJson.has("id")) {
-                    String id = resourceJson.getString("id");
-                    if (!id.isEmpty()) {
-                        // TODO: it would be handy to include the version of the actual parent draft so we can see if the one pulled has updates
-                        return SourceTranslation.simple(getProjectId(), getTargetLanguageId(), id);
-                    }
-                }
+            JSONObject parentDraftStatus = manifest.getJSONObject(FIELD_PARENT_DRAFT);
+            if(Manifest.valueExists(parentDraftStatus, "resource_id")) {
+                // TODO: it would be handy to include the version of the actual parent draft so we can see if the one pulled has updates
+                return SourceTranslation.simple(getProjectId(), getTargetLanguageId(), parentDraftStatus.getString("resource_id"));
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -1096,9 +1090,9 @@ public class TargetTranslation {
         manifest.join(importedManifest.getJSONObject(FIELD_SOURCE_TRANSLATIONS), FIELD_SOURCE_TRANSLATIONS);
 
         // add missing parent draft status
-        if((!manifest.has(FIELD_PARENT_DRAFT_STATUS) || !Manifest.valueExists(manifest.getJSONObject(FIELD_PARENT_DRAFT_STATUS), "version"))
-            && importedManifest.has(FIELD_PARENT_DRAFT_STATUS)) {
-            manifest.put(FIELD_PARENT_DRAFT_STATUS, importedManifest.getJSONObject(FIELD_PARENT_DRAFT_STATUS));
+        if((!manifest.has(FIELD_PARENT_DRAFT) || !Manifest.valueExists(manifest.getJSONObject(FIELD_PARENT_DRAFT), "resource_id"))
+            && importedManifest.has(FIELD_PARENT_DRAFT)) {
+            manifest.put(FIELD_PARENT_DRAFT, importedManifest.getJSONObject(FIELD_PARENT_DRAFT));
         }
 
         if (result.getMergeStatus().equals(MergeResult.MergeStatus.CONFLICTING)) {
