@@ -310,4 +310,45 @@ public class Resource {
     public long getSourceLanguageDBId() {
         return this.sourceLanguageDBId;
     }
+
+    /**
+     * Represents the different types of resources available
+     */
+    public enum Type {
+        REGULAR("reg"),
+        // the two below are specific to Gateway Languages
+        UNLOCKED_LITERAL_BIBLE("ulb"),
+        UNLOCKED_DYNAMIC_BIBLE("udb");
+
+        Type(String s) {
+            mName = s;
+        }
+
+        private final String mName;
+
+        public String getName() {
+            return mName;
+        }
+
+        @Override
+        public String toString() {
+            return mName;
+        }
+
+        /**
+         * Returns a format by it's name
+         * @param name
+         * @return
+         */
+        public static Type get(String name) {
+            if(name != null) {
+                for (Type f : Type.values()) {
+                    if (f.getName().equals(name.toLowerCase())) {
+                        return f;
+                    }
+                }
+            }
+            return null;
+        }
+    }
 }

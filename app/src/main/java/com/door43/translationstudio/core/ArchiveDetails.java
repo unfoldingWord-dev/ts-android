@@ -97,7 +97,18 @@ public class ArchiveDetails {
         for(int i = 0; i < translationsJson.length(); i ++) {
             JSONObject json = translationsJson.getJSONObject(i);
             String targetTranslationId = json.getString("id");
-            String targetLanguageName = json.getString("target_language_name");
+            String targetLanguageName = null;
+            if(json.has("target_language_name")) {
+                targetLanguageName = json.getString("target_language_name");
+            } else {
+                TargetLanguage tl = library.getTargetLanguage(TargetTranslation.getTargetLanguageIdFromId(targetTranslationId));
+                if(tl != null) {
+                    targetLanguageName = tl.name;
+                } else {
+                    // use the target translation id if nothing else can be found
+                    targetLanguageName = targetTranslationId.toUpperCase();
+                }
+            }
             String targetLanguageSlug = TargetTranslation.getTargetLanguageIdFromId(targetTranslationId);
             String projectSlug = TargetTranslation.getProjectIdFromId(targetTranslationId);
             String projectName = null;

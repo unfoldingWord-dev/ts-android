@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
@@ -111,7 +110,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
         TextView publishView = (TextView)v.findViewById(R.id.publish_state);
         publishView.setText("");
         int statusID = 0;
-        switch (mTargetTranslation.getPublishStatus()) {
+        switch (mTargetTranslation.getPublishedStatus()) {
             case NOT_PUBLISHED:
                 statusID = R.string.publish_status_not;
                 break;

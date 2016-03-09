@@ -101,7 +101,12 @@ public class UpdateAppTask extends ManagedTask {
         if(lastVersion < 112) {
             upgradePre112();
         }
-
+        if(lastVersion < 113) {
+            upgradePre113();
+        }
+        if(lastVersion < 115) {
+            upgradePre115();
+        }
         updateTargetTranslations();
         updateBuildNumbers();
     }
@@ -112,11 +117,18 @@ public class UpdateAppTask extends ManagedTask {
      * add a new migration path each time
      */
     private void updateTargetTranslations() {
-        TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
-        for(TargetTranslation tt:targetTranslations) {
-            if(!TargetTranslationMigrator.migrate(tt.getPath())) {
-                Logger.w(this.getClass().getName(), "Failed to migrate the target translation " + tt.getId());
+        // TRICKY: we manually list the target translations because they won't be viewable util updated
+        File translatorDir = AppContext.getTranslator().getPath();
+        File[] dirs = translatorDir.listFiles();
+        for(File tt:dirs) {
+            if(!TargetTranslationMigrator.migrate(tt)) {
+                Logger.w(this.getClass().getName(), "Failed to migrate the target translation " + tt.getName());
             }
+        }
+
+        // commit migration changes
+        TargetTranslation[] translations = AppContext.getTranslator().getTargetTranslations();
+        for(TargetTranslation tt:translations) {
             try {
                 tt.commitSync();
             } catch (Exception e) {
@@ -137,6 +149,20 @@ public class UpdateAppTask extends ManagedTask {
                 Logger.e(this.getClass().getName(), "Failed to update the generator in the target translation " + tt.getId());
             }
         }
+    }
+
+    /**
+     * We updated the source
+     */
+    private void upgradePre115() {
+        AppContext.context().deleteDatabase(Library.DATABASE_NAME);
+    }
+
+    /**
+     * We updated the source
+     */
+    private void upgradePre113() {
+        AppContext.context().deleteDatabase(Library.DATABASE_NAME);
     }
 
     /**
