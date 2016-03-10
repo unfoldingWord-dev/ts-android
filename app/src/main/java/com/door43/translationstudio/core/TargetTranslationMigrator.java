@@ -163,7 +163,7 @@ public class TargetTranslationMigrator {
                         if (pieces.length > 0) {
                             String resId = pieces[pieces.length - 1];
                             sourceTranslation.put("resource_id", resId);
-                            sourceTranslation.put("language_id", languageResourceId.substring(0, resId.length() - 1));
+                            sourceTranslation.put("language_id", languageResourceId.substring(0, languageResourceId.length() - resId.length() - 1));
                             sourceTranslation.put("checking_level", oldObj.getString("checking_level"));
                             sourceTranslation.put("date_modified", oldObj.getInt("date_modified"));
                             sourceTranslation.put("version", oldObj.getString("version"));
