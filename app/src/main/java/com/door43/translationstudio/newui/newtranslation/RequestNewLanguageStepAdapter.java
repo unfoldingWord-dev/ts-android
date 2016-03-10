@@ -1,10 +1,13 @@
 package com.door43.translationstudio.newui.newtranslation;
 
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -49,9 +52,9 @@ public class RequestNewLanguageStepAdapter extends BaseAdapter {
     @Override
     public View getView(final int position, View convertView, final ViewGroup parent) {
         View v = convertView;
-        ViewHolder holder;
+        final ViewHolder holder;
 
-        NewLanguageQuestion item = getItem(position);
+        final NewLanguageQuestion item = getItem(position);
         int layoutResId;
         if (item.type == NewLanguageQuestion.QuestionType.CHECK_BOX) {
             layoutResId = R.layout.fragment_new_language_checkbox_card;
@@ -66,11 +69,33 @@ public class RequestNewLanguageStepAdapter extends BaseAdapter {
 
         if (item.type == NewLanguageQuestion.QuestionType.CHECK_BOX) {
             holder.checkBoxAnswer.setChecked(TRUE_STR.equals(item.answer));
+            holder.checkBoxAnswer.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    item.answer = isChecked ? TRUE_STR : FALSE_STR;
+                }
+            });
         } else {
             holder.answer.setHint(item.helpText);
             if(item.answer != null) {
                 holder.answer.setText(item.answer);
             }
+            holder.answer.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    item.answer = s.toString();
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+
+                }
+            });
         }
 
         return v;

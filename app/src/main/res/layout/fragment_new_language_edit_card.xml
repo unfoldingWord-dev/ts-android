@@ -24,6 +24,8 @@
         android:background="@drawable/edit_text"
         android:hint="@string/enter_answer"
         android:layout_marginLeft="@dimen/stacked_card_margin"
-        android:textSize="@dimen/title"/>
+        android:textSize="@dimen/title"
+        android:inputType="text"
+        android:enabled="true" />
 
 </LinearLayout>
