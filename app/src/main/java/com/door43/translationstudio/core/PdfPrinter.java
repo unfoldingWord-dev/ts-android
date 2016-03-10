@@ -6,7 +6,7 @@ import android.graphics.BitmapFactory;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.spannables.Span;
-import com.door43.translationstudio.spannables.VerseSpan;
+import com.door43.translationstudio.spannables.USFMVerseSpan;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfContentByte;
@@ -256,8 +256,8 @@ public class PdfPrinter extends PdfPageEventHelper {
                     // TODO: 11/13/2015 render body according to the format
                     Paragraph paragraph = new Paragraph("", bodyFont);
                     String body = f.body;
-                    if(format == TranslationFormat.USX) {
-                        addUSX(paragraph, f.body);
+                    if(format == TranslationFormat.USFM) {
+                        addUSFM(paragraph, f.body);
                     } else {
                         paragraph.add(body);
                     }
@@ -273,16 +273,16 @@ public class PdfPrinter extends PdfPageEventHelper {
         }
     }
 
-    private void addUSX(Paragraph paragraph, String usx) {
-        Pattern pattern = Pattern.compile(VerseSpan.PATTERN);
-        Matcher matcher = pattern.matcher(usx);
+    private void addUSFM(Paragraph paragraph, String usfm) {
+        Pattern pattern = Pattern.compile(USFMVerseSpan.PATTERN);
+        Matcher matcher = pattern.matcher(usfm);
         int lastIndex = 0;
         while(matcher.find()) {
             // add preceeding text
-            paragraph.add(usx.substring(lastIndex, matcher.start()));
+            paragraph.add(usfm.substring(lastIndex, matcher.start()));
 
             // add verse
-            Span verse = new VerseSpan(matcher.group(1));
+            Span verse = new USFMVerseSpan(matcher.group(1));
             Chunk chunk = new Chunk();
             chunk.setFont(superScriptFont);
             chunk.setTextRise(5f);
@@ -290,13 +290,13 @@ public class PdfPrinter extends PdfPageEventHelper {
                 chunk.append(verse.getHumanReadable().toString());
             } else {
                 // failed to parse the verse
-                chunk.append(usx.subSequence(lastIndex, matcher.end()).toString());
+                chunk.append(usfm.subSequence(lastIndex, matcher.end()).toString());
             }
             chunk.append(" ");
             paragraph.add(chunk);
             lastIndex = matcher.end();
         }
-        paragraph.add(usx.subSequence(lastIndex, usx.length()).toString());
+        paragraph.add(usfm.subSequence(lastIndex, usfm.length()).toString());
     }
 
     private static void addEmptyLine(Paragraph paragraph, int number) {

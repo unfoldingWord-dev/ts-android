@@ -15,9 +15,9 @@ import android.widget.TextView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Typography;
+import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
-import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.widget.ViewUtil;
 
 /**
@@ -104,8 +104,9 @@ public class ValidationAdapter extends RecyclerView.Adapter<ValidationAdapter.Vi
                 holder.mBody.setVisibility(View.VISIBLE);
                 if(renderedText[position] == null) {
                     RenderingGroup renderingGroup = new RenderingGroup();
-                    if(item.getBodyFormat() == TranslationFormat.USX) {
-                        renderingGroup.addEngine(new USXRenderer());
+                    TranslationFormat format = item.getBodyFormat();
+                    if(Clickables.isClickableFormat(format)) {
+                        Clickables.setupRenderingGroup(format, renderingGroup, null, null, true);
                     } else {
                         renderingGroup.addEngine(new DefaultRenderer(null));
                     }

@@ -40,9 +40,10 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
+import com.door43.translationstudio.rendering.ClickableRenderingEngine;
+import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
-import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.Span;
@@ -71,6 +72,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     private Map<String, Chapter> mChapters = new HashMap<>();
     private int mLayoutBuildNumber = 0;
     private ContentValues[] mTabs;
+    private TranslationFormat mTargetFormat;
 
     public ChunkModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String startingChapterSlug, String startingFrameSlug, boolean openSelectedTarget) {
         mLibrary = AppContext.getLibrary();
@@ -690,9 +692,10 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         holder.mSourceTitle.setText(sourceChapterTitle);
 
         // render the target frame body
+        mTargetFormat =  mTargetTranslation.getFormat();
         final FrameTranslation frameTranslation = mTargetTranslation.getFrameTranslation(frame);
         if(item.renderedTargetBody == null) {
-            item.renderedTargetBody = renderText(frameTranslation.body, frameTranslation.getFormat());
+            item.renderedTargetBody = renderText(frameTranslation.body, mTargetFormat);
         }
         if(holder.mTextWatcher != null) {
             holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
@@ -726,7 +729,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
                 String translation = Translator.compileTranslation((Editable)s);
                 mTargetTranslation.applyFrameTranslation(frameTranslation, translation);
-                item.renderedTargetBody = renderText(translation, frameTranslation.getFormat());
+                item.renderedTargetBody = renderText(translation, mTargetFormat);
 
                 // update view
                 // TRICKY: anything worth updating will need to change by at least 7 characters
@@ -780,9 +783,9 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
     private CharSequence renderText(String text, TranslationFormat format) {
         RenderingGroup renderingGroup = new RenderingGroup();
-        if (format == TranslationFormat.USX) {
+        if (Clickables.isClickableFormat(format)) {
             // TODO: add click listeners for verses and notes
-            USXRenderer usxRenderer = new USXRenderer(null, new Span.OnClickListener() {
+            Span.OnClickListener noteClickListener = new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
                     if(span instanceof NoteSpan) {
@@ -798,9 +801,10 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                 public void onLongClick(View view, Span span, int start, int end) {
 
                 }
-            });
-            usxRenderer.setVersesEnabled(false);
-            renderingGroup.addEngine(usxRenderer);
+            };
+            ClickableRenderingEngine renderer = Clickables.setupRenderingGroup(format, renderingGroup, null, noteClickListener, true);
+            renderer.setVersesEnabled(false);
+
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));

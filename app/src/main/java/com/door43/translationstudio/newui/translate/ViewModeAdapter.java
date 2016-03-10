@@ -5,8 +5,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
 import com.door43.translationstudio.core.TranslationViewMode;
-import com.door43.translationstudio.core.TranslationWord;
-import com.door43.translationstudio.core.TranslationNote;
 
 import java.util.ArrayList;
 import java.util.List;

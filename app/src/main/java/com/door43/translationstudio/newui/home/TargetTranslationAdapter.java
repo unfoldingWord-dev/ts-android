@@ -113,6 +113,7 @@ public class TargetTranslationAdapter extends BaseAdapter {
                 public void run() {
                     // TODO: this method should respond correctly to thread interruptions
                     progress = Math.round(library.getTranslationProgress(targetTranslation) * 100);
+                    progress = progress > 100 ? 100 : (progress < 0 ? 0 : progress); // limit range of calculated progress
                 }
 
                 @Override
