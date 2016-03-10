@@ -1,25 +1,17 @@
 package com.door43.translationstudio.newui.newtranslation;
 
-import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.ArchiveDetails;
 import com.door43.translationstudio.core.NewLanguageQuestion;
-import com.door43.translationstudio.core.Util;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 
@@ -30,6 +22,7 @@ public class RequestNewLanguageStepAdapter extends BaseAdapter {
 
     public static final String TRUE_STR = "YES";
     public static final String FALSE_STR = "NO";
+    public static final String TAG = RequestNewLanguageActivity.class.getSimpleName();
     private List<NewLanguageQuestion> mQuestions = new ArrayList<>();
     private int mSelectedPosition = -1;
 
@@ -66,12 +59,8 @@ public class RequestNewLanguageStepAdapter extends BaseAdapter {
             layoutResId = R.layout.fragment_new_language_edit_card;
         }
 
-        if(convertView == null) {
-            v = LayoutInflater.from(parent.getContext()).inflate(layoutResId, null);
-            holder = new ViewHolder(v,position);
-        } else {
-            holder = (ViewHolder)v.getTag();
-        }
+        v = LayoutInflater.from(parent.getContext()).inflate(layoutResId, null);
+        holder = new ViewHolder(v,position);
 
         holder.question.setText(item.question);
 
