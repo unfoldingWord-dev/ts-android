@@ -15,6 +15,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NewLanguageQuestion;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -28,10 +29,41 @@ public class RequestNewLanguageStepAdapter extends BaseAdapter {
     public static final String TAG = RequestNewLanguageActivity.class.getSimpleName();
     private List<NewLanguageQuestion> mQuestions = new ArrayList<>();
     private int mSelectedPosition = -1;
+    private HashMap<Integer,Integer> mQuestionIndex;
 
     public void loadQuestions(List<NewLanguageQuestion> questions) {
         mQuestions = questions;
+        mQuestionIndex = new HashMap<Integer,Integer>();
+        for (int i = 0; i < mQuestions.size(); i++) {
+            NewLanguageQuestion question = mQuestions.get(i);
+            mQuestionIndex.put(question.id,i);
+        }
         notifyDataSetChanged();
+    }
+
+    private boolean hasDependencies(int id) {
+        for (NewLanguageQuestion question : mQuestions) {
+            if(question.conditionalID == id) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private NewLanguageQuestion getQuestionByID(int id) {
+        if(id < 0) {
+            return null;
+        }
+        try {
+            if(!mQuestionIndex.containsKey(id)) {
+                return null;
+            }
+            Integer pos = mQuestionIndex.get(id);
+            NewLanguageQuestion question = mQuestions.get(pos);
+            return question;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @Override
@@ -67,12 +99,35 @@ public class RequestNewLanguageStepAdapter extends BaseAdapter {
 
         holder.question.setText(item.question);
 
+        final boolean hasDependencies = hasDependencies(item.id);
+        int dependencyID = item.conditionalID;
+        NewLanguageQuestion dependency =  getQuestionByID(dependencyID);
+        boolean display = true;
+        if(dependency != null) {
+            if((dependency.answer != null ) && !dependency.answer.isEmpty()) {
+
+                if(dependency.type == NewLanguageQuestion.QuestionType.CHECK_BOX) {
+                    display = TRUE_STR.equals(dependency.answer);
+                } else {
+                    display = true;
+                }
+            } else {
+                display = false;
+            }
+        }
+
+        v.setVisibility( display ? View.VISIBLE : View.GONE);
+
         if (item.type == NewLanguageQuestion.QuestionType.CHECK_BOX) {
             holder.checkBoxAnswer.setChecked(TRUE_STR.equals(item.answer));
             holder.checkBoxAnswer.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     item.answer = isChecked ? TRUE_STR : FALSE_STR;
+
+                    if(hasDependencies) {
+                        notifyDataSetChanged();
+                    }
                 }
             });
         } else {
@@ -89,6 +144,10 @@ public class RequestNewLanguageStepAdapter extends BaseAdapter {
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
                     item.answer = s.toString();
+
+                    if(hasDependencies) {
+                        notifyDataSetChanged();
+                    }
                 }
 
                 @Override

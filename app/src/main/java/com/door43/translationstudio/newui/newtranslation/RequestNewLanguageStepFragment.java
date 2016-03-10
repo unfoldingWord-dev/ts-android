@@ -103,32 +103,6 @@ public class RequestNewLanguageStepFragment extends BaseFragment {
         return answers;
     }
 
-    protected void initEdit(EditText edit, JSONObject answers, String key) {
-        if(null != edit) {
-            try {
-                String text = answers.getString(key);
-                edit.setText(text);
-            } catch (Exception e) {
-                edit.setText("");
-            }
-        }
-    }
-
-    protected Boolean initCheckbox(CheckBox checkBox, JSONObject answers, String key) {
-        Boolean checked = false;
-
-        try {
-            checked = answers.getBoolean(key);
-        } catch (Exception e) {
-            checked = false;
-        }
-
-        if(null != checkBox) {
-            checkBox.setChecked(checked);
-        }
-        return checked;
-    }
-
     protected List<NewLanguageQuestion> getAnswersFromArgs(Bundle args) {
         String questionsJson = args.getString(RequestNewLanguageActivity.EXTRA_NEW_LANGUAGE_QUESTIONS);
         List<NewLanguageQuestion> questions = RequestNewLanguageActivity.parseJsonStrIntoQuestions(questionsJson);
