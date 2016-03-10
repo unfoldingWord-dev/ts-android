@@ -259,7 +259,6 @@ public class Library {
         }
 
         // word assignments
-        // TODO: delete current translationWord assignments
         if(mDownloader.downloadWordAssignments(sourceTranslation, mAppIndex)) {
             mAppIndex.markWordAssignmentsCatalogUpToDate(sourceTranslation);
         }
