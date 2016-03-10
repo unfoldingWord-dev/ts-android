@@ -965,6 +965,13 @@ public class Library {
         return success;
     }
 
+    /**
+     * Resets all the date_modified values
+     */
+    public void setExpired() {
+        mAppIndex.setExpired();
+    }
+
     public interface OnProgressListener {
         /**
          * Progress the progress on an operation between 0 and max

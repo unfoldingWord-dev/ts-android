@@ -212,6 +212,15 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                 dialog.show(ft, "dialog");
             }
         }));
+        mDeveloperTools.add(new ToolItem("Expire local resources", "Resets the local date modified on content to allow manually updating", 0, new ToolItem.ToolAction() {
+            @Override
+            public void run() {
+                AppContext.getLibrary().setExpired();
+                Snackbar snack = Snackbar.make(findViewById(android.R.id.content), "The resources have been expired", Snackbar.LENGTH_LONG);
+                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                snack.show();
+            }
+        }));
         mDeveloperTools.add(new ToolItem(getResources().getString(R.string.force_update_projects), getResources().getString(R.string.force_update_projects_description), 0, new ToolItem.ToolAction() {
             @Override
             public void run() {

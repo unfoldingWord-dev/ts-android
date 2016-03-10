@@ -1252,4 +1252,14 @@ public class Indexer {
     public void markResourceCatalogUpToDate(String projectSlug, String sourceLanguageSlug) {
         mDatabaseHelper.markResourceCatalogUpToDate(mDatabase, projectSlug, sourceLanguageSlug);
     }
+
+    public void setExpired() {
+        mDatabase.execSQL("UPDATE `resource`"
+                + " SET `source_catalog_local_modified_at`=0,"
+                + " `translation_notes_catalog_local_modified_at`=0,"
+                + " `translation_words_catalog_local_modified_at`=0,"
+                + " `translation_word_assignments_catalog_local_modified_at`=0,"
+                + " `checking_questions_catalog_local_modified_at`=0"
+        );
+    }
 }

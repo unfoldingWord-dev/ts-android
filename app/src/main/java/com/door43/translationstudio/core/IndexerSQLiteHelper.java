@@ -782,6 +782,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         values.put("definition_title", definitionTitle);
         values.put("definition", definition);
 
+        // identify existing word
         Cursor cursor = db.rawQuery("SELECT `id` FROM `translation_word` WHERE `slug`=? AND `catalog_hash`=?", new String[]{wordSlug, catalogHash});
         long wordId;
         if(cursor.moveToFirst()) {
