@@ -300,7 +300,7 @@ public class TargetTranslation {
         manifest.put(FIELD_PROJECT, projectJson);
         JSONObject typeJson = new JSONObject();
         typeJson.put("id", translationType);
-        typeJson.put("name", "");
+        typeJson.put("name", translationType.getName());
         manifest.put(FIELD_TRANSLATION_TYPE, typeJson);
         JSONObject generatorJson = new JSONObject();
         generatorJson.put("name", "ts-android");
