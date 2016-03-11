@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.NestedScrollView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -52,6 +51,16 @@
                 android:layout_gravity="center_horizontal|right"
                 style="@style/Widget.Button.Blue"
                 android:text="@string/next_step"
+                android:layout_marginRight="@dimen/dialog_controls_margin"
+                android:layout_marginLeft="@dimen/dialog_controls_margin" />
+
+            <Button
+                android:id="@+id/done_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal|right"
+                style="@style/Widget.Button.Blue"
+                android:text="@string/done"
                 android:layout_marginRight="@dimen/card_margin"
                 android:layout_marginLeft="@dimen/dialog_controls_margin" />
         </LinearLayout>
@@ -60,4 +69,4 @@
     </LinearLayout>
 
 
-</android.support.v4.widget.NestedScrollView>
+</LinearLayout>
