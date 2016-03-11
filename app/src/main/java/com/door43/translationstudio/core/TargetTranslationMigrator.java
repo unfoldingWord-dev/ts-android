@@ -109,41 +109,47 @@ public class TargetTranslationMigrator {
         }
 
         // update resource
-        if(manifest.has("resource_id")) {
-            String resourceId = manifest.getString("resource_id");
-            manifest.remove("resource_id");
-            JSONObject resourceJson = new JSONObject();
-            // TRICKY: supported resource id's (or now types) are "reg", "obs", "ulb", and "udb".
-            if (resourceId.equals("ulb")) {
-                resourceJson.put("name", "Unlocked Literal Bible");
-            } else if (resourceId.equals("udb")) {
-                resourceJson.put("name", "Unlocked Dynamic Bible");
-            } else if (resourceId.equals("obs")) {
-                resourceJson.put("name", "Open Bible Stories");
-            } else {
-                // everything else changes to "reg"
-                resourceId = "reg";
-                resourceJson.put("name", "Regular");
-            }
-            resourceJson.put("id", resourceId);
-            manifest.put("resource", resourceJson);
-        } else if(!manifest.has("resource")) {
-            // add missing resource
-            JSONObject resourceJson = new JSONObject();
-            JSONObject projectJson = manifest.getJSONObject("project");
-            JSONObject typeJson = manifest.getJSONObject("type");
-            if(typeJson.getString("id").equals("text")) {
-                String resourceId = projectJson.getString("id");
-                if(resourceId.equals("obs")) {
-                    resourceJson.put("id", "obs");
+        if(manifest.getJSONObject("type").getString("id").equals("text")) {
+            if (manifest.has("resource_id")) {
+                String resourceId = manifest.getString("resource_id");
+                manifest.remove("resource_id");
+                JSONObject resourceJson = new JSONObject();
+                // TRICKY: supported resource id's (or now types) are "reg", "obs", "ulb", and "udb".
+                if (resourceId.equals("ulb")) {
+                    resourceJson.put("name", "Unlocked Literal Bible");
+                } else if (resourceId.equals("udb")) {
+                    resourceJson.put("name", "Unlocked Dynamic Bible");
+                } else if (resourceId.equals("obs")) {
                     resourceJson.put("name", "Open Bible Stories");
                 } else {
-                    // everything else changes to reg
-                    resourceJson.put("id", "reg");
+                    // everything else changes to "reg"
+                    resourceId = "reg";
                     resourceJson.put("name", "Regular");
                 }
+                resourceJson.put("id", resourceId);
                 manifest.put("resource", resourceJson);
+            } else if (!manifest.has("resource")) {
+                // add missing resource
+                JSONObject resourceJson = new JSONObject();
+                JSONObject projectJson = manifest.getJSONObject("project");
+                JSONObject typeJson = manifest.getJSONObject("type");
+                if (typeJson.getString("id").equals("text")) {
+                    String resourceId = projectJson.getString("id");
+                    if (resourceId.equals("obs")) {
+                        resourceJson.put("id", "obs");
+                        resourceJson.put("name", "Open Bible Stories");
+                    } else {
+                        // everything else changes to reg
+                        resourceJson.put("id", "reg");
+                        resourceJson.put("name", "Regular");
+                    }
+                    manifest.put("resource", resourceJson);
+                }
             }
+        } else {
+            // non-text translation types do not have resources
+            manifest.remove("resource_id");
+            manifest.remove("resource");
         }
 
         // update source translations

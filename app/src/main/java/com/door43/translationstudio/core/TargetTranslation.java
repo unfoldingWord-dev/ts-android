@@ -134,11 +134,11 @@ public class TargetTranslation {
                 // ulb, obs, reg
                 return GLOBAL_PROJECT_ID + "-" + projectId + "-" + targetLanguageId;
             }
-        } else if(translationType == TranslationType.TRANSLATION_ACADEMY) {
-            // ta
+        } else if(translationType == TranslationType.TRANSLATION_ACADEMY || translationType == TranslationType.TRANSLATION_WORD) {
+            // ta, tw
             return GLOBAL_PROJECT_ID + "-" + projectId + "-" + targetLanguageId;
         } else {
-            // tn, tq, tw
+            // tn, tq
             return GLOBAL_PROJECT_ID + "-" + projectId + "_" + resourceType + "-" + targetLanguageId;
         }
     }
