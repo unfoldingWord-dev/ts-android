@@ -92,8 +92,13 @@ public class TargetTranslationMigrator {
                 }
             }
             JSONObject typeJson = new JSONObject();
+            TranslationType translationType = TranslationType.get(typeId);
             typeJson.put("id", typeId);
-            typeJson.put("name", "");
+            if(translationType != null) {
+                typeJson.put("name", translationType.getName());
+            } else {
+                typeJson.put("name", "");
+            }
             manifest.put("type", typeJson);
         }
 
