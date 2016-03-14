@@ -16,6 +16,7 @@ import com.door43.translationstudio.newui.BaseFragment;
 
 import org.json.JSONObject;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -33,6 +34,7 @@ public class RequestNewLanguagePageFragment extends BaseFragment {
     private RequestNewLanguagePageAdapter mAdapter;
     private boolean mFirstPage;
     private boolean mLastPage;
+    private HashMap<Integer,Integer> mQuestionIndex;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_new_language, container, false);
@@ -43,6 +45,8 @@ public class RequestNewLanguagePageFragment extends BaseFragment {
         mLastPage = args.getBoolean(ARG_LAST_PAGE);
 
         final ListView layout = (ListView) mRootView.findViewById(R.id.controlsLayout);
+
+        mQuestionIndex = RequestNewLanguagePageFragment.generateIdMap(mQuestions);
 
         mAdapter = new RequestNewLanguagePageAdapter();
         layout.setAdapter(mAdapter);
@@ -84,11 +88,46 @@ public class RequestNewLanguagePageFragment extends BaseFragment {
         return mRootView;
     }
 
-     private void setVisible(int resID, Boolean enable) {
-        View view = (View) mRootView.findViewById(resID);
-        if (null != view) {
-            view.setVisibility(enable ? View.VISIBLE : View.GONE);
+    static public HashMap<Integer,Integer> generateIdMap(List<NewLanguageQuestion> questions) {
+        HashMap<Integer,Integer> questionIndex = new HashMap<Integer,Integer>();
+        for (int i = 0; i < questions.size(); i++) {
+            NewLanguageQuestion question = questions.get(i);
+            questionIndex.put(question.id, i);
         }
+        return questionIndex;
+    }
+
+    static public NewLanguageQuestion getQuestionPositionByID(List<NewLanguageQuestion> questions,
+                                                              HashMap<Integer,Integer> questionIndex,
+                                                              int id) {
+        if(id < 0) {
+            return null;
+        }
+        try {
+            if(!questionIndex.containsKey(id)) {
+                return null;
+            }
+            Integer pos = questionIndex.get(id);
+            NewLanguageQuestion question = questions.get(pos);
+            return question;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private boolean shouldHaveAnswer( NewLanguageQuestion question) {
+        if (question.conditionalID >= 0) {
+            NewLanguageQuestion conditionalQuestion = getQuestionPositionByID(mQuestions,mQuestionIndex,question.conditionalID);
+            if(conditionalQuestion != null) {
+                if (conditionalQuestion.type == NewLanguageQuestion.QuestionType.CHECK_BOX) {
+                    return RequestNewLanguagePageAdapter.isCheckBoxAnswerTrue(conditionalQuestion);
+                } else {
+                    return conditionalQuestion.answer != null; // should have answer if question it depends on has answer
+                }
+            }
+        }
+
+        return true;
     }
 
     private void validateAnswers() {
@@ -109,7 +148,8 @@ public class RequestNewLanguagePageFragment extends BaseFragment {
                     incompleteQuestion = question;
                 }
             }
-            if(!hasAnswer) {
+
+            if(!hasAnswer && shouldHaveAnswer(question)) {
                 missingAnswers = true;
                 missingAnswerQuestion = question;
             }

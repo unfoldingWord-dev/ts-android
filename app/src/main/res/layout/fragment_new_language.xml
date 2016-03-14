@@ -12,8 +12,8 @@
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="400dp"
-            >
+            android:layout_height="fill_parent"
+            android:layout_weight="1">
 
             <ListView
                 android:layout_width="match_parent"
@@ -22,7 +22,9 @@
                 android:id="@+id/controlsLayout"
                 android:choiceMode="singleChoice"
                 android:focusable="true"
-                android:descendantFocusability="afterDescendants">
+                android:descendantFocusability="afterDescendants"
+                android:scrollIndicators="right"
+                android:fastScrollAlwaysVisible="true">
 
             </ListView>
 
@@ -32,7 +34,9 @@
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical|right">
+            android:gravity="center_vertical|right"
+            android:layout_weight="0"
+            android:layout_marginBottom="@dimen/card_margin">
 
             <Button
                 android:id="@+id/previous_button"

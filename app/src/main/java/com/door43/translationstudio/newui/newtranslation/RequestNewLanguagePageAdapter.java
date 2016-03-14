@@ -35,13 +35,13 @@ public class RequestNewLanguagePageAdapter extends BaseAdapter {
 
     public void loadQuestions(List<NewLanguageQuestion> questions) {
         mQuestions = questions;
-        mQuestionIndex = new HashMap<Integer,Integer>();
-        for (int i = 0; i < mQuestions.size(); i++) {
-            NewLanguageQuestion question = mQuestions.get(i);
-            mQuestionIndex.put(question.id,i);
-        }
+        mQuestionIndex = RequestNewLanguagePageFragment.generateIdMap(questions);
 
         updateDisplayedQuestions();
+    }
+
+    static public boolean isCheckBoxAnswerTrue(NewLanguageQuestion question) {
+        return TRUE_STR.equals(question.answer);
     }
 
     private void updateDisplayedQuestions() {
@@ -65,19 +65,7 @@ public class RequestNewLanguagePageAdapter extends BaseAdapter {
     }
 
     private NewLanguageQuestion getQuestionByID(int id) {
-        if(id < 0) {
-            return null;
-        }
-        try {
-            if(!mQuestionIndex.containsKey(id)) {
-                return null;
-            }
-            Integer pos = mQuestionIndex.get(id);
-            NewLanguageQuestion question = mQuestions.get(pos);
-            return question;
-        } catch (Exception e) {
-            return null;
-        }
+        return RequestNewLanguagePageFragment.getQuestionPositionByID(mQuestions,mQuestionIndex,id);
     }
 
     private NewLanguageQuestion getDisplayedItemAtPos(int pos) {

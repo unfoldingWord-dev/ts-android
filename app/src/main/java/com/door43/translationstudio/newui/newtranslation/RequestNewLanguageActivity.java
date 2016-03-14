@@ -88,58 +88,63 @@ public class RequestNewLanguageActivity extends BaseActivity implements RequestN
         }
      }
 
+    private List<NewLanguageQuestion> pushPage(List<NewLanguageQuestion> page) {
+        mQuestionPages.add(page);
+        List<NewLanguageQuestion> newPage = new ArrayList<>();
+        return newPage;
+    }
+
     private void createQuestions() {
         final boolean required = true;
         final boolean not_required = false;
+        List<NewLanguageQuestion> page = new ArrayList<>();
 
-        List<NewLanguageQuestion> page1 = new ArrayList<>();
-        page1.add(NewLanguageQuestion.generateFromResources(getApplication(), 100, R.string.language_name_called, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required ));
-        page1.add(NewLanguageQuestion.generateFromResources(getApplication(), 101, R.string.language_name_meaning, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 100 ));
-        page1.add(NewLanguageQuestion.generateFromResources(getApplication(), 102, R.string.language_name_alternates, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 100 ));
-        page1.add(NewLanguageQuestion.generateFromResources(getApplication(), 200, R.string.language_others_name, R.string.enter_answer, NewLanguageQuestion.QuestionType.CHECK_BOX, required ));
-        page1.add(NewLanguageQuestion.generateFromResources(getApplication(), 201, R.string.language_others_called, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 200 ));
-        page1.add(NewLanguageQuestion.generateFromResources(getApplication(), 202, R.string.language_others_who, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 200 ));
-        page1.add(NewLanguageQuestion.generateFromResources(getApplication(), 203, R.string.language_others_meaning, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 200 ));
-        mQuestionPages.add(page1);
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 100, R.string.language_name_called, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required ));
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 101, R.string.language_name_meaning, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 100 ));
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 102, R.string.language_name_alternates, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 100 ));
+        page = pushPage(page);
 
-        List<NewLanguageQuestion> page2 = new ArrayList<>();
-        page2.add(NewLanguageQuestion.generateFromResources(getApplication(), 300, R.string.language_where_else_spoken, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required ));
-        page2.add(NewLanguageQuestion.generateFromResources(getApplication(), 400, R.string.language_where_slightly_different, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required ));
-        page2.add(NewLanguageQuestion.generateFromResources(getApplication(), 401, R.string.language_where_slightly_different_gone, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 400 ));
-        page2.add(NewLanguageQuestion.generateFromResources(getApplication(), 402, R.string.language_where_slightly_different_come, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 400 ));
-        page2.add(NewLanguageQuestion.generateFromResources(getApplication(), 403, R.string.language_where_slightly_different_name, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 400 ));
-        mQuestionPages.add(page2);
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 200, R.string.language_others_name, R.string.enter_answer, NewLanguageQuestion.QuestionType.CHECK_BOX, required ));
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 201, R.string.language_others_called, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 200 ));
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 202, R.string.language_others_who, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 200 ));
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 203, R.string.language_others_meaning, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 200 ));
+        page = pushPage(page);
 
-        List<NewLanguageQuestion> page3 = new ArrayList<>();
-        page3.add(NewLanguageQuestion.generateFromResources(getApplication(), 500, R.string.language_where_different, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required ));
-        page3.add(NewLanguageQuestion.generateFromResources(getApplication(), 501, R.string.language_where_different_understand, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 500 ));
-        page3.add(NewLanguageQuestion.generateFromResources(getApplication(), 502, R.string.language_where_different_gone, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 500 ));
-        page3.add(NewLanguageQuestion.generateFromResources(getApplication(), 503, R.string.language_where_different_come, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 500 ));
-        page3.add(NewLanguageQuestion.generateFromResources(getApplication(), 504, R.string.language_where_different_name, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 500 ));
-        mQuestionPages.add(page3);
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 300, R.string.language_where_else_spoken, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required ));
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 400, R.string.language_where_slightly_different, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required ));
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 401, R.string.language_where_slightly_different_gone, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 400 ));
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 402, R.string.language_where_slightly_different_come, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 400 ));
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 403, R.string.language_where_slightly_different_name, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 400 ));
+        page = pushPage(page);
 
-        List<NewLanguageQuestion> page4 = new ArrayList<>();
-        page4.add(NewLanguageQuestion.generateFromResources(getApplication(), 600, R.string.language_where_most_pure, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required ));
-        page4.add(NewLanguageQuestion.generateFromResources(getApplication(), 601, R.string.language_where_most_pure_why, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 600 ));
-        page4.add(NewLanguageQuestion.generateFromResources(getApplication(), 602, R.string.language_where_most_pure_gone, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 600 ));
-        page4.add(NewLanguageQuestion.generateFromResources(getApplication(), 603, R.string.language_where_most_pure_come, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 600 ));
-        mQuestionPages.add(page4);
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 500, R.string.language_where_different, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required ));
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 501, R.string.language_where_different_understand, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 500 ));
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 502, R.string.language_where_different_gone, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 500 ));
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 503, R.string.language_where_different_come, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 500 ));
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 504, R.string.language_where_different_name, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 500 ));
+        page = pushPage(page);
 
-        List<NewLanguageQuestion> page5 = new ArrayList<>();
-        page5.add(NewLanguageQuestion.generateFromResources(getApplication(), 700, R.string.language_where_spoken_badly, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required ));
-        page5.add(NewLanguageQuestion.generateFromResources(getApplication(), 701, R.string.language_where_spoken_badly_why, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 700 ));
-        page5.add(NewLanguageQuestion.generateFromResources(getApplication(), 702, R.string.language_where_spoken_badly_gone, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 700 ));
-        page5.add(NewLanguageQuestion.generateFromResources(getApplication(), 703, R.string.language_where_spoken_badly_come, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 700 ));
-        mQuestionPages.add(page5);
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 600, R.string.language_where_most_pure, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required ));
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 601, R.string.language_where_most_pure_why, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 600 ));
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 602, R.string.language_where_most_pure_gone, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 600 ));
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 603, R.string.language_where_most_pure_come, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 600 ));
+        page = pushPage(page);
 
-        List<NewLanguageQuestion> page6 = new ArrayList<>();
-        page6.add(NewLanguageQuestion.generateFromResources(getApplication(), 800, R.string.language_gateway_name, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required ));
-        page6.add(NewLanguageQuestion.generateFromResources(getApplication(), 801, R.string.language_gateway_understand, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 800 ));
-        page6.add(NewLanguageQuestion.generateFromResources(getApplication(), 802, R.string.language_gateway_understand_come, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 800 ));
-        page6.add(NewLanguageQuestion.generateFromResources(getApplication(), 803, R.string.language_gateway_understand_children_come, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 800 ));
-        page6.add(NewLanguageQuestion.generateFromResources(getApplication(), 900, R.string.language_where_travel, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required ));
-        page6.add(NewLanguageQuestion.generateFromResources(getApplication(), 1000, R.string.language_tourists, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required ));
-        mQuestionPages.add(page6);
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 700, R.string.language_where_spoken_badly, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required ));
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 701, R.string.language_where_spoken_badly_why, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 700 ));
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 702, R.string.language_where_spoken_badly_gone, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 700 ));
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 703, R.string.language_where_spoken_badly_come, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 700 ));
+        page = pushPage(page);
+
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 800, R.string.language_gateway_name, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required ));
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 801, R.string.language_gateway_understand, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 800 ));
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 802, R.string.language_gateway_understand_come, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 800 ));
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 803, R.string.language_gateway_understand_children_come, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 800 ));
+        page = pushPage(page);
+
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 900, R.string.language_where_travel, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required ));
+        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 1000, R.string.language_tourists, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required ));
+        pushPage(page);
     }
 
     private boolean parseAnswers(String answersJson, int page) {
