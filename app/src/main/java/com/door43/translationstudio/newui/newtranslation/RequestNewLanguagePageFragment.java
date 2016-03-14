@@ -62,7 +62,7 @@ public class RequestNewLanguagePageFragment extends BaseFragment {
             doneButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    doFinished();
+                    validateAnswers();
                 }
             });
             nextButton.setVisibility(View.GONE);
@@ -123,13 +123,13 @@ public class RequestNewLanguagePageFragment extends BaseFragment {
             warnAnswersMissingBeforeContinue(missingAnswerQuestion.question, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    doFinished();
+                doNext();
                 }
             });
 
         } else
         {
-            doFinished();
+            doNext();
         }
     }
 
@@ -146,10 +146,14 @@ public class RequestNewLanguagePageFragment extends BaseFragment {
         }
         return true;
     }
-    private void doFinished() {
+    private void doNext() {
         saveAnswers();
         String answers = RequestNewLanguageActivity.getQuestions(mQuestions).toString();
-        getListener().finishLanguageRequest(answers);
+        if (mLastPage) {
+            getListener().finishLanguageRequest(answers);
+        } else {
+            getListener().nextStep(answers);
+        }
     }
 
     private void saveAnswers() {

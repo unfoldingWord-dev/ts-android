@@ -143,6 +143,7 @@ public class RequestNewLanguagePageAdapter extends BaseAdapter {
                 layoutResId = R.layout.fragment_new_language_edit_card;
             }
 
+            // TODO: 3/14/16 check to see if we can reuse previous v
             v = LayoutInflater.from(parent.getContext()).inflate(layoutResId, null);
             holder = new ViewHolder(v, position);
 
