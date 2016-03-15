@@ -31,7 +31,7 @@ public class NewLanguagePageFragment extends BaseFragment {
     private OnEventListener mListener;
     private View mRootView;
     private List<NewLanguageQuestion> mQuestions;
-    private HashMap<Integer,Integer> mQuestionIndex;
+    private HashMap<Long,Integer> mQuestionIndex;
     private NewLanguagePageAdapter mAdapter;
     private boolean mFirstPage;
     private boolean mLastPage;
@@ -88,8 +88,8 @@ public class NewLanguagePageFragment extends BaseFragment {
         return mRootView;
     }
 
-    static public HashMap<Integer,Integer> generateIdMap(List<NewLanguageQuestion> questions) {
-        HashMap<Integer,Integer> questionIndex = new HashMap<Integer,Integer>();
+    static public HashMap<Long,Integer> generateIdMap(List<NewLanguageQuestion> questions) {
+        HashMap<Long,Integer> questionIndex = new HashMap<Long,Integer>();
         for (int i = 0; i < questions.size(); i++) {
             NewLanguageQuestion question = questions.get(i);
             questionIndex.put(question.id, i);
@@ -98,8 +98,8 @@ public class NewLanguagePageFragment extends BaseFragment {
     }
 
     static public NewLanguageQuestion getQuestionPositionByID(List<NewLanguageQuestion> questions,
-                                                              HashMap<Integer,Integer> questionIndex,
-                                                              int id) {
+                                                              HashMap<Long,Integer> questionIndex,
+                                                              long id) {
         if(id < 0) {
             return null;
         }

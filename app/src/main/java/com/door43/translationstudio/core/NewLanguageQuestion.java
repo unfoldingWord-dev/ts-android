@@ -17,16 +17,16 @@ public class NewLanguageQuestion {
     public static final String TYPE = "type";
     public static final String CONDITIONAL_ID = "conditional_id";
 
-    public int id;
+    public long id;
     public String question;
     public String helpText;
     public String answer; // can be null
     public boolean required;
     public QuestionType type;
-    public int conditionalID = -1;
+    public long conditionalID = -1;
 
-    NewLanguageQuestion(int id, String question, String helpText, String answer,
-                        QuestionType type, boolean required, int conditionalID) {
+    NewLanguageQuestion(long id, String question, String helpText, String answer,
+                        QuestionType type, boolean required, long conditionalID) {
         this.id = id;
         this.question = question;
         this.helpText = helpText;
@@ -36,15 +36,15 @@ public class NewLanguageQuestion {
         this.conditionalID = conditionalID;
     }
 
-    public static NewLanguageQuestion generateFromResources(Context context, int id, int questionResID, int hintResID,
-                                                            QuestionType type, boolean required, int conditionalID) {
+    public static NewLanguageQuestion generateFromResources(Context context, long id, int questionResID, int hintResID,
+                                                            QuestionType type, boolean required, long conditionalID) {
         String question = context.getResources().getString(questionResID);
         String hint = context.getResources().getString(hintResID);
 
         return new NewLanguageQuestion(id,question,hint,null,type,required, conditionalID);
     }
 
-    public static NewLanguageQuestion generateFromResources(Context context, int id, int questionResID, int hintResID,
+    public static NewLanguageQuestion generateFromResources(Context context, long id, int questionResID, int hintResID,
                                                             QuestionType type, boolean required) {
 
         return generateFromResources( context, id, questionResID, hintResID, type, required, -1);
@@ -53,7 +53,7 @@ public class NewLanguageQuestion {
 
     public static NewLanguageQuestion generateFromJson(JSONObject json) {
         try {
-            int id = json.getInt(ID);
+            long id = json.getLong(ID);
             String question = json.getString(QUESTION);
             String answer = null;
             if(json.has(NewLanguageQuestion.INPUT)) {
@@ -63,7 +63,7 @@ public class NewLanguageQuestion {
             boolean required = json.getBoolean(REQUIRED);
             String typeStr = json.getString(TYPE);
             QuestionType type = QuestionType.get(typeStr);
-            int conditional = json.getInt(CONDITIONAL_ID);
+            long conditional = json.getLong(CONDITIONAL_ID);
             return new NewLanguageQuestion(id,question,hint,answer,type,required, conditional);
         } catch (Exception e) {
 

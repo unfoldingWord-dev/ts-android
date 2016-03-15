@@ -348,9 +348,9 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
 
             String newLanguageDataStr = newLanguageData.toString(2);
 
-            Intent startNewLanguage = new Intent(this, NewTargetTranslationActivity.class);
-            startNewLanguage.putExtra(NewTargetTranslationActivity.EXTRA_NEW_LANGUAGE_DATA, newLanguageDataStr);
-            startActivity(startNewLanguage);
+            Intent data = new Intent();
+            data.putExtra(NewTargetTranslationActivity.EXTRA_NEW_LANGUAGE_DATA, newLanguageDataStr);
+            setResult(RESULT_OK, data);
             finish();
 
         } catch(Exception e) {

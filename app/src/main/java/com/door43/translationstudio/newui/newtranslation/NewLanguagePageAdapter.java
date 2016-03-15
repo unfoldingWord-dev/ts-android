@@ -29,9 +29,8 @@ public class NewLanguagePageAdapter extends BaseAdapter {
     public static final String TAG = NewLanguageActivity.class.getSimpleName();
     private List<NewLanguageQuestion> mQuestions = new ArrayList<>();
     private List<Integer> mDisplayedQuestions = new ArrayList<>();
-    private HashMap<Integer,Integer> mQuestionIndex;
+    private HashMap<Long,Integer> mQuestionIndex;
     private int mSelectedPosition = -1;
-    private int mSaveHeight;
 
     public void loadQuestions(List<NewLanguageQuestion> questions) {
         mQuestions = questions;
@@ -55,7 +54,7 @@ public class NewLanguagePageAdapter extends BaseAdapter {
         notifyDataSetChanged();
     }
 
-    private boolean hasDependencies(int id) {
+    private boolean hasDependencies(long id) {
         for (NewLanguageQuestion question : mQuestions) {
             if(question.conditionalID == id) {
                 return true;
@@ -64,7 +63,7 @@ public class NewLanguagePageAdapter extends BaseAdapter {
         return false;
     }
 
-    private NewLanguageQuestion getQuestionByID(int id) {
+    private NewLanguageQuestion getQuestionByID(long id) {
         return NewLanguagePageFragment.getQuestionPositionByID(mQuestions, mQuestionIndex, id);
     }
 
@@ -82,7 +81,7 @@ public class NewLanguagePageAdapter extends BaseAdapter {
     }
 
     protected boolean shouldDisplay(NewLanguageQuestion item) {
-        int dependencyID = item.conditionalID;
+        long dependencyID = item.conditionalID;
         NewLanguageQuestion dependency =  getQuestionByID(dependencyID);
         boolean display = true;
         if(dependency != null) {

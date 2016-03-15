@@ -14,6 +14,7 @@ import android.widget.ImageButton;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.core.LanguageDirection;
 import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
@@ -27,6 +28,8 @@ import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.AppContext;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.Locale;
 
@@ -39,17 +42,16 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     private static final String STATE_TARGET_LANGUAGE_ID = "state_target_language_id";
     public static final int RESULT_ERROR = 3;
     public static final String TAG = NewTargetTranslationActivity.class.getSimpleName();
+    public static final int NEW_LANGUAGE_REQUEST = 1001;
     private TargetLanguage mSelectedTargetLanguage = null;
     private Searchable mFragment;
     private String mNewTargetTranslationId = null;
+    private String mNewLanguageData = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_target_translation);
-
-        // get parameters
-        Bundle args = getIntent().getExtras();
 
         ImageButton newLanguageButton = (ImageButton) findViewById(R.id.newLanguageRequest);
         if (null != newLanguageButton) {
@@ -61,8 +63,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
 //                    Intent requestNewLangaugeIntent = new Intent(NewTargetTranslationActivity.this,
 //                            NewLanguageActivity.class);
 //                    requestNewLangaugeIntent.putExtra(NewLanguageActivity.EXTRA_CALLING_ACTIVITY, NewLanguageActivity.ACTIVITY_HOME);
-//                    startActivity(requestNewLangaugeIntent);
-//                    finish();
+//                    startActivityForResult(requestNewLangaugeIntent, NEW_LANGUAGE_REQUEST);
 
                     String dummyAnswers = "{\n" +
                             "  \"answers\": [\n" +
@@ -198,13 +199,6 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                     useNewLanguage(dummyAnswers);
                 }
             });
-
-            if((args != null) && (args.containsKey(EXTRA_NEW_LANGUAGE_DATA))) { // if we created a new language
-                newLanguageButton.setVisibility(View.GONE);
-
-                String questionsStr = args.getString(EXTRA_NEW_LANGUAGE_DATA);
-                useNewLanguage(questionsStr);
-            }
         }
 
         if(findViewById(R.id.fragment_container) != null) {
@@ -221,13 +215,40 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
 
     private void useNewLanguage(String newLanguageDataStr) {
         try {
+            mNewLanguageData = newLanguageDataStr;
             JSONObject newLanguageData = new JSONObject(newLanguageDataStr);
 
             String languageCode = newLanguageData.getString(NewLanguageActivity.NEW_LANGUAGE_TEMP_CODE);
+            JSONObject nameAnswer = getAnswerForID(newLanguageData, 100);
+            String languageName = nameAnswer.getString(NewLanguageActivity.NEW_LANGUAGE_ANSWER);
+
+            // TODO: 3/15/16 need to add direction and region
+            mSelectedTargetLanguage = new TargetLanguage(languageCode, languageName, "uncertain", LanguageDirection.LeftToRight);
+
+            // display project list
+            mFragment = new ProjectListFragment();
+            ((ProjectListFragment) mFragment).setArguments(getIntent().getExtras());
+            getFragmentManager().beginTransaction().replace(R.id.fragment_container, (ProjectListFragment) mFragment).commit();
+            // TODO: animate
+            invalidateOptionsMenu();
 
         } catch (Exception e) {
             Logger.e(TAG, "Error Adding new language", e);
         }
+    }
+
+    private JSONObject getAnswerForID(JSONObject newLanguageData, long id) throws JSONException {
+
+        JSONArray answers = newLanguageData.getJSONArray(NewLanguageActivity.NEW_LANGUAGE_ANSWERS);
+        for (int i = 0; i < answers.length(); i++) {
+            JSONObject answer = answers.getJSONObject(i);
+            long qid = answer.getLong(NewLanguageActivity.NEW_LANGUAGE_QUESTION_ID);
+            if (qid == id) {
+                return answer;
+            }
+        }
+
+        return null;
     }
 
     public void onRestoreInstanceState(Bundle savedInstanceState) {
@@ -368,5 +389,15 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
         }
 
         super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (NEW_LANGUAGE_REQUEST == requestCode) {
+            if(RESULT_OK == resultCode) {
+                String newLanguageData = data.getStringExtra(NewTargetTranslationActivity.EXTRA_NEW_LANGUAGE_DATA);
+                useNewLanguage(newLanguageData);
+            }
+        }
     }
 }
