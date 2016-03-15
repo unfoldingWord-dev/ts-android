@@ -20,15 +20,18 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.security.InvalidParameterException;
+import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by blm on 2/23/16.
  */
-public class RequestNewLanguageActivity extends BaseActivity implements RequestNewLanguagePageFragment.OnEventListener {
+public class NewLanguageActivity extends BaseActivity implements NewLanguagePageFragment.OnEventListener {
 
-    public static final String TAG = RequestNewLanguageActivity.class.getSimpleName();
+    public static final String TAG = NewLanguageActivity.class.getSimpleName();
 
     private static final String STATE_LANGUAGE_STEP = "state_language_step";
     private static final String STATE_NEW_LANGUAGE_FINISHED = "state_new_language_finished";
@@ -37,6 +40,13 @@ public class RequestNewLanguageActivity extends BaseActivity implements RequestN
     public static final String EXTRA_CALLING_ACTIVITY = "extra_calling_activity";
     public static final String EXTRA_NEW_LANGUAGE_QUESTIONS = "extra_new_language_questions";
 
+    public static final String NEW_LANGUAGE_REQUEST_ID = "request_id";
+    public static final String NEW_LANGUAGE_TEMP_CODE = "temp_code";
+    public static final String NEW_LANGUAGE_QUESTIONAIRE_ID = "questionaire_id";
+    public static final String NEW_LANGUAGE_ANSWERS = "answers";
+    public static final String NEW_LANGUAGE_ANSWER = "answer";
+    public static final String NEW_LANGUAGE_QUESTION_ID = "question_id";
+
     private Translator mTranslator;
     private TargetTranslation mTargetTranslation;
     private int mCurrentPage = 0;
@@ -44,8 +54,9 @@ public class RequestNewLanguageActivity extends BaseActivity implements RequestN
     public static final int ACTIVITY_TRANSLATION = 1002;
     private boolean mLanguageFinished = false;
     private int mCallingActivity;
-    private RequestNewLanguagePageFragment mFragment;
+    private NewLanguagePageFragment mFragment;
     private List<List<NewLanguageQuestion>> mQuestionPages;
+    private int mQuestionaireID = 1;
 
 
     @Override
@@ -81,7 +92,7 @@ public class RequestNewLanguageActivity extends BaseActivity implements RequestN
         // inject fragments
         if(findViewById(R.id.fragment_container) != null) {
             if(savedInstanceState != null) {
-                mFragment = (RequestNewLanguagePageFragment)getFragmentManager().findFragmentById(R.id.fragment_container);
+                mFragment = (NewLanguagePageFragment)getFragmentManager().findFragmentById(R.id.fragment_container);
             } else {
                 doPage(mCurrentPage, null);
             }
@@ -310,13 +321,75 @@ public class RequestNewLanguageActivity extends BaseActivity implements RequestN
 
     @Override
     public void finishLanguageRequest(String answersJson) {
-        if(answersJson != null) {
-            parseAnswers(answersJson, mCurrentPage); // save answers from current page
-        }
-        mLanguageFinished = true;
 
-        // TODO: 3/14/16 need to add action for results
-        getFragmentManager().beginTransaction().remove(mFragment);
+        try {
+            if(answersJson != null) {
+                parseAnswers(answersJson, mCurrentPage); // save answers from current page
+            }
+            mLanguageFinished = true;
+
+            JSONArray questionsJson = new JSONArray();
+
+            for (int i = 0; i < mQuestionPages.size(); i++) {
+                List<NewLanguageQuestion> questions = mQuestionPages.get(i);
+                for (NewLanguageQuestion question : questions) {
+                    JSONObject answer = new JSONObject();
+                    answer.put(NEW_LANGUAGE_QUESTION_ID,question.id);
+                    answer.put(NEW_LANGUAGE_ANSWER,question.answer);
+                    questionsJson.put(answer);
+                }
+            }
+
+            JSONObject newLanguageData = new JSONObject();
+            newLanguageData.put(NEW_LANGUAGE_REQUEST_ID, UUID.randomUUID().toString());
+            newLanguageData.put(NEW_LANGUAGE_TEMP_CODE, getNewLanguageCode());
+            newLanguageData.put(NEW_LANGUAGE_QUESTIONAIRE_ID, mQuestionaireID);
+            newLanguageData.put(NEW_LANGUAGE_ANSWERS, questionsJson);
+
+            String newLanguageDataStr = newLanguageData.toString(2);
+
+            Intent startNewLanguage = new Intent(this, NewTargetTranslationActivity.class);
+            startNewLanguage.putExtra(NewTargetTranslationActivity.EXTRA_NEW_LANGUAGE_DATA, newLanguageDataStr);
+            startActivity(startNewLanguage);
+            finish();
+
+        } catch(Exception e) {
+            Logger.e(TAG,"Error getting question data",e);
+        }
+    }
+
+    private String getNewLanguageCode() {
+        String languageCode;
+        languageCode= "qaa-x-";
+
+        String androidId = AppContext.udid();
+
+        long ms = (new Date()).getTime();
+        String uniqueString = androidId + ms;
+        String sha1Value = getSha1Hex(uniqueString);
+        languageCode += sha1Value.substring(0, 6);
+        return languageCode.toLowerCase();
+    }
+
+    public static String getSha1Hex(String clearString)
+    {
+        try
+        {
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
+            messageDigest.update(clearString.getBytes("UTF-8"));
+            byte[] bytes = messageDigest.digest();
+            StringBuilder buffer = new StringBuilder();
+            for (byte b : bytes)
+            {
+                buffer.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
+            }
+            return buffer.toString();
+        }
+        catch (Exception ignored)
+        {
+            ignored.printStackTrace();
+            return null;
+        }
     }
 
     /**
@@ -337,13 +410,13 @@ public class RequestNewLanguageActivity extends BaseActivity implements RequestN
             mCurrentPage = page;
         }
 
-        mFragment = new RequestNewLanguagePageFragment();
+        mFragment = new NewLanguagePageFragment();
 
         Bundle args = getIntent().getExtras();
-        args.putBoolean(RequestNewLanguagePageFragment.ARG_NEW_LANG_FINISHED, mLanguageFinished);
-        args.putBoolean(RequestNewLanguagePageFragment.ARG_FIRST_PAGE, mCurrentPage == 0);
-        args.putBoolean(RequestNewLanguagePageFragment.ARG_LAST_PAGE, mCurrentPage == (mQuestionPages.size() - 1));
-        args.putString(RequestNewLanguageActivity.EXTRA_NEW_LANGUAGE_QUESTIONS, getQuestions(mCurrentPage).toString());
+        args.putBoolean(NewLanguagePageFragment.ARG_NEW_LANG_FINISHED, mLanguageFinished);
+        args.putBoolean(NewLanguagePageFragment.ARG_FIRST_PAGE, mCurrentPage == 0);
+        args.putBoolean(NewLanguagePageFragment.ARG_LAST_PAGE, mCurrentPage == (mQuestionPages.size() - 1));
+        args.putString(NewLanguageActivity.EXTRA_NEW_LANGUAGE_QUESTIONS, getQuestions(mCurrentPage).toString());
         mFragment.setArguments(args);
         mFragment.setOnEventListener(this);
         getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();

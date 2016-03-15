@@ -22,19 +22,19 @@ import java.util.List;
 /**
  * Created by blm on 2/23/16.
  */
-public class RequestNewLanguagePageFragment extends BaseFragment {
+public class NewLanguagePageFragment extends BaseFragment {
     public static final String ARG_SOURCE_TRANSLATION_ID = "arg_source_translation_id";
     public static final String ARG_NEW_LANG_FINISHED = "arg_publish_finished";
     public static final String ARG_FIRST_PAGE = "first_page";
     public static final String ARG_LAST_PAGE = "last_page";
-    public static final String TAG = RequestNewLanguagePageFragment.class.getSimpleName();
+    public static final String TAG = NewLanguagePageFragment.class.getSimpleName();
     private OnEventListener mListener;
     private View mRootView;
     private List<NewLanguageQuestion> mQuestions;
-    private RequestNewLanguagePageAdapter mAdapter;
+    private HashMap<Integer,Integer> mQuestionIndex;
+    private NewLanguagePageAdapter mAdapter;
     private boolean mFirstPage;
     private boolean mLastPage;
-    private HashMap<Integer,Integer> mQuestionIndex;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_new_language, container, false);
@@ -46,9 +46,9 @@ public class RequestNewLanguagePageFragment extends BaseFragment {
 
         final ListView layout = (ListView) mRootView.findViewById(R.id.controlsLayout);
 
-        mQuestionIndex = RequestNewLanguagePageFragment.generateIdMap(mQuestions);
+        mQuestionIndex = NewLanguagePageFragment.generateIdMap(mQuestions);
 
-        mAdapter = new RequestNewLanguagePageAdapter();
+        mAdapter = new NewLanguagePageAdapter();
         layout.setAdapter(mAdapter);
         mAdapter.loadQuestions(mQuestions);
 
@@ -78,7 +78,7 @@ public class RequestNewLanguagePageFragment extends BaseFragment {
                 @Override
                 public void onClick(View v) {
                     saveAnswers();
-                    getListener().previousStep(RequestNewLanguageActivity.getQuestions(mQuestions).toString());
+                    getListener().previousStep(NewLanguageActivity.getQuestions(mQuestions).toString());
                 }
             });
         } else {
@@ -120,7 +120,7 @@ public class RequestNewLanguagePageFragment extends BaseFragment {
             NewLanguageQuestion conditionalQuestion = getQuestionPositionByID(mQuestions,mQuestionIndex,question.conditionalID);
             if(conditionalQuestion != null) {
                 if (conditionalQuestion.type == NewLanguageQuestion.QuestionType.CHECK_BOX) {
-                    return RequestNewLanguagePageAdapter.isCheckBoxAnswerTrue(conditionalQuestion);
+                    return NewLanguagePageAdapter.isCheckBoxAnswerTrue(conditionalQuestion);
                 } else {
                     return conditionalQuestion.answer != null; // should have answer if question it depends on has answer
                 }
@@ -176,7 +176,7 @@ public class RequestNewLanguagePageFragment extends BaseFragment {
     private boolean hasAnswer(NewLanguageQuestion question) {
         if(null == question.answer) {
             if(question.type == NewLanguageQuestion.QuestionType.CHECK_BOX) {
-                question.answer = RequestNewLanguagePageAdapter.FALSE_STR; // checked always has a state, defaults to false
+                question.answer = NewLanguagePageAdapter.FALSE_STR; // checked always has a state, defaults to false
             } else {
                 return false;
             }
@@ -188,7 +188,7 @@ public class RequestNewLanguagePageFragment extends BaseFragment {
     }
     private void doNext() {
         saveAnswers();
-        String answers = RequestNewLanguageActivity.getQuestions(mQuestions).toString();
+        String answers = NewLanguageActivity.getQuestions(mQuestions).toString();
         if (mLastPage) {
             getListener().finishLanguageRequest(answers);
         } else {
@@ -233,8 +233,8 @@ public class RequestNewLanguagePageFragment extends BaseFragment {
 
 
     protected List<NewLanguageQuestion> getAnswersFromArgs(Bundle args) {
-        String questionsJson = args.getString(RequestNewLanguageActivity.EXTRA_NEW_LANGUAGE_QUESTIONS);
-        List<NewLanguageQuestion> questions = RequestNewLanguageActivity.parseJsonStrIntoQuestions(questionsJson);
+        String questionsJson = args.getString(NewLanguageActivity.EXTRA_NEW_LANGUAGE_QUESTIONS);
+        List<NewLanguageQuestion> questions = NewLanguageActivity.parseJsonStrIntoQuestions(questionsJson);
         return questions;
     }
 

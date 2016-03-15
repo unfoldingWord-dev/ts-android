@@ -22,20 +22,20 @@ import java.util.List;
 /**
  * Handles the rendering of the new language cards activity
  */
-public class RequestNewLanguagePageAdapter extends BaseAdapter {
+public class NewLanguagePageAdapter extends BaseAdapter {
 
     public static final String TRUE_STR = "YES";
     public static final String FALSE_STR = "NO";
-    public static final String TAG = RequestNewLanguageActivity.class.getSimpleName();
+    public static final String TAG = NewLanguageActivity.class.getSimpleName();
     private List<NewLanguageQuestion> mQuestions = new ArrayList<>();
     private List<Integer> mDisplayedQuestions = new ArrayList<>();
-    private int mSelectedPosition = -1;
     private HashMap<Integer,Integer> mQuestionIndex;
+    private int mSelectedPosition = -1;
     private int mSaveHeight;
 
     public void loadQuestions(List<NewLanguageQuestion> questions) {
         mQuestions = questions;
-        mQuestionIndex = RequestNewLanguagePageFragment.generateIdMap(questions);
+        mQuestionIndex = NewLanguagePageFragment.generateIdMap(questions);
 
         updateDisplayedQuestions();
     }
@@ -65,7 +65,7 @@ public class RequestNewLanguagePageAdapter extends BaseAdapter {
     }
 
     private NewLanguageQuestion getQuestionByID(int id) {
-        return RequestNewLanguagePageFragment.getQuestionPositionByID(mQuestions,mQuestionIndex,id);
+        return NewLanguagePageFragment.getQuestionPositionByID(mQuestions, mQuestionIndex, id);
     }
 
     private NewLanguageQuestion getDisplayedItemAtPos(int pos) {
