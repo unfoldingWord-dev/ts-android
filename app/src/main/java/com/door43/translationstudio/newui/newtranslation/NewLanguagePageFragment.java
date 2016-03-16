@@ -6,7 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ListView;
+import android.widget.LinearLayout;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
@@ -44,12 +44,11 @@ public class NewLanguagePageFragment extends BaseFragment {
         mFirstPage = args.getBoolean(ARG_FIRST_PAGE);
         mLastPage = args.getBoolean(ARG_LAST_PAGE);
 
-        final ListView layout = (ListView) mRootView.findViewById(R.id.controlsLayout);
-
         mQuestionIndex = NewLanguagePageFragment.generateIdMap(mQuestions);
 
+        LinearLayout layout = (LinearLayout) mRootView.findViewById(R.id.content_layout);
         mAdapter = new NewLanguagePageAdapter();
-        layout.setAdapter(mAdapter);
+        mAdapter.setContentsView(layout);
         mAdapter.loadQuestions(mQuestions);
 
         Button nextButton = (Button) mRootView.findViewById(R.id.next_button);

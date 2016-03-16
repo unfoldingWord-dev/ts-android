@@ -336,6 +336,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
                     JSONObject answer = new JSONObject();
                     answer.put(NEW_LANGUAGE_QUESTION_ID,question.id);
                     answer.put(NEW_LANGUAGE_ANSWER,question.answer);
+                    answer.put("question",question.question); // useful for debugging
                     questionsJson.put(answer);
                 }
             }

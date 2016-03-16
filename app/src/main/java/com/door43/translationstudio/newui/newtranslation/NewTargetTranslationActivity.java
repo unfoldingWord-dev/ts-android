@@ -60,143 +60,143 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                 public void onClick(View v) {
 
                     // TODO: 3/15/16 for testing
-//                    Intent requestNewLangaugeIntent = new Intent(NewTargetTranslationActivity.this,
-//                            NewLanguageActivity.class);
-//                    requestNewLangaugeIntent.putExtra(NewLanguageActivity.EXTRA_CALLING_ACTIVITY, NewLanguageActivity.ACTIVITY_HOME);
-//                    startActivityForResult(requestNewLangaugeIntent, NEW_LANGUAGE_REQUEST);
+                    Intent requestNewLangaugeIntent = new Intent(NewTargetTranslationActivity.this,
+                            NewLanguageActivity.class);
+                    requestNewLangaugeIntent.putExtra(NewLanguageActivity.EXTRA_CALLING_ACTIVITY, NewLanguageActivity.ACTIVITY_HOME);
+                    startActivityForResult(requestNewLangaugeIntent, NEW_LANGUAGE_REQUEST);
 
-                    String dummyAnswers = "{\n" +
-                            "  \"answers\": [\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a1\",\n" +
-                            "      \"question_id\": 100\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a11\",\n" +
-                            "      \"question_id\": 101\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a12\",\n" +
-                            "      \"question_id\": 102\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"YES\",\n" +
-                            "      \"question_id\": 200\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a21\",\n" +
-                            "      \"question_id\": 201\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a22\",\n" +
-                            "      \"question_id\": 202\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a23\",\n" +
-                            "      \"question_id\": 203\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a3\",\n" +
-                            "      \"question_id\": 300\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a4\",\n" +
-                            "      \"question_id\": 400\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a41\",\n" +
-                            "      \"question_id\": 401\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a42\",\n" +
-                            "      \"question_id\": 402\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a43\",\n" +
-                            "      \"question_id\": 403\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a5\",\n" +
-                            "      \"question_id\": 500\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a51\",\n" +
-                            "      \"question_id\": 501\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a52\",\n" +
-                            "      \"question_id\": 502\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a53\",\n" +
-                            "      \"question_id\": 503\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a54\",\n" +
-                            "      \"question_id\": 504\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a6\",\n" +
-                            "      \"question_id\": 600\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a61\",\n" +
-                            "      \"question_id\": 601\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a62\",\n" +
-                            "      \"question_id\": 602\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a63\",\n" +
-                            "      \"question_id\": 603\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a7\",\n" +
-                            "      \"question_id\": 700\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a71\",\n" +
-                            "      \"question_id\": 701\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a72\",\n" +
-                            "      \"question_id\": 702\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a73\",\n" +
-                            "      \"question_id\": 703\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a8\",\n" +
-                            "      \"question_id\": 800\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a81\",\n" +
-                            "      \"question_id\": 801\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a82\",\n" +
-                            "      \"question_id\": 802\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a83\",\n" +
-                            "      \"question_id\": 803\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a9\",\n" +
-                            "      \"question_id\": 900\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"answer\": \"a10\",\n" +
-                            "      \"question_id\": 1000\n" +
-                            "    }\n" +
-                            "  ],\n" +
-                            "  \"questionaire_id\": 1,\n" +
-                            "  \"temp_code\": \"qaa-x-886f57\",\n" +
-                            "  \"request_id\": \"d83b2629-6fd8-4d15-a0a2-f24437d1de34\"\n" +
-                            "}";
-                    useNewLanguage(dummyAnswers);
+//                    String dummyAnswers = "{\n" +
+//                            "  \"answers\": [\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a1\",\n" +
+//                            "      \"question_id\": 100\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a11\",\n" +
+//                            "      \"question_id\": 101\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a12\",\n" +
+//                            "      \"question_id\": 102\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"YES\",\n" +
+//                            "      \"question_id\": 200\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a21\",\n" +
+//                            "      \"question_id\": 201\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a22\",\n" +
+//                            "      \"question_id\": 202\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a23\",\n" +
+//                            "      \"question_id\": 203\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a3\",\n" +
+//                            "      \"question_id\": 300\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a4\",\n" +
+//                            "      \"question_id\": 400\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a41\",\n" +
+//                            "      \"question_id\": 401\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a42\",\n" +
+//                            "      \"question_id\": 402\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a43\",\n" +
+//                            "      \"question_id\": 403\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a5\",\n" +
+//                            "      \"question_id\": 500\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a51\",\n" +
+//                            "      \"question_id\": 501\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a52\",\n" +
+//                            "      \"question_id\": 502\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a53\",\n" +
+//                            "      \"question_id\": 503\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a54\",\n" +
+//                            "      \"question_id\": 504\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a6\",\n" +
+//                            "      \"question_id\": 600\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a61\",\n" +
+//                            "      \"question_id\": 601\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a62\",\n" +
+//                            "      \"question_id\": 602\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a63\",\n" +
+//                            "      \"question_id\": 603\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a7\",\n" +
+//                            "      \"question_id\": 700\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a71\",\n" +
+//                            "      \"question_id\": 701\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a72\",\n" +
+//                            "      \"question_id\": 702\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a73\",\n" +
+//                            "      \"question_id\": 703\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a8\",\n" +
+//                            "      \"question_id\": 800\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a81\",\n" +
+//                            "      \"question_id\": 801\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a82\",\n" +
+//                            "      \"question_id\": 802\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a83\",\n" +
+//                            "      \"question_id\": 803\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a9\",\n" +
+//                            "      \"question_id\": 900\n" +
+//                            "    },\n" +
+//                            "    {\n" +
+//                            "      \"answer\": \"a10\",\n" +
+//                            "      \"question_id\": 1000\n" +
+//                            "    }\n" +
+//                            "  ],\n" +
+//                            "  \"questionaire_id\": 1,\n" +
+//                            "  \"temp_code\": \"qaa-x-886f57\",\n" +
+//                            "  \"request_id\": \"d83b2629-6fd8-4d15-a0a2-f24437d1de34\"\n" +
+//                            "}";
+//                    useNewLanguage(dummyAnswers);
                 }
             });
         }

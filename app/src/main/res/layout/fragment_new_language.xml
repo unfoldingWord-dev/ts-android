@@ -15,18 +15,26 @@
             android:layout_height="fill_parent"
             android:layout_weight="1">
 
-            <ListView
+            <ScrollView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:id="@+id/controlsLayout"
-                android:choiceMode="singleChoice"
-                android:focusable="true"
-                android:descendantFocusability="afterDescendants"
+                android:id="@+id/scroll_view"
+
                 android:scrollIndicators="right"
                 android:fastScrollAlwaysVisible="true">
 
-            </ListView>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:id="@+id/content_layout"
+                    android:focusable="true"
+                    android:descendantFocusability="afterDescendants"
+                    >
+                </LinearLayout>
+
+            </ScrollView>
 
         </LinearLayout>
 
