@@ -374,7 +374,8 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
             targetCardTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
         }
 
-        holder.mTargetTitle.setText(targetCardTitle + " - " + mTargetLanguage.name);
+        String name = mTargetLanguage != null ? mTargetLanguage.name : "(null)";
+        holder.mTargetTitle.setText(targetCardTitle + " - " + name);
 
         // load tabs
         holder.mTabLayout.setOnTabSelectedListener(null);

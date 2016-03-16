@@ -22,13 +22,13 @@ import java.util.List;
 
 
 /**
- * Handles the rendering of the new language cards activity
+ * Handles the rendering of the questions in NewLanguageActivity
  */
 public class NewLanguagePageAdapter extends BaseAdapter {
 
     public static final String TRUE_STR = "YES";
     public static final String FALSE_STR = "NO";
-    public static final String TAG = NewLanguageActivity.class.getSimpleName();
+    public static final String TAG = NewLanguagePageAdapter.class.getSimpleName();
     public static final int UN_INIT = 0xFFFFFFFE;
     private List<NewLanguageQuestion> mQuestions = new ArrayList<>();
     private HashMap<Long,Integer> mQuestionIndex;

@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Created by blm on 2/23/16.
+ * Activity for getting answers to new language questions
  */
 public class NewLanguageActivity extends BaseActivity implements NewLanguagePageFragment.OnEventListener {
 
