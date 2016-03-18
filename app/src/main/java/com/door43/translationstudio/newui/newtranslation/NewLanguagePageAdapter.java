@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.NewLanguagePackage;
 import com.door43.translationstudio.core.NewLanguageQuestion;
 
 import java.util.ArrayList;
@@ -26,8 +27,6 @@ import java.util.List;
  */
 public class NewLanguagePageAdapter extends BaseAdapter {
 
-    public static final String TRUE_STR = "YES";
-    public static final String FALSE_STR = "NO";
     public static final String TAG = NewLanguagePageAdapter.class.getSimpleName();
     public static final int UN_INIT = 0xFFFFFFFE;
     private List<NewLanguageQuestion> mQuestions = new ArrayList<>();
@@ -57,16 +56,7 @@ public class NewLanguagePageAdapter extends BaseAdapter {
         mContentsView = listView;
     }
 
-    /**
-     * test to see if checkbox is true (checked)
-     * @param question
-     * @return
-     */
-    static public boolean isCheckBoxAnswerTrue(NewLanguageQuestion question) {
-        return TRUE_STR.equals(question.answer);
-    }
-
-    /**
+   /**
      * go through children of listView and update their enable state
      * @param exceptView - view to skip (likely the dependent question view)
      */
@@ -127,29 +117,7 @@ public class NewLanguagePageAdapter extends BaseAdapter {
     protected boolean shouldEnable(NewLanguageQuestion item) {
         long dependencyID = item.conditionalID;
         NewLanguageQuestion dependency =  getQuestionByID(dependencyID);
-        boolean enable = true;
-        if(dependency != null) {
-            if(!isAnswerEmpty(dependency)) {
-
-                if(dependency.type == NewLanguageQuestion.QuestionType.CHECK_BOX) {
-                    enable = TRUE_STR.equals(dependency.answer);
-                } else {
-                    enable = true;
-                }
-            } else {
-                enable = false;
-            }
-        }
-        return enable;
-    }
-
-    /**
-     * test if asnwer to question is empty
-     * @param question
-     * @return
-     */
-    private boolean isAnswerEmpty(NewLanguageQuestion question) {
-        return (null == question.answer ) || question.answer.isEmpty();
+        return NewLanguagePackage.isDependencyMet(dependency);
     }
 
 
@@ -160,7 +128,6 @@ public class NewLanguagePageAdapter extends BaseAdapter {
 
     @Override
     public NewLanguageQuestion getItem(int i) {
-
         if( (i < 0) || (i >= mQuestions.size())) {
             return null;
         }
@@ -198,11 +165,11 @@ public class NewLanguagePageAdapter extends BaseAdapter {
             enableQuestion(v, holder, shouldEnable(item));
 
             if (item.type == NewLanguageQuestion.QuestionType.CHECK_BOX) {
-                holder.checkBoxAnswer.setChecked(TRUE_STR.equals(item.answer));
+                holder.checkBoxAnswer.setChecked(NewLanguagePackage.isCheckBoxAnswerTrue(item));
                 holder.checkBoxAnswer.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        item.answer = isChecked ? TRUE_STR : FALSE_STR;
+                        item.answer = NewLanguagePackage.getCheckBoxAnswer(isChecked);
                         if (hasDependencies) {
                             updateDisplayedQuestions(thisView);
                         }
@@ -215,15 +182,13 @@ public class NewLanguagePageAdapter extends BaseAdapter {
                 }
                 holder.answer.addTextChangedListener(new TextWatcher() {
                     @Override
-                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                    }
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
                     @Override
                     public void onTextChanged(CharSequence s, int start, int before, int count) {
-                        boolean intiallyEmpty = isAnswerEmpty(item);
+                        boolean intiallyEmpty = NewLanguagePackage.isAnswerEmpty(item);
                         item.answer = s.toString();
-                        boolean currentlyEmpty = isAnswerEmpty(item);
+                        boolean currentlyEmpty = NewLanguagePackage.isAnswerEmpty(item);
                         boolean emptyStateChanged = (intiallyEmpty != currentlyEmpty);
 
                         if (hasDependencies && emptyStateChanged) {
@@ -232,9 +197,7 @@ public class NewLanguagePageAdapter extends BaseAdapter {
                     }
 
                     @Override
-                    public void afterTextChanged(Editable s) {
-
-                    }
+                    public void afterTextChanged(Editable s) {}
                 });
             }
         }

@@ -36,6 +36,17 @@ public class NewLanguageQuestion {
         this.conditionalID = conditionalID;
     }
 
+    /**
+     * create a NewLanguageQuestion object from resources
+     * @param context
+     * @param id
+     * @param questionResID
+     * @param hintResID
+     * @param type
+     * @param required
+     * @param conditionalID
+     * @return
+     */
     public static NewLanguageQuestion generateFromResources(Context context, long id, int questionResID, int hintResID,
                                                             QuestionType type, boolean required, long conditionalID) {
         String question = context.getResources().getString(questionResID);
@@ -44,6 +55,16 @@ public class NewLanguageQuestion {
         return new NewLanguageQuestion(id,question,hint,null,type,required, conditionalID);
     }
 
+    /**
+     * create a NewLanguageQuestion object from resources without conditional
+     * @param context
+     * @param id
+     * @param questionResID
+     * @param hintResID
+     * @param type
+     * @param required
+     * @return
+     */
     public static NewLanguageQuestion generateFromResources(Context context, long id, int questionResID, int hintResID,
                                                             QuestionType type, boolean required) {
 
@@ -51,6 +72,11 @@ public class NewLanguageQuestion {
 
     }
 
+    /**
+     * create a NewLanguageQuestion object from JSON data
+     * @param json
+     * @return
+     */
     public static NewLanguageQuestion generateFromJson(JSONObject json) {
         try {
             long id = json.getLong(ID);
@@ -72,6 +98,10 @@ public class NewLanguageQuestion {
         return null;
     }
 
+    /**
+     * return the JSON data representation for object
+     * @return
+     */
     public JSONObject toJson() {
         JSONObject results = new JSONObject();
         try {
@@ -91,6 +121,10 @@ public class NewLanguageQuestion {
         return null;
     }
 
+    /**
+     * returns JSON data in API format
+     * @return
+     */
     public JSONObject getResults() {
         JSONObject results = new JSONObject();
         try {
@@ -106,6 +140,9 @@ public class NewLanguageQuestion {
         return results;
     }
 
+    /**
+     * enum to identify question types and do string conversions
+     */
     public enum QuestionType {
         EDIT_TEXT("edit_text"),
         CHECK_BOX("check_box");

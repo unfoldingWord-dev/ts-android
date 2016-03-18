@@ -11,11 +11,7 @@ import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NewLanguagePackage;
 import com.door43.translationstudio.core.NewLanguageQuestion;
-import com.door43.translationstudio.core.TargetTranslation;
-import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.BaseActivity;
-import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
-import com.door43.translationstudio.AppContext;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -39,12 +35,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
     public static final String EXTRA_CALLING_ACTIVITY = "extra_calling_activity";
     public static final String EXTRA_NEW_LANGUAGE_QUESTIONS = "extra_new_language_questions";
 
-
-    private Translator mTranslator;
-    private TargetTranslation mTargetTranslation;
     private int mCurrentPage = 0;
-    public static final int ACTIVITY_HOME = 1001;
-    public static final int ACTIVITY_TRANSLATION = 1002;
     private boolean mLanguageFinished = false;
     private int mCallingActivity;
     private NewLanguagePageFragment mFragment;
@@ -59,8 +50,6 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        mTranslator = AppContext.getTranslator();
 
         // validate parameters
         Bundle args = getIntent().getExtras();
@@ -288,15 +277,8 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
 
     @Override
     public void onBackPressed() {
-        // TRICKY: the translation activity is finished after opening the publish activity
-        // because we may have to go back and forth and don't want to fill up the stack
-        if(mCallingActivity == ACTIVITY_TRANSLATION) {
-            Intent intent = new Intent(this, TargetTranslationActivity.class);
-            Bundle args = new Bundle();
-            args.putString(AppContext.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
-            intent.putExtras(args);
-            startActivity(intent);
-        }
+        Intent data = new Intent();
+        setResult(RESULT_CANCELED, data);
         finish();
     }
 

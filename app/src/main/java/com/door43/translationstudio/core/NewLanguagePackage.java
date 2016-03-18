@@ -28,6 +28,9 @@ public class NewLanguagePackage {
     public static final String TAG = NewLanguagePackage.class.getSimpleName();
     public static final String REGION = "region";
 
+    public static final String TRUE_STR = "YES";
+    public static final String FALSE_STR = "NO";
+
     public static int CURRENT_QUESTIONAIRE_ID = 1;
     public static int NEW_LANGUAGE_NAME_ID = 100;
 
@@ -197,6 +200,60 @@ public class NewLanguagePackage {
     }
 
     /**
+     * test if asnwer to question is empty
+     * @param question
+     * @return
+     */
+    static public boolean isAnswerEmpty(NewLanguageQuestion question) {
+        return (null == question.answer ) || question.answer.isEmpty();
+    }
+
+    /**
+     * test to see if checkbox is true (checked), null answer is false
+     * @param question
+     * @return
+     */
+    static public boolean isCheckBoxAnswerTrue(NewLanguageQuestion question) {
+        if(question != null) {
+            return TRUE_STR.equals(question.answer);
+        }
+        return false;
+    }
+
+    /**
+     * get answer string for checkbox state
+     * @param isChecked
+     * @return
+     */
+    static public String getCheckBoxAnswer(boolean isChecked) {
+        return isChecked ? TRUE_STR : FALSE_STR;
+    }
+
+    /**
+     * return true if this dependency is met.
+     * If editText then answer must be not null or empty.
+     * If checkbos then answer must be true.
+     * @param dependency
+     * @return
+     */
+    static public boolean isDependencyMet(NewLanguageQuestion dependency) {
+        boolean enable = true;
+        if(dependency != null) {
+            if(!isAnswerEmpty(dependency)) {
+
+                if(dependency.type == NewLanguageQuestion.QuestionType.CHECK_BOX) {
+                    enable = NewLanguagePackage.isCheckBoxAnswerTrue(dependency);
+                } else {
+                    enable = true;
+                }
+            } else {
+                enable = false;
+            }
+        }
+        return enable;
+    }
+
+    /**
      * generate a new language code
      * @return
      */
@@ -238,5 +295,4 @@ public class NewLanguagePackage {
             return null;
         }
     }
-
 }

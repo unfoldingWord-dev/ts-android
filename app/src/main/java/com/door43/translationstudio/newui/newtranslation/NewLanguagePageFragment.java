@@ -10,11 +10,10 @@ import android.widget.LinearLayout;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.NewLanguagePackage;
 import com.door43.translationstudio.core.NewLanguageQuestion;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BaseFragment;
-
-import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.List;
@@ -76,7 +75,6 @@ public class NewLanguagePageFragment extends BaseFragment {
             previousButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    saveAnswers();
                     getListener().previousStep(NewLanguageActivity.getQuestions(mQuestions).toString());
                 }
             });
@@ -87,6 +85,11 @@ public class NewLanguagePageFragment extends BaseFragment {
         return mRootView;
     }
 
+    /**
+     * create a map indexed by question IDs to position in array so we don't have to do iterative searches on keys
+     * @param questions
+     * @return
+     */
     static public HashMap<Long,Integer> generateIdMap(List<NewLanguageQuestion> questions) {
         HashMap<Long,Integer> questionIndex = new HashMap<Long,Integer>();
         for (int i = 0; i < questions.size(); i++) {
@@ -96,12 +99,20 @@ public class NewLanguagePageFragment extends BaseFragment {
         return questionIndex;
     }
 
+    /**
+     * find question by looking up position in HashMap by id
+     * @param questions
+     * @param questionIndex
+     * @param id
+     * @return
+     */
     static public NewLanguageQuestion getQuestionPositionByID(List<NewLanguageQuestion> questions,
                                                               HashMap<Long,Integer> questionIndex,
                                                               long id) {
         if(id < 0) {
             return null;
         }
+
         try {
             if(!questionIndex.containsKey(id)) {
                 return null;
@@ -114,25 +125,31 @@ public class NewLanguagePageFragment extends BaseFragment {
         }
     }
 
+    /**
+     * returns true if question should have an answer.  This doesn't mean it is required, but just that
+     * question is enabled and has no answer.  This is used to warn user that they may have missed a
+     * question.
+     * @param question
+     * @return
+     */
     private boolean shouldHaveAnswer( NewLanguageQuestion question) {
         if (question.conditionalID >= 0) {
             NewLanguageQuestion conditionalQuestion = getQuestionPositionByID(mQuestions,mQuestionIndex,question.conditionalID);
             if(conditionalQuestion != null) {
                 if (conditionalQuestion.type == NewLanguageQuestion.QuestionType.CHECK_BOX) {
-                    return NewLanguagePageAdapter.isCheckBoxAnswerTrue(conditionalQuestion);
+                    return NewLanguagePackage.isCheckBoxAnswerTrue(conditionalQuestion);
                 } else {
                     return conditionalQuestion.answer != null; // should have answer if question it depends on has answer
                 }
             }
         }
-
         return true;
     }
 
+    /***
+     * go through all the questions and validate the answers
+     */
     private void validateAnswers() {
-
-        saveAnswers();
-
         boolean missingAnswers = false;
         boolean valid = true;
         NewLanguageQuestion incompleteQuestion = null;
@@ -172,10 +189,16 @@ public class NewLanguagePageFragment extends BaseFragment {
         }
     }
 
+    /***
+     * returns true if question has been answered (not empty)
+     * @param question
+     * @return
+     */
     private boolean hasAnswer(NewLanguageQuestion question) {
         if(null == question.answer) {
             if(question.type == NewLanguageQuestion.QuestionType.CHECK_BOX) {
-                question.answer = NewLanguagePageAdapter.FALSE_STR; // checked always has a state, defaults to false
+                boolean checked = NewLanguagePackage.isCheckBoxAnswerTrue(question); // checked always has a state, answer of null is false
+                question.answer = NewLanguagePackage.getCheckBoxAnswer(checked); // normalize answer (replace null value)
             } else {
                 return false;
             }
@@ -185,18 +208,17 @@ public class NewLanguagePageFragment extends BaseFragment {
         }
         return true;
     }
+
+    /***
+     * move to next page, or if last page then finished
+     */
     private void doNext() {
-        saveAnswers();
         String answers = NewLanguageActivity.getQuestions(mQuestions).toString();
         if (mLastPage) {
             getListener().finishLanguageRequest(answers);
         } else {
             getListener().nextStep(answers);
         }
-    }
-
-    private void saveAnswers() {
-        // nothing to do?
     }
 
     protected OnEventListener getListener() {
@@ -209,17 +231,6 @@ public class NewLanguagePageFragment extends BaseFragment {
         void previousStep(String answersJson);
 
         void finishLanguageRequest(String answersJson);
-    }
-
-    protected JSONObject parseAnswers(String answersJson) {
-        JSONObject answers;
-        try {
-            answers = new JSONObject(answersJson);
-        } catch (Exception e) {
-            Logger.w(TAG, "could not parse answers", e);
-            answers = new JSONObject();
-        }
-        return answers;
     }
 
     /**
@@ -237,7 +248,11 @@ public class NewLanguagePageFragment extends BaseFragment {
         return questions;
     }
 
-
+    /**
+     * Show dialog to let user know that a required question has not been answered.  The user cannot
+     * advance to next page.
+     * @param question
+     */
     protected void showAnswerRequiredBlocked(String question) {
         Resources res = getActivity().getResources();
         String message = String.format(res.getString(R.string.answer_required_for), question);
@@ -248,6 +263,11 @@ public class NewLanguagePageFragment extends BaseFragment {
                 .show(getFragmentManager(), "MissingAnswer");
     }
 
+    /**
+     * Show dialog to warn that a question has not been answered.  User still has option of continuing.
+     * @param question
+     * @param listener
+     */
     protected void warnAnswerMissingBeforeContinue(String question, View.OnClickListener listener) {
         Resources res = getActivity().getResources();
         String message = String.format(res.getString(R.string.answer_missing_for),question);
@@ -259,6 +279,11 @@ public class NewLanguagePageFragment extends BaseFragment {
                 .show(getFragmentManager(),"MissingAnswers");
     }
 
+    /**
+     * Show dialog to warn that multiple question have not been answered
+     * @param question
+     * @param listener
+     */
     protected void warnAnswersMissingBeforeContinue(String question, View.OnClickListener listener) {
         CustomAlertDialog.Create(getActivity())
                 .setTitle(R.string.answers_missing_title)
