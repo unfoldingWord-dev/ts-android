@@ -36,8 +36,8 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
     public static final String EXTRA_NEW_LANGUAGE_QUESTIONS = "extra_new_language_questions";
 
     private int mCurrentPage = 0;
+    public static final int ACTIVITY_HOME = 1001;
     private boolean mLanguageFinished = false;
-    private int mCallingActivity;
     private NewLanguagePageFragment mFragment;
     private List<List<NewLanguageQuestion>> mQuestionPages;
 
@@ -50,15 +50,6 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        // validate parameters
-        Bundle args = getIntent().getExtras();
-
-        // identify calling activity
-        mCallingActivity = args.getInt(EXTRA_CALLING_ACTIVITY, 0);
-        if(mCallingActivity == 0) {
-            throw new InvalidParameterException("you must specify the calling activity");
-        }
 
         if(savedInstanceState != null) {
             mCurrentPage = savedInstanceState.getInt(STATE_LANGUAGE_STEP, 0);
@@ -223,11 +214,15 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         return pages;
     }
 
+    /**
+     * get questions for page in JSONArray format
+     * @param page
+     * @return
+     */
     private JSONArray getQuestions(int page) {
         JSONArray answers = new JSONArray();
         try {
             List<NewLanguageQuestion> mPage = mQuestionPages.get(page);
-
             return getQuestions(mPage);
 
         } catch (Exception e) {
@@ -238,6 +233,11 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         return answers;
     }
 
+    /**
+     * get questions from list in JSONArray format
+     * @param questions
+     * @return
+     */
     public static JSONArray getQuestions(List<NewLanguageQuestion> questions) {
         JSONArray answers = new JSONArray();
         if(null != questions) {
@@ -258,6 +258,10 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         return answers;
     }
 
+    /**
+     * get all questions in JSONArray format
+     * @return
+     */
     private JSONArray getQuestionPages() {
         JSONArray pages = new JSONArray();
         try {
@@ -274,7 +278,6 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         return pages;
     }
 
-
     @Override
     public void onBackPressed() {
         Intent data = new Intent();
@@ -282,14 +285,21 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         finish();
     }
 
-
+    /**
+     * moves to the next question page
+     * @param answersJson - answers returned by current page
+     */
     @Override
-    public void nextStep(String answersJson) {
+    public void nextPage(String answersJson) {
         doPage(mCurrentPage + 1, answersJson);
     }
 
+    /**
+     * moves to the previous question page
+     * @param answersJson - answers returned by current page
+     */
     @Override
-    public void previousStep(String answersJson) {
+    public void previousPage(String answersJson) {
         doPage(mCurrentPage - 1, answersJson);
     }
 
@@ -323,7 +333,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
     }
 
    /**
-     * Moves to the a stage in the publish process
+     * Moves to a specific question page
      * @param page
      */
     private void doPage(int page, String answersJson) {

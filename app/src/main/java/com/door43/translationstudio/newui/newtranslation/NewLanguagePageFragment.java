@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
-import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NewLanguagePackage;
 import com.door43.translationstudio.core.NewLanguageQuestion;
@@ -75,7 +74,7 @@ public class NewLanguagePageFragment extends BaseFragment {
             previousButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    getListener().previousStep(NewLanguageActivity.getQuestions(mQuestions).toString());
+                    getListener().previousPage(NewLanguageActivity.getQuestions(mQuestions).toString());
                 }
             });
         } else {
@@ -217,7 +216,7 @@ public class NewLanguagePageFragment extends BaseFragment {
         if (mLastPage) {
             getListener().finishLanguageRequest(answers);
         } else {
-            getListener().nextStep(answers);
+            getListener().nextPage(answers);
         }
     }
 
@@ -226,9 +225,9 @@ public class NewLanguagePageFragment extends BaseFragment {
     }
 
     public interface OnEventListener {
-        void nextStep(String answersJson);
+        void nextPage(String answersJson);
 
-        void previousStep(String answersJson);
+        void previousPage(String answersJson);
 
         void finishLanguageRequest(String answersJson);
     }

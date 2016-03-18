@@ -48,6 +48,13 @@ public class NewLanguagePackage {
         this.region = region;
     }
 
+    /**
+     * create a new language instance
+     * @param questions
+     * @param region
+     * @return
+     * @throws JSONException
+     */
     public static NewLanguagePackage generateNew(List<NewLanguageQuestion> questions, String region) throws JSONException {
 
         JSONArray answers = questionsToJsonAnswers(questions);
@@ -180,7 +187,7 @@ public class NewLanguagePackage {
     }
 
     /**
-     * extracts answer data from list of questions
+     * extracts answer data from list of questions.  This is in new_language.json format
      * @param questions
      * @return
      * @throws JSONException
