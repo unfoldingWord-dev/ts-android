@@ -12,7 +12,6 @@ import android.support.annotation.Nullable;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Profile;
-import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Util;

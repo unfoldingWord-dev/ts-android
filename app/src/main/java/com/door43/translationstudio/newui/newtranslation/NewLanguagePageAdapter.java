@@ -35,6 +35,10 @@ public class NewLanguagePageAdapter extends BaseAdapter {
     private int mSelectedPosition = -1;
     private LinearLayout mContentsView = null;
 
+    /**
+     * loads list of questions into adapter
+     * @param questions
+     */
     public void loadQuestions(List<NewLanguageQuestion> questions) {
         mQuestions = questions;
         mQuestionIndex = NewLanguagePageFragment.generateIdMap(questions);
@@ -45,14 +49,27 @@ public class NewLanguagePageAdapter extends BaseAdapter {
         }
     }
 
+    /**
+     * sets the listView for this adapture
+     * @param listView
+     */
     public void setContentsView(LinearLayout listView) {
         mContentsView = listView;
     }
 
+    /**
+     * test to see if checkbox is true (checked)
+     * @param question
+     * @return
+     */
     static public boolean isCheckBoxAnswerTrue(NewLanguageQuestion question) {
         return TRUE_STR.equals(question.answer);
     }
 
+    /**
+     * go through children of listView and update their enable state
+     * @param exceptView - view to skip (likely the dependent question view)
+     */
     private void updateDisplayedQuestions(View exceptView) {
 
         if(mContentsView != null) {
@@ -65,6 +82,10 @@ public class NewLanguagePageAdapter extends BaseAdapter {
         }
     }
 
+    /**
+     * determine if this view should be enabled and update enable state
+     * @param v
+     */
     private void setEnableForView(View v) {
         ViewHolder holder = (ViewHolder) v.getTag();
         if (holder != null) {
@@ -75,6 +96,11 @@ public class NewLanguagePageAdapter extends BaseAdapter {
         }
     }
 
+    /**
+     * checks to see if there are other views that are dependent on this view.
+     * @param id
+     * @return
+     */
     private boolean hasDependencies(long id) {
         for (NewLanguageQuestion question : mQuestions) {
             if(question.conditionalID == id) {
@@ -84,10 +110,20 @@ public class NewLanguagePageAdapter extends BaseAdapter {
         return false;
     }
 
+    /**
+     * lookup question by question ID
+     * @param id
+     * @return
+     */
     private NewLanguageQuestion getQuestionByID(long id) {
         return NewLanguagePageFragment.getQuestionPositionByID(mQuestions, mQuestionIndex, id);
     }
 
+    /**
+     * determine if this question depends on other questions being answers.  Enable if dependencies are satisfied.
+     * @param item
+     * @return
+     */
     protected boolean shouldEnable(NewLanguageQuestion item) {
         long dependencyID = item.conditionalID;
         NewLanguageQuestion dependency =  getQuestionByID(dependencyID);
@@ -107,6 +143,11 @@ public class NewLanguagePageAdapter extends BaseAdapter {
         return enable;
     }
 
+    /**
+     * test if asnwer to question is empty
+     * @param question
+     * @return
+     */
     private boolean isAnswerEmpty(NewLanguageQuestion question) {
         return (null == question.answer ) || question.answer.isEmpty();
     }
@@ -201,6 +242,13 @@ public class NewLanguagePageAdapter extends BaseAdapter {
         return v;
     }
 
+    /**
+     * set enable or disable question.  Sets the appropriate enable states and focus states for
+     * question view and it's children.
+     * @param v
+     * @param holder
+     * @param enable
+     */
     private void enableQuestion(View v, ViewHolder holder, boolean enable) {
         v.setEnabled(enable);
         v.setFocusable(enable);

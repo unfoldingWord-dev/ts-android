@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.NewLanguagePackage;
 import com.door43.translationstudio.core.NewLanguageQuestion;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
@@ -20,11 +21,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.security.InvalidParameterException;
-import java.security.MessageDigest;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.UUID;
+
 
 /**
  * Activity for getting answers to new language questions
@@ -40,12 +39,6 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
     public static final String EXTRA_CALLING_ACTIVITY = "extra_calling_activity";
     public static final String EXTRA_NEW_LANGUAGE_QUESTIONS = "extra_new_language_questions";
 
-    public static final String NEW_LANGUAGE_REQUEST_ID = "request_id";
-    public static final String NEW_LANGUAGE_TEMP_CODE = "temp_code";
-    public static final String NEW_LANGUAGE_QUESTIONAIRE_ID = "questionaire_id";
-    public static final String NEW_LANGUAGE_ANSWERS = "answers";
-    public static final String NEW_LANGUAGE_ANSWER = "answer";
-    public static final String NEW_LANGUAGE_QUESTION_ID = "question_id";
 
     private Translator mTranslator;
     private TargetTranslation mTargetTranslation;
@@ -56,7 +49,6 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
     private int mCallingActivity;
     private NewLanguagePageFragment mFragment;
     private List<List<NewLanguageQuestion>> mQuestionPages;
-    private int mQuestionaireID = 1;
 
 
     @Override
@@ -326,28 +318,17 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
             if(answersJson != null) {
                 parseAnswers(answersJson, mCurrentPage); // save answers from current page
             }
+
             mLanguageFinished = true;
 
-            JSONArray questionsJson = new JSONArray();
-
+            List<NewLanguageQuestion> mergedQuestions = new ArrayList<>();
             for (int i = 0; i < mQuestionPages.size(); i++) {
                 List<NewLanguageQuestion> questions = mQuestionPages.get(i);
-                for (NewLanguageQuestion question : questions) {
-                    JSONObject answer = new JSONObject();
-                    answer.put(NEW_LANGUAGE_QUESTION_ID,question.id);
-                    answer.put(NEW_LANGUAGE_ANSWER,question.answer);
-                    answer.put("question",question.question); // useful for debugging
-                    questionsJson.put(answer);
-                }
+                mergedQuestions.addAll(questions);
             }
 
-            JSONObject newLanguageData = new JSONObject();
-            newLanguageData.put(NEW_LANGUAGE_REQUEST_ID, UUID.randomUUID().toString());
-            newLanguageData.put(NEW_LANGUAGE_TEMP_CODE, getNewLanguageCode());
-            newLanguageData.put(NEW_LANGUAGE_QUESTIONAIRE_ID, mQuestionaireID);
-            newLanguageData.put(NEW_LANGUAGE_ANSWERS, questionsJson);
-
-            String newLanguageDataStr = newLanguageData.toString(2);
+            NewLanguagePackage newLang = NewLanguagePackage.generateNew(mergedQuestions,"uncertain"); // TODO: 3/17/16 need to determine region for new language
+            String newLanguageDataStr = newLang.toJson().toString(2);
 
             Intent data = new Intent();
             data.putExtra(NewTargetTranslationActivity.EXTRA_NEW_LANGUAGE_DATA, newLanguageDataStr);
@@ -359,41 +340,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         }
     }
 
-    private String getNewLanguageCode() {
-        String languageCode;
-        languageCode= "qaa-x-";
-
-        String androidId = AppContext.udid();
-
-        long ms = (new Date()).getTime();
-        String uniqueString = androidId + ms;
-        String sha1Value = getSha1Hex(uniqueString);
-        languageCode += sha1Value.substring(0, 6);
-        return languageCode.toLowerCase();
-    }
-
-    public static String getSha1Hex(String clearString)
-    {
-        try
-        {
-            MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
-            messageDigest.update(clearString.getBytes("UTF-8"));
-            byte[] bytes = messageDigest.digest();
-            StringBuilder buffer = new StringBuilder();
-            for (byte b : bytes)
-            {
-                buffer.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
-            }
-            return buffer.toString();
-        }
-        catch (Exception ignored)
-        {
-            ignored.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
+   /**
      * Moves to the a stage in the publish process
      * @param page
      */

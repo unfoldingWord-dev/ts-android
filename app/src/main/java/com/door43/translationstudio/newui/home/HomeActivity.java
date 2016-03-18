@@ -19,16 +19,12 @@ import android.widget.PopupMenu;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
-import com.door43.translationstudio.core.Chapter;
-import com.door43.translationstudio.core.ChapterTranslation;
-import com.door43.translationstudio.core.Frame;
-import com.door43.translationstudio.core.FrameTranslation;
+import com.door43.translationstudio.TargetLanguageUtility;
+
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
-import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
@@ -42,7 +38,6 @@ import com.door43.widget.ViewUtil;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.Locale;
 
 public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
@@ -308,7 +303,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
     public void onItemClick(TargetTranslation targetTranslation) {
         // validate project (make sure it was downloaded)
         Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
-        TargetLanguage targetLanguage = AppContext.getLibrary().getTargetLanguage(targetTranslation.getTargetLanguageId());
+        TargetLanguage targetLanguage = TargetLanguageUtility.getTargetLanguageWithFallback(targetTranslation.getTargetLanguageId(), targetTranslation.getId());
 
         if(project == null || targetLanguage == null || !AppContext.getLibrary().projectHasSource(project.getId())) {
             Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.missing_project, Snackbar.LENGTH_LONG);

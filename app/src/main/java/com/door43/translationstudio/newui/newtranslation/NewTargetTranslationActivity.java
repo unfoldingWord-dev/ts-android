@@ -15,6 +15,7 @@ import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.LanguageDirection;
+import com.door43.translationstudio.core.NewLanguagePackage;
 import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
@@ -29,8 +30,6 @@ import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.AppContext;
 
 import org.apache.commons.io.FileUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -216,16 +215,20 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
         }
     }
 
-    private void useNewLanguage(String newLanguageDataStr) {
+    /**
+     * use new language information passed in JSON format string to create a new target language
+     * @param newLangDataJsonStr
+     */
+    private void useNewLanguage(String newLangDataJsonStr) {
         try {
-            mNewLanguageData = newLanguageDataStr;
-            JSONObject newLanguageData = new JSONObject(newLanguageDataStr);
+            mNewLanguageData = newLangDataJsonStr;
+            NewLanguagePackage newLang = NewLanguagePackage.parse(newLangDataJsonStr);
 
-            String languageCode = newLanguageData.getString(NewLanguageActivity.NEW_LANGUAGE_TEMP_CODE);
-            JSONObject nameAnswer = getAnswerForID(newLanguageData, 100);
-            String languageName = nameAnswer.getString(NewLanguageActivity.NEW_LANGUAGE_ANSWER);
+            String languageCode = newLang.tempLanguageCode;
+            JSONObject nameAnswer = newLang.getAnswerForID(NewLanguagePackage.NEW_LANGUAGE_NAME_ID);
+            String languageName = nameAnswer.getString(NewLanguagePackage.QUESTION_ANSWER);
 
-            // TODO: 3/15/16 need to add direction and region
+            // TODO: 3/15/16 need to add region
             mSelectedTargetLanguage = new TargetLanguage(languageCode, languageName, "uncertain", LanguageDirection.LeftToRight);
 
             // display project list
@@ -240,21 +243,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
         }
     }
 
-    private JSONObject getAnswerForID(JSONObject newLanguageData, long id) throws JSONException {
-
-        JSONArray answers = newLanguageData.getJSONArray(NewLanguageActivity.NEW_LANGUAGE_ANSWERS);
-        for (int i = 0; i < answers.length(); i++) {
-            JSONObject answer = answers.getJSONObject(i);
-            long qid = answer.getLong(NewLanguageActivity.NEW_LANGUAGE_QUESTION_ID);
-            if (qid == id) {
-                return answer;
-            }
-        }
-
-        return null;
-    }
-
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
+   public void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         if(savedInstanceState != null) {
             mNewTargetTranslationId = savedInstanceState.getString(STATE_TARGET_TRANSLATION_ID, null);
@@ -300,7 +289,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             if(targetTranslation != null) {
 
                 if(mNewLanguageData != null) {
-                    saveNewLanguageData(targetTranslation);
+                    saveNewLanguageData(targetTranslation, mNewLanguageData);
                 }
 
                 mNewTargetTranslationId = targetTranslation.getId();
@@ -325,23 +314,29 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
         }
     }
 
-    private boolean saveNewLanguageData(TargetTranslation targetTranslation) {
-        String path = "(null)";
+    /**
+     * save new language data into target translation as well as "new_languages" folder
+     * @param targetTranslation
+     * @param newLanguageData
+     * @return
+     */
+    private boolean saveNewLanguageData(TargetTranslation targetTranslation, String newLanguageData) {
         try {
+            NewLanguagePackage newLang = NewLanguagePackage.parse(newLanguageData);
+            if(null == newLang) {
+                return false;
+            }
+
             File folder = targetTranslation.getPath();
-            File newLanguageFile = new File(folder,"new_language.json");
-            path = newLanguageFile.toString();
-            FileUtils.write(newLanguageFile, mNewLanguageData);
+            newLang.commit(folder);
 
             File dataPath = new File(folder,"../../new_languages");
-            path = dataPath.toString();
             FileUtils.forceMkdir(dataPath);
             File newLanguagePath = new File(dataPath,targetTranslation.getId() + ".json");
-            path = newLanguagePath.toString();
-            FileUtils.write(newLanguagePath, mNewLanguageData);
+            newLang.commitToFile(newLanguagePath);
 
         } catch (Exception e) {
-            Logger.e(TAG, "Could not write to: " + path, e);
+            Logger.e(TAG, "Could not write new language data", e);
             return false;
         }
         return true;
