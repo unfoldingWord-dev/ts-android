@@ -359,9 +359,6 @@ public class ClientService extends NetworkService {
                                 // TODO: 11/23/2015 perform a diff first
                                 try {
                                     String[] targetTranslationSlugs = translator.importArchive(file);
-
-                                    TargetTranslationMigrator.migrateChunkChanges(translator, AppContext.getLibrary(), targetTranslationSlugs);
-
                                     if(listener != null) {
                                         listener.onReceivedTargetTranslations(server, targetTranslationSlugs);
                                     }

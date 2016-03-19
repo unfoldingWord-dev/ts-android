@@ -36,9 +36,10 @@ import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
+import com.door43.translationstudio.rendering.ClickableRenderingEngine;
+import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
-import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.Span;
@@ -252,9 +253,9 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
             String chapterBody = mLibrary.getChapterBody(mSourceTranslation, chapter.getId());
             TranslationFormat bodyFormat = mLibrary.getChapterBodyFormat(mSourceTranslation, chapter.getId());
             RenderingGroup sourceRendering = new RenderingGroup();
-            if (bodyFormat == TranslationFormat.USX) {
+            if (Clickables.isClickableFormat(bodyFormat)) {
                 // TODO: add click listeners
-                USXRenderer renderer = new USXRenderer(null, new Span.OnClickListener() {
+                Span.OnClickListener noteClickListener = new Span.OnClickListener() {
                     @Override
                     public void onClick(View view, Span span, int start, int end) {
                         if(span instanceof NoteSpan) {
@@ -270,8 +271,8 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
                     public void onLongClick(View view, Span span, int start, int end) {
 
                     }
-                });
-                sourceRendering.addEngine(renderer);
+                };
+                ClickableRenderingEngine renderer = Clickables.setupRenderingGroup(bodyFormat, sourceRendering, null, noteClickListener, true);
 
                 // In read mode (and only in read mode), pull leading major section headings out for
                 // display above chapter headings.
@@ -306,9 +307,9 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
                 chapterBody += " " + frameTranslation.body;
             }
             RenderingGroup targetRendering = new RenderingGroup();
-            if (bodyFormat == TranslationFormat.USX) {
+            if(Clickables.isClickableFormat(bodyFormat)) {
                 // TODO: add click listeners
-                targetRendering.addEngine(new USXRenderer(null, null));
+                Clickables.setupRenderingGroup(bodyFormat, targetRendering, null, null, true);
             } else {
                 targetRendering.addEngine(new DefaultRenderer());
             }

@@ -54,13 +54,15 @@ import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
+import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
-import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.rendering.ClickableRenderingEngine;
 import com.door43.translationstudio.spannables.NoteSpan;
+import com.door43.translationstudio.spannables.USFMNoteSpan;
 import com.door43.translationstudio.spannables.Span;
-import com.door43.translationstudio.spannables.VersePinSpan;
+import com.door43.translationstudio.spannables.VerseSpan;
 import com.door43.util.tasks.ThreadableUI;
 import com.door43.widget.ViewUtil;
 
@@ -397,7 +399,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private void renderSourceCard(int position, final ListItem item, ViewHolder holder) {
         // render
         if(item.renderedSourceBody == null) {
-            item.renderedSourceBody = renderSourceText(item.bodySource, item.translationFormat, holder, item, false);
+            item.renderedSourceBody = renderSourceText(item.bodySource, mSourceTranslation.getFormat(), holder, item, false);
         }
         holder.mSourceBody.setText(item.renderedSourceBody);
     }
@@ -847,7 +849,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 footnote = mContext.getResources().getString(R.string.footnote_label);
             }
 
-            NoteSpan footnoteSpannable = NoteSpan.generateFootnote(footnote);
+            USFMNoteSpan footnoteSpannable = USFMNoteSpan.generateFootnote(footnote);
             footnotecode = footnoteSpannable.getMachineReadable();
         }
 
@@ -1346,7 +1348,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     * generate spannable for target text.  Will add click listener for notes and verses if USX
+     * generate spannable for target text.  Will add click listener for notes and verses if they are supported
      * @param text
      * @param format
      * @param frame
@@ -1357,7 +1359,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      */
     private CharSequence renderTargetText(String text, TranslationFormat format, final Frame frame, final FrameTranslation frameTranslation, final ViewHolder holder, final ListItem item) {
         RenderingGroup renderingGroup = new RenderingGroup();
-        if(format == TranslationFormat.USX && frame != null) {
+        if(Clickables.isClickableFormat(format) && frame != null) {
             Span.OnClickListener verseClickListener = new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
@@ -1370,7 +1372,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 @Override
                 public void onLongClick(final View view, Span span, int start, int end) {
                     ClipData dragData = ClipData.newPlainText(frame.getComplexId(), span.getMachineReadable());
-                    final VersePinSpan pin = ((VersePinSpan) span);
+                    final VerseSpan pin = ((VerseSpan) span);
 
                     // create drag shadow
                     LayoutInflater inflater = (LayoutInflater)AppContext.context().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -1464,9 +1466,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
             };
 
-            USXRenderer usxRenderer = new USXRenderer(verseClickListener, noteClickListener);
-            usxRenderer.setPopulateVerseMarkers(frame.getVerseRange());
-            renderingGroup.addEngine(usxRenderer);
+            ClickableRenderingEngine renderer = Clickables.setupRenderingGroup(format, renderingGroup, verseClickListener, noteClickListener, true);
+            renderer.setPopulateVerseMarkers(frame.getVerseRange());
+
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
@@ -1558,7 +1560,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     * generate spannable for source text.  Will add click listener for notes if USX
+     * generate spannable for source text.  Will add click listener for notes if supported
      * @param text
      * @param format
      * @param holder
@@ -1568,9 +1570,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      */
     private CharSequence renderSourceText(String text, TranslationFormat format, final ViewHolder holder, final ListItem item, final boolean editable) {
         RenderingGroup renderingGroup = new RenderingGroup();
-        if (format == TranslationFormat.USX) {
+        if (Clickables.isClickableFormat(format)) {
             // TODO: add click listeners for verses
-            renderingGroup.addEngine(new USXRenderer(null, new Span.OnClickListener() {
+            Span.OnClickListener noteClickListener = new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
                     if(span instanceof NoteSpan) {
@@ -1582,7 +1584,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 public void onLongClick(View view, Span span, int start, int end) {
 
                 }
-            }));
+            };
+            Clickables.setupRenderingGroup(format, renderingGroup, null, noteClickListener, false);
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
@@ -1751,7 +1754,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             if(isChapterReference || isChapterTitle) {
                 frameTranslation = null;
                 chapterTranslation = targetTranslation.getChapterTranslation(chapter);
-                translationFormat = chapterTranslation.getFormat();
+                translationFormat = targetTranslation.getFormat();
                 if (isChapterTitle) {
                     bodyTranslation = chapterTranslation.title;
                     bodySource = chapter.title;
@@ -1769,12 +1772,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             } else {
                 chapterTranslation = null;
                 frameTranslation = targetTranslation.getFrameTranslation(frame);
-                translationFormat = frameTranslation.getFormat();
+                translationFormat = targetTranslation.getFormat();
                 bodyTranslation = frameTranslation.body;
                 bodySource = frame.body;
                 isTranslationFinished = frameTranslation.isFinished();
             }
         }
-
     }
 }

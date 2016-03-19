@@ -259,7 +259,6 @@ public class Library {
         }
 
         // word assignments
-        // TODO: delete current translationWord assignments
         if(mDownloader.downloadWordAssignments(sourceTranslation, mAppIndex)) {
             mAppIndex.markWordAssignmentsCatalogUpToDate(sourceTranslation);
         }
@@ -963,6 +962,13 @@ public class Library {
         boolean success = getActiveIndex().indexTranslationAcademy(sourceTranslation, catalog);
         getActiveIndex().endTransaction(success);
         return success;
+    }
+
+    /**
+     * Resets all the date_modified values
+     */
+    public void setExpired() {
+        mAppIndex.setExpired();
     }
 
     public interface OnProgressListener {

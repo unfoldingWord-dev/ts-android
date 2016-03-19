@@ -333,4 +333,24 @@ public class Manifest {
         }
         return false;
     }
+
+    /**
+     * Removes a string value from an array
+     * @param array
+     * @param value
+     */
+    public static JSONArray removeValue(JSONArray array, String value) {
+        JSONArray updatedArray = new JSONArray();
+        for (int i = 0; i < array.length(); i++) {
+            try {
+                String content = array.getString(i);
+                if (!content.equals(value)) {
+                    updatedArray.put(content);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return updatedArray;
+    }
 }

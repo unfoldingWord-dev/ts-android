@@ -4,17 +4,23 @@ package com.door43.translationstudio.core;
  * Represents different translation types
  */
 public enum TranslationType {
-    TEXT("text"),
-    TRANSLATION_NOTE("tn"),
-    TRANSLATION_QUESTION("tq"),
-    TRANSLATION_WORD("tw"),
-    TRANSLATION_ACADEMY("ta");
+    TEXT("text", "Text"),
+    TRANSLATION_NOTE("tn", "Notes"),
+    TRANSLATION_QUESTION("tq", "Questions"),
+    TRANSLATION_WORD("tw", "Words"),
+    TRANSLATION_ACADEMY("ta", "Translation Academy");
 
-    TranslationType(String s) {
-        mName = s;
+    TranslationType(String id, String name) {
+        mId = id;
+        mName = name;
     }
 
+    private final String mId;
     private final String mName;
+
+    public String getId() {
+        return mId;
+    }
 
     public String getName() {
         return mName;
@@ -22,7 +28,7 @@ public enum TranslationType {
 
     @Override
     public String toString() {
-        return mName;
+        return mId;
     }
 
     /**
@@ -33,7 +39,7 @@ public enum TranslationType {
     public static TranslationType get(String name) {
         if(name != null) {
             for (TranslationType f : TranslationType.values()) {
-                if (f.getName().equals(name.toLowerCase())) {
+                if (f.getId().equals(name.toLowerCase())) {
                     return f;
                 }
             }

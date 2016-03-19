@@ -1,7 +1,7 @@
 package com.door43.translationstudio.core;
 
-import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.rendering.USXtoUSFMConverter;
 import com.door43.util.Manifest;
 
 import org.apache.commons.io.FileUtils;
@@ -10,6 +10,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Iterator;
 
@@ -91,8 +92,13 @@ public class TargetTranslationMigrator {
                 }
             }
             JSONObject typeJson = new JSONObject();
+            TranslationType translationType = TranslationType.get(typeId);
             typeJson.put("id", typeId);
-            typeJson.put("name", "");
+            if(translationType != null) {
+                typeJson.put("name", translationType.getName());
+            } else {
+                typeJson.put("name", "");
+            }
             manifest.put("type", typeJson);
         }
 
@@ -108,38 +114,47 @@ public class TargetTranslationMigrator {
         }
 
         // update resource
-        if(manifest.has("resource_id")) {
-            String resourceId = manifest.getString("resource_id");
-            manifest.remove("resource_id");
-            JSONObject resourceJson = new JSONObject();
-            // TRICKY: supported resource id's (or now types) are "reg", "ulb", and "udb".
-            if (resourceId.equals("ulb")) {
-                resourceJson.put("name", "Unlocked Literal Bible");
-            } else if (resourceId.equals("udb")) {
-                resourceJson.put("name", "Unlocked Dynamic Bible");
-            } else {
-                // everything else changes to "reg"
-                resourceId = "reg";
-                resourceJson.put("name", "Regular");
-            }
-            resourceJson.put("id", resourceId);
-            manifest.put("resource", resourceJson);
-        } else if(!manifest.has("resource")) {
-            // add missing resource
-            JSONObject resourceJson = new JSONObject();
-            JSONObject projectJson = manifest.getJSONObject("project");
-            JSONObject typeJson = manifest.getJSONObject("type");
-            if(typeJson.getString("id").equals("text")) {
-                if(projectJson.getString("id").equals("obs")) {
-                    // obs switches to reg
-                    resourceJson.put("id", "reg");
-                    resourceJson.put("name", "Regular");
-                } else {
-                    resourceJson.put("id", "ulb");
+        if(manifest.getJSONObject("type").getString("id").equals("text")) {
+            if (manifest.has("resource_id")) {
+                String resourceId = manifest.getString("resource_id");
+                manifest.remove("resource_id");
+                JSONObject resourceJson = new JSONObject();
+                // TRICKY: supported resource id's (or now types) are "reg", "obs", "ulb", and "udb".
+                if (resourceId.equals("ulb")) {
                     resourceJson.put("name", "Unlocked Literal Bible");
+                } else if (resourceId.equals("udb")) {
+                    resourceJson.put("name", "Unlocked Dynamic Bible");
+                } else if (resourceId.equals("obs")) {
+                    resourceJson.put("name", "Open Bible Stories");
+                } else {
+                    // everything else changes to "reg"
+                    resourceId = "reg";
+                    resourceJson.put("name", "Regular");
                 }
+                resourceJson.put("id", resourceId);
                 manifest.put("resource", resourceJson);
+            } else if (!manifest.has("resource")) {
+                // add missing resource
+                JSONObject resourceJson = new JSONObject();
+                JSONObject projectJson = manifest.getJSONObject("project");
+                JSONObject typeJson = manifest.getJSONObject("type");
+                if (typeJson.getString("id").equals("text")) {
+                    String resourceId = projectJson.getString("id");
+                    if (resourceId.equals("obs")) {
+                        resourceJson.put("id", "obs");
+                        resourceJson.put("name", "Open Bible Stories");
+                    } else {
+                        // everything else changes to reg
+                        resourceJson.put("id", "reg");
+                        resourceJson.put("name", "Regular");
+                    }
+                    manifest.put("resource", resourceJson);
+                }
             }
+        } else {
+            // non-text translation types do not have resources
+            manifest.remove("resource_id");
+            manifest.remove("resource");
         }
 
         // update source translations
@@ -160,7 +175,7 @@ public class TargetTranslationMigrator {
                         if (pieces.length > 0) {
                             String resId = pieces[pieces.length - 1];
                             sourceTranslation.put("resource_id", resId);
-                            sourceTranslation.put("language_id", languageResourceId.substring(0, resId.length() - 1));
+                            sourceTranslation.put("language_id", languageResourceId.substring(0, languageResourceId.length() - resId.length() - 1));
                             sourceTranslation.put("checking_level", oldObj.getString("checking_level"));
                             sourceTranslation.put("date_modified", oldObj.getInt("date_modified"));
                             sourceTranslation.put("version", oldObj.getString("version"));
@@ -177,10 +192,8 @@ public class TargetTranslationMigrator {
 
         // update parent draft
         if(manifest.has("parent_draft_resource_id")) {
-            manifest.remove("parent_draft_resource_id");
             JSONObject draftStatus = new JSONObject();
-            // we don't know what the draft status is so just leave blank.
-            // the app should identify this as unknown and ask the user to import again if they want
+            draftStatus.put("resource_id", manifest.getString("parent_draft_resource_id"));
             draftStatus.put("checking_entity", "");
             draftStatus.put("checking_level", "");
             draftStatus.put("comments", "The parent draft is unknown");
@@ -189,7 +202,8 @@ public class TargetTranslationMigrator {
             draftStatus.put("source_text", "");
             draftStatus.put("source_text_version", "");
             draftStatus.put("version", "");
-            manifest.put("parent_draft_status", draftStatus);
+            manifest.put("parent_draft", draftStatus);
+            manifest.remove("parent_draft_resource_id");
         }
 
         // update finished chunks
@@ -236,8 +250,16 @@ public class TargetTranslationMigrator {
             manifest.put("finished_chunks", finishedChunks);
         }
 
-        // update package version
-        manifest.put("package_version", 5);
+        // add format
+        if(!Manifest.valueExists(manifest, "format") || manifest.getString("format").equals("usx") || manifest.getString("format").equals("default")) {
+            String typeId = manifest.getJSONObject("type").getString("id");
+            String projectId = manifest.getJSONObject("project").getString("id");
+            if(!typeId.equals("text") || projectId.equals("obs")) {
+                manifest.put("format", "markdown");
+            } else {
+                manifest.put("format", "usfm");
+            }
+        }
 
         // update where project title is saved.
         File oldProjectTitle = new File(path.getParentFile(), "title.txt");
@@ -247,7 +269,36 @@ public class TargetTranslationMigrator {
             FileUtils.moveFile(oldProjectTitle, newProjectTitle);
         }
 
+        // update package version
+        manifest.put("package_version", 5);
+
         FileUtils.write(path, manifest.toString(2));
+
+        // migrate usx to usfm
+        String format = manifest.getString("format");
+        // TRICKY: we just added the new format field, anything marked as usfm may have residual usx and needs to be migrated
+        if (format.equals("usfm")) {
+            File[] chapterDirs = path.getParentFile().listFiles(new FileFilter() {
+                @Override
+                public boolean accept(File pathname) {
+                    return pathname.isDirectory() && !pathname.getName().equals(".git");
+                }
+            });
+            for(File cDir:chapterDirs) {
+                File[] chunkFiles = cDir.listFiles();
+                for(File chunkFile:chunkFiles) {
+                    try {
+                        String usx = FileUtils.readFileToString(chunkFile);
+                        String usfm = USXtoUSFMConverter.doConversion(usx).toString();
+                        FileUtils.writeStringToFile(chunkFile, usfm);
+                    } catch (IOException e) {
+                        // this conversion may have failed but don't stop the rest of the migration
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
         return true;
     }
 
@@ -274,6 +325,7 @@ public class TargetTranslationMigrator {
             manifest.put("package_version", 3);
             FileUtils.write(path, manifest.toString(2));
         }
+        migrateChunkChanges(path.getParentFile());
         return true;
     }
 
@@ -351,70 +403,30 @@ public class TargetTranslationMigrator {
         return true;
     }
 
-   /**
-    * Merges chunks found in the target translation projects that do not exist in the source translation
-    * to a sibling chunk so that no data is lost.
-    * @param library
-    * @param translationSlugs target translations to merge
-    * @return
-    */
-    public static boolean migrateChunkChanges(final Translator translator, final Library library, final String[] translationSlugs) {
-        boolean mergeSuccess = true;
-        for (String translationSlug : translationSlugs) {
-            final TargetTranslation targetTranslation = translator.getTargetTranslation(translationSlug);
-            boolean success = migrateChunkChanges(library, targetTranslation);
-            mergeSuccess = mergeSuccess && success;
-        }
-        return mergeSuccess;
-    }
-
-    /**
-     * Merges chunks found in the target translation projects that do not exist in the source translation
-     * to a sibling chunk so that no data is lost.
-     * @param library
-     * @param targetTranslations target translations to merge
-     * @return
-     */
-    public static boolean migrateChunkChanges(final Library library, final TargetTranslation[] targetTranslations) {
-        boolean mergeSuccess = true;
-        for (TargetTranslation targetTranslation : targetTranslations) {
-            boolean success = migrateChunkChanges(AppContext.getLibrary(), targetTranslation);
-            mergeSuccess = mergeSuccess && success;
-        }
-        return mergeSuccess;
-    }
-
     /**
      * Merges chunks found in a target translation Project that do not exist in the source translation
      * to a sibling chunk so that no data is lost.
-     * @param library
-     * @param targetTranslation target translation to merge
+     * @param targetTranslationDir
      * @return
      */
-    public static boolean migrateChunkChanges(final Library library, final TargetTranslation targetTranslation)  {
-        try {
-            Logger.i(TargetTranslationMigrator.class.getName(), "Migrating chunks in target translation " + targetTranslation.getProjectId());
-            final SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(targetTranslation.getProjectId(), "en");
-            if(sourceTranslation == null) {
-                Logger.w(TargetTranslationMigrator.class.getName(), "Could not find a source translation for the target translation " + targetTranslation.getId());
-                return false;
-            }
-            if(targetTranslation.getPath().exists()) {
-                boolean migrationSuccess = true;
-                // perform the chunk migration on each chapter of the target translation
-                for(ChapterTranslation chapterTranslation:targetTranslation.getChapterTranslations()) {
-                    Chapter chapter = library.getChapter(sourceTranslation, chapterTranslation.getId());
-                    if(chapter != null) {
-                        boolean success = mergeInvalidChunksInChapter(library, sourceTranslation, targetTranslation, chapter);
-                        migrationSuccess = migrationSuccess && success;
-                    }
-                }
-                return migrationSuccess;
-            }
-        } catch (Exception e) {
-            Logger.e(TargetTranslationMigrator.class.getName(), "Failed to merge the chunks in the target translation " + targetTranslation.getProjectId());
+    private static boolean migrateChunkChanges(File targetTranslationDir)  {
+        // TRICKY: calling the AppContext here is bad practice, but we'll deprecate this soon anyway.
+        final Library library = AppContext.getLibrary();
+        final SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(targetTranslationDir.getName(), "en");
+        if(sourceTranslation == null) {
+            // if there is no source we are done
+            return true;
         }
-        return false;
+        File[] chapterDirs = targetTranslationDir.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.isDirectory() && !pathname.getName().equals(".git") && !pathname.getName().equals("00"); // 00 contains project title translations
+            }
+        });
+        for(File cDir:chapterDirs) {
+            mergeInvalidChunksInChapter(library, new File(targetTranslationDir, "manifest.json"), sourceTranslation, cDir);
+        }
+        return true;
     }
 
     /**
@@ -422,61 +434,111 @@ public class TargetTranslationMigrator {
      * to preserve translation data. Merged chunks are marked as not finished to force
      * translators to review the changes.
      * @param library
+     * @param manifestFile
      * @param sourceTranslation
-     * @param targetTranslation
-     * @param chapter
+     * @param chapterDir
      * @return
      */
-    private static boolean mergeInvalidChunksInChapter(final Library library, final SourceTranslation sourceTranslation, final TargetTranslation targetTranslation, final Chapter chapter) {
-        boolean success = true;
+    private static boolean mergeInvalidChunksInChapter(final Library library, File manifestFile, final SourceTranslation sourceTranslation, final File chapterDir) {
+        JSONObject manifest;
+        try {
+            manifest = new JSONObject(FileUtils.readFileToString(manifestFile));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+
         final String chunkMergeMarker = "\n----------\n";
-        Logger.i(TargetTranslationMigrator.class.getName(), "Searching chapter " + chapter.getId() + " for invalid chunks ");
-        // TRICKY: the translation format doesn't matter for migrating
-        FrameTranslation[] frameTranslations = targetTranslation.getFrameTranslations(chapter.getId(), TranslationFormat.DEFAULT);
+        File[] frameFiles = chapterDir.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return !pathname.getName().equals("title.txt") && !pathname.getName().equals("reference.txt");
+            }
+        });
         String invalidChunks = "";
-        Frame lastValidFrame = null;
-        for(FrameTranslation frameTranslation:frameTranslations) {
-            Frame frame = library.getFrame(sourceTranslation, chapter.getId(), frameTranslation.getId());
+        File lastValidFrameFile = null;
+        String chapterId = chapterDir.getName();
+        for(File frameFile:frameFiles) {
+            String frameId = frameFile.getName();
+            Frame frame = library.getFrame(sourceTranslation, chapterId, frameId);
+            String frameBody = "";
+            try {
+                frameBody = FileUtils.readFileToString(frameFile).trim();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             if(frame != null) {
-                lastValidFrame =  frame;
+                lastValidFrameFile =  frameFile;
                 // merge invalid frames into the existing frame
                 if(!invalidChunks.isEmpty()) {
-                    targetTranslation.applyFrameTranslation(frameTranslation, invalidChunks + frameTranslation.body);
+                    try {
+                        FileUtils.writeStringToFile(frameFile, invalidChunks + frameBody);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     invalidChunks = "";
-                    targetTranslation.reopenFrame(frame);
+                    try {
+                        Manifest.removeValue(manifest.getJSONArray("finished_frames"), chapterId + "-" + frameId);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 }
-            } else if(!frameTranslation.body.trim().isEmpty()) {
-                if(lastValidFrame == null) {
-                    // collect invalid frame
-                    invalidChunks += frameTranslation.body + chunkMergeMarker;
-                } else { // if last frame is not null, then append invalid chunk to it
-                    FrameTranslation lastFrameTranslation = targetTranslation.getFrameTranslation(lastValidFrame);
-                    targetTranslation.applyFrameTranslation(lastFrameTranslation, lastFrameTranslation.body + chunkMergeMarker + frameTranslation.body );
-                    targetTranslation.reopenFrame(lastValidFrame);
+            } else if(!frameBody.isEmpty()) {
+                // collect invalid frame
+                if(lastValidFrameFile == null) {
+                    invalidChunks += frameBody + chunkMergeMarker;
+                } else {
+                    // append to last valid frame
+                    String lastValidFrameBody = "";
+                    try {
+                        lastValidFrameBody = FileUtils.readFileToString(lastValidFrameFile);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        FileUtils.writeStringToFile(lastValidFrameFile, lastValidFrameBody + chunkMergeMarker + frameBody);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        Manifest.removeValue(manifest.getJSONArray("finished_frames"), chapterId + "-" + lastValidFrameFile.getName());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 }
-                targetTranslation.applyFrameTranslation(frameTranslation, "" ); // clear out old data
+                // delete invalid frame
+                FileUtils.deleteQuietly(frameFile);
             }
         }
         // clean up remaining invalid chunks
         if(!invalidChunks.isEmpty()) {
-            if(lastValidFrame == null) {
-                // push remaining invalid chunks onto the first available frame
-                String[] frameslugs = library.getFrameSlugs(sourceTranslation, chapter.getId());
-                if(frameslugs.length > 0) {
-                    lastValidFrame = library.getFrame(sourceTranslation, chapter.getId(), frameslugs[0]);
-                } else {
-                    Logger.w(TargetTranslationMigrator.class.getName(), "No frames were found for chapter " + chapter.getId());
+            // grab updated list of frames
+            frameFiles = chapterDir.listFiles(new FileFilter() {
+                @Override
+                public boolean accept(File pathname) {
+                    return !pathname.getName().equals("title.txt") && !pathname.getName().equals("reference.txt");
+                }
+            });
+            if(frameFiles != null && frameFiles.length > 0) {
+                String frameBody = "";
+                try {
+                    frameBody = FileUtils.readFileToString(frameFiles[0]);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    FileUtils.writeStringToFile(frameFiles[0], invalidChunks + chunkMergeMarker + frameBody);
+                    try {
+                        Manifest.removeValue(manifest.getJSONArray("finished_frames"), chapterId + "-" + frameFiles[0].getName());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
-
-            if(lastValidFrame != null) {
-                FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(lastValidFrame);
-                targetTranslation.applyFrameTranslation(frameTranslation, invalidChunks + chunkMergeMarker + frameTranslation.body);
-                targetTranslation.reopenFrame(lastValidFrame);
-            }
         }
-
-        return success;
+        return true;
     }
 
     /**

@@ -140,7 +140,8 @@ public class Translator {
     }
 
     /**
-     * Compiles all the spans within the text into machine readable strings (XML)
+     * Compiles all the editable text back into source that could be either USX or USFM.  It replaces
+     *   the displayed text in spans with their mark-ups.
      * @param text
      * @return
      */
@@ -255,8 +256,9 @@ public class Translator {
      */
     public TargetTranslation importDraftTranslation(NativeSpeaker translator, SourceTranslation draftTranslation, Library library) {
         TargetLanguage targetLanguage = library.getTargetLanguage(draftTranslation.sourceLanguageSlug);
-        // TRICKY: android only supports "regular" "text" translations
-        TargetTranslation t = createTargetTranslation(translator, targetLanguage, draftTranslation.projectSlug, TranslationType.TEXT, Resource.Type.REGULAR, draftTranslation.getFormat());
+        // TRICKY: for now android only supports "regular" or "obs" "text" translations
+        Resource.Type resourceType = draftTranslation.projectSlug.equals("obs") ? Resource.Type.OPEN_BIBLE_STORIES : Resource.Type.REGULAR;
+        TargetTranslation t = createTargetTranslation(translator, targetLanguage, draftTranslation.projectSlug, TranslationType.TEXT, resourceType, draftTranslation.getFormat());
         try {
             if (t != null) {
                 // commit local changes to history

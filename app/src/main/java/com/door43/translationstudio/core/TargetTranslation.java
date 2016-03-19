@@ -45,17 +45,20 @@ import java.util.Locale;
  */
 public class TargetTranslation {
     public static final int PACKAGE_VERSION = 5; // the version of the target translation implementation
-    public static final String FIELD_PARENT_DRAFT_STATUS = "parent_draft_status";
+
+    private static final String FIELD_PARENT_DRAFT = "parent_draft";
     private static final String FIELD_FINISHED_CHUNKS = "finished_chunks";
     private static final String FIELD_TRANSLATORS = "translators";
-    public static final String FIELD_TARGET_LANGUAGE = "target_language";
+    private static final String FIELD_TARGET_LANGUAGE = "target_language";
     private static final String GLOBAL_PROJECT_ID = "uw";
     private static final String FIELD_FORMAT = "format";
     private static final String FIELD_RESOURCE = "resource";
-    public static final String FIELD_SOURCE_TRANSLATIONS = "source_translations";
-    public static final String FIELD_PACKAGE_VERSION = "package_version";
-    public static final String FIELD_PROJECT = "project";
-    public static final String FIELD_GENERATOR = "generator";
+    private static final String FIELD_SOURCE_TRANSLATIONS = "source_translations";
+    private static final String FIELD_PACKAGE_VERSION = "package_version";
+    private static final String FIELD_PROJECT = "project";
+    private static final String FIELD_GENERATOR = "generator";
+    private static final String FIELD_TRANSLATION_TYPE = "type";
+    private static final String FIELD_TRANSLATION_FORMAT = "format";
 
     private final File targetTranslationDir;
     private final Manifest manifest;
@@ -69,6 +72,8 @@ public class TargetTranslation {
 
     private Resource.Type resourceType = null;
     private String resourceTypeName = null;
+
+    private TranslationFormat mTranslationFormat;
 
     /**
      * Creates a new instance of the target translation
@@ -100,6 +105,8 @@ public class TargetTranslation {
             this.resourceType = Resource.Type.get(resourceJson.getString("id"));
             this.resourceTypeName = Manifest.valueExists(resourceJson, "name") ? resourceJson.getString("name") : this.resourceType.toString().toUpperCase();
         }
+
+        mTranslationFormat = readTranslationFormat();
     }
 
     /**
@@ -124,14 +131,14 @@ public class TargetTranslation {
                 // udb
                 return GLOBAL_PROJECT_ID + "-" + projectId + "_" + resourceType + "-" + targetLanguageId;
             } else {
-                // ulb, reg
+                // ulb, obs, reg
                 return GLOBAL_PROJECT_ID + "-" + projectId + "-" + targetLanguageId;
             }
-        } else if(translationType == TranslationType.TRANSLATION_ACADEMY) {
-            // ta
+        } else if(translationType == TranslationType.TRANSLATION_ACADEMY || translationType == TranslationType.TRANSLATION_WORD) {
+            // ta, tw
             return GLOBAL_PROJECT_ID + "-" + projectId + "-" + targetLanguageId;
         } else {
-            // tn, tq, tw
+            // tn, tq
             return GLOBAL_PROJECT_ID + "-" + projectId + "_" + resourceType + "-" + targetLanguageId;
         }
     }
@@ -185,6 +192,66 @@ public class TargetTranslation {
     }
 
     /**
+     * get format of translation
+     * @return
+     */
+    public TranslationFormat getFormat() {
+        return mTranslationFormat;
+    }
+
+    /**
+     * read the format of the translation
+     * @return
+     */
+    private TranslationFormat readTranslationFormat() {
+        TranslationFormat format = fetchTranslationFormat(manifest);
+        if(null == format) {
+            TranslationType translationType = fetchTranslationType(manifest);
+            if(translationType != TranslationType.TEXT) {
+                return TranslationFormat.MARKDOWN;
+            } else {
+                String projectIdStr = fetchProjectID(manifest);
+                if("obs".equalsIgnoreCase(projectIdStr)) {
+                    return TranslationFormat.MARKDOWN;
+                }
+                return TranslationFormat.USFM;
+            }
+        }
+        return format;
+    }
+
+    private static TranslationFormat fetchTranslationFormat(Manifest manifest) {
+        String formatStr = manifest.getString(FIELD_TRANSLATION_FORMAT);
+        return TranslationFormat.get(formatStr);
+    }
+
+    public static String fetchProjectID(Manifest manifest) {
+        String projectIdStr = "";
+        JSONObject projectIdJson = manifest.getJSONObject(FIELD_PROJECT);
+        if(projectIdJson != null) {
+            try {
+                projectIdStr = projectIdJson.getString("id");
+            } catch(Exception e) {
+                projectIdStr = "";
+            }
+        }
+        return projectIdStr;
+    }
+
+    public static TranslationType fetchTranslationType(Manifest manifest) {
+        String translationTypeStr = "";
+        JSONObject typeJson = manifest.getJSONObject(FIELD_TRANSLATION_TYPE);
+        if(typeJson != null) {
+            try {
+                translationTypeStr = typeJson.getString("id");
+            } catch(Exception e) {
+                translationTypeStr = "";
+            }
+        }
+        return TranslationType.get(translationTypeStr);
+    }
+
+    /**
      * Opens an existing target translation.
      * @param targetTranslationDir
      * @return null if the directory does not exist or the manifest is invalid
@@ -233,8 +300,8 @@ public class TargetTranslation {
         manifest.put(FIELD_PROJECT, projectJson);
         JSONObject typeJson = new JSONObject();
         typeJson.put("id", translationType);
-        typeJson.put("name", "");
-        manifest.put("type", typeJson);
+        typeJson.put("name", translationType.getName());
+        manifest.put(FIELD_TRANSLATION_TYPE, typeJson);
         JSONObject generatorJson = new JSONObject();
         generatorJson.put("name", "ts-android");
         generatorJson.put("build", packageInfo.versionCode);
@@ -362,18 +429,7 @@ public class TargetTranslation {
     public void removeContributor(NativeSpeaker speaker) {
         if(speaker != null) {
             JSONArray translatorsJson = manifest.getJSONArray(FIELD_TRANSLATORS);
-            JSONArray updatedTranslatorsJson = new JSONArray();
-            for (int i = 0; i < translatorsJson.length(); i++) {
-                try {
-                    String name = translatorsJson.getString(i);
-                    if (!name.equals(speaker.name)) {
-                        updatedTranslatorsJson.put(name);
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-            manifest.put(FIELD_TRANSLATORS, updatedTranslatorsJson);
+            manifest.put(FIELD_TRANSLATORS, Manifest.removeValue(translatorsJson, speaker.name));
         }
     }
 
@@ -500,7 +556,7 @@ public class TargetTranslation {
                 e.printStackTrace();
             }
         }
-        return new ChapterTranslation(title, reference, chapterSlug, isChapterTitleFinished(chapterSlug), isChapterReferenceFinished(chapterSlug));
+        return new ChapterTranslation(title, reference, chapterSlug, isChapterTitleFinished(chapterSlug), isChapterReferenceFinished(chapterSlug), getFormat());
     }
 
     /**
@@ -1025,10 +1081,11 @@ public class TargetTranslation {
     public void setParentDraft(SourceTranslation draftTranslation) {
         JSONObject draftStatus = new JSONObject();
         try {
+            draftStatus.put("resource_id", draftTranslation.resourceSlug);
             draftStatus.put("checking_level", draftTranslation.getCheckingLevel());
             draftStatus.put("version", draftTranslation.getVersion());
-            // TODO: 3/2/2016 need to update resource object to collect all info from api so we can include more detail her
-            manifest.put(FIELD_PARENT_DRAFT_STATUS, draftStatus);
+            // TODO: 3/2/2016 need to update resource object to collect all info from api so we can include more detail here
+            manifest.put(FIELD_PARENT_DRAFT, draftStatus);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -1039,17 +1096,10 @@ public class TargetTranslation {
      */
     public SourceTranslation getParentDraft () {
         try {
-            JSONObject parentDraftStatus = manifest.getJSONObject(FIELD_PARENT_DRAFT_STATUS);
-            if(parentDraftStatus.has("version") && !parentDraftStatus.getString("version").isEmpty()) {
-                // parent drafts have the same resource id as the target translation
-                JSONObject resourceJson = manifest.getJSONObject(FIELD_RESOURCE);
-                if (resourceJson.has("id")) {
-                    String id = resourceJson.getString("id");
-                    if (!id.isEmpty()) {
-                        // TODO: it would be handy to include the version of the actual parent draft so we can see if the one pulled has updates
-                        return SourceTranslation.simple(getProjectId(), getTargetLanguageId(), id);
-                    }
-                }
+            JSONObject parentDraftStatus = manifest.getJSONObject(FIELD_PARENT_DRAFT);
+            if(Manifest.valueExists(parentDraftStatus, "resource_id")) {
+                // TODO: it would be handy to include the version of the actual parent draft so we can see if the one pulled has updates
+                return SourceTranslation.simple(getProjectId(), getTargetLanguageId(), parentDraftStatus.getString("resource_id"));
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -1096,9 +1146,9 @@ public class TargetTranslation {
         manifest.join(importedManifest.getJSONObject(FIELD_SOURCE_TRANSLATIONS), FIELD_SOURCE_TRANSLATIONS);
 
         // add missing parent draft status
-        if((!manifest.has(FIELD_PARENT_DRAFT_STATUS) || !Manifest.valueExists(manifest.getJSONObject(FIELD_PARENT_DRAFT_STATUS), "version"))
-            && importedManifest.has(FIELD_PARENT_DRAFT_STATUS)) {
-            manifest.put(FIELD_PARENT_DRAFT_STATUS, importedManifest.getJSONObject(FIELD_PARENT_DRAFT_STATUS));
+        if((!manifest.has(FIELD_PARENT_DRAFT) || !Manifest.valueExists(manifest.getJSONObject(FIELD_PARENT_DRAFT), "resource_id"))
+            && importedManifest.has(FIELD_PARENT_DRAFT)) {
+            manifest.put(FIELD_PARENT_DRAFT, importedManifest.getJSONObject(FIELD_PARENT_DRAFT));
         }
 
         if (result.getMergeStatus().equals(MergeResult.MergeStatus.CONFLICTING)) {
