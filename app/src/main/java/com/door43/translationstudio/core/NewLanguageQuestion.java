@@ -11,14 +11,14 @@ import org.json.JSONObject;
  * Created by blm on 3/9/16.
  */
 public class NewLanguageQuestion {
-    public static final String ID = "id";
-    public static final String QUESTION = "question";
-    public static final String HELP_TEXT = "helpText";
-    public static final String ANSWER = "answer";
-    public static final String REQUIRED = "required";
-    public static final String QUERY = "query";
-    public static final String INPUT_TYPE = "input";
-    public static final String CONDITIONAL_ID = "conditional_id";
+    public static final String ID_KEY = "id";
+    public static final String QUESTION_KEY = "question";
+    public static final String HELP_TEXT_KEY = "helpText";
+    public static final String ANSWER_KEY = "answer";
+    public static final String REQUIRED_KEY = "required";
+    public static final String QUERY_KEY = "query";
+    public static final String INPUT_TYPE_KEY = "input";
+    public static final String CONDITIONAL_ID_KEY = "conditional_id";
 
     public long id;
     public String question;
@@ -85,21 +85,24 @@ public class NewLanguageQuestion {
      */
     public static NewLanguageQuestion parse(JSONObject json) {
         try {
-            long id = json.getLong(ID);
-            String question = json.getString(QUESTION);
+            long id = json.getLong(ID_KEY);
+            String question = json.getString(QUESTION_KEY);
             String answer = null;
-            if(json.has(NewLanguageQuestion.ANSWER)) {
-                answer = json.getString(NewLanguageQuestion.ANSWER);
+            if(json.has(NewLanguageQuestion.ANSWER_KEY)) {
+                answer = json.getString(NewLanguageQuestion.ANSWER_KEY);
             }
-            String hint = json.getString(HELP_TEXT);
-            boolean required = json.getBoolean(REQUIRED);
-            String typeStr = json.getString(INPUT_TYPE);
+            String hint = json.getString(HELP_TEXT_KEY);
+            boolean required = json.getBoolean(REQUIRED_KEY);
+            String typeStr = json.getString(INPUT_TYPE_KEY);
             QuestionType type = QuestionType.get(typeStr);
-            long conditional = -1;
-            if(json.has(NewLanguageQuestion.CONDITIONAL_ID)) {
-                conditional = json.getLong(CONDITIONAL_ID);
+            if(null == type) { // default to string input
+                type = QuestionType.INPUT_TYPE_STRING;
             }
-            String query = json.getString(QUERY);
+            long conditional = -1;
+            if(json.has(NewLanguageQuestion.CONDITIONAL_ID_KEY)) {
+                conditional = json.getLong(CONDITIONAL_ID_KEY);
+            }
+            String query = json.getString(QUERY_KEY);
             return new NewLanguageQuestion(id,question,hint,answer,type,required, query, conditional);
         } catch (Exception e) {
             Logger.e(NewLanguageQuestion.class.getSimpleName(),"Error parsing json: " + json.toString(),e);
@@ -115,16 +118,16 @@ public class NewLanguageQuestion {
     public JSONObject toJson() {
         JSONObject results = new JSONObject();
         try {
-            results.put(ID, id);
-            results.put(QUESTION, question);
-            results.put(HELP_TEXT, helpText);
+            results.put(ID_KEY, id);
+            results.put(QUESTION_KEY, question);
+            results.put(HELP_TEXT_KEY, helpText);
             if(null != answer) {
-                results.put(ANSWER, answer);
+                results.put(ANSWER_KEY, answer);
             }
-            results.put(REQUIRED, required);
-            results.put(INPUT_TYPE, type.toString());
-            results.put(CONDITIONAL_ID, conditionalID);
-            results.put(QUERY, query);
+            results.put(REQUIRED_KEY, required);
+            results.put(INPUT_TYPE_KEY, type.toString());
+            results.put(CONDITIONAL_ID_KEY, conditionalID);
+            results.put(QUERY_KEY, query);
             return results;
         } catch (Exception e) {
 
@@ -139,12 +142,12 @@ public class NewLanguageQuestion {
     public JSONObject getResults() {
         JSONObject results = new JSONObject();
         try {
-            results.put(ID, id);
-            results.put(QUESTION, question);
-            results.put(HELP_TEXT, helpText);
-            results.put(ANSWER, (null != answer) ? answer : "(NULL)");
-            results.put(REQUIRED, required);
-            results.put(QUERY, query);
+            results.put(ID_KEY, id);
+            results.put(QUESTION_KEY, question);
+            results.put(HELP_TEXT_KEY, helpText);
+            results.put(ANSWER_KEY, (null != answer) ? answer : "(NULL)");
+            results.put(REQUIRED_KEY, required);
+            results.put(QUERY_KEY, query);
         } catch (Exception e) {
 
         }
@@ -155,8 +158,8 @@ public class NewLanguageQuestion {
      * enum to identify question types and do string conversions
      */
     public enum QuestionType {
-        EDIT_TEXT(NewLanguageAPI.INPUT_TYPE_STR),
-        CHECK_BOX(NewLanguageAPI.INPUT_TYPE_BOOLEAN);
+        INPUT_TYPE_STRING(NewLanguageAPI.INPUT_TYPE_STRING),
+        INPUT_TYPE_BOOLEAN(NewLanguageAPI.INPUT_TYPE_BOOLEAN);
 
         QuestionType(String s) {
             mName = s;

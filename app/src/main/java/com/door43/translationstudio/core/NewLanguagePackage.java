@@ -247,7 +247,7 @@ public class NewLanguagePackage {
         if(dependency != null) {
             if(!isAnswerEmpty(dependency)) {
 
-                if(dependency.type == NewLanguageQuestion.QuestionType.CHECK_BOX) {
+                if(dependency.type == NewLanguageQuestion.QuestionType.INPUT_TYPE_BOOLEAN) {
                     enable = NewLanguagePackage.isCheckBoxAnswerTrue(dependency);
                 } else {
                     enable = true;

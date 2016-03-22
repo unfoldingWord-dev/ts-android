@@ -86,10 +86,10 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         try {
             JSONObject questionnaire = (new NewLanguageAPI()).readQuestionnaire();
 
-            JSONArray questionsJson = questionnaire.getJSONArray(NewLanguageAPI.QUESTIONAIRE_DATA);
-            JSONObject questionaireMeta = questionnaire.getJSONObject(NewLanguageAPI.QUESTIONNAIRE_META);
-            mQuestionnaireID = questionnaire.getLong(NewLanguageAPI.QUESTIONNAIRE_ID);
-            JSONArray questionaireOrder = questionaireMeta.getJSONArray(NewLanguageAPI.QUESTIONNAIRE_ORDER);
+            JSONArray questionsJson = questionnaire.getJSONArray(NewLanguageAPI.QUESTIONAIRE_DATA_KEY);
+            JSONObject questionaireMeta = questionnaire.getJSONObject(NewLanguageAPI.QUESTIONNAIRE_META_KEY);
+            mQuestionnaireID = questionnaire.getLong(NewLanguageAPI.QUESTIONNAIRE_ID_KEY);
+            JSONArray questionaireOrder = questionaireMeta.getJSONArray(NewLanguageAPI.QUESTIONNAIRE_ORDER_KEY);
 
             for(int i = 0; i < questionsJson.length(); i++) {
 
@@ -127,12 +127,12 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
             for(int i = 0; i < length; i++ ) {
                 JSONObject question = (JSONObject) answersPage.get(i);
                 NewLanguageQuestion originalQuestion = mPage.get(i);
-                int questionID = question.getInt(NewLanguageQuestion.ID);
+                int questionID = question.getInt(NewLanguageQuestion.ID_KEY);
                 if((null == question) || (originalQuestion.id != questionID)) {
                     return false; // response does not match original
                 } else {
-                    if(question.has(NewLanguageQuestion.ANSWER)) {
-                        originalQuestion.answer = question.getString(NewLanguageQuestion.ANSWER);
+                    if(question.has(NewLanguageQuestion.ANSWER_KEY)) {
+                        originalQuestion.answer = question.getString(NewLanguageQuestion.ANSWER_KEY);
                     } else {
                         originalQuestion.answer = null;
                     }

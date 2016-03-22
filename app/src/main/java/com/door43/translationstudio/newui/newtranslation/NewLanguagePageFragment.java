@@ -135,7 +135,7 @@ public class NewLanguagePageFragment extends BaseFragment {
         if (question.conditionalID >= 0) {
             NewLanguageQuestion conditionalQuestion = getQuestionPositionByID(mQuestions,mQuestionIndex,question.conditionalID);
             if(conditionalQuestion != null) {
-                if (conditionalQuestion.type == NewLanguageQuestion.QuestionType.CHECK_BOX) {
+                if (conditionalQuestion.type == NewLanguageQuestion.QuestionType.INPUT_TYPE_BOOLEAN) {
                     return NewLanguagePackage.isCheckBoxAnswerTrue(conditionalQuestion);
                 } else {
                     return conditionalQuestion.answer != null; // should have answer if question it depends on has answer
@@ -195,7 +195,7 @@ public class NewLanguagePageFragment extends BaseFragment {
      */
     private boolean hasAnswer(NewLanguageQuestion question) {
         if(null == question.answer) {
-            if(question.type == NewLanguageQuestion.QuestionType.CHECK_BOX) {
+            if(question.type == NewLanguageQuestion.QuestionType.INPUT_TYPE_BOOLEAN) {
                 boolean checked = NewLanguagePackage.isCheckBoxAnswerTrue(question); // checked always has a state, answer of null is false
                 question.answer = NewLanguagePackage.getCheckBoxAnswer(checked); // normalize answer (replace null value)
             } else {

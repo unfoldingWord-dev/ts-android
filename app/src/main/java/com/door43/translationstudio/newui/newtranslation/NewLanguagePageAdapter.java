@@ -147,7 +147,7 @@ public class NewLanguagePageAdapter extends BaseAdapter {
         final NewLanguageQuestion item = getItem(position);
         if(null != item) {
             int layoutResId;
-            if (item.type == NewLanguageQuestion.QuestionType.CHECK_BOX) {
+            if (item.type == NewLanguageQuestion.QuestionType.INPUT_TYPE_BOOLEAN) {
                 layoutResId = R.layout.fragment_new_language_checkbox_card;
             } else {
                 layoutResId = R.layout.fragment_new_language_edit_card;
@@ -164,7 +164,7 @@ public class NewLanguagePageAdapter extends BaseAdapter {
 
             enableQuestion(v, holder, shouldEnable(item));
 
-            if (item.type == NewLanguageQuestion.QuestionType.CHECK_BOX) {
+            if (item.type == NewLanguageQuestion.QuestionType.INPUT_TYPE_BOOLEAN) {
                 holder.checkBoxAnswer.setChecked(NewLanguagePackage.isCheckBoxAnswerTrue(item));
                 holder.checkBoxAnswer.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
