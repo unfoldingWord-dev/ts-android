@@ -2,6 +2,9 @@ package com.door43.translationstudio.core;
 
 import android.content.Context;
 
+import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.newui.newtranslation.NewLanguageAPI;
+
 import org.json.JSONObject;
 
 /**
@@ -11,10 +14,10 @@ public class NewLanguageQuestion {
     public static final String ID = "id";
     public static final String QUESTION = "question";
     public static final String HELP_TEXT = "helpText";
-    public static final String INPUT = "input";
+    public static final String ANSWER = "answer";
     public static final String REQUIRED = "required";
     public static final String QUERY = "query";
-    public static final String TYPE = "type";
+    public static final String INPUT_TYPE = "input";
     public static final String CONDITIONAL_ID = "conditional_id";
 
     public long id;
@@ -23,10 +26,12 @@ public class NewLanguageQuestion {
     public String answer; // can be null
     public boolean required;
     public QuestionType type;
+    public String query;
     public long conditionalID = -1;
 
-    NewLanguageQuestion(long id, String question, String helpText, String answer,
-                        QuestionType type, boolean required, long conditionalID) {
+    public NewLanguageQuestion(long id, String question, String helpText, String answer,
+                               QuestionType type, boolean required, String query,
+                               long conditionalID) {
         this.id = id;
         this.question = question;
         this.helpText = helpText;
@@ -34,6 +39,7 @@ public class NewLanguageQuestion {
         this.required = required;
         this.type = type;
         this.conditionalID = conditionalID;
+        this.query = query;
     }
 
     /**
@@ -48,11 +54,11 @@ public class NewLanguageQuestion {
      * @return
      */
     public static NewLanguageQuestion generateFromResources(Context context, long id, int questionResID, int hintResID,
-                                                            QuestionType type, boolean required, long conditionalID) {
+                                                            QuestionType type, boolean required, String query, long conditionalID) {
         String question = context.getResources().getString(questionResID);
         String hint = context.getResources().getString(hintResID);
 
-        return new NewLanguageQuestion(id,question,hint,null,type,required, conditionalID);
+        return new NewLanguageQuestion(id,question,hint,null,type,required, query, conditionalID);
     }
 
     /**
@@ -66,9 +72,9 @@ public class NewLanguageQuestion {
      * @return
      */
     public static NewLanguageQuestion generateFromResources(Context context, long id, int questionResID, int hintResID,
-                                                            QuestionType type, boolean required) {
+                                                            QuestionType type, boolean required, String query) {
 
-        return generateFromResources( context, id, questionResID, hintResID, type, required, -1);
+        return generateFromResources( context, id, questionResID, hintResID, type, required, query, -1);
 
     }
 
@@ -77,22 +83,26 @@ public class NewLanguageQuestion {
      * @param json
      * @return
      */
-    public static NewLanguageQuestion generateFromJson(JSONObject json) {
+    public static NewLanguageQuestion parse(JSONObject json) {
         try {
             long id = json.getLong(ID);
             String question = json.getString(QUESTION);
             String answer = null;
-            if(json.has(NewLanguageQuestion.INPUT)) {
-                answer = json.getString(NewLanguageQuestion.INPUT);
+            if(json.has(NewLanguageQuestion.ANSWER)) {
+                answer = json.getString(NewLanguageQuestion.ANSWER);
             }
             String hint = json.getString(HELP_TEXT);
             boolean required = json.getBoolean(REQUIRED);
-            String typeStr = json.getString(TYPE);
+            String typeStr = json.getString(INPUT_TYPE);
             QuestionType type = QuestionType.get(typeStr);
-            long conditional = json.getLong(CONDITIONAL_ID);
-            return new NewLanguageQuestion(id,question,hint,answer,type,required, conditional);
+            long conditional = -1;
+            if(json.has(NewLanguageQuestion.CONDITIONAL_ID)) {
+                conditional = json.getLong(CONDITIONAL_ID);
+            }
+            String query = json.getString(QUERY);
+            return new NewLanguageQuestion(id,question,hint,answer,type,required, query, conditional);
         } catch (Exception e) {
-
+            Logger.e(NewLanguageQuestion.class.getSimpleName(),"Error parsing json: " + json.toString(),e);
         }
 
         return null;
@@ -109,11 +119,12 @@ public class NewLanguageQuestion {
             results.put(QUESTION, question);
             results.put(HELP_TEXT, helpText);
             if(null != answer) {
-                results.put(INPUT, answer);
+                results.put(ANSWER, answer);
             }
             results.put(REQUIRED, required);
-            results.put(TYPE, type.toString());
+            results.put(INPUT_TYPE, type.toString());
             results.put(CONDITIONAL_ID, conditionalID);
+            results.put(QUERY, query);
             return results;
         } catch (Exception e) {
 
@@ -131,9 +142,9 @@ public class NewLanguageQuestion {
             results.put(ID, id);
             results.put(QUESTION, question);
             results.put(HELP_TEXT, helpText);
-            results.put(INPUT, (null != answer) ? answer : "(NULL)");
+            results.put(ANSWER, (null != answer) ? answer : "(NULL)");
             results.put(REQUIRED, required);
-            results.put(QUERY, "");
+            results.put(QUERY, query);
         } catch (Exception e) {
 
         }
@@ -144,8 +155,8 @@ public class NewLanguageQuestion {
      * enum to identify question types and do string conversions
      */
     public enum QuestionType {
-        EDIT_TEXT("edit_text"),
-        CHECK_BOX("check_box");
+        EDIT_TEXT(NewLanguageAPI.INPUT_TYPE_STR),
+        CHECK_BOX(NewLanguageAPI.INPUT_TYPE_BOOLEAN);
 
         QuestionType(String s) {
             mName = s;

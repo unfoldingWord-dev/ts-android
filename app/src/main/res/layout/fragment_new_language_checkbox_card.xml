@@ -10,7 +10,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/language_others_meaning"
+        android:text=""
         android:layout_weight="1"
         android:layout_marginLeft="@dimen/dialog_content_margin"
         android:textSize="@dimen/title"

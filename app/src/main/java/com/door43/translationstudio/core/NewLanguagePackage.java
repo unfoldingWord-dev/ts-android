@@ -31,7 +31,6 @@ public class NewLanguagePackage {
     public static final String TRUE_STR = "YES";
     public static final String FALSE_STR = "NO";
 
-    public static int CURRENT_QUESTIONAIRE_ID = 1;
     public static int NEW_LANGUAGE_NAME_ID = 100;
 
     final public long questionaireID;
@@ -55,13 +54,13 @@ public class NewLanguagePackage {
      * @return
      * @throws JSONException
      */
-    public static NewLanguagePackage generateNew(List<NewLanguageQuestion> questions, String region) throws JSONException {
+    public static NewLanguagePackage generateNew(long questionaireID, List<NewLanguageQuestion> questions, String region) throws JSONException {
 
         JSONArray answers = questionsToJsonAnswers(questions);
         String requestID = UUID.randomUUID().toString();
         String tempLanguageCode = getNewLanguageCode();
 
-        return new NewLanguagePackage(CURRENT_QUESTIONAIRE_ID,tempLanguageCode, requestID, region, answers);
+        return new NewLanguagePackage(questionaireID,tempLanguageCode, requestID, region, answers);
     }
 
     /**

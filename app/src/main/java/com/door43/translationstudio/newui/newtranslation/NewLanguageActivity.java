@@ -16,8 +16,8 @@ import com.door43.translationstudio.newui.BaseActivity;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -40,6 +40,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
     private boolean mLanguageFinished = false;
     private NewLanguagePageFragment mFragment;
     private List<List<NewLanguageQuestion>> mQuestionPages;
+    private long mQuestionnaireID = -1;
 
 
     @Override
@@ -57,8 +58,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
             String answers = savedInstanceState.getString(STATE_NEW_LANGUAGE_ANSWERS);
             mQuestionPages = parseJsonStrIntoPages(answers);
         } else {
-            mQuestionPages = new ArrayList<>();
-            createQuestions();
+            mQuestionPages = readQuestionnaire();
         }
 
         // inject fragments
@@ -77,58 +77,46 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         return newPage;
     }
 
-    private void createQuestions() {
-        final boolean required = true;
-        final boolean not_required = false;
+    private List<List<NewLanguageQuestion>> readQuestionnaire() {
+        HashMap<Long,Integer> idIndex = new HashMap<>();
+        List<NewLanguageQuestion> questions = new ArrayList<>();
         List<NewLanguageQuestion> page = new ArrayList<>();
+        mQuestionPages = new ArrayList<>();
 
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 100, R.string.language_name_called, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required ));
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 101, R.string.language_name_meaning, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 100 ));
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 102, R.string.language_name_alternates, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 100 ));
-        page = pushPage(page);
+        try {
+            JSONObject questionnaire = (new NewLanguageAPI()).readQuestionnaire();
 
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 200, R.string.language_others_name, R.string.enter_answer, NewLanguageQuestion.QuestionType.CHECK_BOX, required ));
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 201, R.string.language_others_called, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 200 ));
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 202, R.string.language_others_who, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 200 ));
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 203, R.string.language_others_meaning, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 200 ));
-        page = pushPage(page);
+            JSONArray questionsJson = questionnaire.getJSONArray(NewLanguageAPI.QUESTIONAIRE_DATA);
+            JSONObject questionaireMeta = questionnaire.getJSONObject(NewLanguageAPI.QUESTIONNAIRE_META);
+            mQuestionnaireID = questionnaire.getLong(NewLanguageAPI.QUESTIONNAIRE_ID);
+            JSONArray questionaireOrder = questionaireMeta.getJSONArray(NewLanguageAPI.QUESTIONNAIRE_ORDER);
 
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 300, R.string.language_where_else_spoken, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required ));
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 400, R.string.language_where_slightly_different, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required ));
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 401, R.string.language_where_slightly_different_gone, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 400 ));
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 402, R.string.language_where_slightly_different_come, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 400 ));
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 403, R.string.language_where_slightly_different_name, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 400 ));
-        page = pushPage(page);
+            for(int i = 0; i < questionsJson.length(); i++) {
 
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 500, R.string.language_where_different, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required ));
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 501, R.string.language_where_different_understand, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 500 ));
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 502, R.string.language_where_different_gone, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 500 ));
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 503, R.string.language_where_different_come, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 500 ));
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 504, R.string.language_where_different_name, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 500 ));
-        page = pushPage(page);
+                // get question
+                JSONObject questionJson = questionsJson.getJSONObject(i);
+                NewLanguageQuestion questionObj = NewLanguageQuestion.parse(questionJson);
+                questions.add(questionObj);
+                idIndex.put(questionObj.id, i);
+            }
 
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 600, R.string.language_where_most_pure, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required ));
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 601, R.string.language_where_most_pure_why, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 600 ));
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 602, R.string.language_where_most_pure_gone, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 600 ));
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 603, R.string.language_where_most_pure_come, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 600 ));
-        page = pushPage(page);
+            for(int i = 0; i < questionaireOrder.length(); i++) {
+                JSONArray pageOrderJson = questionaireOrder.getJSONArray(i);
+                for(int j = 0; j < pageOrderJson.length(); j++) {
+                    Long id = pageOrderJson.getLong(j);
+                    int index = idIndex.get(id);
+                    page.add(questions.get(index));
+                }
+                page = pushPage(page);
+            }
 
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 700, R.string.language_where_spoken_badly, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required ));
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 701, R.string.language_where_spoken_badly_why, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 700 ));
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 702, R.string.language_where_spoken_badly_gone, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 700 ));
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 703, R.string.language_where_spoken_badly_come, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 700 ));
-        page = pushPage(page);
+        } catch (Exception e) {
+            Logger.e(TAG,"Error parsing questionnaire",e);
+            return null;
+        }
 
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 800, R.string.language_gateway_name, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required ));
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 801, R.string.language_gateway_understand, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 800 ));
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 802, R.string.language_gateway_understand_come, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 800 ));
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 803, R.string.language_gateway_understand_children_come, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, not_required, 800 ));
-        page = pushPage(page);
-
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 900, R.string.language_where_travel, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required ));
-        page.add(NewLanguageQuestion.generateFromResources(getApplication(), 1000, R.string.language_tourists, R.string.enter_answer, NewLanguageQuestion.QuestionType.EDIT_TEXT, required ));
-        pushPage(page);
-    }
+        return mQuestionPages;
+   }
 
     private boolean parseAnswers(String answersJson, int page) {
         try {
@@ -143,8 +131,8 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
                 if((null == question) || (originalQuestion.id != questionID)) {
                     return false; // response does not match original
                 } else {
-                    if(question.has(NewLanguageQuestion.INPUT)) {
-                        originalQuestion.answer = question.getString(NewLanguageQuestion.INPUT);
+                    if(question.has(NewLanguageQuestion.ANSWER)) {
+                        originalQuestion.answer = question.getString(NewLanguageQuestion.ANSWER);
                     } else {
                         originalQuestion.answer = null;
                     }
@@ -178,7 +166,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
             int length = answers.length();
             for(int i = 0; i < length; i++ ) {
                 JSONObject questionStr = (JSONObject) answers.get(i);
-                NewLanguageQuestion question = NewLanguageQuestion.generateFromJson(questionStr);
+                NewLanguageQuestion question = NewLanguageQuestion.parse(questionStr);
                 if(null != question) {
                     page.add(question);
                 }
@@ -220,17 +208,15 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
      * @return
      */
     private JSONArray getQuestions(int page) {
-        JSONArray answers = new JSONArray();
         try {
             List<NewLanguageQuestion> mPage = mQuestionPages.get(page);
             return getQuestions(mPage);
 
         } catch (Exception e) {
             Logger.w(TAG, "could not generate questions", e);
-            answers = null;
         }
 
-        return answers;
+        return null;
     }
 
     /**
@@ -319,7 +305,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
                 mergedQuestions.addAll(questions);
             }
 
-            NewLanguagePackage newLang = NewLanguagePackage.generateNew(mergedQuestions,"uncertain"); // TODO: 3/17/16 need to determine region for new language
+            NewLanguagePackage newLang = NewLanguagePackage.generateNew(mQuestionnaireID, mergedQuestions,"uncertain"); // TODO: 3/17/16 need to determine region for new language
             String newLanguageDataStr = newLang.toJson().toString(2);
 
             Intent data = new Intent();

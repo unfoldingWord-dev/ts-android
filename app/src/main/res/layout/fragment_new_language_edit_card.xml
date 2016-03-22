@@ -10,7 +10,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/language_others_meaning"
+        android:text=""
         android:layout_weight="1"
         android:layout_marginLeft="@dimen/dialog_content_margin"
         android:textSize="@dimen/title"
@@ -22,7 +22,7 @@
         android:layout_weight="1"
         android:id="@+id/edit_text"
         android:background="@drawable/edit_text"
-        android:hint="@string/enter_answer"
+        android:hint=""
         android:layout_marginLeft="@dimen/stacked_card_margin"
         android:textSize="@dimen/title"
         android:inputType="text"
