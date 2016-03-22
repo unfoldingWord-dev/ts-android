@@ -1,4 +1,4 @@
-package com.door43.translationstudio.newui.newtranslation;
+package com.door43.translationstudio.newui.newlanguage;
 
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -26,6 +26,8 @@ public class NewLanguagePageFragment extends BaseFragment {
     public static final String ARG_FIRST_PAGE = "first_page";
     public static final String ARG_LAST_PAGE = "last_page";
     public static final String TAG = NewLanguagePageFragment.class.getSimpleName();
+    public static final String EXTRA_NEW_LANGUAGE_FOCUS_POSITION = "extra_new_language_focus_position";
+    public static final String EXTRA_NEW_LANGUAGE_SELECTION = "extra_new_language_selection";
     private OnEventListener mListener;
     private View mRootView;
     private List<NewLanguageQuestion> mQuestions;
@@ -38,9 +40,14 @@ public class NewLanguagePageFragment extends BaseFragment {
         mRootView = inflater.inflate(R.layout.fragment_new_language, container, false);
 
         Bundle args = getArguments();
-        mQuestions = getAnswersFromArgs(args);
         mFirstPage = args.getBoolean(ARG_FIRST_PAGE);
         mLastPage = args.getBoolean(ARG_LAST_PAGE);
+
+        if(savedInstanceState != null) {
+            mQuestions = getAnswersFromArgs(savedInstanceState);
+        } else {
+            mQuestions = getAnswersFromArgs(args);
+        }
 
         mQuestionIndex = NewLanguagePageFragment.generateIdMap(mQuestions);
 
@@ -48,6 +55,12 @@ public class NewLanguagePageFragment extends BaseFragment {
         mAdapter = new NewLanguagePageAdapter();
         mAdapter.setContentsView(layout);
         mAdapter.loadQuestions(mQuestions);
+
+        if(savedInstanceState != null) { // need to restore focus
+            int focusedPosition = savedInstanceState.getInt(EXTRA_NEW_LANGUAGE_FOCUS_POSITION);
+            int selection = savedInstanceState.getInt(EXTRA_NEW_LANGUAGE_SELECTION);
+            mAdapter.restoreFocus(focusedPosition, selection);
+        }
 
         Button nextButton = (Button) mRootView.findViewById(R.id.next_button);
         Button doneButton = (Button) mRootView.findViewById(R.id.done_button);
@@ -74,6 +87,7 @@ public class NewLanguagePageFragment extends BaseFragment {
             previousButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    saveAnswers();
                     getListener().previousPage(NewLanguageActivity.getQuestions(mQuestions).toString());
                 }
             });
@@ -82,6 +96,20 @@ public class NewLanguagePageFragment extends BaseFragment {
         }
 
         return mRootView;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        mAdapter.cleanup();
+        String questionsJson = NewLanguageActivity.getQuestions(mQuestions).toString();
+        outState.putString(NewLanguageActivity.EXTRA_NEW_LANGUAGE_QUESTIONS, questionsJson);
+        outState.putInt(EXTRA_NEW_LANGUAGE_FOCUS_POSITION, mAdapter.getFocusedPosition());
+        outState.putInt(EXTRA_NEW_LANGUAGE_SELECTION, mAdapter.getSelection());
+        super.onSaveInstanceState(outState);
+    }
+
+    public void saveAnswers() {
+        mAdapter.updateAnswers();
     }
 
     /**
@@ -136,7 +164,7 @@ public class NewLanguagePageFragment extends BaseFragment {
             NewLanguageQuestion conditionalQuestion = getQuestionPositionByID(mQuestions,mQuestionIndex,question.conditionalID);
             if(conditionalQuestion != null) {
                 if (conditionalQuestion.type == NewLanguageQuestion.QuestionType.INPUT_TYPE_BOOLEAN) {
-                    return NewLanguagePackage.isCheckBoxAnswerTrue(conditionalQuestion);
+                    return conditionalQuestion.isBooleanAnswerTrue();
                 } else {
                     return conditionalQuestion.answer != null; // should have answer if question it depends on has answer
                 }
@@ -149,6 +177,8 @@ public class NewLanguagePageFragment extends BaseFragment {
      * go through all the questions and validate the answers
      */
     private void validateAnswers() {
+        saveAnswers();
+
         boolean missingAnswers = false;
         boolean valid = true;
         NewLanguageQuestion incompleteQuestion = null;
@@ -178,7 +208,7 @@ public class NewLanguagePageFragment extends BaseFragment {
             warnAnswersMissingBeforeContinue(missingAnswerQuestion.question, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                doNext();
+                     doNext();
                 }
             });
 
@@ -196,8 +226,8 @@ public class NewLanguagePageFragment extends BaseFragment {
     private boolean hasAnswer(NewLanguageQuestion question) {
         if(null == question.answer) {
             if(question.type == NewLanguageQuestion.QuestionType.INPUT_TYPE_BOOLEAN) {
-                boolean checked = NewLanguagePackage.isCheckBoxAnswerTrue(question); // checked always has a state, answer of null is false
-                question.answer = NewLanguagePackage.getCheckBoxAnswer(checked); // normalize answer (replace null value)
+                boolean checked = question.isBooleanAnswerTrue(); // checked always has a state, answer of null is false
+                question.setAnswer(checked); // normalize answer (replace null value)
             } else {
                 return false;
             }

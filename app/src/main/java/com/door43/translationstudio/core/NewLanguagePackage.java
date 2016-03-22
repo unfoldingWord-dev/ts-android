@@ -2,6 +2,7 @@ package com.door43.translationstudio.core;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
+import com.door43.util.Security;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
@@ -28,9 +29,6 @@ public class NewLanguagePackage {
     public static final String TAG = NewLanguagePackage.class.getSimpleName();
     public static final String REGION = "region";
 
-    public static final String TRUE_STR = "YES";
-    public static final String FALSE_STR = "NO";
-
     public static int NEW_LANGUAGE_NAME_ID = 100;
 
     final public long questionaireID;
@@ -54,7 +52,7 @@ public class NewLanguagePackage {
      * @return
      * @throws JSONException
      */
-    public static NewLanguagePackage generateNew(long questionaireID, List<NewLanguageQuestion> questions, String region) throws JSONException {
+    public static NewLanguagePackage newInstance(long questionaireID, List<NewLanguageQuestion> questions, String region) throws JSONException {
 
         JSONArray answers = questionsToJsonAnswers(questions);
         String requestID = UUID.randomUUID().toString();
@@ -206,36 +204,6 @@ public class NewLanguagePackage {
     }
 
     /**
-     * test if asnwer to question is empty
-     * @param question
-     * @return
-     */
-    static public boolean isAnswerEmpty(NewLanguageQuestion question) {
-        return (null == question.answer ) || question.answer.isEmpty();
-    }
-
-    /**
-     * test to see if checkbox is true (checked), null answer is false
-     * @param question
-     * @return
-     */
-    static public boolean isCheckBoxAnswerTrue(NewLanguageQuestion question) {
-        if(question != null) {
-            return TRUE_STR.equals(question.answer);
-        }
-        return false;
-    }
-
-    /**
-     * get answer string for checkbox state
-     * @param isChecked
-     * @return
-     */
-    static public String getCheckBoxAnswer(boolean isChecked) {
-        return isChecked ? TRUE_STR : FALSE_STR;
-    }
-
-    /**
      * return true if this dependency is met.
      * If editText then answer must be not null or empty.
      * If checkbos then answer must be true.
@@ -245,10 +213,10 @@ public class NewLanguagePackage {
     static public boolean isDependencyMet(NewLanguageQuestion dependency) {
         boolean enable = true;
         if(dependency != null) {
-            if(!isAnswerEmpty(dependency)) {
+            if(!dependency.isAnswerEmpty()) {
 
                 if(dependency.type == NewLanguageQuestion.QuestionType.INPUT_TYPE_BOOLEAN) {
-                    enable = NewLanguagePackage.isCheckBoxAnswerTrue(dependency);
+                    enable = dependency.isBooleanAnswerTrue();
                 } else {
                     enable = true;
                 }
@@ -271,34 +239,8 @@ public class NewLanguagePackage {
 
         long ms = (new Date()).getTime();
         String uniqueString = androidId + ms;
-        String sha1Value = getSha1Hex(uniqueString);
+        String sha1Value = Security.sha1(uniqueString);
         languageCode += sha1Value.substring(0, 6);
         return languageCode.toLowerCase();
-    }
-
-    /**
-     * generate sha1 for string
-     * @param clearString
-     * @return
-     */
-    public static String getSha1Hex(String clearString)
-    {
-        try
-        {
-            MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
-            messageDigest.update(clearString.getBytes("UTF-8"));
-            byte[] bytes = messageDigest.digest();
-            StringBuilder buffer = new StringBuilder();
-            for (byte b : bytes)
-            {
-                buffer.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
-            }
-            return buffer.toString();
-        }
-        catch (Exception ignored)
-        {
-            ignored.printStackTrace();
-            return null;
-        }
     }
 }

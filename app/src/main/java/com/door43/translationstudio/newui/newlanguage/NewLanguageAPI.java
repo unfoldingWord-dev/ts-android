@@ -1,4 +1,4 @@
-package com.door43.translationstudio.newui.newtranslation;
+package com.door43.translationstudio.newui.newlanguage;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.core.NewLanguageQuestion;

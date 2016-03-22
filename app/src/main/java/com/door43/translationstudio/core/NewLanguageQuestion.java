@@ -3,7 +3,7 @@ package com.door43.translationstudio.core;
 import android.content.Context;
 
 import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.newui.newtranslation.NewLanguageAPI;
+import com.door43.translationstudio.newui.newlanguage.NewLanguageAPI;
 
 import org.json.JSONObject;
 
@@ -19,6 +19,9 @@ public class NewLanguageQuestion {
     public static final String QUERY_KEY = "query";
     public static final String INPUT_TYPE_KEY = "input";
     public static final String CONDITIONAL_ID_KEY = "conditional_id";
+
+    public static final String TRUE_STR = "YES";
+    public static final String FALSE_STR = "NO";
 
     public long id;
     public String question;
@@ -53,8 +56,8 @@ public class NewLanguageQuestion {
      * @param conditionalID
      * @return
      */
-    public static NewLanguageQuestion generateFromResources(Context context, long id, int questionResID, int hintResID,
-                                                            QuestionType type, boolean required, String query, long conditionalID) {
+    public static NewLanguageQuestion newInstance(Context context, long id, int questionResID, int hintResID,
+                                                  QuestionType type, boolean required, String query, long conditionalID) {
         String question = context.getResources().getString(questionResID);
         String hint = context.getResources().getString(hintResID);
 
@@ -71,10 +74,10 @@ public class NewLanguageQuestion {
      * @param required
      * @return
      */
-    public static NewLanguageQuestion generateFromResources(Context context, long id, int questionResID, int hintResID,
-                                                            QuestionType type, boolean required, String query) {
+    public static NewLanguageQuestion newInstance(Context context, long id, int questionResID, int hintResID,
+                                                  QuestionType type, boolean required, String query) {
 
-        return generateFromResources( context, id, questionResID, hintResID, type, required, query, -1);
+        return newInstance(context, id, questionResID, hintResID, type, required, query, -1);
 
     }
 
@@ -155,6 +158,42 @@ public class NewLanguageQuestion {
     }
 
     /**
+     * set answer string for boolean state
+     * @param truth
+     * @return
+     */
+    public void setAnswer(boolean truth) {
+        this.answer = truth ? TRUE_STR : FALSE_STR;
+    }
+
+    /**
+     * test to see if boolean is true, null answer is treated as false
+     * @return
+     */
+    public boolean isBooleanAnswerTrue() {
+        return TRUE_STR.equals(answer);
+    }
+
+    /**
+     * get answer string and replace null with ""
+     * @return
+     */
+    public String getAnswerNotNull() {
+        if(null == answer) {
+            return "";
+        }
+        return answer;
+    }
+
+    /**
+     * test if answer to question is empty (either null or empty string)
+     * @return
+     */
+    public boolean isAnswerEmpty() {
+        return (null == answer ) || answer.isEmpty();
+    }
+
+     /**
      * enum to identify question types and do string conversions
      */
     public enum QuestionType {

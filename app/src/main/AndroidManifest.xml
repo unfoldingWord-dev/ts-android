@@ -136,7 +136,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".newui.newtranslation.NewTargetTranslationActivity"
+            android:name=".newui.newlanguage.NewTargetTranslationActivity"
             android:label="@string/title_activity_new_target_translation"
             android:parentActivityName=".newui.home.HomeActivity">
             <meta-data
@@ -157,7 +157,7 @@
             android:label="@string/title_activity_publish"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".newui.newtranslation.NewLanguageActivity"
+            android:name=".newui.newlanguage.NewLanguageActivity"
             android:label="@string/title_activity_new_language"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity

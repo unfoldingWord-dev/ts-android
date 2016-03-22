@@ -1,13 +1,12 @@
-package com.door43.translationstudio.newui.newtranslation;
+package com.door43.translationstudio.newui.newlanguage;
 
-import android.text.Editable;
-import android.text.TextWatcher;
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -28,11 +27,13 @@ import java.util.List;
 public class NewLanguagePageAdapter extends BaseAdapter {
 
     public static final String TAG = NewLanguagePageAdapter.class.getSimpleName();
-    public static final int UN_INIT = 0xFFFFFFFE;
     private List<NewLanguageQuestion> mQuestions = new ArrayList<>();
     private HashMap<Long,Integer> mQuestionIndex;
+    private HashMap<Integer,ViewHolder> mViewHolders = new HashMap<>();
     private int mSelectedPosition = -1;
     private LinearLayout mContentsView = null;
+    private int mFocusedPosition = -1;
+    private int mSelection = -1;
 
     /**
      * loads list of questions into adapter
@@ -48,28 +49,62 @@ public class NewLanguagePageAdapter extends BaseAdapter {
         }
     }
 
+    public void restoreFocus(final int focusedPosition, final int selection) {
+
+        mContentsView.post(new Runnable() { // set focus after children have been shown
+            @Override
+            public void run() {
+                mFocusedPosition = focusedPosition;
+                mSelection = selection;
+
+                if(mViewHolders.containsKey(mFocusedPosition)) {
+                    ViewHolder holder = mViewHolders.get(mFocusedPosition);
+                    if(holder.answer != null) {
+                        holder.answer.setSelection(mSelection);
+
+                        boolean gotFocus = holder.answer.requestFocus();
+                        InputMethodManager mgr = (InputMethodManager)
+                                mContentsView.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        mgr.showSoftInput(holder.answer, InputMethodManager.SHOW_IMPLICIT);
+                    }
+                }
+            }
+        });
+    }
+
     /**
-     * sets the listView for this adapture
+     * cleanup
+     */
+    public void cleanup() {
+        updateAnswers();
+        int focusedPosition = mFocusedPosition; // cache value before destroy
+        mContentsView.removeAllViews(); // if this is not removed the old children remain on the display and cause strange side effects
+        mFocusedPosition = focusedPosition; // restore
+    }
+
+    public void updateAnswers() {
+        for(int i = 0; i < mQuestions.size(); i++){
+            ViewHolder holder = mViewHolders.get(i);
+            NewLanguageQuestion question = getItem(i);
+            if(holder.answer != null) {
+                question.answer = holder.answer.getText().toString();
+                if(i == mFocusedPosition) {
+                    mSelection = holder.answer.getSelectionStart();
+                }
+            }
+            if(holder.checkBoxAnswer != null) {
+                boolean checked = holder.checkBoxAnswer.isChecked();
+                question.setAnswer(checked);
+            }
+        }
+    }
+
+    /**
+     * sets the listView for this adaptor
      * @param listView
      */
     public void setContentsView(LinearLayout listView) {
         mContentsView = listView;
-    }
-
-   /**
-     * go through children of listView and update their enable state
-     * @param exceptView - view to skip (likely the dependent question view)
-     */
-    private void updateDisplayedQuestions(View exceptView) {
-
-        if(mContentsView != null) {
-            for (int i = 0; i < mContentsView.getChildCount(); i++) {
-                View v = mContentsView.getChildAt(i);
-                if ((v != null) && (v != exceptView)) {
-                    setEnableForView(v);
-                }
-            }
-        }
     }
 
     /**
@@ -84,20 +119,6 @@ public class NewLanguagePageAdapter extends BaseAdapter {
                 enableQuestion(v, holder, shouldEnable(item));
             }
         }
-    }
-
-    /**
-     * checks to see if there are other views that are dependent on this view.
-     * @param id
-     * @return
-     */
-    private boolean hasDependencies(long id) {
-        for (NewLanguageQuestion question : mQuestions) {
-            if(question.conditionalID == id) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -153,51 +174,29 @@ public class NewLanguagePageAdapter extends BaseAdapter {
                 layoutResId = R.layout.fragment_new_language_edit_card;
             }
 
-            // TODO: 3/14/16 add check to see if we can reuse previous v
             v = LayoutInflater.from(parent.getContext()).inflate(layoutResId, null);
             holder = new ViewHolder(v, position);
-            final View thisView = v;
+            mViewHolders.put(position,holder);
 
             holder.question.setText(item.question);
-
-            final boolean hasDependencies = hasDependencies(item.id);
 
             enableQuestion(v, holder, shouldEnable(item));
 
             if (item.type == NewLanguageQuestion.QuestionType.INPUT_TYPE_BOOLEAN) {
-                holder.checkBoxAnswer.setChecked(NewLanguagePackage.isCheckBoxAnswerTrue(item));
-                holder.checkBoxAnswer.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        item.answer = NewLanguagePackage.getCheckBoxAnswer(isChecked);
-                        if (hasDependencies) {
-                            updateDisplayedQuestions(thisView);
-                        }
-                    }
-                });
-            } else {
+                holder.checkBoxAnswer.setChecked(item.isBooleanAnswerTrue());
+             } else {
                 holder.answer.setHint(item.helpText);
-                if (item.answer != null) {
-                    holder.answer.setText(item.answer);
-                }
-                holder.answer.addTextChangedListener(new TextWatcher() {
-                    @Override
-                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                holder.answer.setText(item.getAnswerNotNull());
 
+                holder.answer.setOnFocusChangeListener(new View.OnFocusChangeListener() {
                     @Override
-                    public void onTextChanged(CharSequence s, int start, int before, int count) {
-                        boolean intiallyEmpty = NewLanguagePackage.isAnswerEmpty(item);
-                        item.answer = s.toString();
-                        boolean currentlyEmpty = NewLanguagePackage.isAnswerEmpty(item);
-                        boolean emptyStateChanged = (intiallyEmpty != currentlyEmpty);
-
-                        if (hasDependencies && emptyStateChanged) {
-                            updateDisplayedQuestions(thisView);
+                    public void onFocusChange(View v, boolean hasFocus) {
+                        if (hasFocus) {
+                            mFocusedPosition = position;
+                        } else if (mFocusedPosition == position) { //see if we deselected this position
+                            mFocusedPosition = -1;
                         }
                     }
-
-                    @Override
-                    public void afterTextChanged(Editable s) {}
                 });
             }
         }
@@ -251,6 +250,14 @@ public class NewLanguagePageAdapter extends BaseAdapter {
             holder.checkBoxAnswer.setFocusable(enable);
             holder.checkBoxAnswer.setFocusableInTouchMode(enable);
         }
+    }
+
+    public int getFocusedPosition() {
+        return mFocusedPosition;
+    }
+
+    public int getSelection() {
+        return mSelection;
     }
 
     private static class ViewHolder {

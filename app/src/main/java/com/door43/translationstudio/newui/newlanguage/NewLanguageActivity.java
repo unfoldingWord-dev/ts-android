@@ -1,8 +1,9 @@
-package com.door43.translationstudio.newui.newtranslation;
+package com.door43.translationstudio.newui.newlanguage;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -30,10 +31,11 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
 
     private static final String STATE_LANGUAGE_STEP = "state_language_step";
     private static final String STATE_NEW_LANGUAGE_FINISHED = "state_new_language_finished";
-    private static final String STATE_NEW_LANGUAGE_ANSWERS = "state_new_language_answers";
+    private static final String STATE_NEW_LANGUAGE_QUESTIONS = "state_new_language_questions";
 
     public static final String EXTRA_CALLING_ACTIVITY = "extra_calling_activity";
     public static final String EXTRA_NEW_LANGUAGE_QUESTIONS = "extra_new_language_questions";
+    public static final String STATE_NEW_LANGUAGE_QUESTION_ID = "state_new_language_question_id";
 
     private int mCurrentPage = 0;
     public static final int ACTIVITY_HOME = 1001;
@@ -53,10 +55,11 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         if(savedInstanceState != null) {
-            mCurrentPage = savedInstanceState.getInt(STATE_LANGUAGE_STEP, 0);
+            mCurrentPage = savedInstanceState.getInt(STATE_LANGUAGE_STEP, -1);
             mLanguageFinished = savedInstanceState.getBoolean(STATE_NEW_LANGUAGE_FINISHED, false);
-            String answers = savedInstanceState.getString(STATE_NEW_LANGUAGE_ANSWERS);
-            mQuestionPages = parseJsonStrIntoPages(answers);
+            String questions = savedInstanceState.getString(STATE_NEW_LANGUAGE_QUESTIONS);
+            mQuestionPages = parseJsonStrIntoPages(questions);
+            mQuestionnaireID = savedInstanceState.getLong(STATE_NEW_LANGUAGE_QUESTION_ID, -1);
         } else {
             mQuestionPages = readQuestionnaire();
         }
@@ -70,6 +73,16 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
             }
         }
      }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putInt(STATE_LANGUAGE_STEP, mCurrentPage);
+        outState.putBoolean(STATE_NEW_LANGUAGE_FINISHED, mLanguageFinished);
+        String questions = getQuestionPages().toString();
+        outState.putString(STATE_NEW_LANGUAGE_QUESTIONS, questions);
+        outState.putLong(STATE_NEW_LANGUAGE_QUESTION_ID,mQuestionnaireID);
+        super.onSaveInstanceState(outState);
+    }
 
     private List<NewLanguageQuestion> pushPage(List<NewLanguageQuestion> page) {
         mQuestionPages.add(page);
@@ -265,10 +278,25 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
     }
 
     @Override
-    public void onBackPressed() {
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // Respond to the action bar's Up/Home button
+            case android.R.id.home:
+                goBack();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void goBack(){
         Intent data = new Intent();
         setResult(RESULT_CANCELED, data);
         finish();
+    }
+
+    @Override
+    public void onBackPressed() {
+        goBack();
     }
 
     /**
@@ -305,7 +333,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
                 mergedQuestions.addAll(questions);
             }
 
-            NewLanguagePackage newLang = NewLanguagePackage.generateNew(mQuestionnaireID, mergedQuestions,"uncertain"); // TODO: 3/17/16 need to determine region for new language
+            NewLanguagePackage newLang = NewLanguagePackage.newInstance(mQuestionnaireID, mergedQuestions, "uncertain"); // TODO: 3/17/16 need to determine region for new language
             String newLanguageDataStr = newLang.toJson().toString(2);
 
             Intent data = new Intent();
@@ -370,7 +398,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         public void onSaveInstanceState(Bundle out) {
             out.putInt(STATE_LANGUAGE_STEP, mCurrentPage);
             out.putBoolean(STATE_NEW_LANGUAGE_FINISHED, mLanguageFinished);
-            out.putString(STATE_NEW_LANGUAGE_ANSWERS, getQuestionPages().toString());
+            out.putString(STATE_NEW_LANGUAGE_QUESTIONS, getQuestionPages().toString());
         }
     }
 }

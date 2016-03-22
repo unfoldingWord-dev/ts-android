@@ -1,4 +1,4 @@
-package com.door43.translationstudio.newui.newtranslation;
+package com.door43.translationstudio.newui.newlanguage;
 
 import android.app.SearchManager;
 import android.content.Context;
@@ -28,6 +28,8 @@ import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.newui.newtranslation.ProjectListFragment;
+import com.door43.translationstudio.newui.newtranslation.TargetLanguageListFragment;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
@@ -49,19 +51,20 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     private Searchable mFragment;
     private String mNewTargetTranslationId = null;
     private String mNewLanguageData = null;
+    private ImageButton mNewLanguageButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_target_translation);
 
-        ImageButton newLanguageButton = (ImageButton) findViewById(R.id.newLanguageRequest);
-        if (null != newLanguageButton) {
-            newLanguageButton.setOnClickListener(new View.OnClickListener() {
+        mNewLanguageButton = (ImageButton) findViewById(R.id.newLanguageRequest);
+        if (null != mNewLanguageButton) {
+            mNewLanguageButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                Intent requestNewLangaugeIntent = new Intent(NewTargetTranslationActivity.this,
-                        NewLanguageActivity.class);
+                    Intent requestNewLangaugeIntent = new Intent(NewTargetTranslationActivity.this,
+                            NewLanguageActivity.class);
                     requestNewLangaugeIntent.putExtra(NewLanguageActivity.EXTRA_CALLING_ACTIVITY, NewLanguageActivity.ACTIVITY_HOME);
                     startActivityForResult(requestNewLangaugeIntent, NEW_LANGUAGE_REQUEST);
                 }
@@ -285,6 +288,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
         if (NEW_LANGUAGE_REQUEST == requestCode) {
             if(RESULT_OK == resultCode) {
                 String newLanguageData = data.getStringExtra(NewTargetTranslationActivity.EXTRA_NEW_LANGUAGE_DATA);
+                mNewLanguageButton.setVisibility(View.INVISIBLE);
                 useNewLanguage(newLanguageData);
             }
         }

@@ -16,7 +16,6 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 
-import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.TargetLanguageUtility;
@@ -29,7 +28,7 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.newui.BaseActivity;
-import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
+import com.door43.translationstudio.newui.newlanguage.NewTargetTranslationActivity;
 import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.AppContext;
