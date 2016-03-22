@@ -70,8 +70,8 @@ public class TargetTranslation {
     private final TranslationType translationType;
     private final String translationTypeName;
 
-    private Resource.Type resourceType = null;
-    private String resourceTypeName = null;
+    private String resourceSlug = null;
+    private String resourceName = null;
 
     private TranslationFormat mTranslationFormat;
 
@@ -102,8 +102,8 @@ public class TargetTranslation {
         if(this.translationType == TranslationType.TEXT) {
             // resource
             JSONObject resourceJson = this.manifest.getJSONObject("resource");
-            this.resourceType = Resource.Type.get(resourceJson.getString("id"));
-            this.resourceTypeName = Manifest.valueExists(resourceJson, "name") ? resourceJson.getString("name") : this.resourceType.toString().toUpperCase();
+            this.resourceSlug = resourceJson.getString("id");
+            this.resourceName = Manifest.valueExists(resourceJson, "name") ? resourceJson.getString("name") : this.resourceSlug.toUpperCase();
         }
 
         mTranslationFormat = readTranslationFormat();
@@ -114,41 +114,31 @@ public class TargetTranslation {
      * @return
      */
     public String getId() {
-        return generateTargetTranslationId(this.targetLanguageId, this.projectId, this.translationType, this.resourceType);
+        return generateTargetTranslationId(this.targetLanguageId, this.projectId, this.translationType, this.resourceSlug);
     }
 
     /**
      * Returns a properly formatted target translation id
-     * @param targetLanguageId
-     * @param projectId
+     * @param targetLanguageSlug
+     * @param projectSlug
      * @param translationType
-     * @param resourceType
+     * @param resourceSlug
      * @return
      */
-    public static String generateTargetTranslationId(String targetLanguageId, String projectId, TranslationType translationType, Resource.Type resourceType) {
+    public static String generateTargetTranslationId(String targetLanguageSlug, String projectSlug, TranslationType translationType, String resourceSlug) {
+        String id = targetLanguageSlug + "_" + projectSlug + "_" + translationType;
         if(translationType == TranslationType.TEXT) {
-            if(resourceType == Resource.Type.UNLOCKED_DYNAMIC_BIBLE) {
-                // udb
-                return GLOBAL_PROJECT_ID + "-" + projectId + "_" + resourceType + "-" + targetLanguageId;
-            } else {
-                // ulb, obs, reg
-                return GLOBAL_PROJECT_ID + "-" + projectId + "-" + targetLanguageId;
-            }
-        } else if(translationType == TranslationType.TRANSLATION_ACADEMY || translationType == TranslationType.TRANSLATION_WORD) {
-            // ta, tw
-            return GLOBAL_PROJECT_ID + "-" + projectId + "-" + targetLanguageId;
-        } else {
-            // tn, tq
-            return GLOBAL_PROJECT_ID + "-" + projectId + "_" + resourceType + "-" + targetLanguageId;
+            id += "_" + resourceSlug;
         }
+        return id.toLowerCase();
     }
 
     /**
-     * Returns the resource type/slug
+     * Returns the resource slug
      * @return
      */
-    public Resource.Type getResourceType() {
-        return this.resourceType;
+    public String getResourceSlug() {
+        return this.resourceSlug;
     }
 
     /**
@@ -283,13 +273,13 @@ public class TargetTranslation {
      * @param targetLanguage
      * @param projectId
      * @param translationType
-     * @param resourceType
+     * @param resourceSlug
      * @param packageInfo
      * @param targetTranslationDir
      * @return
      * @throws Exception
      */
-    public static TargetTranslation create(NativeSpeaker translator, TranslationFormat translationFormat, TargetLanguage targetLanguage, String projectId, TranslationType translationType, Resource.Type resourceType, PackageInfo packageInfo, File targetTranslationDir) throws Exception {
+    public static TargetTranslation create(NativeSpeaker translator, TranslationFormat translationFormat, TargetLanguage targetLanguage, String projectId, TranslationType translationType, String resourceSlug, PackageInfo packageInfo, File targetTranslationDir) throws Exception {
         targetTranslationDir.mkdirs();
         Manifest manifest = Manifest.generate(targetTranslationDir);
 
@@ -310,7 +300,7 @@ public class TargetTranslation {
         manifest.put(FIELD_TARGET_LANGUAGE, targetLanguage.toJson());
         manifest.put(FIELD_FORMAT, translationFormat);
         JSONObject resourceJson = new JSONObject();
-        resourceJson.put("id", resourceType);
+        resourceJson.put("id", resourceSlug);
         manifest.put(FIELD_RESOURCE, resourceJson);
 
         // return the new target translation

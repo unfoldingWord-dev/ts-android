@@ -92,11 +92,11 @@ public class Translator {
      * @param targetLanguage
      * @param projectId
      * @param translationType
-     * @param resourceType
+     * @param resourceSlug
      * @param translationFormat
      * @return
      */
-    public TargetTranslation createTargetTranslation(NativeSpeaker translator, TargetLanguage targetLanguage, String projectId, TranslationType translationType, Resource.Type resourceType, TranslationFormat translationFormat) {
+    public TargetTranslation createTargetTranslation(NativeSpeaker translator, TargetLanguage targetLanguage, String projectId, TranslationType translationType, String resourceSlug, TranslationFormat translationFormat) {
         // TRICKY: force deprecated formats to use new formats
         if(translationFormat == TranslationFormat.USX) {
             translationFormat = TranslationFormat.USFM;
@@ -104,11 +104,11 @@ public class Translator {
             translationFormat = TranslationFormat.MARKDOWN;
         }
 
-        String targetLanguageId = TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), projectId, translationType, resourceType);
+        String targetLanguageId = TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), projectId, translationType, resourceSlug);
         File targetTranslationDir = new File(this.mRootDir, targetLanguageId);
         try {
             PackageInfo pInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
-            return TargetTranslation.create(translator, translationFormat, targetLanguage, projectId, translationType, resourceType, pInfo, targetTranslationDir);
+            return TargetTranslation.create(translator, translationFormat, targetLanguage, projectId, translationType, resourceSlug, pInfo, targetTranslationDir);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -257,8 +257,9 @@ public class Translator {
     public TargetTranslation importDraftTranslation(NativeSpeaker translator, SourceTranslation draftTranslation, Library library) {
         TargetLanguage targetLanguage = library.getTargetLanguage(draftTranslation.sourceLanguageSlug);
         // TRICKY: for now android only supports "regular" or "obs" "text" translations
-        Resource.Type resourceType = draftTranslation.projectSlug.equals("obs") ? Resource.Type.OPEN_BIBLE_STORIES : Resource.Type.REGULAR;
-        TargetTranslation t = createTargetTranslation(translator, targetLanguage, draftTranslation.projectSlug, TranslationType.TEXT, resourceType, draftTranslation.getFormat());
+        // TODO: we should technically check if the project contains more than one resource when determining if it needs a regular slug or not.
+        String resourceSlug = draftTranslation.projectSlug.equals("obs") ? "obs" : Resource.REGULAR_SLUG;
+        TargetTranslation t = createTargetTranslation(translator, targetLanguage, draftTranslation.projectSlug, TranslationType.TEXT, resourceSlug, draftTranslation.getFormat());
         try {
             if (t != null) {
                 // commit local changes to history
@@ -501,11 +502,11 @@ public class Translator {
                         } else {
                             format = TranslationFormat.USFM;
                         }
-                        File targetTranslationDir = new File(mRootDir, TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), project.getId(), TranslationType.TEXT, Resource.Type.REGULAR));
+                        File targetTranslationDir = new File(mRootDir, TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), project.getId(), TranslationType.TEXT, Resource.REGULAR_SLUG));
                         try {
                             PackageInfo pInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
                             // TRICKY: android only supports creating regular text translations
-                            targetTranslation = TargetTranslation.create(AppContext.getProfile().getNativeSpeaker(), format, targetLanguage, project.getId(), TranslationType.TEXT, Resource.Type.REGULAR, pInfo, targetTranslationDir);
+                            targetTranslation = TargetTranslation.create(AppContext.getProfile().getNativeSpeaker(), format, targetLanguage, project.getId(), TranslationType.TEXT, Resource.REGULAR_SLUG, pInfo, targetTranslationDir);
                         } catch (Exception e) {
                             Logger.e(Translator.class.getName(), "Failed to create target translation from DokuWiki", e);
                         }
