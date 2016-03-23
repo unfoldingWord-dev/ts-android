@@ -153,19 +153,28 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             // TODO: 3/2/2016 eventually the format will be specified in the project
             SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(projectId, sourceLanguage.getId());
             Resource resource = AppContext.getLibrary().getResource(sourceTranslation);
-            TargetTranslation targetTranslation = AppContext.getTranslator().createTargetTranslation(AppContext.getProfile().getNativeSpeaker(), mSelectedTargetLanguage, projectId, TranslationType.TEXT, resourceType, sourceTranslation.getFormat());
+            final TargetTranslation targetTranslation = AppContext.getTranslator().createTargetTranslation(AppContext.getProfile().getNativeSpeaker(), mSelectedTargetLanguage, projectId, TranslationType.TEXT, resourceType, sourceTranslation.getFormat());
             if(targetTranslation != null) {
 
                 if(mNewLanguageData != null) {
                     saveNewLanguageData(targetTranslation, mNewLanguageData);
+
+                    String msg = String.format(AppContext.context().getResources().getString(R.string.new_language_confirmation), targetTranslation.getTargetLanguageId(), targetTranslation.getTargetLanguageName());
+
+                    CustomAlertDialog.Create(this)
+                            .setTitle(R.string.language)
+                            .setMessage(msg)
+                            .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    newProjectCreated(targetTranslation);
+                                }
+                            })
+                            .setNegativeButton(R.string.title_cancel, null)
+                            .show("NewLang");
+                } else {
+                    newProjectCreated(targetTranslation);
                 }
-
-                mNewTargetTranslationId = targetTranslation.getId();
-
-                Intent data = new Intent();
-                data.putExtra(EXTRA_TARGET_TRANSLATION_ID, mNewTargetTranslationId);
-                setResult(RESULT_OK, data);
-                finish();
             } else {
                 AppContext.getTranslator().deleteTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId, TranslationType.TEXT, resourceType));
                 Intent data = new Intent();
@@ -179,6 +188,15 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             setResult(RESULT_DUPLICATE, data);
             finish();
         }
+    }
+
+    private void newProjectCreated(TargetTranslation targetTranslation) {
+        mNewTargetTranslationId = targetTranslation.getId();
+
+        Intent data = new Intent();
+        data.putExtra(EXTRA_TARGET_TRANSLATION_ID, mNewTargetTranslationId);
+        setResult(RESULT_OK, data);
+        finish();
     }
 
     /**

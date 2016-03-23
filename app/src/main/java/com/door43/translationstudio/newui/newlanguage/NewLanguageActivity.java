@@ -68,6 +68,9 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         if(findViewById(R.id.fragment_container) != null) {
             if(savedInstanceState != null) {
                 mFragment = (NewLanguagePageFragment)getFragmentManager().findFragmentById(R.id.fragment_container);
+                if(mFragment != null)  {
+                    mFragment.setOnEventListener(this); // restore listener
+                }
             } else {
                 doPage(mCurrentPage, null);
             }

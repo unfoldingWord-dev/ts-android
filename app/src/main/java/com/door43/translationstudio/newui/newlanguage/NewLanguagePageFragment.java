@@ -225,12 +225,7 @@ public class NewLanguagePageFragment extends BaseFragment {
      */
     private boolean hasAnswer(NewLanguageQuestion question) {
         if(null == question.answer) {
-            if(question.type == NewLanguageQuestion.QuestionType.INPUT_TYPE_BOOLEAN) {
-                boolean checked = question.isBooleanAnswerTrue(); // checked always has a state, answer of null is false
-                question.setAnswer(checked); // normalize answer (replace null value)
-            } else {
-                return false;
-            }
+            return false;
         }
         if(question.answer.isEmpty()) {
             return false;

@@ -175,6 +175,14 @@ public class NewLanguageQuestion {
     }
 
     /**
+     * test to see if boolean is false, null answer is treated as false
+     * @return
+     */
+    public boolean isBooleanAnswerFalse() {
+        return FALSE_STR.equals(answer);
+    }
+
+    /**
      * get answer string and replace null with ""
      * @return
      */

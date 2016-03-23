@@ -664,10 +664,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="invalidate_keys">Invalidate SSH Keys</string>
     <string name="invalidate_keys_description">Sets keys invalid for auth testing</string>
     <string name="person_agrees_with_licenses">This person has agreed to the License Agreement, Statement of Faith, and Translation Guidelines</string>
-    <string name="language_title_name">Name</string>
-    <string name="language_title_understanding">Understanding</string>
-    <string name="language_title_dialects">Dialects</string>
-    <string name="language_title_gateway">Gateway</string>
     <string name="invalid_entry_title">Invalid Entry</string>
     <string name="answers_missing_title">Answers Missing</string>
     <string name="answer_required_for">Need answer for question:\n%s</string>
@@ -675,5 +671,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="answers_missing_continue">Answers are missing for questions.\nContinue anyway?</string>
     <string name="previous_step">Previous step</string>
     <string name="title_activity_new_language">New Language Request</string>
+    <string name="new_language_confirmation">We will create a temporary language code of \"<xliff:g example="zz-zzz" id="temp_language_code">%1$s</xliff:g>\" for \"<xliff:g example="Greek" id="language_name">%2$s</xliff:g>\".</string>
 
 </resources>

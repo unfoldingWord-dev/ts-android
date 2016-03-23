@@ -6,9 +6,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.BaseAdapter;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
 import com.door43.translationstudio.AppContext;
@@ -92,9 +92,18 @@ public class NewLanguagePageAdapter extends BaseAdapter {
                     mSelection = holder.answer.getSelectionStart();
                 }
             }
-            if(holder.checkBoxAnswer != null) {
-                boolean checked = holder.checkBoxAnswer.isChecked();
-                question.setAnswer(checked);
+
+            if(holder.radioButtonYes != null) {
+                question.answer = null; //default if none selected
+                boolean checked = holder.radioButtonYes.isChecked();
+                if(checked) {
+                    question.setAnswer(true);
+                } else if(holder.radioButtonNo != null) {
+                    checked = holder.radioButtonNo.isChecked();
+                    if(checked) {
+                        question.setAnswer(false);
+                    }
+                }
             }
         }
     }
@@ -169,21 +178,22 @@ public class NewLanguagePageAdapter extends BaseAdapter {
         if(null != item) {
             int layoutResId;
             if (item.type == NewLanguageQuestion.QuestionType.INPUT_TYPE_BOOLEAN) {
-                layoutResId = R.layout.fragment_new_language_checkbox_card;
+                layoutResId = R.layout.fragment_new_language_boolean_card;
             } else {
-                layoutResId = R.layout.fragment_new_language_edit_card;
+                layoutResId = R.layout.fragment_new_language_text_input_card;
             }
 
             v = LayoutInflater.from(parent.getContext()).inflate(layoutResId, null);
             holder = new ViewHolder(v, position);
-            mViewHolders.put(position,holder);
+            mViewHolders.put(position, holder);
 
             holder.question.setText(item.question);
 
             enableQuestion(v, holder, shouldEnable(item));
 
             if (item.type == NewLanguageQuestion.QuestionType.INPUT_TYPE_BOOLEAN) {
-                holder.checkBoxAnswer.setChecked(item.isBooleanAnswerTrue());
+                holder.radioButtonYes.setChecked(item.isBooleanAnswerTrue());
+                holder.radioButtonNo.setChecked(item.isBooleanAnswerFalse());
              } else {
                 holder.answer.setHint(item.helpText);
                 holder.answer.setText(item.getAnswerNotNull());
@@ -212,9 +222,7 @@ public class NewLanguagePageAdapter extends BaseAdapter {
      * @param enable
      */
     private void enableQuestion(View v, ViewHolder holder, boolean enable) {
-        v.setEnabled(enable);
-        v.setFocusable(enable);
-        v.setFocusableInTouchMode(enable);
+        inputEnable(v, enable);
 
         if(holder.question != null) {
             int color;
@@ -224,8 +232,7 @@ public class NewLanguagePageAdapter extends BaseAdapter {
                 color = AppContext.context().getResources().getColor(R.color.dark_disabled_text);
             }
             holder.question.setTextColor(color);
-            holder.question.setFocusable(false);
-            holder.question.setFocusableInTouchMode(false);
+            setFocusable(holder.question, false);
         }
 
         if(holder.answer != null) {
@@ -240,16 +247,31 @@ public class NewLanguagePageAdapter extends BaseAdapter {
             holder.answer.setTextColor(color);
             holder.answer.setHintTextColor(colorHint);
 
-            holder.answer.setEnabled(enable);
-            holder.answer.setFocusable(enable);
-            holder.answer.setFocusableInTouchMode(enable);
+            inputEnable(holder.answer, enable);
         }
 
-        if(holder.checkBoxAnswer != null) {
-            holder.checkBoxAnswer.setEnabled(enable);
-            holder.checkBoxAnswer.setFocusable(enable);
-            holder.checkBoxAnswer.setFocusableInTouchMode(enable);
+        radioEnable(holder.radioButtonYes, enable);
+        radioEnable(holder.radioButtonNo, enable);
+    }
+
+    private static void radioEnable(View v, boolean enable) {
+        if(v != null) {
+            v.setEnabled(enable);
+            v.setFocusable(enable);
+            v.setFocusableInTouchMode(false);
         }
+    }
+
+    private static void inputEnable(View v, boolean enable) {
+        if(v != null) {
+            v.setEnabled(enable);
+            setFocusable(v, enable);
+        }
+    }
+
+    private static void setFocusable(View v, boolean focusable) {
+        v.setFocusable(focusable);
+        v.setFocusableInTouchMode(focusable);
     }
 
     public int getFocusedPosition() {
@@ -263,13 +285,15 @@ public class NewLanguagePageAdapter extends BaseAdapter {
     private static class ViewHolder {
         private final EditText answer;
         private final TextView question;
-        private final CheckBox checkBoxAnswer;
+        private final RadioButton radioButtonYes;
+        private final RadioButton radioButtonNo;
         private final int position;
 
         public ViewHolder(View v, int pos) {
             this.question = (TextView)v.findViewById(R.id.label);
             this.answer = (EditText)v.findViewById(R.id.edit_text);
-            this.checkBoxAnswer = (CheckBox)v.findViewById(R.id.check_box);
+            this.radioButtonYes = (RadioButton)v.findViewById(R.id.radio_button_yes);
+            this.radioButtonNo = (RadioButton)v.findViewById(R.id.radio_button_no);
             this.position = pos;
             v.setTag(this);
         }
