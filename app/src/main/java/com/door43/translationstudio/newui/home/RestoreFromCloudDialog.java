@@ -155,7 +155,7 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
                     try {
                         AppContext.backupTargetTranslation(existingTargetTranslation, true);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Logger.e(this.getClass().getName(), "Failed to backup the target translation", e);
                     }
                 }
 

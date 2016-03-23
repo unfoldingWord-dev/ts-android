@@ -207,19 +207,19 @@ public class AppContext {
     public static boolean backupTargetTranslation(TargetTranslation targetTranslation, Boolean orphaned) throws Exception {
         if(targetTranslation != null) {
             String name = targetTranslation.getId();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm", Locale.US);
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss", Locale.US);
             if (orphaned) {
                 name += "." + sdf.format(new Date());
             }
             File temp = null;
             try {
-                temp = File.createTempFile(name, "");
+                temp = File.createTempFile(name, "." + Translator.ARCHIVE_EXTENSION);
                 targetTranslation.setDefaultContributor(getProfile().getNativeSpeaker());
                 getTranslator().exportArchive(targetTranslation, temp);
                 if (temp.exists() && temp.isFile()) {
                     // copy into backup locations
-                    File downloadsBackup = new File(getPublicDownloadsDirectory(), name + Translator.ARCHIVE_EXTENSION);
-                    File publicBackup = new File(getPublicDirectory(), "backups/" + name + Translator.ARCHIVE_EXTENSION);
+                    File downloadsBackup = new File(getPublicDownloadsDirectory(), name + "." + Translator.ARCHIVE_EXTENSION);
+                    File publicBackup = new File(getPublicDirectory(), "backups/" + name + "." + Translator.ARCHIVE_EXTENSION);
                     downloadsBackup.getParentFile().mkdirs();
                     publicBackup.getParentFile().mkdirs();
 
