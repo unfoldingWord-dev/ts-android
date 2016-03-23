@@ -44,13 +44,12 @@ import java.util.Locale;
  * Created by joel on 8/29/2015.
  */
 public class TargetTranslation {
-    public static final int PACKAGE_VERSION = 5; // the version of the target translation implementation
+    public static final int PACKAGE_VERSION = 6; // the version of the target translation implementation
 
     private static final String FIELD_PARENT_DRAFT = "parent_draft";
     private static final String FIELD_FINISHED_CHUNKS = "finished_chunks";
     private static final String FIELD_TRANSLATORS = "translators";
     private static final String FIELD_TARGET_LANGUAGE = "target_language";
-    private static final String GLOBAL_PROJECT_ID = "uw";
     private static final String FIELD_FORMAT = "format";
     private static final String FIELD_RESOURCE = "resource";
     private static final String FIELD_SOURCE_TRANSLATIONS = "source_translations";
@@ -127,7 +126,7 @@ public class TargetTranslation {
      */
     public static String generateTargetTranslationId(String targetLanguageSlug, String projectSlug, TranslationType translationType, String resourceSlug) {
         String id = targetLanguageSlug + "_" + projectSlug + "_" + translationType;
-        if(translationType == TranslationType.TEXT) {
+        if(translationType == TranslationType.TEXT && resourceSlug != null) {
             id += "_" + resourceSlug;
         }
         return id.toLowerCase();
@@ -247,21 +246,23 @@ public class TargetTranslation {
      * @return null if the directory does not exist or the manifest is invalid
      */
     public static TargetTranslation open(File targetTranslationDir) {
-        File manifestFile = new File(targetTranslationDir, "manifest.json");
-        if(manifestFile.exists()) {
-            try {
-                JSONObject manifest = new JSONObject(FileUtils.readFileToString(manifestFile));
-                int version = manifest.getInt(FIELD_PACKAGE_VERSION);
-                if(version == PACKAGE_VERSION) {
-                    return new TargetTranslation(targetTranslationDir);
-                } else {
-                    Logger.w(TargetTranslation.class.getName(), "Unsupported target translation version " + version + " in" + targetTranslationDir.getName());
+        if(targetTranslationDir != null) {
+            File manifestFile = new File(targetTranslationDir, "manifest.json");
+            if (manifestFile.exists()) {
+                try {
+                    JSONObject manifest = new JSONObject(FileUtils.readFileToString(manifestFile));
+                    int version = manifest.getInt(FIELD_PACKAGE_VERSION);
+                    if (version == PACKAGE_VERSION) {
+                        return new TargetTranslation(targetTranslationDir);
+                    } else {
+                        Logger.w(TargetTranslation.class.getName(), "Unsupported target translation version " + version + " in" + targetTranslationDir.getName());
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
+            } else {
+                Logger.w(TargetTranslation.class.getName(), "Missing manifest file in target translation " + targetTranslationDir.getName());
             }
-        } else {
-            Logger.w(TargetTranslation.class.getName(), "Missing manifest file in target translation " + targetTranslationDir.getName());
         }
         return null;
     }
@@ -1272,8 +1273,12 @@ public class TargetTranslation {
      * @return
      */
     public int numFinished() {
-        JSONArray finishedFrames = manifest.getJSONArray(FIELD_FINISHED_CHUNKS);
-        return finishedFrames.length();
+        if(manifest.has(FIELD_FINISHED_CHUNKS)) {
+            JSONArray finishedFrames = manifest.getJSONArray(FIELD_FINISHED_CHUNKS);
+            return finishedFrames.length();
+        } else {
+            return 0;
+        }
     }
 
     /**

@@ -615,4 +615,18 @@ public class Translator {
         }
         return success;
     }
+
+    /**
+     * This will move a target translation into the root dir.
+     * Any existing target translation will be replaced
+     * @param tempTargetTranslation
+     * @throws IOException
+     */
+    public void restoreTargetTranslation(TargetTranslation tempTargetTranslation) throws IOException {
+        if(tempTargetTranslation != null) {
+            File destDir = new File(mRootDir, tempTargetTranslation.getId());
+            FileUtilities.safeDelete(destDir);
+            FileUtils.moveDirectory(tempTargetTranslation.getPath(), destDir);
+        }
+    }
 }

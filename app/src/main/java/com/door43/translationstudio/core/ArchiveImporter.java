@@ -56,7 +56,8 @@ public class ArchiveImporter {
         // migrate target translations
         List<File> validTargetTranslations = new ArrayList<>();
         for(File dir:targetTranslationDirs) {
-            if(TargetTranslationMigrator.migrate(dir)) {
+            File migratedDir = TargetTranslationMigrator.migrate(dir);
+            if(migratedDir != null) {
                 validTargetTranslations.add(dir);
             }
         }

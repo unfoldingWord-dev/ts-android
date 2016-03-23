@@ -10,6 +10,7 @@ import android.provider.Settings;
 import android.support.annotation.Nullable;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.core.ArchiveDetails;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.TargetTranslation;
@@ -27,8 +28,12 @@ import org.json.JSONException;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * This class provides global access to the application context as well as other important tools
@@ -191,6 +196,56 @@ public class AppContext {
         }
         dir.mkdirs();
         return dir;
+    }
+
+    /**
+     * Creates a backup of a target translation in all the right places
+     * @param targetTranslation the target translation that will be backed up
+     * @param orphaned if true this backup will be orphaned (time stamped)
+     * @return true if the backup was actually performed
+     */
+    public static boolean backupTargetTranslation(TargetTranslation targetTranslation, Boolean orphaned) throws Exception {
+        if(targetTranslation != null) {
+            String name = targetTranslation.getId();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm", Locale.US);
+            if (orphaned) {
+                name += "." + sdf.format(new Date());
+            }
+            File temp = null;
+            try {
+                temp = File.createTempFile(name, "");
+                targetTranslation.setDefaultContributor(getProfile().getNativeSpeaker());
+                getTranslator().exportArchive(targetTranslation, temp);
+                if (temp.exists() && temp.isFile()) {
+                    // copy into backup locations
+                    File downloadsBackup = new File(getPublicDownloadsDirectory(), name + Translator.ARCHIVE_EXTENSION);
+                    File publicBackup = new File(getPublicDirectory(), "backups/" + name + Translator.ARCHIVE_EXTENSION);
+                    downloadsBackup.getParentFile().mkdirs();
+                    publicBackup.getParentFile().mkdirs();
+
+                    // check if we need to backup
+                    if(!orphaned) {
+                        ArchiveDetails downloadsDetails = ArchiveDetails.newInstance(downloadsBackup, "en", getLibrary());
+                        ArchiveDetails publicDetails = ArchiveDetails.newInstance(publicBackup, "en", getLibrary());
+                        // TRICKY: we only generate backups with a single target translation inside.
+                        if(downloadsDetails != null && downloadsDetails.targetTranslationDetails[0].commitHash == targetTranslation.getCommitHash()
+                            && publicDetails != null && publicDetails.targetTranslationDetails[0].commitHash == targetTranslation.getCommitHash()) {
+                            return false;
+                        }
+                    }
+
+                    FileUtils.copyFile(temp, downloadsBackup);
+                    FileUtils.copyFile(temp, publicBackup);
+                    return true;
+                }
+            } catch (Exception e) {
+                if (temp != null) {
+                    FileUtils.deleteQuietly(temp);
+                }
+                throw e;
+            }
+        }
+        return false;
     }
     
     /**

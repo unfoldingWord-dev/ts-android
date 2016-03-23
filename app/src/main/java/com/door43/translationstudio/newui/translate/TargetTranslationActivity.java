@@ -75,7 +75,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         final String targetTranslationId = args.getString(AppContext.EXTRA_TARGET_TRANSLATION_ID, null);
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         if (mTargetTranslation == null) {
-            throw new InvalidParameterException("a valid target translation id is required");
+            Logger.e(TAG ,"A valid target translation id is required. Received '" + targetTranslationId + "' but the translation could not be found");
+            finish();
+            return;
         }
 
         // notify user that a draft translation exists the first time actvity starts
