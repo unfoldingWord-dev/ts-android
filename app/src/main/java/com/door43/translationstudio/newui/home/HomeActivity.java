@@ -203,6 +203,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
     @Override
     public void onResume() {
         super.onResume();
+        AppContext.setLastFocusTargetTranslation(null);
 
         int numTranslations = mTranslator.getTargetTranslations().length;
         if(numTranslations > 0 && mFragment instanceof WelcomeFragment) {

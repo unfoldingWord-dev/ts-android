@@ -228,8 +228,8 @@ public class AppContext {
                         ArchiveDetails downloadsDetails = ArchiveDetails.newInstance(downloadsBackup, "en", getLibrary());
                         ArchiveDetails publicDetails = ArchiveDetails.newInstance(publicBackup, "en", getLibrary());
                         // TRICKY: we only generate backups with a single target translation inside.
-                        if(downloadsDetails != null && downloadsDetails.targetTranslationDetails[0].commitHash == targetTranslation.getCommitHash()
-                            && publicDetails != null && publicDetails.targetTranslationDetails[0].commitHash == targetTranslation.getCommitHash()) {
+                        if(downloadsDetails != null && downloadsDetails.targetTranslationDetails[0].commitHash.equals(targetTranslation.getCommitHash())
+                            && publicDetails != null && publicDetails.targetTranslationDetails[0].commitHash.equals(targetTranslation.getCommitHash())) {
                             return false;
                         }
                     }

@@ -329,9 +329,9 @@ public class TargetTranslation {
      * @param targetTranslationId the target translation id
      * @return
      */
-    public static String getProjectIdFromId(String targetTranslationId) throws StringIndexOutOfBoundsException {
-        String[] complexId = targetTranslationId.split("-", 3);
-        if(complexId.length == 3) {
+    public static String getProjectSlugFromId(String targetTranslationId) throws StringIndexOutOfBoundsException {
+        String[] complexId = targetTranslationId.split("_");
+        if(complexId.length >= 3) {
             return complexId[1];
         } else {
             throw new StringIndexOutOfBoundsException("malformed target translation id " + targetTranslationId);
@@ -343,15 +343,10 @@ public class TargetTranslation {
      * @param targetTranslationId the target translation id
      * @return
      */
-    public static String getTargetLanguageIdFromId(String targetTranslationId) throws StringIndexOutOfBoundsException {
-        String[] complexId = targetTranslationId.split("-");
+    public static String getTargetLanguageSlugFromId(String targetTranslationId) throws StringIndexOutOfBoundsException {
+        String[] complexId = targetTranslationId.split("_");
         if(complexId.length >= 3) {
-            // TRICKY: target language id's can have dashes in them.
-            String targetLanguageId = complexId[2];
-            for(int i = 3; i < complexId.length; i ++) {
-                targetLanguageId += "-" + complexId[i];
-            }
-            return targetLanguageId;
+            return complexId[0];
         } else {
             throw new StringIndexOutOfBoundsException("malformed target translation id" + targetTranslationId);
         }

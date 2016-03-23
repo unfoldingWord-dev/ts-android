@@ -23,6 +23,33 @@ public class TargetTranslationMigrator {
     private static final String MANIFEST_FILE = "manifest.json";
 
     /**
+     * Performs a migration on a manifest object.
+     * We just throw it into a temporary directory and run the normal migration on it.
+     * @param manifestJson
+     * @return
+     */
+    public static JSONObject migrateManifest(JSONObject manifestJson) {
+        File tempDir = new File(AppContext.context().getCacheDir(), System.currentTimeMillis() + "");
+        // TRICKY: the migration can change the name of the translation dir so we nest it to avoid conflicts.
+        File fakeTranslationDir = new File(tempDir, "translation");
+        fakeTranslationDir.mkdirs();
+        JSONObject migratedManifest = null;
+        try {
+            FileUtils.writeStringToFile(new File(fakeTranslationDir, "manifest.json"), manifestJson.toString());
+            fakeTranslationDir = migrate(fakeTranslationDir);
+            if(fakeTranslationDir != null) {
+                migratedManifest = new JSONObject(FileUtils.readFileToString(new File(fakeTranslationDir, "manifest.json")));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            // clean up
+            FileUtils.deleteQuietly(tempDir);
+        }
+        return migratedManifest;
+    }
+
+    /**
      * Performs necessary migration operations on a target translation
      * @param targetTranslationDir
      * @return the target translation dir. Null if the migration failed

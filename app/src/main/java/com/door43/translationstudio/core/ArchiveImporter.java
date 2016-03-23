@@ -108,8 +108,8 @@ public class ArchiveImporter {
 //        for(String targetTranslationId:translationDirs) {
 //            targetTranslationId = StringUtilities.ltrim(targetTranslationId, '\\');
 //            try {
-//                String projectSlug = TargetTranslation.getProjectIdFromId(targetTranslationId);
-//                String targetLanguageSlug = TargetTranslation.getTargetLanguageIdFromId(targetTranslationId);
+//                String projectSlug = TargetTranslation.getProjectSlugFromId(targetTranslationId);
+//                String targetLanguageSlug = TargetTranslation.getTargetLanguageSlugFromId(targetTranslationId);
 //            } catch (Exception e) {
 //                e.printStackTrace();
 //                continue;
