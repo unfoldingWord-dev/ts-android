@@ -32,7 +32,6 @@ import com.door43.translationstudio.newui.newtranslation.ProjectListFragment;
 import com.door43.translationstudio.newui.newtranslation.TargetLanguageListFragment;
 
 import org.apache.commons.io.FileUtils;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.util.Locale;
@@ -93,8 +92,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             NewLanguagePackage newLang = NewLanguagePackage.parse(newLangDataJsonStr);
 
             String languageCode = newLang.tempLanguageCode;
-            JSONObject nameAnswer = newLang.getAnswerForID(NewLanguagePackage.NEW_LANGUAGE_NAME_ID);
-            String languageName = nameAnswer.getString(NewLanguagePackage.QUESTION_ANSWER);
+            String languageName = newLang.languageName;
 
             // TODO: 3/15/16 need to add region
             mSelectedTargetLanguage = new TargetLanguage(languageCode, languageName, "uncertain", LanguageDirection.LeftToRight);
@@ -111,7 +109,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
         }
     }
 
-   public void onRestoreInstanceState(Bundle savedInstanceState) {
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         if(savedInstanceState != null) {
             mNewTargetTranslationId = savedInstanceState.getString(STATE_TARGET_TRANSLATION_ID, null);
@@ -160,11 +158,10 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                     saveNewLanguageData(targetTranslation, mNewLanguageData);
 
                     String msg = String.format(AppContext.context().getResources().getString(R.string.new_language_confirmation), targetTranslation.getTargetLanguageId(), targetTranslation.getTargetLanguageName());
-
                     CustomAlertDialog.Create(this)
                             .setTitle(R.string.language)
                             .setMessage(msg)
-                            .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
+                            .setPositiveButton(R.string.confirm, new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
                                     newProjectCreated(targetTranslation);
@@ -206,6 +203,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
      * @return
      */
     private boolean saveNewLanguageData(TargetTranslation targetTranslation, String newLanguageData) {
+        String path = "";
         try {
             NewLanguagePackage newLang = NewLanguagePackage.parse(newLanguageData);
             if(null == newLang) {
@@ -213,15 +211,18 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             }
 
             File folder = targetTranslation.getPath();
+            path = folder.toString();
             newLang.commit(folder);
 
-            File dataPath = new File(folder,"../../new_languages");
+            File dataPath = NewLanguagePackage.getNewLanguageFolder();
+            path = dataPath.toString();
             FileUtils.forceMkdir(dataPath);
-            File newLanguagePath = new File(dataPath,targetTranslation.getId() + ".json");
+            File newLanguagePath = new File(dataPath,targetTranslation.getId() + NewLanguagePackage.NEW_LANGUAGE_FILE_EXTENSION);
+            path = newLanguagePath.toString();
             newLang.commitToFile(newLanguagePath);
 
         } catch (Exception e) {
-            Logger.e(TAG, "Could not write new language data", e);
+            Logger.e(TAG, "Could not write new language data to: " + path, e);
             return false;
         }
         return true;

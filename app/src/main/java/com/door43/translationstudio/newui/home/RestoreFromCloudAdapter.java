@@ -9,11 +9,10 @@ import android.widget.TextView;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.NewLanguagePackage;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
-
-import org.w3c.dom.Text;
 
 import java.util.Locale;
 
@@ -56,11 +55,12 @@ public class RestoreFromCloudAdapter extends BaseAdapter {
             holder = (ViewHolder)v.getTag();
         }
 
-        holder.projectName.setText(getItem(position));
+        String targetTranslationID = getItem(position);
+        holder.projectName.setText(targetTranslationID);
         holder.targetLanguageName.setText("");
         try {
-            String projectSlug = TargetTranslation.getProjectIdFromId(getItem(position));
-            String targetLanguageSlug = TargetTranslation.getTargetLanguageIdFromId(getItem(position));
+            String projectSlug = TargetTranslation.getProjectIdFromId(targetTranslationID);
+            String targetLanguageSlug = TargetTranslation.getTargetLanguageIdFromId(targetTranslationID);
 
             Project p = library.getProject(projectSlug, Locale.getDefault().getLanguage());
             if(p != null) {
@@ -69,12 +69,28 @@ public class RestoreFromCloudAdapter extends BaseAdapter {
             TargetLanguage tl = library.getTargetLanguage(targetLanguageSlug);
             if(tl != null) {
                 holder.targetLanguageName.setText(tl.name);
+            } else if(NewLanguagePackage.isNewLanguageCode(targetLanguageSlug)) { // see if temp language
+                holder.targetLanguageName.setText(targetLanguageSlug); // default to just show temp language code
+
+                String name = lookupNewLanguageName(targetLanguageSlug); // see if language is already loaded and get name
+                if(name != null) {
+                    holder.targetLanguageName.setText(name + "-" + targetLanguageSlug);
+                }
             }
         } catch (StringIndexOutOfBoundsException e) {
             e.printStackTrace();
         }
 
         return v;
+    }
+
+    private String lookupNewLanguageName(String targetLanguageID) {
+        NewLanguagePackage newLang = NewLanguagePackage.getNewLanguageFromFileSystem(targetLanguageID);
+        if(newLang != null) {
+            return newLang.languageName;
+        }
+
+        return null;
     }
 
     /**

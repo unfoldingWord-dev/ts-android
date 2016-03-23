@@ -44,51 +44,51 @@ public class NewLanguageAPI {
             mPageData = new JSONArray();
             mPageMeta = new JSONArray();
 
-            addQuestion(100, "1. What do you call your language?", "(Enter Answer Here)", INPUT_TYPE_STRING, required);
-            addQuestion(101, "1.1  Does that have a special meaning?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(102, "1.2  Do you have other names for your language?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
+            addQuestion(1, "1. What do you call your language?", "(Enter Answer Here)", INPUT_TYPE_STRING, required);
+            addQuestion(2, "1.1  Does that have a special meaning?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
+            addQuestion(3, "1.2  Do you have other names for your language?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
             pushPage();
 
-            addQuestion(200, "2. Other people have a different name for your language?", "(Enter Answer Here)", INPUT_TYPE_BOOLEAN, required);
-            addQuestion(201, "2.1. What do they call it?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(202, "2.2. Who calls it that?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(203, "2.3. Does that have a special meaning?  What does it mean?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
+            addQuestion(4, "2. Other people have a different name for your language?", "(Enter Answer Here)", INPUT_TYPE_BOOLEAN, required);
+            addQuestion(5, "2.1. What do they call it?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
+            addQuestion(6, "2.2. Who calls it that?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
+            addQuestion(7, "2.3. Does that have a special meaning?  What does it mean?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
             pushPage();
 
-            addQuestion(300, "3. Where else do people speak just the same way as you do?", "(Enter Answer Here)", INPUT_TYPE_STRING, required);
-            addQuestion(400, "4. Where do people speak just a little bit differently?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(401, "4.1. Have you yourself gone to these places?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(402, "4.2. Do people from there also come here?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(403, "4.3. Do you have a name for this other dialect in your own language?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
+            addQuestion(8, "3. Where else do people speak just the same way as you do?", "(Enter Answer Here)", INPUT_TYPE_STRING, required);
+            addQuestion(9, "4. Where do people speak just a little bit differently?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
+            addQuestion(10, "4.1. Have you yourself gone to these places?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
+            addQuestion(11, "4.2. Do people from there also come here?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
+            addQuestion(12, "4.3. Do you have a name for this other dialect in your own language?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
             pushPage();
 
-            addQuestion(500, "5. Where do people speak very differently?", "(Enter Answer Here)", INPUT_TYPE_STRING, required);
-            addQuestion(501, "5.1. How much of their speech do you understand? (few words, main ideas, most, all)", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(502, "5.2. Have you yourself gone to these places?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(503, "5.3. Do people from there come here?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(504, "5.4. Do you have a name for this other dialect in your own language?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
+            addQuestion(13, "5. Where do people speak very differently?", "(Enter Answer Here)", INPUT_TYPE_STRING, required);
+            addQuestion(14, "5.1. How much of their speech do you understand? (few words, main ideas, most, all)", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
+            addQuestion(15, "5.2. Have you yourself gone to these places?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
+            addQuestion(16, "5.3. Do people from there come here?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
+            addQuestion(17, "5.4. Do you have a name for this other dialect in your own language?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
             pushPage();
 
-            addQuestion(600, "6. Where do people speak your own language the most purely?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(601, "6.1. Why do you say that is the most pure?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(602, "6.2. Have you yourself gone to these places?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(603, "6.3. Do people from there come here?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
+            addQuestion(18, "6. Where do people speak your own language the most purely?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
+            addQuestion(19, "6.1. Why do you say that is the most pure?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
+            addQuestion(20, "6.2. Have you yourself gone to these places?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
+            addQuestion(21, "6.3. Do people from there come here?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
             pushPage();
 
-            addQuestion(700, "7. Where is your language spoken badly?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(701, "7.1. Why do you say that it is spoken badly?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(702, "7.2. Have you yourself gone to these places?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(703, "7.3. Have people from there come here?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
+            addQuestion(22, "7. Where is your language spoken badly?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
+            addQuestion(23, "7.1. Why do you say that it is spoken badly?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
+            addQuestion(24, "7.2. Have you yourself gone to these places?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
+            addQuestion(25, "7.3. Have people from there come here?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
             pushPage();
 
-            addQuestion(800, "8. What do you call the language people speak in [large place, 1-2  day’s march distance]?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(801, "8.1. Do people understand you when you speak your language there?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(802, "8.2. If a man from there come here, can everybody understand his speech?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(803, "8.3. Even the women and children?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
+            addQuestion(26, "8. What do you call the language people speak in [large place, 1-2  day’s march distance]?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
+            addQuestion(27, "8.1. Do people understand you when you speak your language there?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
+            addQuestion(28, "8.2. If a man from there come here, can everybody understand his speech?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
+            addQuestion(29, "8.3. Even the women and children?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
             pushPage();
 
-            addQuestion(900, "9. What other places do you travel to?", "(Enter Answer Here)", INPUT_TYPE_STRING, required);
-            addQuestion(1000, "10. Do many people travel outside from here?", "(Enter Answer Here)", INPUT_TYPE_STRING, required);
+            addQuestion(30, "9. What other places do you travel to?", "(Enter Answer Here)", INPUT_TYPE_STRING, required);
+            addQuestion(31, "10. Do many people travel outside from here?", "(Enter Answer Here)", INPUT_TYPE_STRING, required);
             pushPage();
 
             questionnaire.put(QUESTIONNAIRE_ID_KEY, 1010);

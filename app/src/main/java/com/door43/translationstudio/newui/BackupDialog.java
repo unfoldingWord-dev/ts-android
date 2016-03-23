@@ -21,6 +21,7 @@ import android.widget.Button;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.NewLanguagePackage;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
@@ -151,6 +152,12 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
                                         }
                                     });
                                 } else {
+                                    
+                                    NewLanguagePackage newLang = NewLanguagePackage.open(mTargetTranslation.getPath());
+                                    if(newLang != null) {
+                                        // TODO: 3/23/16 add upload to new language API in tD
+                                    }
+                                    
                                     // begin upload
                                     UploadTargetTranslationTask task = new UploadTargetTranslationTask(mTargetTranslation);
                                     mTaskWatcher.watch(task);
