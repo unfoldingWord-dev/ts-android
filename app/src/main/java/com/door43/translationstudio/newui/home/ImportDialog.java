@@ -218,7 +218,7 @@ public class ImportDialog extends DialogFragment {
                 Logger.i(this.getClass().getName(), "Importing SD card: " + uri);
                 final InputStream in = AppContext.context().getContentResolver().openInputStream(uri);
                 final Translator translator = AppContext.getTranslator();
-                final String[] targetTranslationSlugs = translator.importArchive(in, uri.getPath());
+                final String[] targetTranslationSlugs = translator.importArchive(in);
                 showImportResults(R.string.import_success, SdUtils.getPathString(uri.toString()));
             } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "Failed to import the archive", e);

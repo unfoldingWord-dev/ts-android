@@ -58,7 +58,7 @@ public class ArchiveImporter {
         for(File dir:targetTranslationDirs) {
             File migratedDir = TargetTranslationMigrator.migrate(dir);
             if(migratedDir != null) {
-                validTargetTranslations.add(dir);
+                validTargetTranslations.add(migratedDir);
             }
         }
         return validTargetTranslations.toArray(new File[validTargetTranslations.size()]);
