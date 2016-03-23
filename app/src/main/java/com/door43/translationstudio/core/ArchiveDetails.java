@@ -6,6 +6,7 @@ import android.support.v4.provider.DocumentFile;
 import com.door43.translationstudio.AppContext;
 import com.door43.util.Zip;
 
+import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,6 +33,36 @@ public class ArchiveDetails {
     private ArchiveDetails(long timestamp, TargetTranslationDetails[] targetTranslationDetails) {
         this.createdAt = timestamp;
         this.targetTranslationDetails = targetTranslationDetails;
+    }
+
+    /**
+     * Reads the details from a translationStudio archive
+     * @param archiveStream
+     * @param preferredLocale
+     * @param library
+     * @return
+     * @throws Exception
+     */
+    public static ArchiveDetails newInstance(InputStream archiveStream, String preferredLocale, Library library) throws Exception {
+        if(archiveStream != null) {
+            File tempFile = File.createTempFile("targettranslation", "." + Translator.ARCHIVE_EXTENSION);
+            FileUtils.copyInputStreamToFile(archiveStream, tempFile);
+
+            String rawManifest = Zip.read(tempFile, "manifest.json");
+            if (rawManifest != null) {
+                JSONObject json = new JSONObject(rawManifest);
+                if (json.has("package_version")) {
+                    int manifestVersion = json.getInt("package_version");
+                    switch (manifestVersion) {
+                        case 1:
+                            return parseV1Manifest(json);
+                        case 2:
+                            return parseV2Manifest(new FileInputStream(tempFile), json, preferredLocale, library);
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -71,15 +102,15 @@ public class ArchiveDetails {
         if(archive != null && archive.exists()) {
             InputStream ais = context.getContentResolver().openInputStream(archive.getUri());
             String rawManifest = Zip.readInputStream(ais, "manifest.json");
-            if(rawManifest != null) {
+            if (rawManifest != null) {
                 JSONObject json = new JSONObject(rawManifest);
-                if(json.has("package_version")) {
+                if (json.has("package_version")) {
                     int manifestVersion = json.getInt("package_version");
                     switch (manifestVersion) {
                         case 1:
                             return parseV1Manifest(json);
                         case 2:
-                            return parseV2Manifest(ais, json, preferredLocale, library);
+                            return parseV2Manifest(context.getContentResolver().openInputStream(archive.getUri()), json, preferredLocale, library);
                     }
                 }
             }
@@ -101,60 +132,63 @@ public class ArchiveDetails {
             JSONObject translationRecordJson = translationsJson.getJSONObject(i);
             String path = translationRecordJson.getString("path");
             String rawTranslationManifest = Zip.readInputStream(ais, path.replaceAll("/+$", "") + "/manifest.json");
-            JSONObject manifest = new JSONObject(rawTranslationManifest);
+            if(rawTranslationManifest != null) {
+                JSONObject manifest = new JSONObject(rawTranslationManifest);
 
-            // migrate the manifest
-            manifest = TargetTranslationMigrator.migrateManifest(manifest);
+                // migrate the manifest
+                manifest = TargetTranslationMigrator.migrateManifest(manifest);
 
-            if(manifest != null) {
-                JSONObject targetLanguageJson = manifest.getJSONObject("target_language");
-                JSONObject projectJson = manifest.getJSONObject("project");
+                if (manifest != null) {
+                    JSONObject targetLanguageJson = manifest.getJSONObject("target_language");
+                    JSONObject projectJson = manifest.getJSONObject("project");
 
-                // get target language
-                String targetLanguageName = null;
-                String targetLanguageSlug = targetLanguageJson.getString("id");
-                LanguageDirection targetLangaugeDirection = LanguageDirection.get(targetLanguageJson.getString("direction"));
-                if(targetLangaugeDirection == null) {
-                    targetLangaugeDirection = LanguageDirection.LeftToRight;
+                    // get target language
+                    String targetLanguageName = null;
+                    String targetLanguageSlug = targetLanguageJson.getString("id");
+                    LanguageDirection targetLangaugeDirection = LanguageDirection.get(targetLanguageJson.getString("direction"));
+                    if (targetLangaugeDirection == null) {
+                        targetLangaugeDirection = LanguageDirection.LeftToRight;
+                    }
+                    TargetLanguage tl = library.getTargetLanguage(targetLanguageSlug);
+                    if (tl != null) {
+                        targetLanguageName = tl.name;
+                    } else {
+                        targetLanguageName = targetLanguageSlug.toUpperCase();
+                    }
+
+                    // get project
+                    String projectName = null;
+                    String projectSlug = projectJson.getString("id");
+                    Project project = library.getProject(projectSlug, preferredLocale);
+                    if (project != null) {
+                        projectName = project.name;
+                    } else {
+                        projectName = projectSlug.toUpperCase();
+                    }
+
+                    // git commit hash
+                    String commit = translationRecordJson.getString("commit_hash");
+
+                    // translation type
+                    TranslationType translationType = TranslationType.get(manifest.getJSONObject("type").getString("id"));
+                    if (translationType == null) {
+                        translationType = TranslationType.TEXT;
+                    }
+
+                    // resource
+                    String resourceSlug = null;
+                    if (manifest.has("resource")) {
+                        resourceSlug = manifest.getJSONObject("resource").getString("id");
+                    }
+
+                    // build id
+                    String targetTranslationId = TargetTranslation.generateTargetTranslationId(targetLanguageSlug, projectSlug, translationType, resourceSlug);
+
+                    targetDetails.add(new TargetTranslationDetails(targetTranslationId, targetLanguageSlug, targetLanguageName, projectSlug, projectName, targetLangaugeDirection, commit));
                 }
-                TargetLanguage tl = library.getTargetLanguage(targetLanguageSlug);
-                if(tl != null) {
-                    targetLanguageName = tl.name;
-                } else {
-                    targetLanguageName = targetLanguageSlug.toUpperCase();
-                }
-
-                // get project
-                String projectName = null;
-                String projectSlug = projectJson.getString("id");
-                Project project = library.getProject(projectSlug, preferredLocale);
-                if(project != null) {
-                    projectName = project.name;
-                } else {
-                    projectName = projectSlug.toUpperCase();
-                }
-
-                // git commit hash
-                String commit = translationRecordJson.getString("commit_hash");
-
-                // translation type
-                TranslationType translationType = TranslationType.get(manifest.getJSONObject("type").getString("id"));
-                if(translationType == null) {
-                    translationType = TranslationType.TEXT;
-                }
-
-                // resource
-                String resourceSlug = null;
-                if(manifest.has("resource")) {
-                    resourceSlug = manifest.getJSONObject("resource").getString("id");
-                }
-
-                // build id
-                String targetTranslationId = TargetTranslation.generateTargetTranslationId(targetLanguageSlug, projectSlug, translationType, resourceSlug);
-
-                targetDetails.add(new TargetTranslationDetails(targetTranslationId, targetLanguageSlug, targetLanguageName, projectSlug, projectName, targetLangaugeDirection, commit));
             }
         }
+        ais.close();
         return new ArchiveDetails(timestamp, targetDetails.toArray(new TargetTranslationDetails[targetDetails.size()]));
     }
 
