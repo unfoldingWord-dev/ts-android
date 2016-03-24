@@ -379,6 +379,7 @@ public class ServerService extends NetworkService {
                 try {
                     JSONObject json = new JSONObject();
                     json.put("target_translation_id", targetTranslation.getId());
+                    json.put("package_version", TargetTranslation.PACKAGE_VERSION);
                     json.put("project_name", sourceTranslation.getProjectTitle());
                     json.put("target_language_name", targetTranslation.getTargetLanguageName());
                     json.put("progress", library.getTranslationProgress(targetTranslation));
