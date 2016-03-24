@@ -76,7 +76,6 @@ public class NewLanguagePageAdapter extends BaseAdapter {
      * cleanup
      */
     public void cleanup() {
-        updateAnswers();
         int focusedPosition = mFocusedPosition; // cache value before destroy
         mContentsView.removeAllViews(); // if this is not removed the old children remain on the display and cause strange side effects
         mFocusedPosition = focusedPosition; // restore

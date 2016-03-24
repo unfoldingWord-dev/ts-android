@@ -100,7 +100,8 @@ public class NewLanguagePageFragment extends BaseFragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        mAdapter.cleanup();
+        saveAnswers();
+        cleanup();
         String questionsJson = NewLanguageActivity.getQuestions(mQuestions).toString();
         outState.putString(NewLanguageActivity.EXTRA_NEW_LANGUAGE_QUESTIONS, questionsJson);
         outState.putInt(EXTRA_NEW_LANGUAGE_FOCUS_POSITION, mAdapter.getFocusedPosition());
@@ -108,8 +109,16 @@ public class NewLanguagePageFragment extends BaseFragment {
         super.onSaveInstanceState(outState);
     }
 
+    public void cleanup() {
+        if(mAdapter != null) {
+            mAdapter.cleanup();
+        }
+    }
+
     public void saveAnswers() {
-        mAdapter.updateAnswers();
+        if(mAdapter != null) {
+            mAdapter.updateAnswers();
+        }
     }
 
     /**

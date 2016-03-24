@@ -292,6 +292,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
     }
 
     private void goBack(){
+        cleanup();
         Intent data = new Intent();
         setResult(RESULT_CANCELED, data);
         finish();
@@ -324,6 +325,8 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
     public void finishLanguageRequest(String answersJson) {
 
         try {
+            cleanup();
+
             if(answersJson != null) {
                 parseAnswers(answersJson, mCurrentPage); // save answers from current page
             }
@@ -349,7 +352,13 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         }
     }
 
-   /**
+    public void cleanup() {
+        if(mFragment != null) {
+            mFragment.cleanup();
+        }
+    }
+
+    /**
      * Moves to a specific question page
      * @param page
      */
