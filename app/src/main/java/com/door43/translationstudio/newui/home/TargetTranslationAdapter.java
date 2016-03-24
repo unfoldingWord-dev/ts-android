@@ -83,9 +83,9 @@ public class TargetTranslationAdapter extends BaseAdapter {
         final Library library = AppContext.getLibrary();
         Project project = library.getProject(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
         if(project != null) {
-            if(targetTranslation.getResourceType() != Resource.Type.REGULAR && targetTranslation.getResourceType() != Resource.Type.OPEN_BIBLE_STORIES) {
+            if(!targetTranslation.getResourceSlug().equals(Resource.REGULAR_SLUG) && !targetTranslation.getResourceSlug().equals("obs")) {
                 // display the resource type if not a regular resource e.g. this is for a gateway language
-                holder.mTitleView.setText(project.name + " (" + targetTranslation.getResourceType() + ")");
+                holder.mTitleView.setText(project.name + " (" + targetTranslation.getResourceSlug() + ")");
             } else {
                 holder.mTitleView.setText(project.name);
             }

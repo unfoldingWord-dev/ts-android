@@ -121,7 +121,7 @@ public class UpdateAppTask extends ManagedTask {
         File translatorDir = AppContext.getTranslator().getPath();
         File[] dirs = translatorDir.listFiles();
         for(File tt:dirs) {
-            if(!TargetTranslationMigrator.migrate(tt)) {
+            if(TargetTranslationMigrator.migrate(tt) == null) {
                 Logger.w(this.getClass().getName(), "Failed to migrate the target translation " + tt.getName());
             }
         }
@@ -237,17 +237,7 @@ public class UpdateAppTask extends ManagedTask {
      * We made some changes to the target translation manifest structure
      */
     private void upgradePre107() {
-        TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
-        for(TargetTranslation tt:targetTranslations) {
-            if(!TargetTranslationMigrator.migrate(tt.getPath())) {
-                Logger.w(this.getClass().getName(), "Failed to migrate the target translation " + tt.getId());
-            }
-            try {
-                tt.commitSync();
-            } catch (Exception e) {
-                Logger.e(this.getClass().getName(), "Failed to commit migration changes to target translation " + tt.getId());
-            }
-        }
+        // we were migrating the target translations but now they are migrated automagically
     }
 
     /**

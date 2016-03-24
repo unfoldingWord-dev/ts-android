@@ -32,8 +32,8 @@ import java.net.Socket;
 import java.util.Collection;
 
 /**
- * Performs the uploading of a translation to the server.
- * This will upload a target translation as the user profile
+ * Uploads a target translation to the server.
+ *
  */
 public class UploadTargetTranslationTask extends ManagedTask {
     public static final String TASK_ID = "upload_target_translation";
@@ -98,7 +98,7 @@ public class UploadTargetTranslationTask extends ManagedTask {
         publishProgress(-1, AppContext.context().getResources().getString(R.string.uploading));
 
         String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
-        String targetTranslationRemoteRepository = server + ":tS/" + AppContext.udid() + "/uw-" + mTargetTranslation.getProjectId() + "-" + mTargetTranslation.getTargetLanguageId();
+        String targetTranslationRemoteRepository = server + ":tS/" + AppContext.udid() + "/" + mTargetTranslation.getId();
 
         // push the translation
         Repo translationRepo = mTargetTranslation.getRepo();

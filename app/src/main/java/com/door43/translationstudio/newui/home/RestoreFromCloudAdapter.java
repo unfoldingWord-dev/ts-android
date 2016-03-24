@@ -14,6 +14,8 @@ import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 
+import org.w3c.dom.Text;
+
 import java.util.Locale;
 
 /**
@@ -59,8 +61,8 @@ public class RestoreFromCloudAdapter extends BaseAdapter {
         holder.projectName.setText(targetTranslationID);
         holder.targetLanguageName.setText("");
         try {
-            String projectSlug = TargetTranslation.getProjectIdFromId(targetTranslationID);
-            String targetLanguageSlug = TargetTranslation.getTargetLanguageIdFromId(targetTranslationID);
+            String projectSlug = TargetTranslation.getProjectSlugFromId(targetTranslationID);
+            String targetLanguageSlug = TargetTranslation.getTargetLanguageSlugFromId(targetTranslationID);
 
             Project p = library.getProject(projectSlug, Locale.getDefault().getLanguage());
             if(p != null) {

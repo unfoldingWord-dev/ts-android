@@ -2,6 +2,7 @@ package com.door43.translationstudio.core;
 
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.rendering.USXtoUSFMConverter;
+import com.door43.util.FileUtilities;
 import com.door43.util.Manifest;
 
 import org.apache.commons.io.FileUtils;
@@ -19,54 +20,116 @@ import java.util.Iterator;
  */
 public class TargetTranslationMigrator {
 
-    private TargetTranslationMigrator() {
+    private static final String MANIFEST_FILE = "manifest.json";
 
+    /**
+     * Performs a migration on a manifest object.
+     * We just throw it into a temporary directory and run the normal migration on it.
+     * @param manifestJson
+     * @return
+     */
+    public static JSONObject migrateManifest(JSONObject manifestJson) {
+        File tempDir = new File(AppContext.context().getCacheDir(), System.currentTimeMillis() + "");
+        // TRICKY: the migration can change the name of the translation dir so we nest it to avoid conflicts.
+        File fakeTranslationDir = new File(tempDir, "translation");
+        fakeTranslationDir.mkdirs();
+        JSONObject migratedManifest = null;
+        try {
+            FileUtils.writeStringToFile(new File(fakeTranslationDir, "manifest.json"), manifestJson.toString());
+            fakeTranslationDir = migrate(fakeTranslationDir);
+            if(fakeTranslationDir != null) {
+                migratedManifest = new JSONObject(FileUtils.readFileToString(new File(fakeTranslationDir, "manifest.json")));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            // clean up
+            FileUtils.deleteQuietly(tempDir);
+        }
+        return migratedManifest;
     }
 
     /**
      * Performs necessary migration operations on a target translation
      * @param targetTranslationDir
-     * @return
+     * @return the target translation dir. Null if the migration failed
      */
-    public static boolean migrate(File targetTranslationDir) {
-        boolean success = false;
-        File manifestFile = new File(targetTranslationDir, "manifest.json");
+    public static File migrate(File targetTranslationDir) {
+        File migratedDir = targetTranslationDir;
+        File manifestFile = new File(targetTranslationDir, MANIFEST_FILE);
         try {
-
-            if (manifestFile.exists()) {
-                JSONObject manifest = new JSONObject(FileUtils.readFileToString(manifestFile));
-                switch (manifest.getInt("package_version")) {
-                    case 2:
-                        success = v2(manifestFile);
-                        if(!success) break;
-                    case 3:
-                        success = v3(manifestFile);
-                        if(!success) break;
-                    case 4:
-                        success = v4(manifestFile);
-                        if(!success) break;
-                    case 5:
-                        success = v5(manifestFile);
-                        if(!success) break;
-                    default:
-                        if(success) {
-                            success = validateTranslationType(manifestFile);
-                        }
-                }
+            JSONObject manifest = new JSONObject(FileUtils.readFileToString(manifestFile));
+            switch (manifest.getInt("package_version")) {
+                case 2:
+                    migratedDir = v2(migratedDir);
+                    if (migratedDir == null) break;
+                case 3:
+                    migratedDir = v3(migratedDir);
+                    if (migratedDir == null) break;
+                case 4:
+                    migratedDir = v4(migratedDir);
+                    if (migratedDir == null) break;
+                case 5:
+                    migratedDir = v5(migratedDir);
+                    if (migratedDir == null) break;
+                case 6:
+                    migratedDir = v6(migratedDir);
+                    if (migratedDir == null) break;
+                default:
+                    if (migratedDir != null && !validateTranslationType(migratedDir)) {
+                        migratedDir = null;
+                    }
             }
         } catch (Exception e) {
             e.printStackTrace();
+            migratedDir = null;
         }
-        return success;
+        return migratedDir;
     }
 
     /**
-     * latest version
+     * current version
+     * @param path
+     * @return
+     * @throws Exception
+     */
+    private static File v6(File path) throws Exception {
+        return path;
+    }
+
+    /**
+     * Updated the id format of target translations
      * @param path
      * @return
      */
-    private static boolean v5(File path) {
-        return true;
+    private static File v5(File path) throws Exception {
+        File manifestFile = new File(path, MANIFEST_FILE);
+        JSONObject manifest = new JSONObject(FileUtils.readFileToString(manifestFile));
+
+        // pull info to build id
+        String targetLanguageCode = manifest.getJSONObject("target_language").getString("id");
+        String projectSlug = manifest.getJSONObject("project").getString("id");
+        String translationTypeSlug = manifest.getJSONObject("type").getString("id");
+        String resourceSlug = null;
+        if(translationTypeSlug.equals("text")) {
+            resourceSlug = manifest.getJSONObject("resource").getString("id");
+        }
+
+        // build new id
+        String id = targetLanguageCode + "_" + projectSlug + "_" + translationTypeSlug;
+        if(translationTypeSlug.equals("text") && resourceSlug != null) {
+            id += "_" + resourceSlug;
+        }
+
+        // update package version
+        manifest.put("package_version", 6);
+        FileUtils.write(manifestFile, manifest.toString(2));
+
+        // update target translation dir name
+        File newPath = new File(path.getParentFile(), id.toLowerCase());
+        FileUtilities.safeDelete(newPath);
+        FileUtils.moveDirectory(path, newPath);
+        return newPath;
     }
 
     /**
@@ -75,8 +138,9 @@ public class TargetTranslationMigrator {
      * @param path
      * @return
      */
-    private static boolean v4(File path) throws Exception {
-        JSONObject manifest = new JSONObject(FileUtils.readFileToString(path));
+    private static File v4(File path) throws Exception {
+        File manifestFile = new File(path, MANIFEST_FILE);
+        JSONObject manifest = new JSONObject(FileUtils.readFileToString(manifestFile));
 
         // type
         {
@@ -262,8 +326,8 @@ public class TargetTranslationMigrator {
         }
 
         // update where project title is saved.
-        File oldProjectTitle = new File(path.getParentFile(), "title.txt");
-        File newProjectTitle = new File(path.getParentFile(), "00/title.txt");
+        File oldProjectTitle = new File(path, "title.txt");
+        File newProjectTitle = new File(path, "00/title.txt");
         if(oldProjectTitle.exists()) {
             newProjectTitle.getParentFile().mkdirs();
             FileUtils.moveFile(oldProjectTitle, newProjectTitle);
@@ -272,13 +336,13 @@ public class TargetTranslationMigrator {
         // update package version
         manifest.put("package_version", 5);
 
-        FileUtils.write(path, manifest.toString(2));
+        FileUtils.write(manifestFile, manifest.toString(2));
 
         // migrate usx to usfm
         String format = manifest.getString("format");
         // TRICKY: we just added the new format field, anything marked as usfm may have residual usx and needs to be migrated
         if (format.equals("usfm")) {
-            File[] chapterDirs = path.getParentFile().listFiles(new FileFilter() {
+            File[] chapterDirs = path.listFiles(new FileFilter() {
                 @Override
                 public boolean accept(File pathname) {
                     return pathname.isDirectory() && !pathname.getName().equals(".git");
@@ -299,7 +363,7 @@ public class TargetTranslationMigrator {
             }
         }
 
-        return true;
+        return path;
     }
 
     /**
@@ -308,8 +372,9 @@ public class TargetTranslationMigrator {
      * @param path
      * @return
      */
-    private static boolean v3(File path) throws Exception {
-        JSONObject manifest = new JSONObject(FileUtils.readFileToString(path));
+    private static File v3(File path) throws Exception {
+        File manifestFile = new File(path, MANIFEST_FILE);
+        JSONObject manifest = new JSONObject(FileUtils.readFileToString(manifestFile));
         if(manifest.has("translators")) {
             JSONArray legacyTranslators = manifest.getJSONArray("translators");
             JSONArray translators = new JSONArray();
@@ -322,11 +387,11 @@ public class TargetTranslationMigrator {
                 }
             }
             manifest.put("translators", translators);
-            manifest.put("package_version", 3);
-            FileUtils.write(path, manifest.toString(2));
+            manifest.put("package_version", 4);
+            FileUtils.write(manifestFile, manifest.toString(2));
         }
-        migrateChunkChanges(path.getParentFile());
-        return true;
+        migrateChunkChanges(path);
+        return path;
     }
 
     /**
@@ -334,8 +399,9 @@ public class TargetTranslationMigrator {
      * @param path
      * @return
      */
-    private static boolean v2( File path) throws Exception {
-        JSONObject manifest = new JSONObject(FileUtils.readFileToString(path));
+    private static File v2( File path) throws Exception {
+        File manifestFile = new File(path, MANIFEST_FILE);
+        JSONObject manifest = new JSONObject(FileUtils.readFileToString(manifestFile));
         // fix finished frames
         if(manifest.has("frames")) {
             JSONObject legacyFrames = manifest.getJSONObject("frames");
@@ -398,9 +464,9 @@ public class TargetTranslationMigrator {
             manifest.put("target_language", targetLanguage);
         }
 
-        manifest.put("package_version", 2);
-        FileUtils.write(path, manifest.toString(2));
-        return true;
+        manifest.put("package_version", 3);
+        FileUtils.write(manifestFile, manifest.toString(2));
+        return path;
     }
 
     /**
@@ -548,7 +614,7 @@ public class TargetTranslationMigrator {
      * @return
      */
     private static boolean validateTranslationType(File path) throws Exception{
-        JSONObject manifest = new JSONObject(FileUtils.readFileToString(path));
+        JSONObject manifest = new JSONObject(FileUtils.readFileToString(new File(path, MANIFEST_FILE)));
         String typeId = manifest.getJSONObject("type").getString("id");
         // android only supports TEXT translations for now
         return TranslationType.get(typeId) == TranslationType.TEXT;

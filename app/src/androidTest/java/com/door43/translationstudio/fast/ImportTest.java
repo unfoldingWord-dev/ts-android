@@ -33,29 +33,29 @@ public class ImportTest extends InstrumentationTestCase {
     }
 
     public void test01ImportMultiLanguageDokuWikiFile() throws Exception {
-        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs", TranslationType.TEXT, Resource.Type.REGULAR));
-        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.Type.REGULAR));
-        assertNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs", TranslationType.TEXT, Resource.Type.REGULAR)));
-        assertNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.Type.REGULAR)));
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs", TranslationType.TEXT, Resource.REGULAR_SLUG));
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.REGULAR_SLUG));
+        assertNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs", TranslationType.TEXT, Resource.REGULAR_SLUG)));
+        assertNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.REGULAR_SLUG)));
         File file = new File(this.testsDir, "multilanguage.txt");
         file.getParentFile().mkdirs();
         Util.copyStreamToCache(this.context, this.context.getAssets().open("exports/1.0_afaraf_deutsch.txt"), file);
         this.translator.importDokuWiki(this.library, file);
-        assertNotNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs", TranslationType.TEXT, Resource.Type.REGULAR)));
-        assertNotNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.Type.REGULAR)));
-        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs", TranslationType.TEXT, Resource.Type.REGULAR));
-        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.Type.REGULAR));
+        assertNotNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs", TranslationType.TEXT, Resource.REGULAR_SLUG)));
+        assertNotNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.REGULAR_SLUG)));
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs", TranslationType.TEXT, Resource.REGULAR_SLUG));
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.REGULAR_SLUG));
     }
 
     public void test02ImportDokuWikiFile() throws Exception {
-        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs", TranslationType.TEXT, Resource.Type.REGULAR));
-        assertNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs", TranslationType.TEXT, Resource.Type.REGULAR)));
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs", TranslationType.TEXT, Resource.REGULAR_SLUG));
+        assertNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs", TranslationType.TEXT, Resource.REGULAR_SLUG)));
         File file = new File(this.testsDir, "singlelanguage.txt");
         file.getParentFile().mkdirs();
         Util.copyStreamToCache(this.context, this.context.getAssets().open("exports/1.0_deutsch.txt"), file);
         this.translator.importDokuWiki(this.library, file);
-        assertNotNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs", TranslationType.TEXT, Resource.Type.REGULAR)));
-        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs", TranslationType.TEXT, Resource.Type.REGULAR));
+        assertNotNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs", TranslationType.TEXT, Resource.REGULAR_SLUG)));
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs", TranslationType.TEXT, Resource.REGULAR_SLUG));
     }
 
     public void test03ImportLegacyArchive() throws Exception {
@@ -89,13 +89,13 @@ public class ImportTest extends InstrumentationTestCase {
     }
 
     public void test07ImportV2Archive() throws Exception {
-        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.Type.REGULAR));
-        assertNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.Type.REGULAR)));
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.REGULAR_SLUG));
+        assertNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.REGULAR_SLUG)));
         File file = new File(this.testsDir, "3.0.1_uw-obs-aa.tstudio");
         file.getParentFile().mkdirs();
         Util.copyStreamToCache(this.context, this.context.getAssets().open("exports/3.0.1_uw-obs-aa.tstudio"), file);
         this.translator.importArchive(file);
-        assertNotNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.Type.REGULAR)));
-        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.Type.REGULAR));
+        assertNotNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.REGULAR_SLUG)));
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.REGULAR_SLUG));
     }
 }

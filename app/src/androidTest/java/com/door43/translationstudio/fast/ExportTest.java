@@ -39,7 +39,7 @@ public class ExportTest extends InstrumentationTestCase {
         this.translator.deleteTargetTranslation("uw-obs-aa");
         Util.copyStreamToCache(this.context, this.context.getAssets().open("exports/3.0.1_uw-obs-aa.tstudio"), file);
         this.translator.importArchive(file);
-        TargetTranslation targetTranslation = this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.Type.REGULAR));
+        TargetTranslation targetTranslation = this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.REGULAR_SLUG));
         assertNotNull(targetTranslation);
         assertTrue(targetTranslation.getChapterTranslations().length > 0);
 
@@ -66,7 +66,7 @@ public class ExportTest extends InstrumentationTestCase {
         file.getParentFile().mkdirs();
         Util.copyStreamToCache(this.context, this.context.getAssets().open("exports/3.0.1_uw-obs-aa.tstudio"), file);
         this.translator.importArchive(file);
-        TargetTranslation targetTranslation = this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.Type.REGULAR));
+        TargetTranslation targetTranslation = this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, Resource.REGULAR_SLUG));
         assertNotNull(targetTranslation);
         assertTrue(targetTranslation.getChapterTranslations().length > 0);
 
