@@ -75,35 +75,11 @@ public class FeedbackDialog extends DialogFragment implements ManagedTask.OnFini
 
         ImageView wifiIcon = (ImageView)v.findViewById(R.id.wifi_icon);
         ViewUtil.tintViewDrawable(wifiIcon, getActivity().getResources().getColor(R.color.dark_secondary_text));
-        Button logButton = (Button)v.findViewById(R.id.log_button);
         Button cancelButton = (Button)v.findViewById(R.id.cancelButton);
         Button confirmButton = (Button)v.findViewById(R.id.confirmButton);
         final EditText editText = (EditText)v.findViewById(R.id.editText);
         editText.setText(mMessage);
         editText.setSelection(editText.getText().length());
-
-        File logFile = Logger.getLogFile();
-        if(logFile.exists()) {
-            try {
-                final String log = FileUtils.readFileToString(logFile);
-                if(!log.trim().isEmpty()) {
-                    logButton.setVisibility(View.VISIBLE);
-                    logButton.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            showLog();
-                        }
-                    });
-                } else {
-                    logButton.setVisibility(View.GONE);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-                logButton.setVisibility(View.GONE);
-            }
-        } else {
-            logButton.setVisibility(View.GONE);
-        }
 
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -144,18 +120,6 @@ public class FeedbackDialog extends DialogFragment implements ManagedTask.OnFini
         }
 
         return v;
-    }
-
-    private void showLog() {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        Fragment prev = getFragmentManager().findFragmentByTag("logDialog");
-        if (prev != null) {
-            ft.remove(prev);
-        }
-        ft.addToBackStack(null);
-
-        LogDialog dialog = new LogDialog();
-        dialog.show(ft, "logDialog");
     }
 
     private void notifyInputRequired() {

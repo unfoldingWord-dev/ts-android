@@ -6,6 +6,8 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -16,10 +18,12 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.TargetLanguageUtility;
 
+import com.door43.translationstudio.core.ArchiveDetails;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetLanguage;
@@ -28,7 +32,7 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.newui.BaseActivity;
-import com.door43.translationstudio.newui.newlanguage.NewTargetTranslationActivity;
+import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
 import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.AppContext;
@@ -156,12 +160,62 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                 if (action.compareTo(Intent.ACTION_VIEW) == 0 || action.compareTo(Intent.ACTION_DEFAULT) == 0) {
                     String scheme = intent.getScheme();
                     ContentResolver resolver = getContentResolver();
-
+                    Uri contentUri = intent.getData();
+                    File tempFile = null;
                     if (scheme.compareTo(ContentResolver.SCHEME_FILE) == 0) {
-                        // TODO: 2/10/2016 confirm with user that they want to import the file
+                        finish();
+                        // TODO: 3/23/2016 we need to finish adding support for importing by clicking on a file.
+                        // the import needs to be ran in a task and a loading dialog should be displayed.
+                        try {
+                            tempFile = File.createTempFile("targettranslation", "." + Translator.ARCHIVE_EXTENSION);
+                            FileUtils.copyInputStreamToFile(resolver.openInputStream(contentUri), tempFile);
+                            ArchiveDetails details = ArchiveDetails.newInstance(tempFile, Locale.getDefault().getLanguage(), mLibrary);
+                            String names = "";
+                            for (ArchiveDetails.TargetTranslationDetails td : details.targetTranslationDetails) {
+                                names = td.projectName + " - " + td.targetLanguageName + ", ";
+                            }
+                            names = names.replaceAll(", $", "");
+                            final File archiveFile = tempFile;
+                            CustomAlertDialog.Create(this)
+                                    .setTitle(R.string.label_import)
+                                    .setMessage(String.format(getResources().getString(R.string.confirm_import_target_translation), names))
+                                    .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            FileUtils.deleteQuietly(archiveFile);
+                                            HomeActivity.this.finish();
+                                        }
+                                    })
+                                    .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            // TODO: 3/23/2016 import the file!
+                                            try {
+                                                String[] importedSlugs = AppContext.getTranslator().importArchive(archiveFile);
+                                                if (importedSlugs.length > 0) {
+                                                    // TODO: 3/23/2016 success!
+                                                    HomeActivity.this.notifyDatasetChanged();
+                                                } else {
+                                                    // TODO: 3/23/2016 nothing could be imported
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            } finally {
+                                                FileUtils.deleteQuietly(archiveFile);
+                                                HomeActivity.this.finish();
+                                            }
+                                        }
+                                    })
+                                    .show("confirm_import");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            if (tempFile != null) {
+                                FileUtils.deleteQuietly(tempFile);
+                            }
+                            finish();
+                        }
                     }
                 }
-                return;
             }
         }
 
@@ -197,6 +251,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
     @Override
     public void onResume() {
         super.onResume();
+        AppContext.setLastFocusTargetTranslation(null);
 
         int numTranslations = mTranslator.getTargetTranslations().length;
         if(numTranslations > 0 && mFragment instanceof WelcomeFragment) {
@@ -204,6 +259,16 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
             mFragment = new TargetTranslationListFragment();
             mFragment.setArguments(getIntent().getExtras());
             getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
+
+            // load list after fragment created
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    ((TargetTranslationListFragment) mFragment).reloadList();
+                }
+            });
+
         } else if(numTranslations == 0 && mFragment instanceof TargetTranslationListFragment) {
             // display welcome screen
             mFragment = new WelcomeFragment();

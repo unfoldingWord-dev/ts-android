@@ -52,7 +52,7 @@ public class CloneTargetTranslationTask extends SshTask {
         publishProgress(-1, AppContext.context().getResources().getString(R.string.downloading));
         try {
             // prepare destination
-            localPath.delete();
+            localPath.mkdirs();
 
             Git result = Git.cloneRepository()
                     .setURI(remote)

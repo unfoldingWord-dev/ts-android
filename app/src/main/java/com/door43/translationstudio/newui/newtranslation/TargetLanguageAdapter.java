@@ -20,26 +20,21 @@ import java.util.List;
  * Created by joel on 9/4/2015.
  */
 public class TargetLanguageAdapter extends BaseAdapter {
-
+    private TargetLanguage[] mTargetLanguages;
+    private TargetLanguage[] mFilteredTargetLanguages;
     private TargetLanguageFilter mTargetLanguageFilter;
 
     public TargetLanguageAdapter(TargetLanguage[] targetLanguages) {
         List<TargetLanguage> targetLanguagesList = Arrays.asList(targetLanguages);
-
-        mTargetLanguageFilter = new TargetLanguageFilter(targetLanguagesList);
-        mTargetLanguageFilter.setResultsListener(new TargetLanguageFilter.OnPublishResultsListener() {
-            @Override
-            public void onFinish(TargetLanguage[] filteredTargetLanguages) {
-                notifyDataSetChanged();
-            }
-        } );
+        Collections.sort(targetLanguagesList);
+        mTargetLanguages = targetLanguagesList.toArray(new TargetLanguage[targetLanguagesList.size()]);
+        mFilteredTargetLanguages = mTargetLanguages;
     }
 
     @Override
     public int getCount() {
-        TargetLanguage[] filteredTargetLanguages = mTargetLanguageFilter.getFilteredTargetLanguages();
-        if(filteredTargetLanguages != null) {
-            return filteredTargetLanguages.length;
+        if(mFilteredTargetLanguages != null) {
+            return mFilteredTargetLanguages.length;
         } else {
             return 0;
         }
@@ -47,8 +42,7 @@ public class TargetLanguageAdapter extends BaseAdapter {
 
     @Override
     public TargetLanguage getItem(int position) {
-        TargetLanguage[] filteredTargetLanguages = mTargetLanguageFilter.getFilteredTargetLanguages();
-        return filteredTargetLanguages[position];
+        return mFilteredTargetLanguages[position];
     }
 
     @Override
@@ -80,6 +74,9 @@ public class TargetLanguageAdapter extends BaseAdapter {
      * @return
      */
     public Filter getFilter() {
+        if(mTargetLanguageFilter == null) {
+            mTargetLanguageFilter = new TargetLanguageFilter();
+        }
         return mTargetLanguageFilter;
     }
 
@@ -93,4 +90,69 @@ public class TargetLanguageAdapter extends BaseAdapter {
             view.setTag(this);
         }
     }
- }
+
+    private class TargetLanguageFilter extends Filter {
+
+        @Override
+        protected FilterResults performFiltering(CharSequence charSequence) {
+            FilterResults results = new FilterResults();
+            if(charSequence == null || charSequence.length() == 0) {
+                // no filter
+                results.values = Arrays.asList(mTargetLanguages);
+                results.count = mTargetLanguages.length;
+            } else {
+                // perform filter
+                List<TargetLanguage> filteredCategories = new ArrayList<>();
+                for(TargetLanguage language:mTargetLanguages) {
+                    // match the target language id
+                    boolean match = language.getId().toLowerCase().startsWith(charSequence.toString().toLowerCase());
+                    if(!match) {
+                        if (language.name.toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
+                            // match the target language name
+                            match = true;
+                        }
+                    }
+                    if(match) {
+                        filteredCategories.add(language);
+                    }
+                }
+                results.values = filteredCategories;
+                results.count = filteredCategories.size();
+            }
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+            List<TargetLanguage> filteredLanguages = (List<TargetLanguage>)filterResults.values;
+            if(charSequence != null && charSequence.length() > 0) {
+                sortTargetLanguages(filteredLanguages, charSequence);
+            }
+            mFilteredTargetLanguages = filteredLanguages.toArray(new TargetLanguage[filteredLanguages.size()]);
+            notifyDataSetChanged();
+        }
+    }
+
+    /**
+     * Sorts target languages by id
+     * @param languages
+     * @param referenceId languages are sorted according to the reference id
+     */
+    private static void sortTargetLanguages(List<TargetLanguage> languages, final CharSequence referenceId) {
+        Collections.sort(languages, new Comparator<TargetLanguage>() {
+            @Override
+            public int compare(TargetLanguage lhs, TargetLanguage rhs) {
+                String lhId = lhs.getId();
+                String rhId = rhs.getId();
+                // give priority to matches with the reference
+                if(lhId.startsWith(referenceId.toString().toLowerCase())) {
+                    lhId = "!" + lhId;
+                }
+                if(rhId.startsWith(referenceId.toString().toLowerCase())) {
+                    rhId = "!" + rhId;
+                }
+                return lhId.compareToIgnoreCase(rhId);
+            }
+        });
+    }
+}

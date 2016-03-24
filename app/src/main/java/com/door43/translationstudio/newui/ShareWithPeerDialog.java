@@ -223,32 +223,56 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
                                 final String targetTranslationSlug = request.context.getString("target_translation_id");
                                 String projectName = request.context.getString("project_name");
                                 String targetLanguageName = request.context.getString("target_language_name");
+                                int packageVersion = request.context.getInt("package_version");
+                                if(packageVersion <= TargetTranslation.PACKAGE_VERSION) {
+                                    final CustomAlertDialog dialog = CustomAlertDialog.Create(getActivity());
+                                    dialog.setTitle(peer.getName())
+                                            .setMessage(String.format(getResources().getString(R.string.confirm_import_target_translation), projectName + " - " + targetLanguageName))
+                                            .setPositiveButton(R.string.label_import, new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View v) {
+                                                    peer.dismissRequest(request);
+                                                    if (adapter != null) {
+                                                        adapter.notifyDataSetChanged();
+                                                    }
+                                                    clientService.requestTargetTranslation(peer, targetTranslationSlug);
+                                                    dialog.dismiss();
+                                                }
+                                            })
+                                            .setNegativeButton(R.string.dismiss, new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View v) {
+                                                    peer.dismissRequest(request);
+                                                    if (adapter != null) {
+                                                        adapter.notifyDataSetChanged();
+                                                    }
+                                                    dialog.dismiss();
+                                                }
+                                            })
+                                            .show("approve-request");
+                                } else {
+                                    // our app is to old to import this version of a target translation
+                                    Logger.w(ShareWithPeerDialog.class.getName(), "Could not import target translation with package version " + TargetTranslation.PACKAGE_VERSION + ". Supported version is " + TargetTranslation.PACKAGE_VERSION);
+                                    peer.dismissRequest(request);
+                                    if (adapter != null) {
+                                        adapter.notifyDataSetChanged();
+                                    }
+                                    final CustomAlertDialog dialog = CustomAlertDialog.Create(getActivity());
+                                    dialog.setTitle(peer.getName())
+                                            .setMessage(String.format(getResources().getString(R.string.error_importing_unsupported_target_translation), projectName, targetLanguageName, getResources().getString(R.string.app_name)))
+                                            .setNeutralButton(R.string.dismiss, null)
+                                            .show("approve-request");
+                                }
+                            } catch (JSONException e) {
+                                peer.dismissRequest(request);
+                                if (adapter != null) {
+                                    adapter.notifyDataSetChanged();
+                                }
                                 final CustomAlertDialog dialog = CustomAlertDialog.Create(getActivity());
                                 dialog.setTitle(peer.getName())
-                                        .setMessage(String.format(getResources().getString(R.string.confirm_import_target_translation), projectName + " - " + targetLanguageName))
-                                        .setPositiveButton(R.string.label_import, new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View v) {
-                                                peer.dismissRequest(request);
-                                                if(adapter != null) {
-                                                    adapter.notifyDataSetChanged();
-                                                }
-                                                clientService.requestTargetTranslation(peer, targetTranslationSlug);
-                                                dialog.dismiss();
-                                            }
-                                        })
-                                        .setNegativeButton(R.string.dismiss, new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View v) {
-                                                peer.dismissRequest(request);
-                                                if(adapter != null) {
-                                                    adapter.notifyDataSetChanged();
-                                                }
-                                                dialog.dismiss();
-                                            }
-                                        })
+                                        .setMessage(R.string.error)
+                                        .setNeutralButton(R.string.dismiss, null)
                                         .show("approve-request");
-                            } catch (JSONException e) {
                                 Logger.e(ShareWithPeerDialog.class.getName(), "Invalid request context", e);
                             }
                         } else {

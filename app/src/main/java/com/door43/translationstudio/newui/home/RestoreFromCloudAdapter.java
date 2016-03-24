@@ -59,8 +59,8 @@ public class RestoreFromCloudAdapter extends BaseAdapter {
         holder.projectName.setText(targetTranslationID);
         holder.targetLanguageName.setText("");
         try {
-            String projectSlug = TargetTranslation.getProjectIdFromId(targetTranslationID);
-            String targetLanguageSlug = TargetTranslation.getTargetLanguageIdFromId(targetTranslationID);
+            String projectSlug = TargetTranslation.getProjectSlugFromId(targetTranslationID);
+            String targetLanguageSlug = TargetTranslation.getTargetLanguageSlugFromId(targetTranslationID);
 
             Project p = library.getProject(projectSlug, Locale.getDefault().getLanguage());
             if(p != null) {

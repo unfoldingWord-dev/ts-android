@@ -44,13 +44,12 @@ import java.util.Locale;
  * Created by joel on 8/29/2015.
  */
 public class TargetTranslation {
-    public static final int PACKAGE_VERSION = 5; // the version of the target translation implementation
+    public static final int PACKAGE_VERSION = 6; // the version of the target translation implementation
 
     private static final String FIELD_PARENT_DRAFT = "parent_draft";
     private static final String FIELD_FINISHED_CHUNKS = "finished_chunks";
     private static final String FIELD_TRANSLATORS = "translators";
     private static final String FIELD_TARGET_LANGUAGE = "target_language";
-    private static final String GLOBAL_PROJECT_ID = "uw";
     private static final String FIELD_FORMAT = "format";
     private static final String FIELD_RESOURCE = "resource";
     private static final String FIELD_SOURCE_TRANSLATIONS = "source_translations";
@@ -70,8 +69,8 @@ public class TargetTranslation {
     private final TranslationType translationType;
     private final String translationTypeName;
 
-    private Resource.Type resourceType = null;
-    private String resourceTypeName = null;
+    private String resourceSlug = null;
+    private String resourceName = null;
 
     private TranslationFormat mTranslationFormat;
 
@@ -102,8 +101,8 @@ public class TargetTranslation {
         if(this.translationType == TranslationType.TEXT) {
             // resource
             JSONObject resourceJson = this.manifest.getJSONObject("resource");
-            this.resourceType = Resource.Type.get(resourceJson.getString("id"));
-            this.resourceTypeName = Manifest.valueExists(resourceJson, "name") ? resourceJson.getString("name") : this.resourceType.toString().toUpperCase();
+            this.resourceSlug = resourceJson.getString("id");
+            this.resourceName = Manifest.valueExists(resourceJson, "name") ? resourceJson.getString("name") : this.resourceSlug.toUpperCase();
         }
 
         mTranslationFormat = readTranslationFormat();
@@ -114,41 +113,31 @@ public class TargetTranslation {
      * @return
      */
     public String getId() {
-        return generateTargetTranslationId(this.targetLanguageId, this.projectId, this.translationType, this.resourceType);
+        return generateTargetTranslationId(this.targetLanguageId, this.projectId, this.translationType, this.resourceSlug);
     }
 
     /**
      * Returns a properly formatted target translation id
-     * @param targetLanguageId
-     * @param projectId
+     * @param targetLanguageSlug
+     * @param projectSlug
      * @param translationType
-     * @param resourceType
+     * @param resourceSlug
      * @return
      */
-    public static String generateTargetTranslationId(String targetLanguageId, String projectId, TranslationType translationType, Resource.Type resourceType) {
-        if(translationType == TranslationType.TEXT) {
-            if(resourceType == Resource.Type.UNLOCKED_DYNAMIC_BIBLE) {
-                // udb
-                return GLOBAL_PROJECT_ID + "-" + projectId + "_" + resourceType + "-" + targetLanguageId;
-            } else {
-                // ulb, obs, reg
-                return GLOBAL_PROJECT_ID + "-" + projectId + "-" + targetLanguageId;
-            }
-        } else if(translationType == TranslationType.TRANSLATION_ACADEMY || translationType == TranslationType.TRANSLATION_WORD) {
-            // ta, tw
-            return GLOBAL_PROJECT_ID + "-" + projectId + "-" + targetLanguageId;
-        } else {
-            // tn, tq
-            return GLOBAL_PROJECT_ID + "-" + projectId + "_" + resourceType + "-" + targetLanguageId;
+    public static String generateTargetTranslationId(String targetLanguageSlug, String projectSlug, TranslationType translationType, String resourceSlug) {
+        String id = targetLanguageSlug + "_" + projectSlug + "_" + translationType;
+        if(translationType == TranslationType.TEXT && resourceSlug != null) {
+            id += "_" + resourceSlug;
         }
+        return id.toLowerCase();
     }
 
     /**
-     * Returns the resource type/slug
+     * Returns the resource slug
      * @return
      */
-    public Resource.Type getResourceType() {
-        return this.resourceType;
+    public String getResourceSlug() {
+        return this.resourceSlug;
     }
 
     /**
@@ -257,21 +246,23 @@ public class TargetTranslation {
      * @return null if the directory does not exist or the manifest is invalid
      */
     public static TargetTranslation open(File targetTranslationDir) {
-        File manifestFile = new File(targetTranslationDir, "manifest.json");
-        if(manifestFile.exists()) {
-            try {
-                JSONObject manifest = new JSONObject(FileUtils.readFileToString(manifestFile));
-                int version = manifest.getInt(FIELD_PACKAGE_VERSION);
-                if(version == PACKAGE_VERSION) {
-                    return new TargetTranslation(targetTranslationDir);
-                } else {
-                    Logger.w(TargetTranslation.class.getName(), "Unsupported target translation version " + version + " in" + targetTranslationDir.getName());
+        if(targetTranslationDir != null) {
+            File manifestFile = new File(targetTranslationDir, "manifest.json");
+            if (manifestFile.exists()) {
+                try {
+                    JSONObject manifest = new JSONObject(FileUtils.readFileToString(manifestFile));
+                    int version = manifest.getInt(FIELD_PACKAGE_VERSION);
+                    if (version == PACKAGE_VERSION) {
+                        return new TargetTranslation(targetTranslationDir);
+                    } else {
+                        Logger.w(TargetTranslation.class.getName(), "Unsupported target translation version " + version + " in" + targetTranslationDir.getName());
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
+            } else {
+                Logger.w(TargetTranslation.class.getName(), "Missing manifest file in target translation " + targetTranslationDir.getName());
             }
-        } else {
-            Logger.w(TargetTranslation.class.getName(), "Missing manifest file in target translation " + targetTranslationDir.getName());
         }
         return null;
     }
@@ -283,13 +274,13 @@ public class TargetTranslation {
      * @param targetLanguage
      * @param projectId
      * @param translationType
-     * @param resourceType
+     * @param resourceSlug
      * @param packageInfo
      * @param targetTranslationDir
      * @return
      * @throws Exception
      */
-    public static TargetTranslation create(NativeSpeaker translator, TranslationFormat translationFormat, TargetLanguage targetLanguage, String projectId, TranslationType translationType, Resource.Type resourceType, PackageInfo packageInfo, File targetTranslationDir) throws Exception {
+    public static TargetTranslation create(NativeSpeaker translator, TranslationFormat translationFormat, TargetLanguage targetLanguage, String projectId, TranslationType translationType, String resourceSlug, PackageInfo packageInfo, File targetTranslationDir) throws Exception {
         targetTranslationDir.mkdirs();
         Manifest manifest = Manifest.generate(targetTranslationDir);
 
@@ -310,7 +301,7 @@ public class TargetTranslation {
         manifest.put(FIELD_TARGET_LANGUAGE, targetLanguage.toJson());
         manifest.put(FIELD_FORMAT, translationFormat);
         JSONObject resourceJson = new JSONObject();
-        resourceJson.put("id", resourceType);
+        resourceJson.put("id", resourceSlug);
         manifest.put(FIELD_RESOURCE, resourceJson);
 
         // return the new target translation
@@ -338,9 +329,9 @@ public class TargetTranslation {
      * @param targetTranslationId the target translation id
      * @return
      */
-    public static String getProjectIdFromId(String targetTranslationId) throws StringIndexOutOfBoundsException {
-        String[] complexId = targetTranslationId.split("-", 3);
-        if(complexId.length == 3) {
+    public static String getProjectSlugFromId(String targetTranslationId) throws StringIndexOutOfBoundsException {
+        String[] complexId = targetTranslationId.split("_");
+        if(complexId.length >= 3) {
             return complexId[1];
         } else {
             throw new StringIndexOutOfBoundsException("malformed target translation id " + targetTranslationId);
@@ -352,15 +343,10 @@ public class TargetTranslation {
      * @param targetTranslationId the target translation id
      * @return
      */
-    public static String getTargetLanguageIdFromId(String targetTranslationId) throws StringIndexOutOfBoundsException {
-        String[] complexId = targetTranslationId.split("-");
+    public static String getTargetLanguageSlugFromId(String targetTranslationId) throws StringIndexOutOfBoundsException {
+        String[] complexId = targetTranslationId.split("_");
         if(complexId.length >= 3) {
-            // TRICKY: target language id's can have dashes in them.
-            String targetLanguageId = complexId[2];
-            for(int i = 3; i < complexId.length; i ++) {
-                targetLanguageId += "-" + complexId[i];
-            }
-            return targetLanguageId;
+            return complexId[0];
         } else {
             throw new StringIndexOutOfBoundsException("malformed target translation id" + targetTranslationId);
         }
@@ -1282,8 +1268,12 @@ public class TargetTranslation {
      * @return
      */
     public int numFinished() {
-        JSONArray finishedFrames = manifest.getJSONArray(FIELD_FINISHED_CHUNKS);
-        return finishedFrames.length();
+        if(manifest.has(FIELD_FINISHED_CHUNKS)) {
+            JSONArray finishedFrames = manifest.getJSONArray(FIELD_FINISHED_CHUNKS);
+            return finishedFrames.length();
+        } else {
+            return 0;
+        }
     }
 
     /**

@@ -13,6 +13,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NewLanguagePackage;
 import com.door43.translationstudio.core.NewLanguageQuestion;
 import com.door43.translationstudio.newui.BaseActivity;
+import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
