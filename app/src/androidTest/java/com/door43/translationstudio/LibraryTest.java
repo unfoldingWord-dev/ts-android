@@ -1,4 +1,4 @@
-package com.door43.translationstudio.slow;
+package com.door43.translationstudio;
 
 import android.content.Context;
 import android.test.InstrumentationTestCase;
@@ -43,54 +43,54 @@ public class LibraryTest extends InstrumentationTestCase {
         assertTrue(mLibrary.exists());
     }
 
-    public void test03DownloadTargetLanguages() throws Exception {
-        mLibrary.downloadTargetLanguages();
-        assertTrue(mLibrary.getTargetLanguages().length > 0);
-    }
+//    public void test03DownloadTargetLanguages() throws Exception {
+//        mLibrary.downloadTargetLanguages();
+//        assertTrue(mLibrary.getTargetLanguages().length > 0);
+//    }
 
-    public void test04CheckForAvailableUpdates() throws Exception {
-        LibraryUpdates updates = mLibrary.checkServerForUpdates(null);
+//    public void test04CheckForAvailableUpdates() throws Exception {
+//        LibraryUpdates updates = mLibrary.checkServerForUpdates(null);
+//
+//        // cache updates
+//        FileOutputStream fos = AppContext.context().openFileOutput("library_updates", Context.MODE_PRIVATE);
+//        ObjectOutputStream os = new ObjectOutputStream(fos);
+//        os.writeObject(updates);
+//        os.close();
+//        fos.close();
+//
+//        if(updates.numSourceTranslationUpdates() > 0) {
+//            String pid = updates.getUpdatedProjects()[0];
+//            assertTrue(updates.getUpdatedSourceLanguages(pid).length > 0);
+//            String lid = updates.getUpdatedSourceLanguages(pid)[0];
+//            assertTrue(updates.getUpdatedResources(pid, lid).length > 0);
+//        }
+//    }
 
-        // cache updates
-        FileOutputStream fos = AppContext.context().openFileOutput("library_updates", Context.MODE_PRIVATE);
-        ObjectOutputStream os = new ObjectOutputStream(fos);
-        os.writeObject(updates);
-        os.close();
-        fos.close();
+//    public void test05DownloadUpdates() throws Exception {
+//        FileInputStream fis = AppContext.context().openFileInput("library_updates");
+//        ObjectInputStream is = new ObjectInputStream(fis);
+//        LibraryUpdates updates = (LibraryUpdates) is.readObject();
+//        is.close();
+//        fis.close();
+//
+//        // download all available updates
+//        assertTrue(mLibrary.downloadUpdates(updates, null));
+//    }
 
-        if(updates.numSourceTranslationUpdates() > 0) {
-            String pid = updates.getUpdatedProjects()[0];
-            assertTrue(updates.getUpdatedSourceLanguages(pid).length > 0);
-            String lid = updates.getUpdatedSourceLanguages(pid)[0];
-            assertTrue(updates.getUpdatedResources(pid, lid).length > 0);
-        }
-    }
+//    public void test06DownloadEverything() throws Exception {
+//        mLibrary.delete();
+//        mLibrary = AppContext.getLibrary();
+//        assertFalse(mLibrary.exists());
+//        mLibrary.checkServerForUpdates(null);
+//        assertTrue(mLibrary.downloadTargetLanguages());
+//        assertTrue(mLibrary.downloadAllProjects(null, null));
+//    }
 
-    public void test05DownloadUpdates() throws Exception {
-        FileInputStream fis = AppContext.context().openFileInput("library_updates");
-        ObjectInputStream is = new ObjectInputStream(fis);
-        LibraryUpdates updates = (LibraryUpdates) is.readObject();
-        is.close();
-        fis.close();
-
-        // download all available updates
-        assertTrue(mLibrary.downloadUpdates(updates, null));
-    }
-
-    public void test06DownloadEverything() throws Exception {
-        mLibrary.delete();
-        mLibrary = AppContext.getLibrary();
-        assertFalse(mLibrary.exists());
-        mLibrary.checkServerForUpdates(null);
-        assertTrue(mLibrary.downloadTargetLanguages());
-        assertTrue(mLibrary.downloadAllProjects(null, null));
-    }
-
-    public void test07Export() throws Exception {
-        File archive = mLibrary.export(AppContext.getPublicDownloadsDirectory());
-        assertNotNull(archive);
-        assertTrue(archive.exists());
-    }
+//    public void test07Export() throws Exception {
+//        File archive = mLibrary.export(AppContext.getPublicDownloadsDirectory());
+//        assertNotNull(archive);
+//        assertTrue(archive.exists());
+//    }
 
     public void test08LoadTargetLanguages() throws Exception {
         TargetLanguage[] languages = mLibrary.getTargetLanguages();
@@ -98,11 +98,11 @@ public class LibraryTest extends InstrumentationTestCase {
         assertTrue(languages.length > 0);
     }
 
-    public void test09DownloadSourceTranslation() throws Exception {
-        SourceTranslation sourceTranslation = mLibrary.getSourceTranslations("obs")[0];
-
-        assertTrue(mLibrary.downloadSourceTranslation(sourceTranslation, null));
-    }
+//    public void test09DownloadSourceTranslation() throws Exception {
+//        SourceTranslation sourceTranslation = mLibrary.getSourceTranslations("obs")[0];
+//
+//        assertTrue(mLibrary.downloadSourceTranslation(sourceTranslation, null));
+//    }
 
     public void test10GetProjectCategories() throws Exception {
         ProjectCategory[] projectCategories = mLibrary.getProjectCategories("en");

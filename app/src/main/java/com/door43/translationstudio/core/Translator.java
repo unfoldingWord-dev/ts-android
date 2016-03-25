@@ -229,7 +229,10 @@ public class Translator {
      */
     public void exportArchive(TargetTranslation targetTranslation, OutputStream out, String fileName) throws Exception {
         if(!FilenameUtils.getExtension(fileName).toLowerCase().equals(ARCHIVE_EXTENSION)) {
-            throw new Exception("Not a translationStudio archive");
+            throw new Exception("Output file must have '" + ARCHIVE_EXTENSION + "' extension");
+        }
+        if(targetTranslation == null) {
+            throw new Exception("Not a valid target translation");
         }
 
         targetTranslation.commitSync();

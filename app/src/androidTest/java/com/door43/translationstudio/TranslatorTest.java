@@ -1,4 +1,4 @@
-package com.door43.translationstudio.fast;
+package com.door43.translationstudio;
 
 import android.test.InstrumentationTestCase;
 
