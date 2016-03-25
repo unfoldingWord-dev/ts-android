@@ -32,7 +32,11 @@ public class UploadBugReportTask extends ManagedTask {
 
         if(githubTokenIdentifier != 0) {
             GithubReporter reporter = new GithubReporter(AppContext.context(), githubUrl, AppContext.context().getResources().getString(githubTokenIdentifier));
-            reporter.reportBug(mNotes, logFile);
+            try {
+                reporter.reportBug(mNotes, logFile);
+            } catch (IOException e) {
+                Logger.e(this.getClass().getName(), "Failed to submit the bug report", e);
+            }
 
             // empty the log
             try {

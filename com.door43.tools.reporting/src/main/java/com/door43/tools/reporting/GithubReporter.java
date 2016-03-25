@@ -5,14 +5,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.provider.Settings;
+import android.util.Pair;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -83,7 +77,7 @@ public class GithubReporter {
      * @param stacktrace the stracktrace
      * @param log information from the log
      */
-    public void reportCrash(String notes, String stacktrace, String log) {
+    public void reportCrash(String notes, String stacktrace, String log) throws IOException {
         String title = getTitle(notes, DEFAULT_CRASH_TITLE);
         StringBuffer bodyBuf = new StringBuffer();
         bodyBuf.append(getNotesBlock(notes));
@@ -92,16 +86,17 @@ public class GithubReporter {
         bodyBuf.append(getLogBlock(log));
 
         String[] labels = new String[]{"crash report"};
-        String respose = submit(generatePayload(title, bodyBuf.toString(), labels));
-        // TODO: handle response
+        submit(generatePayload(title, bodyBuf.toString(), labels));
+        // TODO: 3/25/2016 handle response
     }
 
     /**
      * Creates a bug issue on github
      * @param notes notes supplied by the user
      */
-    public void reportBug(String notes) {
+    public void reportBug(String notes) throws IOException {
         reportBug(notes, "");
+        // TODO: 3/25/2016 handle response
     }
 
     /**
@@ -109,7 +104,7 @@ public class GithubReporter {
      * @param notes notes supplied by the user
      * @param logFile the log file
      */
-    public void reportBug(String notes, File logFile) {
+    public void reportBug(String notes, File logFile) throws IOException {
         String log = null;
         if(logFile != null && logFile.exists()) {
             try {
@@ -119,6 +114,7 @@ public class GithubReporter {
             }
         }
         reportBug(notes, log);
+        // TODO: 3/25/2016 handle response
     }
 
     /**
@@ -126,7 +122,7 @@ public class GithubReporter {
      * @param notes notes supplied by the user
      * @param log information from the log
      */
-    public void reportBug(String notes, String log) {
+    public void reportBug(String notes, String log) throws IOException {
         String title = getTitle(notes, DEFAULT_BUG_TITLE);
         StringBuffer bodyBuf = new StringBuffer();
         bodyBuf.append(getNotesBlock(notes));
@@ -134,8 +130,8 @@ public class GithubReporter {
         bodyBuf.append(getLogBlock(log));
 
         String[] labels = new String[]{"bug report"};
-        String respose = submit(generatePayload(title, bodyBuf.toString(), labels));
-        // TODO: handle response
+        submit(generatePayload(title, bodyBuf.toString(), labels));
+        // TODO: 3/25/2016 handle response
     }
 
     /**
@@ -172,28 +168,12 @@ public class GithubReporter {
      * @param json the payload
      * @return
      */
-    private String submit(JSONObject json) {
-        // headers
-        List<NameValuePair> headers = new ArrayList<>();
-        headers.add(new BasicNameValuePair("Authorization", "token " + sGithubOauth2Token));
-        headers.add(new BasicNameValuePair("Content-Type", "application/json"));
-
-        // create post request
-        DefaultHttpClient httpClient = new DefaultHttpClient();
-        HttpPost httpPost = new HttpPost(sRepositoryUrl);
-        try {
-            httpPost.setEntity(new StringEntity(json.toString()));
-            if(headers != null) {
-                for(NameValuePair h:headers) {
-                    httpPost.setHeader(h.getName(), h.getValue());
-                }
-            }
-            HttpResponse response = httpClient.execute(httpPost);
-            return response.toString();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return "";
-        }
+    private String submit(JSONObject json) throws IOException {
+        Github github = new Github(sRepositoryUrl);
+        List<Pair<String, String>> headers = new ArrayList<>();
+        headers.add(new Pair<>("Authorization", "token " + sGithubOauth2Token));
+        headers.add(new Pair<>("Content-Type", "application/json"));
+        return github.postRequest("", headers, json.toString());
     }
 
     /**
