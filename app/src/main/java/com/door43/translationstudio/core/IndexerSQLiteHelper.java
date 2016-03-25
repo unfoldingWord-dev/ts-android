@@ -128,7 +128,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         if(cursor.moveToFirst()) {
             // update
             projectId = cursor.getLong(0);
-            db.update("project", values, "`id`=" + projectId, null);
+            db.update("project", values, "`id`=" + projectId, new String[]{});
         } else {
             // insert
             projectId = db.insert("project", null, values);
@@ -211,7 +211,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         if(cursor.moveToFirst()) {
             // update
             sourceLanguageId = cursor.getLong(0);
-            db.update("source_language", values, "`id`=" + sourceLanguageId, null);
+            db.update("source_language", values, "`id`=" + sourceLanguageId, new String[]{});
         } else {
             // insert
             sourceLanguageId = db.insert("source_language", null, values);
@@ -327,7 +327,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         if(cursor.moveToFirst()) {
             // update
             resourceId = cursor.getLong(0);
-            db.update("resource", values, "`id`=" + resourceId, null);
+            db.update("resource", values, "`id`=" + resourceId, new String[]{});
         } else {
             // insert
             resourceId = db.insert("resource", null, values);
@@ -411,7 +411,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         if(cursor.moveToFirst()) {
             // update
             chapterId = cursor.getLong(0);
-            db.update("chapter", values, "`id`=" + chapterId, null);
+            db.update("chapter", values, "`id`=" + chapterId, new String[]{});
         } else {
             // insert
             chapterId = db.insert("chapter", null, values);
@@ -455,7 +455,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         if(cursor.moveToFirst()) {
             // update
             frameId = cursor.getLong(0);
-            db.update("frame", values, "`id`=" + frameId, null);
+            db.update("frame", values, "`id`=" + frameId, new String[]{});
         } else {
             // insert
             frameId = db.insert("frame", null, values);
@@ -679,7 +679,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         if(cursor.moveToFirst()) {
             // update
             noteId = cursor.getLong(0);
-            db.update("translation_note", values, "`id`=" + noteId, null);
+            db.update("translation_note", values, "`id`=" + noteId, new String[]{});
         } else {
             // insert
             noteId = db.insert("translation_note", null, values);
@@ -788,7 +788,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         if(cursor.moveToFirst()) {
             // update
             wordId = cursor.getLong(0);
-            db.update("translation_word", values, "`id`=" + wordId, null);
+            db.update("translation_word", values, "`id`=" + wordId, new String[]{});
         } else {
             // insert
             wordId = db.insert("translation_word", null, values);
@@ -1026,7 +1026,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         if(cursor.moveToFirst()) {
             // update
             questionId = cursor.getLong(0);
-            db.update("checking_question", values, "`id`=" + questionId, null);
+            db.update("checking_question", values, "`id`=" + questionId, new String[]{});
         } else {
             // insert
             questionId = db.insert("checking_question", null, values);
@@ -1944,7 +1944,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         if(cursor.moveToFirst()) {
             // update
             volumeId = cursor.getLong(0);
-            db.update("translation_academy_volume", values, "`id`=" + volumeId, null);
+            db.update("translation_academy_volume", values, "`id`=" + volumeId, new String[]{});
         } else {
             // insert
             volumeId = db.insert("translation_academy_volume", null, values);
@@ -1979,7 +1979,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         if(cursor.moveToFirst()) {
             // update
             manualId = cursor.getLong(0);
-            db.update("translation_academy_manual", values, "`id`=" + manualId, null);
+            db.update("translation_academy_manual", values, "`id`=" + manualId, new String[]{});
         } else {
             // insert
             manualId = db.insert("translation_academy_manual", null, values);
@@ -2010,7 +2010,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         if(cursor.moveToFirst()) {
             // update
             articleDBId = cursor.getLong(0);
-            db.update("translation_academy_article", values, "`id`=" + articleDBId, null);
+            db.update("translation_academy_article", values, "`id`=" + articleDBId, new String[]{});
         } else {
             // insert
             articleDBId = db.insert("translation_academy_article", null, values);
