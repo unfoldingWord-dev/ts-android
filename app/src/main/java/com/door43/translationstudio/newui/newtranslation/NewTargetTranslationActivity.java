@@ -29,10 +29,9 @@ import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.newui.newlanguage.NewLanguageActivity;
-import com.door43.translationstudio.newui.newtranslation.ProjectListFragment;
-import com.door43.translationstudio.newui.newtranslation.TargetLanguageListFragment;
 
 import org.apache.commons.io.FileUtils;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.util.Locale;
@@ -69,6 +68,19 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                     startActivityForResult(requestNewLangaugeIntent, NEW_LANGUAGE_REQUEST);
                 }
             });
+        }
+
+        if(savedInstanceState != null) {
+            if (savedInstanceState.containsKey(STATE_TARGET_TRANSLATION_ID)) {
+                mNewTargetTranslationId = (String) savedInstanceState.getSerializable(STATE_TARGET_TRANSLATION_ID);
+            }
+
+            if (savedInstanceState.containsKey(STATE_TARGET_LANGUAGE_ID)) {
+                String targetLanguageJsonStr = savedInstanceState.getString(STATE_TARGET_LANGUAGE_ID);
+                try {
+                    mSelectedTargetLanguage = TargetLanguage.generate(new JSONObject(targetLanguageJsonStr));
+                } catch (Exception e) { }
+            }
         }
 
         if(findViewById(R.id.fragment_container) != null) {
@@ -288,13 +300,13 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     }
 
     public void onSaveInstanceState(Bundle outState) {
-        if(mNewTargetTranslationId != null) {
-            outState.putSerializable(STATE_TARGET_TRANSLATION_ID, mNewTargetTranslationId);
-        } else {
-            outState.remove(STATE_TARGET_TRANSLATION_ID);
-        }
+        outState.putSerializable(STATE_TARGET_TRANSLATION_ID, mNewTargetTranslationId);
+
         if(mSelectedTargetLanguage != null) {
-            outState.putString(STATE_TARGET_LANGUAGE_ID, mSelectedTargetLanguage.getId());
+            JSONObject targetLanguageJson = mSelectedTargetLanguage.toApiFormatJson();
+            if(targetLanguageJson != null) {
+                outState.putString(STATE_TARGET_LANGUAGE_ID, targetLanguageJson.toString());
+            }
         } else {
             outState.remove(STATE_TARGET_LANGUAGE_ID);
         }
@@ -307,8 +319,8 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
         if (NEW_LANGUAGE_REQUEST == requestCode) {
             if(RESULT_OK == resultCode) {
                 String newLanguageData = data.getStringExtra(NewTargetTranslationActivity.EXTRA_NEW_LANGUAGE_DATA);
-                mNewLanguageButton.setVisibility(View.INVISIBLE);
                 useNewLanguage(newLanguageData);
+                mNewLanguageButton.setVisibility(View.INVISIBLE);
             }
         }
     }
