@@ -19,10 +19,6 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.home.HomeActivity;
 import com.door43.translationstudio.AppContext;
 
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 

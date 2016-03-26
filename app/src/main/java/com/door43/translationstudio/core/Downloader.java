@@ -2,18 +2,17 @@ package com.door43.translationstudio.core;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
-import com.door43.translationstudio.newui.home.ImportDialog;
 import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.http.util.ByteArrayBuffer;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -36,34 +35,23 @@ public class Downloader {
      * @return
      */
     private String request(String apiUrl) {
-        if(apiUrl.trim().isEmpty()) {
-            return null;
-        }
-        URL url;
+        HttpURLConnection urlConnection = null;
         try {
-            url = new URL(apiUrl);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+            URL url = new URL(apiUrl);
+            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setReadTimeout(5000);
+            urlConnection.setReadTimeout(5000);
+            InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+            String response = FileUtilities.readStreamToString(in);
+            urlConnection.disconnect();
+            return response;
+        } catch (IOException e) {
+            Logger.e(this.getClass().getName(), "Failed to download file", e);
             return null;
-        }
-
-        try {
-            URLConnection conn = url.openConnection();
-            conn.setReadTimeout(5000);
-            conn.setConnectTimeout(5000);
-
-            InputStream is = conn.getInputStream();
-            BufferedInputStream bis = new BufferedInputStream(is);
-
-            ByteArrayBuffer bab = new ByteArrayBuffer(5000);
-            int current;
-            while ((current = bis.read()) != -1) {
-                bab.append((byte) current);
+        } finally {
+            if(urlConnection != null) {
+                urlConnection.disconnect();
             }
-            return new String(bab.toByteArray(), "UTF-8");
-        } catch(IOException e) {
-            e.printStackTrace();
-            return null;
         }
     }
 

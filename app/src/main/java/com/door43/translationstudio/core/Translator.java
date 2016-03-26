@@ -1,6 +1,5 @@
 package com.door43.translationstudio.core;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.text.Editable;

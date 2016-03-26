@@ -11,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -78,7 +79,7 @@ public abstract class SshTask extends ManagedTask {
                 // submit key
                 JSONObject json = new JSONObject();
                 try {
-                    String key = FileUtilities.getStringFromFile(AppContext.context().getPublicKey().getAbsolutePath()).trim();
+                    String key = FileUtilities.readFileToString(new File(AppContext.context().getPublicKey().getAbsolutePath())).trim();
                     json.put("key", key);
                     json.put("udid", AppContext.udid());
                     // TODO: provide support for using user names

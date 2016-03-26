@@ -44,7 +44,7 @@ android {
         disable 'MissingTranslation'
         disable 'ExtraTranslation'
     }
-    useLibrary  'org.apache.http.legacy'
+//    useLibrary  'org.apache.http.legacy'
 }
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')

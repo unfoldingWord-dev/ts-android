@@ -13,12 +13,9 @@ import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
-import com.door43.translationstudio.core.Translator;
-import com.door43.util.FileUtilities;
 import com.door43.util.tasks.ManagedTask;
 
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jgit.errors.IllegalTodoFileModification;
 
 import java.io.File;
 import java.io.IOException;
