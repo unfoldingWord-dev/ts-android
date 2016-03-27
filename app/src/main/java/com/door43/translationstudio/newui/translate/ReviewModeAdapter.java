@@ -710,8 +710,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
             };
             thread.start();
+
+            boolean allowFootnote = mAllowFootnote && item.isFrame();
             holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
-            holder.mAddNoteButton.setVisibility(mAllowFootnote ? View.VISIBLE : View.GONE);
+            holder.mAddNoteButton.setVisibility(allowFootnote ? View.VISIBLE : View.GONE);
             holder.mUndoButton.setVisibility(View.GONE);
             holder.mRedoButton.setVisibility(View.GONE);
             holder.mTargetBody.setVisibility(View.GONE);
