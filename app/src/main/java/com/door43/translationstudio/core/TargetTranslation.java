@@ -38,7 +38,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * Created by joel on 8/29/2015.
@@ -969,8 +969,9 @@ public class TargetTranslation {
         try {
             Git git = getRepo().getGit();
             final TagCommand tag = git.tag();
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss", Locale.US);
-            String name = "Published=" + format.format(new Date());
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
+            format.setTimeZone(TimeZone.getTimeZone("UTC"));
+            String name = "R2P=" + format.format(new Date());
             tag.setName(name);
 
             Thread thread = new Thread() {
