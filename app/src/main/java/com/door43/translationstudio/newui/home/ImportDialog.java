@@ -21,7 +21,6 @@ import com.door43.translationstudio.ImportFileChooserActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
-import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.DeviceNetworkAliasDialog;
@@ -197,7 +196,7 @@ public class ImportDialog extends DialogFragment {
                 Logger.i(this.getClass().getName(), "Importing internal file: " + file.toString());
                 final Translator translator = AppContext.getTranslator();
                 final String[] targetTranslationSlugs = translator.importArchive(file);
-                extractSourcesForTargets(translator, targetTranslationSlugs);
+                applySourcesToProjects(translator, targetTranslationSlugs);
                 showImportResults(R.string.import_success, file.toString());
             } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "Failed to import the archive", e);
@@ -222,7 +221,7 @@ public class ImportDialog extends DialogFragment {
                 final InputStream in = AppContext.context().getContentResolver().openInputStream(uri);
                 final Translator translator = AppContext.getTranslator();
                 final String[] targetTranslationSlugs = translator.importArchive(in);
-                extractSourcesForTargets(translator, targetTranslationSlugs);
+                applySourcesToProjects(translator, targetTranslationSlugs);
                 showImportResults(R.string.import_success, SdUtils.getPathString(uri.toString()));
             } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "Failed to import the archive", e);
@@ -236,7 +235,7 @@ public class ImportDialog extends DialogFragment {
         }
     }
 
-    private void extractSourcesForTargets(Translator translator, String[] targetTranslationSlugs) {
+    private void applySourcesToProjects(Translator translator, String[] targetTranslationSlugs) {
         for (String targetTranslationSlug : targetTranslationSlugs) {
             TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationSlug);
             String[] sourceTranslationSlugs = targetTranslation.getSourceTranslations();
