@@ -102,6 +102,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private boolean mResourcesOpened = false;
     private ContentValues[] mTabs;
     private int[] mOpenResourceTab;
+    private boolean mAllowFootnote = true;
+
 //    private boolean onBind = false;
 
     public ReviewModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String startingChapterSlug, String startingFrameSlug, boolean resourcesOpened) {
@@ -111,6 +113,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         mContext = context;
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
+        boolean isOBS = mSourceTranslation.projectSlug.equals("obs");
+        mAllowFootnote = !isOBS;
         mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectSlug, mSourceTranslation.sourceLanguageSlug);
         mTargetLanguage = mLibrary.getTargetLanguage(mTargetTranslation.getTargetLanguageId());
         mResourcesOpened = resourcesOpened;
@@ -707,7 +711,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             };
             thread.start();
             holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
-            holder.mAddNoteButton.setVisibility(View.VISIBLE);
+            holder.mAddNoteButton.setVisibility(mAllowFootnote ? View.VISIBLE : View.GONE);
             holder.mUndoButton.setVisibility(View.GONE);
             holder.mRedoButton.setVisibility(View.GONE);
             holder.mTargetBody.setVisibility(View.GONE);
