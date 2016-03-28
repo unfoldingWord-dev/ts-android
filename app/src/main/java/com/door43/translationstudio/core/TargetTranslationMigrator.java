@@ -1,5 +1,7 @@
 package com.door43.translationstudio.core;
 
+import android.content.res.AssetManager;
+
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.rendering.USXtoUSFMConverter;
 import com.door43.util.FileUtilities;
@@ -13,6 +15,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
 
 /**
@@ -21,6 +24,7 @@ import java.util.Iterator;
 public class TargetTranslationMigrator {
 
     private static final String MANIFEST_FILE = "manifest.json";
+    public static final String LICENSE = "LICENSE";
 
     /**
      * Performs a migration on a manifest object.
@@ -121,6 +125,8 @@ public class TargetTranslationMigrator {
             id += "_" + resourceSlug;
         }
 
+        addLicenseFile(path);
+
         // update package version
         manifest.put("package_version", 6);
         FileUtils.write(manifestFile, manifest.toString(2));
@@ -130,6 +136,30 @@ public class TargetTranslationMigrator {
         FileUtilities.safeDelete(newPath);
         FileUtils.moveDirectory(path, newPath);
         return newPath;
+    }
+
+    /**
+     * make sure the license file is present in folder
+     * @param targetTranslationDir
+     */
+    private static void addLicenseFile(File targetTranslationDir) {
+        //ensure that there is a license file
+        try {
+            File license = new File(targetTranslationDir, LICENSE);
+            if(!license.exists()) {
+                AssetManager am = AppContext.context().getAssets();
+                String licenseSource = "LICENSE.md";
+                InputStream is = am.open(licenseSource);
+                if(is != null) {
+                    FileUtils.copyInputStreamToFile(is, license);
+                } else {
+                    System.err.append("Failed to open license resource: " + licenseSource);
+                    System.err.append("\n");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**

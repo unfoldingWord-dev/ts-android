@@ -2,9 +2,11 @@ package com.door43.translationstudio.core;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
+import android.content.res.AssetManager;
 import android.support.annotation.Nullable;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.git.Repo;
 import com.door43.util.Manifest;
 
@@ -33,6 +35,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,6 +48,8 @@ import java.util.Locale;
  */
 public class TargetTranslation {
     public static final int PACKAGE_VERSION = 6; // the version of the target translation implementation
+    public static final String LICENSE = "LICENSE";
+    public static final String TAG = TargetTranslation.class.getSimpleName();
 
     private static final String FIELD_PARENT_DRAFT = "parent_draft";
     private static final String FIELD_FINISHED_CHUNKS = "finished_chunks";
@@ -303,11 +308,35 @@ public class TargetTranslation {
         JSONObject resourceJson = new JSONObject();
         resourceJson.put("id", resourceSlug);
         manifest.put(FIELD_RESOURCE, resourceJson);
+        addLicenseFile(targetTranslationDir);
 
         // return the new target translation
         TargetTranslation targetTranslation = new TargetTranslation(targetTranslationDir);
         targetTranslation.addContributor(translator);
         return targetTranslation;
+    }
+
+    /**
+     * make sure the license file is present in folder
+     * @param targetTranslationDir
+     */
+    private static void addLicenseFile(File targetTranslationDir) {
+        //ensure that there is a license file
+        try {
+            File license = new File(targetTranslationDir, LICENSE);
+            if(!license.exists()) {
+                AssetManager am = AppContext.context().getAssets();
+                String licenseSource = "LICENSE.md";
+                InputStream is = am.open(licenseSource);
+                if(is != null) {
+                        FileUtils.copyInputStreamToFile(is, license);
+                } else {
+                    Logger.e(TAG, "Failed to open license resource: " + licenseSource);
+                }
+            }
+        } catch (Exception e) {
+            Logger.e(TAG, "Failed to copy license file", e);
+        }
     }
 
     /**
