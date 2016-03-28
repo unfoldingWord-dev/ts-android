@@ -63,7 +63,8 @@ public class TargetTranslationMigrator {
         File manifestFile = new File(targetTranslationDir, MANIFEST_FILE);
         try {
             JSONObject manifest = new JSONObject(FileUtils.readFileToString(manifestFile));
-            switch (manifest.getInt("package_version")) {
+            int packageVersion = manifest.getInt("package_version");
+            switch (packageVersion) {
                 case 2:
                     migratedDir = v2(migratedDir);
                     if (migratedDir == null) break;

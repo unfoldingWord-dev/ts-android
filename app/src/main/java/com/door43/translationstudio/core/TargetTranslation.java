@@ -258,6 +258,7 @@ public class TargetTranslation {
                     JSONObject manifest = new JSONObject(FileUtils.readFileToString(manifestFile));
                     int version = manifest.getInt(FIELD_PACKAGE_VERSION);
                     if (version == PACKAGE_VERSION) {
+                        ensureLicenseFilePresent(targetTranslationDir);
                         return new TargetTranslation(targetTranslationDir);
                     } else {
                         Logger.w(TargetTranslation.class.getName(), "Unsupported target translation version " + version + " in" + targetTranslationDir.getName());
@@ -308,7 +309,7 @@ public class TargetTranslation {
         JSONObject resourceJson = new JSONObject();
         resourceJson.put("id", resourceSlug);
         manifest.put(FIELD_RESOURCE, resourceJson);
-        addLicenseFile(targetTranslationDir);
+        ensureLicenseFilePresent(targetTranslationDir);
 
         // return the new target translation
         TargetTranslation targetTranslation = new TargetTranslation(targetTranslationDir);
@@ -320,7 +321,7 @@ public class TargetTranslation {
      * make sure the license file is present in folder
      * @param targetTranslationDir
      */
-    private static void addLicenseFile(File targetTranslationDir) {
+    private static void ensureLicenseFilePresent(File targetTranslationDir) {
         //ensure that there is a license file
         try {
             File license = new File(targetTranslationDir, LICENSE);
