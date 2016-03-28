@@ -803,7 +803,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                 }
             };
             ClickableRenderingEngine renderer = Clickables.setupRenderingGroup(format, renderingGroup, null, noteClickListener, true);
-            renderer.setVersesEnabled(false);
+            renderer.setVersesEnabled(true);
 
         } else {
             // TODO: add note click listener
