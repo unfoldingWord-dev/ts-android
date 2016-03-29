@@ -110,7 +110,7 @@ public class Translator {
             File targetTranslationDir = new File(this.mRootDir, targetLanguageId);
             try {
                 PackageInfo pInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
-                return TargetTranslation.create(nativeSpeaker, translationFormat, targetLanguage, projectSlug, translationType, resourceSlug, pInfo, targetTranslationDir);
+                return TargetTranslation.create(this.mContext, nativeSpeaker, translationFormat, targetLanguage, projectSlug, translationType, resourceSlug, pInfo, targetTranslationDir);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -508,7 +508,7 @@ public class Translator {
                         try {
                             PackageInfo pInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
                             // TRICKY: android only supports creating regular text translations
-                            targetTranslation = TargetTranslation.create(AppContext.getProfile().getNativeSpeaker(), format, targetLanguage, project.getId(), TranslationType.TEXT, Resource.REGULAR_SLUG, pInfo, targetTranslationDir);
+                            targetTranslation = TargetTranslation.create(this.mContext, AppContext.getProfile().getNativeSpeaker(), format, targetLanguage, project.getId(), TranslationType.TEXT, Resource.REGULAR_SLUG, pInfo, targetTranslationDir);
                         } catch (Exception e) {
                             Logger.e(Translator.class.getName(), "Failed to create target translation from DokuWiki", e);
                         }

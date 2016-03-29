@@ -1,5 +1,7 @@
 package com.door43.translationstudio.core;
 
+import android.content.res.AssetManager;
+
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.rendering.USXtoUSFMConverter;
 import com.door43.util.FileUtilities;
@@ -13,6 +15,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
 
 /**
@@ -21,6 +24,7 @@ import java.util.Iterator;
 public class TargetTranslationMigrator {
 
     private static final String MANIFEST_FILE = "manifest.json";
+    public static final String LICENSE = "LICENSE";
 
     /**
      * Performs a migration on a manifest object.
@@ -123,6 +127,18 @@ public class TargetTranslationMigrator {
         String id = targetLanguageCode + "_" + projectSlug + "_" + translationTypeSlug;
         if(translationTypeSlug.equals("text") && resourceSlug != null) {
             id += "_" + resourceSlug;
+        }
+
+        // add license file
+        File licenseFile = new File(path, "LICENSE.md");
+        if(!licenseFile.exists()) {
+            AssetManager am = AppContext.context().getAssets();
+            InputStream is = am.open("LICENSE.md");
+            if(is != null) {
+                FileUtils.copyInputStreamToFile(is, licenseFile);
+            } else {
+                throw new Exception("Failed to open the template license file");
+            }
         }
 
         // update package version
