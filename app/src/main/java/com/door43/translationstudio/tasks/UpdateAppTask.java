@@ -52,6 +52,10 @@ public class UpdateAppTask extends ManagedTask {
             e.printStackTrace();
         }
 
+        // TRICKY: we always migrate target translations because uninstalling the app removes our notion of a previous install
+        updateTargetTranslations();
+        updateBuildNumbers();
+
         if (pInfo != null) {
             // record latest version
             editor.putInt("last_version_code", pInfo.versionCode);
@@ -80,9 +84,6 @@ public class UpdateAppTask extends ManagedTask {
         if(lastVersion < 106) {
             upgradePre106();
         }
-        if(lastVersion < 107) {
-            upgradePre107();
-        }
         if(lastVersion < 108) {
             upgradePre108();
         }
@@ -104,8 +105,6 @@ public class UpdateAppTask extends ManagedTask {
         if(lastVersion < 115) {
             upgradePre115();
         }
-        updateTargetTranslations();
-        updateBuildNumbers();
     }
 
     /**
@@ -208,7 +207,7 @@ public class UpdateAppTask extends ManagedTask {
     private void upgradePre110() {
         AppContext.context().deleteDatabase(Library.DATABASE_NAME);
 
-        // TRICKY: we deploy the new library in a different task but since we are using it we need to do so now
+        // TRICKY: we deploy the new library in a different task but since we are using it in the migration we need to do so now
         try {
             AppContext.deployDefaultLibrary();
         } catch (Exception e) {
@@ -228,13 +227,6 @@ public class UpdateAppTask extends ManagedTask {
      */
     private void upgradePre108() {
         AppContext.context().deleteDatabase(Library.DATABASE_NAME);
-    }
-
-    /**
-     * We made some changes to the target translation manifest structure
-     */
-    private void upgradePre107() {
-        // we were migrating the target translations but now they are migrated automagically
     }
 
     /**
