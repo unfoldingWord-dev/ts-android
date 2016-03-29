@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.TimeZone;
 
 /**
@@ -969,7 +970,7 @@ public class TargetTranslation {
         try {
             Git git = getRepo().getGit();
             final TagCommand tag = git.tag();
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss", Locale.US);
             format.setTimeZone(TimeZone.getTimeZone("UTC"));
             String name = "R2P=" + format.format(new Date());
             tag.setName(name);
@@ -1045,7 +1046,7 @@ public class TargetTranslation {
 
             RevCommit head = getGitHead(getRepo());
             if(null == head) {
-                return PublishStatus.QUERY_ERROR;
+                return PublishStatus.ERROR;
             }
 
             if(head.getCommitTime() > lastTag.getCommitTime()) {
@@ -1058,7 +1059,7 @@ public class TargetTranslation {
             Logger.w(this.getClass().toString(), "Error checking published status", e);
         }
 
-        return PublishStatus.QUERY_ERROR;
+        return PublishStatus.ERROR;
     }
 
     /**
@@ -1149,7 +1150,7 @@ public class TargetTranslation {
         IS_CURRENT,
         NOT_CURRENT,
         NOT_PUBLISHED,
-        QUERY_ERROR
+        ERROR
     }
 
     /**
