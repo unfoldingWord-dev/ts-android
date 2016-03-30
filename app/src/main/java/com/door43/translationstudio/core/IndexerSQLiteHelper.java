@@ -253,9 +253,11 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
                         categoryId = cursor.getLong(0);
                         if(categoryId == 0L) {
                             // stop when we reach the top
+                            cursor.close();
                             break;
                         }
                     }
+                    cursor.close();
                 }
             } else {
                 cursor.close();
