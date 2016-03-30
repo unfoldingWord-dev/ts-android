@@ -6,6 +6,15 @@
     android:layout_height="match_parent">
 
     <TextView
+        android:id="@+id/word_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Title"
+        android:textSize="@dimen/title"
+        android:textColor="@color/dark_primary_text"
+        android:layout_marginBottom="@dimen/card_margin"/>
+
+    <TextView
         android:id="@+id/description_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
