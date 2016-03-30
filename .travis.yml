@@ -40,7 +40,7 @@ android:
     # if you need to run emulator(s) during your tests
     - sys-img-armeabi-v7a-android-19
 
-install: travis_wait mvn install
+#install: travis_wait mvn install
 
 #branches:
 #    only:
