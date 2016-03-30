@@ -181,7 +181,7 @@ public class ReviewModeFragment extends ViewModeFragment {
         }
         if(mResourcesDrawerContent != null) {
             mResourcesDrawerContent.setVisibility(View.VISIBLE);
-            mCloseResourcesDrawerButton.setText(getActivity().getResources().getString(R.string.translation_words_index));
+//            mCloseResourcesDrawerButton.setText(getActivity().getResources().getString(R.string.translation_words_index));
             Library library = AppContext.getLibrary();
             ListView list = (ListView) getActivity().getLayoutInflater().inflate(R.layout.fragment_words_index_list, null);
             mResourcesDrawerContent.removeAllViews();
@@ -218,7 +218,7 @@ public class ReviewModeFragment extends ViewModeFragment {
             mResourcesDrawerContent.setVisibility(View.GONE);
         }
         if(mScrollingResourcesDrawerContent != null && article != null) {
-            mCloseResourcesDrawerButton.setText(article.getTitle());
+//            mCloseResourcesDrawerButton.setText(article.getTitle());
             mScrollingResourcesDrawerContent.setVisibility(View.VISIBLE);
             mScrollingResourcesDrawerContent.scrollTo(0, 0);
             WebView view = (WebView) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_article, null);
@@ -325,8 +325,9 @@ public class ReviewModeFragment extends ViewModeFragment {
             mScrollingResourcesDrawerContent.scrollTo(0, 0);
             LinearLayout view = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_word, null);
 
-            mCloseResourcesDrawerButton.setText(word.getTerm());
+//            mCloseResourcesDrawerButton.setText(word.getTerm());
 
+            TextView wordTitle = (TextView)view.findViewById(R.id.word_title);
             TextView descriptionTitle = (TextView)view.findViewById(R.id.description_title);
             HtmlTextView descriptionView = (HtmlTextView)view.findViewById(R.id.description);
             TextView seeAlsoTitle = (TextView)view.findViewById(R.id.see_also_title);
@@ -342,6 +343,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                 }
             });
 
+            wordTitle.setText(word.getTerm());
             descriptionTitle.setText(word.getDefinitionTitle());
             Typography.formatTitle(getActivity(), descriptionTitle, sourceLanguage.getId(), sourceLanguage.getDirection());
             HtmlRenderer renderer = new HtmlRenderer(new HtmlRenderer.OnPreprocessLink() {
@@ -463,7 +465,7 @@ public class ReviewModeFragment extends ViewModeFragment {
             mScrollingResourcesDrawerContent.scrollTo(0, 0);
             LinearLayout view = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_note, null);
 
-            mCloseResourcesDrawerButton.setText(note.getTitle());
+//            mCloseResourcesDrawerButton.setText(note.getTitle());
 
             TextView title = (TextView)view.findViewById(R.id.title);
             TextView descriptionView = (TextView)view.findViewById(R.id.description);
@@ -482,11 +484,16 @@ public class ReviewModeFragment extends ViewModeFragment {
                     } else if(span instanceof PassageLinkSpan) {
                         PassageLinkSpan link = (PassageLinkSpan)span;
                         String chapterID = link.getChapterId();
+                        // TODO: 3/30/2016 rather than assuming passage links are always referring to the current source translation we need to support links to other source translations
                         Frame frame = library.getFrame(sourceTranslation, chapterID, link.getFrameId());
-                        String chapter = (chapterID != null) ? String.valueOf(Integer.parseInt(chapterID)) : ""; // handle null chapter ID
-                        String title = sourceTranslation.getProjectTitle() + " " + chapter + ":" + frame.getTitle();
-                        link.setTitle(title);
-                        return library.getFrame(sourceTranslation, chapterID, link.getFrameId()) != null;
+                        if(frame != null) {
+                            String chapter = (chapterID != null) ? String.valueOf(Integer.parseInt(chapterID)) : ""; // handle null chapter ID
+                            String title = sourceTranslation.getProjectTitle() + " " + chapter + ":" + frame.getTitle();
+                            link.setTitle(title);
+                            return library.getFrame(sourceTranslation, chapterID, link.getFrameId()) != null;
+                        } else {
+                            return false;
+                        }
                     }
                     return true;
                 }
@@ -548,7 +555,7 @@ public class ReviewModeFragment extends ViewModeFragment {
             mScrollingResourcesDrawerContent.scrollTo(0, 0);
             LinearLayout view = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_question, null);
 
-            mCloseResourcesDrawerButton.setText(question.getQuestion());
+//            mCloseResourcesDrawerButton.setText(question.getQuestion());
 
             TextView questionTitle = (TextView)view.findViewById(R.id.question_title);
             Typography.formatTitle(getActivity(), questionTitle, sourceLanguage.getId(), sourceLanguage.direction);
