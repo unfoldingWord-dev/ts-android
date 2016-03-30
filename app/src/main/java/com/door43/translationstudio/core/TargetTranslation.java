@@ -400,12 +400,12 @@ public class TargetTranslation {
     }
 
     /**
-     * get sources list from manifest
+     * get list of source translations slugs from manifest
      */
-    public SourceTranslation[] getSourceTranslations() {
+    public String[] getSourceTranslations() {
 
         try {
-            List<SourceTranslation> sources = new ArrayList<>();
+            List<String> sources = new ArrayList<>();
 
             JSONArray sourceTranslationsJson = manifest.getJSONArray(FIELD_SOURCE_TRANSLATIONS);
 
@@ -415,15 +415,15 @@ public class TargetTranslation {
                 String sourceLanguageSlug = obj.getString(LANGUAGE_ID);
                 String resourceSlug = obj.getString(RESOURCE_ID);
 
-                SourceTranslation sourceTranslation =  SourceTranslation.simple(this.projectId, sourceLanguageSlug, resourceSlug);
-                sources.add(sourceTranslation);
+                SourceTranslation sourceTranslation =  SourceTranslation.simple(this.projectId,sourceLanguageSlug,resourceSlug);
+                sources.add(sourceTranslation.getId());
             }
 
-            return sources.toArray(new SourceTranslation[sources.size()]);
+            return sources.toArray(new String[sources.size()]);
         } catch(Exception e) {
             Logger.e(TAG, "Error reading sources", e);
         }
-        return new SourceTranslation[0];
+        return new String[0]; // return empty array on error
     }
 
     /**

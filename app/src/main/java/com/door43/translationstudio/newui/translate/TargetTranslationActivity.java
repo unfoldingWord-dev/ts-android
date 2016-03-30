@@ -290,8 +290,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     private void applyPreviouslySavedSourcesToProject() {
-        SourceTranslation[] sourceTranslations = mTargetTranslation.getSourceTranslations();
-        for(SourceTranslation sourceTranslation : sourceTranslations) {
+        String[] sourceTranslationSlugs = mTargetTranslation.getSourceTranslations();
+        for(String id:sourceTranslationSlugs) {
+            SourceTranslation sourceTranslation = AppContext.getLibrary().getSourceTranslation(id);
             AppContext.addOpenSourceTranslation(mTargetTranslation.getId(), sourceTranslation.getId());
         }
     }
