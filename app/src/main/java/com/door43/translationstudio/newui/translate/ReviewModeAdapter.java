@@ -113,8 +113,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         mContext = context;
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
-        boolean isOBS = mSourceTranslation.projectSlug.equals("obs");
-        mAllowFootnote = !isOBS;
+        boolean usfm = mTargetTranslation.getFormat() == TranslationFormat.USFM;
+        mAllowFootnote = usfm;
         mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectSlug, mSourceTranslation.sourceLanguageSlug);
         mTargetLanguage = mLibrary.getTargetLanguage(mTargetTranslation.getTargetLanguageId());
         mResourcesOpened = resourcesOpened;
