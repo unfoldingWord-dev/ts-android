@@ -338,7 +338,7 @@
     <string name="confirm">Confirm</string>
     <string name="selected">Selected</string>
     <string name="available">Available</string>
-    <string name="action_translations">My Translations</string>
+    <string name="action_translations">Home</string>
     <string name="publish">Publish</string>
     <string name="backup">Backup</string>
     <string name="attached_files">Attached files</string>

@@ -22,11 +22,7 @@
         <!-- You can also set colorControlNormal, colorControlActivated
          colorControlHighlight, and colorSwitchThumbNormal. -->
         <item name="windowActionModeOverlay">true</item>
-        <item name="android:popupMenuStyle">@style/UwPopupMenu</item>
-    </style>
 
-    <style name ="UwPopupMenu" parent="Widget.AppCompat.Light.PopupMenu.Overflow">
-        <item name="android:popupBackground">@android:color/white</item>
     </style>
 
 </resources>
