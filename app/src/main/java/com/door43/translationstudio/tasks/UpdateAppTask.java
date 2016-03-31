@@ -81,29 +81,14 @@ public class UpdateAppTask extends ManagedTask {
         if(lastVersion < 103) {
             upgradePre103();
         }
-        if(lastVersion < 106) {
-            upgradePre106();
-        }
-        if(lastVersion < 108) {
-            upgradePre108();
-        }
-        if(lastVersion < 109) {
-            upgradePre109();
-        }
         if(lastVersion < 110) {
             upgradePre110();
         }
         if(lastVersion < 111) {
             upgradePre111();
         }
-        if(lastVersion < 112) {
-            upgradePre112();
-        }
-        if(lastVersion < 113) {
-            upgradePre113();
-        }
-        if(lastVersion < 115) {
-            upgradePre115();
+        if(lastVersion < 119) {
+            AppContext.context().deleteDatabase(Library.DATABASE_NAME);
         }
     }
 
@@ -147,27 +132,6 @@ public class UpdateAppTask extends ManagedTask {
         }
     }
 
-    /**
-     * We updated the source
-     */
-    private void upgradePre115() {
-        AppContext.context().deleteDatabase(Library.DATABASE_NAME);
-    }
-
-    /**
-     * We updated the source
-     */
-    private void upgradePre113() {
-        AppContext.context().deleteDatabase(Library.DATABASE_NAME);
-    }
-
-    /**
-     * We made some updates to the db schema and updated the source.
-     */
-    private void upgradePre112() {
-        AppContext.context().deleteDatabase(Library.DATABASE_NAME);
-    }
-    
     /**
      * We moved the target translations to the public files directory so that they persist when the
      * app is uninstalled
@@ -213,28 +177,6 @@ public class UpdateAppTask extends ManagedTask {
         } catch (Exception e) {
             Logger.e(this.getClass().getName(), "Failed to deploy the default index", e);
         }
-    }
-
-    /**
-     * Updated db schema
-     */
-    private void upgradePre109() {
-        AppContext.context().deleteDatabase(Library.DATABASE_NAME);
-    }
-
-    /**
-     * Updated the source content
-     */
-    private void upgradePre108() {
-        AppContext.context().deleteDatabase(Library.DATABASE_NAME);
-    }
-
-    /**
-     * Minor schema changes and updated source content.
-     */
-    private void upgradePre106() {
-        // clear old index so new index is loaded
-        AppContext.context().deleteDatabase(Library.DATABASE_NAME);
     }
 
     /**
