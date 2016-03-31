@@ -41,7 +41,6 @@ import com.door43.widget.VerticalSeekBar;
 import com.door43.widget.ViewUtil;
 import com.door43.translationstudio.newui.BaseActivity;
 
-import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -78,6 +77,15 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             Logger.e(TAG ,"A valid target translation id is required. Received '" + targetTranslationId + "' but the translation could not be found");
             finish();
             return;
+        }
+
+        // open used source translations by default
+        if(AppContext.getOpenSourceTranslationIds(mTargetTranslation.getId()).length == 0) {
+            String[] slugs = mTargetTranslation.getSourceTranslations();
+            for (String slug : slugs) {
+                SourceTranslation sourceTranslation = AppContext.getLibrary().getSourceTranslation(slug);
+                AppContext.addOpenSourceTranslation(mTargetTranslation.getId(), sourceTranslation.getId());
+            }
         }
 
         // notify user that a draft translation exists the first time actvity starts

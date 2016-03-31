@@ -49,9 +49,9 @@ import java.util.TimeZone;
  * Created by joel on 8/29/2015.
  */
 public class TargetTranslation {
+    public static final String TAG = TargetTranslation.class.getSimpleName();
     public static final int PACKAGE_VERSION = 6; // the version of the target translation implementation
     public static final String LICENSE_FILE = "LICENSE.md";
-    public static final String TAG = TargetTranslation.class.getSimpleName();
 
     private static final String FIELD_PARENT_DRAFT = "parent_draft";
     private static final String FIELD_FINISHED_CHUNKS = "finished_chunks";
@@ -429,6 +429,33 @@ public class TargetTranslation {
             sourceTranslationsJson.put(translationJson);
             manifest.put(FIELD_SOURCE_TRANSLATIONS, sourceTranslationsJson);
         }
+    }
+
+    /**
+     * get list of source translation slugs used
+     */
+    public String[] getSourceTranslations() {
+
+        try {
+            List<String> sources = new ArrayList<>();
+
+            JSONArray sourceTranslationsJson = manifest.getJSONArray(FIELD_SOURCE_TRANSLATIONS);
+
+            for (int i = 0; i < sourceTranslationsJson.length(); i++) {
+                JSONObject obj = sourceTranslationsJson.getJSONObject(i);
+
+                String sourceLanguageSlug = obj.getString("language_id");
+                String resourceSlug = obj.getString("resource_id");
+
+                SourceTranslation sourceTranslation =  SourceTranslation.simple(this.projectId, sourceLanguageSlug, resourceSlug);
+                sources.add(sourceTranslation.getId());
+            }
+
+            return sources.toArray(new String[sources.size()]);
+        } catch(Exception e) {
+            Logger.e(TAG, "Error reading sources", e);
+        }
+        return new String[0]; // return empty array on error
     }
 
     /**
