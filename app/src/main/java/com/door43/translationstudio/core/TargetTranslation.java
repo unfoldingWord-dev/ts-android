@@ -49,6 +49,7 @@ import java.util.TimeZone;
  * Created by joel on 8/29/2015.
  */
 public class TargetTranslation {
+    public static final String TAG = TargetTranslation.class.getSimpleName();
     public static final int PACKAGE_VERSION = 6; // the version of the target translation implementation
     public static final String LICENSE_FILE = "LICENSE.md";
     public static final String TAG = TargetTranslation.class.getSimpleName();
@@ -65,6 +66,11 @@ public class TargetTranslation {
     private static final String FIELD_GENERATOR = "generator";
     private static final String FIELD_TRANSLATION_TYPE = "type";
     private static final String FIELD_TRANSLATION_FORMAT = "format";
+    public static final String LANGUAGE_ID = "language_id";
+    public static final String RESOURCE_ID = "resource_id";
+    public static final String CHECKING_LEVEL = "checking_level";
+    public static final String DATE_MODIFIED = "date_modified";
+    public static final String VERSION = "version";
 
     private final File targetTranslationDir;
     private final Manifest manifest;
@@ -414,21 +420,48 @@ public class TargetTranslation {
         boolean foundDuplicate = false;
         for(int i = 0; i < sourceTranslationsJson.length(); i ++) {
             JSONObject obj = sourceTranslationsJson.getJSONObject(i);
-            if(obj.getString("language_id").equals(sourceTranslation.sourceLanguageSlug) && obj.getString("resource_id").equals(sourceTranslation.resourceSlug)) {
+            if(obj.getString(LANGUAGE_ID).equals(sourceTranslation.sourceLanguageSlug) && obj.getString(RESOURCE_ID).equals(sourceTranslation.resourceSlug)) {
                 foundDuplicate = true;
                 break;
             }
         }
         if(!foundDuplicate) {
             JSONObject translationJson = new JSONObject();
-            translationJson.put("language_id", sourceTranslation.sourceLanguageSlug);
-            translationJson.put("resource_id", sourceTranslation.resourceSlug);
-            translationJson.put("checking_level", sourceTranslation.getCheckingLevel());
-            translationJson.put("date_modified", sourceTranslation.getDateModified());
-            translationJson.put("version", sourceTranslation.getVersion());
+            translationJson.put(LANGUAGE_ID, sourceTranslation.sourceLanguageSlug);
+            translationJson.put(RESOURCE_ID, sourceTranslation.resourceSlug);
+            translationJson.put(CHECKING_LEVEL, sourceTranslation.getCheckingLevel());
+            translationJson.put(DATE_MODIFIED, sourceTranslation.getDateModified());
+            translationJson.put(VERSION, sourceTranslation.getVersion());
             sourceTranslationsJson.put(translationJson);
             manifest.put(FIELD_SOURCE_TRANSLATIONS, sourceTranslationsJson);
         }
+    }
+
+    /**
+     * get list of source translations slugs from manifest
+     */
+    public String[] getSourceTranslations() {
+
+        try {
+            List<String> sources = new ArrayList<>();
+
+            JSONArray sourceTranslationsJson = manifest.getJSONArray(FIELD_SOURCE_TRANSLATIONS);
+
+            for (int i = 0; i < sourceTranslationsJson.length(); i++) {
+                JSONObject obj = sourceTranslationsJson.getJSONObject(i);
+
+                String sourceLanguageSlug = obj.getString(LANGUAGE_ID);
+                String resourceSlug = obj.getString(RESOURCE_ID);
+
+                SourceTranslation sourceTranslation =  SourceTranslation.simple(this.projectId,sourceLanguageSlug,resourceSlug);
+                sources.add(sourceTranslation.getId());
+            }
+
+            return sources.toArray(new String[sources.size()]);
+        } catch(Exception e) {
+            Logger.e(TAG, "Error reading sources", e);
+        }
+        return new String[0]; // return empty array on error
     }
 
     /**
@@ -1106,9 +1139,9 @@ public class TargetTranslation {
     public void setParentDraft(SourceTranslation draftTranslation) {
         JSONObject draftStatus = new JSONObject();
         try {
-            draftStatus.put("resource_id", draftTranslation.resourceSlug);
-            draftStatus.put("checking_level", draftTranslation.getCheckingLevel());
-            draftStatus.put("version", draftTranslation.getVersion());
+            draftStatus.put(RESOURCE_ID, draftTranslation.resourceSlug);
+            draftStatus.put(CHECKING_LEVEL, draftTranslation.getCheckingLevel());
+            draftStatus.put(VERSION, draftTranslation.getVersion());
             // TODO: 3/2/2016 need to update resource object to collect all info from api so we can include more detail here
             manifest.put(FIELD_PARENT_DRAFT, draftStatus);
         } catch (JSONException e) {
@@ -1122,9 +1155,9 @@ public class TargetTranslation {
     public SourceTranslation getParentDraft () {
         try {
             JSONObject parentDraftStatus = manifest.getJSONObject(FIELD_PARENT_DRAFT);
-            if(Manifest.valueExists(parentDraftStatus, "resource_id")) {
+            if(Manifest.valueExists(parentDraftStatus, RESOURCE_ID)) {
                 // TODO: it would be handy to include the version of the actual parent draft so we can see if the one pulled has updates
-                return SourceTranslation.simple(getProjectId(), getTargetLanguageId(), parentDraftStatus.getString("resource_id"));
+                return SourceTranslation.simple(getProjectId(), getTargetLanguageId(), parentDraftStatus.getString(RESOURCE_ID));
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -1171,7 +1204,7 @@ public class TargetTranslation {
         manifest.join(importedManifest.getJSONObject(FIELD_SOURCE_TRANSLATIONS), FIELD_SOURCE_TRANSLATIONS);
 
         // add missing parent draft status
-        if((!manifest.has(FIELD_PARENT_DRAFT) || !Manifest.valueExists(manifest.getJSONObject(FIELD_PARENT_DRAFT), "resource_id"))
+        if((!manifest.has(FIELD_PARENT_DRAFT) || !Manifest.valueExists(manifest.getJSONObject(FIELD_PARENT_DRAFT), RESOURCE_ID))
             && importedManifest.has(FIELD_PARENT_DRAFT)) {
             manifest.put(FIELD_PARENT_DRAFT, importedManifest.getJSONObject(FIELD_PARENT_DRAFT));
         }

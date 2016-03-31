@@ -41,7 +41,6 @@ import com.door43.widget.VerticalSeekBar;
 import com.door43.widget.ViewUtil;
 import com.door43.translationstudio.newui.BaseActivity;
 
-import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -79,6 +78,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             finish();
             return;
         }
+
+        applyPreviouslySavedSourcesToProject();
 
         // notify user that a draft translation exists the first time actvity starts
         if(savedInstanceState == null && draftIsAvailable() && !targetTranslationHasDraft()) {
@@ -287,6 +288,15 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             }
         });
     }
+
+    private void applyPreviouslySavedSourcesToProject() {
+        String[] sourceTranslationSlugs = mTargetTranslation.getSourceTranslations();
+        for(String id:sourceTranslationSlugs) {
+            SourceTranslation sourceTranslation = AppContext.getLibrary().getSourceTranslation(id);
+            AppContext.addOpenSourceTranslation(mTargetTranslation.getId(), sourceTranslation.getId());
+        }
+    }
+
 
     /**
      * Checks if the target translation aleady has the best draft
