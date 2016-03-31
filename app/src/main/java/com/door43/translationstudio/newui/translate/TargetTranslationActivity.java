@@ -79,7 +79,14 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             return;
         }
 
-        applyPreviouslySavedSourcesToProject();
+        // open used source translations by default
+        if(AppContext.getOpenSourceTranslationIds(mTargetTranslation.getId()).length == 0) {
+            String[] slugs = mTargetTranslation.getSourceTranslations();
+            for (String slug : slugs) {
+                SourceTranslation sourceTranslation = AppContext.getLibrary().getSourceTranslation(slug);
+                AppContext.addOpenSourceTranslation(mTargetTranslation.getId(), sourceTranslation.getId());
+            }
+        }
 
         // notify user that a draft translation exists the first time actvity starts
         if(savedInstanceState == null && draftIsAvailable() && !targetTranslationHasDraft()) {
@@ -288,15 +295,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             }
         });
     }
-
-    private void applyPreviouslySavedSourcesToProject() {
-        String[] sourceTranslationSlugs = mTargetTranslation.getSourceTranslations();
-        for(String id:sourceTranslationSlugs) {
-            SourceTranslation sourceTranslation = AppContext.getLibrary().getSourceTranslation(id);
-            AppContext.addOpenSourceTranslation(mTargetTranslation.getId(), sourceTranslation.getId());
-        }
-    }
-
 
     /**
      * Checks if the target translation aleady has the best draft
