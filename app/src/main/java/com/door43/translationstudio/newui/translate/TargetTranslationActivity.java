@@ -79,7 +79,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             return;
         }
 
-        applyPreviouslySavedSourcesToProject();
+        applyPreviouslySavedSourcesToProjectIfNoSources();
 
         // notify user that a draft translation exists the first time actvity starts
         if(savedInstanceState == null && draftIsAvailable() && !targetTranslationHasDraft()) {
@@ -289,14 +289,16 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         });
     }
 
-    private void applyPreviouslySavedSourcesToProject() {
-        String[] sourceTranslationSlugs = mTargetTranslation.getSourceTranslations();
-        for(String id:sourceTranslationSlugs) {
-            SourceTranslation sourceTranslation = AppContext.getLibrary().getSourceTranslation(id);
-            AppContext.addOpenSourceTranslation(mTargetTranslation.getId(), sourceTranslation.getId());
+    private void applyPreviouslySavedSourcesToProjectIfNoSources() {
+        String[] sourceLanguages = AppContext.getOpenSourceTranslationIds(mTargetTranslation.getId());
+        if(sourceLanguages.length == 0) { // if no source languages set for project, then check if we have any in manifest
+            String[] sourceTranslationSlugs = mTargetTranslation.getSourceTranslations();
+            for (String id : sourceTranslationSlugs) {
+                SourceTranslation sourceTranslation = AppContext.getLibrary().getSourceTranslation(id);
+                AppContext.addOpenSourceTranslation(mTargetTranslation.getId(), sourceTranslation.getId());
+            }
         }
     }
-
 
     /**
      * Checks if the target translation aleady has the best draft
