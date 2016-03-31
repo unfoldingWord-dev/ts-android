@@ -1,2 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorAccent">@color/accent</item>
+
+        <item name="android:textColor">@color/dark_primary_text</item>
+        <item name="android:textColorLink">@color/accent</item>
+        <item name="android:textColorLinkInverse">@color/accent_light</item>
+
+        <item name="android:actionBarStyle">@style/AppActionBar</item>
+        <item name="android:actionBarTabTextStyle">@style/AppActionBarTabText</item>
+        <item name="android:actionMenuTextColor">@color/light_primary_text</item>
+
+        <!-- Support library compatability -->
+        <item name="actionBarStyle">@style/AppActionBar</item>
+        <item name="actionBarTabTextStyle">@style/AppActionBarTabText</item>
+        <item name="actionMenuTextColor">@color/light_primary_text</item>
+
+        <!-- You can also set colorControlNormal, colorControlActivated
+         colorControlHighlight, and colorSwitchThumbNormal. -->
+        <item name="windowActionModeOverlay">true</item>
+
+        <item name="android:popupMenuStyle">@style/UwPopupMenu</item>
+        <!--&lt;!&ndash;<item name="android:popupMenuListViewStyle">@style/UwPopupMenuListView</item>&ndash;&gt;-->
+        <!--<item name="actionOverflowMenuStyle">@style/Widget.AppCompat.PopupMenu.Overflow</item>-->
+
+    </style>
+
+    <style name ="UwPopupMenu" parent="android:Widget.Holo.Light.PopupMenu">
+        <!--<style name ="UwPopupMenu" parent="android:Widget.DeviceDefault.PopupMenu">-->
+        <item name="android:popupBackground">@drawable/copy_abc_popup_background_mtrl_mult</item>
+        <!--<item name="android:popupBackground">@drawable/menu_panel_holo_light</item>-->
+        <!--<item name="android:popupBackground">@android:color/white</item>-->
+        <!--<item name="android:overlapAnchor">true</item>-->
+        <!--<item name="android:dropDownHorizontalOffset">-4dip</item>-->
+        <item name="android:dropDownVerticalOffset">-40dip</item>
+        <!--<item name="android:dropDownWidth">wrap_content</item>-->
+
+        <!--//does not work-->
+        <!--<item name="android:divider">#FF0000</item>-->
+        <!--<item name="android:dividerHeight">2dp</item>-->
+    </style>
+
+</resources>
