@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
  */
 public class PassageLinkSpan extends Span {
     // e.g. [[:en:bible:notes:gen:01:03|1:5]]
-    public static final Pattern PATTERN = Pattern.compile("\\[\\[:((?!\\]\\])(.*)\\|(.*))\\]\\]");
+    public static final Pattern PATTERN = Pattern.compile("\\[\\[:(((?!\\]\\]).)*)\\|(((?!\\]\\]).)*)\\]\\]");//\\[\\[:((?!\\]\\])(.*)\\|(.*))\\]\\]");
     private static String mTitle;
     private static String mAddress;
     private SpannableStringBuilder mSpannable;
