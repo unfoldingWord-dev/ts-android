@@ -7,7 +7,6 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.TransportCallback;
 import com.door43.translationstudio.AppContext;
-import com.door43.util.FileUtilities;
 import com.door43.util.tasks.ManagedTask;
 
 import org.eclipse.jgit.api.AddCommand;
@@ -19,16 +18,8 @@ import org.eclipse.jgit.api.errors.JGitInternalException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RemoteRefUpdate;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.Socket;
 import java.util.Collection;
 
 /**

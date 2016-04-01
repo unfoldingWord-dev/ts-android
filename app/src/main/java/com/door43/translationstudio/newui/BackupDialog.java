@@ -140,6 +140,8 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
                 if(AppContext.context().isNetworkAvailable()) {
                     try {
                         final Handler hand = new Handler(Looper.getMainLooper());
+                        // TODO: 3/26/2016 We can completely remove this method call once we move to gogs
+                        // at that point we'll begin uploading right away
                         mTargetTranslation.setLegacyPublished(false, new TargetTranslation.OnCommitListener() {
                             @Override
                             public void onCommit(boolean success) {

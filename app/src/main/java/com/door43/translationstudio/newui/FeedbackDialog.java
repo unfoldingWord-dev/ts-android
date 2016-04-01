@@ -31,11 +31,6 @@ import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 import com.door43.widget.ViewUtil;
 
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
-
 /**
  * Created by joel on 9/17/2015.
  */

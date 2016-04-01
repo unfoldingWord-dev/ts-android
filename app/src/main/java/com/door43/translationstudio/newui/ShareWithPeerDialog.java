@@ -44,6 +44,8 @@ import org.json.JSONException;
 
 import java.io.File;
 import java.security.InvalidParameterException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -336,8 +338,21 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
             RSAEncryption.generateKeys(privateKeyFile, publicKeyFile);
         }
         // TODO: 11/30/2015 we should use a shared interface for setting parameters so we don't have to manage two sets
-        intent.putExtra(ServerService.PARAM_PRIVATE_KEY, RSAEncryption.readPrivateKeyFromFile(privateKeyFile));
-        intent.putExtra(ServerService.PARAM_PUBLIC_KEY, RSAEncryption.getPublicKeyAsString(RSAEncryption.readPublicKeyFromFile(publicKeyFile)));
+        PrivateKey privateKey;
+        PublicKey publicKey;
+        try {
+            privateKey = RSAEncryption.readPrivateKeyFromFile(privateKeyFile);
+            publicKey = RSAEncryption.readPublicKeyFromFile(publicKeyFile);
+        } catch (Exception e) {
+            // try to regenerate the keys if loading fails
+            Logger.w(this.getClass().getName(), "Failed to load the p2p keys. Attempting to regenerate...", e);
+            RSAEncryption.generateKeys(privateKeyFile, publicKeyFile);
+            privateKey = RSAEncryption.readPrivateKeyFromFile(privateKeyFile);
+            publicKey = RSAEncryption.readPublicKeyFromFile(publicKeyFile);
+        }
+
+        intent.putExtra(ServerService.PARAM_PRIVATE_KEY, privateKey);
+        intent.putExtra(ServerService.PARAM_PUBLIC_KEY, RSAEncryption.getPublicKeyAsString(publicKey));
         intent.putExtra(ServerService.PARAM_DEVICE_ALIAS, AppContext.getDeviceNetworkAlias());
         Logger.i(this.getClass().getName(), "Starting service " + intent.getComponent().getClassName());
         getActivity().startService(intent);

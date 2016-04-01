@@ -1,22 +1,21 @@
 package com.door43.tools.reporting;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
+import android.util.Pair;
+
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.List;
 
 /**
@@ -30,23 +29,34 @@ public class Github {
         mApiUrl = apiUrl;
     }
 
-    public String getLatestRelease() {
+    /**
+     * Returns the latest release in this repository
+     * @return
+     * @throws IOException
+     */
+    public String getLatestRelease() throws IOException {
         return getRequest("releases/latest");
     }
 
-    private String getRequest(String apiMethod) {
-        HttpClient httpClient = new DefaultHttpClient();
-        HttpGet httpGet = new HttpGet(mApiUrl + '/' + apiMethod);
+    /**
+     * Performs a get request
+     * @param apiMethod
+     * @return
+     * @throws IOException
+     */
+    private String getRequest(String apiMethod) throws IOException {
+        HttpURLConnection urlConnection = null;
         try {
-            HttpResponse response = httpClient.execute(httpGet);
-            if(response != null) {
-                return convertStreamToString(response.getEntity().getContent());
-            } else {
-                return null;
+            URL url = new URL(mApiUrl + '/' + apiMethod);
+            urlConnection = (HttpURLConnection) url.openConnection();
+            InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+            String response = convertStreamToString(in);
+            urlConnection.disconnect();
+            return response;
+        } finally {
+            if(urlConnection != null) {
+                urlConnection.disconnect();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
         }
     }
 
@@ -83,27 +93,44 @@ public class Github {
      * @param payload the data to submit to the server
      * @return null if the postRequest fails or the response
      */
-    private String postRequest(String apiMethod, List<NameValuePair> headers, JSONObject payload) {
-        DefaultHttpClient httpClient = new DefaultHttpClient();
-        HttpPost httpPost = new HttpPost(mApiUrl + '/' + apiMethod);
-        if(payload != null) {
-            try {
-                httpPost.setEntity(new StringEntity(payload.toString()));
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-        }
-        if (headers != null) {
-            for (NameValuePair h : headers) {
-                httpPost.setHeader(h.getName(), h.getValue());
-            }
-        }
+    public String postRequest(String apiMethod, List<Pair<String, String>> headers, String payload) throws IOException {
+        HttpURLConnection urlConnection = null;
         try {
-            HttpResponse response = httpClient.execute(httpPost);
-            return response.toString();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+            URL url = new URL(mApiUrl + '/' + apiMethod);
+            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("POST");
+
+            // headers
+            if(headers != null) {
+                for (Pair<String, String> h : headers) {
+                    urlConnection.setRequestProperty(h.first, h.second);
+                }
+            }
+
+            // payload
+            if(payload != null) {
+                urlConnection.setDoOutput(true);
+                DataOutputStream out = new DataOutputStream(urlConnection.getOutputStream());
+                out.writeBytes(payload);
+                out.flush();
+                out.close();
+            }
+
+            int responseCode = urlConnection.getResponseCode();
+
+            // response
+            BufferedInputStream bis = new BufferedInputStream(urlConnection.getInputStream());
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            int current;
+            while ((current = bis.read()) != -1) {
+                baos.write((byte) current);
+            }
+            String response = baos.toString("UTF-8");
+            return response;
+        } finally {
+            if(urlConnection != null) {
+                urlConnection.disconnect();
+            }
         }
     }
 }
