@@ -20,6 +20,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.core.ImportUsfm;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceTranslation;
@@ -32,19 +33,24 @@ import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
 import com.door43.translationstudio.util.ToolAdapter;
 import com.door43.translationstudio.util.ToolItem;
 import com.door43.util.StringUtilities;
+import com.door43.util.Zip;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 import com.door43.util.tasks.ThreadableUI;
 import com.door43.widget.ViewUtil;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 
 public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.OnProgressListener, ManagedTask.OnFinishedListener, DialogInterface.OnCancelListener {
 
     private static final String TASK_PREP_FORCE_DOWNLOAD_ALL_PROJECTS = "prep_force_download_all_projects";
+    public static final String TAG = DeveloperToolsActivity.class.getSimpleName();
     private ArrayList<ToolItem> mDeveloperTools = new ArrayList<>();
     private ToolAdapter mAdapter;
     private String mVersionName;
@@ -118,6 +124,24 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                 }
             }
         });
+
+        mDeveloperTools.add(new ToolItem("Test USFM Import", "Test USFM Import", 0, new ToolItem.ToolAction() {
+            @Override
+            public void run() {
+                String file = "mrk.zip";
+                File tempLibraryDir = null;
+                try {
+                    InputStream usfmStream = getAssets().open(file);
+                    (new ImportUsfm()).importStream(usfmStream);
+
+                } catch (Exception e) {
+                    Logger.e(TAG,"error reading " + file, e);
+                }
+
+                FileUtils.deleteQuietly(tempLibraryDir);
+            }
+        }));
+
 
         // load tools
         mDeveloperTools.add(new ToolItem(getResources().getString(R.string.regenerate_keys), getResources().getString(R.string.regenerate_keys_description), 0, new ToolItem.ToolAction() {
