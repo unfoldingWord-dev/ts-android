@@ -165,6 +165,8 @@ public class ImportUsfm {
 
         extractChaptersFromBook(book);
 
+        // TODO: 4/3/16 build tstudio package
+        cleanup();
         return true;
     }
 
@@ -179,7 +181,7 @@ public class ImportUsfm {
             section = text.subSequence(lastIndex, matcher.start()); // get section before this chapter marker
             success = success && breakUpChapter(section);
             mChapter = matcher.group(1); // chapter number for next section
-            lastIndex = matcher.end();
+            lastIndex = matcher.start();
         }
         section = text.subSequence(lastIndex, text.length()); // get last section
         success = success && breakUpChapter(section);
@@ -190,27 +192,27 @@ public class ImportUsfm {
         boolean success = true;
         if(!isEmpty(mChapter)) {
             try {
-                String key = mChapter;
-                if (!mChunk.has(key)) {
-                    key = "0" + key;
-                    if (!mChunk.has(key)) {
-                        key = "0" + key;
+                String chapter = mChapter;
+                if (!mChunk.has(chapter)) {
+                    chapter = "0" + chapter;
+                    if (!mChunk.has(chapter)) {
+                        chapter = "0" + chapter;
                     }
                 }
 
-                if (!mChunk.has(key)) {
+                if (!mChunk.has(chapter)) {
                     addError("COuld not find chapter: " + mChapter);
                     return false;
                 }
 
-                JSONArray versebreaks = mChunk.getJSONArray(key);
+                JSONArray versebreaks = mChunk.getJSONArray(chapter);
                 String lastFirst = null;
-                for (int i = 1; i < versebreaks.length(); i++) {
+                for (int i = 0; i < versebreaks.length(); i++) {
                     String first = versebreaks.getString(i);
-                    success = success && breakUpChapter(text, lastFirst, first);
+                    success = success && extractVerses(chapter, text, lastFirst, first);
                     lastFirst = first;
                 }
-                success = success && breakUpChapter(text, lastFirst, "999999");
+                success = success && extractVerses(chapter, text, lastFirst, "999999");
 
             } catch (Exception e) {
                 Logger.e(TAG, "error parsing chapter " + mChapter, e);
@@ -220,12 +222,63 @@ public class ImportUsfm {
         return success;
     }
 
-    private boolean breakUpChapter(CharSequence text, String start, String end) {
+    private boolean extractVerses(String chapter, CharSequence text, String start, String end) {
         boolean success = true;
         if(null != start) {
-            // TODO: 4/3/16 find verse range
+            int startVerse = Integer.valueOf(start);
+            int endVerse = Integer.valueOf(end);
+            success = extractVerseRange(chapter, text, startVerse, endVerse, start);
         }
         return success;
+    }
+
+    private boolean extractVerseRange(String chapter, CharSequence text, int start, int end, String firstVerse) {
+        boolean success = true;
+        if(!isEmpty(chapter)) {
+            Pattern versePattern = Pattern.compile(USFMVerseSpan.PATTERN);
+            Matcher matcher = versePattern.matcher(text);
+            int lastIndex = 0;
+            String section = "";
+            int currentVerse = 0;
+            boolean done = false;
+            while (matcher.find()) {
+                if(currentVerse >= end) {
+                    done = true;
+                    break;
+                }
+
+                if(currentVerse >= start) {
+                    section = section + text.subSequence(lastIndex, matcher.start()); // get section before this chunk marker
+                }
+
+                String verse = matcher.group(1);
+                currentVerse = Integer.valueOf(verse);
+                lastIndex = matcher.start();
+            }
+
+            if(!done) {
+                section = section + text.subSequence(lastIndex, matcher.start()); // get section before this chunk marker
+            }
+
+            if(!section.isEmpty()) {
+                success = success && saveChunk(chapter, firstVerse, section);
+            }
+        }
+        return success;
+    }
+
+    private boolean saveChunk(String chapter, String firstVerse, CharSequence chunk) {
+        File chapterFolder = new File(mTempDest, chapter);
+        try {
+            FileUtils.forceMkdir(chapterFolder);
+            File output = new File(chapterFolder, firstVerse + ".txt");
+            FileUtils.write(output,chunk);
+            return true;
+        } catch (Exception e) {
+            Logger.e(TAG, "error parsing chapter " + mChapter, e);
+            addError("Error writing " + chapter + "/" + firstVerse);
+            return false;
+        }
     }
 
     private boolean isEmpty(CharSequence text) {
@@ -276,7 +329,7 @@ public class ImportUsfm {
                 return false;
             }
 
-            // TODO: 4/3/16 save this section
+            saveChunk(mChapter, firstVerse, section);
         }
         return true;
     }
