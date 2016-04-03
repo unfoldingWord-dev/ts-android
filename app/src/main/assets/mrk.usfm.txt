@@ -1,0 +1,106 @@
+\id MRK 41-MRK-asv.sfm The American Standard Version of the Holy Bible (1901) Tuesday, September 12, 2006
+\ide UTF-8
+\h Mark 
+\toc1 The Gospel According to Saint Mark 
+\toc2 Mark 
+\toc3 Mrk 
+\mt The Gospel According to Saint Mark 
+\c 1
+\p
+\s5
+\v 1 The beginning of the gospel of Jesus Christ, the Son of God.
+\p
+\v 2 Even as it is written in Isaiah the prophet,
+\q Behold, I send my messenger before your face,
+\q Who shall prepare your way;
+\q
+\v 3 The voice of one crying in the wilderness,
+\q Make you ready the way of the Lord,
+\q Make his paths straight;
+\m
+\s5
+\v 4 John came, who baptized in the wilderness and preached the baptism of repentance to remission of sins.
+\v 5 And there went out to him all the country of Judaea, and all they of Jerusalem; and they were baptized of him in the
+river Jordan, confessing their sins.
+\v 6 And John was clothed with camel’s hair, and had a leather girdle about his loins, and did eat locusts and wild
+honey.
+\s5
+\v 7 And he preached, saying, There comes after me he that is mightier than I, the latchet of whose shoes I am not worthy to
+stoop down and unloose.
+\v 8 I baptized you in water; but he shall baptize you in the Holy Spirit.
+\p
+\s5
+\v 9 And it came to pass in those days, that Jesus came from Nazareth of Galilee, and was baptized of John in the Jordan.
+\v 10 And straightway coming up out of the water, he saw the heavens tore asunder, and the Spirit as a dove descending upon
+him:
+\v 11 and a voice came out of the heavens, You are my beloved Son, in you I am well pleased.
+\p
+\s5
+\v 12 And straightway the Spirit drives him forth into the wilderness.
+\v 13 And he was in the wilderness forty days tempted of Satan; and he was with the wild beasts; and the angels ministered to
+him.
+\p
+\s5
+\v 14 Now after John was delivered up, Jesus came into Galilee, preaching the gospel of God,
+\v 15 and saying, The time is fulfilled, and the kingdom of God is at hand: repent ye, and believe in the gospel.
+\p
+\s5
+\v 16 And passing along by the sea of Galilee, he saw Simon and Andrew the brother of Simon casting a net in the sea; for they
+were fishers.
+\v 17 And Jesus said to them, Come you after me, and I will make you to become fishers of men.
+\v 18 And straightway they left the nets, and followed him.
+\s5
+\v 19 And going on a little further, he saw James the son of Zebedee, and John his brother, who also were in the boat
+mending the nets.
+\v 20 And straightway he called them: and they left their father Zebedee in the boat with the hired servants, and went after
+him.
+\p
+\s5
+\v 21 And they go into Capernaum; and straightway on the sabbath day he entered into the synagogue and taught.
+\v 22 And they were astonished at his teaching: for he taught them as having authority, and not as the scribes.
+\s5
+\v 23 And straightway there was in their synagogue a man with an unclean spirit; and he cried out,
+\v 24 saying, What have we to do with you, Jesus you Nazarene? are you come to destroy us? I know you who you are, the
+Holy One of God.
+\v 25 And Jesus rebuked him, saying, Hold your peace, and come out of him.
+\v 26 And the unclean spirit, tearing him and crying with a loud voice, came out of him.
+\s5
+\v 27 And they were all amazed, insomuch that they questioned among themselves, saying, What is this? a new teaching! with
+authority he commands even the unclean spirits, and they obey him.
+\v 28 And the report of him went out straightway everywhere into all the region of Galilee round about.
+\p
+\s5
+\v 29 And straightway, when they were come out of the synagogue, they came into the house of Simon and Andrew, with James and
+John.
+\v 30 Now Simon’s wife’s mother lay sick of a fever; and straightway they tell him of her:
+\v 31 and he came and took her by the hand, and raised her up; and the fever left her, and she ministered to them.
+\p
+\s5
+\v 32 And at even, when the sun did set, they brought to him all that were sick, and them that were possessed with demons.
+\v 33 And all the city was gathered together at the door.
+\v 34 And he healed many that were sick with various diseases, and cast out many demons; and he suffered not the demons to
+speak, because they knew him.
+\p
+\s5
+\v 35 And in the morning, a great while before day, he rose up and went out, and departed into a desert place, and there
+prayed.
+\v 36 And Simon and they that were with him followed after him;
+\v 37 and they found him, and say to him, All are seeking thee.
+\s5
+\v 38 And he says to them, Let us go elsewhere into the next towns, that I may preach there also; for to this end came I
+forth.
+\v 39 And he went into their synagogues throughout all Galilee, preaching and casting out demons.
+\p
+\s5
+\v 40 And there comes to him a leper, beseeching him, and kneeling down to him, and saying to him, If you wilt, you can
+make me clean.
+\v 41 And being moved with compassion, he stretched forth his hand, and touched him, and says to him, I will; be you made
+clean.
+\v 42 And straightway the leprosy departed from him, and he was made clean.
+\s5
+\v 43 And he strictly charged him, and straightway sent him out,
+\v 44 and says to him, See you say nothing to any man: but go show yourself to the priest, and offer for your cleansing the
+things which Moses commanded, for a testimony to them.
+\s5
+\v 45 But he went out, and began to publish it much, and to spread abroad the matter, insomuch that Jesus could no more openly
+enter into a city, but was without in desert places: and they came to him from every quarter.
