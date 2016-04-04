@@ -131,42 +131,70 @@ public class ImportUsfm {
     }
 
     public boolean processBook(String book) {
-        mBookName = extractString(book,BOOK_NAME_MARKER);
-        mBookShortName = extractString(book,BOOK_SHORT_NAME_MARKER).toLowerCase();
+        boolean success = true;
+        try {
+            mBookName = extractString(book,BOOK_NAME_MARKER);
+            mBookShortName = extractString(book,BOOK_SHORT_NAME_MARKER).toLowerCase();
 
-        if(isEmpty(mBookShortName)) {
-            addError("Missing book short name");
-            return false;
-        }
-
-        if(isEmpty(mBookName)) {
-            addWarning("Missing book name, using short name");
-            mBookName = mBookShortName;
-        }
-
-        boolean hasSections = isPresent(book, SECTION_MARKER);
-
-        if(!isPresent(book, USFMVerseSpan.PATTERN)) { // check for verses
-            if(!hasSections) {
-                addError("No verses found");
+            if(isEmpty(mBookShortName)) {
+                addError("Missing book short name");
                 return false;
             }
 
-            addWarning("Using sections");
-            extractChaptersFromText(book);
-            return true;
-        }
+            if(isEmpty(mBookName)) {
+                addWarning("Missing book name, using short name");
+                mBookName = mBookShortName;
+            }
 
-        if(!mChunks.containsKey(mBookShortName)) {
-            addError("No Chunk found for " + mBookShortName);
+            boolean hasSections = isPresent(book, SECTION_MARKER);
+
+            if(!isPresent(book, USFMVerseSpan.PATTERN)) { // check for verses
+                if(!hasSections) {
+                    addError("No verses found");
+                    return false;
+                }
+
+                addWarning("Using sections");
+                extractChaptersFromText(book);
+                return true;
+            }
+
+            if(!mChunks.containsKey(mBookShortName)) {
+                addError("No Chunk found for " + mBookShortName);
+                return false;
+            }
+            mChunk = mChunks.get(mBookShortName);
+
+            success = extractChaptersFromBook(book);
+
+            // TODO: 4/3/16 build tstudio package
+            copyProject();
+
+        } catch (Exception e) {
+            Logger.e(TAG, "error parsing book", e);
+            return false;
+        } finally {
+            try {
+            cleanup();
+            } catch (Exception e) {
+                Logger.e(TAG, "error cleaning up", e);
+                success = false;
+            }
+        }
+        return success;
+    }
+
+    public boolean copyProject() {
+        File dest = null;
+        try {
+            File target = AppContext.getPublicDownloadsDirectory();
+            dest = new File(target,"test");
+            FileUtils.forceDelete(dest);
+            FileUtils.copyDirectory(mTempDest, dest);
+        } catch (Exception e) {
+            Logger.e(TAG, "error moving files to " + dest.toString(), e);
             return false;
         }
-        mChunk = mChunks.get(mBookShortName);
-
-        extractChaptersFromBook(book);
-
-        // TODO: 4/3/16 build tstudio package
-        cleanup();
         return true;
     }
 
