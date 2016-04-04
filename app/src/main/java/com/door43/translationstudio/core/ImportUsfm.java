@@ -28,6 +28,7 @@ public class ImportUsfm {
     public static final String CHAPTER_NUMBER_MARKER = "\\\\c\\s(\\d+(-\\d+)?)\\s";
 
     private File mTempDir;
+    private File mTempOutput;
     private File mTempDest;
     private File mTempSrce;
     private String mChapter;
@@ -78,6 +79,12 @@ public class ImportUsfm {
         return success;
     }
 
+    /**
+     * add chunkJson (contains verses for each section) to map
+     * @param book
+     * @param chunk
+     * @return
+     */
     public boolean addChunk(String book, JSONArray chunk) {
         try {
             JSONObject processedChunk = new JSONObject();
@@ -105,6 +112,12 @@ public class ImportUsfm {
         return true;
     }
 
+    /**
+     * add chunkJson (contains verses for each section) to map
+     * @param book
+     * @param chunkStr
+     * @return
+     */
     public boolean addChunk(String book, String chunkStr) {
         try {
             JSONArray chunkJson = new JSONArray(chunkStr);
@@ -115,6 +128,10 @@ public class ImportUsfm {
         return false;
     }
 
+    /**
+     * get error list
+     * @return
+     */
     public String[] getErrors() {
         if( mErrors != null) {
             return mErrors.toArray(new String[mErrors.size()]);
@@ -122,14 +139,27 @@ public class ImportUsfm {
         return new String[0];
     }
 
+    /**
+     * add error to error list
+     * @param error
+     */
     private void addError(String error) {
         mErrors.add("Error: " + error);
     }
 
+    /**
+     * add warning to error list
+     * @param error
+     */
     private void addWarning(String error) {
-        mErrors.add("Error: " + error);
+        mErrors.add("Warning: " + error);
     }
 
+    /**
+     * process book text
+     * @param book
+     * @return
+     */
     public boolean processBook(String book) {
         boolean success = true;
         try {
@@ -140,6 +170,8 @@ public class ImportUsfm {
                 addError("Missing book short name");
                 return false;
             }
+
+            mTempDest = new File(mTempOutput, mBookShortName);
 
             if(isEmpty(mBookName)) {
                 addWarning("Missing book name, using short name");
@@ -155,7 +187,7 @@ public class ImportUsfm {
                 }
 
                 addWarning("Using sections");
-                extractChaptersFromText(book);
+                extractChaptersFromDocument(book);
                 return true;
             }
 
@@ -168,7 +200,7 @@ public class ImportUsfm {
             success = extractChaptersFromBook(book);
 
             // TODO: 4/3/16 build tstudio package
-            copyProject();
+            copyProjectToDownloads();
 
         } catch (Exception e) {
             Logger.e(TAG, "error parsing book", e);
@@ -184,13 +216,17 @@ public class ImportUsfm {
         return success;
     }
 
-    public boolean copyProject() {
+    /**
+     * copy output folder into downloads for testing
+     * @return
+     */
+    public boolean copyProjectToDownloads() {
         File dest = null;
         try {
             File target = AppContext.getPublicDownloadsDirectory();
             dest = new File(target,"test");
             FileUtils.forceDelete(dest);
-            FileUtils.copyDirectory(mTempDest, dest);
+            FileUtils.copyDirectory(mTempOutput, dest);
         } catch (Exception e) {
             Logger.e(TAG, "error moving files to " + dest.toString(), e);
             return false;
@@ -198,26 +234,40 @@ public class ImportUsfm {
         return true;
     }
 
+    /**
+     * extract chapters in book
+     * @param text
+     * @return
+     */
     public boolean extractChaptersFromBook(CharSequence text) {
-        Pattern ChapterPattern = Pattern.compile(CHAPTER_NUMBER_MARKER);
-        Matcher matcher = ChapterPattern.matcher(text);
+        Pattern pattern = Pattern.compile(CHAPTER_NUMBER_MARKER);
+        Matcher matcher = pattern.matcher(text);
         int lastIndex = 0;
         CharSequence section;
         mChapter = null;
-        boolean success = true;
+        boolean successOverall = true;
+        boolean success;
         while(matcher.find()) {
             section = text.subSequence(lastIndex, matcher.start()); // get section before this chapter marker
-            success = success && breakUpChapter(section);
+            success = breakUpChapter(section);
+            successOverall = successOverall && success;
             mChapter = matcher.group(1); // chapter number for next section
             lastIndex = matcher.start();
         }
         section = text.subSequence(lastIndex, text.length()); // get last section
-        success = success && breakUpChapter(section);
-        return success;
+        success = breakUpChapter(section);
+        successOverall = successOverall && success;
+        return successOverall;
     }
 
+    /**
+     * break up chapter into sections
+     * @param text
+     * @return
+     */
     private boolean breakUpChapter(CharSequence text) {
-        boolean success = true;
+        boolean successOverall = true;
+        boolean success;
         if(!isEmpty(mChapter)) {
             try {
                 String chapter = mChapter;
@@ -237,19 +287,29 @@ public class ImportUsfm {
                 String lastFirst = null;
                 for (int i = 0; i < versebreaks.length(); i++) {
                     String first = versebreaks.getString(i);
-                    success = success && extractVerses(chapter, text, lastFirst, first);
+                    success = extractVerses(chapter, text, lastFirst, first);
+                    successOverall = successOverall && success;
                     lastFirst = first;
                 }
-                success = success && extractVerses(chapter, text, lastFirst, "999999");
+                success = extractVerses(chapter, text, lastFirst, "999999");
+                successOverall = successOverall && success;
 
             } catch (Exception e) {
                 Logger.e(TAG, "error parsing chapter " + mChapter, e);
                 return false;
             }
         }
-        return success;
+        return successOverall;
     }
 
+    /**
+     * extract verses in range start to end into section
+     * @param chapter
+     * @param text
+     * @param start
+     * @param end
+     * @return
+     */
     private boolean extractVerses(String chapter, CharSequence text, String start, String end) {
         boolean success = true;
         if(null != start) {
@@ -260,12 +320,22 @@ public class ImportUsfm {
         return success;
     }
 
+    /**
+     * extract verses in range start to end into section
+     * @param chapter
+     * @param text
+     * @param start
+     * @param end
+     * @param firstVerse
+     * @return
+     */
     private boolean extractVerseRange(String chapter, CharSequence text, int start, int end, String firstVerse) {
-        boolean success = true;
+        boolean successOverall = true;
+        boolean success;
         if(!isEmpty(chapter)) {
-            Pattern versePattern = Pattern.compile(USFMVerseSpan.PATTERN);
-            Matcher matcher = versePattern.matcher(text);
-            int lastIndex = 0;
+            Pattern pattern = Pattern.compile(USFMVerseSpan.PATTERN);
+            Matcher matcher = pattern.matcher(text);
+            int lastIndex = -1;
             String section = "";
             int currentVerse = 0;
             boolean done = false;
@@ -284,23 +354,32 @@ public class ImportUsfm {
                 lastIndex = matcher.start();
             }
 
-            if(!done) {
-                section = section + text.subSequence(lastIndex, matcher.start()); // get section before this chunk marker
+            if(!done && (lastIndex >= 0) && (currentVerse < end)) {
+                section = section + text.subSequence(lastIndex, text.length()); // get section before this chunk marker
             }
 
             if(!section.isEmpty()) {
-                success = success && saveChunk(chapter, firstVerse, section);
+                success = saveSection(chapter, firstVerse, section);
+                successOverall = successOverall && success;
             }
         }
-        return success;
+        return successOverall;
     }
 
-    private boolean saveChunk(String chapter, String firstVerse, CharSequence chunk) {
+    /**
+     * save section in file in chapter folder and book folder
+     * @param chapter
+     * @param firstVerse
+     * @param section
+     * @return
+     */
+    private boolean saveSection(String chapter, String firstVerse, CharSequence section) {
         File chapterFolder = new File(mTempDest, chapter);
         try {
+            String cleanChunk = removePattern(section, SECTION_MARKER);
             FileUtils.forceMkdir(chapterFolder);
             File output = new File(chapterFolder, firstVerse + ".txt");
-            FileUtils.write(output,chunk);
+            FileUtils.write(output,cleanChunk);
             return true;
         } catch (Exception e) {
             Logger.e(TAG, "error parsing chapter " + mChapter, e);
@@ -309,6 +388,11 @@ public class ImportUsfm {
         }
     }
 
+    /**
+     * test if CharSequence is null or empty
+     * @param text
+     * @return
+     */
     private boolean isEmpty(CharSequence text) {
         if(null == text) {
             return true;
@@ -316,39 +400,53 @@ public class ImportUsfm {
         return text.length() == 0;
     }
 
-    private boolean extractChaptersFromText(CharSequence text) {
-        Pattern ChapterPattern = Pattern.compile(CHAPTER_NUMBER_MARKER);
-        Matcher matcher = ChapterPattern.matcher(text);
+    /**
+     * extract chapters from document text
+     * @param text
+     * @return
+     */
+    private boolean extractChaptersFromDocument(CharSequence text) {
+        Pattern pattern = Pattern.compile(CHAPTER_NUMBER_MARKER);
+        Matcher matcher = pattern.matcher(text);
         int lastIndex = 0;
         CharSequence section;
         mChapter = null;
         while(matcher.find()) {
             section = text.subSequence(lastIndex, matcher.start()); // get section before this chapter marker
-            extractChunksFromChapter(section);
+            extractSectionsFromChapter(section);
             mChapter = matcher.group(1); // chapter number for next section
             lastIndex = matcher.end();
         }
         section = text.subSequence(lastIndex, text.length()); // get last section
-        extractChunksFromChapter(section);
+        extractSectionsFromChapter(section);
         return true;
     }
 
-    private void extractChunksFromChapter(CharSequence text) {
+    /**
+     * extract sections from chapter
+     * @param chapter
+     */
+    private void extractSectionsFromChapter(CharSequence chapter) {
         if(!isEmpty(mChapter)) {
-            Pattern ChunkPattern = Pattern.compile(SECTION_MARKER);
-            Matcher matcher = ChunkPattern.matcher(text);
+            Pattern pattern = Pattern.compile(SECTION_MARKER);
+            Matcher matcher = pattern.matcher(chapter);
             int lastIndex = 0;
             CharSequence section;
             while (matcher.find()) {
-                section = text.subSequence(lastIndex, matcher.start()); // get section before this chunk marker
+                section = chapter.subSequence(lastIndex, matcher.start()); // get section before this chunk marker
                 processSection(section);
                 lastIndex = matcher.end();
             }
-            section = text.subSequence(lastIndex, text.length()); // get last section
+            section = chapter.subSequence(lastIndex, chapter.length()); // get last section
             processSection(section);
         }
     }
 
+    /**
+     * extract verses from section
+     * @param section
+     * @return
+     */
     private boolean processSection(CharSequence section) {
         if(!isEmpty(section)) {
             String firstVerse = extractString(section, USFMVerseSpan.PATTERN);
@@ -357,16 +455,22 @@ public class ImportUsfm {
                 return false;
             }
 
-            saveChunk(mChapter, firstVerse, section);
+            saveSection(mChapter, firstVerse, section);
         }
         return true;
     }
 
-    private String extractString(CharSequence section, String regexPattern) {
-        if(section.length() > 0) {
+    /**
+     * extract string in group 1 of regex if present
+     * @param text
+     * @param regexPattern
+     * @return
+     */
+    private String extractString(CharSequence text, String regexPattern) {
+        if(text.length() > 0) {
             // find instance
             Pattern findPattern = Pattern.compile(regexPattern);
-            Matcher matcher = findPattern.matcher(section);
+            Matcher matcher = findPattern.matcher(text);
             String foundItem = null;
             if(matcher.find()) {
                 foundItem = matcher.group(1);
@@ -377,11 +481,36 @@ public class ImportUsfm {
         return null;
     }
 
-    private boolean isPresent(CharSequence section, String regexPattern) {
-        if(section.length() > 0) {
+    /**
+     * remove pattern if present in text
+     * @param text
+     * @param removePattern
+     * @return
+     */
+    private String removePattern(CharSequence text, String removePattern) {
+        String out = "";
+        Pattern pattern = Pattern.compile(removePattern);
+        Matcher matcher = pattern.matcher(text);
+        int lastIndex = 0;
+        while (matcher.find()) {
+            out = out + text.subSequence(lastIndex, matcher.start()); // get section before this chunk marker
+            lastIndex = matcher.end();
+        }
+        out = out + text.subSequence(lastIndex, text.length()); // get last section
+        return out;
+    }
+
+    /**
+     * test to see if regex pattern is present in text
+     * @param text
+     * @param regexPattern
+     * @return
+     */
+    private boolean isPresent(CharSequence text, String regexPattern) {
+        if(text.length() > 0) {
             // find instance
             Pattern versePattern = Pattern.compile(regexPattern);
-            Matcher matcher = versePattern.matcher(section);
+            Matcher matcher = versePattern.matcher(text);
             if(matcher.find()) {
                 return true;
             }
@@ -390,19 +519,30 @@ public class ImportUsfm {
         return false;
     }
 
+    /**
+     * create the necessary temp folders for unzipped source and output
+     */
     private void createTempFolders() {
         mTempDir = new File(AppContext.context().getCacheDir(), System.currentTimeMillis() + "");
         mTempDir.mkdirs();
         mTempSrce = new File(mTempDir,"source");
         mTempSrce.mkdirs();
-        mTempDest = new File(mTempDir,"new");
-        mTempDest.mkdirs();
+        mTempOutput = new File(mTempDir,"output");
+        mTempOutput.mkdirs();
     }
 
+    /**
+     * cleanup
+     */
     private void cleanup() {
         FileUtils.deleteQuietly(mTempDir);
     }
 
+    /**
+     * add file and files in sub-folders to list of files to process
+     * @param usfmFile
+     * @return
+     */
     private boolean addFilesInFolder(File usfmFile) {
         Logger.i(TAG, "processing folder: " + usfmFile.toString());
 
@@ -418,6 +558,11 @@ public class ImportUsfm {
         return true;
     }
 
+    /**
+     * add file to list of files to process
+     * @param usfmFile
+     * @return
+     */
     private boolean addFile(File usfmFile) {
         Logger.i(TAG, "processing file: " + usfmFile.toString());
         mSourceFiles.add(usfmFile);
