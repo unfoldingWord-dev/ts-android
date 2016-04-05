@@ -96,25 +96,25 @@ public class TargetTranslation {
 
         // target language
         JSONObject targetLanguageJson = this.manifest.getJSONObject(FIELD_MANIFEST_TARGET_LANGUAGE);
-        this.targetLanguageId = targetLanguageJson.getString("id");
-        this.targetLanguageName = Manifest.valueExists(targetLanguageJson, "name") ? targetLanguageJson.getString("name") : this.targetLanguageId.toUpperCase();
+        this.targetLanguageId = targetLanguageJson.getString(FIELD_MANIFEST_ID);
+        this.targetLanguageName = Manifest.valueExists(targetLanguageJson, FIELD_MANIFEST_NAME) ? targetLanguageJson.getString(FIELD_MANIFEST_NAME) : this.targetLanguageId.toUpperCase();
         this.targetLanguageDirection = LanguageDirection.get(targetLanguageJson.getString("direction"));
 
         // project
         JSONObject projectJson = this.manifest.getJSONObject(FIELD_MANIFEST_PROJECT);
-        this.projectId = projectJson.getString("id");
-        this.projectName = Manifest.valueExists(projectJson, "name") ? projectJson.getString("name") : this.projectId.toUpperCase();
+        this.projectId = projectJson.getString(FIELD_MANIFEST_ID);
+        this.projectName = Manifest.valueExists(projectJson, FIELD_MANIFEST_NAME) ? projectJson.getString(FIELD_MANIFEST_NAME) : this.projectId.toUpperCase();
 
         // translation type
-        JSONObject typeJson = this.manifest.getJSONObject("type");
-        this.translationType = TranslationType.get(typeJson.getString("id"));
-        this.translationTypeName = Manifest.valueExists(typeJson, "name") ? typeJson.getString("name") : this.translationType.toString().toUpperCase();
+        JSONObject typeJson = this.manifest.getJSONObject(FIELD_MANIFEST_TRANSLATION_TYPE);
+        this.translationType = TranslationType.get(typeJson.getString(FIELD_MANIFEST_ID));
+        this.translationTypeName = Manifest.valueExists(typeJson, FIELD_MANIFEST_NAME) ? typeJson.getString(FIELD_MANIFEST_NAME) : this.translationType.toString().toUpperCase();
 
         if(this.translationType == TranslationType.TEXT) {
             // resource
-            JSONObject resourceJson = this.manifest.getJSONObject("resource");
-            this.resourceSlug = resourceJson.getString("id");
-            this.resourceName = Manifest.valueExists(resourceJson, "name") ? resourceJson.getString("name") : this.resourceSlug.toUpperCase();
+            JSONObject resourceJson = this.manifest.getJSONObject(FIELD_MANIFEST_RESOURCE);
+            this.resourceSlug = resourceJson.getString(FIELD_MANIFEST_ID);
+            this.resourceName = Manifest.valueExists(resourceJson, FIELD_MANIFEST_NAME) ? resourceJson.getString(FIELD_MANIFEST_NAME) : this.resourceSlug.toUpperCase();
         }
 
         mTranslationFormat = readTranslationFormat();
@@ -231,7 +231,7 @@ public class TargetTranslation {
         JSONObject projectIdJson = manifest.getJSONObject(FIELD_MANIFEST_PROJECT);
         if(projectIdJson != null) {
             try {
-                projectIdStr = projectIdJson.getString("id");
+                projectIdStr = projectIdJson.getString(FIELD_MANIFEST_ID);
             } catch(Exception e) {
                 projectIdStr = "";
             }
@@ -244,7 +244,7 @@ public class TargetTranslation {
         JSONObject typeJson = manifest.getJSONObject(FIELD_MANIFEST_TRANSLATION_TYPE);
         if(typeJson != null) {
             try {
-                translationTypeStr = typeJson.getString("id");
+                translationTypeStr = typeJson.getString(FIELD_MANIFEST_ID);
             } catch(Exception e) {
                 translationTypeStr = "";
             }
@@ -361,9 +361,9 @@ public class TargetTranslation {
      */
     public static void updateGenerator(Context context, TargetTranslation targetTranslation) throws Exception{
         JSONObject generatorJson = new JSONObject();
-        generatorJson.put("name", "ts-android");
+        generatorJson.put(FIELD_MANIFEST_NAME, "ts-android");
         PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
-        generatorJson.put("build", pInfo.versionCode);
+        generatorJson.put(FIELD_MANIFEST_BUILD, pInfo.versionCode);
         targetTranslation.manifest.put(FIELD_MANIFEST_GENERATOR, generatorJson);
     }
 

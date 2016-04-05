@@ -1,14 +1,21 @@
 package com.door43.translationstudio.core;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageInfo;
+import android.text.TextUtils;
+import android.view.View;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.R;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.spannables.USFMVerseSpan;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,28 +42,34 @@ public class ImportUsfm {
     private File mTempOutput;
     private File mTempDest;
     private File mTempSrce;
+    private String mTranlationFolder;
+
     private String mChapter;
     private List<File> mSourceFiles;
-    private HashMap<String,JSONObject> mChunks;
+    private HashMap<String, JSONObject> mChunks;
     private List<String> mErrors;
 
     private String mBookName;
     private String mBookShortName;
     private JSONObject mChunk;
-    private String mLanguageCode;
+    private TargetLanguage mTargetLanguage;
 
-    public ImportUsfm(String languageCode) {
+    public ImportUsfm(TargetLanguage targetLanguage) {
         createTempFolders();
         mSourceFiles = new ArrayList<>();
         mErrors = new ArrayList<>();
         mChunks = new HashMap<>();
-        mLanguageCode = languageCode;
+        mTargetLanguage = targetLanguage;
+
+        // TODO: 4/5/16 hard coded for now
+        String chunkJsonStr = "[{\"chp\": \"01\", \"firstvs\": \"01\"}, {\"chp\": \"01\", \"firstvs\": \"04\"}, {\"chp\": \"01\", \"firstvs\": \"07\"}, {\"chp\": \"01\", \"firstvs\": \"09\"}, {\"chp\": \"01\", \"firstvs\": \"12\"}, {\"chp\": \"01\", \"firstvs\": \"14\"}, {\"chp\": \"01\", \"firstvs\": \"16\"}, {\"chp\": \"01\", \"firstvs\": \"19\"}, {\"chp\": \"01\", \"firstvs\": \"21\"}, {\"chp\": \"01\", \"firstvs\": \"23\"}, {\"chp\": \"01\", \"firstvs\": \"27\"}, {\"chp\": \"01\", \"firstvs\": \"29\"}, {\"chp\": \"01\", \"firstvs\": \"32\"}, {\"chp\": \"01\", \"firstvs\": \"35\"}, {\"chp\": \"01\", \"firstvs\": \"38\"}, {\"chp\": \"01\", \"firstvs\": \"40\"}, {\"chp\": \"01\", \"firstvs\": \"43\"}, {\"chp\": \"01\", \"firstvs\": \"45\"}, {\"chp\": \"02\", \"firstvs\": \"01\"}, {\"chp\": \"02\", \"firstvs\": \"03\"}, {\"chp\": \"02\", \"firstvs\": \"05\"}, {\"chp\": \"02\", \"firstvs\": \"08\"}, {\"chp\": \"02\", \"firstvs\": \"10\"}, {\"chp\": \"02\", \"firstvs\": \"13\"}, {\"chp\": \"02\", \"firstvs\": \"15\"}, {\"chp\": \"02\", \"firstvs\": \"17\"}, {\"chp\": \"02\", \"firstvs\": \"18\"}, {\"chp\": \"02\", \"firstvs\": \"20\"}, {\"chp\": \"02\", \"firstvs\": \"22\"}, {\"chp\": \"02\", \"firstvs\": \"23\"}, {\"chp\": \"02\", \"firstvs\": \"25\"}, {\"chp\": \"02\", \"firstvs\": \"27\"}, {\"chp\": \"03\", \"firstvs\": \"01\"}, {\"chp\": \"03\", \"firstvs\": \"03\"}, {\"chp\": \"03\", \"firstvs\": \"05\"}, {\"chp\": \"03\", \"firstvs\": \"07\"}, {\"chp\": \"03\", \"firstvs\": \"09\"}, {\"chp\": \"03\", \"firstvs\": \"11\"}, {\"chp\": \"03\", \"firstvs\": \"13\"}, {\"chp\": \"03\", \"firstvs\": \"17\"}, {\"chp\": \"03\", \"firstvs\": \"20\"}, {\"chp\": \"03\", \"firstvs\": \"23\"}, {\"chp\": \"03\", \"firstvs\": \"26\"}, {\"chp\": \"03\", \"firstvs\": \"28\"}, {\"chp\": \"03\", \"firstvs\": \"31\"}, {\"chp\": \"03\", \"firstvs\": \"33\"}, {\"chp\": \"04\", \"firstvs\": \"01\"}, {\"chp\": \"04\", \"firstvs\": \"03\"}, {\"chp\": \"04\", \"firstvs\": \"06\"}, {\"chp\": \"04\", \"firstvs\": \"08\"}, {\"chp\": \"04\", \"firstvs\": \"10\"}, {\"chp\": \"04\", \"firstvs\": \"13\"}, {\"chp\": \"04\", \"firstvs\": \"16\"}, {\"chp\": \"04\", \"firstvs\": \"18\"}, {\"chp\": \"04\", \"firstvs\": \"21\"}, {\"chp\": \"04\", \"firstvs\": \"24\"}, {\"chp\": \"04\", \"firstvs\": \"26\"}, {\"chp\": \"04\", \"firstvs\": \"30\"}, {\"chp\": \"04\", \"firstvs\": \"33\"}, {\"chp\": \"04\", \"firstvs\": \"35\"}, {\"chp\": \"04\", \"firstvs\": \"38\"}, {\"chp\": \"04\", \"firstvs\": \"40\"}, {\"chp\": \"05\", \"firstvs\": \"01\"}, {\"chp\": \"05\", \"firstvs\": \"03\"}, {\"chp\": \"05\", \"firstvs\": \"05\"}, {\"chp\": \"05\", \"firstvs\": \"07\"}, {\"chp\": \"05\", \"firstvs\": \"09\"}, {\"chp\": \"05\", \"firstvs\": \"11\"}, {\"chp\": \"05\", \"firstvs\": \"14\"}, {\"chp\": \"05\", \"firstvs\": \"16\"}, {\"chp\": \"05\", \"firstvs\": \"18\"}, {\"chp\": \"05\", \"firstvs\": \"21\"}, {\"chp\": \"05\", \"firstvs\": \"25\"}, {\"chp\": \"05\", \"firstvs\": \"28\"}, {\"chp\": \"05\", \"firstvs\": \"30\"}, {\"chp\": \"05\", \"firstvs\": \"33\"}, {\"chp\": \"05\", \"firstvs\": \"35\"}, {\"chp\": \"05\", \"firstvs\": \"36\"}, {\"chp\": \"05\", \"firstvs\": \"39\"}, {\"chp\": \"05\", \"firstvs\": \"41\"}, {\"chp\": \"06\", \"firstvs\": \"01\"}, {\"chp\": \"06\", \"firstvs\": \"04\"}, {\"chp\": \"06\", \"firstvs\": \"07\"}, {\"chp\": \"06\", \"firstvs\": \"10\"}, {\"chp\": \"06\", \"firstvs\": \"12\"}, {\"chp\": \"06\", \"firstvs\": \"14\"}, {\"chp\": \"06\", \"firstvs\": \"16\"}, {\"chp\": \"06\", \"firstvs\": \"18\"}, {\"chp\": \"06\", \"firstvs\": \"21\"}, {\"chp\": \"06\", \"firstvs\": \"23\"}, {\"chp\": \"06\", \"firstvs\": \"26\"}, {\"chp\": \"06\", \"firstvs\": \"30\"}, {\"chp\": \"06\", \"firstvs\": \"33\"}, {\"chp\": \"06\", \"firstvs\": \"35\"}, {\"chp\": \"06\", \"firstvs\": \"37\"}, {\"chp\": \"06\", \"firstvs\": \"39\"}, {\"chp\": \"06\", \"firstvs\": \"42\"}, {\"chp\": \"06\", \"firstvs\": \"45\"}, {\"chp\": \"06\", \"firstvs\": \"48\"}, {\"chp\": \"06\", \"firstvs\": \"51\"}, {\"chp\": \"06\", \"firstvs\": \"53\"}, {\"chp\": \"06\", \"firstvs\": \"56\"}, {\"chp\": \"07\", \"firstvs\": \"01\"}, {\"chp\": \"07\", \"firstvs\": \"02\"}, {\"chp\": \"07\", \"firstvs\": \"05\"}, {\"chp\": \"07\", \"firstvs\": \"06\"}, {\"chp\": \"07\", \"firstvs\": \"08\"}, {\"chp\": \"07\", \"firstvs\": \"11\"}, {\"chp\": \"07\", \"firstvs\": \"14\"}, {\"chp\": \"07\", \"firstvs\": \"17\"}, {\"chp\": \"07\", \"firstvs\": \"20\"}, {\"chp\": \"07\", \"firstvs\": \"24\"}, {\"chp\": \"07\", \"firstvs\": \"27\"}, {\"chp\": \"07\", \"firstvs\": \"29\"}, {\"chp\": \"07\", \"firstvs\": \"31\"}, {\"chp\": \"07\", \"firstvs\": \"33\"}, {\"chp\": \"07\", \"firstvs\": \"36\"}, {\"chp\": \"08\", \"firstvs\": \"01\"}, {\"chp\": \"08\", \"firstvs\": \"05\"}, {\"chp\": \"08\", \"firstvs\": \"07\"}, {\"chp\": \"08\", \"firstvs\": \"11\"}, {\"chp\": \"08\", \"firstvs\": \"14\"}, {\"chp\": \"08\", \"firstvs\": \"16\"}, {\"chp\": \"08\", \"firstvs\": \"18\"}, {\"chp\": \"08\", \"firstvs\": \"20\"}, {\"chp\": \"08\", \"firstvs\": \"22\"}, {\"chp\": \"08\", \"firstvs\": \"24\"}, {\"chp\": \"08\", \"firstvs\": \"27\"}, {\"chp\": \"08\", \"firstvs\": \"29\"}, {\"chp\": \"08\", \"firstvs\": \"31\"}, {\"chp\": \"08\", \"firstvs\": \"33\"}, {\"chp\": \"08\", \"firstvs\": \"35\"}, {\"chp\": \"08\", \"firstvs\": \"38\"}, {\"chp\": \"09\", \"firstvs\": \"01\"}, {\"chp\": \"09\", \"firstvs\": \"04\"}, {\"chp\": \"09\", \"firstvs\": \"07\"}, {\"chp\": \"09\", \"firstvs\": \"09\"}, {\"chp\": \"09\", \"firstvs\": \"11\"}, {\"chp\": \"09\", \"firstvs\": \"14\"}, {\"chp\": \"09\", \"firstvs\": \"17\"}, {\"chp\": \"09\", \"firstvs\": \"20\"}, {\"chp\": \"09\", \"firstvs\": \"23\"}, {\"chp\": \"09\", \"firstvs\": \"26\"}, {\"chp\": \"09\", \"firstvs\": \"28\"}, {\"chp\": \"09\", \"firstvs\": \"30\"}, {\"chp\": \"09\", \"firstvs\": \"33\"}, {\"chp\": \"09\", \"firstvs\": \"36\"}, {\"chp\": \"09\", \"firstvs\": \"38\"}, {\"chp\": \"09\", \"firstvs\": \"40\"}, {\"chp\": \"09\", \"firstvs\": \"42\"}, {\"chp\": \"09\", \"firstvs\": \"45\"}, {\"chp\": \"09\", \"firstvs\": \"47\"}, {\"chp\": \"09\", \"firstvs\": \"49\"}, {\"chp\": \"10\", \"firstvs\": \"01\"}, {\"chp\": \"10\", \"firstvs\": \"05\"}, {\"chp\": \"10\", \"firstvs\": \"07\"}, {\"chp\": \"10\", \"firstvs\": \"10\"}, {\"chp\": \"10\", \"firstvs\": \"13\"}, {\"chp\": \"10\", \"firstvs\": \"15\"}, {\"chp\": \"10\", \"firstvs\": \"17\"}, {\"chp\": \"10\", \"firstvs\": \"20\"}, {\"chp\": \"10\", \"firstvs\": \"23\"}, {\"chp\": \"10\", \"firstvs\": \"26\"}, {\"chp\": \"10\", \"firstvs\": \"29\"}, {\"chp\": \"10\", \"firstvs\": \"32\"}, {\"chp\": \"10\", \"firstvs\": \"35\"}, {\"chp\": \"10\", \"firstvs\": \"38\"}, {\"chp\": \"10\", \"firstvs\": \"41\"}, {\"chp\": \"10\", \"firstvs\": \"43\"}, {\"chp\": \"10\", \"firstvs\": \"46\"}, {\"chp\": \"10\", \"firstvs\": \"49\"}, {\"chp\": \"10\", \"firstvs\": \"51\"}, {\"chp\": \"11\", \"firstvs\": \"01\"}, {\"chp\": \"11\", \"firstvs\": \"04\"}, {\"chp\": \"11\", \"firstvs\": \"07\"}, {\"chp\": \"11\", \"firstvs\": \"11\"}, {\"chp\": \"11\", \"firstvs\": \"13\"}, {\"chp\": \"11\", \"firstvs\": \"15\"}, {\"chp\": \"11\", \"firstvs\": \"17\"}, {\"chp\": \"11\", \"firstvs\": \"20\"}, {\"chp\": \"11\", \"firstvs\": \"22\"}, {\"chp\": \"11\", \"firstvs\": \"24\"}, {\"chp\": \"11\", \"firstvs\": \"27\"}, {\"chp\": \"11\", \"firstvs\": \"29\"}, {\"chp\": \"11\", \"firstvs\": \"31\"}, {\"chp\": \"12\", \"firstvs\": \"01\"}, {\"chp\": \"12\", \"firstvs\": \"04\"}, {\"chp\": \"12\", \"firstvs\": \"06\"}, {\"chp\": \"12\", \"firstvs\": \"08\"}, {\"chp\": \"12\", \"firstvs\": \"10\"}, {\"chp\": \"12\", \"firstvs\": \"13\"}, {\"chp\": \"12\", \"firstvs\": \"16\"}, {\"chp\": \"12\", \"firstvs\": \"18\"}, {\"chp\": \"12\", \"firstvs\": \"20\"}, {\"chp\": \"12\", \"firstvs\": \"24\"}, {\"chp\": \"12\", \"firstvs\": \"26\"}, {\"chp\": \"12\", \"firstvs\": \"28\"}, {\"chp\": \"12\", \"firstvs\": \"32\"}, {\"chp\": \"12\", \"firstvs\": \"35\"}, {\"chp\": \"12\", \"firstvs\": \"38\"}, {\"chp\": \"12\", \"firstvs\": \"41\"}, {\"chp\": \"12\", \"firstvs\": \"43\"}, {\"chp\": \"13\", \"firstvs\": \"01\"}, {\"chp\": \"13\", \"firstvs\": \"03\"}, {\"chp\": \"13\", \"firstvs\": \"05\"}, {\"chp\": \"13\", \"firstvs\": \"07\"}, {\"chp\": \"13\", \"firstvs\": \"09\"}, {\"chp\": \"13\", \"firstvs\": \"11\"}, {\"chp\": \"13\", \"firstvs\": \"14\"}, {\"chp\": \"13\", \"firstvs\": \"17\"}, {\"chp\": \"13\", \"firstvs\": \"21\"}, {\"chp\": \"13\", \"firstvs\": \"24\"}, {\"chp\": \"13\", \"firstvs\": \"28\"}, {\"chp\": \"13\", \"firstvs\": \"30\"}, {\"chp\": \"13\", \"firstvs\": \"33\"}, {\"chp\": \"13\", \"firstvs\": \"35\"}, {\"chp\": \"14\", \"firstvs\": \"01\"}, {\"chp\": \"14\", \"firstvs\": \"03\"}, {\"chp\": \"14\", \"firstvs\": \"06\"}, {\"chp\": \"14\", \"firstvs\": \"10\"}, {\"chp\": \"14\", \"firstvs\": \"12\"}, {\"chp\": \"14\", \"firstvs\": \"15\"}, {\"chp\": \"14\", \"firstvs\": \"17\"}, {\"chp\": \"14\", \"firstvs\": \"20\"}, {\"chp\": \"14\", \"firstvs\": \"22\"}, {\"chp\": \"14\", \"firstvs\": \"26\"}, {\"chp\": \"14\", \"firstvs\": \"28\"}, {\"chp\": \"14\", \"firstvs\": \"30\"}, {\"chp\": \"14\", \"firstvs\": \"32\"}, {\"chp\": \"14\", \"firstvs\": \"35\"}, {\"chp\": \"14\", \"firstvs\": \"37\"}, {\"chp\": \"14\", \"firstvs\": \"40\"}, {\"chp\": \"14\", \"firstvs\": \"43\"}, {\"chp\": \"14\", \"firstvs\": \"47\"}, {\"chp\": \"14\", \"firstvs\": \"51\"}, {\"chp\": \"14\", \"firstvs\": \"53\"}, {\"chp\": \"14\", \"firstvs\": \"55\"}, {\"chp\": \"14\", \"firstvs\": \"57\"}, {\"chp\": \"14\", \"firstvs\": \"60\"}, {\"chp\": \"14\", \"firstvs\": \"63\"}, {\"chp\": \"14\", \"firstvs\": \"66\"}, {\"chp\": \"14\", \"firstvs\": \"69\"}, {\"chp\": \"14\", \"firstvs\": \"71\"}, {\"chp\": \"15\", \"firstvs\": \"01\"}, {\"chp\": \"15\", \"firstvs\": \"04\"}, {\"chp\": \"15\", \"firstvs\": \"06\"}, {\"chp\": \"15\", \"firstvs\": \"09\"}, {\"chp\": \"15\", \"firstvs\": \"12\"}, {\"chp\": \"15\", \"firstvs\": \"14\"}, {\"chp\": \"15\", \"firstvs\": \"16\"}, {\"chp\": \"15\", \"firstvs\": \"19\"}, {\"chp\": \"15\", \"firstvs\": \"22\"}, {\"chp\": \"15\", \"firstvs\": \"25\"}, {\"chp\": \"15\", \"firstvs\": \"29\"}, {\"chp\": \"15\", \"firstvs\": \"31\"}, {\"chp\": \"15\", \"firstvs\": \"33\"}, {\"chp\": \"15\", \"firstvs\": \"36\"}, {\"chp\": \"15\", \"firstvs\": \"39\"}, {\"chp\": \"15\", \"firstvs\": \"42\"}, {\"chp\": \"15\", \"firstvs\": \"45\"}, {\"chp\": \"16\", \"firstvs\": \"01\"}, {\"chp\": \"16\", \"firstvs\": \"03\"}, {\"chp\": \"16\", \"firstvs\": \"05\"}, {\"chp\": \"16\", \"firstvs\": \"08\"}, {\"chp\": \"16\", \"firstvs\": \"09\"}, {\"chp\": \"16\", \"firstvs\": \"12\"}, {\"chp\": \"16\", \"firstvs\": \"14\"}, {\"chp\": \"16\", \"firstvs\": \"17\"}, {\"chp\": \"16\", \"firstvs\": \"19\"}]";
+        addChunk("mrk", chunkJsonStr);
+        addChunk("xmrk", chunkJsonStr);
     }
 
-     public boolean importZipStream(InputStream usfmStream) {
-
-        boolean success = true;
-        mTempDir = null;
+    public boolean importZipStream(InputStream usfmStream) {
+        boolean successOverall = true;
+        boolean success;
         try {
             Zip.unzipFromStream(usfmStream, mTempSrce);
             File[] usfmFiles = mTempSrce.listFiles();
@@ -64,23 +77,54 @@ public class ImportUsfm {
             for (File usfmFile : usfmFiles) {
                 addFilesInFolder(usfmFile);
             }
-            Logger.i(TAG, "found files: " + mSourceFiles.size());
+            Logger.i(TAG, "found files: " + TextUtils.join("\n", mSourceFiles));
+
+            for (File file : mSourceFiles) {
+                success = processBook(file, false);
+                if(!success) {
+                    addError("Could not parse " + file.toString());
+                }
+                successOverall = successOverall && success;
+            }
+
+            finishImport();
+            cleanup();
 
         } catch (Exception e) {
             Logger.e(TAG, "error reading stream ", e);
+            successOverall = false;
         }
 
+        return successOverall;
+    }
+
+    public boolean importFile(File file) {
+        boolean success = processBook(file, false);
+        if(!success) {
+            addError("Could not parse " + file.toString());
+        }
         return success;
     }
 
-    public boolean importFile(File usfm) {
+    public boolean importResourceFile(Activity context, String fileName) {
 
         boolean success = true;
-        mTempDir = null;
 
-        createTempFolders();
-        addFilesInFolder(usfm);
-        Logger.i(TAG, "found files: " + mSourceFiles.size());
+        String ext = FilenameUtils.getExtension(fileName).toLowerCase();
+        boolean zip = "zip".equals(ext);
+
+        try {
+            InputStream usfmStream = context.getAssets().open(fileName);
+            if(!zip) {
+                String text = IOUtils.toString(usfmStream, "UTF-8");
+                success = processBook(text, true);
+            } else {
+                success = importZipStream(usfmStream);
+            }
+        } catch (Exception e) {
+            Logger.e(TAG,"error reading " + fileName, e);
+            success = false;
+        }
         return success;
     }
 
@@ -94,17 +138,17 @@ public class ImportUsfm {
         try {
             JSONObject processedChunk = new JSONObject();
             int length = chunk.length();
-            for(int i = 0; i < length; i++) {
+            for (int i = 0; i < length; i++) {
                 JSONObject item = (JSONObject) chunk.get(i);
                 String chapter = item.getString("chp");
                 String firstverse = item.getString("firstvs");
 
                 JSONArray verses = null;
-                if(processedChunk.has(chapter)) {
+                if (processedChunk.has(chapter)) {
                     verses = processedChunk.getJSONArray(chapter);
                 } else {
                     verses = new JSONArray();
-                    processedChunk.put(chapter,verses);
+                    processedChunk.put(chapter, verses);
                 }
                 verses.put(firstverse);
             }
@@ -138,7 +182,7 @@ public class ImportUsfm {
      * @return
      */
     public String[] getErrors() {
-        if( mErrors != null) {
+        if (mErrors != null) {
             return mErrors.toArray(new String[mErrors.size()]);
         }
         return new String[0];
@@ -161,33 +205,58 @@ public class ImportUsfm {
     }
 
     /**
+     * process file
+     *
+     * @param file
+     * @return
+     */
+    private boolean processBook(File file, boolean lastFile) {
+        boolean success;
+        try {
+            String book = FileUtils.readFileToString(file);
+            success = processBook(book, lastFile);
+        } catch (Exception e) {
+            Logger.e(TAG, "error reading book " + file.toString(), e);
+            success = false;
+        }
+        return success;
+    }
+
+    /**
      * process book text
      * @param book
      * @return
      */
-    public boolean processBook(String book) {
+    private boolean processBook(String book, boolean lastFile) {
         boolean successOverall = true;
         boolean success;
         try {
-            mBookName = extractString(book,BOOK_NAME_MARKER);
-            mBookShortName = extractString(book,BOOK_SHORT_NAME_MARKER).toLowerCase();
+            mBookName = extractString(book, BOOK_NAME_MARKER);
+            mBookShortName = extractString(book, BOOK_SHORT_NAME_MARKER).toLowerCase();
 
-            if(isEmpty(mBookShortName)) {
+            if (null == mTargetLanguage) {
+                addError("Missing language");
+                return false;
+            }
+
+            if (isMissing(mBookShortName)) {
                 addError("Missing book short name");
                 return false;
             }
 
+            mTranlationFolder = mBookShortName + "-" + mTargetLanguage.getId() + "/";
+
             mTempDest = new File(mTempOutput, mBookShortName);
 
-            if(isEmpty(mBookName)) {
+            if (isMissing(mBookName)) {
                 addWarning("Missing book name, using short name");
                 mBookName = mBookShortName;
             }
 
             boolean hasSections = isPresent(book, SECTION_MARKER);
 
-            if(!isPresent(book, USFMVerseSpan.PATTERN)) { // check for verses
-                if(!hasSections) {
+            if (!isPresent(book, USFMVerseSpan.PATTERN)) { // check for verses
+                if (!hasSections) {
                     addError("No verses found");
                     return false;
                 }
@@ -197,7 +266,7 @@ public class ImportUsfm {
                 return true;
             }
 
-            if(!mChunks.containsKey(mBookShortName)) {
+            if (!mChunks.containsKey(mBookShortName)) {
                 addError("No Chunk found for " + mBookShortName);
                 return false;
             }
@@ -210,21 +279,70 @@ public class ImportUsfm {
             success = buildManifest();
             successOverall = successOverall && success;
 
-            copyProjectToDownloads(); // TODO: 4/5/16 replace with import file
+            if(lastFile) {
+                finishImport();
+            }
 
         } catch (Exception e) {
             Logger.e(TAG, "error parsing book", e);
             return false;
         } finally {
-            try {
-            cleanup();
-            } catch (Exception e) {
-                Logger.e(TAG, "error cleaning up", e);
-                addError("error cleaning up");
-                successOverall = false;
+            if(lastFile) {
+                try {
+                    cleanup();
+                } catch (Exception e) {
+                    Logger.e(TAG, "error cleaning up", e);
+                    addError("error cleaning up");
+                    successOverall = false;
+                }
             }
         }
         return successOverall;
+    }
+
+    private void finishImport() {
+        copyProjectToDownloads(); // TODO: 4/5/16 replace with import file
+    }
+
+    private boolean setLanguage(final Activity context, String languageCode, final ImportUsfm.OnLanguageSelectedListener listener) {
+        if(isMissing(languageCode)) {
+            final CustomAlertDialog dlg = CustomAlertDialog.Create(context);
+            dlg.setTitle("Missing Target Language")
+                    .setMessage("What is target language code (exact)?")
+                    .addInputPrompt(true)
+                    .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            String language = dlg.getEnteredText().toString();
+                            setLanguage(context, language, listener); // try to use language
+                        }
+                    })
+                    .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            listener.onFinished(false, null);
+                        }
+                    })
+                    .show("getLanguage");
+        }
+        else {
+            TargetLanguage targetLanguage = AppContext.getLibrary().getTargetLanguage(languageCode);
+            if(targetLanguage != null) {
+                listener.onFinished(true, targetLanguage);
+            } else {
+                CustomAlertDialog.Create(context)
+                        .setTitle("Invalid Target Language")
+                        .setMessage("Target language code " + languageCode + " unknown")
+                        .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                setLanguage(context, null, listener); // prompt again
+                            }
+                        })
+                        .show("invalidLanguage");
+            }
+        }
+        return true;
     }
 
     /**
@@ -237,13 +355,9 @@ public class ImportUsfm {
         try {
             Context context = AppContext.context();
             pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
-            String languageName = mLanguageCode; // TODO: 4/5/16 get full name
-            String region = "uncertain"; // TODO: 4/5/16 get region
-            LanguageDirection direction = LanguageDirection.LeftToRight; // TODO: 4/5/16 get direction
-            TargetLanguage targetLanguage = new TargetLanguage (mLanguageCode, languageName, region, direction);
-            String projectId = "unknown_project_id";
+            String projectId = mBookShortName;
             String resourceSlug = mBookShortName;
-            targetTranslation = TargetTranslation.create( context, AppContext.getProfile().getNativeSpeaker(), TranslationFormat.USFM, targetLanguage, projectId, TranslationType.TEXT, resourceSlug, pInfo, mTempDest);
+            targetTranslation = TargetTranslation.create( context, AppContext.getProfile().getNativeSpeaker(), TranslationFormat.USFM, mTargetLanguage, projectId, TranslationType.TEXT, resourceSlug, pInfo, mTempDest);
 
         } catch (Exception e) {
             addError("failed to build manifest");
@@ -306,7 +420,7 @@ public class ImportUsfm {
     private boolean breakUpChapter(CharSequence text) {
         boolean successOverall = true;
         boolean success;
-        if(!isEmpty(mChapter)) {
+        if(!isMissing(mChapter)) {
             try {
                 String chapter = mChapter;
                 if (!mChunk.has(chapter)) {
@@ -370,7 +484,7 @@ public class ImportUsfm {
     private boolean extractVerseRange(String chapter, CharSequence text, int start, int end, String firstVerse) {
         boolean successOverall = true;
         boolean success;
-        if(!isEmpty(chapter)) {
+        if(!isMissing(chapter)) {
             Pattern pattern = Pattern.compile(USFMVerseSpan.PATTERN);
             Matcher matcher = pattern.matcher(text);
             int lastIndex = -1;
@@ -412,7 +526,7 @@ public class ImportUsfm {
      * @return
      */
     private boolean saveSection(String chapter, String firstVerse, CharSequence section) {
-        File chapterFolder = new File(mTempDest, mBookShortName + "-" + mLanguageCode + "/" + chapter);
+        File chapterFolder = new File(mTempDest, mTranlationFolder + chapter);
         try {
             String cleanChunk = removePattern(section, SECTION_MARKER);
             FileUtils.forceMkdir(chapterFolder);
@@ -431,7 +545,7 @@ public class ImportUsfm {
      * @param text
      * @return
      */
-    private boolean isEmpty(CharSequence text) {
+    private boolean isMissing(CharSequence text) {
         if(null == text) {
             return true;
         }
@@ -465,7 +579,7 @@ public class ImportUsfm {
      * @param chapter
      */
     private void extractSectionsFromChapter(CharSequence chapter) {
-        if(!isEmpty(mChapter)) {
+        if(!isMissing(mChapter)) {
             Pattern pattern = Pattern.compile(SECTION_MARKER);
             Matcher matcher = pattern.matcher(chapter);
             int lastIndex = 0;
@@ -486,7 +600,7 @@ public class ImportUsfm {
      * @return
      */
     private boolean processSection(CharSequence section) {
-        if(!isEmpty(section)) {
+        if(!isMissing(section)) {
             String firstVerse = extractString(section, USFMVerseSpan.PATTERN);
             if (null == firstVerse) {
                 addError("Missing verse");
@@ -605,5 +719,13 @@ public class ImportUsfm {
         Logger.i(TAG, "processing file: " + usfmFile.toString());
         mSourceFiles.add(usfmFile);
         return true;
+    }
+
+    public interface OnFinishedListener {
+        void onFinished(boolean success);
+    }
+
+    public interface OnLanguageSelectedListener {
+        void onFinished(boolean success, TargetLanguage targetLanguage);
     }
 }

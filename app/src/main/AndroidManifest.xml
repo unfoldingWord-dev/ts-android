@@ -179,6 +179,9 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".newui.translate.TargetTranslationActivity" />
         </activity>
+        <activity
+            android:name=".newui.ImportUsfmActivity"
+            android:label="@string/title_activity_import_usfm"></activity>
     </application>
 
 </manifest>
