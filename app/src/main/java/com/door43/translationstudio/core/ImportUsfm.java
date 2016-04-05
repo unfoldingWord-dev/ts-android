@@ -1,5 +1,8 @@
 package com.door43.translationstudio.core;
 
+import android.content.Context;
+import android.content.pm.PackageInfo;
+
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.spannables.USFMVerseSpan;
@@ -7,6 +10,7 @@ import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -39,13 +43,14 @@ public class ImportUsfm {
     private String mBookName;
     private String mBookShortName;
     private JSONObject mChunk;
+    private String mLanguageCode;
 
-
-    public ImportUsfm() {
+    public ImportUsfm(String languageCode) {
         createTempFolders();
         mSourceFiles = new ArrayList<>();
         mErrors = new ArrayList<>();
         mChunks = new HashMap<>();
+        mLanguageCode = languageCode;
     }
 
      public boolean importZipStream(InputStream usfmStream) {
@@ -161,7 +166,8 @@ public class ImportUsfm {
      * @return
      */
     public boolean processBook(String book) {
-        boolean success = true;
+        boolean successOverall = true;
+        boolean success;
         try {
             mBookName = extractString(book,BOOK_NAME_MARKER);
             mBookShortName = extractString(book,BOOK_SHORT_NAME_MARKER).toLowerCase();
@@ -198,9 +204,13 @@ public class ImportUsfm {
             mChunk = mChunks.get(mBookShortName);
 
             success = extractChaptersFromBook(book);
+            successOverall = successOverall && success;
 
             // TODO: 4/3/16 build tstudio package
-            copyProjectToDownloads();
+            success = buildManifest();
+            successOverall = successOverall && success;
+
+            copyProjectToDownloads(); // TODO: 4/5/16 replace with import file
 
         } catch (Exception e) {
             Logger.e(TAG, "error parsing book", e);
@@ -210,10 +220,38 @@ public class ImportUsfm {
             cleanup();
             } catch (Exception e) {
                 Logger.e(TAG, "error cleaning up", e);
-                success = false;
+                addError("error cleaning up");
+                successOverall = false;
             }
         }
-        return success;
+        return successOverall;
+    }
+
+    /**
+     * create the manifest
+     * @throws JSONException
+     */
+    private boolean buildManifest() throws JSONException {
+        PackageInfo pInfo;
+        TargetTranslation targetTranslation;
+        try {
+            Context context = AppContext.context();
+            pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            String languageName = mLanguageCode; // TODO: 4/5/16 get full name
+            String region = "uncertain"; // TODO: 4/5/16 get region
+            LanguageDirection direction = LanguageDirection.LeftToRight; // TODO: 4/5/16 get direction
+            TargetLanguage targetLanguage = new TargetLanguage (mLanguageCode, languageName, region, direction);
+            String projectId = "unknown_project_id";
+            String resourceSlug = mBookShortName;
+            targetTranslation = TargetTranslation.create( context, AppContext.getProfile().getNativeSpeaker(), TranslationFormat.USFM, targetLanguage, projectId, TranslationType.TEXT, resourceSlug, pInfo, mTempDest);
+
+        } catch (Exception e) {
+            addError("failed to build manifest");
+            Logger.e(TAG, "failed to build manifest", e);
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -374,7 +412,7 @@ public class ImportUsfm {
      * @return
      */
     private boolean saveSection(String chapter, String firstVerse, CharSequence section) {
-        File chapterFolder = new File(mTempDest, chapter);
+        File chapterFolder = new File(mTempDest, mBookShortName + "-" + mLanguageCode + "/" + chapter);
         try {
             String cleanChunk = removePattern(section, SECTION_MARKER);
             FileUtils.forceMkdir(chapterFolder);

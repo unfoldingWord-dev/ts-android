@@ -133,7 +133,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                 try {
                     InputStream usfmStream = getAssets().open(file);
                     String text = IOUtils.toString(usfmStream, "UTF-8");
-                    ImportUsfm usfm = (new ImportUsfm());
+                    ImportUsfm usfm = (new ImportUsfm("es-419"));
                     usfm.addChunk("mrk", chunkJsonStr);
                     success = usfm.processBook(text);
                     String[] errors = usfm.getErrors();

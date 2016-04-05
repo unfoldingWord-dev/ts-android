@@ -56,15 +56,20 @@ public class TargetTranslation {
     private static final String FIELD_PARENT_DRAFT = "parent_draft";
     private static final String FIELD_FINISHED_CHUNKS = "finished_chunks";
     private static final String FIELD_TRANSLATORS = "translators";
-    private static final String FIELD_TARGET_LANGUAGE = "target_language";
-    private static final String FIELD_FORMAT = "format";
-    private static final String FIELD_RESOURCE = "resource";
-    private static final String FIELD_SOURCE_TRANSLATIONS = "source_translations";
-    private static final String FIELD_PACKAGE_VERSION = "package_version";
-    private static final String FIELD_PROJECT = "project";
-    private static final String FIELD_GENERATOR = "generator";
-    private static final String FIELD_TRANSLATION_TYPE = "type";
-    private static final String FIELD_TRANSLATION_FORMAT = "format";
+
+    public static final String FIELD_MANIFEST_TARGET_LANGUAGE = "target_language";
+    public static final String FIELD_MANIFEST_FORMAT = "format";
+    public static final String FIELD_MANIFEST_RESOURCE = "resource";
+    public static final String FIELD_SOURCE_TRANSLATIONS = "source_translations";
+    public static final String FIELD_MANIFEST_PACKAGE_VERSION = "package_version";
+    public static final String FIELD_MANIFEST_PROJECT = "project";
+    public static final String FIELD_MANIFEST_GENERATOR = "generator";
+    public static final String FIELD_MANIFEST_TRANSLATION_TYPE = "type";
+    public static final String FIELD_TRANSLATION_FORMAT = "format";
+    public static final String FIELD_MANIFEST_ID = "id";
+    public static final String FIELD_MANIFEST_NAME = "name";
+    public static final String FIELD_MANIFEST_BUILD = "build";
+    public static final String APPLICATION_NAME = "ts-android";
 
     private final File targetTranslationDir;
     private final Manifest manifest;
@@ -90,13 +95,13 @@ public class TargetTranslation {
         this.manifest = Manifest.generate(targetTranslationDir);
 
         // target language
-        JSONObject targetLanguageJson = this.manifest.getJSONObject(FIELD_TARGET_LANGUAGE);
+        JSONObject targetLanguageJson = this.manifest.getJSONObject(FIELD_MANIFEST_TARGET_LANGUAGE);
         this.targetLanguageId = targetLanguageJson.getString("id");
         this.targetLanguageName = Manifest.valueExists(targetLanguageJson, "name") ? targetLanguageJson.getString("name") : this.targetLanguageId.toUpperCase();
         this.targetLanguageDirection = LanguageDirection.get(targetLanguageJson.getString("direction"));
 
         // project
-        JSONObject projectJson = this.manifest.getJSONObject(FIELD_PROJECT);
+        JSONObject projectJson = this.manifest.getJSONObject(FIELD_MANIFEST_PROJECT);
         this.projectId = projectJson.getString("id");
         this.projectName = Manifest.valueExists(projectJson, "name") ? projectJson.getString("name") : this.projectId.toUpperCase();
 
@@ -223,7 +228,7 @@ public class TargetTranslation {
 
     public static String fetchProjectID(Manifest manifest) {
         String projectIdStr = "";
-        JSONObject projectIdJson = manifest.getJSONObject(FIELD_PROJECT);
+        JSONObject projectIdJson = manifest.getJSONObject(FIELD_MANIFEST_PROJECT);
         if(projectIdJson != null) {
             try {
                 projectIdStr = projectIdJson.getString("id");
@@ -236,7 +241,7 @@ public class TargetTranslation {
 
     public static TranslationType fetchTranslationType(Manifest manifest) {
         String translationTypeStr = "";
-        JSONObject typeJson = manifest.getJSONObject(FIELD_TRANSLATION_TYPE);
+        JSONObject typeJson = manifest.getJSONObject(FIELD_MANIFEST_TRANSLATION_TYPE);
         if(typeJson != null) {
             try {
                 translationTypeStr = typeJson.getString("id");
@@ -258,7 +263,7 @@ public class TargetTranslation {
             if (manifestFile.exists()) {
                 try {
                     JSONObject manifest = new JSONObject(FileUtils.readFileToString(manifestFile));
-                    int version = manifest.getInt(FIELD_PACKAGE_VERSION);
+                    int version = manifest.getInt(FIELD_MANIFEST_PACKAGE_VERSION);
                     if (version == PACKAGE_VERSION) {
                         return new TargetTranslation(targetTranslationDir);
                     } else {
@@ -293,23 +298,23 @@ public class TargetTranslation {
 
         // build new manifest
         JSONObject projectJson = new JSONObject();
-        projectJson.put("id", projectId);
-        projectJson.put("name", "");
-        manifest.put(FIELD_PROJECT, projectJson);
+        projectJson.put(FIELD_MANIFEST_ID, projectId);
+        projectJson.put(FIELD_MANIFEST_NAME, "");
+        manifest.put(FIELD_MANIFEST_PROJECT, projectJson);
         JSONObject typeJson = new JSONObject();
-        typeJson.put("id", translationType);
-        typeJson.put("name", translationType.getName());
-        manifest.put(FIELD_TRANSLATION_TYPE, typeJson);
+        typeJson.put(FIELD_MANIFEST_ID, translationType);
+        typeJson.put(FIELD_MANIFEST_NAME, translationType.getName());
+        manifest.put(FIELD_MANIFEST_TRANSLATION_TYPE, typeJson);
         JSONObject generatorJson = new JSONObject();
-        generatorJson.put("name", "ts-android");
-        generatorJson.put("build", packageInfo.versionCode);
-        manifest.put(FIELD_GENERATOR, generatorJson);
-        manifest.put(FIELD_PACKAGE_VERSION, PACKAGE_VERSION);
-        manifest.put(FIELD_TARGET_LANGUAGE, targetLanguage.toJson());
-        manifest.put(FIELD_FORMAT, translationFormat);
+        generatorJson.put(FIELD_MANIFEST_NAME, APPLICATION_NAME);
+        generatorJson.put(FIELD_MANIFEST_BUILD, packageInfo.versionCode);
+        manifest.put(FIELD_MANIFEST_GENERATOR, generatorJson);
+        manifest.put(FIELD_MANIFEST_PACKAGE_VERSION, PACKAGE_VERSION);
+        manifest.put(FIELD_MANIFEST_TARGET_LANGUAGE, targetLanguage.toJson());
+        manifest.put(FIELD_MANIFEST_FORMAT, translationFormat);
         JSONObject resourceJson = new JSONObject();
-        resourceJson.put("id", resourceSlug);
-        manifest.put(FIELD_RESOURCE, resourceJson);
+        resourceJson.put(FIELD_MANIFEST_ID, resourceSlug);
+        manifest.put(FIELD_MANIFEST_RESOURCE, resourceJson);
 
         File licenseFile = new File(targetTranslationDir, LICENSE_FILE);
         InputStream is = context.getAssets().open(LICENSE_FILE);
@@ -359,7 +364,7 @@ public class TargetTranslation {
         generatorJson.put("name", "ts-android");
         PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
         generatorJson.put("build", pInfo.versionCode);
-        targetTranslation.manifest.put(FIELD_GENERATOR, generatorJson);
+        targetTranslation.manifest.put(FIELD_MANIFEST_GENERATOR, generatorJson);
     }
 
     /**
