@@ -34,9 +34,14 @@ import java.util.regex.Pattern;
 public class ImportUsfm {
     public static final String TAG = ImportUsfm.class.getSimpleName();
     public static final String BOOK_NAME_MARKER = "\\\\toc1\\s([^\\n]*)";
+    private static final Pattern PATTERN_BOOK_NAME_MARKER = Pattern.compile(BOOK_NAME_MARKER);
     public static final String BOOK_SHORT_NAME_MARKER = "\\\\toc3\\s([^\\n]*)";
+    private static final Pattern PATTERN_BOOK_SHORT_NAME_MARKER = Pattern.compile(BOOK_SHORT_NAME_MARKER);
     public static final String SECTION_MARKER = "\\\\s5([^\\n]*)";
+    private static final Pattern PATTERN_SECTION_MARKER = Pattern.compile(SECTION_MARKER);
     public static final String CHAPTER_NUMBER_MARKER = "\\\\c\\s(\\d+(-\\d+)?)\\s";
+    private static final Pattern PATTERN_CHAPTER_NUMBER_MARKER = Pattern.compile(CHAPTER_NUMBER_MARKER);
+    private static final Pattern PATTERN_USFM_VERSE_SPAN = Pattern.compile(USFMVerseSpan.PATTERN);
 
     private File mTempDir;
     private File mTempOutput;
@@ -231,8 +236,8 @@ public class ImportUsfm {
         boolean successOverall = true;
         boolean success;
         try {
-            mBookName = extractString(book, BOOK_NAME_MARKER);
-            mBookShortName = extractString(book, BOOK_SHORT_NAME_MARKER).toLowerCase();
+            mBookName = extractString(book, PATTERN_BOOK_NAME_MARKER);
+            mBookShortName = extractString(book, PATTERN_BOOK_SHORT_NAME_MARKER).toLowerCase();
 
             if (null == mTargetLanguage) {
                 addError("Missing language");
@@ -253,9 +258,9 @@ public class ImportUsfm {
                 mBookName = mBookShortName;
             }
 
-            boolean hasSections = isPresent(book, SECTION_MARKER);
+            boolean hasSections = isPresent(book, PATTERN_SECTION_MARKER);
 
-            if (!isPresent(book, USFMVerseSpan.PATTERN)) { // check for verses
+            if (!isPresent(book, PATTERN_USFM_VERSE_SPAN)) { // check for verses
                 if (!hasSections) {
                     addError("No verses found");
                     return false;
@@ -392,7 +397,7 @@ public class ImportUsfm {
      * @return
      */
     public boolean extractChaptersFromBook(CharSequence text) {
-        Pattern pattern = Pattern.compile(CHAPTER_NUMBER_MARKER);
+        Pattern pattern = PATTERN_CHAPTER_NUMBER_MARKER;
         Matcher matcher = pattern.matcher(text);
         int lastIndex = 0;
         CharSequence section;
@@ -485,7 +490,7 @@ public class ImportUsfm {
         boolean successOverall = true;
         boolean success;
         if(!isMissing(chapter)) {
-            Pattern pattern = Pattern.compile(USFMVerseSpan.PATTERN);
+            Pattern pattern = PATTERN_USFM_VERSE_SPAN;
             Matcher matcher = pattern.matcher(text);
             int lastIndex = -1;
             String section = "";
@@ -528,7 +533,7 @@ public class ImportUsfm {
     private boolean saveSection(String chapter, String firstVerse, CharSequence section) {
         File chapterFolder = new File(mTempDest, mTranlationFolder + chapter);
         try {
-            String cleanChunk = removePattern(section, SECTION_MARKER);
+            String cleanChunk = removePattern(section, PATTERN_SECTION_MARKER);
             FileUtils.forceMkdir(chapterFolder);
             File output = new File(chapterFolder, firstVerse + ".txt");
             FileUtils.write(output,cleanChunk);
@@ -558,7 +563,7 @@ public class ImportUsfm {
      * @return
      */
     private boolean extractChaptersFromDocument(CharSequence text) {
-        Pattern pattern = Pattern.compile(CHAPTER_NUMBER_MARKER);
+        Pattern pattern = PATTERN_CHAPTER_NUMBER_MARKER;
         Matcher matcher = pattern.matcher(text);
         int lastIndex = 0;
         CharSequence section;
@@ -580,7 +585,7 @@ public class ImportUsfm {
      */
     private void extractSectionsFromChapter(CharSequence chapter) {
         if(!isMissing(mChapter)) {
-            Pattern pattern = Pattern.compile(SECTION_MARKER);
+            Pattern pattern = PATTERN_SECTION_MARKER;
             Matcher matcher = pattern.matcher(chapter);
             int lastIndex = 0;
             CharSequence section;
@@ -601,7 +606,7 @@ public class ImportUsfm {
      */
     private boolean processSection(CharSequence section) {
         if(!isMissing(section)) {
-            String firstVerse = extractString(section, USFMVerseSpan.PATTERN);
+            String firstVerse = extractString(section, PATTERN_USFM_VERSE_SPAN);
             if (null == firstVerse) {
                 addError("Missing verse");
                 return false;
@@ -618,11 +623,10 @@ public class ImportUsfm {
      * @param regexPattern
      * @return
      */
-    private String extractString(CharSequence text, String regexPattern) {
+    private String extractString(CharSequence text, Pattern regexPattern) {
         if(text.length() > 0) {
             // find instance
-            Pattern findPattern = Pattern.compile(regexPattern);
-            Matcher matcher = findPattern.matcher(text);
+            Matcher matcher = regexPattern.matcher(text);
             String foundItem = null;
             if(matcher.find()) {
                 foundItem = matcher.group(1);
@@ -639,10 +643,9 @@ public class ImportUsfm {
      * @param removePattern
      * @return
      */
-    private String removePattern(CharSequence text, String removePattern) {
+    private String removePattern(CharSequence text, Pattern removePattern) {
         String out = "";
-        Pattern pattern = Pattern.compile(removePattern);
-        Matcher matcher = pattern.matcher(text);
+        Matcher matcher = removePattern.matcher(text);
         int lastIndex = 0;
         while (matcher.find()) {
             out = out + text.subSequence(lastIndex, matcher.start()); // get section before this chunk marker
@@ -658,11 +661,10 @@ public class ImportUsfm {
      * @param regexPattern
      * @return
      */
-    private boolean isPresent(CharSequence text, String regexPattern) {
+    private boolean isPresent(CharSequence text, Pattern regexPattern) {
         if(text.length() > 0) {
             // find instance
-            Pattern versePattern = Pattern.compile(regexPattern);
-            Matcher matcher = versePattern.matcher(text);
+            Matcher matcher = regexPattern.matcher(text);
             if(matcher.find()) {
                 return true;
             }

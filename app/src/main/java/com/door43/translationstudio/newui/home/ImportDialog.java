@@ -37,10 +37,14 @@ import java.io.InputStream;
 public class ImportDialog extends DialogFragment {
 
     private static final int IMPORT_PROJECT_FROM_SD_REQUEST = 142;
+    public static final String EXTRAS_RAW_FILE = "extras_raw_file";
     public static final String TAG = "importDialog";
     private static final String STATE_SETTING_DEVICE_ALIAS = "state_setting_device_alias";
+    public static final String STATE_SETTING_RAW_FILE = "state_setting_raw_file";
     private boolean settingDeviceAlias = false;
     private boolean isDocumentFile = false;
+
+    private boolean mRawFileSupport = false;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -60,6 +64,7 @@ public class ImportDialog extends DialogFragment {
         if(savedInstanceState != null) {
             // check if returning from device alias dialog
             settingDeviceAlias = savedInstanceState.getBoolean(STATE_SETTING_DEVICE_ALIAS, false);
+            mRawFileSupport = savedInstanceState.getBoolean(STATE_SETTING_RAW_FILE, false);
         }
 
         importCloudButton.setOnClickListener(new View.OnClickListener() {
@@ -127,6 +132,10 @@ public class ImportDialog extends DialogFragment {
         return v;
     }
 
+    public void setRawFile(boolean mRawFile) {
+        this.mRawFileSupport = mRawFile;
+    }
+
     private void doImportFromSdCard() {
         String typeStr = null;
         Intent intent = new Intent(getActivity(), ImportFileChooserActivity.class);
@@ -138,6 +147,7 @@ public class ImportDialog extends DialogFragment {
         }
 
         intent.setType(typeStr);
+        intent.putExtra(ImportDialog.EXTRAS_RAW_FILE, mRawFileSupport);
         startActivityForResult(intent, IMPORT_PROJECT_FROM_SD_REQUEST);
     }
 
@@ -251,6 +261,7 @@ public class ImportDialog extends DialogFragment {
     @Override
     public void onSaveInstanceState(Bundle out) {
         out.putBoolean(STATE_SETTING_DEVICE_ALIAS, settingDeviceAlias);
+        out.putBoolean(STATE_SETTING_RAW_FILE, mRawFileSupport);
         super.onSaveInstanceState(out);
     }
 }

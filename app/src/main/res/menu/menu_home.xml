@@ -16,6 +16,12 @@
         android:icon="@drawable/ic_file_download_black_24dp"
         app:showAsAction="never" />
 
+    <item android:id="@+id/action_import_usfm"
+        android:title="@string/label_import_usfm"
+        android:orderInCategory="200"
+        android:icon="@drawable/ic_file_download_black_24dp"
+        app:showAsAction="never" />
+
     <item android:id="@+id/action_feedback"
         android:title="@string/feedback"
         android:orderInCategory="300"

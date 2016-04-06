@@ -21,6 +21,7 @@ import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.filebrowser.DocumentFileBrowserAdapter;
 import com.door43.translationstudio.filebrowser.DocumentFileItem;
 import com.door43.translationstudio.newui.BaseActivity;
+import com.door43.translationstudio.newui.home.ImportDialog;
 import com.door43.translationstudio.util.SdUtils;
 
 import java.io.File;
@@ -48,6 +49,7 @@ public class ImportFileChooserActivity extends BaseActivity {
     private DocumentFile mCurrentDir;
     private String mType;
 
+    private boolean mRawFileSupport = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -163,6 +165,8 @@ public class ImportFileChooserActivity extends BaseActivity {
 
         Intent intent = getIntent();
         mType = intent.getType();
+        Bundle args = intent.getExtras();
+        mRawFileSupport = args.getBoolean(ImportDialog.EXTRAS_RAW_FILE, false);
 
         showFolderFromSdCard();
     }
@@ -322,6 +326,7 @@ public class ImportFileChooserActivity extends BaseActivity {
             }
         }
 
+        mAdapter.setRawFile(mRawFileSupport);
         mAdapter.loadFiles(this, fileList);
 
         if(fileList.size() <= 0) {

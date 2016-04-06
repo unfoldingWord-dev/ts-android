@@ -116,6 +116,18 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                                 ImportDialog importDialog = new ImportDialog();
                                 importDialog.show(backupFt, ImportDialog.TAG);
                                 return true;
+                            case R.id.action_import_usfm:
+                                FragmentTransaction importUsfmFt = getFragmentManager().beginTransaction();
+                                Fragment importUsfmPrev = getFragmentManager().findFragmentByTag(ImportDialog.TAG);
+                                if (importUsfmPrev != null) {
+                                    importUsfmFt.remove(importUsfmPrev);
+                                }
+                                importUsfmFt.addToBackStack(null);
+
+                                ImportDialog importUsfmDialog = new ImportDialog();
+                                importUsfmDialog.setRawFile(true);
+                                importUsfmDialog.show(importUsfmFt, ImportDialog.TAG);
+                                return true;
                             case R.id.action_feedback:
                                 FragmentTransaction ft = getFragmentManager().beginTransaction();
                                 Fragment prev = getFragmentManager().findFragmentByTag("bugDialog");
