@@ -792,6 +792,38 @@ public class Indexer {
     }
 
     /**
+     * Builds a chunks index from json
+     * @param projectSlug
+     * @param catalog
+     * @return
+     */
+    public synchronized boolean indexChunks(String projectSlug, String catalog) {
+        JSONArray items;
+        try {
+            items = new JSONArray(catalog);
+        } catch (JSONException e) {
+            Logger.e(this.getClass().getName(), "Failed to parse the chunks catalog for " + projectSlug, e);
+            return false;
+        }
+
+        long projectId = mDatabaseHelper.getProjectDBId(mDatabase, projectSlug);
+
+        if(projectId > 0) {
+            for (int i = 0; i < items.length(); i ++) {
+                try {
+                    JSONObject item = items.getJSONObject(i);
+
+                    mDatabaseHelper.addChunk(mDatabase, item.getString("chp"), item.getString("firstvs"), projectId);
+                    mDatabase.yieldIfContendedSafely();
+                } catch (JSONException e) {
+                    Logger.w(this.getClass().getName(), "Failed to parse a chunk for " + projectSlug, e);
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
      * Returns an array of projectS
      * @return
      */

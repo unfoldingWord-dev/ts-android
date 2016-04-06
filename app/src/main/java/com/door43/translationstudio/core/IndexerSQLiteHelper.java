@@ -2051,4 +2051,18 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         cursor.close();
         return article;
     }
+
+    /**
+     * Adds a chunk
+     * 
+     * @param mDatabase
+     * @param chapter
+     * @param firstVerse
+     * @param projectId
+     * @return
+     */
+    public long addChunk(SQLiteDatabase mDatabase, String chapter, String firstVerse, long projectId) {
+        // TODO: 4/5/2016 impliment 
+        return 0;
+    }
 }

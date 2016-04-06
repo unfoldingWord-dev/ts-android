@@ -247,7 +247,7 @@ public class Library {
             success = false;
         }
         if(listener != null) {
-            listener.onProgress(1, 5);
+            listener.onProgress(1, 6);
         }
 
         // words
@@ -255,7 +255,7 @@ public class Library {
             mAppIndex.markWordsCatalogUpToDate(sourceTranslation);
         }
         if(listener != null) {
-            listener.onProgress(2, 5);
+            listener.onProgress(2, 6);
         }
 
         // word assignments
@@ -263,7 +263,7 @@ public class Library {
             mAppIndex.markWordAssignmentsCatalogUpToDate(sourceTranslation);
         }
         if(listener != null) {
-            listener.onProgress(3, 5);
+            listener.onProgress(3, 6);
         }
 
         // notes
@@ -271,7 +271,7 @@ public class Library {
             mAppIndex.markNotesCatalogUpToDate(sourceTranslation);
         }
         if(listener != null) {
-            listener.onProgress(4, 5);
+            listener.onProgress(4, 6);
         }
 
         // questions
@@ -279,8 +279,20 @@ public class Library {
             mAppIndex.markQuestionsCatalogUpToDate(sourceTranslation);
         }
         if(listener != null) {
-            listener.onProgress(5, 5);
+            listener.onProgress(5, 6);
         }
+
+        // chunks
+        if(mDownloader.downloadChunks(sourceTranslation.projectSlug, mAppIndex)) {
+            mAppIndex.markChunksCatalogUpToDate(sourceTranslation);
+        }
+
+        if(listener != null) {
+            listener.onProgress(6, 6);
+        }
+
+        // TODO: 4/5/2016 eventually ta
+
 
         // Images are not downloaded here; rather, fetched on demand since they're large.
 
