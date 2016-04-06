@@ -19,8 +19,8 @@ android {
         applicationId "com.translationstudio.androidapp"
         minSdkVersion 15
         targetSdkVersion 23
-        versionCode 119
-        versionName "6.0"
+        versionCode 120
+        versionName "6.1"
         multiDexEnabled = true
     }
     dexOptions {
