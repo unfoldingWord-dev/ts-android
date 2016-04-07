@@ -16,20 +16,13 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 
-import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.ArchiveDetails;
-import com.door43.translationstudio.core.Chapter;
-import com.door43.translationstudio.core.ChapterTranslation;
-import com.door43.translationstudio.core.Frame;
-import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
-import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
@@ -38,16 +31,11 @@ import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationAct
 import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.AppContext;
-import com.door43.util.Zip;
 import com.door43.widget.ViewUtil;
 
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Locale;
 
 public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
@@ -57,6 +45,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
     private Library mLibrary;
     private Translator mTranslator;
     private Fragment mFragment;
+    private boolean mUsfmImport = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,7 +114,8 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                                 importUsfmFt.addToBackStack(null);
 
                                 ImportDialog importUsfmDialog = new ImportDialog();
-                                importUsfmDialog.setRawFile(true);
+                                mUsfmImport = true;
+                                importUsfmDialog.setUsfmImport(mUsfmImport);
                                 importUsfmDialog.show(importUsfmFt, ImportDialog.TAG);
                                 return true;
                             case R.id.action_feedback:

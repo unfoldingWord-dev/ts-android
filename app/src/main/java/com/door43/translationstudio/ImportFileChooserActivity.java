@@ -32,6 +32,9 @@ import java.util.List;
  * Created by blm on 12/31/15.
  */
 public class ImportFileChooserActivity extends BaseActivity {
+
+    public static final String EXTRAS_RAW_FILE = "extras_raw_file";
+
     public static final String FOLDER_KEY = "folder";
     public static final String FILE_PATH_KEY = "file_path";
     public static final String SD_CARD_TYPE = "sd_card";
@@ -88,6 +91,8 @@ public class ImportFileChooserActivity extends BaseActivity {
                     selectedItem = mAdapter.getItem(position);
                     if (!selectedItem.file.isDirectory()) {
                         if (selectedItem.isTranslationArchive()) {
+                            itemSelected = true;
+                        } else if ( mRawFileSupport ) {
                             itemSelected = true;
                         }
                     }
@@ -154,6 +159,10 @@ public class ImportFileChooserActivity extends BaseActivity {
                         mAdapter.setSelectedPosition(position);
                         mFileList.setItemChecked(position, true);
                         return;
+                    } else if(mRawFileSupport) {
+                        mAdapter.setSelectedPosition(position);
+                        mFileList.setItemChecked(position, true);
+                        return;
                     }
                 }
 
@@ -166,7 +175,7 @@ public class ImportFileChooserActivity extends BaseActivity {
         Intent intent = getIntent();
         mType = intent.getType();
         Bundle args = intent.getExtras();
-        mRawFileSupport = args.getBoolean(ImportDialog.EXTRAS_RAW_FILE, false);
+        mRawFileSupport = args.getBoolean(EXTRAS_RAW_FILE, false);
 
         showFolderFromSdCard();
     }
@@ -326,7 +335,6 @@ public class ImportFileChooserActivity extends BaseActivity {
             }
         }
 
-        mAdapter.setRawFile(mRawFileSupport);
         mAdapter.loadFiles(this, fileList);
 
         if(fileList.size() <= 0) {

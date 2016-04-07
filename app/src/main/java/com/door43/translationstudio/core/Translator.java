@@ -320,43 +320,12 @@ public class Translator {
      */
     public String[] importArchive(InputStream in) throws Exception {
         File archiveDir = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
-        List<String> importedSlugs = new ArrayList<>();
+        String[] importedSlugs = new String[0];
         try {
             archiveDir.mkdirs();
             Zip.unzipFromStream(in, archiveDir);
 
-            File[] targetTranslationDirs = ArchiveImporter.importArchive(archiveDir);
-            for(File newDir:targetTranslationDirs) {
-                TargetTranslation newTargetTranslation = TargetTranslation.open(newDir);
-                if(newTargetTranslation != null) {
-                    // TRICKY: the correct id is pulled from the manifest to avoid propogating bad folder names
-                    String targetTranslationId = newTargetTranslation.getId();
-                    File localDir = new File(mRootDir, targetTranslationId);
-                    TargetTranslation localTargetTranslation = TargetTranslation.open(localDir);
-                    if(localTargetTranslation != null) {
-                        // commit local changes to history
-                        if(localTargetTranslation != null) {
-                            localTargetTranslation.commitSync();
-                        }
-
-                        // merge translations
-                        try {
-                            localTargetTranslation.merge(newDir);
-                        } catch(Exception e) {
-                            e.printStackTrace();
-                            continue;
-                        }
-                    }  else {
-                        // import new translation
-                        FileUtilities.safeDelete(localDir); // in case local was an invalid target translation
-                        FileUtils.moveDirectory(newDir, localDir);
-                    }
-                    // update the generator info. TRICKY: we re-open to get the updated manifest.
-                    TargetTranslation.updateGenerator(mContext, TargetTranslation.open(localDir));
-
-                    importedSlugs.add(targetTranslationId);
-                }
-            }
+            importedSlugs = importFolder(archiveDir);
         } catch (Exception e) {
             throw e;
         } finally {
@@ -364,6 +333,67 @@ public class Translator {
             FileUtils.deleteQuietly(archiveDir);
         }
 
+        return importedSlugs;
+    }
+
+    /**
+     * imports uncompressed folder
+     * @param archiveDir
+     * @throws Exception
+     */
+    public String[] importFolder(File archiveDir) throws Exception {
+        String[] importedSlugs = new String[0];
+        try {
+            File[] targetTranslationDirs = ArchiveImporter.importArchive(archiveDir);
+            importedSlugs = loadTranslationFolders(targetTranslationDirs);
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            FileUtils.deleteQuietly(archiveDir);
+        }
+
+        return importedSlugs;
+    }
+
+    /**
+     * loads folders into folder of working projects
+     * @param targetTranslationDirs
+     * @return
+     * @throws Exception
+     */
+    public String[] loadTranslationFolders(File[] targetTranslationDirs) throws Exception {
+        List<String> importedSlugs = new ArrayList<>();
+        for (File newDir : targetTranslationDirs) {
+            TargetTranslation newTargetTranslation = TargetTranslation.open(newDir);
+            if (newTargetTranslation != null) {
+                // TRICKY: the correct id is pulled from the manifest to avoid propagating bad folder names
+                String targetTranslationId = newTargetTranslation.getId();
+                File localDir = new File(mRootDir, targetTranslationId);
+                TargetTranslation localTargetTranslation = TargetTranslation.open(localDir);
+                if (localTargetTranslation != null) {
+                    // commit local changes to history
+                    if (localTargetTranslation != null) {
+                        localTargetTranslation.commitSync();
+                    }
+
+                    // merge translations
+                    try {
+                        localTargetTranslation.merge(newDir);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        continue;
+                    }
+                } else {
+                    // import new translation
+                    FileUtilities.safeDelete(localDir); // in case local was an invalid target translation
+                    FileUtils.moveDirectory(newDir, localDir);
+                }
+                // update the generator info. TRICKY: we re-open to get the updated manifest.
+                TargetTranslation.updateGenerator(mContext, TargetTranslation.open(localDir));
+
+                importedSlugs.add(targetTranslationId);
+            }
+        }
         return importedSlugs.toArray(new String[importedSlugs.size()]);
     }
 

@@ -3,6 +3,7 @@ package com.door43.translationstudio.core;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageInfo;
+import android.net.Uri;
 import android.text.TextUtils;
 import android.view.View;
 
@@ -11,6 +12,7 @@ import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.spannables.USFMVerseSpan;
+import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
@@ -21,6 +23,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,10 +50,12 @@ public class ImportUsfm {
     private File mTempOutput;
     private File mTempDest;
     private File mTempSrce;
-    private String mTranlationFolder;
+    private File mProjectFolder;
 
     private String mChapter;
     private List<File> mSourceFiles;
+
+    private List<File> mImportProjects;
     private HashMap<String, JSONObject> mChunks;
     private List<String> mErrors;
 
@@ -62,6 +67,7 @@ public class ImportUsfm {
     public ImportUsfm(TargetLanguage targetLanguage) {
         createTempFolders();
         mSourceFiles = new ArrayList<>();
+        mImportProjects = new ArrayList<>();
         mErrors = new ArrayList<>();
         mChunks = new HashMap<>();
         mTargetLanguage = targetLanguage;
@@ -72,7 +78,7 @@ public class ImportUsfm {
         addChunk("xmrk", chunkJsonStr);
     }
 
-    public boolean importZipStream(InputStream usfmStream) {
+    public boolean importZipStream(Activity context, InputStream usfmStream) {
         boolean successOverall = true;
         boolean success;
         try {
@@ -85,7 +91,7 @@ public class ImportUsfm {
             Logger.i(TAG, "found files: " + TextUtils.join("\n", mSourceFiles));
 
             for (File file : mSourceFiles) {
-                success = processBook(file, false);
+                success = processBook( context, file, false);
                 if(!success) {
                     addError("Could not parse " + file.toString());
                 }
@@ -93,7 +99,6 @@ public class ImportUsfm {
             }
 
             finishImport();
-            cleanup();
 
         } catch (Exception e) {
             Logger.e(TAG, "error reading stream ", e);
@@ -103,16 +108,57 @@ public class ImportUsfm {
         return successOverall;
     }
 
-    public boolean importFile(File file) {
-        boolean success = processBook(file, false);
-        if(!success) {
-            addError("Could not parse " + file.toString());
+    public boolean importFile(Activity context, File file) {
+        boolean success = true;
+        if(null == file) {
+            addError("file is null");
+            return false;
+        }
+
+        try {
+            String ext = FilenameUtils.getExtension(file.toString()).toLowerCase();
+            boolean zip = "zip".equals(ext);
+            if(!zip) {
+                success = processBook( context, file, true);
+            } else {
+                InputStream usfmStream = new FileInputStream(file);
+                success = importZipStream( context, usfmStream);
+            }
+        } catch (Exception e) {
+            Logger.e(TAG,"error reading " + file.toString(), e);
+            success = false;
+        }
+        return success;
+    }
+
+    public boolean importUri(Activity context, Uri uri) {
+        boolean success = true;
+        if(null == uri) {
+            addError("Uri is null");
+            return false;
+        }
+
+        String path = uri.toString();
+
+        try {
+            String ext = FilenameUtils.getExtension(path).toLowerCase();
+            boolean zip = "zip".equals(ext);
+
+            InputStream usfmStream = AppContext.context().getContentResolver().openInputStream(uri);
+            if(!zip) {
+                String text = IOUtils.toString(usfmStream, "UTF-8");
+                success = processBook( context, text, true);
+            } else {
+                success = importZipStream( context, usfmStream);
+            }
+        } catch (Exception e) {
+            Logger.e(TAG,"error reading " + path, e);
+            success = false;
         }
         return success;
     }
 
     public boolean importResourceFile(Activity context, String fileName) {
-
         boolean success = true;
 
         String ext = FilenameUtils.getExtension(fileName).toLowerCase();
@@ -122,9 +168,9 @@ public class ImportUsfm {
             InputStream usfmStream = context.getAssets().open(fileName);
             if(!zip) {
                 String text = IOUtils.toString(usfmStream, "UTF-8");
-                success = processBook(text, true);
+                success = processBook( context, text, true);
             } else {
-                success = importZipStream(usfmStream);
+                success = importZipStream( context, usfmStream);
             }
         } catch (Exception e) {
             Logger.e(TAG,"error reading " + fileName, e);
@@ -164,6 +210,17 @@ public class ImportUsfm {
             return false;
         }
         return true;
+    }
+
+    public File getProjectsFolder() {
+        return mTempOutput;
+    }
+
+    public File[] getImportProjects() {
+        if( mImportProjects != null ) {
+            return mImportProjects.toArray(new File[mImportProjects.size()]);
+        }
+        return new File[0];
     }
 
     /**
@@ -215,11 +272,11 @@ public class ImportUsfm {
      * @param file
      * @return
      */
-    private boolean processBook(File file, boolean lastFile) {
+    private boolean processBook(Activity context, File file, boolean lastFile) {
         boolean success;
         try {
             String book = FileUtils.readFileToString(file);
-            success = processBook(book, lastFile);
+            success = processBook( context, book, lastFile);
         } catch (Exception e) {
             Logger.e(TAG, "error reading book " + file.toString(), e);
             success = false;
@@ -232,7 +289,7 @@ public class ImportUsfm {
      * @param book
      * @return
      */
-    private boolean processBook(String book, boolean lastFile) {
+    private boolean processBook(Activity context, String book, boolean lastFile) {
         boolean successOverall = true;
         boolean success;
         try {
@@ -249,9 +306,8 @@ public class ImportUsfm {
                 return false;
             }
 
-            mTranlationFolder = mBookShortName + "-" + mTargetLanguage.getId() + "/";
-
             mTempDest = new File(mTempOutput, mBookShortName);
+            mProjectFolder = new File(mTempDest, mBookShortName + "-" + mTargetLanguage.getId());
 
             if (isMissing(mBookName)) {
                 addWarning("Missing book name, using short name");
@@ -259,30 +315,44 @@ public class ImportUsfm {
             }
 
             boolean hasSections = isPresent(book, PATTERN_SECTION_MARKER);
+            boolean hasVerses = isPresent(book, PATTERN_USFM_VERSE_SPAN);
+            boolean haveChunksList = mChunks.containsKey(mBookShortName);
 
-            if (!isPresent(book, PATTERN_USFM_VERSE_SPAN)) { // check for verses
+            if (!hasSections && !hasVerses) {
+                addError("No sections nor verses found");
+                return false;
+            }
+
+            if (!haveChunksList) { // no chunk list, so use sections
+
+                addWarning("No chunk list found for " + mBookShortName);
+
+                // TODO: 4/7/16 add prompting
+
                 if (!hasSections) {
-                    addError("No verses found");
+                    addError("No sections nor chunk list found");
                     return false;
                 }
 
                 addWarning("Using sections");
-                extractChaptersFromDocument(book);
-                return true;
+                success = extractChaptersFromDocument(book);
+                successOverall = successOverall && success;
             }
+            else { // has chunks
 
-            if (!mChunks.containsKey(mBookShortName)) {
-                addError("No Chunk found for " + mBookShortName);
-                return false;
+                mChunk = mChunks.get(mBookShortName);
+
+                success = extractChaptersFromBook(book);
+                successOverall = successOverall && success;
             }
-            mChunk = mChunks.get(mBookShortName);
-
-            success = extractChaptersFromBook(book);
-            successOverall = successOverall && success;
 
             // TODO: 4/3/16 build tstudio package
             success = buildManifest();
             successOverall = successOverall && success;
+
+            if(successOverall) {
+                mImportProjects.add(mProjectFolder);
+            }
 
             if(lastFile) {
                 finishImport();
@@ -291,22 +361,12 @@ public class ImportUsfm {
         } catch (Exception e) {
             Logger.e(TAG, "error parsing book", e);
             return false;
-        } finally {
-            if(lastFile) {
-                try {
-                    cleanup();
-                } catch (Exception e) {
-                    Logger.e(TAG, "error cleaning up", e);
-                    addError("error cleaning up");
-                    successOverall = false;
-                }
-            }
         }
         return successOverall;
     }
 
     private void finishImport() {
-        copyProjectToDownloads(); // TODO: 4/5/16 replace with import file
+       // place holder for post ops
     }
 
     private boolean setLanguage(final Activity context, String languageCode, final ImportUsfm.OnLanguageSelectedListener listener) {
@@ -361,8 +421,8 @@ public class ImportUsfm {
             Context context = AppContext.context();
             pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
             String projectId = mBookShortName;
-            String resourceSlug = mBookShortName;
-            targetTranslation = TargetTranslation.create( context, AppContext.getProfile().getNativeSpeaker(), TranslationFormat.USFM, mTargetLanguage, projectId, TranslationType.TEXT, resourceSlug, pInfo, mTempDest);
+            String resourceSlug = Resource.REGULAR_SLUG;
+            targetTranslation = TargetTranslation.create( context, AppContext.getProfile().getNativeSpeaker(), TranslationFormat.USFM, mTargetLanguage, projectId, TranslationType.TEXT, resourceSlug, pInfo, mProjectFolder);
 
         } catch (Exception e) {
             addError("failed to build manifest");
@@ -382,7 +442,9 @@ public class ImportUsfm {
         try {
             File target = AppContext.getPublicDownloadsDirectory();
             dest = new File(target,"test");
-            FileUtils.forceDelete(dest);
+            if(dest.exists()) {
+                FileUtilities.safeDelete(dest);
+            }
             FileUtils.copyDirectory(mTempOutput, dest);
         } catch (Exception e) {
             Logger.e(TAG, "error moving files to " + dest.toString(), e);
@@ -531,7 +593,7 @@ public class ImportUsfm {
      * @return
      */
     private boolean saveSection(String chapter, String firstVerse, CharSequence section) {
-        File chapterFolder = new File(mTempDest, mTranlationFolder + chapter);
+        File chapterFolder = new File(mProjectFolder, chapter);
         try {
             String cleanChunk = removePattern(section, PATTERN_SECTION_MARKER);
             FileUtils.forceMkdir(chapterFolder);
@@ -688,8 +750,12 @@ public class ImportUsfm {
     /**
      * cleanup
      */
-    private void cleanup() {
+    public void cleanup() {
         FileUtils.deleteQuietly(mTempDir);
+        mTempDir = null;
+        mTempSrce = null;
+        mTempOutput = null;
+        mTempDest = null;
     }
 
     /**

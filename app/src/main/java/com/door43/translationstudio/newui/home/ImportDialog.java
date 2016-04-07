@@ -22,6 +22,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.DeviceNetworkAliasDialog;
+import com.door43.translationstudio.newui.ImportUsfmActivity;
 import com.door43.translationstudio.newui.ShareWithPeerDialog;
 import com.door43.translationstudio.util.SdUtils;
 import com.door43.widget.ViewUtil;
@@ -29,6 +30,7 @@ import com.door43.widget.ViewUtil;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 
 /**
@@ -37,14 +39,13 @@ import java.io.InputStream;
 public class ImportDialog extends DialogFragment {
 
     private static final int IMPORT_PROJECT_FROM_SD_REQUEST = 142;
-    public static final String EXTRAS_RAW_FILE = "extras_raw_file";
     public static final String TAG = "importDialog";
     private static final String STATE_SETTING_DEVICE_ALIAS = "state_setting_device_alias";
-    public static final String STATE_SETTING_RAW_FILE = "state_setting_raw_file";
+    private static final String STATE_SETTING_USFM_IMPORT = "state_setting_usfm_import";
     private boolean settingDeviceAlias = false;
     private boolean isDocumentFile = false;
 
-    private boolean mRawFileSupport = false;
+    private boolean mUsfmImport = false;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -64,7 +65,7 @@ public class ImportDialog extends DialogFragment {
         if(savedInstanceState != null) {
             // check if returning from device alias dialog
             settingDeviceAlias = savedInstanceState.getBoolean(STATE_SETTING_DEVICE_ALIAS, false);
-            mRawFileSupport = savedInstanceState.getBoolean(STATE_SETTING_RAW_FILE, false);
+            mUsfmImport = savedInstanceState.getBoolean(STATE_SETTING_USFM_IMPORT, false);
         }
 
         importCloudButton.setOnClickListener(new View.OnClickListener() {
@@ -132,8 +133,8 @@ public class ImportDialog extends DialogFragment {
         return v;
     }
 
-    public void setRawFile(boolean mRawFile) {
-        this.mRawFileSupport = mRawFile;
+    public void setUsfmImport(boolean mRawFile) {
+        this.mUsfmImport = mRawFile;
     }
 
     private void doImportFromSdCard() {
@@ -147,7 +148,7 @@ public class ImportDialog extends DialogFragment {
         }
 
         intent.setType(typeStr);
-        intent.putExtra(ImportDialog.EXTRAS_RAW_FILE, mRawFileSupport);
+        intent.putExtra(ImportFileChooserActivity.EXTRAS_RAW_FILE, mUsfmImport);
         startActivityForResult(intent, IMPORT_PROJECT_FROM_SD_REQUEST);
     }
 
@@ -185,10 +186,18 @@ public class ImportDialog extends DialogFragment {
             if((resultCode == Activity.RESULT_OK) && (data != null)) {
                 if(isDocumentFile) {
                     Uri uri = data.getData();
-                    importUri(uri);
+                    if(mUsfmImport) {
+                        ImportUsfmActivity.startActivityForUriImport(getActivity(),uri);
+                    } else {
+                        importUri(uri);
+                    }
                 } else {
                     File file = new File(data.getData().getPath());
-                    importFile(file);
+                    if(mUsfmImport) {
+                        ImportUsfmActivity.startActivityForFileImport(getActivity(),file);
+                    } else {
+                        importFile(file);
+                    }
                 }
             }
         }
@@ -261,7 +270,7 @@ public class ImportDialog extends DialogFragment {
     @Override
     public void onSaveInstanceState(Bundle out) {
         out.putBoolean(STATE_SETTING_DEVICE_ALIAS, settingDeviceAlias);
-        out.putBoolean(STATE_SETTING_RAW_FILE, mRawFileSupport);
+        out.putBoolean(STATE_SETTING_USFM_IMPORT, mUsfmImport);
         super.onSaveInstanceState(out);
     }
 }

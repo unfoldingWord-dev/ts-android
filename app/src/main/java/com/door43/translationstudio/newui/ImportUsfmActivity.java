@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.support.v4.view.MenuItemCompat;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
@@ -15,23 +16,20 @@ import android.view.View;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.core.ArchiveImporter;
 import com.door43.translationstudio.core.ImportUsfm;
 import com.door43.translationstudio.core.TargetLanguage;
+import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
+import com.door43.translationstudio.newui.home.HomeActivity;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.AppContext;
-import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
 import com.door43.translationstudio.newui.newtranslation.ProjectListFragment;
 import com.door43.translationstudio.newui.newtranslation.TargetLanguageListFragment;
-import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
-
-import org.json.JSONObject;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.io.Serializable;
 
 
 public class ImportUsfmActivity extends BaseActivity implements TargetLanguageListFragment.OnItemClickListener {
@@ -39,7 +37,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
     public static final int RESULT_DUPLICATE = 2;
     private static final String STATE_TARGET_LANGUAGE_ID = "state_target_language_id";
     public static final int RESULT_ERROR = 3;
-    public static final String EXTRA_USFM_IMPORT_FOLDER = "extra_usfm_import_folder";
+    public static final String EXTRA_USFM_IMPORT_URI = "extra_usfm_import_uri";
     public static final String EXTRA_USFM_IMPORT_FILE = "extra_usfm_import_file";
     public static final String EXTRA_USFM_IMPORT_RESOURCE_FILE = "extra_usfm_import_resource_file";
     private Searchable mFragment;
@@ -71,10 +69,14 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         final ImportUsfm usfm = new ImportUsfm(mTargetLanguage);
         boolean success = false;
 
-        if(args.containsKey(EXTRA_USFM_IMPORT_FOLDER)) {
-            String importFolder = args.getString(EXTRA_USFM_IMPORT_FOLDER);
+        if(args.containsKey(EXTRA_USFM_IMPORT_URI)) {
+            String uriStr = args.getString(EXTRA_USFM_IMPORT_URI);
+            Uri uri = intent.getData();
+            success = usfm.importUri(this, uri);
         } else if(args.containsKey(EXTRA_USFM_IMPORT_FILE)) {
-            String importFile = args.getString(EXTRA_USFM_IMPORT_FILE);
+            Serializable serial = args.getSerializable(EXTRA_USFM_IMPORT_FILE);
+            File file = (File) serial;
+            success = usfm.importFile(this, file);
         } else if(args.containsKey(EXTRA_USFM_IMPORT_RESOURCE_FILE)) {
             String importResourceFile = args.getString(EXTRA_USFM_IMPORT_RESOURCE_FILE);
             success = usfm.importResourceFile(this,importResourceFile);
@@ -86,17 +88,29 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         } else if(errors.length > 0) {
             Logger.i(TAG, "USFM import finished with warnings: " + TextUtils.join("\n", errors));
         }
+
+        File[] imports = usfm.getImportProjects();
+        final Translator translator = AppContext.getTranslator();
+        try {
+            final String[] targetTranslationSlugs = translator.loadTranslationFolders(imports);
+        } catch (Exception e) {
+            Logger.e(TAG, "Failed to import folder " + imports.toString());
+        }
+
+        usfm.cleanup();
     }
+
 
     public static void startActivityForFileImport(Activity context, File path) {
         Intent intent = new Intent(context, ImportUsfmActivity.class);
-        intent.putExtra(EXTRA_USFM_IMPORT_FILE, path.toString());
+        intent.putExtra(EXTRA_USFM_IMPORT_FILE, path);
         context.startActivity(intent);
     }
 
-    public static void startActivityForFolderImport(Activity context, File folder) {
+    public static void startActivityForUriImport(Activity context, Uri uri) {
         Intent intent = new Intent(context, ImportUsfmActivity.class);
-        intent.putExtra(EXTRA_USFM_IMPORT_FOLDER, folder.toString());
+        intent.putExtra(EXTRA_USFM_IMPORT_URI, uri.toString()); // flag that we are using Uri
+        intent.setData(uri); // only way to pass data since Uri does not serialize
         context.startActivity(intent);
     }
 

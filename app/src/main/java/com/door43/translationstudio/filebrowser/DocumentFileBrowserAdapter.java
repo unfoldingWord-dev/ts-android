@@ -33,8 +33,6 @@ public class DocumentFileBrowserAdapter extends BaseAdapter {
     private List<DocumentFileItem> mFiles = new ArrayList<>();
     private int mSelectedPosition = -1;
 
-   private boolean mRawFile = false;
-
     public void loadFiles(Context context, List<DocumentFileItem> files) {
         final Library library = AppContext.getLibrary();
         mFiles = files;
@@ -60,10 +58,6 @@ public class DocumentFileBrowserAdapter extends BaseAdapter {
                 notifyDataSetChanged();
             }
         }.start();
-    }
-
-    public void setRawFile(boolean mrawFile) {
-        this.mRawFile = mrawFile;
     }
 
     @Override
