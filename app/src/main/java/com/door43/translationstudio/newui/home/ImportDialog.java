@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
@@ -61,6 +62,11 @@ public class ImportDialog extends DialogFragment {
         final Button importCloudButton = (Button)v.findViewById(R.id.import_from_cloud);
         Button importFromSDButton = (Button)v.findViewById(R.id.import_from_sd);
         Button importFromFriend = (Button)v.findViewById(R.id.import_from_friend);
+
+        if(mUsfmImport) {
+            TextView label = (TextView)v.findViewById(R.id.title);
+            label.setText(R.string.label_import_usfm);
+        }
 
         if(savedInstanceState != null) {
             // check if returning from device alias dialog
@@ -133,8 +139,8 @@ public class ImportDialog extends DialogFragment {
         return v;
     }
 
-    public void setUsfmImport(boolean mRawFile) {
-        this.mUsfmImport = mRawFile;
+    public void setUsfmImport(boolean usfmImport) {
+        this.mUsfmImport = usfmImport;
     }
 
     private void doImportFromSdCard() {

@@ -56,7 +56,7 @@ public class ImportUsfm {
     private List<File> mSourceFiles;
 
     private List<File> mImportProjects;
-    private HashMap<String, JSONObject> mChunks;
+    private HashMap<String, JSONObject> mChunks; // // TODO: 4/7/16 this will be replaced with system call
     private List<String> mErrors;
 
     private String mBookName;
@@ -78,6 +78,12 @@ public class ImportUsfm {
         addChunk("xmrk", chunkJsonStr);
     }
 
+    /**
+     * unpack and import documents from zip stream
+     * @param context
+     * @param usfmStream
+     * @return
+     */
     public boolean importZipStream(Activity context, InputStream usfmStream) {
         boolean successOverall = true;
         boolean success;
@@ -108,6 +114,12 @@ public class ImportUsfm {
         return successOverall;
     }
 
+    /**
+     * import single file
+     * @param context
+     * @param file
+     * @return
+     */
     public boolean importFile(Activity context, File file) {
         boolean success = true;
         if(null == file) {
@@ -131,6 +143,12 @@ public class ImportUsfm {
         return success;
     }
 
+    /**
+     * import file from uri, if it is a zip file, then all files in zip will be imported
+     * @param context
+     * @param uri
+     * @return
+     */
     public boolean importUri(Activity context, Uri uri) {
         boolean success = true;
         if(null == uri) {
@@ -158,6 +176,12 @@ public class ImportUsfm {
         return success;
     }
 
+    /**
+     * import file from resource. if it is a zip file, then all files in zip will be imported
+     * @param context
+     * @param fileName
+     * @return
+     */
     public boolean importResourceFile(Activity context, String fileName) {
         boolean success = true;
 
@@ -212,17 +236,6 @@ public class ImportUsfm {
         return true;
     }
 
-    public File getProjectsFolder() {
-        return mTempOutput;
-    }
-
-    public File[] getImportProjects() {
-        if( mImportProjects != null ) {
-            return mImportProjects.toArray(new File[mImportProjects.size()]);
-        }
-        return new File[0];
-    }
-
     /**
      * add chunkJson (contains verses for each section) to map
      * @param book
@@ -237,6 +250,25 @@ public class ImportUsfm {
             Logger.e(TAG, "error parsing chunk " + book, e);
         }
         return false;
+    }
+
+    /**
+     * get the base folder for all the projects
+     * @return
+     */
+    public File getProjectsFolder() {
+        return mTempOutput;
+    }
+
+    /**
+     * get array of the imported project folders
+     * @return
+     */
+    public File[] getImportProjects() {
+        if( mImportProjects != null ) {
+            return mImportProjects.toArray(new File[mImportProjects.size()]);
+        }
+        return new File[0];
     }
 
     /**
@@ -267,7 +299,7 @@ public class ImportUsfm {
     }
 
     /**
-     * process file
+     * process single document and create a project
      *
      * @param file
      * @return
@@ -285,7 +317,7 @@ public class ImportUsfm {
     }
 
     /**
-     * process book text
+     * process single document and create a project
      * @param book
      * @return
      */
@@ -369,49 +401,8 @@ public class ImportUsfm {
        // place holder for post ops
     }
 
-    private boolean setLanguage(final Activity context, String languageCode, final ImportUsfm.OnLanguageSelectedListener listener) {
-        if(isMissing(languageCode)) {
-            final CustomAlertDialog dlg = CustomAlertDialog.Create(context);
-            dlg.setTitle("Missing Target Language")
-                    .setMessage("What is target language code (exact)?")
-                    .addInputPrompt(true)
-                    .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            String language = dlg.getEnteredText().toString();
-                            setLanguage(context, language, listener); // try to use language
-                        }
-                    })
-                    .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            listener.onFinished(false, null);
-                        }
-                    })
-                    .show("getLanguage");
-        }
-        else {
-            TargetLanguage targetLanguage = AppContext.getLibrary().getTargetLanguage(languageCode);
-            if(targetLanguage != null) {
-                listener.onFinished(true, targetLanguage);
-            } else {
-                CustomAlertDialog.Create(context)
-                        .setTitle("Invalid Target Language")
-                        .setMessage("Target language code " + languageCode + " unknown")
-                        .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                setLanguage(context, null, listener); // prompt again
-                            }
-                        })
-                        .show("invalidLanguage");
-            }
-        }
-        return true;
-    }
-
     /**
-     * create the manifest
+     * create the manifest for a project
      * @throws JSONException
      */
     private boolean buildManifest() throws JSONException {
@@ -480,7 +471,7 @@ public class ImportUsfm {
     }
 
     /**
-     * break up chapter into sections
+     * break up chapter into sections based on chunk list
      * @param text
      * @return
      */
@@ -522,7 +513,7 @@ public class ImportUsfm {
     }
 
     /**
-     * extract verses in range start to end into section
+     * extract verses in range of start to end into new section
      * @param chapter
      * @param text
      * @param start
@@ -540,7 +531,7 @@ public class ImportUsfm {
     }
 
     /**
-     * extract verses in range start to end into section
+     * extract verses in range of start to end into new section
      * @param chapter
      * @param text
      * @param start
@@ -586,7 +577,7 @@ public class ImportUsfm {
     }
 
     /**
-     * save section in file in chapter folder and book folder
+     * save section (chunk) to file in chapter folder
      * @param chapter
      * @param firstVerse
      * @param section
@@ -620,7 +611,7 @@ public class ImportUsfm {
     }
 
     /**
-     * extract chapters from document text
+     * extract chapters from document text (used for splitting by sections)
      * @param text
      * @return
      */
@@ -680,7 +671,7 @@ public class ImportUsfm {
     }
 
     /**
-     * extract string in group 1 of regex if present
+     * match regexPattern and get string in group 1 if present
      * @param text
      * @param regexPattern
      * @return
@@ -748,7 +739,7 @@ public class ImportUsfm {
     }
 
     /**
-     * cleanup
+     * cleanup working directory and values
      */
     public void cleanup() {
         FileUtils.deleteQuietly(mTempDir);

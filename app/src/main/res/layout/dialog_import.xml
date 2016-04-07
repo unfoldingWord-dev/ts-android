@@ -19,7 +19,7 @@
             android:layout_marginBottom="@dimen/dialog_content_margin"
             android:textColor="@color/dark_primary_text"
             android:textSize="@dimen/headline"
-            android:id="@+id/textView13" />
+            android:id="@+id/title" />
 
         <LinearLayout
             android:orientation="vertical"
