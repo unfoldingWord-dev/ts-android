@@ -156,7 +156,7 @@ public class Indexer {
         try {
             items = new JSONArray(catalog);
         } catch (JSONException e) {
-            Logger.e(this.getClass().getName(), "Failed to the projects catalog", e);
+            Logger.e(this.getClass().getName(), "Failed to parse the projects catalog", e);
             return false;
         }
 
@@ -170,6 +170,7 @@ public class Indexer {
                     for(int j = 0; j < categoriesJson.length(); j ++) {
                         categorySlugs.add(categoriesJson.getString(j));
                     }
+                    // TODO: eventually we will pass in the chunk marker catalog info
                     mDatabaseHelper.addProject(mDatabase, project.getId(), project.sort, project.dateModified, project.sourceLanguageCatalog, project.sourceLanguageCatalogServerDateModified, categorySlugs.toArray(new String[categorySlugs.size()]));
                     mDatabase.yieldIfContendedSafely();
                 }

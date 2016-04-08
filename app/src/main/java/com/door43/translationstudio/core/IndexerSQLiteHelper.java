@@ -156,6 +156,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
 
     /**
      * Inserts or updates a project
+     * // TODO: 4/8/16 eventually this will take in the chunk marker catalog info
      * @param db
      * @param slug
      * @param sort
