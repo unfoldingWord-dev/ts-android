@@ -366,6 +366,10 @@ public class Indexer {
         mDatabaseHelper.markWordAssignmentsCatalogUpToDate(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug);
     }
 
+    public synchronized void markChunkMarkerCatalogUpToDate(String projectSlug) {
+        mDatabaseHelper.markChunkMarkerCatalogUpToDate(mDatabase, projectSlug);
+    }
+
     /**
      * Builds a source index from json
      * @param sourceTranslation
@@ -797,12 +801,12 @@ public class Indexer {
      * @param catalog
      * @return
      */
-    public synchronized boolean indexChunks(String projectSlug, String catalog) {
+    public synchronized boolean indexChunkMarkers(String projectSlug, String catalog) {
         JSONArray items;
         try {
             items = new JSONArray(catalog);
         } catch (JSONException e) {
-            Logger.e(this.getClass().getName(), "Failed to parse the chunks catalog for " + projectSlug, e);
+            Logger.e(this.getClass().getName(), "Failed to parse the chunk marker catalog for " + projectSlug, e);
             return false;
         }
 
@@ -813,10 +817,10 @@ public class Indexer {
                 try {
                     JSONObject item = items.getJSONObject(i);
 
-                    mDatabaseHelper.addChunk(mDatabase, item.getString("chp"), item.getString("firstvs"), projectId);
+                    mDatabaseHelper.addChunkMarker(mDatabase, item.getString("chp"), item.getString("firstvs"), projectId);
                     mDatabase.yieldIfContendedSafely();
                 } catch (JSONException e) {
-                    Logger.w(this.getClass().getName(), "Failed to parse a chunk for " + projectSlug, e);
+                    Logger.w(this.getClass().getName(), "Failed to parse a chunk marker for " + projectSlug, e);
                 }
             }
         }

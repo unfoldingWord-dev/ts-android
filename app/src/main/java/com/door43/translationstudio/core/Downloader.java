@@ -108,8 +108,30 @@ public class Downloader {
     }
 
     /**
+     * Downloads the chunk markers for a project from the server
+     * @param projectSlug
+     * @param targetIndex
+     * @return
+     */
+    public boolean downloadChunkMarkerList(String projectSlug, Indexer targetIndex) {
+        Project project = targetIndex.getProject(projectSlug);
+        if(project != null && project.chunkMarkerCatalog != null
+                && (project.chunkMarkerCatalogLocalDateModified < project.chunkMarkerCatalogServerDateModified
+                || project.chunkMarkerCatalogServerDateModified == 0)) {
+            String catalog = request(project.chunkMarkerCatalog);
+            if(catalog != null) {
+                if(targetIndex.indexChunkMarkers(projectSlug, catalog)) {
+                    targetIndex.markChunkMarkerCatalogUpToDate(projectSlug);
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
      * Downloads the source languages for a project from the server
      * @param projectSlug
+     * @param targetIndex
      * @return
      */
     public boolean downloadSourceLanguageList(String projectSlug, Indexer targetIndex) {
@@ -260,7 +282,7 @@ public class Downloader {
      * @param targetIndex the index to which the chunks will be downloaded
      * @return
      */
-    public boolean downloadChunks(String projectSlug, Indexer targetIndex) {
+    public boolean downloadChunkMarkers(String projectSlug, Indexer targetIndex) {
 //        Resource resource = targetIndex.getResource(project);
         String catalog = request("https://api.unfoldingword.org/bible/txt/1/" + projectSlug + "/chunks.json");
         // TODO: 4/5/2016 once chunks are properly in the catalog we can use the code below
@@ -269,7 +291,7 @@ public class Downloader {
 //                || resource.getChunksDateModified() == 0)) {
 //            String catalog = request(resource.getChunksCatalogUrl());
             if(catalog != null) {
-                return targetIndex.indexChunks(projectSlug, catalog);
+                return targetIndex.indexChunkMarkers(projectSlug, catalog);
             } else {
                 Logger.w(this.getClass().getName(), "Failed to fetch the catalog from " + catalog);
             }

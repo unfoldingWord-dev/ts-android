@@ -10,7 +10,6 @@ import com.door43.util.Zip;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -19,8 +18,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-
-import javax.xml.transform.Source;
 
 /**
  * Created by joel on 8/29/2015.
@@ -112,6 +109,14 @@ public class Library {
     }
 
     /**
+     * Downloads the chunk markers for this project from the server
+     * @param projectSlug
+     */
+    private void downloadChunkMarkerList(String projectSlug) {
+        mDownloader.downloadChunkMarkerList(projectSlug, mAppIndex);
+    }
+
+    /**
      * Downloads the source language catalog from the server
      * @param projectId
      */
@@ -134,6 +139,7 @@ public class Library {
             String[] projectIds = mAppIndex.getProjectSlugs();
             for (int i = 0; i < projectIds.length; i ++) {
                 String projectId = projectIds[i];
+                downloadChunkMarkerList(projectId);
                 downloadSourceLanguageList(projectId);
                 if(listener != null) {
                     if(!listener.onProgress((i + 1), projectIds.length)) {
@@ -280,11 +286,6 @@ public class Library {
         }
         if(listener != null) {
             listener.onProgress(5, 6);
-        }
-
-        // chunks
-        if(mDownloader.downloadChunks(sourceTranslation.projectSlug, mAppIndex)) {
-            mAppIndex.markChunksCatalogUpToDate(sourceTranslation);
         }
 
         if(listener != null) {
