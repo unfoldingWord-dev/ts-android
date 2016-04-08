@@ -6,6 +6,7 @@ import android.test.InstrumentationTestCase;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.core.CheckingQuestion;
+import com.door43.translationstudio.core.ChunkMarker;
 import com.door43.translationstudio.core.Indexer;
 import com.door43.translationstudio.core.IndexerSQLiteHelper;
 import com.door43.translationstudio.core.SourceTranslation;
@@ -154,5 +155,10 @@ public class IndexerTest extends InstrumentationTestCase {
         assertTrue(mIndex.indexTranslationAcademy(translation, catalog));
         mIndex.endTransaction(true);
         // TODO: 12/4/2015 test retrieving an article
+    }
+
+    public void test09ChunkMarkers() throws Exception {
+        ChunkMarker[] markers = mIndex.getChunkMarkers("gen");
+        assertTrue(markers.length > 0);
     }
 }
