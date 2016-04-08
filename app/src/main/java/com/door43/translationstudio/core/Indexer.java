@@ -1291,11 +1291,21 @@ public class Indexer {
 
     public void setExpired() {
         mDatabase.execSQL("UPDATE `resource`"
-                + " SET `source_catalog_local_modified_at`=0,"
-                + " `translation_notes_catalog_local_modified_at`=0,"
-                + " `translation_words_catalog_local_modified_at`=0,"
-                + " `translation_word_assignments_catalog_local_modified_at`=0,"
-                + " `checking_questions_catalog_local_modified_at`=0"
+                        + " SET `source_catalog_local_modified_at`=0,"
+                        + " `translation_notes_catalog_local_modified_at`=0,"
+                        + " `translation_words_catalog_local_modified_at`=0,"
+                        + " `translation_word_assignments_catalog_local_modified_at`=0,"
+                        + " `checking_questions_catalog_local_modified_at`=0"
         );
+    }
+
+    /**
+     * This is a temporary method for injecting the chunk marker urls into the project table
+     *
+     * @return
+     * @deprecated you probably shouldn't use this method
+     */
+    public boolean manuallyInjectChunkMarkerUrls() {
+        return mDatabaseHelper.manuallyInjectChunkMarkerUrls(mDatabase);
     }
 }

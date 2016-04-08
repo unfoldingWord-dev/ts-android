@@ -20,8 +20,8 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
     // TRICKY: when you bump the db version you should run the library tests to generate a new index.
     // Note that the extract test will fail.
     private static final int DATABASE_VERSION = 5;
-    private final String mDatabaseName;
-    private final String mSchema;
+    private final String databaseName;
+    private final String schema;
 
     /**
      * Creates a new sql helper for the indexer.
@@ -32,8 +32,8 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      */
     public IndexerSQLiteHelper(Context context, String name) throws IOException {
         super(context, name, null, DATABASE_VERSION);
-        mSchema = Util.readStream(context.getAssets().open("schema.sql"));
-        mDatabaseName = name;
+        this.schema = Util.readStream(context.getAssets().open("schema.sql"));
+        this.databaseName = name;
     }
 
     @Override
@@ -41,7 +41,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
             db.execSQL("PRAGMA foreign_keys=OFF;");
         }
-        String[] queries = mSchema.split(";");
+        String[] queries = schema.split(";");
         for (String query : queries) {
             query = query.trim();
             if(!query.isEmpty()) {
@@ -69,19 +69,65 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        if(newVersion == 1) {
+            onCreate(db);
+        }
         if(oldVersion < 2) {
+            db.beginTransaction();
+
             // new tables
             db.execSQL("DROP TABLE IF EXISTS `file`");
             db.execSQL("DROP TABLE IF EXISTS `link`");
             onCreate(db);
-        } else if(oldVersion < 3) {
+
+            db.setTransactionSuccessful();
+            db.endTransaction();
+        }
+        if(oldVersion < 3) {
+            db.beginTransaction();
+
             // add columns
             db.execSQL("ALTER TABLE `project` ADD COLUMN `source_language_catalog_local_modified_at` INTEGER NOT NULL DEFAULT 0;");
             db.execSQL("ALTER TABLE `project` ADD COLUMN `source_language_catalog_server_modified_at` INTEGER NOT NULL DEFAULT 0;");
             db.execSQL("ALTER TABLE `source_language` ADD COLUMN `resource_catalog_local_modified_at` INTEGER NOT NULL DEFAULT 0;");
             db.execSQL("ALTER TABLE `source_language` ADD COLUMN `resource_catalog_server_modified_at` INTEGER NOT NULL DEFAULT 0;");
-        } else {
-            onCreate(db);
+
+            db.setTransactionSuccessful();
+            db.endTransaction();
+        }
+        if(oldVersion < 5) {
+            db.beginTransaction();
+
+            // alter project table with chunk_marker catalog
+            db.execSQL("CREATE TABLE `project_new` (" +
+                    "  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT," +
+                    "  `slug` TEXT NOT NULL," +
+                    "  `sort` INTEGER NOT NULL DEFAULT 0," +
+                    "  `modified_at` INTEGER NOT NULL," +
+                    "  `source_language_catalog_url` TEXT NOT NULL," +
+                    "  `source_language_catalog_local_modified_at` INTEGER NOT NULL DEFAULT 0," +
+                    "  `source_language_catalog_server_modified_at` INTEGER NOT NULL DEFAULT 0," +
+                    "  `chunk_marker_catalog_url` TEXT NULL DEFAULT NULL," +
+                    "  `chunk_marker_catalog_local_modified_at` INTEGER NOT NULL DEFAULT 0," +
+                    "  `chunk_marker_catalog_server_modified_at` INTEGER NOT NULL DEFAULT 0" +
+                    "  UNIQUE (`slug`)" +
+                    ");");
+            db.execSQL("INSERT INTO `project_new` SELECT * FROM `project`;");
+            db.execSQL("DROP TABLE IF EXISTS `project`");
+            db.execSQL("ALTER TABLE `project_new` RENAME TO `project`");
+
+            // add chunk_marker table
+            db.execSQL("CREATE TABLE `chunk_marker` (" +
+                    "  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT," +
+                    "  `project_id` INTEGER NOT NULL," +
+                    "  `chapter_slug` TEXT NOT NULL," +
+                    "  `first_verse_slug` TEXT NOT NULL," +
+                    "  UNIQUE (`project_id`, 'chapter_slug', 'first_verse_slug')," +
+                    "  FOREIGN KEY (project_id) REFERENCES `project` (`id`) ON DELETE CASCADE" +
+                    ");");
+
+            db.setTransactionSuccessful();
+            db.endTransaction();
         }
     }
 
@@ -103,7 +149,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * Destroys the database
      */
     public void deleteDatabase(Context context) {
-        context.deleteDatabase(mDatabaseName);
+        context.deleteDatabase(this.databaseName);
     }
 
     /**
@@ -2106,5 +2152,19 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         }
         cursor.close();
         return chunkMarkerDBId;
+    }
+
+    /**
+     * This is a temporary method for injecting the chunk marker urls into the database
+     * because the chunk markers are not currently available in the api
+     *
+     * @return
+     * @deprecated you probably shouldn't use this method
+     */
+    public boolean manuallyInjectChunkMarkerUrls(SQLiteDatabase db) {
+        db.execSQL("UPDATE `project` SET" +
+                "`chunk_marker_catalog_url` = 'https://api.unfoldingword.org/bible/txt/1/' || `project`.`slug` || '/chunks.json'" +
+                "WHERE `project`.`slug` <> 'obs'");
+        return true;
     }
 }

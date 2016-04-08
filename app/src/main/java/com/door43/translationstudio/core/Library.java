@@ -978,6 +978,19 @@ public class Library {
     }
 
     /**
+     * This is a temporary method so we can index chunk markers
+     * Chunk markers are not currently available in the api so we must inject the catalog urls manually
+     * @return
+     * @deprecated you probably shouldn't use this method
+     */
+    public boolean manuallyInjectChunkMarkerCatalogUrl() {
+        getActiveIndex().beginTransaction();
+        boolean success = getActiveIndex().manuallyInjectChunkMarkerUrls();
+        getActiveIndex().endTransaction(success);
+        return success;
+    }
+
+    /**
      * Resets all the date_modified values
      */
     public void setExpired() {

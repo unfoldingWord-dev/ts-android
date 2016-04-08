@@ -32,7 +32,7 @@ CREATE TABLE `project` (
   `source_language_catalog_url` TEXT NOT NULL,
   `source_language_catalog_local_modified_at` INTEGER NOT NULL DEFAULT 0,
   `source_language_catalog_server_modified_at` INTEGER NOT NULL DEFAULT 0,
-  `chunk_marker_catalog_url` TEXT NOT NULL,
+  `chunk_marker_catalog_url` TEXT NULL DEFAULT NULL,
   `chunk_marker_catalog_local_modified_at` INTEGER NOT NULL DEFAULT 0,
   `chunk_marker_catalog_server_modified_at` INTEGER NOT NULL DEFAULT 0
   UNIQUE (`slug`)
