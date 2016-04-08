@@ -3,6 +3,7 @@ package com.door43.translationstudio;
 import android.content.Context;
 import android.test.InstrumentationTestCase;
 
+import com.door43.translationstudio.core.ChunkMarker;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.LibraryUpdates;
 import com.door43.translationstudio.core.Project;
@@ -41,6 +42,11 @@ public class LibraryTest extends InstrumentationTestCase {
 
         // NOTE: this will fail when first updating the db version
         assertTrue(mLibrary.exists());
+    }
+
+    public void test03ChunkMarkers() throws Exception {
+        ChunkMarker[] markers = mLibrary.getChunkMarkers("gen");
+        assertTrue(markers.length > 0);
     }
 
 //    public void test03DownloadTargetLanguages() throws Exception {
