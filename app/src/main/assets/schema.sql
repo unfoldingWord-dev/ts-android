@@ -50,6 +50,7 @@ CREATE TABLE `chunk_marker` (
   `project_id` INTEGER NOT NULL,
   `chapter_slug` TEXT NOT NULL,
   `first_verse_slug` TEXT NOT NULL,
+  UNIQUE (`project_id`, 'chapter_slug', 'first_verse_slug'),
   FOREIGN KEY (project_id) REFERENCES `project` (`id`) ON DELETE CASCADE
 );
 
