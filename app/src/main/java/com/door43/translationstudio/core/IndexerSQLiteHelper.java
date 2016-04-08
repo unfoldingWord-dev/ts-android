@@ -322,11 +322,11 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      */
     public void deleteSourceLanguage(SQLiteDatabase db, String sourceLanguageSlug, String projectSlug) {
         db.execSQL("DELETE FROM `source_language`"
-                   + " WHERE `id` IN ("
-                   + "  SELECT `sl`.`id` from `source_language` AS `sl`"
-                   + "  LEFT JOIN `project` AS `p` ON `p`.`id`=`sl`.`project_id`"
-                   + "  WHERE `sl`.`slug`=? AND `p`.`slug`=?"
-                   + " )", new String[]{sourceLanguageSlug, projectSlug});
+                + " WHERE `id` IN ("
+                + "  SELECT `sl`.`id` from `source_language` AS `sl`"
+                + "  LEFT JOIN `project` AS `p` ON `p`.`id`=`sl`.`project_id`"
+                + "  WHERE `sl`.`slug`=? AND `p`.`slug`=?"
+                + " )", new String[]{sourceLanguageSlug, projectSlug});
     }
 
     /**
@@ -2172,5 +2172,25 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
                 "`chunk_marker_catalog_url` = 'https://api.unfoldingword.org/bible/txt/1/' || `project`.`slug` || '/chunks.json'" +
                 "WHERE `project`.`slug` <> 'obs'");
         return true;
+    }
+
+    /**
+     * Returns an array of chunk markers for the project
+     * @param db
+     * @param projectSlug
+     * @return
+     */
+    public ChunkMarker[] getChunkMarkers(SQLiteDatabase db, String projectSlug) {
+        List<ChunkMarker> chunkMarkers = new ArrayList<>();
+        Cursor cursor = db.rawQuery("SELECT `cm`.`chapter_slug`, `cm`.`first_verse_slug` FROM `chunk_markers` AS `cm`"
+                + " LEFT JOIN `project` AS `p` ON `p`.`id` = `cm`.`project_id`"
+                + " WHERE `p`.`slug`=?", new String[]{projectSlug});
+        cursor.moveToFirst();
+        while(!cursor.isAfterLast()) {
+            chunkMarkers.add(new ChunkMarker(cursor.getString(0), cursor.getString(1)));
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return chunkMarkers.toArray(new ChunkMarker[chunkMarkers.size()]);
     }
 }

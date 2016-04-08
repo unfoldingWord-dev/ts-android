@@ -182,6 +182,15 @@ public class Library {
     }
 
     /**
+     * Returns an array of chunk markers for the project
+     * @param projectSlug
+     * @return
+     */
+    public ChunkMarker[] getChunkMarkers(String projectSlug) {
+        return mAppIndex.getChunkMarkers(projectSlug);
+    }
+
+    /**
      * Downloads all of the projects from the server
      *
      * @param projectProgressListener

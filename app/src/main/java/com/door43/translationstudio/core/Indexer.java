@@ -1308,4 +1308,13 @@ public class Indexer {
     public boolean manuallyInjectChunkMarkerUrls() {
         return mDatabaseHelper.manuallyInjectChunkMarkerUrls(mDatabase);
     }
+
+    /**
+     * Returns an array of chunk markers for the project
+     * @param projectSlug
+     * @return
+     */
+    public ChunkMarker[] getChunkMarkers(String projectSlug) {
+        return mDatabaseHelper.getChunkMarkers(mDatabase, projectSlug);
+    }
 }
