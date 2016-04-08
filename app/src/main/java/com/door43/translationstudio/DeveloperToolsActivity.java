@@ -432,7 +432,19 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
 
         if(task instanceof GetLibraryUpdatesTask) {
             if(task.getTaskId().equals(INDEX_CHUNK_MARKERS_TASK_ID)) {
-
+                if(mDownloadProgressDialog != null && mDownloadProgressDialog.isShowing()) {
+                    mDownloadProgressDialog.dismiss();
+                }
+                mDownloadProgressDialog = null;
+                if(!task.isCanceled()) {
+                    CustomAlertDialog.Create(DeveloperToolsActivity.this)
+                            .setTitle(R.string.success)
+                            .setIcon(R.drawable.ic_done_black_24dp)
+                            .setMessage("Chunk Markers have been indexed")
+                            .setCancelableChainable(false)
+                            .setPositiveButton(R.string.label_ok, null)
+                            .show("Success");
+                }
             } else {
                 DownloadAllProjectsTask newTask = new DownloadAllProjectsTask();
                 newTask.addOnProgressListener(this);

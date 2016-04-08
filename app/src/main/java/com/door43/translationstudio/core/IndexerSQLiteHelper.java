@@ -112,7 +112,9 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
                     "  `chunk_marker_catalog_server_modified_at` INTEGER NOT NULL DEFAULT 0," +
                     "  UNIQUE (`slug`)" +
                     ");");
-            db.execSQL("INSERT INTO `project_new` SELECT * FROM `project`;");
+            db.execSQL("INSERT INTO `project_new` (`id`, `slug`, `sort`, `modified_at`," +
+                    " `source_language_catalog_url`, `source_language_catalog_local_modified_at`," +
+                    " `source_language_catalog_server_modified_at`) SELECT * FROM `project`;");
             db.execSQL("DROP TABLE IF EXISTS `project`");
             db.execSQL("ALTER TABLE `project_new` RENAME TO `project`");
 
@@ -1167,13 +1169,17 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      */
     public Project getProject(SQLiteDatabase db, String projectSlug, String sourceLanguageSlug) {
         Project project = null;
-        Cursor cursor = db.rawQuery("SELECT `p`.`sort`, `p`.`modified_at`, `p`.`source_language_catalog_url`,"
+        Cursor cursor = db.rawQuery("SELECT `p`.`sort`,"
+                + " `p`.`modified_at`,"
+                + " `p`.`source_language_catalog_url`,"
                 + " COALESCE(`sl1`.`slug`, `sl2`.`slug`, `sl3`.`slug`),"
                 + " COALESCE(`sl1`.`project_name`, `sl2`.`project_name`, `sl3`.`project_name`),"
                 + " COALESCE(`sl1`.`project_description`, `sl2`.`project_description`, `sl3`.`project_description`),"
-                + " `p`.`source_language_catalog_local_modified_at`, `p`.`source_language_catalog_server_modified_at`,"
+                + " `p`.`source_language_catalog_local_modified_at`,"
+                + " `p`.`source_language_catalog_server_modified_at`,"
                 + " `p`.`chunk_marker_catalog_url`,"
-                + " `p`.`chunk_marker_catalog_local_modified_at`, `p`.`chunk_marker_catalog_server_modified_at`"
+                + " `p`.`chunk_marker_catalog_local_modified_at`,"
+                + " `p`.`chunk_marker_catalog_server_modified_at`"
                 + " FROM `project` AS `p`"
                 + " LEFT JOIN `source_language` AS `sl1` ON `sl1`.`project_id`=`p`.`id`AND `sl1`.`slug`=?"
                 + " LEFT JOIN `source_language` AS `sl2` ON `sl2`.`project_id`=`p`.`id` AND `sl2`.`slug`='en'"
@@ -1184,15 +1190,15 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             int sort = cursor.getInt(0);
             int dateModified = cursor.getInt(1);
             String sourceLanguageCatalog = cursor.getString(2);
-            String actualSsourceLanguageSlug = cursor.getString(3);
+            String actualSourceLanguageSlug = cursor.getString(3);
             String projectName = cursor.getString(4);
             String projectDescription = cursor.getString(5);
             int sourceLanguageCatalogLocalModified = cursor.getInt(6);
             int sourceLanguageCatalogServerModified = cursor.getInt(7);
-            String chunkMarkerCatalog = cursor.getString(9);
-            int chunkMarkerCatalogLocalModified = cursor.getInt(10);
-            int chunkMarkerCatalogServerModified = cursor.getInt(11);
-            project = new Project(projectSlug, actualSsourceLanguageSlug, projectName,
+            String chunkMarkerCatalog = cursor.getString(8);
+            int chunkMarkerCatalogLocalModified = cursor.getInt(9);
+            int chunkMarkerCatalogServerModified = cursor.getInt(10);
+            project = new Project(projectSlug, actualSourceLanguageSlug, projectName,
                     projectDescription, dateModified, sort, sourceLanguageCatalog,
                     sourceLanguageCatalogLocalModified, sourceLanguageCatalogServerModified,
                     chunkMarkerCatalog, chunkMarkerCatalogLocalModified, chunkMarkerCatalogServerModified);

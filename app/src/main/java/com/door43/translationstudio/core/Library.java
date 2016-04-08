@@ -985,7 +985,12 @@ public class Library {
      */
     public boolean manuallyInjectChunkMarkerCatalogUrl() {
         getActiveIndex().beginTransaction();
-        boolean success = getActiveIndex().manuallyInjectChunkMarkerUrls();
+        boolean success = false;
+        try {
+            success = getActiveIndex().manuallyInjectChunkMarkerUrls();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         getActiveIndex().endTransaction(success);
         return success;
     }
