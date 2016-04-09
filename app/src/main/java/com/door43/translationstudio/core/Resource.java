@@ -28,6 +28,10 @@ public class Resource {
     private final int wordsServerDateModified;
     private final int wordAssignmentsServerDateModified;
     private final int questionsServerDateModified;
+    private final String chunksCatalogUrl;
+    private final int chunksDateModified;
+    private final int chunksServerDateModified;
+
     private long DBId = -1;
     private boolean isDownloaded;
     // TODO: 12/14/2015 hook these up
@@ -68,6 +72,11 @@ public class Resource {
         this.questionsCatalogUrl = questionsCatalogUrl;
         this.questionsDateModified = questionsDateModified;
         this.questionsServerDateModified = questionsServerDateModified;
+
+        // TODO: 4/5/2016 eventually these will be passed in
+        this.chunksCatalogUrl = "";
+        this.chunksDateModified = 0;
+        this.chunksServerDateModified = 0;
     }
 
     /**
@@ -312,4 +321,15 @@ public class Resource {
         return this.sourceLanguageDBId;
     }
 
+    public String getChunksCatalogUrl() {
+        return chunksCatalogUrl;
+    }
+
+    public int getChunksDateModified() {
+        return chunksDateModified;
+    }
+
+    public int getChunksServerDateModified() {
+        return chunksServerDateModified;
+    }
 }

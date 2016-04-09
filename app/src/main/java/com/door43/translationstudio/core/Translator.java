@@ -7,6 +7,7 @@ import android.text.SpannedString;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.rendering.USXtoUSFMConverter;
 import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
@@ -18,6 +19,7 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -268,6 +270,9 @@ public class Translator {
 
         TargetTranslation t = createTargetTranslation(nativeSpeaker, targetLanguage, draftTranslation.projectSlug, TranslationType.TEXT, resourceSlug, draftTranslation.getFormat());
 
+        // convert legacy usx format to usfm
+        boolean convertToUSFM = draftTranslation.getFormat() == TranslationFormat.USX;
+
         try {
             if (t != null) {
                 // commit local changes to history
@@ -280,7 +285,8 @@ public class Translator {
                     t.applyChapterTitleTranslation(ct, c.title);
                     t.applyChapterReferenceTranslation(ct, c.reference);
                     for(Frame f:library.getFrames(draftTranslation, c.getId())) {
-                        t.applyFrameTranslation(t.getFrameTranslation(f), f.body);
+                        String text = convertToUSFM ? USXtoUSFMConverter.doConversion(f.body).toString() : f.body;
+                        t.applyFrameTranslation(t.getFrameTranslation(f), text);
                     }
                 }
                 // TODO: 3/23/2016 also import the front and back matter along with project title

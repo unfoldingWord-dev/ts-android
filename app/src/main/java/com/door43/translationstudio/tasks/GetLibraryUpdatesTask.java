@@ -37,7 +37,6 @@ public class GetLibraryUpdatesTask extends ManagedTask {
                 AppContext.setLastCheckedForUpdates(System.currentTimeMillis());
             }
         }
-
         // make sure we have the most recent target languages
         library.downloadTargetLanguages();
     }
