@@ -668,4 +668,26 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="version">Version</string>
     <string name="title_activity_import_usfm">Import USFM Project - Select Language</string>
     <string name="label_import_usfm">Import USFM</string>
+    <string name="title_import_usfm_error_book">Error Importing USFM book \'%s\'</string>
+    <string name="title_import_usfm_error">Error Importing USFM</string>
+    <string name="title_import_usfm_summary">USFM Import Summary</string>
+    <string name="zip_read_error">Error reading Zip</string>
+    <string name="file_read_error">Error reading File</string>
+    <string name="file_write_error">Error writing File</string>
+    <string name="file_write_for_verse">Error writing verse %s</string>
+    <string name="file_read_error_detail">Error reading File \'%s\'</string>
+    <string name="missing_book_short_name">Missing book short name (\\toc3)</string>
+    <string name="missing_book_name">Missing book name (\\toc1)</string>
+    <string name="missing_language">Missing language</string>
+    <string name="no_section_no_verse">No section nor verse markers found</string>
+    <string name="no_section_no_chunk">No sections found and no chunking breakdown list</string>
+    <string name="book_parse_error">Error parsing book</string>
+    <string name="error_reading_file">Error reading file: %s</string>
+    <string name="could_not_find_chapter">Could not find chapter: %s</string>
+    <string name="could_not_parse_chapter">Could not parse chapter: %s</string>
+    <string name="missing_verses_in_section">No Verses in Section</string>
+    <string name="error_prefix">Error: %s</string>
+    <string name="warning_prefix">Warning: %s</string>
+    <string name="found_book">Found book: %s</string>
+    <string name="selected_language">Selected Language: %s</string>
 </resources>

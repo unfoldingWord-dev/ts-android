@@ -64,38 +64,38 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         Intent intent = getIntent();
         Bundle args = intent.getExtras();
 
-        final ImportUsfm usfm = new ImportUsfm(mTargetLanguage);
+        final ImportUsfm usfm = new ImportUsfm(this, mTargetLanguage);
         boolean success = false;
 
         if(args.containsKey(EXTRA_USFM_IMPORT_URI)) {
             String uriStr = args.getString(EXTRA_USFM_IMPORT_URI);
             Uri uri = intent.getData();
-            success = usfm.importUri(this, uri);
+            success = usfm.importUri( uri);
         } else if(args.containsKey(EXTRA_USFM_IMPORT_FILE)) {
             Serializable serial = args.getSerializable(EXTRA_USFM_IMPORT_FILE);
             File file = (File) serial;
-            success = usfm.importFile(this, file);
+            success = usfm.importFile( file);
         } else if(args.containsKey(EXTRA_USFM_IMPORT_RESOURCE_FILE)) {
             String importResourceFile = args.getString(EXTRA_USFM_IMPORT_RESOURCE_FILE);
-            success = usfm.importResourceFile(this,importResourceFile);
+            success = usfm.importResourceFile(importResourceFile);
         }
 
-        String[] errors = usfm.getErrors();
-        if(!success) {
-            Logger.i(TAG, "USFM import finished with errors: " + TextUtils.join("\n", errors));
-        } else if(errors.length > 0) {
-            Logger.i(TAG, "USFM import finished with warnings: " + TextUtils.join("\n", errors));
-        }
-
-        File[] imports = usfm.getImportProjects();
-        final Translator translator = AppContext.getTranslator();
-        try {
-            final String[] targetTranslationSlugs = translator.loadTranslationFolders(imports);
-        } catch (Exception e) {
-            Logger.e(TAG, "Failed to import folder " + imports.toString());
-        }
-
-        usfm.cleanup();
+        usfm.showResults(new ImportUsfm.OnFinishedListener() {
+            @Override
+            public void onFinished(boolean success) {
+                if(success) { // if user is OK to continue
+                    File[] imports = usfm.getImportProjects();
+                    final Translator translator = AppContext.getTranslator();
+                    try {
+                        final String[] targetTranslationSlugs = translator.loadTranslationFolders(imports);
+                    } catch (Exception e) {
+                        Logger.e(TAG, "Failed to import folder " + imports.toString());
+                    }
+                }
+                usfm.cleanup();
+                finished();
+            }
+        });
     }
 
 
@@ -212,6 +212,10 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
             doFileImport();
         }
 
+//        finished();
+    }
+
+    private void finished() {
         Intent data = new Intent();
         setResult(RESULT_OK, data);
         finish();
