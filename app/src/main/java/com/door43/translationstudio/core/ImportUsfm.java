@@ -19,7 +19,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -53,19 +52,19 @@ public class ImportUsfm {
 
     private String mChapter;
     private List<File> mSourceFiles;
+    private HashMap<String, JSONArray> mChunks;
 
     private List<File> mImportProjects;
-    private HashMap<String, JSONObject> mChunks; // // TODO: 4/7/16 this will be replaced with system call
     private List<String> mErrors;
     private List<String> mFoundBooks;
     private int mCurrentBook;
 
     private String mBookName;
     private String mBookShortName;
-    private JSONObject mChunk;
     private TargetLanguage mTargetLanguage;
     private Activity mContext;
     private boolean mSuccess;
+    private ChunkMarker[] mMarkers;
 
     public ImportUsfm(Activity context, TargetLanguage targetLanguage) {
         createTempFolders();
@@ -78,11 +77,7 @@ public class ImportUsfm {
         mCurrentBook = 0;
         mContext = context;
         mSuccess = false;
-
-        // TODO: 4/5/16 hard coded for now
-        String chunkJsonStr = "[{\"chp\": \"01\", \"firstvs\": \"01\"}, {\"chp\": \"01\", \"firstvs\": \"04\"}, {\"chp\": \"01\", \"firstvs\": \"07\"}, {\"chp\": \"01\", \"firstvs\": \"09\"}, {\"chp\": \"01\", \"firstvs\": \"12\"}, {\"chp\": \"01\", \"firstvs\": \"14\"}, {\"chp\": \"01\", \"firstvs\": \"16\"}, {\"chp\": \"01\", \"firstvs\": \"19\"}, {\"chp\": \"01\", \"firstvs\": \"21\"}, {\"chp\": \"01\", \"firstvs\": \"23\"}, {\"chp\": \"01\", \"firstvs\": \"27\"}, {\"chp\": \"01\", \"firstvs\": \"29\"}, {\"chp\": \"01\", \"firstvs\": \"32\"}, {\"chp\": \"01\", \"firstvs\": \"35\"}, {\"chp\": \"01\", \"firstvs\": \"38\"}, {\"chp\": \"01\", \"firstvs\": \"40\"}, {\"chp\": \"01\", \"firstvs\": \"43\"}, {\"chp\": \"01\", \"firstvs\": \"45\"}, {\"chp\": \"02\", \"firstvs\": \"01\"}, {\"chp\": \"02\", \"firstvs\": \"03\"}, {\"chp\": \"02\", \"firstvs\": \"05\"}, {\"chp\": \"02\", \"firstvs\": \"08\"}, {\"chp\": \"02\", \"firstvs\": \"10\"}, {\"chp\": \"02\", \"firstvs\": \"13\"}, {\"chp\": \"02\", \"firstvs\": \"15\"}, {\"chp\": \"02\", \"firstvs\": \"17\"}, {\"chp\": \"02\", \"firstvs\": \"18\"}, {\"chp\": \"02\", \"firstvs\": \"20\"}, {\"chp\": \"02\", \"firstvs\": \"22\"}, {\"chp\": \"02\", \"firstvs\": \"23\"}, {\"chp\": \"02\", \"firstvs\": \"25\"}, {\"chp\": \"02\", \"firstvs\": \"27\"}, {\"chp\": \"03\", \"firstvs\": \"01\"}, {\"chp\": \"03\", \"firstvs\": \"03\"}, {\"chp\": \"03\", \"firstvs\": \"05\"}, {\"chp\": \"03\", \"firstvs\": \"07\"}, {\"chp\": \"03\", \"firstvs\": \"09\"}, {\"chp\": \"03\", \"firstvs\": \"11\"}, {\"chp\": \"03\", \"firstvs\": \"13\"}, {\"chp\": \"03\", \"firstvs\": \"17\"}, {\"chp\": \"03\", \"firstvs\": \"20\"}, {\"chp\": \"03\", \"firstvs\": \"23\"}, {\"chp\": \"03\", \"firstvs\": \"26\"}, {\"chp\": \"03\", \"firstvs\": \"28\"}, {\"chp\": \"03\", \"firstvs\": \"31\"}, {\"chp\": \"03\", \"firstvs\": \"33\"}, {\"chp\": \"04\", \"firstvs\": \"01\"}, {\"chp\": \"04\", \"firstvs\": \"03\"}, {\"chp\": \"04\", \"firstvs\": \"06\"}, {\"chp\": \"04\", \"firstvs\": \"08\"}, {\"chp\": \"04\", \"firstvs\": \"10\"}, {\"chp\": \"04\", \"firstvs\": \"13\"}, {\"chp\": \"04\", \"firstvs\": \"16\"}, {\"chp\": \"04\", \"firstvs\": \"18\"}, {\"chp\": \"04\", \"firstvs\": \"21\"}, {\"chp\": \"04\", \"firstvs\": \"24\"}, {\"chp\": \"04\", \"firstvs\": \"26\"}, {\"chp\": \"04\", \"firstvs\": \"30\"}, {\"chp\": \"04\", \"firstvs\": \"33\"}, {\"chp\": \"04\", \"firstvs\": \"35\"}, {\"chp\": \"04\", \"firstvs\": \"38\"}, {\"chp\": \"04\", \"firstvs\": \"40\"}, {\"chp\": \"05\", \"firstvs\": \"01\"}, {\"chp\": \"05\", \"firstvs\": \"03\"}, {\"chp\": \"05\", \"firstvs\": \"05\"}, {\"chp\": \"05\", \"firstvs\": \"07\"}, {\"chp\": \"05\", \"firstvs\": \"09\"}, {\"chp\": \"05\", \"firstvs\": \"11\"}, {\"chp\": \"05\", \"firstvs\": \"14\"}, {\"chp\": \"05\", \"firstvs\": \"16\"}, {\"chp\": \"05\", \"firstvs\": \"18\"}, {\"chp\": \"05\", \"firstvs\": \"21\"}, {\"chp\": \"05\", \"firstvs\": \"25\"}, {\"chp\": \"05\", \"firstvs\": \"28\"}, {\"chp\": \"05\", \"firstvs\": \"30\"}, {\"chp\": \"05\", \"firstvs\": \"33\"}, {\"chp\": \"05\", \"firstvs\": \"35\"}, {\"chp\": \"05\", \"firstvs\": \"36\"}, {\"chp\": \"05\", \"firstvs\": \"39\"}, {\"chp\": \"05\", \"firstvs\": \"41\"}, {\"chp\": \"06\", \"firstvs\": \"01\"}, {\"chp\": \"06\", \"firstvs\": \"04\"}, {\"chp\": \"06\", \"firstvs\": \"07\"}, {\"chp\": \"06\", \"firstvs\": \"10\"}, {\"chp\": \"06\", \"firstvs\": \"12\"}, {\"chp\": \"06\", \"firstvs\": \"14\"}, {\"chp\": \"06\", \"firstvs\": \"16\"}, {\"chp\": \"06\", \"firstvs\": \"18\"}, {\"chp\": \"06\", \"firstvs\": \"21\"}, {\"chp\": \"06\", \"firstvs\": \"23\"}, {\"chp\": \"06\", \"firstvs\": \"26\"}, {\"chp\": \"06\", \"firstvs\": \"30\"}, {\"chp\": \"06\", \"firstvs\": \"33\"}, {\"chp\": \"06\", \"firstvs\": \"35\"}, {\"chp\": \"06\", \"firstvs\": \"37\"}, {\"chp\": \"06\", \"firstvs\": \"39\"}, {\"chp\": \"06\", \"firstvs\": \"42\"}, {\"chp\": \"06\", \"firstvs\": \"45\"}, {\"chp\": \"06\", \"firstvs\": \"48\"}, {\"chp\": \"06\", \"firstvs\": \"51\"}, {\"chp\": \"06\", \"firstvs\": \"53\"}, {\"chp\": \"06\", \"firstvs\": \"56\"}, {\"chp\": \"07\", \"firstvs\": \"01\"}, {\"chp\": \"07\", \"firstvs\": \"02\"}, {\"chp\": \"07\", \"firstvs\": \"05\"}, {\"chp\": \"07\", \"firstvs\": \"06\"}, {\"chp\": \"07\", \"firstvs\": \"08\"}, {\"chp\": \"07\", \"firstvs\": \"11\"}, {\"chp\": \"07\", \"firstvs\": \"14\"}, {\"chp\": \"07\", \"firstvs\": \"17\"}, {\"chp\": \"07\", \"firstvs\": \"20\"}, {\"chp\": \"07\", \"firstvs\": \"24\"}, {\"chp\": \"07\", \"firstvs\": \"27\"}, {\"chp\": \"07\", \"firstvs\": \"29\"}, {\"chp\": \"07\", \"firstvs\": \"31\"}, {\"chp\": \"07\", \"firstvs\": \"33\"}, {\"chp\": \"07\", \"firstvs\": \"36\"}, {\"chp\": \"08\", \"firstvs\": \"01\"}, {\"chp\": \"08\", \"firstvs\": \"05\"}, {\"chp\": \"08\", \"firstvs\": \"07\"}, {\"chp\": \"08\", \"firstvs\": \"11\"}, {\"chp\": \"08\", \"firstvs\": \"14\"}, {\"chp\": \"08\", \"firstvs\": \"16\"}, {\"chp\": \"08\", \"firstvs\": \"18\"}, {\"chp\": \"08\", \"firstvs\": \"20\"}, {\"chp\": \"08\", \"firstvs\": \"22\"}, {\"chp\": \"08\", \"firstvs\": \"24\"}, {\"chp\": \"08\", \"firstvs\": \"27\"}, {\"chp\": \"08\", \"firstvs\": \"29\"}, {\"chp\": \"08\", \"firstvs\": \"31\"}, {\"chp\": \"08\", \"firstvs\": \"33\"}, {\"chp\": \"08\", \"firstvs\": \"35\"}, {\"chp\": \"08\", \"firstvs\": \"38\"}, {\"chp\": \"09\", \"firstvs\": \"01\"}, {\"chp\": \"09\", \"firstvs\": \"04\"}, {\"chp\": \"09\", \"firstvs\": \"07\"}, {\"chp\": \"09\", \"firstvs\": \"09\"}, {\"chp\": \"09\", \"firstvs\": \"11\"}, {\"chp\": \"09\", \"firstvs\": \"14\"}, {\"chp\": \"09\", \"firstvs\": \"17\"}, {\"chp\": \"09\", \"firstvs\": \"20\"}, {\"chp\": \"09\", \"firstvs\": \"23\"}, {\"chp\": \"09\", \"firstvs\": \"26\"}, {\"chp\": \"09\", \"firstvs\": \"28\"}, {\"chp\": \"09\", \"firstvs\": \"30\"}, {\"chp\": \"09\", \"firstvs\": \"33\"}, {\"chp\": \"09\", \"firstvs\": \"36\"}, {\"chp\": \"09\", \"firstvs\": \"38\"}, {\"chp\": \"09\", \"firstvs\": \"40\"}, {\"chp\": \"09\", \"firstvs\": \"42\"}, {\"chp\": \"09\", \"firstvs\": \"45\"}, {\"chp\": \"09\", \"firstvs\": \"47\"}, {\"chp\": \"09\", \"firstvs\": \"49\"}, {\"chp\": \"10\", \"firstvs\": \"01\"}, {\"chp\": \"10\", \"firstvs\": \"05\"}, {\"chp\": \"10\", \"firstvs\": \"07\"}, {\"chp\": \"10\", \"firstvs\": \"10\"}, {\"chp\": \"10\", \"firstvs\": \"13\"}, {\"chp\": \"10\", \"firstvs\": \"15\"}, {\"chp\": \"10\", \"firstvs\": \"17\"}, {\"chp\": \"10\", \"firstvs\": \"20\"}, {\"chp\": \"10\", \"firstvs\": \"23\"}, {\"chp\": \"10\", \"firstvs\": \"26\"}, {\"chp\": \"10\", \"firstvs\": \"29\"}, {\"chp\": \"10\", \"firstvs\": \"32\"}, {\"chp\": \"10\", \"firstvs\": \"35\"}, {\"chp\": \"10\", \"firstvs\": \"38\"}, {\"chp\": \"10\", \"firstvs\": \"41\"}, {\"chp\": \"10\", \"firstvs\": \"43\"}, {\"chp\": \"10\", \"firstvs\": \"46\"}, {\"chp\": \"10\", \"firstvs\": \"49\"}, {\"chp\": \"10\", \"firstvs\": \"51\"}, {\"chp\": \"11\", \"firstvs\": \"01\"}, {\"chp\": \"11\", \"firstvs\": \"04\"}, {\"chp\": \"11\", \"firstvs\": \"07\"}, {\"chp\": \"11\", \"firstvs\": \"11\"}, {\"chp\": \"11\", \"firstvs\": \"13\"}, {\"chp\": \"11\", \"firstvs\": \"15\"}, {\"chp\": \"11\", \"firstvs\": \"17\"}, {\"chp\": \"11\", \"firstvs\": \"20\"}, {\"chp\": \"11\", \"firstvs\": \"22\"}, {\"chp\": \"11\", \"firstvs\": \"24\"}, {\"chp\": \"11\", \"firstvs\": \"27\"}, {\"chp\": \"11\", \"firstvs\": \"29\"}, {\"chp\": \"11\", \"firstvs\": \"31\"}, {\"chp\": \"12\", \"firstvs\": \"01\"}, {\"chp\": \"12\", \"firstvs\": \"04\"}, {\"chp\": \"12\", \"firstvs\": \"06\"}, {\"chp\": \"12\", \"firstvs\": \"08\"}, {\"chp\": \"12\", \"firstvs\": \"10\"}, {\"chp\": \"12\", \"firstvs\": \"13\"}, {\"chp\": \"12\", \"firstvs\": \"16\"}, {\"chp\": \"12\", \"firstvs\": \"18\"}, {\"chp\": \"12\", \"firstvs\": \"20\"}, {\"chp\": \"12\", \"firstvs\": \"24\"}, {\"chp\": \"12\", \"firstvs\": \"26\"}, {\"chp\": \"12\", \"firstvs\": \"28\"}, {\"chp\": \"12\", \"firstvs\": \"32\"}, {\"chp\": \"12\", \"firstvs\": \"35\"}, {\"chp\": \"12\", \"firstvs\": \"38\"}, {\"chp\": \"12\", \"firstvs\": \"41\"}, {\"chp\": \"12\", \"firstvs\": \"43\"}, {\"chp\": \"13\", \"firstvs\": \"01\"}, {\"chp\": \"13\", \"firstvs\": \"03\"}, {\"chp\": \"13\", \"firstvs\": \"05\"}, {\"chp\": \"13\", \"firstvs\": \"07\"}, {\"chp\": \"13\", \"firstvs\": \"09\"}, {\"chp\": \"13\", \"firstvs\": \"11\"}, {\"chp\": \"13\", \"firstvs\": \"14\"}, {\"chp\": \"13\", \"firstvs\": \"17\"}, {\"chp\": \"13\", \"firstvs\": \"21\"}, {\"chp\": \"13\", \"firstvs\": \"24\"}, {\"chp\": \"13\", \"firstvs\": \"28\"}, {\"chp\": \"13\", \"firstvs\": \"30\"}, {\"chp\": \"13\", \"firstvs\": \"33\"}, {\"chp\": \"13\", \"firstvs\": \"35\"}, {\"chp\": \"14\", \"firstvs\": \"01\"}, {\"chp\": \"14\", \"firstvs\": \"03\"}, {\"chp\": \"14\", \"firstvs\": \"06\"}, {\"chp\": \"14\", \"firstvs\": \"10\"}, {\"chp\": \"14\", \"firstvs\": \"12\"}, {\"chp\": \"14\", \"firstvs\": \"15\"}, {\"chp\": \"14\", \"firstvs\": \"17\"}, {\"chp\": \"14\", \"firstvs\": \"20\"}, {\"chp\": \"14\", \"firstvs\": \"22\"}, {\"chp\": \"14\", \"firstvs\": \"26\"}, {\"chp\": \"14\", \"firstvs\": \"28\"}, {\"chp\": \"14\", \"firstvs\": \"30\"}, {\"chp\": \"14\", \"firstvs\": \"32\"}, {\"chp\": \"14\", \"firstvs\": \"35\"}, {\"chp\": \"14\", \"firstvs\": \"37\"}, {\"chp\": \"14\", \"firstvs\": \"40\"}, {\"chp\": \"14\", \"firstvs\": \"43\"}, {\"chp\": \"14\", \"firstvs\": \"47\"}, {\"chp\": \"14\", \"firstvs\": \"51\"}, {\"chp\": \"14\", \"firstvs\": \"53\"}, {\"chp\": \"14\", \"firstvs\": \"55\"}, {\"chp\": \"14\", \"firstvs\": \"57\"}, {\"chp\": \"14\", \"firstvs\": \"60\"}, {\"chp\": \"14\", \"firstvs\": \"63\"}, {\"chp\": \"14\", \"firstvs\": \"66\"}, {\"chp\": \"14\", \"firstvs\": \"69\"}, {\"chp\": \"14\", \"firstvs\": \"71\"}, {\"chp\": \"15\", \"firstvs\": \"01\"}, {\"chp\": \"15\", \"firstvs\": \"04\"}, {\"chp\": \"15\", \"firstvs\": \"06\"}, {\"chp\": \"15\", \"firstvs\": \"09\"}, {\"chp\": \"15\", \"firstvs\": \"12\"}, {\"chp\": \"15\", \"firstvs\": \"14\"}, {\"chp\": \"15\", \"firstvs\": \"16\"}, {\"chp\": \"15\", \"firstvs\": \"19\"}, {\"chp\": \"15\", \"firstvs\": \"22\"}, {\"chp\": \"15\", \"firstvs\": \"25\"}, {\"chp\": \"15\", \"firstvs\": \"29\"}, {\"chp\": \"15\", \"firstvs\": \"31\"}, {\"chp\": \"15\", \"firstvs\": \"33\"}, {\"chp\": \"15\", \"firstvs\": \"36\"}, {\"chp\": \"15\", \"firstvs\": \"39\"}, {\"chp\": \"15\", \"firstvs\": \"42\"}, {\"chp\": \"15\", \"firstvs\": \"45\"}, {\"chp\": \"16\", \"firstvs\": \"01\"}, {\"chp\": \"16\", \"firstvs\": \"03\"}, {\"chp\": \"16\", \"firstvs\": \"05\"}, {\"chp\": \"16\", \"firstvs\": \"08\"}, {\"chp\": \"16\", \"firstvs\": \"09\"}, {\"chp\": \"16\", \"firstvs\": \"12\"}, {\"chp\": \"16\", \"firstvs\": \"14\"}, {\"chp\": \"16\", \"firstvs\": \"17\"}, {\"chp\": \"16\", \"firstvs\": \"19\"}]";
-        addChunk("mrk", chunkJsonStr);
-        addChunk("xmrk", chunkJsonStr);
+        mMarkers = null;
     }
 
     /**
@@ -335,52 +330,35 @@ public class ImportUsfm {
     }
 
     /**
-     * add chunkJson (contains verses for each section) to map
+     * add chunk markers (contains verses and chapters) to map by chapter
      * @param book
-     * @param chunk
+     * @param chunks
      * @return
      */
-    public boolean addChunk(String book, JSONArray chunk) {
+    public boolean addChunks(String book, ChunkMarker[] chunks) {
         try {
-            JSONObject processedChunk = new JSONObject();
-            int length = chunk.length();
+            int length = chunks.length;
             for (int i = 0; i < length; i++) {
-                JSONObject item = (JSONObject) chunk.get(i);
-                String chapter = item.getString("chp");
-                String firstverse = item.getString("firstvs");
+                ChunkMarker chunkMarker = chunks[i];
+
+                String chapter = chunkMarker.chapterSlug;
+                String firstverse = chunkMarker.firstVerseSlug;
 
                 JSONArray verses = null;
-                if (processedChunk.has(chapter)) {
-                    verses = processedChunk.getJSONArray(chapter);
+                if (mChunks.containsKey(chapter)) {
+                    verses = mChunks.get(chapter);
                 } else {
                     verses = new JSONArray();
-                    processedChunk.put(chapter, verses);
+                    mChunks.put(chapter, verses);
                 }
                 verses.put(firstverse);
             }
 
-            mChunks.put(book.toLowerCase(), processedChunk);
         } catch (Exception e) {
-            Logger.e(TAG, "error parsing chunk " + book, e);
+            Logger.e(TAG, "error parsing chunks " + book, e);
             return false;
         }
         return true;
-    }
-
-    /**
-     * add chunkJson (contains verses for each section) to map
-     * @param book
-     * @param chunkStr
-     * @return
-     */
-    public boolean addChunk(String book, String chunkStr) {
-        try {
-            JSONArray chunkJson = new JSONArray(chunkStr);
-            return addChunk(book, chunkJson);
-        } catch (Exception e) {
-            Logger.e(TAG, "error parsing chunk " + book, e);
-        }
-        return false;
     }
 
     /**
@@ -456,7 +434,9 @@ public class ImportUsfm {
 
             boolean hasSections = isPresent(book, PATTERN_SECTION_MARKER);
             boolean hasVerses = isPresent(book, PATTERN_USFM_VERSE_SPAN);
-            boolean haveChunksList = mChunks.containsKey(mBookShortName);
+
+            mMarkers = AppContext.getLibrary().getChunkMarkers(mBookShortName);
+            boolean haveChunksList = mMarkers.length > 0;
 
             if (!hasSections && !hasVerses) {
                 addError( R.string.no_section_no_verse);
@@ -480,7 +460,7 @@ public class ImportUsfm {
             }
             else { // has chunks
 
-                mChunk = mChunks.get(mBookShortName);
+                addChunks(mBookShortName, mMarkers);
 
                 success = extractChaptersFromBook(book);
                 successOverall = successOverall && success;
@@ -589,19 +569,19 @@ public class ImportUsfm {
         if(!isMissing(mChapter)) {
             try {
                 String chapter = mChapter;
-                if (!mChunk.has(chapter)) {
+                if (!mChunks.containsKey(chapter)) {
                     chapter = "0" + chapter;
-                    if (!mChunk.has(chapter)) {
+                    if (!mChunks.containsKey(chapter)) {
                         chapter = "0" + chapter;
                     }
                 }
 
-                if (!mChunk.has(chapter)) {
+                if (!mChunks.containsKey(chapter)) {
                     addError(R.string.could_not_find_chapter, mChapter);
                     return false;
                 }
 
-                JSONArray versebreaks = mChunk.getJSONArray(chapter);
+                JSONArray versebreaks = mChunks.get(chapter);
                 String lastFirst = null;
                 for (int i = 0; i < versebreaks.length(); i++) {
                     String first = versebreaks.getString(i);
