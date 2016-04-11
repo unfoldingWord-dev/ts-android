@@ -22,11 +22,15 @@
         <!-- You can also set colorControlNormal, colorControlActivated
          colorControlHighlight, and colorSwitchThumbNormal. -->
         <item name="windowActionModeOverlay">true</item>
+
         <item name="android:popupMenuStyle">@style/UwPopupMenu</item>
     </style>
 
-    <style name ="UwPopupMenu" parent="Widget.AppCompat.Light.PopupMenu.Overflow">
-        <item name="android:popupBackground">@android:color/white</item>
+    <style name ="UwPopupMenu" parent="android:Widget.Holo.Light.PopupMenu">
+        <!-- version for pre-Lollipop - doesn't throw an error, but doesn't seem to do anything -->
+        <item name="overlapAnchor">true</item>
+        
+        <item name="android:popupBackground">@drawable/copy_abc_popup_background_mtrl_mult</item>
     </style>
 
 </resources>

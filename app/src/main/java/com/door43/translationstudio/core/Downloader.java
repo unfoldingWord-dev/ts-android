@@ -276,29 +276,6 @@ public class Downloader {
         return true;
     }
 
-    /**
-     * Downloads the chunks for the source translation from the server
-     * @param projectSlug
-     * @param targetIndex the index to which the chunks will be downloaded
-     * @return
-     */
-    public boolean downloadChunkMarkers(String projectSlug, Indexer targetIndex) {
-//        Resource resource = targetIndex.getResource(project);
-        String catalog = request("https://api.unfoldingword.org/bible/txt/1/" + projectSlug + "/chunks.json");
-        // TODO: 4/5/2016 once chunks are properly in the catalog we can use the code below
-//        if(resource != null && resource.getChunksCatalogUrl() != null
-//                && (resource.getChunksDateModified() < resource.getChunksServerDateModified()
-//                || resource.getChunksDateModified() == 0)) {
-//            String catalog = request(resource.getChunksCatalogUrl());
-            if(catalog != null) {
-                return targetIndex.indexChunkMarkers(projectSlug, catalog);
-            } else {
-                Logger.w(this.getClass().getName(), "Failed to fetch the catalog from " + catalog);
-            }
-//        }
-        return false;
-    }
-
     public boolean downloadImages(Library.OnProgressListener listener) {
         // TODO: 1/21/2016 we need to be sure to download images for the correct project. right now only obs has images
         // eventually the api will be updated so we can easily download the correct images.
