@@ -2183,7 +2183,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      */
     public ChunkMarker[] getChunkMarkers(SQLiteDatabase db, String projectSlug) {
         List<ChunkMarker> chunkMarkers = new ArrayList<>();
-        Cursor cursor = db.rawQuery("SELECT `cm`.`chapter_slug`, `cm`.`first_verse_slug` FROM `chunk_markers` AS `cm`"
+        Cursor cursor = db.rawQuery("SELECT `cm`.`chapter_slug`, `cm`.`first_verse_slug` FROM `chunk_marker` AS `cm`"
                 + " LEFT JOIN `project` AS `p` ON `p`.`id` = `cm`.`project_id`"
                 + " WHERE `p`.`slug`=?", new String[]{projectSlug});
         cursor.moveToFirst();

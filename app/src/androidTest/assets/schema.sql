@@ -38,6 +38,7 @@ CREATE TABLE `project` (
   UNIQUE (`slug`)
 );
 
+
 -- ---
 -- Table 'chunk_marker'
 -- ---
