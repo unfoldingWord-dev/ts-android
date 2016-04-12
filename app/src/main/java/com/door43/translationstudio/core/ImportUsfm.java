@@ -36,6 +36,8 @@ public class ImportUsfm {
     public static final String TAG = ImportUsfm.class.getSimpleName();
     public static final String BOOK_NAME_MARKER = "\\\\toc1\\s([^\\n]*)";
     private static final Pattern PATTERN_BOOK_NAME_MARKER = Pattern.compile(BOOK_NAME_MARKER);
+    public static final String ID_TAG = "\\\\id\\s([^\\n]*)";
+    private static final Pattern ID_TAG_MARKER = Pattern.compile(ID_TAG);
     public static final String BOOK_SHORT_NAME_MARKER = "\\\\toc3\\s([^\\n]*)";
     private static final Pattern PATTERN_BOOK_SHORT_NAME_MARKER = Pattern.compile(BOOK_SHORT_NAME_MARKER);
     public static final String SECTION_MARKER = "\\\\s5([^\\n]*)";
@@ -65,6 +67,9 @@ public class ImportUsfm {
     private Activity mContext;
     private boolean mSuccess;
     private ChunkMarker[] mMarkers;
+    private UpdateStatusListener mUpdateListener;
+    private int mCurrentChapter;
+    private int mChaperCount;
 
     public ImportUsfm(Activity context, TargetLanguage targetLanguage) {
         createTempFolders();
@@ -78,6 +83,40 @@ public class ImportUsfm {
         mContext = context;
         mSuccess = false;
         mMarkers = null;
+        mUpdateListener = null;
+        mCurrentChapter = 0;
+        mChaperCount= 1;
+    }
+
+    public void setListener(UpdateStatusListener listener) {
+        mUpdateListener = listener;
+    }
+
+    private void updateStatus(String text) {
+        int fileCount = mSourceFiles.size();
+        if(fileCount < 1) { fileCount = 1; }
+
+        float importAmountDone = (float) mCurrentBook / fileCount;
+        float bookAmountDone = (float) mCurrentChapter / (mChaperCount + 2);
+        float percentage = 100.0f * (importAmountDone + bookAmountDone / fileCount);
+        int percentDone = Math.round(percentage);
+
+        if(mUpdateListener != null) {
+            if(!isMissing(mBookShortName)) {
+                text = mBookShortName + " - " + text;
+            }
+            mUpdateListener.statusUpdate(text, percentDone);
+        }
+    }
+
+    private void updateStatus(int resource) {
+        String status = mContext.getResources().getString(resource);
+        updateStatus(status);
+    }
+
+    private void updateStatus(int resource, String data) {
+        String format = mContext.getResources().getString(resource);
+        updateStatus(String.format(format, data));
     }
 
     /**
@@ -208,6 +247,7 @@ public class ImportUsfm {
     public boolean importZipStream(InputStream usfmStream) {
         boolean successOverall = true;
         boolean success;
+        updateStatus(R.string.initializing_import);
         try {
             Zip.unzipFromStream(usfmStream, mTempSrce);
             File[] usfmFiles = mTempSrce.listFiles();
@@ -218,7 +258,10 @@ public class ImportUsfm {
             Logger.i(TAG, "found files: " + TextUtils.join("\n", mSourceFiles));
 
             for(mCurrentBook = 0; mCurrentBook < mSourceFiles.size(); mCurrentBook++) {
+                mCurrentChapter = 0;
                 File file = mSourceFiles.get(mCurrentBook);
+                String name = file.getName().toString();
+                updateStatus(R.string.found_book, name);
                 success = processBook( file, false);
                 if(!success) {
                     addError( "Could not parse " + file.toString());
@@ -236,6 +279,7 @@ public class ImportUsfm {
             successOverall = false;
         }
 
+        updateStatus(R.string.finished_loading);
         mSuccess = successOverall;
         return successOverall;
     }
@@ -247,6 +291,7 @@ public class ImportUsfm {
      */
     public boolean importFile(File file) {
         boolean success = true;
+        updateStatus(R.string.initializing_import);
         if(null == file) {
             addError(R.string.file_read_error);
             return false;
@@ -265,6 +310,7 @@ public class ImportUsfm {
             addError( R.string.file_read_error_detail, file.toString());
             success = false;
         }
+        updateStatus(R.string.finished_loading);
         mSuccess = success;
         return success;
     }
@@ -276,6 +322,7 @@ public class ImportUsfm {
      */
     public boolean importUri(Uri uri) {
         boolean success = true;
+        updateStatus(R.string.initializing_import);
         if(null == uri) {
             addError( R.string.file_read_error);
             return false;
@@ -298,6 +345,7 @@ public class ImportUsfm {
             addError( R.string.file_read_error_detail, path);
             success = false;
         }
+        updateStatus(R.string.finished_loading);
         mSuccess = success;
         return success;
     }
@@ -309,7 +357,7 @@ public class ImportUsfm {
      */
     public boolean importResourceFile(String fileName) {
         boolean success = true;
-
+        updateStatus(R.string.initializing_import);
         String ext = FilenameUtils.getExtension(fileName).toLowerCase();
         boolean zip = "zip".equals(ext);
 
@@ -325,6 +373,7 @@ public class ImportUsfm {
             Logger.e(TAG,"error reading " + fileName, e);
             success = false;
         }
+        updateStatus(R.string.finished_loading);
         mSuccess = success;
         return success;
     }
@@ -407,10 +456,15 @@ public class ImportUsfm {
     private boolean processBook(String book, boolean lastFile, String name) {
         boolean successOverall = true;
         boolean success;
+        mBookShortName = "";
         setBookName("", name);
         try {
-            mBookName = extractString(book, PATTERN_BOOK_NAME_MARKER);
-            mBookShortName = extractString(book, PATTERN_BOOK_SHORT_NAME_MARKER).toLowerCase();
+            mCurrentChapter = 0;
+            mChaperCount= 1;
+
+            extractBookID(book);
+
+            // TODO: 4/12/16 verify book
 
             if (null == mTargetLanguage) {
                 addError( R.string.missing_language);
@@ -418,9 +472,14 @@ public class ImportUsfm {
             }
 
             if (isMissing(mBookShortName)) {
+
+                // TODO: 4/12/16 prompt for book
+
                 addError( R.string.missing_book_short_name);
                 return false;
             }
+
+            mBookShortName = mBookShortName.toLowerCase();
 
             setBookName();
 
@@ -447,8 +506,6 @@ public class ImportUsfm {
 
                 addWarning( "No chunk list found for " + mBookShortName);
 
-                // TODO: 4/7/16 add prompting
-
                 if (!hasSections) {
                     addError( R.string.no_section_no_verse);
                     return false;
@@ -461,12 +518,15 @@ public class ImportUsfm {
             else { // has chunks
 
                 addChunks(mBookShortName, mMarkers);
+                mChaperCount = mChunks.size();
 
                 success = extractChaptersFromBook(book);
                 successOverall = successOverall && success;
             }
 
-            // TODO: 4/3/16 build tstudio package
+            mCurrentChapter = (mChaperCount + 1);
+            updateStatus(R.string.building_manifest);
+
             success = buildManifest();
             successOverall = successOverall && success;
 
@@ -483,6 +543,19 @@ public class ImportUsfm {
             return false;
         }
         return successOverall;
+    }
+
+    private void extractBookID(String book) {
+        mBookName = extractString(book, PATTERN_BOOK_NAME_MARKER);
+        mBookShortName = extractString(book, PATTERN_BOOK_SHORT_NAME_MARKER);
+
+        String idString = extractString(book, ID_TAG_MARKER);
+        if(null != idString) {
+            String[] tags = idString.split(" ");
+            if(tags.length > 0) {
+                mBookShortName = tags[0];
+            }
+        }
     }
 
     private void finishImport() {
@@ -580,6 +653,10 @@ public class ImportUsfm {
                     addError(R.string.could_not_find_chapter, mChapter);
                     return false;
                 }
+
+                mCurrentChapter = Integer.valueOf(mChapter);
+
+                updateStatus(R.string.processing_chapter, new Integer(mChaperCount - mCurrentChapter + 1).toString());
 
                 JSONArray versebreaks = mChunks.get(chapter);
                 String lastFirst = null;
@@ -708,16 +785,35 @@ public class ImportUsfm {
         Pattern pattern = PATTERN_CHAPTER_NUMBER_MARKER;
         Matcher matcher = pattern.matcher(text);
         int lastIndex = 0;
-        CharSequence section;
+        int length = text.length();
+        CharSequence chapter;
         mChapter = null;
         while(matcher.find()) {
-            section = text.subSequence(lastIndex, matcher.start()); // get section before this chapter marker
-            extractSectionsFromChapter(section);
+            chapter = text.subSequence(lastIndex, matcher.start()); // get section before this chapter marker
+            extractSectionsFromChapter(chapter);
             mChapter = matcher.group(1); // chapter number for next section
             lastIndex = matcher.end();
+            mCurrentChapter = Integer.valueOf(mChapter);
+
+            //estimate number of chapters - doesn't need to be exact
+            if(mCurrentChapter > 1) {
+                float percentIn = (float) lastIndex / length;
+                if (percentIn != 0.0f) {
+                    mChaperCount = Math.round((mCurrentChapter - 1) / percentIn);
+                    if (mChaperCount < 1) { // sanity checks
+                        mChaperCount = 1;
+                    } else if (mChaperCount > 250) {
+                        mChaperCount = 250;
+                    } else if (mChaperCount < mCurrentChapter) {
+                        mChaperCount = mCurrentChapter;
+                    }
+
+                    updateStatus(R.string.processing_chapter, new Integer(mChaperCount - mCurrentChapter + 1).toString());
+                }
+            }
         }
-        section = text.subSequence(lastIndex, text.length()); // get last section
-        extractSectionsFromChapter(section);
+        chapter = text.subSequence(lastIndex, text.length()); // get last section
+        extractSectionsFromChapter(chapter);
         return true;
     }
 
@@ -733,7 +829,9 @@ public class ImportUsfm {
             CharSequence section;
             while (matcher.find()) {
                 section = chapter.subSequence(lastIndex, matcher.start()); // get section before this chunk marker
-                processSection(section);
+                if(lastIndex > 0) { // ignore what's before first section
+                    processSection(section);
+                }
                 lastIndex = matcher.end();
             }
             section = chapter.subSequence(lastIndex, chapter.length()); // get last section
@@ -772,8 +870,8 @@ public class ImportUsfm {
             String foundItem = null;
             if(matcher.find()) {
                 foundItem = matcher.group(1);
+                return foundItem.trim();
             }
-            return foundItem.trim();
         }
 
         return null;
@@ -871,6 +969,10 @@ public class ImportUsfm {
 
     public interface OnFinishedListener {
         void onFinished(boolean success);
+    }
+
+    public interface UpdateStatusListener {
+        void statusUpdate(String textStatus, int percentStatus);
     }
 
     public interface OnLanguageSelectedListener {

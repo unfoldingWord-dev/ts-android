@@ -14,7 +14,8 @@
         android:layout_marginRight="@dimen/dialog_content_margin"
         android:layout_marginLeft="@dimen/dialog_content_margin"
         android:layout_marginTop="@dimen/dialog_content_margin"
-        android:layout_marginBottom="@dimen/dialog_content_margin">
+        android:layout_marginBottom="@dimen/dialog_content_margin"
+        android:layout_weight="0.0">
 
         <ImageView
             android:id="@+id/dialog_icon"
@@ -39,30 +40,42 @@
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:gravity="center"
         android:layout_marginBottom="@dimen/dialog_controls_margin"
         android:paddingRight="@dimen/dialog_content_margin"
-        android:id="@+id/content_layout">
+        android:id="@+id/content_layout"
+        android:layout_weight="1.0">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <ScrollView
+            android:orientation="horizontal"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/body"
-            android:layout_gravity="left|center_vertical"
-            android:textColor="@color/dark_secondary_text"
-            android:text="Here is an example content that is wider."
-            android:id="@+id/dialog_content"
-            android:gravity="left|center"
-            android:layout_marginLeft="@dimen/dialog_content_margin"
-            android:layout_marginRight="@dimen/dialog_content_margin" />
+            android:scrollbars="vertical"
+            android:fillViewport="true">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/body"
+                android:layout_gravity="left|center_vertical"
+                android:textColor="@color/dark_secondary_text"
+                android:text="Here is an example content that is wider."
+                android:id="@+id/dialog_content"
+                android:gravity="left|center"
+                android:layout_marginLeft="@dimen/dialog_content_margin"
+                android:layout_marginRight="@dimen/dialog_content_margin"
+                android:layout_weight="1.0" />
+
+        </ScrollView>
     </LinearLayout>
 
 
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="right">
+        android:layout_gravity="right"
+        android:layout_weight="0.0">
 
         <LinearLayout
             android:orientation="horizontal"

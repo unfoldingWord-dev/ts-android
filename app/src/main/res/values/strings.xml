@@ -689,5 +689,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="error_prefix">Error: %s</string>
     <string name="warning_prefix">Warning: %s</string>
     <string name="found_book">Found book: %s</string>
+    <string name="importing_file">Importing: %s</string>
     <string name="selected_language">Selected Language: %s</string>
+    <string name="initializing_import">Initializing Import</string>
+    <string name="finished_loading">Finished Loading Books</string>
+    <string name="processing_chapter">Processing Chapter: %s</string>
+    <string name="building_manifest">Building Manifest</string>
+    <string name="reading_usfm">Reading USFM</string>
+    <string name="importing_usfm">Importing USFM</string>
 </resources>

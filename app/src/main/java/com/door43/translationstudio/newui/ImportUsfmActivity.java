@@ -1,14 +1,16 @@
 package com.door43.translationstudio.newui;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.view.MenuItemCompat;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
-import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,6 +20,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.ImportUsfm;
 import com.door43.translationstudio.core.TargetLanguage;
+import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
@@ -25,6 +28,9 @@ import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.newui.newtranslation.ProjectListFragment;
 import com.door43.translationstudio.newui.newtranslation.TargetLanguageListFragment;
+import com.door43.util.FileUtilities;
+
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.Serializable;
@@ -42,6 +48,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
     public static final String TAG = ImportUsfmActivity.class.getSimpleName();
     private TargetLanguage mTargetLanguage;
+    private ProgressDialog mProgressDialog = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,8 +72,156 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         Bundle args = intent.getExtras();
 
         final ImportUsfm usfm = new ImportUsfm(this, mTargetLanguage);
-        boolean success = false;
+        processUsfmImportWithProgress(intent, args, usfm);
+    }
 
+    private void processUsfmImportWithProgress(final Intent intent, final Bundle args, final ImportUsfm usfm) {
+        final Handler hand = new Handler(Looper.getMainLooper());
+
+        mProgressDialog = new ProgressDialog(this);
+        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.setCanceledOnTouchOutside(false);
+        mProgressDialog.setTitle(R.string.reading_usfm);
+        mProgressDialog.setMessage("");
+        mProgressDialog.setMax(100);
+        mProgressDialog.show();
+
+        usfm.setListener(new ImportUsfm.UpdateStatusListener() {
+            @Override
+            public void statusUpdate(final String textStatus, final int percent) {
+                Logger.i(TAG,"Update " + textStatus + ", " + percent);
+                updateProcessUsfmProgress(textStatus, percent, hand);
+            }
+        });
+
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                boolean success = processUsfmImport( intent,  args,  usfm );
+                usfmImportFinished(hand, usfm);
+            }
+        };
+        thread.start();
+    }
+
+    private void usfmImportFinished(final Handler hand, final ImportUsfm usfm) {
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                mProgressDialog.hide();
+                usfm.showResults(new ImportUsfm.OnFinishedListener() {
+                    @Override
+                    public void onFinished(final boolean success) {
+                        if(success) { // if user is OK to continue
+                            mProgressDialog.show();
+                            mProgressDialog.setProgress(0);
+                            mProgressDialog.setTitle(R.string.reading_usfm);
+                            mProgressDialog.setMessage("");
+                            doImportingWithProgress(hand, usfm);
+                        } else {
+                            usfmImportDone(usfm);
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    private void usfmImportDone(ImportUsfm usfm) {
+        usfm.cleanup();
+        mProgressDialog.dismiss();
+        mProgressDialog = null;
+        finished();
+    }
+
+    private void doImportingWithProgress(final Handler hand, final ImportUsfm usfm) {
+
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                File[] imports = usfm.getImportProjects();
+                final Translator translator = AppContext.getTranslator();
+                int count = 0;
+                int size = imports.length;
+                try {
+                    for (File newDir : imports) {
+
+                        String filename = newDir.getName().toString();
+                        String format = getResources().getString(R.string.importing_file);
+                        float progress = 100f * count++ / (float) size;
+                        updateProcessUsfmProgress(String.format(format, filename), Math.round(progress), hand);
+
+                        TargetTranslation newTargetTranslation = TargetTranslation.open(newDir);
+                        if (newTargetTranslation != null) {
+                            // TRICKY: the correct id is pulled from the manifest to avoid propagating bad folder names
+                            String targetTranslationId = newTargetTranslation.getId();
+                            File localDir = new File(translator.getPath(), targetTranslationId);
+                            TargetTranslation localTargetTranslation = TargetTranslation.open(localDir);
+                            if (localTargetTranslation != null) {
+                                // commit local changes to history
+                                if (localTargetTranslation != null) {
+                                    localTargetTranslation.commitSync();
+                                }
+
+                                // merge translations
+                                try {
+                                    localTargetTranslation.merge(newDir);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    continue;
+                                }
+                            } else {
+                                // import new translation
+                                FileUtilities.safeDelete(localDir); // in case local was an invalid target translation
+                                FileUtils.moveDirectory(newDir, localDir);
+                            }
+                            // update the generator info. TRICKY: we re-open to get the updated manifest.
+                            TargetTranslation.updateGenerator(ImportUsfmActivity.this, TargetTranslation.open(localDir));
+                        }
+                    }
+
+                    updateProcessUsfmProgress("", 100, hand);
+
+                } catch (Exception e) {
+                    Logger.e(TAG, "Failed to import folder " + imports.toString());
+                }
+
+                hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        usfmImportDone(usfm);
+                    }
+                });
+            }
+        };
+        thread.start();
+    }
+
+    private void updateProcessUsfmProgress(final String textStatus, final int percent, Handler hand) {
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                if(mProgressDialog != null) {
+                    if (null != textStatus) {
+                        mProgressDialog.setMessage(textStatus);
+                    }
+
+                    int percentStatus = percent;
+                    if (percentStatus > 100) {
+                        percentStatus = 100;
+                    } else if (percentStatus < 0) {
+                        percentStatus = 0;
+                    }
+
+                    mProgressDialog.setProgress(percentStatus);
+                }
+            }
+        });
+    }
+
+    private boolean processUsfmImport(Intent intent, Bundle args, final ImportUsfm usfm) {
+        boolean success = false;
         if(args.containsKey(EXTRA_USFM_IMPORT_URI)) {
             String uriStr = args.getString(EXTRA_USFM_IMPORT_URI);
             Uri uri = intent.getData();
@@ -80,22 +235,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
             success = usfm.importResourceFile(importResourceFile);
         }
 
-        usfm.showResults(new ImportUsfm.OnFinishedListener() {
-            @Override
-            public void onFinished(boolean success) {
-                if(success) { // if user is OK to continue
-                    File[] imports = usfm.getImportProjects();
-                    final Translator translator = AppContext.getTranslator();
-                    try {
-                        final String[] targetTranslationSlugs = translator.loadTranslationFolders(imports);
-                    } catch (Exception e) {
-                        Logger.e(TAG, "Failed to import folder " + imports.toString());
-                    }
-                }
-                usfm.cleanup();
-                finished();
-            }
-        });
+        return success;
     }
 
 
