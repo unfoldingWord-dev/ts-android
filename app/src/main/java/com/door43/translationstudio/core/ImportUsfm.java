@@ -517,6 +517,7 @@ public class ImportUsfm {
             }
             else { // has chunks
 
+                mChunks = new HashMap<>(); // clear old map
                 addChunks(mBookShortName, mMarkers);
                 mChaperCount = mChunks.size();
 
@@ -726,7 +727,15 @@ public class ImportUsfm {
                 }
 
                 String verse = matcher.group(1);
-                currentVerse = Integer.valueOf(verse);
+                try {
+                    currentVerse = Integer.valueOf(verse);
+                } catch (NumberFormatException e) { // might be a range in format 12-13
+                    String[] range = verse.split("-");
+                    if(range.length != 2) {
+                        return false;
+                    }
+                    currentVerse = Integer.valueOf(range[0]);
+                }
                 lastIndex = matcher.start();
             }
 
