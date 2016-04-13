@@ -23,16 +23,13 @@ import com.door43.util.StringUtilities;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
-import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 /**
@@ -57,6 +54,7 @@ public class AppContext {
     public static final String EXTRA_CHAPTER_ID = "extra_chapter_id";
     public static final String EXTRA_FRAME_ID = "extra_frame_id";
     public static final String EXTRA_VIEW_MODE = "extra_view_mode_id";
+    private static final String PROFILE = "profile";
 
     public static final String TAG = AppContext.class.toString();
     private static MainApplication mContext;
@@ -524,101 +522,34 @@ public class AppContext {
     }
 
     /**
-     * Returns information about the user of the application.
-     *
-     * <p>This is a readable collection of information, not a "live-updating" reference to storage.
-     * To change the profiles in use, call {@link #setProfiles(List)}</p>.
-     *
-     * @return A list of {@link Profile} objects; or an empty list if not set, or on error.
-     */
-    @Nullable
-    public static List<Profile> getProfiles() {
-        try {
-            String profilesEncoded = getUserString(SettingsActivity.KEY_PREF_PROFILES, null);
-            if (profilesEncoded != null) {
-                JSONArray profilesJson = new JSONArray(profilesEncoded);
-                return Profile.decodeJsonArray(profilesJson);
-            }
-        }
-        catch (Exception e) {
-            // There are lots of ways for this to fail, none of which are particularly serious.
-            // In this case, log the result but allow the data to be lost.
-            Logger.e(TAG, "getProfiles: Failed to parse profile data", e);
-        }
-        return new ArrayList<>();
-    }
-
-    /**
-     * Returns the currently opened user profile
+     * Returns the current user profile
      * @return
      */
     public static Profile getProfile() {
-        // TODO: 2/19/2016 we need to fix profiles
-        List<Profile> profiles = getProfiles();
-        if(profiles.size() > 0) {
-            return getProfiles().get(0);
-        } else {
-            return new Profile("test", "test", "test");
-        }
-    }
+        String profileString = getUserString(PROFILE, null);
 
-    /**
-     * Set the user's default profile, used to populate translator information when creating a new
-     * translation.
-     *
-     * <p>This persists the information but does not retain a reference to it. Changes to the
-     * argument made after this call are not persisted.</p>
-     *
-     * @param profiles A list of profile objects.
-     */
-    public static void setProfiles(List<Profile> profiles) {
         try {
-            String profilesJson = Profile.encodeJsonArray(profiles).toString();
-            setUserString(SettingsActivity.KEY_PREF_PROFILES, profilesJson);
+            if (profileString != null) {
+                return Profile.fromJSON(new JSONObject(profileString));
+            }
+        } catch (Exception e) {
+            Logger.e(TAG, "Failed to parse the profile", e);
         }
-        catch (JSONException e) {
-            // Failures to save are not particularly severe. Log and continue.
-            Logger.e(TAG, "setProfiles: Failed to encode profile data", e);
-        }
+        return null;
     }
 
     /**
-     * Returns a human-readable string summarizing the user's profile settings, suitable for
-     * display as a single string.
+     * Stores the user profile
      *
-     * @return A string, or the empty string if nothing is set
+     * @param profile
      */
-    public static String getProfileSummary() {
-        List<Profile> profiles = getProfiles();
-
-        StringBuilder all = new StringBuilder();
-        StringBuilder single = new StringBuilder();
-
-        for (Profile profile : profiles) {
-            // Prepare a summary of the profile we're examining right now.
-            String[] fields = { profile.name, profile.email, profile.phone };
-            for (String field : fields) {
-                if (field == null || field.isEmpty()) {
-                    continue;
-                }
-
-                if (single.length() > 0) {
-                    single.append(", ");
-                }
-
-                single.append(field);
-            }
-
-            // Add the single-profile summary to the overall summary. But only include it if
-            // this profile has a summary (i.e., prefer "foo, bar; baz" to "foo, bar; ; baz").
-            if (all.length() > 0 && single.length() > 0) {
-                all.append("; ");
-            }
-            all.append(single);
-            single.delete(0, single.length());
+    public static void setProfile(Profile profile) {
+        try {
+            String profileString = profile.toJSON().toString();
+            setUserString(PROFILE, profileString);
+        } catch (JSONException e) {
+            Logger.e(TAG, "setProfile: Failed to encode profile data", e);
         }
-
-        return all.toString();
     }
 
     /**

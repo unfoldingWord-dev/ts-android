@@ -2,7 +2,6 @@ package com.door43.translationstudio;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
 import android.view.View;
 import android.widget.EditText;
 
@@ -36,15 +35,13 @@ public class ProfileActivity extends BaseActivity {
         findViewById(R.id.ok_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final Profile profile = new Profile(mName.getText().toString());
-                if (profile.isValid()) {
+                final Profile profile = new Profile(mName.getText().toString().trim());
+                if (!profile.getFullName().equals("")) {
                     // confirm
                     showPrivacyNotice(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            List<Profile> profiles = new ArrayList<>();
-                            profiles.add(profile);
-                            AppContext.setProfiles(profiles);
+                            AppContext.setProfile(profile);
                             openMainActivity();
                         }
                     });
@@ -68,8 +65,7 @@ public class ProfileActivity extends BaseActivity {
     public void onResume() {
         super.onResume();
 
-        List<Profile> profiles = AppContext.getProfiles();
-        if (profiles != null && profiles.size() > 0) {
+        if (AppContext.getProfile() != null) {
             openMainActivity();
         }
     }
