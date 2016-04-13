@@ -49,6 +49,8 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
     public static final String TAG = ImportUsfmActivity.class.getSimpleName();
     private TargetLanguage mTargetLanguage;
     private ProgressDialog mProgressDialog = null;
+    private Thread mUsfmImportThread = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,14 +97,100 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
             }
         });
 
-        Thread thread = new Thread() {
+        mUsfmImportThread = new Thread() {
             @Override
             public void run() {
                 boolean success = processUsfmImport( intent,  args,  usfm );
-                usfmImportFinished(hand, usfm);
+
+                ImportUsfm.MissingNameItem[] missingNameItems = usfm.getMissingNames();
+                if(missingNameItems.length > 0) { // if we need valid names
+                    handleMissingNames(missingNameItems, hand, usfm);
+                } else {
+                    usfmImportFinished(hand, usfm);
+                }
             }
         };
-        thread.start();
+        mUsfmImportThread.start();
+    }
+
+    private void handleMissingNames(final ImportUsfm.MissingNameItem[] missingNameItems, final Handler hand, final ImportUsfm usfm) {
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+
+                final Counter count = new Counter();
+                count.setCount(missingNameItems.length);
+
+                for (ImportUsfm.MissingNameItem missingNameItem : missingNameItems) {
+                    usfmPromptForName(hand, usfm, missingNameItem, new OnPromptFinishedListener() {
+
+                        @Override
+                        public void onFinished(boolean success, String name) {
+                            count.decrement();
+                            if(success) {
+                                // TODO: 4/13/16 process file with new name
+                            }
+                            if(count.isEmpty()) {
+                                usfmImportFinished(hand, usfm);
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    class Counter {
+        private int counter;
+
+        Counter() {
+            counter = 0;
+        }
+
+        public boolean isEmpty() {
+            return counter == 0;
+        }
+
+        public void setCount(int count) {
+            counter = count;
+        }
+
+        public void increment() {
+            counter++;
+        }
+
+        public void decrement() {
+            if(counter > 0) {
+                counter--;
+            }
+        }
+    }
+
+    private void usfmPromptForName(final Handler hand, final ImportUsfm usfm, final ImportUsfm.MissingNameItem item, final OnPromptFinishedListener listener) {
+
+        String message = "";
+        if(item.invalidName != null) {
+            message = "'" + item.description + "'\nhas invalid book name: '" + item.invalidName + "'\nEnter valid name:";
+        } else {
+            message = "'" + item.description + "'\nis missing book name" + "\nEnter valid name:";
+        }
+        final CustomAlertDialog dlg = CustomAlertDialog.Create(ImportUsfmActivity.this);
+        dlg.setTitle(R.string.title_activity_import_usfm)
+                .setMessage(message)
+                .addInputPrompt(true)
+                .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        listener.onFinished(true,dlg.getEnteredText().toString());
+                    }
+                })
+                .setNegativeButton(R.string.menu_cancel, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        listener.onFinished(false,"");
+                    }
+                })
+                .show("getName");
     }
 
     private void usfmImportFinished(final Handler hand, final ImportUsfm usfm) {
@@ -225,14 +313,14 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         if(args.containsKey(EXTRA_USFM_IMPORT_URI)) {
             String uriStr = args.getString(EXTRA_USFM_IMPORT_URI);
             Uri uri = intent.getData();
-            success = usfm.importUri( uri);
+            success = usfm.readUri( uri);
         } else if(args.containsKey(EXTRA_USFM_IMPORT_FILE)) {
             Serializable serial = args.getSerializable(EXTRA_USFM_IMPORT_FILE);
             File file = (File) serial;
-            success = usfm.importFile( file);
+            success = usfm.readFile( file);
         } else if(args.containsKey(EXTRA_USFM_IMPORT_RESOURCE_FILE)) {
             String importResourceFile = args.getString(EXTRA_USFM_IMPORT_RESOURCE_FILE);
-            success = usfm.importResourceFile(importResourceFile);
+            success = usfm.readResourceFile(importResourceFile);
         }
 
         return success;
@@ -363,5 +451,9 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
     public interface OnFinishedListener {
         void onFinished(boolean success);
+    }
+
+    public interface OnPromptFinishedListener {
+        void onFinished(boolean success, String name);
     }
 }

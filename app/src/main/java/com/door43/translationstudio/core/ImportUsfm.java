@@ -70,6 +70,8 @@ public class ImportUsfm {
     private UpdateStatusListener mUpdateListener;
     private int mCurrentChapter;
     private int mChaperCount;
+    private List<MissingNameItem> mMissingNames;
+
 
     public ImportUsfm(Activity context, TargetLanguage targetLanguage) {
         createTempFolders();
@@ -84,8 +86,17 @@ public class ImportUsfm {
         mSuccess = false;
         mMarkers = null;
         mUpdateListener = null;
+        mMissingNames = new ArrayList<>();
         mCurrentChapter = 0;
         mChaperCount= 1;
+    }
+
+    public MissingNameItem[] getMissingNames() {
+        return mMissingNames.toArray(new MissingNameItem[mMissingNames.size()]);
+    }
+
+    public void addMissingName(String description, String invalidName, String contents) {
+        mMissingNames.add(new MissingNameItem( description, invalidName, contents));
     }
 
     public void setListener(UpdateStatusListener listener) {
@@ -121,7 +132,6 @@ public class ImportUsfm {
 
     /**
      * get error list
-     * @return
      */
     public void showResults(final OnFinishedListener listener) {
         normalizeBookQueue();
@@ -244,7 +254,7 @@ public class ImportUsfm {
      * @param usfmStream
      * @return
      */
-    public boolean importZipStream(InputStream usfmStream) {
+    public boolean readZipStream(InputStream usfmStream) {
         boolean successOverall = true;
         boolean success;
         updateStatus(R.string.initializing_import);
@@ -289,7 +299,7 @@ public class ImportUsfm {
      * @param file
      * @return
      */
-    public boolean importFile(File file) {
+    public boolean readFile(File file) {
         boolean success = true;
         updateStatus(R.string.initializing_import);
         if(null == file) {
@@ -304,7 +314,7 @@ public class ImportUsfm {
                 success = processBook( file, true);
             } else {
                 InputStream usfmStream = new FileInputStream(file);
-                success = importZipStream( usfmStream);
+                success = readZipStream( usfmStream);
             }
         } catch (Exception e) {
             addError( R.string.file_read_error_detail, file.toString());
@@ -320,7 +330,7 @@ public class ImportUsfm {
      * @param uri
      * @return
      */
-    public boolean importUri(Uri uri) {
+    public boolean readUri(Uri uri) {
         boolean success = true;
         updateStatus(R.string.initializing_import);
         if(null == uri) {
@@ -339,7 +349,7 @@ public class ImportUsfm {
                 String text = IOUtils.toString(usfmStream, "UTF-8");
                 success = processBook( text, true, uri.toString());
             } else {
-                success = importZipStream( usfmStream);
+                success = readZipStream( usfmStream);
             }
         } catch (Exception e) {
             addError( R.string.file_read_error_detail, path);
@@ -355,7 +365,7 @@ public class ImportUsfm {
      * @param fileName
      * @return
      */
-    public boolean importResourceFile(String fileName) {
+    public boolean readResourceFile(String fileName) {
         boolean success = true;
         updateStatus(R.string.initializing_import);
         String ext = FilenameUtils.getExtension(fileName).toLowerCase();
@@ -365,9 +375,9 @@ public class ImportUsfm {
             InputStream usfmStream = mContext.getAssets().open(fileName);
             if(!zip) {
                 String text = IOUtils.toString(usfmStream, "UTF-8");
-                success = processBook( text, true, fileName.toString());
+                success = processBook( text, true, fileName);
             } else {
-                success = importZipStream( usfmStream);
+                success = readZipStream( usfmStream);
             }
         } catch (Exception e) {
             Logger.e(TAG,"error reading " + fileName, e);
@@ -448,12 +458,11 @@ public class ImportUsfm {
         return success;
     }
 
-    /**
-     * process single document and create a project
-     * @param book
-     * @return
-     */
     private boolean processBook(String book, boolean lastFile, String name) {
+        return processBook( book, lastFile, name, true, null);
+    }
+
+    private boolean processBook(String book, boolean lastFile, String name, boolean promptForName, String useName) {
         boolean successOverall = true;
         boolean success;
         mBookShortName = "";
@@ -471,12 +480,14 @@ public class ImportUsfm {
                 return false;
             }
 
+            if(useName != null) {
+                mBookShortName = useName;
+            }
+
             if (isMissing(mBookShortName)) {
-
-                // TODO: 4/12/16 prompt for book
-
                 addError( R.string.missing_book_short_name);
-                return false;
+                addMissingName(name, null, book);
+                return promptForName;
             }
 
             mBookShortName = mBookShortName.toLowerCase();
@@ -502,18 +513,21 @@ public class ImportUsfm {
                 return false;
             }
 
-            if (!haveChunksList) { // no chunk list, so use sections
-
+            if (!haveChunksList) { // no chunk list
                 addWarning( "No chunk list found for " + mBookShortName);
+                addMissingName(mBookName, mBookShortName, book);
+                return promptForName;
 
-                if (!hasSections) {
-                    addError( R.string.no_section_no_verse);
-                    return false;
-                }
+                //removed processing by sections
 
-                addWarning( "Using sections");
-                success = extractChaptersFromDocument(book);
-                successOverall = successOverall && success;
+//                if (!hasSections) {
+//                    addError( R.string.no_section_no_verse);
+//                    return false;
+//                }
+//
+//                addWarning( "Using sections");
+//                success = extractChaptersFromDocument(book);
+//                successOverall = successOverall && success;
             }
             else { // has chunks
 
@@ -984,7 +998,15 @@ public class ImportUsfm {
         void statusUpdate(String textStatus, int percentStatus);
     }
 
-    public interface OnLanguageSelectedListener {
-        void onFinished(boolean success, TargetLanguage targetLanguage);
+    public class MissingNameItem {
+        public String description;
+        public String invalidName;
+        public String contents;
+
+        public MissingNameItem(String description, String invalidName, String contents) {
+            this.description = description;
+            this.invalidName = invalidName;
+            this.contents = contents;
+        }
     }
 }
