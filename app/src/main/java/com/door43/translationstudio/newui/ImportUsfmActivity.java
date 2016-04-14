@@ -50,6 +50,10 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
     private TargetLanguage mTargetLanguage;
     private ProgressDialog mProgressDialog = null;
     private Thread mUsfmImportThread = null;
+    private Counter mCount;
+    private ImportUsfm.MissingNameItem[] mMissingNameItems;
+    private ImportUsfm mUsfm;
+    private Handler mHand;
 
 
     @Override
@@ -73,12 +77,12 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         Intent intent = getIntent();
         Bundle args = intent.getExtras();
 
-        final ImportUsfm usfm = new ImportUsfm(this, mTargetLanguage);
-        processUsfmImportWithProgress(intent, args, usfm);
+        mUsfm = new ImportUsfm(this, mTargetLanguage);
+        processUsfmImportWithProgress(intent, args);
     }
 
-    private void processUsfmImportWithProgress(final Intent intent, final Bundle args, final ImportUsfm usfm) {
-        final Handler hand = new Handler(Looper.getMainLooper());
+    private void processUsfmImportWithProgress(final Intent intent, final Bundle args) {
+        mHand = new Handler(Looper.getMainLooper());
 
         mProgressDialog = new ProgressDialog(this);
         mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
@@ -89,26 +93,26 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         mProgressDialog.setMax(100);
         mProgressDialog.show();
 
-        usfm.setListener(new ImportUsfm.UpdateStatusListener() {
+        mUsfm.setListener(new ImportUsfm.UpdateStatusListener() {
             @Override
             public void statusUpdate(final String textStatus, final int percent) {
                 Logger.i(TAG,"Update " + textStatus + ", " + percent);
-                updateProcessUsfmProgress(textStatus, percent, hand);
+                updateProcessUsfmProgress(textStatus, percent);
             }
         });
 
         mUsfmImportThread = new Thread() {
             @Override
             public void run() {
-                boolean success = processUsfmImport( intent,  args,  usfm );
+                boolean success = processUsfmImport( intent,  args );
 
-                ImportUsfm.MissingNameItem[] missingNameItems = usfm.getMissingNames();
-                if(missingNameItems.length > 0) { // if we need valid names
-                    final Counter count = new Counter();
-                    count.setCount(missingNameItems.length);
-                    usfmPromptForNextName(hand, usfm, missingNameItems, count);
+                mMissingNameItems = mUsfm.getMissingNames();
+                if(mMissingNameItems.length > 0) { // if we need valid names
+                    mCount = new Counter();
+                    mCount.setCount(mMissingNameItems.length);
+                    usfmPromptForNextName();
                 } else {
-                    usfmImportFinished(hand, usfm);
+                    usfmImportFinished();
                 }
             }
         };
@@ -142,70 +146,74 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         }
     }
 
-    private void usfmPromptForNextName(final Handler hand, final ImportUsfm usfm, final ImportUsfm.MissingNameItem[] missingNameItems, final Counter count) {
+    private void usfmPromptForNextName() {
 
-        if(count.isEmpty()) {
-            usfmImportFinished(hand, usfm);
-            return;
-        }
-
-        hand.post(new Runnable() {
-            @Override
-            public void run() {
-
-                usfmPromptForName(count, missingNameItems, usfm, hand);
+        if(mCount != null) {
+            if (mCount.isEmpty()) {
+                usfmImportFinished();
+                return;
             }
-        });
-    }
 
-    private void usfmPromptForName(final Counter count, final ImportUsfm.MissingNameItem[] missingNameItems, final ImportUsfm usfm, final Handler hand) {
-        int i = count.decrement();
-        final ImportUsfm.MissingNameItem item = missingNameItems[i];
+            mHand.post(new Runnable() {
+                @Override
+                public void run() {
 
-        String message = "";
-        if(item.invalidName != null) {
-            message = "'" + item.description + "'\nhas invalid book name: '" + item.invalidName + "'\nEnter valid name:";
-        } else {
-            message = "'" + item.description + "'\nis missing book name" + "\nEnter valid name:";
+                    usfmPromptForName();
+                }
+            });
         }
-        final CustomAlertDialog dlg = CustomAlertDialog.Create(ImportUsfmActivity.this);
-        dlg.setTitle(R.string.title_activity_import_usfm)
-                .setMessage(message)
-                .addInputPrompt(true)
-                .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        String book = dlg.getEnteredText().toString();
-                        usfmProcessBook(item, book, usfm, hand, missingNameItems, count);
-                    }
-                })
-                .setNegativeButton(R.string.menu_cancel, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        usfmPromptForNextName(hand, usfm, missingNameItems, count);
-                    }
-                })
-                .show("getName");
     }
 
-    private void usfmProcessBook(final ImportUsfm.MissingNameItem item, final String book, final ImportUsfm usfm, final Handler hand, final ImportUsfm.MissingNameItem[] missingNameItems, final Counter count) {
+    private void usfmPromptForName() {
+        if(mCount != null) {
+            int i = mCount.decrement();
+            final ImportUsfm.MissingNameItem item = mMissingNameItems[i];
+
+            String message = "";
+            if (item.invalidName != null) {
+                message = "'" + item.description + "'\nhas invalid book name: '" + item.invalidName + "'\nEnter valid name:";
+            } else {
+                message = "'" + item.description + "'\nis missing book name" + "\nEnter valid name:";
+            }
+            final CustomAlertDialog dlg = CustomAlertDialog.Create(ImportUsfmActivity.this);
+            dlg.setTitle(R.string.title_activity_import_usfm)
+                    .setMessage(message)
+                    .addInputPrompt(true)
+                    .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            String book = dlg.getEnteredText().toString();
+                            usfmProcessBook(item, book);
+                        }
+                    })
+                    .setNegativeButton(R.string.menu_cancel, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            usfmPromptForNextName();
+                        }
+                    })
+                    .show("getName");
+        }
+    }
+
+    private void usfmProcessBook(final ImportUsfm.MissingNameItem item, final String book) {
         Thread thread = new Thread() {
             @Override
             public void run() {
-                boolean success2 = usfm.readText(item.contents, item.description, false, book);
+                boolean success2 = mUsfm.readText(item.contents, item.description, false, book);
                 Logger.i(TAG, book + " success = " + success2);
-                usfmPromptForNextName(hand, usfm, missingNameItems, count);
+                usfmPromptForNextName();
             }
         };
         thread.start();
     }
 
-    private void usfmImportFinished(final Handler hand, final ImportUsfm usfm) {
-        hand.post(new Runnable() {
+    private void usfmImportFinished() {
+        mHand.post(new Runnable() {
             @Override
             public void run() {
                 mProgressDialog.hide();
-                usfm.showResults(new ImportUsfm.OnFinishedListener() {
+                mUsfm.showResults(new ImportUsfm.OnFinishedListener() {
                     @Override
                     public void onFinished(final boolean success) {
                         if(success) { // if user is OK to continue
@@ -213,9 +221,9 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                             mProgressDialog.setProgress(0);
                             mProgressDialog.setTitle(R.string.reading_usfm);
                             mProgressDialog.setMessage("");
-                            doImportingWithProgress(hand, usfm);
+                            doImportingWithProgress();
                         } else {
-                            usfmImportDone(usfm);
+                            usfmImportDone();
                         }
                     }
                 });
@@ -223,19 +231,19 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         });
     }
 
-    private void usfmImportDone(ImportUsfm usfm) {
-        usfm.cleanup();
+    private void usfmImportDone() {
+        mUsfm.cleanup();
         mProgressDialog.dismiss();
         mProgressDialog = null;
         finished();
     }
 
-    private void doImportingWithProgress(final Handler hand, final ImportUsfm usfm) {
+    private void doImportingWithProgress() {
 
         Thread thread = new Thread() {
             @Override
             public void run() {
-                File[] imports = usfm.getImportProjects();
+                File[] imports = mUsfm.getImportProjects();
                 final Translator translator = AppContext.getTranslator();
                 int count = 0;
                 int size = imports.length;
@@ -245,7 +253,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                         String filename = newDir.getName().toString();
                         String format = getResources().getString(R.string.importing_file);
                         float progress = 100f * count++ / (float) size;
-                        updateProcessUsfmProgress(String.format(format, filename), Math.round(progress), hand);
+                        updateProcessUsfmProgress(String.format(format, filename), Math.round(progress));
 
                         TargetTranslation newTargetTranslation = TargetTranslation.open(newDir);
                         if (newTargetTranslation != null) {
@@ -276,16 +284,16 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                         }
                     }
 
-                    updateProcessUsfmProgress("", 100, hand);
+                    updateProcessUsfmProgress("", 100);
 
                 } catch (Exception e) {
                     Logger.e(TAG, "Failed to import folder " + imports.toString());
                 }
 
-                hand.post(new Runnable() {
+                mHand.post(new Runnable() {
                     @Override
                     public void run() {
-                        usfmImportDone(usfm);
+                        usfmImportDone();
                     }
                 });
             }
@@ -293,41 +301,43 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         thread.start();
     }
 
-    private void updateProcessUsfmProgress(final String textStatus, final int percent, Handler hand) {
-        hand.post(new Runnable() {
-            @Override
-            public void run() {
-                if(mProgressDialog != null) {
-                    if (null != textStatus) {
-                        mProgressDialog.setMessage(textStatus);
-                    }
+    private void updateProcessUsfmProgress(final String textStatus, final int percent) {
+        if(mHand != null) {
+            mHand.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (mProgressDialog != null) {
+                        if (null != textStatus) {
+                            mProgressDialog.setMessage(textStatus);
+                        }
 
-                    int percentStatus = percent;
-                    if (percentStatus > 100) {
-                        percentStatus = 100;
-                    } else if (percentStatus < 0) {
-                        percentStatus = 0;
-                    }
+                        int percentStatus = percent;
+                        if (percentStatus > 100) {
+                            percentStatus = 100;
+                        } else if (percentStatus < 0) {
+                            percentStatus = 0;
+                        }
 
-                    mProgressDialog.setProgress(percentStatus);
+                        mProgressDialog.setProgress(percentStatus);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
-    private boolean processUsfmImport(Intent intent, Bundle args, final ImportUsfm usfm) {
+    private boolean processUsfmImport(Intent intent, Bundle args) {
         boolean success = false;
         if(args.containsKey(EXTRA_USFM_IMPORT_URI)) {
             String uriStr = args.getString(EXTRA_USFM_IMPORT_URI);
             Uri uri = intent.getData();
-            success = usfm.readUri( uri);
+            success = mUsfm.readUri( uri);
         } else if(args.containsKey(EXTRA_USFM_IMPORT_FILE)) {
             Serializable serial = args.getSerializable(EXTRA_USFM_IMPORT_FILE);
             File file = (File) serial;
-            success = usfm.readFile( file);
+            success = mUsfm.readFile( file);
         } else if(args.containsKey(EXTRA_USFM_IMPORT_RESOURCE_FILE)) {
             String importResourceFile = args.getString(EXTRA_USFM_IMPORT_RESOURCE_FILE);
-            success = usfm.readResourceFile(importResourceFile);
+            success = mUsfm.readResourceFile(importResourceFile);
         }
 
         return success;
