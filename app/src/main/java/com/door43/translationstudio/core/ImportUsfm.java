@@ -19,6 +19,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -66,37 +67,142 @@ public class ImportUsfm {
     private TargetLanguage mTargetLanguage;
     private Activity mContext;
     private boolean mSuccess;
-    private ChunkMarker[] mMarkers;
     private UpdateStatusListener mUpdateListener;
     private int mCurrentChapter;
     private int mChaperCount;
     private List<MissingNameItem> mMissingNames;
 
-
     public ImportUsfm(Activity context, TargetLanguage targetLanguage) {
+        mTempDir = null;
+        mTempOutput = null;
+        mTempDest = null;
+        mTempSrce = null;
+        mProjectFolder = null;
+
         createTempFolders();
+
+        mUpdateListener = null;
+        mContext = context;
+        mChunks = null;
+
         mSourceFiles = new ArrayList<>();
         mImportProjects = new ArrayList<>();
         mErrors = new ArrayList<>();
         mFoundBooks = new ArrayList<>();
-        mChunks = new HashMap<>();
         mTargetLanguage = targetLanguage;
         mCurrentBook = 0;
-        mContext = context;
+
         mSuccess = false;
-        mMarkers = null;
-        mUpdateListener = null;
         mMissingNames = new ArrayList<>();
         mCurrentChapter = 0;
-        mChaperCount= 1;
+        mChaperCount = 1;
+
+        mBookName = null;
+        mBookShortName = null;
+        mChapter = null;
     }
+
+    private ImportUsfm(Activity context, File mTempDir, File mTempOutput, File mTempDest,
+                       File mTempSrce, File mProjectFolder, String mChapter, List<File> mSourceFiles,
+                       List<File> mImportProjects, List<String> mErrors, List<String> mFoundBooks,
+                       int mCurrentBook, String mBookName, String mBookShortName, TargetLanguage mTargetLanguage,
+                       boolean mSuccess, int mCurrentChapter, int mChaperCount, List<MissingNameItem> mMissingNames) {
+        this.mUpdateListener = null;
+        this.mContext = context;
+        this.mChunks = null;
+
+        this.mTempDir = mTempDir;
+        this.mTempOutput = mTempOutput;
+        this.mTempDest = mTempDest;
+        this.mTempSrce = mTempSrce;
+        this.mProjectFolder = mProjectFolder;
+        this.mChapter = mChapter;
+        this.mSourceFiles = mSourceFiles;
+        this.mImportProjects = mImportProjects;
+        this.mErrors = mErrors;
+        this.mFoundBooks = mFoundBooks;
+        this.mCurrentBook = mCurrentBook;
+        this.mBookName = mBookName;
+        this.mBookShortName = mBookShortName;
+        this.mTargetLanguage = mTargetLanguage;
+        this.mSuccess = mSuccess;
+        this.mCurrentChapter = mCurrentChapter;
+        this.mChaperCount = mChaperCount;
+        this.mMissingNames = mMissingNames;
+    }
+
+    public JSONObject toJson() {
+        try {
+            JSONObject json = new JSONObject();
+            json.putOpt("mTempDir", mTempDir);
+            json.putOpt("mTempOutput", mTempOutput);
+            json.putOpt("mTempDest", mTempDest);
+            json.putOpt("mTempSrce", mTempSrce);
+            json.putOpt("mProjectFolder", mProjectFolder);
+            json.putOpt("mSourceFiles", toJsonFileArray(mSourceFiles));
+            json.putOpt("mImportProjects", toJsonFileArray(mImportProjects));
+            json.putOpt("mErrors", toJsonStringArray(mErrors));
+            json.putOpt("mFoundBooks", toJsonStringArray(mFoundBooks));
+            json.putOpt("mTargetLanguage", mTargetLanguage.toApiFormatJson());
+            json.putOpt("mCurrentBook", mCurrentBook);
+            json.putOpt("mSuccess", mSuccess);
+            json.putOpt("mMissingNames", MissingNameItem.toJsonArray(mMissingNames));
+            json.putOpt("mCurrentChapter", mCurrentChapter);
+            json.putOpt("mChaperCount", mChaperCount);
+            json.putOpt("mBookName", mBookName);
+            json.putOpt("mBookShortName", mBookShortName);
+            json.putOpt("mChapter", mChapter);
+
+            return json;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public static ImportUsfm generate(Activity context, String jsonStr) {
+        try {
+            JSONObject jsonObject = new JSONObject(jsonStr);
+            return ImportUsfm.generate(context, jsonObject);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public static ImportUsfm generate(Activity context, JSONObject json) {
+        try {
+            return new ImportUsfm(context,
+                    getOptFile(json,"mTempDir"),
+                    getOptFile(json,"mTempOutput"),
+                    getOptFile(json,"mTempDest"),
+                    getOptFile(json,"mTempSrce"),
+                    getOptFile(json,"mProjectFolder"),
+                    getOptString(json,"mChapter"),
+                    fromJsonArrayToFiles(getOptJsonArray(json,"mSourceFiles")),
+                    fromJsonArrayToFiles(getOptJsonArray(json,"mImportProjects")),
+                    fromJsonArrayToStrings(getOptJsonArray(json,"mErrors")),
+                    fromJsonArrayToStrings(getOptJsonArray(json,"mFoundBooks")),
+                    getOptInteger(json,"mCurrentBook"),
+                    getOptString(json,"mBookName"),
+                    getOptString(json,"mBookShortName"),
+                    TargetLanguage.generate(getOptJsonObject(json,"mTargetLanguage")),
+                    getOptBoolean(json,"mSuccess"),
+                    getOptInteger(json,"mCurrentChapter"),
+                    getOptInteger(json,"mChaperCount"),
+                    MissingNameItem.fromJsonArray(getOptJsonArray(json,"mMissingNames")));
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+
 
     public MissingNameItem[] getMissingNames() {
         return mMissingNames.toArray(new MissingNameItem[mMissingNames.size()]);
     }
 
     public void addMissingName(String description, String invalidName, String contents) {
-        mMissingNames.add(new MissingNameItem( description, invalidName, contents));
+        mMissingNames.add(new MissingNameItem(description, invalidName, contents));
     }
 
     public void setListener(UpdateStatusListener listener) {
@@ -105,15 +211,17 @@ public class ImportUsfm {
 
     private void updateStatus(String text) {
         int fileCount = mSourceFiles.size();
-        if(fileCount < 1) { fileCount = 1; }
+        if (fileCount < 1) {
+            fileCount = 1;
+        }
 
         float importAmountDone = (float) mCurrentBook / fileCount;
         float bookAmountDone = (float) mCurrentChapter / (mChaperCount + 2);
         float percentage = 100.0f * (importAmountDone + bookAmountDone / fileCount);
         int percentDone = Math.round(percentage);
 
-        if(mUpdateListener != null) {
-            if(!isMissing(mBookShortName)) {
+        if (mUpdateListener != null) {
+            if (!isMissing(mBookShortName)) {
                 text = mBookShortName + " - " + text;
             }
             mUpdateListener.statusUpdate(text, percentDone);
@@ -138,14 +246,14 @@ public class ImportUsfm {
         normalizeMessageQueue();
         String format = mContext.getResources().getString(R.string.found_book);
         String results = "";
-        for(int i = 0; i <= mCurrentBook; i++) {
+        for (int i = 0; i <= mCurrentBook; i++) {
             String bookName = String.format(format, mFoundBooks.get(i));
             String currentResults = "\n" + bookName + "\n" + mErrors.get(i);
             results = results + currentResults + "\n";
         }
 
         format = mContext.getResources().getString(R.string.selected_language);
-        String language = String.format(format,mTargetLanguage.getId() + " - " + mTargetLanguage.name);
+        String language = String.format(format, mTargetLanguage.getId() + " - " + mTargetLanguage.name);
         results = language + "\n" + results;
 
         CustomAlertDialog.Create(mContext)
@@ -182,46 +290,50 @@ public class ImportUsfm {
 
     /**
      * add error to error list
+     *
      * @param resource
      * @param error
      */
     private void addError(int resource, String error) {
         String format = mContext.getResources().getString(resource);
         String newError = String.format(format, error);
-        addError( newError);
+        addError(newError);
     }
 
     /**
      * add error to error list
+     *
      * @param resource
      */
     private void addError(int resource) {
         String newError = mContext.getResources().getString(resource);
-        addError( newError);
+        addError(newError);
     }
 
     /**
      * add error to error list
+     *
      * @param error
      */
     private void addError(String error) {
-        addMessage( error, true);
+        addMessage(error, true);
     }
 
     /**
      * add message to error list
+     *
      * @param message
      */
     private void addMessage(String message, boolean error) {
         normalizeMessageQueue();
         String errors = mErrors.get(mCurrentBook);
-        if(!errors.isEmpty()) {
+        if (!errors.isEmpty()) {
             errors += "\n";
         }
         String format = mContext.getResources().getString(error ? R.string.error_prefix : R.string.warning_prefix);
         String newError = String.format(format, message);
-        mErrors.set(mCurrentBook,  errors + newError);
-        if(error) {
+        mErrors.set(mCurrentBook, errors + newError);
+        if (error) {
             Logger.e(TAG, newError);
         } else {
             Logger.w(TAG, newError);
@@ -229,28 +341,30 @@ public class ImportUsfm {
     }
 
     private void normalizeMessageQueue() {
-        while(mErrors.size() <= mCurrentBook) {
+        while (mErrors.size() <= mCurrentBook) {
             mErrors.add("");
         }
     }
 
     private void normalizeBookQueue() {
-        while(mFoundBooks.size() <= mCurrentBook) {
+        while (mFoundBooks.size() <= mCurrentBook) {
             mFoundBooks.add("");
         }
     }
 
     /**
      * add warning to error list
+     *
      * @param error
      */
     private void addWarning(String error) {
-        addMessage( error, false);
+        addMessage(error, false);
     }
 
 
     /**
      * unpack and import documents from zip stream
+     *
      * @param usfmStream
      * @return
      */
@@ -267,14 +381,14 @@ public class ImportUsfm {
             }
             Logger.i(TAG, "found files: " + TextUtils.join("\n", mSourceFiles));
 
-            for(mCurrentBook = 0; mCurrentBook < mSourceFiles.size(); mCurrentBook++) {
+            for (mCurrentBook = 0; mCurrentBook < mSourceFiles.size(); mCurrentBook++) {
                 mCurrentChapter = 0;
                 File file = mSourceFiles.get(mCurrentBook);
                 String name = file.getName();
                 updateStatus(R.string.found_book, name);
-                success = processBook( file);
-                if(!success) {
-                    addError( "Could not parse " + file.toString());
+                success = processBook(file);
+                if (!success) {
+                    addError("Could not parse " + file.toString());
                 }
                 successOverall = successOverall && success;
             }
@@ -283,7 +397,7 @@ public class ImportUsfm {
 
         } catch (Exception e) {
             Logger.e(TAG, "error reading stream ", e);
-            addError( R.string.zip_read_error);
+            addError(R.string.zip_read_error);
             successOverall = false;
         }
 
@@ -294,13 +408,14 @@ public class ImportUsfm {
 
     /**
      * import single file
+     *
      * @param file
      * @return
      */
     public boolean readFile(File file) {
         boolean success = true;
         updateStatus(R.string.initializing_import);
-        if(null == file) {
+        if (null == file) {
             addError(R.string.file_read_error);
             return false;
         }
@@ -308,14 +423,14 @@ public class ImportUsfm {
         try {
             String ext = FilenameUtils.getExtension(file.toString()).toLowerCase();
             boolean zip = "zip".equals(ext);
-            if(!zip) {
-                success = processBook( file);
+            if (!zip) {
+                success = processBook(file);
             } else {
                 InputStream usfmStream = new FileInputStream(file);
-                success = readZipStream( usfmStream);
+                success = readZipStream(usfmStream);
             }
         } catch (Exception e) {
-            addError( R.string.file_read_error_detail, file.toString());
+            addError(R.string.file_read_error_detail, file.toString());
             success = false;
         }
         updateStatus(R.string.finished_loading);
@@ -325,14 +440,15 @@ public class ImportUsfm {
 
     /**
      * import file from uri, if it is a zip file, then all files in zip will be imported
+     *
      * @param uri
      * @return
      */
     public boolean readUri(Uri uri) {
         boolean success = true;
         updateStatus(R.string.initializing_import);
-        if(null == uri) {
-            addError( R.string.file_read_error);
+        if (null == uri) {
+            addError(R.string.file_read_error);
             return false;
         }
 
@@ -343,14 +459,14 @@ public class ImportUsfm {
             boolean zip = "zip".equals(ext);
 
             InputStream usfmStream = AppContext.context().getContentResolver().openInputStream(uri);
-            if(!zip) {
+            if (!zip) {
                 String text = IOUtils.toString(usfmStream, "UTF-8");
-                success = processBook( text, uri.toString());
+                success = processBook(text, uri.toString());
             } else {
-                success = readZipStream( usfmStream);
+                success = readZipStream(usfmStream);
             }
         } catch (Exception e) {
-            addError( R.string.file_read_error_detail, path);
+            addError(R.string.file_read_error_detail, path);
             success = false;
         }
         updateStatus(R.string.finished_loading);
@@ -360,6 +476,7 @@ public class ImportUsfm {
 
     /**
      * import file from resource. if it is a zip file, then all files in zip will be imported
+     *
      * @param fileName
      * @return
      */
@@ -371,14 +488,14 @@ public class ImportUsfm {
 
         try {
             InputStream usfmStream = mContext.getAssets().open(fileName);
-            if(!zip) {
+            if (!zip) {
                 String text = IOUtils.toString(usfmStream, "UTF-8");
-                success = processBook( text, fileName);
+                success = processBook(text, fileName);
             } else {
-                success = readZipStream( usfmStream);
+                success = readZipStream(usfmStream);
             }
         } catch (Exception e) {
-            Logger.e(TAG,"error reading " + fileName, e);
+            Logger.e(TAG, "error reading " + fileName, e);
             success = false;
         }
         updateStatus(R.string.finished_loading);
@@ -388,6 +505,7 @@ public class ImportUsfm {
 
     /**
      * add chunk markers (contains verses and chapters) to map by chapter
+     *
      * @param book
      * @param chunks
      * @return
@@ -418,6 +536,7 @@ public class ImportUsfm {
 
     /**
      * get the base folder for all the projects
+     *
      * @return
      */
     public File getProjectsFolder() {
@@ -426,10 +545,11 @@ public class ImportUsfm {
 
     /**
      * get array of the imported project folders
+     *
      * @return
      */
     public File[] getImportProjects() {
-        if( mImportProjects != null ) {
+        if (mImportProjects != null) {
             return mImportProjects.toArray(new File[mImportProjects.size()]);
         }
         return new File[0];
@@ -445,22 +565,22 @@ public class ImportUsfm {
         boolean success;
         try {
             String book = FileUtils.readFileToString(file);
-            success = processBook( book, file.toString());
+            success = processBook(book, file.toString());
         } catch (Exception e) {
             Logger.e(TAG, "error reading book " + file.toString(), e);
-            addError( R.string.error_reading_file, file.toString());
+            addError(R.string.error_reading_file, file.toString());
             success = false;
         }
         return success;
     }
 
     private boolean processBook(String book, String name) {
-        return processBook1( book, name, true, null);
+        return processBook1(book, name, true, null);
     }
 
     public boolean readText(String book, String name, boolean promptForName, String useName) {
         mCurrentBook = mFoundBooks.size();
-        return processBook1( book, name, promptForName, useName);
+        return processBook1(book, name, promptForName, useName);
     }
 
     private boolean processBook1(String book, String name, boolean promptForName, String useName) {
@@ -470,14 +590,14 @@ public class ImportUsfm {
         setBookName("", name);
         try {
             mCurrentChapter = 0;
-            mChaperCount= 1;
+            mChaperCount = 1;
 
             extractBookID(book);
 
             // TODO: 4/12/16 verify book
 
             if (null == mTargetLanguage) {
-                addError( R.string.missing_language);
+                addError(R.string.missing_language);
                 return false;
             }
 
@@ -485,16 +605,16 @@ public class ImportUsfm {
             boolean hasVerses = isPresent(book, PATTERN_USFM_VERSE_SPAN);
 
             if (!hasVerses) {
-                addError( R.string.no_verse);
+                addError(R.string.no_verse);
                 return false;
             }
 
-            if(useName != null) {
+            if (useName != null) {
                 mBookShortName = useName;
             }
 
             if (isMissing(mBookShortName)) {
-                addError( R.string.missing_book_short_name);
+                addError(R.string.missing_book_short_name);
                 addMissingName(name, null, book);
                 return promptForName;
             }
@@ -507,31 +627,30 @@ public class ImportUsfm {
             mProjectFolder = new File(mTempDest, mBookShortName + "-" + mTargetLanguage.getId());
 
             if (isMissing(mBookName)) {
-                addError( R.string.missing_book_name);
+                addError(R.string.missing_book_name);
                 mBookName = mBookShortName;
             }
 
-            mMarkers = AppContext.getLibrary().getChunkMarkers(mBookShortName);
-            boolean haveChunksList = mMarkers.length > 0;
+            ChunkMarker[] markers = AppContext.getLibrary().getChunkMarkers(mBookShortName);
+            boolean haveChunksList = markers.length > 0;
 
             if (!haveChunksList) { // no chunk list
                 // TODO: 4/13/16 add support for processing by sections
 
-                addWarning( "No chunk list found for " + mBookShortName);
+                addWarning("No chunk list found for " + mBookShortName);
                 addMissingName(mBookName, mBookShortName, book);
                 return promptForName;
-            }
-            else { // has chunks
+            } else { // has chunks
 
                 mChunks = new HashMap<>(); // clear old map
-                addChunks(mBookShortName, mMarkers);
+                addChunks(mBookShortName, markers);
                 mChaperCount = mChunks.size();
 
                 success = extractChaptersFromBook(book);
                 successOverall = successOverall && success;
             }
 
-            if(successOverall) {
+            if (successOverall) {
                 mCurrentChapter = (mChaperCount + 1);
                 updateStatus(R.string.building_manifest);
 
@@ -539,7 +658,7 @@ public class ImportUsfm {
                 successOverall = successOverall && success;
             }
 
-            if(successOverall) {
+            if (successOverall) {
                 mImportProjects.add(mProjectFolder);
             }
 
@@ -555,9 +674,9 @@ public class ImportUsfm {
         mBookShortName = extractString(book, PATTERN_BOOK_SHORT_NAME_MARKER);
 
         String idString = extractString(book, ID_TAG_MARKER);
-        if(null != idString) {
+        if (null != idString) {
             String[] tags = idString.split(" ");
-            if(tags.length > 0) {
+            if (tags.length > 0) {
                 mBookShortName = tags[0];
             }
         }
@@ -565,6 +684,7 @@ public class ImportUsfm {
 
     /**
      * create the manifest for a project
+     *
      * @throws JSONException
      */
     private boolean buildManifest() throws JSONException {
@@ -575,7 +695,7 @@ public class ImportUsfm {
             pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
             String projectId = mBookShortName;
             String resourceSlug = Resource.REGULAR_SLUG;
-            targetTranslation = TargetTranslation.create( context, AppContext.getProfile().getNativeSpeaker(), TranslationFormat.USFM, mTargetLanguage, projectId, TranslationType.TEXT, resourceSlug, pInfo, mProjectFolder);
+            targetTranslation = TargetTranslation.create(context, AppContext.getProfile().getNativeSpeaker(), TranslationFormat.USFM, mTargetLanguage, projectId, TranslationType.TEXT, resourceSlug, pInfo, mProjectFolder);
 
         } catch (Exception e) {
             addError(R.string.file_write_error);
@@ -608,6 +728,7 @@ public class ImportUsfm {
 
     /**
      * extract chapters in book
+     *
      * @param text
      * @return
      */
@@ -619,7 +740,7 @@ public class ImportUsfm {
         mChapter = null;
         boolean successOverall = true;
         boolean success;
-        while(matcher.find() && successOverall) {
+        while (matcher.find() && successOverall) {
             section = text.subSequence(lastIndex, matcher.start()); // get section before this chapter marker
             success = breakUpChapter(section);
             successOverall = successOverall && success;
@@ -627,7 +748,7 @@ public class ImportUsfm {
             lastIndex = matcher.start();
         }
 
-        if(successOverall) {
+        if (successOverall) {
             section = text.subSequence(lastIndex, text.length()); // get last section
             success = breakUpChapter(section);
             successOverall = successOverall && success;
@@ -637,13 +758,14 @@ public class ImportUsfm {
 
     /**
      * break up chapter into sections based on chunk list
+     *
      * @param text
      * @return
      */
     private boolean breakUpChapter(CharSequence text) {
         boolean successOverall = true;
         boolean success = true;
-        if(!isMissing(mChapter)) {
+        if (!isMissing(mChapter)) {
             try {
                 String chapter = getChapterKey(mChapter);
                 if (null == chapter) {
@@ -664,7 +786,7 @@ public class ImportUsfm {
                     successOverall = successOverall && success;
                     lastFirst = first;
                 }
-                if(successOverall) {
+                if (successOverall) {
                     success = extractVerses(chapter, text, lastFirst, "999999");
                     successOverall = successOverall && success;
                 }
@@ -681,14 +803,14 @@ public class ImportUsfm {
                 JSONArray versebreaks = mChunks.get(chapter1);
                 first = (String) versebreaks.get(0);
             } catch (JSONException e) {
-                Logger.e(TAG,"Could not get first verse of chapter 1",e);
+                Logger.e(TAG, "Could not get first verse of chapter 1", e);
             }
 
             String chapter0 = "0000".substring(0, chapter1.length()); // match length of chapter 1
             String verse0 = "0000".substring(0, first.length()); // match length of verse 1
-            success =  saveSection(chapter0, verse0, text);
+            success = saveSection(chapter0, verse0, text);
             successOverall = successOverall && success;
-            success =  saveSection(chapter0, "title", mBookName);
+            success = saveSection(chapter0, "title", mBookName);
             successOverall = successOverall && success;
         }
         return successOverall;
@@ -705,7 +827,7 @@ public class ImportUsfm {
             return chapter;
         }
 
-       chapter = "0" + chapter;
+        chapter = "0" + chapter;
         if (mChunks.containsKey(chapter)) {
             return chapter;
         }
@@ -716,6 +838,7 @@ public class ImportUsfm {
 
     /**
      * extract verses in range of start to end into new section
+     *
      * @param chapter
      * @param text
      * @param start
@@ -724,7 +847,7 @@ public class ImportUsfm {
      */
     private boolean extractVerses(String chapter, CharSequence text, String start, String end) {
         boolean success = true;
-        if(null == start) { // we need to capture stuff before first verse
+        if (null == start) { // we need to capture stuff before first verse
             String verse0 = "0000".substring(0, end.length()); // match length
             start = verse0;
         }
@@ -737,6 +860,7 @@ public class ImportUsfm {
 
     /**
      * extract verses in range of start to end into new section
+     *
      * @param chapter
      * @param text
      * @param start
@@ -747,7 +871,7 @@ public class ImportUsfm {
     private boolean extractVerseRange(String chapter, CharSequence text, int start, int end, String firstVerse) {
         boolean successOverall = true;
         boolean success;
-        if(!isMissing(chapter)) {
+        if (!isMissing(chapter)) {
             Pattern pattern = PATTERN_USFM_VERSE_SPAN;
             Matcher matcher = pattern.matcher(text);
             int lastIndex = 0;
@@ -758,12 +882,12 @@ public class ImportUsfm {
             while (matcher.find()) {
                 matchesFound = true;
 
-                if(currentVerse >= end) {
+                if (currentVerse >= end) {
                     done = true;
                     break;
                 }
 
-                if(currentVerse >= start) {
+                if (currentVerse >= start) {
                     section = section + text.subSequence(lastIndex, matcher.start()); // get section before this chunk marker
                 }
 
@@ -772,7 +896,7 @@ public class ImportUsfm {
                     currentVerse = Integer.valueOf(verse);
                 } catch (NumberFormatException e) { // might be a range in format 12-13
                     String[] range = verse.split("-");
-                    if(range.length != 2) {
+                    if (range.length != 2) {
                         return false;
                     }
                     currentVerse = Integer.valueOf(range[0]);
@@ -780,11 +904,11 @@ public class ImportUsfm {
                 lastIndex = matcher.start();
             }
 
-            if(!done && matchesFound && (currentVerse >= start) && (currentVerse < end)) {
+            if (!done && matchesFound && (currentVerse >= start) && (currentVerse < end)) {
                 section = section + text.subSequence(lastIndex, text.length()); // get last section
             }
 
-            if(!section.isEmpty()) {
+            if (!section.isEmpty()) {
                 success = saveSection(chapter, firstVerse, section);
                 successOverall = successOverall && success;
             } else {
@@ -799,6 +923,7 @@ public class ImportUsfm {
 
     /**
      * save section (chunk) to file in chapter folder
+     *
      * @param chapter
      * @param fileName
      * @param section
@@ -810,7 +935,7 @@ public class ImportUsfm {
             String cleanChunk = removePattern(section, PATTERN_SECTION_MARKER);
             FileUtils.forceMkdir(chapterFolder);
             File output = new File(chapterFolder, fileName + ".txt");
-            FileUtils.write(output,cleanChunk);
+            FileUtils.write(output, cleanChunk);
             return true;
         } catch (Exception e) {
             Logger.e(TAG, "error parsing chapter " + mChapter, e);
@@ -821,11 +946,12 @@ public class ImportUsfm {
 
     /**
      * test if CharSequence is null or empty
+     *
      * @param text
      * @return
      */
     private boolean isMissing(CharSequence text) {
-        if(null == text) {
+        if (null == text) {
             return true;
         }
         return text.length() == 0;
@@ -833,6 +959,7 @@ public class ImportUsfm {
 
     /**
      * extract chapters from document text (used for splitting by sections)
+     *
      * @param text
      * @return
      */
@@ -843,7 +970,7 @@ public class ImportUsfm {
         int length = text.length();
         CharSequence chapter;
         mChapter = null;
-        while(matcher.find()) {
+        while (matcher.find()) {
             chapter = text.subSequence(lastIndex, matcher.start()); // get section before this chapter marker
             extractSectionsFromChapter(chapter);
             mChapter = matcher.group(1); // chapter number for next section
@@ -851,7 +978,7 @@ public class ImportUsfm {
             mCurrentChapter = Integer.valueOf(mChapter);
 
             //estimate number of chapters - doesn't need to be exact
-            if(mCurrentChapter > 1) {
+            if (mCurrentChapter > 1) {
                 float percentIn = (float) lastIndex / length;
                 if (percentIn != 0.0f) {
                     mChaperCount = Math.round((mCurrentChapter - 1) / percentIn);
@@ -874,17 +1001,18 @@ public class ImportUsfm {
 
     /**
      * extract sections from chapter
+     *
      * @param chapter
      */
     private void extractSectionsFromChapter(CharSequence chapter) {
-        if(!isMissing(mChapter)) {
+        if (!isMissing(mChapter)) {
             Pattern pattern = PATTERN_SECTION_MARKER;
             Matcher matcher = pattern.matcher(chapter);
             int lastIndex = 0;
             CharSequence section;
             while (matcher.find()) {
                 section = chapter.subSequence(lastIndex, matcher.start()); // get section before this chunk marker
-                if(lastIndex > 0) { // ignore what's before first section
+                if (lastIndex > 0) { // ignore what's before first section
                     processSection(section);
                 }
                 lastIndex = matcher.end();
@@ -896,11 +1024,12 @@ public class ImportUsfm {
 
     /**
      * extract verses from section
+     *
      * @param section
      * @return
      */
     private boolean processSection(CharSequence section) {
-        if(!isMissing(section)) {
+        if (!isMissing(section)) {
             String firstVerse = extractString(section, PATTERN_USFM_VERSE_SPAN);
             if (null == firstVerse) {
                 addError(R.string.missing_verses_in_section);
@@ -914,16 +1043,17 @@ public class ImportUsfm {
 
     /**
      * match regexPattern and get string in group 1 if present
+     *
      * @param text
      * @param regexPattern
      * @return
      */
     private String extractString(CharSequence text, Pattern regexPattern) {
-        if(text.length() > 0) {
+        if (text.length() > 0) {
             // find instance
             Matcher matcher = regexPattern.matcher(text);
             String foundItem = null;
-            if(matcher.find()) {
+            if (matcher.find()) {
                 foundItem = matcher.group(1);
                 return foundItem.trim();
             }
@@ -934,6 +1064,7 @@ public class ImportUsfm {
 
     /**
      * remove pattern if present in text
+     *
      * @param text
      * @param removePattern
      * @return
@@ -952,15 +1083,16 @@ public class ImportUsfm {
 
     /**
      * test to see if regex pattern is present in text
+     *
      * @param text
      * @param regexPattern
      * @return
      */
     private boolean isPresent(CharSequence text, Pattern regexPattern) {
-        if(text.length() > 0) {
+        if (text.length() > 0) {
             // find instance
             Matcher matcher = regexPattern.matcher(text);
-            if(matcher.find()) {
+            if (matcher.find()) {
                 return true;
             }
         }
@@ -974,9 +1106,9 @@ public class ImportUsfm {
     private void createTempFolders() {
         mTempDir = new File(AppContext.context().getCacheDir(), System.currentTimeMillis() + "");
         mTempDir.mkdirs();
-        mTempSrce = new File(mTempDir,"source");
+        mTempSrce = new File(mTempDir, "source");
         mTempSrce.mkdirs();
-        mTempOutput = new File(mTempDir,"output");
+        mTempOutput = new File(mTempDir, "output");
         mTempOutput.mkdirs();
     }
 
@@ -993,6 +1125,7 @@ public class ImportUsfm {
 
     /**
      * add file and files in sub-folders to list of files to process
+     *
      * @param usfmFile
      * @return
      */
@@ -1013,6 +1146,7 @@ public class ImportUsfm {
 
     /**
      * add file to list of files to process
+     *
      * @param usfmFile
      * @return
      */
@@ -1030,15 +1164,101 @@ public class ImportUsfm {
         void statusUpdate(String textStatus, int percentStatus);
     }
 
-    public class MissingNameItem {
-        public String description;
-        public String invalidName;
-        public String contents;
-
-        public MissingNameItem(String description, String invalidName, String contents) {
-            this.description = description;
-            this.invalidName = invalidName;
-            this.contents = contents;
+    static JSONArray toJsonFileArray(List<File> array) {
+        JSONArray jsonArray = new JSONArray();
+        for (File item : array) {
+            jsonArray.put(item.toString());
         }
+        return jsonArray;
+    }
+
+    static List<File> fromJsonArrayToFiles(String jsonStr) {
+        try {
+            JSONArray jsonArray = new JSONArray(jsonStr);
+            return fromJsonArrayToFiles(jsonArray);
+        } catch (Exception e) {
+        }
+        return null;
+    }
+
+    static List<File> fromJsonArrayToFiles(JSONArray jsonArray) throws JSONException {
+        List<File> array = new ArrayList<>();
+
+        for (int i = 0; i < jsonArray.length(); i++) {
+            String path = jsonArray.getString(i);
+            File file = new File(path);
+            array.add(file);
+        }
+        return array;
+    }
+
+    static JSONArray toJsonStringArray(List<String> array) {
+        JSONArray jsonArray = new JSONArray();
+        for (String item : array) {
+            jsonArray.put(item);
+        }
+        return jsonArray;
+    }
+
+    static List<String> fromJsonArrayToStrings(String jsonStr) {
+        try {
+            JSONArray jsonArray = new JSONArray(jsonStr);
+            return fromJsonArrayToStrings(jsonArray);
+        } catch (Exception e) {
+        }
+        return null;
+    }
+
+    static List<String> fromJsonArrayToStrings(JSONArray jsonArray) throws JSONException {
+        List<String> array = new ArrayList<>();
+
+        for (int i = 0; i < jsonArray.length(); i++) {
+            String text = jsonArray.getString(i);
+            array.add(text);
+        }
+        return array;
+    }
+
+    static Integer getOptInteger(JSONObject json, String key) {
+        return (Integer) getOpt(json,key);
+    }
+
+    static Boolean getOptBoolean(JSONObject json, String key) {
+        return (Boolean) getOpt(json,key);
+    }
+
+    static File getOptFile(JSONObject json, String key) {
+        return new File(getOptString(json,key));
+    }
+
+    static String getOptString(JSONObject json, String key) {
+        return (String) getOpt(json,key);
+    }
+
+    static JSONObject getOptJsonObject(JSONObject json, String key) {
+        try {
+            return (JSONObject) getOpt(json, key);
+        } catch (Exception e) {
+            return new JSONObject();
+        }
+    }
+
+    static JSONArray getOptJsonArray(JSONObject json, String key) {
+        try {
+            return (JSONArray) getOpt(json, key);
+        } catch (Exception e) {
+            return new JSONArray();
+        }
+    }
+
+    static Object getOpt(JSONObject json, String key) {
+        try {
+            if(json.has(key)) {
+                Object obj = json.get(key);
+                return obj;
+            }
+        } catch (Exception e) {
+        }
+        return null;
     }
 }
