@@ -37,7 +37,7 @@ import java.io.File;
 import java.io.Serializable;
 
 
-public class ImportUsfmActivity extends BaseActivity implements TargetLanguageListFragment.OnItemClickListener {
+public class ImportUsfmActivity extends BaseActivity implements TargetLanguageListFragment.OnItemClickListener, ProjectListFragment.OnItemClickListener {
 
     public static final int RESULT_DUPLICATE = 2;
     private static final String STATE_TARGET_LANGUAGE_ID = "state_target_language_id";
@@ -180,19 +180,29 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
             String message = "";
             if (item.invalidName != null) {
-                message = "'" + item.description + "'\nhas invalid book name: '" + item.invalidName + "'\nEnter valid name:";
+                message = "'" + item.description + "'\nhas invalid book name: '" + item.invalidName + "'\nDo you wish to select a book name?";
             } else {
-                message = "'" + item.description + "'\nis missing book name" + "\nEnter valid name:";
+                message = "'" + item.description + "'\nis missing book name" + "\nDo you wish to select a book name?";
             }
+
             final CustomAlertDialog dlg = CustomAlertDialog.Create(ImportUsfmActivity.this);
-            dlg.setTitle(R.string.title_activity_import_usfm)
+            dlg.setTitle(R.string.title_activity_import_usfm_language)
                     .setMessage(message)
-                    .addInputPrompt(true)
                     .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            String book = dlg.getEnteredText().toString();
-                            usfmProcessBook(item, book);
+                            mFragment = new ProjectListFragment();
+                            ((ProjectListFragment) mFragment).setArguments(getIntent().getExtras());
+                            getFragmentManager().beginTransaction().replace(R.id.fragment_container, (ProjectListFragment) mFragment).commit();
+                            String title = getResources().getString(R.string.title_activity_import_usfm_book);
+                            String book = item.description;
+                            String[] sections = item.description.split("/");
+                            if(sections.length > 0) {
+                                book = sections[sections.length - 1];
+                            }
+                            title += " " + book;
+                            setTitle(title);
+                            mProgressDialog.hide();
                         }
                     })
                     .setNegativeButton(R.string.menu_cancel, new View.OnClickListener() {
@@ -505,6 +515,15 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         }
 
 //        finished();
+    }
+
+    @Override
+    public void onItemClick(String projectId) {
+
+        getFragmentManager().beginTransaction().remove((ProjectListFragment) mFragment).commit();
+
+        final MissingNameItem item = mMissingNameItems[mCount.counter];
+        usfmProcessBook(item, projectId);
     }
 
     private void finished() {
