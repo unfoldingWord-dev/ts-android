@@ -220,7 +220,7 @@ public class ImportUsfm {
         }
         String format = mContext.getResources().getString(error ? R.string.error_prefix : R.string.warning_prefix);
         String newError = String.format(format, message);
-        mErrors.set(mCurrentBook,  newError);
+        mErrors.set(mCurrentBook,  errors + newError);
         if(error) {
             Logger.e(TAG, newError);
         } else {
@@ -270,9 +270,9 @@ public class ImportUsfm {
             for(mCurrentBook = 0; mCurrentBook < mSourceFiles.size(); mCurrentBook++) {
                 mCurrentChapter = 0;
                 File file = mSourceFiles.get(mCurrentBook);
-                String name = file.getName().toString();
+                String name = file.getName();
                 updateStatus(R.string.found_book, name);
-                success = processBook( file, false);
+                success = processBook( file);
                 if(!success) {
                     addError( "Could not parse " + file.toString());
                 }
@@ -280,8 +280,6 @@ public class ImportUsfm {
             }
 
             mCurrentBook = mSourceFiles.size() - 1; // set to last book
-
-            finishImport();
 
         } catch (Exception e) {
             Logger.e(TAG, "error reading stream ", e);
@@ -311,7 +309,7 @@ public class ImportUsfm {
             String ext = FilenameUtils.getExtension(file.toString()).toLowerCase();
             boolean zip = "zip".equals(ext);
             if(!zip) {
-                success = processBook( file, true);
+                success = processBook( file);
             } else {
                 InputStream usfmStream = new FileInputStream(file);
                 success = readZipStream( usfmStream);
@@ -347,7 +345,7 @@ public class ImportUsfm {
             InputStream usfmStream = AppContext.context().getContentResolver().openInputStream(uri);
             if(!zip) {
                 String text = IOUtils.toString(usfmStream, "UTF-8");
-                success = processBook( text, true, uri.toString());
+                success = processBook( text, uri.toString());
             } else {
                 success = readZipStream( usfmStream);
             }
@@ -375,7 +373,7 @@ public class ImportUsfm {
             InputStream usfmStream = mContext.getAssets().open(fileName);
             if(!zip) {
                 String text = IOUtils.toString(usfmStream, "UTF-8");
-                success = processBook( text, true, fileName);
+                success = processBook( text, fileName);
             } else {
                 success = readZipStream( usfmStream);
             }
@@ -396,9 +394,7 @@ public class ImportUsfm {
      */
     public boolean addChunks(String book, ChunkMarker[] chunks) {
         try {
-            int length = chunks.length;
-            for (int i = 0; i < length; i++) {
-                ChunkMarker chunkMarker = chunks[i];
+            for (ChunkMarker chunkMarker : chunks) {
 
                 String chapter = chunkMarker.chapterSlug;
                 String firstverse = chunkMarker.firstVerseSlug;
@@ -445,11 +441,11 @@ public class ImportUsfm {
      * @param file
      * @return
      */
-    private boolean processBook(File file, boolean lastFile) {
+    private boolean processBook(File file) {
         boolean success;
         try {
             String book = FileUtils.readFileToString(file);
-            success = processBook( book, lastFile, file.toString());
+            success = processBook( book, file.toString());
         } catch (Exception e) {
             Logger.e(TAG, "error reading book " + file.toString(), e);
             addError( R.string.error_reading_file, file.toString());
@@ -458,11 +454,16 @@ public class ImportUsfm {
         return success;
     }
 
-    private boolean processBook(String book, boolean lastFile, String name) {
-        return processBook( book, lastFile, name, true, null);
+    private boolean processBook(String book, String name) {
+        return processBook1( book, name, true, null);
     }
 
-    private boolean processBook(String book, boolean lastFile, String name, boolean promptForName, String useName) {
+    public boolean readText(String book, String name, boolean promptForName, String useName) {
+        mCurrentBook = mFoundBooks.size();
+        return processBook1( book, name, promptForName, useName);
+    }
+
+    private boolean processBook1(String book, String name, boolean promptForName, String useName) {
         boolean successOverall = true;
         boolean success;
         mBookShortName = "";
@@ -477,6 +478,14 @@ public class ImportUsfm {
 
             if (null == mTargetLanguage) {
                 addError( R.string.missing_language);
+                return false;
+            }
+
+//            boolean hasSections = isPresent(book, PATTERN_SECTION_MARKER);
+            boolean hasVerses = isPresent(book, PATTERN_USFM_VERSE_SPAN);
+
+            if (!hasVerses) {
+                addError( R.string.no_verse);
                 return false;
             }
 
@@ -502,32 +511,15 @@ public class ImportUsfm {
                 mBookName = mBookShortName;
             }
 
-            boolean hasSections = isPresent(book, PATTERN_SECTION_MARKER);
-            boolean hasVerses = isPresent(book, PATTERN_USFM_VERSE_SPAN);
-
             mMarkers = AppContext.getLibrary().getChunkMarkers(mBookShortName);
             boolean haveChunksList = mMarkers.length > 0;
 
-            if (!hasSections && !hasVerses) {
-                addError( R.string.no_section_no_verse);
-                return false;
-            }
-
             if (!haveChunksList) { // no chunk list
+                // TODO: 4/13/16 add support for processing by sections
+
                 addWarning( "No chunk list found for " + mBookShortName);
                 addMissingName(mBookName, mBookShortName, book);
                 return promptForName;
-
-                //removed processing by sections
-
-//                if (!hasSections) {
-//                    addError( R.string.no_section_no_verse);
-//                    return false;
-//                }
-//
-//                addWarning( "Using sections");
-//                success = extractChaptersFromDocument(book);
-//                successOverall = successOverall && success;
             }
             else { // has chunks
 
@@ -539,18 +531,16 @@ public class ImportUsfm {
                 successOverall = successOverall && success;
             }
 
-            mCurrentChapter = (mChaperCount + 1);
-            updateStatus(R.string.building_manifest);
+            if(successOverall) {
+                mCurrentChapter = (mChaperCount + 1);
+                updateStatus(R.string.building_manifest);
 
-            success = buildManifest();
-            successOverall = successOverall && success;
+                success = buildManifest();
+                successOverall = successOverall && success;
+            }
 
             if(successOverall) {
                 mImportProjects.add(mProjectFolder);
-            }
-
-            if(lastFile) {
-                finishImport();
             }
 
         } catch (Exception e) {
@@ -571,10 +561,6 @@ public class ImportUsfm {
                 mBookShortName = tags[0];
             }
         }
-    }
-
-    private void finishImport() {
-       // place holder for post ops
     }
 
     /**
@@ -633,16 +619,19 @@ public class ImportUsfm {
         mChapter = null;
         boolean successOverall = true;
         boolean success;
-        while(matcher.find()) {
+        while(matcher.find() && successOverall) {
             section = text.subSequence(lastIndex, matcher.start()); // get section before this chapter marker
             success = breakUpChapter(section);
             successOverall = successOverall && success;
             mChapter = matcher.group(1); // chapter number for next section
             lastIndex = matcher.start();
         }
-        section = text.subSequence(lastIndex, text.length()); // get last section
-        success = breakUpChapter(section);
-        successOverall = successOverall && success;
+
+        if(successOverall) {
+            section = text.subSequence(lastIndex, text.length()); // get last section
+            success = breakUpChapter(section);
+            successOverall = successOverall && success;
+        }
         return successOverall;
     }
 
@@ -653,29 +642,23 @@ public class ImportUsfm {
      */
     private boolean breakUpChapter(CharSequence text) {
         boolean successOverall = true;
-        boolean success;
+        boolean success = true;
         if(!isMissing(mChapter)) {
             try {
-                String chapter = mChapter;
-                if (!mChunks.containsKey(chapter)) {
-                    chapter = "0" + chapter;
-                    if (!mChunks.containsKey(chapter)) {
-                        chapter = "0" + chapter;
-                    }
-                }
-
-                if (!mChunks.containsKey(chapter)) {
+                String chapter = getChapterKey(mChapter);
+                if (null == chapter) {
                     addError(R.string.could_not_find_chapter, mChapter);
                     return false;
                 }
 
                 mCurrentChapter = Integer.valueOf(mChapter);
 
+                JSONArray versebreaks = mChunks.get(chapter);
+
                 updateStatus(R.string.processing_chapter, new Integer(mChaperCount - mCurrentChapter + 1).toString());
 
-                JSONArray versebreaks = mChunks.get(chapter);
                 String lastFirst = null;
-                for (int i = 0; i < versebreaks.length(); i++) {
+                for (int i = 0; (i < versebreaks.length()) && success; i++) {
                     String first = versebreaks.getString(i);
                     success = extractVerses(chapter, text, lastFirst, first);
                     successOverall = successOverall && success;
@@ -689,8 +672,44 @@ public class ImportUsfm {
                 addError(R.string.could_not_parse_chapter, mChapter);
                 return false;
             }
+        } else { // save stuff before first chapter
+            String chapter1 = getChapterKey("1"); // to get width of chapters
+            String first = "00";
+            try {
+                JSONArray versebreaks = mChunks.get(chapter1);
+                first = (String) versebreaks.get(0);
+            } catch (JSONException e) {
+                Logger.e(TAG,"Could not get first verse of chapter 1",e);
+            }
+
+            String chapter0 = "0000".substring(0, chapter1.length()); // match length of chapter 1
+            String verse0 = "0000".substring(0, first.length()); // match length of verse 1
+            success =  saveSection(chapter0, verse0, text);
+            successOverall = successOverall && success;
+            success =  saveSection(chapter0, "title", mBookName);
+            successOverall = successOverall && success;
         }
         return successOverall;
+    }
+
+    private String getChapterKey(String mChapter) {
+        String chapter = mChapter;
+        if (mChunks.containsKey(chapter)) {
+            return chapter;
+        }
+
+        chapter = "0" + chapter;
+        if (mChunks.containsKey(chapter)) {
+            return chapter;
+        }
+
+       chapter = "0" + chapter;
+        if (mChunks.containsKey(chapter)) {
+            return chapter;
+        }
+
+        addError(R.string.could_not_find_chapter, mChapter);
+        return null;
     }
 
     /**
@@ -703,11 +722,14 @@ public class ImportUsfm {
      */
     private boolean extractVerses(String chapter, CharSequence text, String start, String end) {
         boolean success = true;
-        if(null != start) {
-            int startVerse = Integer.valueOf(start);
-            int endVerse = Integer.valueOf(end);
-            success = extractVerseRange(chapter, text, startVerse, endVerse, start);
+        if(null == start) { // we need to capture stuff before first verse
+            String verse0 = "0000".substring(0, end.length()); // match length
+            start = verse0;
         }
+
+        int startVerse = Integer.valueOf(start);
+        int endVerse = Integer.valueOf(end);
+        success = extractVerseRange(chapter, text, startVerse, endVerse, start);
         return success;
     }
 
@@ -726,11 +748,14 @@ public class ImportUsfm {
         if(!isMissing(chapter)) {
             Pattern pattern = PATTERN_USFM_VERSE_SPAN;
             Matcher matcher = pattern.matcher(text);
-            int lastIndex = -1;
+            int lastIndex = 0;
             String section = "";
             int currentVerse = 0;
             boolean done = false;
+            boolean matchesFound = false;
             while (matcher.find()) {
+                matchesFound = true;
+
                 if(currentVerse >= end) {
                     done = true;
                     break;
@@ -753,13 +778,18 @@ public class ImportUsfm {
                 lastIndex = matcher.start();
             }
 
-            if(!done && (lastIndex >= 0) && (currentVerse < end)) {
-                section = section + text.subSequence(lastIndex, text.length()); // get section before this chunk marker
+            if(!done && matchesFound && (currentVerse < end)) {
+                section = section + text.subSequence(lastIndex, text.length()); // get last section
             }
 
             if(!section.isEmpty()) {
                 success = saveSection(chapter, firstVerse, section);
                 successOverall = successOverall && success;
+            } else {
+                String format = mContext.getResources().getString(R.string.could_not_find_verses_in_chapter);
+                String msg = String.format(format, start, end, chapter);
+                addError(msg);
+                return false;
             }
         }
         return successOverall;
@@ -768,21 +798,21 @@ public class ImportUsfm {
     /**
      * save section (chunk) to file in chapter folder
      * @param chapter
-     * @param firstVerse
+     * @param fileName
      * @param section
      * @return
      */
-    private boolean saveSection(String chapter, String firstVerse, CharSequence section) {
+    private boolean saveSection(String chapter, String fileName, CharSequence section) {
         File chapterFolder = new File(mProjectFolder, chapter);
         try {
             String cleanChunk = removePattern(section, PATTERN_SECTION_MARKER);
             FileUtils.forceMkdir(chapterFolder);
-            File output = new File(chapterFolder, firstVerse + ".txt");
+            File output = new File(chapterFolder, fileName + ".txt");
             FileUtils.write(output,cleanChunk);
             return true;
         } catch (Exception e) {
             Logger.e(TAG, "error parsing chapter " + mChapter, e);
-            addError(R.string.file_write_for_verse, chapter + "/" + firstVerse);
+            addError(R.string.file_write_for_verse, chapter + "/" + fileName);
             return false;
         }
     }

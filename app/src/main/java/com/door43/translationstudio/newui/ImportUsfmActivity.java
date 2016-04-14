@@ -104,7 +104,9 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
                 ImportUsfm.MissingNameItem[] missingNameItems = usfm.getMissingNames();
                 if(missingNameItems.length > 0) { // if we need valid names
-                    handleMissingNames(missingNameItems, hand, usfm);
+                    final Counter count = new Counter();
+                    count.setCount(missingNameItems.length);
+                    usfmPromptForNextName(hand, usfm, missingNameItems, count);
                 } else {
                     usfmImportFinished(hand, usfm);
                 }
@@ -113,35 +115,8 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         mUsfmImportThread.start();
     }
 
-    private void handleMissingNames(final ImportUsfm.MissingNameItem[] missingNameItems, final Handler hand, final ImportUsfm usfm) {
-        hand.post(new Runnable() {
-            @Override
-            public void run() {
-
-                final Counter count = new Counter();
-                count.setCount(missingNameItems.length);
-
-                for (ImportUsfm.MissingNameItem missingNameItem : missingNameItems) {
-                    usfmPromptForName(hand, usfm, missingNameItem, new OnPromptFinishedListener() {
-
-                        @Override
-                        public void onFinished(boolean success, String name) {
-                            count.decrement();
-                            if(success) {
-                                // TODO: 4/13/16 process file with new name
-                            }
-                            if(count.isEmpty()) {
-                                usfmImportFinished(hand, usfm);
-                            }
-                        }
-                    });
-                }
-            }
-        });
-    }
-
-    class Counter {
-        private int counter;
+    private class Counter {
+        public int counter;
 
         Counter() {
             counter = 0;
@@ -155,18 +130,37 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
             counter = count;
         }
 
-        public void increment() {
-            counter++;
+        public int increment() {
+            return ++counter;
         }
 
-        public void decrement() {
+        public int decrement() {
             if(counter > 0) {
                 counter--;
             }
+            return counter;
         }
     }
 
-    private void usfmPromptForName(final Handler hand, final ImportUsfm usfm, final ImportUsfm.MissingNameItem item, final OnPromptFinishedListener listener) {
+    private void usfmPromptForNextName(final Handler hand, final ImportUsfm usfm, final ImportUsfm.MissingNameItem[] missingNameItems, final Counter count) {
+
+        if(count.isEmpty()) {
+            usfmImportFinished(hand, usfm);
+            return;
+        }
+
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+
+                usfmPromptForName(count, missingNameItems, usfm, hand);
+            }
+        });
+    }
+
+    private void usfmPromptForName(final Counter count, final ImportUsfm.MissingNameItem[] missingNameItems, final ImportUsfm usfm, final Handler hand) {
+        int i = count.decrement();
+        final ImportUsfm.MissingNameItem item = missingNameItems[i];
 
         String message = "";
         if(item.invalidName != null) {
@@ -181,16 +175,29 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                 .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        listener.onFinished(true,dlg.getEnteredText().toString());
+                        String book = dlg.getEnteredText().toString();
+                        usfmProcessBook(item, book, usfm, hand, missingNameItems, count);
                     }
                 })
                 .setNegativeButton(R.string.menu_cancel, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        listener.onFinished(false,"");
+                        usfmPromptForNextName(hand, usfm, missingNameItems, count);
                     }
                 })
                 .show("getName");
+    }
+
+    private void usfmProcessBook(final ImportUsfm.MissingNameItem item, final String book, final ImportUsfm usfm, final Handler hand, final ImportUsfm.MissingNameItem[] missingNameItems, final Counter count) {
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                boolean success2 = usfm.readText(item.contents, item.description, false, book);
+                Logger.i(TAG, book + " success = " + success2);
+                usfmPromptForNextName(hand, usfm, missingNameItems, count);
+            }
+        };
+        thread.start();
     }
 
     private void usfmImportFinished(final Handler hand, final ImportUsfm usfm) {

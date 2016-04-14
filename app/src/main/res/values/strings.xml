@@ -680,10 +680,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="missing_book_name">Missing book name (\\toc1)</string>
     <string name="missing_language">Missing language</string>
     <string name="no_section_no_verse">No section nor verse markers found</string>
+    <string name="no_verse">No verse markers found</string>
     <string name="no_section_no_chunk">No sections found and no chunking breakdown list</string>
     <string name="book_parse_error">Error parsing book</string>
     <string name="error_reading_file">Error reading file: %s</string>
     <string name="could_not_find_chapter">Could not find chapter: %s</string>
+    <string name="could_not_find_verses_in_chapter">Could not find verse range <xliff:g example="1" id="start_verse">%1$d</xliff:g> to <xliff:g example="2" id="end_verse">%2$d</xliff:g> in chapter: <xliff:g example="05" id="chapter">%3$s</xliff:g></string>
     <string name="could_not_parse_chapter">Could not parse chapter: %s</string>
     <string name="missing_verses_in_section">No Verses in Section</string>
     <string name="error_prefix">Error: %s</string>
