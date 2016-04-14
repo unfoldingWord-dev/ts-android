@@ -664,8 +664,10 @@ public class ImportUsfm {
                     successOverall = successOverall && success;
                     lastFirst = first;
                 }
-                success = extractVerses(chapter, text, lastFirst, "999999");
-                successOverall = successOverall && success;
+                if(successOverall) {
+                    success = extractVerses(chapter, text, lastFirst, "999999");
+                    successOverall = successOverall && success;
+                }
 
             } catch (Exception e) {
                 Logger.e(TAG, "error parsing chapter " + mChapter, e);
@@ -778,7 +780,7 @@ public class ImportUsfm {
                 lastIndex = matcher.start();
             }
 
-            if(!done && matchesFound && (currentVerse < end)) {
+            if(!done && matchesFound && (currentVerse >= start) && (currentVerse < end)) {
                 section = section + text.subSequence(lastIndex, text.length()); // get last section
             }
 
