@@ -2,6 +2,7 @@ package com.door43.translationstudio;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.view.View;
 import android.widget.Button;
 
@@ -9,6 +10,7 @@ import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.home.HomeActivity;
 import com.door43.translationstudio.newui.legal.LegalDocumentActivity;
+import com.door43.widget.ViewUtil;
 
 /**
  * This activity checks if the user has accepted the terms of use before continuing to load the app
@@ -36,6 +38,12 @@ public class TermsOfUseActivity extends BaseActivity {
             rejectBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    // log out
+                    AppContext.setProfile(null);
+
+                    // return to login
+                    Intent intent = new Intent(TermsOfUseActivity.this, ProfileActivity.class);
+                    startActivity(intent);
                     finish();
                 }
             });

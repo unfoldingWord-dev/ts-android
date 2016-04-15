@@ -553,8 +553,12 @@ public class AppContext {
      */
     public static void setProfile(Profile profile) {
         try {
-            String profileString = profile.toJSON().toString();
-            setUserString(PROFILE, profileString);
+            if(profile != null) {
+                String profileString = profile.toJSON().toString();
+                setUserString(PROFILE, profileString);
+            } else {
+                setUserString(PROFILE, null);
+            }
         } catch (JSONException e) {
             Logger.e(TAG, "setProfile: Failed to encode profile data", e);
         }

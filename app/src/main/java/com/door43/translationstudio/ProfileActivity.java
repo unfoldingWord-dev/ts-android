@@ -1,5 +1,6 @@
 package com.door43.translationstudio;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -32,7 +33,7 @@ public class ProfileActivity extends BaseActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(ProfileActivity.this, LoginDoor43Activity.class);
                 startActivity(intent);
-                finish();
+//                finish();
             }
         });
         registerDoor43.setOnClickListener(new View.OnClickListener() {
@@ -40,7 +41,7 @@ public class ProfileActivity extends BaseActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(ProfileActivity.this, RegisterDoor43Activity.class);
                 startActivity(intent);
-                finish();
+//                finish();
             }
         });
         registerOffline.setOnClickListener(new View.OnClickListener() {
@@ -48,7 +49,7 @@ public class ProfileActivity extends BaseActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(ProfileActivity.this, RegisterOfflineActivity.class);
                 startActivity(intent);
-                finish();
+//                finish();
             }
         });
 
@@ -105,8 +106,8 @@ public class ProfileActivity extends BaseActivity {
      * Displays the privacy notice
      * @param listener if set the dialog will become a confirmation dialog
      */
-    public void showPrivacyNotice(View.OnClickListener listener) {
-        CustomAlertDialog privacy = CustomAlertDialog.Create(this)
+    public static void showPrivacyNotice(Activity context, View.OnClickListener listener) {
+        CustomAlertDialog privacy = CustomAlertDialog.Create(context)
                 .setTitle(R.string.privacy_notice)
                 .setIcon(R.drawable.ic_info_black_24dp)
                 .setMessage(R.string.publishing_privacy_notice);
