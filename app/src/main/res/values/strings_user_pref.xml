@@ -40,9 +40,11 @@
     <!-- The port on the server used to authenticate the device -->
     <string name="pref_title_auth_server_port">Authentication Server Port</string>
     <!-- The server to which data is uploaded -->
-    <string name="pref_title_git_server">Upload Server</string>
+    <string name="pref_title_git_server">Git Server</string>
     <!-- The port on the server to which data is uploaded -->
-    <string name="pref_title_git_server_port">Upload Server Port</string>
+    <string name="pref_title_git_server_port">Git Server Port</string>
+    <!-- The server used to perform api requests with the git server-->
+    <string name="pref_title_gogs_api">Git Server API</string>
     <!-- The server from which data is downloaded -->
     <string name="pref_title_media_server">Media Server</string>
 

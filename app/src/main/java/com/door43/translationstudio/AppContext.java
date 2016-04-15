@@ -1,5 +1,6 @@
 package com.door43.translationstudio;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -8,6 +9,8 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.core.ArchiveDetails;
@@ -572,6 +575,27 @@ public class AppContext {
      */
     public static String getUserString(String preferenceKey, int defaultResource) {
         return getUserString(preferenceKey, mContext.getResources().getString(defaultResource));
+    }
+
+    /**
+     * Closes the keyboard in the given activity
+     * @param activity
+     */
+    public static void closeKeyboard(Activity activity) {
+        if(activity != null) {
+            if (activity.getCurrentFocus() != null) {
+                try {
+                    InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(), 0);
+                } catch (Exception e) {
+                }
+            } else {
+                try {
+                    activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+                } catch (Exception e) {
+                }
+            }
+        }
     }
 
     /**

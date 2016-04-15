@@ -11,7 +11,7 @@ import org.unfoldingword.gogsclient.User;
 public class Profile {
     private static final long serialVersionUID = 0L;
     private String fullName;
-    private User gogsUser;
+    public User gogsUser;
     private int termsOfUseLastAccepted = 0;
 
     /**
@@ -82,10 +82,6 @@ public class Profile {
 
     public String getFullName() {
         return this.fullName;
-    }
-
-    public User getGogsUser() {
-        return this.gogsUser;
     }
 
     /**

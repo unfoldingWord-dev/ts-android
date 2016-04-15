@@ -669,4 +669,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="username">login name</string>
     <string name="password">password</string>
     <string name="password_confirm">re-type password</string>
+    <string name="logging_in">Logging in</string>
+    <string name="double_check_credentials">Double check your credentials and try again</string>
 </resources>

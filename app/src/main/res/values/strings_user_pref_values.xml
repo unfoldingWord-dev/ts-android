@@ -27,7 +27,10 @@
 
     <string name="pref_default_git_server_port" translatable="false">9299</string>
 
+    <string name="pref_default_gogs_api" translatable="false">https://git.door43.org/api/v1/</string>
+
     <string name="pref_default_media_server" translatable="false">https://api.unfoldingword.org</string>
+
 
     <!--<string name="pref_default_export_format" translatable="false">dokuwiki</string>-->
     <!--<string-array name="pref_export_format_values" translatable="false">-->

@@ -16,9 +16,6 @@ import com.door43.translationstudio.newui.home.HomeActivity;
 
 public class ProfileActivity extends BaseActivity {
 
-    private EditText mName;
-    private View mPrivacyNotice;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,7 +30,6 @@ public class ProfileActivity extends BaseActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(ProfileActivity.this, LoginDoor43Activity.class);
                 startActivity(intent);
-//                finish();
             }
         });
         registerDoor43.setOnClickListener(new View.OnClickListener() {
@@ -41,7 +37,6 @@ public class ProfileActivity extends BaseActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(ProfileActivity.this, RegisterDoor43Activity.class);
                 startActivity(intent);
-//                finish();
             }
         });
         registerOffline.setOnClickListener(new View.OnClickListener() {
@@ -49,40 +44,8 @@ public class ProfileActivity extends BaseActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(ProfileActivity.this, RegisterOfflineActivity.class);
                 startActivity(intent);
-//                finish();
             }
         });
-
-//        mPrivacyNotice = findViewById(R.id.privacy_notice);
-//        mName = (EditText)findViewById(R.id.name_edittext);
-
-//        mPrivacyNotice.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                showPrivacyNotice(null);
-//            }
-//        });
-//        findViewById(R.id.ok_button).setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                final Profile profile = new Profile(mName.getText().toString().trim());
-//                if (!profile.getFullName().equals("")) {
-//                    // confirm
-//                    showPrivacyNotice(new View.OnClickListener() {
-//                        @Override
-//                        public void onClick(View v) {
-//                            AppContext.setProfile(profile);
-//                            openMainActivity();
-//                        }
-//                    });
-//                } else {
-//                    CustomAlertDialog.Create(ProfileActivity.this)
-//                            .setMessage(R.string.complete_required_fields)
-//                            .setPositiveButton(R.string.label_ok, null)
-//                            .show("missing-fields");
-//                }
-//            }
-//        });
         findViewById(R.id.cancel_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

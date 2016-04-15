@@ -1,6 +1,5 @@
 package com.door43.translationstudio;
 
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -8,8 +7,6 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.door43.translationstudio.core.Profile;
-import com.door43.translationstudio.newui.home.HomeActivity;
-import com.door43.widget.ViewUtil;
 
 public class RegisterOfflineActivity extends AppCompatActivity {
 

@@ -73,6 +73,7 @@ public class SettingsActivity extends PreferenceActivity {
     public static final String KEY_PREF_DEVICE_ALIAS = "device_name";
     public static final String KEY_SDCARD_ACCESS_URI = "internal_uri_extsdcard";
     public static final String KEY_SDCARD_ACCESS_FLAGS = "internal_flags_extsdcard";
+    public static final String KEY_PREF_GOGS_API = "gogs_api";
 
     /**
      * TRICKY: this was added after API 19 to fix a vulnerability.
@@ -203,6 +204,7 @@ public class SettingsActivity extends PreferenceActivity {
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_GIT_SERVER));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTH_SERVER_PORT));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_GIT_SERVER_PORT));
+        bindPreferenceSummaryToValue(findPreference(KEY_PREF_GOGS_API));
 //        bindPreferenceSummaryToValue(findPreference(KEY_PREF_EXPORT_FORMAT));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_MEDIA_SERVER));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_LOGGING_LEVEL));
