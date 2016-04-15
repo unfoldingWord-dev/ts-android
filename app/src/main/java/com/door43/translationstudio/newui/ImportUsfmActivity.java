@@ -46,7 +46,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
     public static final String EXTRA_USFM_IMPORT_FILE = "extra_usfm_import_file";
     public static final String EXTRA_USFM_IMPORT_RESOURCE_FILE = "extra_usfm_import_resource_file";
     public static final String STATE_USFM = "state_usfm";
-    public static final String STATE_SHOWING_RESULTS = "state_showing_results";
+    public static final String STATE_CURRENT_STATE = "state_current_state";
     public static final String STATE_PROMPT_NAME_COUNTER = "state_prompt_name_counter";
     private Searchable mFragment;
 
@@ -58,7 +58,8 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
     private MissingNameItem[] mMissingNameItems;
     private ImportUsfm mUsfm;
     private Handler mHand;
-    private boolean mShowingResults = false;
+    private eImportState mCurrentState = eImportState.needLanguage;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,11 +69,6 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         if(findViewById(R.id.fragment_container) != null) {
             if(savedInstanceState != null) {
                 mFragment = (Searchable)getFragmentManager().findFragmentById(R.id.fragment_container);
-            } else {
-                mFragment = new TargetLanguageListFragment();
-                ((TargetLanguageListFragment) mFragment).setArguments(getIntent().getExtras());
-                getFragmentManager().beginTransaction().add(R.id.fragment_container, (TargetLanguageListFragment) mFragment).commit();
-                // TODO: animate
             }
         }
     }
@@ -80,6 +76,8 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
     private void doFileImport() {
         Intent intent = getIntent();
         Bundle args = intent.getExtras();
+
+        mCurrentState = eImportState.processingFiles;
 
         mUsfm = new ImportUsfm(this, mTargetLanguage);
         processUsfmImportWithProgress(intent, args);
@@ -98,7 +96,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                     mCount = new Counter(mMissingNameItems.length);
                     usfmPromptForNextName();
                 } else {
-                    usfmImportFinished();
+                    usfmProcessFileFinished();
                 }
             }
         };
@@ -159,7 +157,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
         if(mCount != null) {
             if (mCount.isEmpty()) {
-                usfmImportFinished();
+                usfmProcessFileFinished();
                 return;
             }
 
@@ -175,6 +173,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
     private void usfmPromptForName() {
         if(mCount != null) {
+            mCurrentState = eImportState.promptingForBookName;
             int i = mCount.decrement();
             final MissingNameItem item = mMissingNameItems[i];
 
@@ -227,13 +226,13 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         thread.start();
     }
 
-    private void usfmImportFinished() {
+    private void usfmProcessFileFinished() {
+        mCurrentState = eImportState.showingResults;
+
         mHand.post(new Runnable() {
             @Override
             public void run() {
                 mProgressDialog.hide();
-
-                mShowingResults = true;
 
                 mUsfm.showResults(new ImportUsfm.OnFinishedListener() {
                     @Override
@@ -254,6 +253,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
     }
 
     private void usfmImportDone() {
+        mCurrentState = eImportState.finished;
         mUsfm.cleanup();
         mProgressDialog.dismiss();
         mProgressDialog = null;
@@ -261,7 +261,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
     }
 
     private void doImportingWithProgress() {
-
+        mCurrentState = eImportState.importingFiles;
         Thread thread = new Thread() {
             @Override
             public void run() {
@@ -429,6 +429,9 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                 return true;
             case R.id.action_search:
                 return true;
+            case R.id.home:
+                onBackPressed();
+                return true;
             case R.id.action_update:
                 CustomAlertDialog.Create(this)
                         .setTitle(R.string.update_projects)
@@ -458,7 +461,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                 mTargetLanguage = AppContext.getLibrary().getTargetLanguage(targetLanguageId);
             }
 
-            mShowingResults = savedInstanceState.getBoolean(STATE_SHOWING_RESULTS);
+            mCurrentState = eImportState.fromInt(savedInstanceState.getInt(STATE_CURRENT_STATE, eImportState.needLanguage.getValue()));
 
             String usfmStr = savedInstanceState.getString(STATE_USFM, null);
             if(usfmStr != null) {
@@ -470,14 +473,65 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                 mCount = new Counter(count + 1); // backup one
                 mMissingNameItems = mUsfm.getMissingNames();
             }
+        }
 
-            if(mShowingResults) {
+        startState(mCurrentState);
+    }
+
+    private void startState(eImportState currentState) {
+        mCurrentState = currentState;
+
+        switch (currentState) {
+            case needLanguage:
+                if(null == mFragment) {
+                    mFragment = new TargetLanguageListFragment();
+                    ((TargetLanguageListFragment) mFragment).setArguments(getIntent().getExtras());
+                    getFragmentManager().beginTransaction().add(R.id.fragment_container, (TargetLanguageListFragment) mFragment).commit();
+                    // TODO: animate
+                }
+                break;
+
+            case processingFiles:
+                // not resumable - presume completed, proceed to next
+
+            case promptingForBookName:
+                if(mCount != null) {
+                    showProgressDialog();
+                    usfmPromptForName();
+                    break;
+                }
+                // otherwise we go down to showing results
+
+            case showingResults:
                 showProgressDialog();
-                usfmImportFinished();
-            } else if(mCount != null) {
-                showProgressDialog();
-                usfmPromptForName();
-            }
+                usfmProcessFileFinished();
+                break;
+
+            case importingFiles:
+                // not resumable - presume completed
+                break;
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        switch (mCurrentState) {
+            case needLanguage:
+                cancelled();
+                break;
+
+            case showingResults:
+            case promptingForBookName:
+            case processingFiles:
+                if(mUsfm != null) {
+                    mUsfm.cleanup();
+                }
+                startState(eImportState.needLanguage);
+                break;
+
+            default:
+                // not backup-able - presume completed
+                break;
         }
     }
 
@@ -501,7 +555,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         }
 
 
-        outState.putBoolean(STATE_SHOWING_RESULTS, mShowingResults);
+        outState.putInt(STATE_CURRENT_STATE, mCurrentState.getValue());
 
         super.onSaveInstanceState(outState);
     }
@@ -511,19 +565,29 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         mTargetLanguage = targetLanguage;
 
         if(null != targetLanguage) {
+            getFragmentManager().beginTransaction().remove((TargetLanguageListFragment) mFragment).commit();
+            mFragment = null;
             doFileImport();
         }
-
-//        finished();
+        else {
+            cancelled();
+        }
     }
 
     @Override
     public void onItemClick(String projectId) {
 
         getFragmentManager().beginTransaction().remove((ProjectListFragment) mFragment).commit();
-
+        mFragment = null;
+        mProgressDialog.show();
         final MissingNameItem item = mMissingNameItems[mCount.counter];
         usfmProcessBook(item, projectId);
+    }
+
+    private void cancelled() {
+        Intent data = new Intent();
+        setResult(RESULT_CANCELED, data);
+        finish();
     }
 
     private void finished() {
@@ -538,5 +602,32 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
     public interface OnPromptFinishedListener {
         void onFinished(boolean success, String name);
+    }
+
+    public enum eImportState {
+        needLanguage(0),
+        processingFiles(1),
+        promptingForBookName(2),
+        showingResults(3),
+        importingFiles(4),
+        finished(5);
+
+
+        private int _value;
+
+        eImportState(int Value) {
+            this._value = Value;
+        }
+
+        public int getValue() {
+            return _value;
+        }
+
+        public static eImportState fromInt(int i) {
+            for (eImportState b : eImportState.values()) {
+                if (b.getValue() == i) { return b; }
+            }
+            return null;
+        }
     }
 }
