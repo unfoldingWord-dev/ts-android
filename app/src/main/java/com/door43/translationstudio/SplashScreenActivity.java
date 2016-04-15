@@ -9,7 +9,6 @@ import android.widget.TextView;
 
 import com.door43.tools.reporting.GlobalExceptionHandler;
 import com.door43.translationstudio.newui.BaseActivity;
-import com.door43.translationstudio.newui.home.HomeActivity;
 import com.door43.translationstudio.tasks.InitializeLibraryTask;
 import com.door43.translationstudio.tasks.LoadTargetLanguagesTask;
 import com.door43.translationstudio.tasks.UpdateAppTask;

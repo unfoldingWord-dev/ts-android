@@ -88,6 +88,14 @@ public class AppContext {
     }
 
     /**
+     * Returns the version of the terms of use
+     * @return
+     */
+    public static int getTermsOfUseVersion() {
+        return mContext.getResources().getInteger(R.integer.terms_of_use_version);
+    }
+
+    /**
      * Checks if the device is a tablet
      * @return
      */
@@ -203,7 +211,7 @@ public class AppContext {
      * @return true if the backup was actually performed
      */
     public static boolean backupTargetTranslation(TargetTranslation targetTranslation, Boolean orphaned) throws Exception {
-        if(targetTranslation != null) {
+        if(targetTranslation != null && getProfile() != null) {
             String name = targetTranslation.getId();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss", Locale.US);
             if (orphaned) {
@@ -245,7 +253,7 @@ public class AppContext {
         }
         return false;
     }
-    
+
     /**
      * Returns the path to the public files directory.
      * Files saved in this directory will not be removed when the application is uninstalled

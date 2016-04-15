@@ -12,6 +12,7 @@ public class Profile {
     private static final long serialVersionUID = 0L;
     private String fullName;
     private User gogsUser;
+    private int termsOfUseLastAccepted = 0;
 
     /**
      * Creates a new profile
@@ -34,6 +35,7 @@ public class Profile {
         } else {
             json.put("full_name", fullName);
         }
+        json.put("terms_last_accepted", termsOfUseLastAccepted);
         return json;
     }
 
@@ -62,6 +64,10 @@ public class Profile {
             if(json.has("gogs_token")) {
                 gogsToken = Token.fromJSON(json.getJSONObject("gogs_token"));
             }
+            int termsLastAccepted = 0;
+            if(json.has("terms_last_accepted")) {
+                termsLastAccepted = json.getInt("terms_last_accepted");
+            }
 
             if(gogsUser != null) {
                 fullName = gogsUser.fullName;
@@ -69,6 +75,7 @@ public class Profile {
             }
             profile = new Profile(fullName);
             profile.gogsUser = gogsUser;
+            profile.setTermsOfUseLastAccepted(termsLastAccepted);
         }
         return profile;
     }
@@ -88,5 +95,13 @@ public class Profile {
      */
     public NativeSpeaker getNativeSpeaker() {
         return new NativeSpeaker(this.fullName);
+    }
+
+    public int getTermsOfUseLastAccepted() {
+        return termsOfUseLastAccepted;
+    }
+
+    public void setTermsOfUseLastAccepted(int termsOfUseLastAccepted) {
+        this.termsOfUseLastAccepted = termsOfUseLastAccepted;
     }
 }

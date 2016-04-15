@@ -34,8 +34,10 @@
         android:text="@string/loading"
         android:textSize="@dimen/body"
         android:id="@+id/loadingText"
+        android:scrollHorizontally="false"
         android:gravity="center"
         android:textColor="@color/dark_secondary_text"
-        android:padding="10dp" />
+        android:padding="10dp"
+        android:lines="2" />
 
 </LinearLayout>
