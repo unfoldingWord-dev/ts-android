@@ -672,4 +672,5 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="logging_in">Logging in</string>
     <string name="double_check_credentials">Double check your credentials and try again</string>
     <string name="passwords_mismatch">Passwords do not match</string>
+    <string name="contributors">Contributors</string>
 </resources>
