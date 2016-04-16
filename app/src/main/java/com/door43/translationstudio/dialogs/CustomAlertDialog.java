@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.FragmentManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -62,6 +63,8 @@ public class CustomAlertDialog extends DialogFragment {
     private Activity mContext;
 
     private boolean mAutoDismiss = true;
+    private boolean mCancellable = true;
+    private boolean mDialogDismissed = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -173,6 +176,21 @@ public class CustomAlertDialog extends DialogFragment {
 
         return rootView;
     }
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        if(mCancellable && !mDialogDismissed) {
+            mDialogDismissed = true;
+            mNegativeButton.callOnClick();
+        }
+    }
+
+    @Override
+    public void dismiss() {
+        mDialogDismissed = true;
+        super.dismiss();
+    }
+
 
     /**
      * Chainable - set context to use for resources
@@ -361,6 +379,7 @@ public class CustomAlertDialog extends DialogFragment {
      */
     public CustomAlertDialog setCancelableChainable(boolean cancelable) {
         super.setCancelable(cancelable);
+        mCancellable = cancelable;
         return this;
     }
 

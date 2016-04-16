@@ -252,8 +252,7 @@ public class ImportUsfm {
             results = results + currentResults + "\n";
         }
 
-        format = mContext.getResources().getString(R.string.selected_language);
-        String language = String.format(format, mTargetLanguage.getId() + " - " + mTargetLanguage.name);
+        String language = getLanguageTitle();
         results = language + "\n" + results;
 
         CustomAlertDialog.Create(mContext)
@@ -272,6 +271,13 @@ public class ImportUsfm {
                     }
                 })
                 .show("results");
+    }
+
+    public String getLanguageTitle() {
+        String format;
+        format = mContext.getResources().getString(R.string.selected_language);
+        String language = String.format(format, mTargetLanguage.getId() + " - " + mTargetLanguage.name);
+        return language;
     }
 
     /**

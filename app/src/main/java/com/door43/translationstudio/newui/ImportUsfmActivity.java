@@ -69,6 +69,8 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         if(findViewById(R.id.fragment_container) != null) {
             if(savedInstanceState != null) {
                 mFragment = (Searchable)getFragmentManager().findFragmentById(R.id.fragment_container);
+            } else {
+                startState(eImportState.needLanguage);
             }
         }
     }
@@ -80,6 +82,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         mCurrentState = eImportState.processingFiles;
 
         mUsfm = new ImportUsfm(this, mTargetLanguage);
+        setTitle(mUsfm.getLanguageTitle());
         processUsfmImportWithProgress(intent, args);
     }
 
@@ -164,8 +167,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
             mHand.post(new Runnable() {
                 @Override
                 public void run() {
-
-                    usfmPromptForName();
+                    startState(eImportState.promptingForBookName);
                 }
             });
         }
@@ -173,7 +175,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
     private void usfmPromptForName() {
         if(mCount != null) {
-            mCurrentState = eImportState.promptingForBookName;
+            mProgressDialog.hide();
             int i = mCount.decrement();
             final MissingNameItem item = mMissingNameItems[i];
 
@@ -210,6 +212,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                             usfmPromptForNextName();
                         }
                     })
+                    .setCancelableChainable(true)
                     .show("getName");
         }
     }
@@ -244,7 +247,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                             mProgressDialog.setMessage("");
                             doImportingWithProgress();
                         } else {
-                            usfmImportDone();
+                            usfmImportDone(true);
                         }
                     }
                 });
@@ -252,12 +255,16 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         });
     }
 
-    private void usfmImportDone() {
+    private void usfmImportDone(boolean cancelled) {
         mCurrentState = eImportState.finished;
         mUsfm.cleanup();
         mProgressDialog.dismiss();
         mProgressDialog = null;
-        finished();
+        if(cancelled) {
+            cancelled();
+        } else {
+            finished();
+        }
     }
 
     private void doImportingWithProgress() {
@@ -315,7 +322,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                 mHand.post(new Runnable() {
                     @Override
                     public void run() {
-                        usfmImportDone();
+                        usfmImportDone(false);
                     }
                 });
             }
@@ -481,6 +488,10 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
     private void startState(eImportState currentState) {
         mCurrentState = currentState;
 
+        if(mUsfm != null) {
+            setTitle(mUsfm.getLanguageTitle());
+        }
+
         switch (currentState) {
             case needLanguage:
                 if(null == mFragment) {
@@ -520,8 +531,11 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                 cancelled();
                 break;
 
-            case showingResults:
             case promptingForBookName:
+                selectBookName(null);
+                break;
+
+            case showingResults:
             case processingFiles:
                 if(mUsfm != null) {
                     mUsfm.cleanup();
@@ -576,12 +590,19 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
     @Override
     public void onItemClick(String projectId) {
+        selectBookName(projectId);
+    }
 
-        getFragmentManager().beginTransaction().remove((ProjectListFragment) mFragment).commit();
-        mFragment = null;
-        mProgressDialog.show();
-        final MissingNameItem item = mMissingNameItems[mCount.counter];
-        usfmProcessBook(item, projectId);
+    private void selectBookName(String projectId) {
+        if(projectId != null) {
+            getFragmentManager().beginTransaction().remove((ProjectListFragment) mFragment).commit();
+            mFragment = null;
+            mProgressDialog.show();
+            final MissingNameItem item = mMissingNameItems[mCount.counter];
+            usfmProcessBook(item, projectId);
+        } else { //book cancelled
+            usfmPromptForNextName();
+        }
     }
 
     private void cancelled() {
