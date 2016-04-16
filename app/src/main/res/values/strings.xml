@@ -673,4 +673,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="double_check_credentials">Double check your credentials and try again</string>
     <string name="passwords_mismatch">Passwords do not match</string>
     <string name="contributors">Contributors</string>
+    <string name="show_passwords">Show Passwords</string>
+    <string name="hide_passwords">Hide Passwords</string>
+    <string name="log_out">Log out</string>
+    <string name="gogs_username_already_exists">That username already exists</string>
+    <string name="registration_failed">Your account could not be created.</string>
 </resources>

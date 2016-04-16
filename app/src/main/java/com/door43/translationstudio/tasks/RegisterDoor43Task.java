@@ -22,7 +22,7 @@ public class RegisterDoor43Task extends ManagedTask {
     private final String fullName;
     private final String email;
     private User user = null;
-    private Response response;
+    private String error;
 
     public RegisterDoor43Task(String username, String password, String fullName, String email) {
         this.username = username;
@@ -50,7 +50,14 @@ public class RegisterDoor43Task extends ManagedTask {
             this.user = api.createUser(userTemplate, authUser, true);
 
             if(this.user == null) {
-                this.response = api.getLastResponse();
+                Response response = api.getLastResponse();
+
+                // check if username already exists
+                User existingUser = api.getUser(userTemplate, null);
+                if(existingUser != null) {
+                    this.error = AppContext.context().getResources().getString(R.string.gogs_username_already_exists);
+                }
+
                 Logger.w(LoginDoor43Task.class.getName(), "gogs api responded with " + response.code + ": " + response.toString(), response.exception);
                 return;
             }
@@ -62,7 +69,8 @@ public class RegisterDoor43Task extends ManagedTask {
             // validate login
             if (this.user.token == null) {
                 this.user = null;
-                this.response = api.getLastResponse();
+                this.error = "";
+                Response response = api.getLastResponse();
                 Logger.w(LoginDoor43Task.class.getName(), "gogs api responded with " + response.code + ": " + response.toString(), response.exception);
             }
         } else {
@@ -79,10 +87,10 @@ public class RegisterDoor43Task extends ManagedTask {
     }
 
     /**
-     * Returns the last response the user gave if an error occured
+     * Returns the last error the user gave if an error occured
      * @return
      */
-    public Response getResponse() {
-        return response;
+    public String getError() {
+        return error;
     }
 }

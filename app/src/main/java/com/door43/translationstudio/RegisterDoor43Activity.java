@@ -4,9 +4,11 @@ import android.app.ProgressDialog;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ToggleButton;
 
 import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
@@ -32,6 +34,17 @@ public class RegisterDoor43Activity extends AppCompatActivity implements Managed
         final EditText passwordText = (EditText)findViewById(R.id.password);
         final EditText password2Text = (EditText)findViewById(R.id.password2);
 
+        final ToggleButton showPasswordButton = (ToggleButton) findViewById(R.id.show_password_button);
+        showPasswordButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int inputType = showPasswordButton.isChecked() ? InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD : InputType.TYPE_TEXT_VARIATION_PASSWORD;
+                passwordText.setInputType(InputType.TYPE_CLASS_TEXT | inputType);
+                passwordText.setSelection(passwordText.getText().length());
+                password2Text.setInputType(InputType.TYPE_CLASS_TEXT | inputType);
+                password2Text.setSelection(password2Text.getText().length());
+            }
+        });
         Button cancelButton = (Button)findViewById(R.id.cancel_button);
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -82,7 +95,12 @@ public class RegisterDoor43Activity extends AppCompatActivity implements Managed
             }
         });
 
-        // TODO: 4/15/16 connect to existing task
+
+        RegisterDoor43Task task = (RegisterDoor43Task) TaskManager.getTask(RegisterDoor43Task.TASK_ID);
+        if(task != null) {
+            showProgressDialog();
+            task.addOnFinishedListener(this);
+        }
     }
 
     private void showProgressDialog() {
@@ -112,10 +130,12 @@ public class RegisterDoor43Activity extends AppCompatActivity implements Managed
             AppContext.setProfile(profile);
             finish();
         } else {
+            String error =((RegisterDoor43Task)task).getError();
+            error = error == null ? getResources().getString(R.string.registration_failed) : error;
             // registration failed
             CustomAlertDialog.Create(this)
                     .setTitle(R.string.error)
-                    .setMessage(R.string.double_check_credentials)
+                    .setMessage(error)
                     .setPositiveButton(R.string.label_ok, null)
                     .show("registration_failed");
         }

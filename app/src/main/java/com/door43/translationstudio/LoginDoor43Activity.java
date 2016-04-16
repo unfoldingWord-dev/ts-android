@@ -50,7 +50,6 @@ public class LoginDoor43Activity extends AppCompatActivity implements ManagedTas
 
         LoginDoor43Task task = (LoginDoor43Task) TaskManager.getTask(LoginDoor43Task.TASK_ID);
         if(task != null) {
-            // TRICKY: onstart is only called once so we manually call it
             showProgressDialog();
             task.addOnFinishedListener(this);
         }
@@ -68,7 +67,8 @@ public class LoginDoor43Activity extends AppCompatActivity implements ManagedTas
         if(user != null) {
             // save gogs user to profile
             // TODO: 4/15/16 if the fullname has not been set we need to ask for it
-            Profile profile = new Profile(user.fullName);
+            String fullName = user.fullName == null || user.fullName.isEmpty() ? user.getUsername() : user.fullName;
+            Profile profile = new Profile(fullName);
             profile.gogsUser = user;
             AppContext.setProfile(profile);
             finish();
