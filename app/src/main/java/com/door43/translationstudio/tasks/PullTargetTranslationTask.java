@@ -13,19 +13,21 @@ import com.door43.translationstudio.git.TransportCallback;
 import com.door43.util.tasks.ManagedTask;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.PullResult;
-import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.TransportException;
+import org.eclipse.jgit.errors.NoRemoteRepositoryException;
 import org.eclipse.jgit.lib.ProgressMonitor;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 /**
  * Created by joel on 4/18/16.
  */
 public class PullTargetTranslationTask extends ManagedTask {
 
+    public static final String TASK_ID = "pull_target_translation_task";
     private final TargetTranslation targetTranslation;
     private String message = "";
     private Status status = Status.UNKNOWN;
@@ -46,7 +48,11 @@ public class PullTargetTranslationTask extends ManagedTask {
         if(AppContext.context().isNetworkAvailable() && profile != null && profile.gogsUser != null) {
             String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
             String remote = server + ":" + profile.gogsUser.getUsername() + "/" + this.targetTranslation.getId() + ".git";
-
+            try {
+                this.targetTranslation.commitSync();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             Repo repo = this.targetTranslation.getRepo();
             this.message = pull(repo, remote);
         }
@@ -55,15 +61,17 @@ public class PullTargetTranslationTask extends ManagedTask {
     private String pull(Repo repo, String remote) {
         Git git;
         try {
+            repo.setRemote("origin", remote);
             git = repo.getGit();
-        } catch (IOException e1) {
+        } catch (IOException e) {
             return null;
         }
 
         // TODO: we might want to get some progress feedback for the user
         PullCommand pullCommand = git.pull()
                 .setTransportConfigCallback(new TransportCallback())
-                .setRemote(remote)
+                .setRemote("origin")
+                .setRemoteBranchName("master")
                 .setProgressMonitor(new ProgressMonitor() {
                     @Override
                     public void start(int totalTasks) {
@@ -92,13 +100,46 @@ public class PullTargetTranslationTask extends ManagedTask {
                 });
         try {
             PullResult result = pullCommand.call();
-            this.status = Status.OK;
+            MergeResult mergeResult = result.getMergeResult();
+            if(mergeResult != null && mergeResult.getMergedCommits().length > 0) {
+                this.status = Status.RECEIVED_UPDATES;
+            } else {
+                this.status = Status.UP_TO_DATE;
+            }
+            // TODO: 4/18/16 check if there were merge conflicts
             // TODO: 4/18/16 parse result
+            // TODO: 4/18/16 check if updates were downloaded or if we are up to date
             return "message";
-        } catch (GitAPIException e) {
+        } catch (TransportException e) {
             Logger.e(this.getClass().getName(), e.getMessage(), e);
+            Throwable cause = e.getCause();
+            if(cause != null) {
+                Throwable subException = cause.getCause();
+                if(subException != null) {
+                    String detail = subException.getMessage();
+                    if ("Auth fail".equals(detail)) {
+                        this.status = Status.AUTH_FAILURE; // we do special handling for auth failure
+                    }
+                } else if(cause instanceof NoRemoteRepositoryException) {
+                    this.status = Status.NO_REMOTE_REPO;
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            Throwable cause = e.getCause();
+            if(cause instanceof NoRemoteRepositoryException) {
+                this.status = Status.NO_REMOTE_REPO;
+            }
+            Logger.e(this.getClass().getName(), e.getMessage(), e);
+            return null;
+        } catch (OutOfMemoryError e) {
+            Logger.e(this.getClass().getName(), e.getMessage(), e);
+            this.status = Status.OUT_OF_MEMORY;
+            return null;
+        } catch (Throwable e) {
+            Logger.e(this.getClass().getName(), e.getMessage(), e);
+            return null;
         }
-        return null;
     }
 
     public String getMessage() {
@@ -110,8 +151,12 @@ public class PullTargetTranslationTask extends ManagedTask {
     }
 
     public enum Status {
-        OK,
+        UP_TO_DATE,
         MERGE_CONFLICTS,
+        RECEIVED_UPDATES,
+        OUT_OF_MEMORY,
+        AUTH_FAILURE,
+        NO_REMOTE_REPO,
         UNKNOWN
     }
 }

@@ -112,32 +112,36 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                     }
 
                     // tag as published
-                    try {
-                        final Handler hand = new Handler(Looper.getMainLooper());
-                        targetTranslation.setPublished(new TargetTranslation.OnPublishedListener() {
-                            @Override
-                            public void onSuccess() {
-                                // begin upload
-                                PushTargetTranslationTask task = new PushTargetTranslationTask(targetTranslation);
-                                mTaskWatcher.watch(task);
-                                TaskManager.addTask(task, PushTargetTranslationTask.TASK_ID);
-                            }
+//                    try {
+//                        final Handler hand = new Handler(Looper.getMainLooper());
+//                        targetTranslation.setPublished(new TargetTranslation.OnPublishedListener() {
+//                            @Override
+//                            public void onSuccess() {
+//                                // begin upload
+//                                PushTargetTranslationTask task = new PushTargetTranslationTask(targetTranslation);
+//                                mTaskWatcher.watch(task);
+//                                TaskManager.addTask(task, PushTargetTranslationTask.TASK_ID);
+//                            }
+//
+//                            @Override
+//                            public void onFailed(Exception e) {
+//                                hand.post(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        notifyPublishFailed(targetTranslation);
+//                                    }
+//                                });
+//                            }
+//                        });
+//                    } catch (Exception e) {
+//                        Logger.e(PublishFragment.class.getName(), "Failed to mark target translation " + targetTranslation.getId() + " as publishable", e);
+//                        notifyPublishFailed(targetTranslation);
+//                        return;
+//                    }
 
-                            @Override
-                            public void onFailed(Exception e) {
-                                hand.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        notifyPublishFailed(targetTranslation);
-                                    }
-                                });
-                            }
-                        });
-                    } catch (Exception e) {
-                        Logger.e(PublishFragment.class.getName(), "Failed to mark target translation " + targetTranslation.getId() + " as publishable", e);
-                        notifyPublishFailed(targetTranslation);
-                        return;
-                    }
+                    PullTargetTranslationTask task = new PullTargetTranslationTask(targetTranslation);
+                    mTaskWatcher.watch(task);
+                    TaskManager.addTask(task, PullTargetTranslationTask.TASK_ID);
                 } else {
                     Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.internet_not_available, Snackbar.LENGTH_LONG);
                     ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
@@ -224,7 +228,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             final String message = ((PushTargetTranslationTask)task).getMessage();
 
             if(status == PushTargetTranslationTask.Status.OK) {
-                // TODO: 4/18/16 if there are conflicts upstream then try to pull first
+//                final String message = ((PullTargetTranslationTask)task).getMessage();
                 getListener().finishPublishing();
                 Handler hand = new Handler(Looper.getMainLooper());
                 hand.post(new Runnable() {
@@ -244,7 +248,63 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                                 }).show("PubFinished");
                     }
                 });
-            } else if(status == PushTargetTranslationTask.Status.AUTH_FAILURE) {
+                // TRICKY: we pull after pushing to handle auth errors and missing repos. Once pushed we must pull to retrieve latest info
+//                PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation);
+//                mTaskWatcher.watch(pullTask);
+//                TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
+            } else {
+                notifyPublishFailed(targetTranslation);
+            }
+
+        } else if(task instanceof RegisterSSHKeysTask) {
+            if(((RegisterSSHKeysTask)task).isSuccess()) {
+                // try to push again
+                PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation);
+                mTaskWatcher.watch(pullTask);
+                TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
+            } else {
+                notifyPublishFailed(targetTranslation);
+            }
+        } else if(task instanceof PullTargetTranslationTask) {
+            PullTargetTranslationTask.Status status = ((PullTargetTranslationTask)task).getStatus();
+            //  TRICKY: we continue to push for unknown status in case the repo was just created
+            if(status == PullTargetTranslationTask.Status.RECEIVED_UPDATES
+                    || status == PullTargetTranslationTask.Status.UP_TO_DATE
+                    || status == PullTargetTranslationTask.Status.UNKNOWN) {
+                try {
+                    final Handler hand = new Handler(Looper.getMainLooper());
+                    targetTranslation.setPublished(new TargetTranslation.OnPublishedListener() {
+                        @Override
+                        public void onSuccess() {
+                            // begin upload
+                            PushTargetTranslationTask task = new PushTargetTranslationTask(targetTranslation);
+                            mTaskWatcher.watch(task);
+                            TaskManager.addTask(task, PushTargetTranslationTask.TASK_ID);
+                        }
+
+                        @Override
+                        public void onFailed(Exception e) {
+                            hand.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    notifyPublishFailed(targetTranslation);
+                                }
+                            });
+                        }
+                    });
+                } catch (Exception e) {
+                    Logger.e(PublishFragment.class.getName(), "Failed to mark target translation " + targetTranslation.getId() + " as publishable", e);
+                    notifyPublishFailed(targetTranslation);
+                    return;
+                }
+
+                // TODO: 4/18/16 should we tag again????
+//                PushTargetTranslationTask pushTask = new PushTargetTranslationTask(targetTranslation);
+//                mTaskWatcher.watch(pushTask);
+//                TaskManager.addTask(pushTask, PushTargetTranslationTask.TASK_ID);
+//            } else if(status == PullTargetTranslationTask.Status.UP_TO_DATE) {
+
+            } else if(status == PullTargetTranslationTask.Status.AUTH_FAILURE) {
                 // if we have already tried ask the user if they would like to try again
                 if(AppContext.context().hasKeys()) {
                     showAuthFailure();
@@ -254,29 +314,11 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(false);
                 mTaskWatcher.watch(keyTask);
                 TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
-            } else if(status == PushTargetTranslationTask.Status.NO_REMOTE_REPO) {
+            } else if(status == PullTargetTranslationTask.Status.NO_REMOTE_REPO) {
                 // create missing repo
                 CreateRepositoryTask repoTask = new CreateRepositoryTask(targetTranslation);
                 mTaskWatcher.watch(repoTask);
                 TaskManager.addTask(repoTask, CreateRepositoryTask.TASK_ID);
-            } else {
-                notifyPublishFailed(targetTranslation);
-            }
-
-        } else if(task instanceof RegisterSSHKeysTask) {
-            if(((RegisterSSHKeysTask)task).isSuccess()) {
-                PushTargetTranslationTask pushTask = new PushTargetTranslationTask(targetTranslation);
-                mTaskWatcher.watch(pushTask);
-                TaskManager.addTask(pushTask, PushTargetTranslationTask.TASK_ID);
-            } else {
-                notifyPublishFailed(targetTranslation);
-            }
-        } else if(task instanceof PullTargetTranslationTask) {
-            PullTargetTranslationTask.Status status = ((PullTargetTranslationTask)task).getStatus();
-            if(status == PullTargetTranslationTask.Status.OK) {
-                PushTargetTranslationTask pushTask = new PushTargetTranslationTask(targetTranslation);
-                mTaskWatcher.watch(pushTask);
-                TaskManager.addTask(pushTask, PushTargetTranslationTask.TASK_ID);
             } else if(status == PullTargetTranslationTask.Status.MERGE_CONFLICTS) {
                 // TODO: 4/18/16 ask user how to handle conflicts
                 Logger.i(this.getClass().getName(), "handle merge conflicts");
@@ -285,9 +327,9 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             }
         } else if(task instanceof CreateRepositoryTask) {
             if(((CreateRepositoryTask)task).isSuccess()) {
-                PushTargetTranslationTask pushTask = new PushTargetTranslationTask(targetTranslation);
-                mTaskWatcher.watch(pushTask);
-                TaskManager.addTask(pushTask, PushTargetTranslationTask.TASK_ID);
+                PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation);
+                mTaskWatcher.watch(pullTask);
+                TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
             } else {
                 notifyPublishFailed(targetTranslation);
             }
