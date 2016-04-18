@@ -1031,39 +1031,33 @@ public class TargetTranslation {
      * @return true if successful
      */
     public void setPublished(final OnPublishedListener listener)  {
-        try {
-            Git git = getRepo().getGit();
-            final TagCommand tag = git.tag();
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss", Locale.US);
-            format.setTimeZone(TimeZone.getTimeZone("UTC"));
-            String name = "R2P=" + format.format(new Date());
-            tag.setName(name);
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    Git git = getRepo().getGit();
+                    final TagCommand tag = git.tag();
+                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd/HH.mm.ss", Locale.US);
+                    format.setTimeZone(TimeZone.getTimeZone("UTC"));
+                    String name = "R2P/" + format.format(new Date());
+                    tag.setName(name);
 
-            Thread thread = new Thread() {
-                @Override
-                public void run() {
-                    try {
-                        // don't tag if already tagged
-                        if(getPublishedStatus() != PublishStatus.IS_CURRENT) {
-                            tag.call();
-                            if (listener != null) {
-                                listener.onSuccess();
-                            }
-                        }
-                    } catch (Exception e) {
-                        if(listener != null) {
-                            listener.onFailed(e);
-                        }
+                    // tag if not already
+                    if(getPublishedStatus() != PublishStatus.IS_CURRENT) {
+                        tag.call();
+                    }
+                    if (listener != null) {
+                        listener.onSuccess();
+                    }
+                } catch (Exception e) {
+                    if(listener != null) {
+                        listener.onFailed(e);
                     }
                 }
-            };
-            thread.start();
-
-        } catch (Exception e) {
-            if(listener != null) {
-                listener.onFailed(e);
             }
-        }
+        };
+        thread.start();
+
     }
 
     /**
@@ -1257,27 +1251,6 @@ public class TargetTranslation {
             commit = c;
         }
         return commit;
-    }
-
-    /**
-     * Sets whether or not this target translation is publishable
-     * @param publishable
-     * @param listener
-     * @throws Exception
-     * @deprecated this will go away after moving to gogs. Use setLegacyPublished(OnPublishedListener) instead
-     */
-    public void setLegacyPublished(boolean publishable, OnCommitListener listener) throws Exception {
-        File readyFile = new File(targetTranslationDir, "READY");
-        if(publishable) {
-            try {
-                readyFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            readyFile.delete();
-        }
-        commit(listener);
     }
 
     /**

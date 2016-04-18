@@ -342,7 +342,7 @@
     <string name="publish">Publish</string>
     <string name="backup">Backup</string>
     <string name="attached_files">Attached files</string>
-    <string name="requires_internet">This will use your internet connection</string>
+    <string name="requires_internet">Requires internet access</string>
     <string name="input_required">Input cannot be empty</string>
     <string name="dismiss">Dismiss</string>
     <string name="done">Done</string>
@@ -678,4 +678,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="log_out">Log out</string>
     <string name="gogs_username_already_exists">That username already exists</string>
     <string name="registration_failed">Your account could not be created.</string>
+    <string name="title_door43_account_required">Door43 Account Required</string>
+    <string name="door43_account_required">You must connect to a Door43 account first.</string>
+    <string name="login_doo43">Login with Door43 Account</string>
+    <string name="register_door43">Create new Door43 Account</string>
+    <string name="create_offline_profile">Create offline Account</string>
+    <string name="still_possible_to_register_door43">You can still create or login to a Door43 account later</string>
+    <string name="title_connect_door43">Connect To Door43</string>
 </resources>

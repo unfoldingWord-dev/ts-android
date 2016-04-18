@@ -21,6 +21,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
+import com.door43.translationstudio.newui.Door43LoginDialog;
 import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.tasks.UploadTargetTranslationTask;
 import com.door43.translationstudio.AppContext;
@@ -97,26 +98,34 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             @Override
             public void onClick(View v) {
                 if(AppContext.context().isNetworkAvailable()) {
+                    // make sure we have a gogs user
+                    if(AppContext.getProfile().gogsUser == null) {
+                        FragmentTransaction ft = getFragmentManager().beginTransaction();
+                        Door43LoginDialog dialog = new Door43LoginDialog();
+                        dialog.show(ft, Door43LoginDialog.TAG);
+                        return;
+                    }
+
+                    // tag as published
                     try {
                         final Handler hand = new Handler(Looper.getMainLooper());
-                        // TODO: once we switch to gogs we need to move the listener to the setPublished method.
-                        targetTranslation.setPublished(null);
-                        targetTranslation.setLegacyPublished(true, new TargetTranslation.OnCommitListener() {
+                        targetTranslation.setPublished(new TargetTranslation.OnPublishedListener() {
                             @Override
-                            public void onCommit(boolean success) {
-                                if (!success) {
-                                    hand.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            notifyPublishFailed(targetTranslation);
-                                        }
-                                    });
-                                } else {
-                                    // begin upload
-                                    UploadTargetTranslationTask task = new UploadTargetTranslationTask(targetTranslation);
-                                    mTaskWatcher.watch(task);
-                                    TaskManager.addTask(task, UploadTargetTranslationTask.TASK_ID);
-                                }
+                            public void onSuccess() {
+                                // begin upload
+                                UploadTargetTranslationTask task = new UploadTargetTranslationTask(targetTranslation);
+                                mTaskWatcher.watch(task);
+                                TaskManager.addTask(task, UploadTargetTranslationTask.TASK_ID);
+                            }
+
+                            @Override
+                            public void onFailed(Exception e) {
+                                hand.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        notifyPublishFailed(targetTranslation);
+                                    }
+                                });
                             }
                         });
                     } catch (Exception e) {
@@ -197,6 +206,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 snack.show();
             }
         });
+
         return rootView;
     }
 

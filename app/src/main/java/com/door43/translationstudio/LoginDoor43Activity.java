@@ -41,7 +41,9 @@ public class LoginDoor43Activity extends AppCompatActivity implements ManagedTas
                 AppContext.closeKeyboard(LoginDoor43Activity.this);
                 String username = usernameText.getText().toString();
                 String password = passwordText.getText().toString();
-                LoginDoor43Task task = new LoginDoor43Task(username, password);
+                Profile profile = AppContext.getProfile();
+                String fullName = profile == null ? null : profile.getFullName();
+                LoginDoor43Task task = new LoginDoor43Task(username, password, fullName);
                 showProgressDialog();
                 task.addOnFinishedListener(LoginDoor43Activity.this);
                 TaskManager.addTask(task, LoginDoor43Task.TASK_ID);
@@ -66,9 +68,12 @@ public class LoginDoor43Activity extends AppCompatActivity implements ManagedTas
         User user = ((LoginDoor43Task)task).getUser();
         if(user != null) {
             // save gogs user to profile
-            // TODO: 4/15/16 if the fullname has not been set we need to ask for it
-            String fullName = user.fullName == null || user.fullName.isEmpty() ? user.getUsername() : user.fullName;
-            Profile profile = new Profile(fullName);
+            if(user.fullName == null || user.fullName.isEmpty()) {
+                // TODO: 4/15/16 if the fullname has not been set we need to ask for it
+                // this is our quick fix to get the full name for now
+                user.fullName = user.getUsername();
+            }
+            Profile profile = new Profile(user.fullName);
             profile.gogsUser = user;
             AppContext.setProfile(profile);
             finish();

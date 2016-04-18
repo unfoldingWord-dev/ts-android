@@ -138,33 +138,10 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
             @Override
             public void onClick(View v) {
                 if(AppContext.context().isNetworkAvailable()) {
-                    try {
-                        final Handler hand = new Handler(Looper.getMainLooper());
-                        // TODO: 3/26/2016 We can completely remove this method call once we move to gogs
-                        // at that point we'll begin uploading right away
-                        mTargetTranslation.setLegacyPublished(false, new TargetTranslation.OnCommitListener() {
-                            @Override
-                            public void onCommit(boolean success) {
-                                if (!success) {
-                                    hand.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            notifyBackupFailed(mTargetTranslation);
-                                        }
-                                    });
-                                } else {
-                                    // begin upload
-                                    UploadTargetTranslationTask task = new UploadTargetTranslationTask(mTargetTranslation);
-                                    mTaskWatcher.watch(task);
-                                    TaskManager.addTask(task, UploadTargetTranslationTask.TASK_ID);
-                                }
-                            }
-                        });
-                    } catch (Exception e) {
-                        Logger.e(BackupDialog.class.getName(), "Failed to mark target translation " + mTargetTranslation.getId() + " as not publishable", e);
-                        notifyBackupFailed(mTargetTranslation);
-                        return;
-                    }
+                    // begin upload
+                    UploadTargetTranslationTask task = new UploadTargetTranslationTask(mTargetTranslation);
+                    mTaskWatcher.watch(task);
+                    TaskManager.addTask(task, UploadTargetTranslationTask.TASK_ID);
                 } else {
                     Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.internet_not_available, Snackbar.LENGTH_LONG);
                     ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));

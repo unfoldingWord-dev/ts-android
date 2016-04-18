@@ -21,12 +21,32 @@ public class LoginDoor43Task extends ManagedTask {
     private final String password;
     private final String username;
     private final String tokenName;
+    private final String fullName;
     private User user = null;
 
+    /**
+     * Logs into a door43 account
+     * @param username
+     * @param password
+     */
     public LoginDoor43Task(String username, String password) {
         this.username = username;
         this.password = password;
         this.tokenName = AppContext.context().getResources().getString(R.string.gogs_token_name);
+        this.fullName = null;
+    }
+
+    /**
+     * Logs into a door43 account. If no full_name exists on the account the provided one will be added
+     * @param username
+     * @param password
+     * @param fullName the name to add to the account if one does not areadly exist
+     */
+    public LoginDoor43Task(String username, String password, String fullName) {
+        this.username = username;
+        this.password = password;
+        this.tokenName = AppContext.context().getResources().getString(R.string.gogs_token_name);
+        this.fullName = fullName;
     }
 
 
@@ -59,6 +79,17 @@ public class LoginDoor43Task extends ManagedTask {
                 this.user = null;
                 Response response = api.getLastResponse();
                 Logger.w(LoginDoor43Task.class.getName(), "gogs api responded with " + response.code + ": " + response.toString(), response.exception);
+            }
+
+            // set missing full_name
+            if(this.user.fullName == null || this.user.fullName.isEmpty()
+                    && (this.fullName != null && !this.fullName.isEmpty())) {
+                this.user.fullName = this.fullName;
+                User updatedUser = api.editUser(this.user, authUser);
+                if(updatedUser == null) {
+                    Response response = api.getLastResponse();
+                    Logger.w(LoginDoor43Task.class.getName(), "The full_name could not be updated gogs api responded with " + response.code + ": " + response.toString(), response.exception);
+                }
             }
         }
     }
