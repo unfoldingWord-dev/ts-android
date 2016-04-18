@@ -23,6 +23,10 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.Door43LoginDialog;
 import com.door43.translationstudio.newui.FeedbackDialog;
+import com.door43.translationstudio.tasks.CreateRepositoryTask;
+import com.door43.translationstudio.tasks.PullTargetTranslationTask;
+import com.door43.translationstudio.tasks.PushTargetTranslationTask;
+import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
 import com.door43.translationstudio.tasks.UploadTargetTranslationTask;
 import com.door43.translationstudio.AppContext;
 import com.door43.util.tasks.GenericTaskWatcher;
@@ -46,6 +50,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
     private Button mUploadButton;
     private GenericTaskWatcher mTaskWatcher;
     private LinearLayout mUploadSuccess;
+    private TargetTranslation targetTranslation;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_publish_publish, container, false);
@@ -71,7 +76,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             mUploaded = args.getBoolean(ARG_PUBLISH_FINISHED, mUploaded);
         }
 
-        final TargetTranslation targetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
+        this.targetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
 
         mUploadSuccess = (LinearLayout)rootView.findViewById(R.id.upload_success);
         mUploadButton = (Button)rootView.findViewById(R.id.upload_button);
@@ -113,9 +118,9 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                             @Override
                             public void onSuccess() {
                                 // begin upload
-                                UploadTargetTranslationTask task = new UploadTargetTranslationTask(targetTranslation);
+                                PushTargetTranslationTask task = new PushTargetTranslationTask(targetTranslation);
                                 mTaskWatcher.watch(task);
-                                TaskManager.addTask(task, UploadTargetTranslationTask.TASK_ID);
+                                TaskManager.addTask(task, PushTargetTranslationTask.TASK_ID);
                             }
 
                             @Override
@@ -214,54 +219,96 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
     public void onFinished(final ManagedTask task) {
         mTaskWatcher.stop();
 
-        if(((UploadTargetTranslationTask)task).uploadSucceeded()) {
-            final String response = ((UploadTargetTranslationTask)task).getResponse();
-            mUploaded = true;
-            getListener().finishPublishing();
-            Handler hand = new Handler(Looper.getMainLooper());
-            hand.post(new Runnable() {
-                @Override
-                public void run() {
-                    mUploadButton.setVisibility(View.GONE);
-                    mUploadSuccess.setVisibility(View.VISIBLE);
+        if(task instanceof PushTargetTranslationTask) {
+            PushTargetTranslationTask.Status status =((PushTargetTranslationTask)task).getStatus();
+            final String message = ((PushTargetTranslationTask)task).getMessage();
 
-                    CustomAlertDialog.Create(getActivity())
-                        .setTitle(R.string.success).setMessage(R.string.project_uploaded).setPositiveButton(R.string.dismiss, null)
-                        .setNeutralButton(R.string.label_details, new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                CustomAlertDialog.Create(getActivity())
-                                    .setTitle(R.string.project_uploaded).setMessage(response).setPositiveButton(R.string.dismiss, null).show("PubDetails");
-                            }
-                        }).show("PubFinished");
+            if(status == PushTargetTranslationTask.Status.OK) {
+                // TODO: 4/18/16 if there are conflicts upstream then try to pull first
+                getListener().finishPublishing();
+                Handler hand = new Handler(Looper.getMainLooper());
+                hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mUploadButton.setVisibility(View.GONE);
+                        mUploadSuccess.setVisibility(View.VISIBLE);
+
+                        CustomAlertDialog.Create(getActivity())
+                                .setTitle(R.string.success).setMessage(R.string.project_uploaded).setPositiveButton(R.string.dismiss, null)
+                                .setNeutralButton(R.string.label_details, new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        CustomAlertDialog.Create(getActivity())
+                                                .setTitle(R.string.project_uploaded).setMessage(message).setPositiveButton(R.string.dismiss, null).show("PubDetails");
+                                    }
+                                }).show("PubFinished");
+                    }
+                });
+            } else if(status == PushTargetTranslationTask.Status.AUTH_FAILURE) {
+                // if we have already tried ask the user if they would like to try again
+                if(AppContext.context().hasKeys()) {
+                    showAuthFailure();
+                    return;
                 }
-            });
-        } else {
-            boolean authFailure = ((UploadTargetTranslationTask)task).uploadSucceeded();
-            if(authFailure) {
-                showAuthFailure((UploadTargetTranslationTask) task);
+
+                RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(false);
+                mTaskWatcher.watch(keyTask);
+                TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
+            } else if(status == PushTargetTranslationTask.Status.NO_REMOTE_REPO) {
+                // create missing repo
+                CreateRepositoryTask repoTask = new CreateRepositoryTask(targetTranslation);
+                mTaskWatcher.watch(repoTask);
+                TaskManager.addTask(repoTask, CreateRepositoryTask.TASK_ID);
             } else {
-                TargetTranslation targetTranslation = ((UploadTargetTranslationTask) task).getTargetTranslation();
+                notifyPublishFailed(targetTranslation);
+            }
+
+        } else if(task instanceof RegisterSSHKeysTask) {
+            if(((RegisterSSHKeysTask)task).isSuccess()) {
+                PushTargetTranslationTask pushTask = new PushTargetTranslationTask(targetTranslation);
+                mTaskWatcher.watch(pushTask);
+                TaskManager.addTask(pushTask, PushTargetTranslationTask.TASK_ID);
+            } else {
+                notifyPublishFailed(targetTranslation);
+            }
+        } else if(task instanceof PullTargetTranslationTask) {
+            PullTargetTranslationTask.Status status = ((PullTargetTranslationTask)task).getStatus();
+            if(status == PullTargetTranslationTask.Status.OK) {
+                PushTargetTranslationTask pushTask = new PushTargetTranslationTask(targetTranslation);
+                mTaskWatcher.watch(pushTask);
+                TaskManager.addTask(pushTask, PushTargetTranslationTask.TASK_ID);
+            } else if(status == PullTargetTranslationTask.Status.MERGE_CONFLICTS) {
+                // TODO: 4/18/16 ask user how to handle conflicts
+                Logger.i(this.getClass().getName(), "handle merge conflicts");
+            } else {
+                notifyPublishFailed(targetTranslation);
+            }
+        } else if(task instanceof CreateRepositoryTask) {
+            if(((CreateRepositoryTask)task).isSuccess()) {
+                PushTargetTranslationTask pushTask = new PushTargetTranslationTask(targetTranslation);
+                mTaskWatcher.watch(pushTask);
+                TaskManager.addTask(pushTask, PushTargetTranslationTask.TASK_ID);
+            } else {
                 notifyPublishFailed(targetTranslation);
             }
         }
     }
 
-    public void showAuthFailure(final UploadTargetTranslationTask task) {
+    public void showAuthFailure() {
         CustomAlertDialog.Create(getActivity())
                 .setTitle(R.string.upload_failed).setMessage(R.string.auth_failure_retry)
                 .setPositiveButton(R.string.yes, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        AppContext.context().generateKeys();
-                        mUploadButton.callOnClick();
+                        RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(true);
+                        mTaskWatcher.watch(keyTask);
+                        TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
                     }
                 })
                 .setNegativeButton(R.string.no, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        TargetTranslation targetTranslation = task.getTargetTranslation();
-                        notifyPublishFailed(targetTranslation);
+//                        notifyPublishFailed(targetTranslation);
                     }
                 })
                 .show("PubAuthFailure");

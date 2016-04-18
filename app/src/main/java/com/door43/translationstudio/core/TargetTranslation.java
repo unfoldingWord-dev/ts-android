@@ -1035,6 +1035,8 @@ public class TargetTranslation {
             @Override
             public void run() {
                 try {
+                    commitSync();
+
                     Git git = getRepo().getGit();
                     final TagCommand tag = git.tag();
                     SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd/HH.mm.ss", Locale.US);

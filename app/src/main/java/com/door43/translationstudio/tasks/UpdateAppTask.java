@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.preference.PreferenceManager;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.MainApplication;
@@ -89,6 +90,9 @@ public class UpdateAppTask extends ManagedTask {
         }
         if(lastVersion < 119) {
             AppContext.context().deleteDatabase(Library.DATABASE_NAME);
+        }
+        if(lastVersion < 122) {
+            PreferenceManager.setDefaultValues(AppContext.context(), R.xml.general_preferences, true);
         }
     }
 

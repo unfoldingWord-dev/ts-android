@@ -458,6 +458,7 @@ public class MainApplication extends Application {
     /**
      * Checks if the client has sent it's ssh key to the server
      * @return
+     * @deprecated we will always try to push first and register if it fails
      */
     public boolean hasRegisteredKeys() {
         SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
@@ -467,6 +468,7 @@ public class MainApplication extends Application {
     /**
      * Sets whether the client has sent it's ssh key to the server
      * @param hasRegistered
+     * @deprecated
      */
     public void setHasRegisteredKeys(Boolean hasRegistered) {
         SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);

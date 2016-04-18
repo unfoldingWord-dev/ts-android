@@ -23,7 +23,7 @@
 
     <string name="pref_default_auth_server_port" translatable="false">9095</string>
 
-    <string name="pref_default_git_server" translatable="false">gitolite3@ts.door43.org</string>
+    <string name="pref_default_git_server" translatable="false">git@git.door43.org</string>
 
     <string name="pref_default_git_server_port" translatable="false">9299</string>
 
