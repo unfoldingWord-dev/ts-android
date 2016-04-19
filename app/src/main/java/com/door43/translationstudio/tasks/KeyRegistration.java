@@ -21,6 +21,7 @@ import java.net.Socket;
 /**
  * Created by blm on 2/16/16.
  */
+@Deprecated
 public class KeyRegistration {
     private boolean mUploadSucceeded = false;
     private String mAuthServer;

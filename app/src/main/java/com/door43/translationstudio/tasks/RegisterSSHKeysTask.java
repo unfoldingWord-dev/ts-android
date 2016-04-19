@@ -40,6 +40,7 @@ public class RegisterSSHKeysTask extends ManagedTask {
     @Override
     public void start() {
         if(AppContext.context().isNetworkAvailable()) {
+            publishProgress(-1, "Authenticating");
             GogsAPI api = new GogsAPI(AppContext.getUserString(SettingsActivity.KEY_PREF_GOGS_API, R.string.pref_default_gogs_api));
             Profile profile = AppContext.getProfile();
             if (profile != null && profile.gogsUser != null) {

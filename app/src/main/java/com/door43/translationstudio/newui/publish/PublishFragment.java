@@ -68,7 +68,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             throw new InvalidParameterException("a valid target translation id is required");
         }
 
-        mTaskWatcher = new GenericTaskWatcher(getActivity(), R.string.publish);
+        mTaskWatcher = new GenericTaskWatcher(getActivity(), R.string.uploading);
         mTaskWatcher.setOnFinishedListener(this);
 
         // receive uploaded status from activity (overrides save state from fragment)
@@ -110,35 +110,6 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                         dialog.show(ft, Door43LoginDialog.TAG);
                         return;
                     }
-
-                    // tag as published
-//                    try {
-//                        final Handler hand = new Handler(Looper.getMainLooper());
-//                        targetTranslation.setPublished(new TargetTranslation.OnPublishedListener() {
-//                            @Override
-//                            public void onSuccess() {
-//                                // begin upload
-//                                PushTargetTranslationTask task = new PushTargetTranslationTask(targetTranslation);
-//                                mTaskWatcher.watch(task);
-//                                TaskManager.addTask(task, PushTargetTranslationTask.TASK_ID);
-//                            }
-//
-//                            @Override
-//                            public void onFailed(Exception e) {
-//                                hand.post(new Runnable() {
-//                                    @Override
-//                                    public void run() {
-//                                        notifyPublishFailed(targetTranslation);
-//                                    }
-//                                });
-//                            }
-//                        });
-//                    } catch (Exception e) {
-//                        Logger.e(PublishFragment.class.getName(), "Failed to mark target translation " + targetTranslation.getId() + " as publishable", e);
-//                        notifyPublishFailed(targetTranslation);
-//                        return;
-//                    }
-
                     PullTargetTranslationTask task = new PullTargetTranslationTask(targetTranslation);
                     mTaskWatcher.watch(task);
                     TaskManager.addTask(task, PullTargetTranslationTask.TASK_ID);
@@ -238,6 +209,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             if(status == PullTargetTranslationTask.Status.RECEIVED_UPDATES
                     || status == PullTargetTranslationTask.Status.UP_TO_DATE
                     || status == PullTargetTranslationTask.Status.UNKNOWN) {
+                Logger.i(this.getClass().getName(), "Changes on the server were synced with " + targetTranslation.getId());
                 try {
                     final Handler hand = new Handler(Looper.getMainLooper());
                     targetTranslation.setPublished(new TargetTranslation.OnPublishedListener() {
@@ -264,14 +236,8 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                     notifyPublishFailed(targetTranslation);
                     return;
                 }
-
-                // TODO: 4/18/16 should we tag again????
-//                PushTargetTranslationTask pushTask = new PushTargetTranslationTask(targetTranslation);
-//                mTaskWatcher.watch(pushTask);
-//                TaskManager.addTask(pushTask, PushTargetTranslationTask.TASK_ID);
-//            } else if(status == PullTargetTranslationTask.Status.UP_TO_DATE) {
-
             } else if(status == PullTargetTranslationTask.Status.AUTH_FAILURE) {
+                Logger.i(this.getClass().getName(), "Authentication failed");
                 // if we have already tried ask the user if they would like to try again
                 if(AppContext.context().hasKeys()) {
                     showAuthFailure();
@@ -282,18 +248,20 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 mTaskWatcher.watch(keyTask);
                 TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
             } else if(status == PullTargetTranslationTask.Status.NO_REMOTE_REPO) {
+                Logger.i(this.getClass().getName(), "The repository " + targetTranslation.getId() + " could not be found");
                 // create missing repo
                 CreateRepositoryTask repoTask = new CreateRepositoryTask(targetTranslation);
                 mTaskWatcher.watch(repoTask);
                 TaskManager.addTask(repoTask, CreateRepositoryTask.TASK_ID);
             } else if(status == PullTargetTranslationTask.Status.MERGE_CONFLICTS) {
+                Logger.i(this.getClass().getName(), "The server contains conflicting changes for " + targetTranslation.getId());
                 // TODO: 4/18/16 ask user how to handle conflicts
-                Logger.i(this.getClass().getName(), "handle merge conflicts");
             } else {
                 notifyPublishFailed(targetTranslation);
             }
         } else if(task instanceof RegisterSSHKeysTask) {
             if(((RegisterSSHKeysTask)task).isSuccess()) {
+                Logger.i(this.getClass().getName(), "SSH keys were registered with the server");
                 // try to push again
                 PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation);
                 mTaskWatcher.watch(pullTask);
@@ -303,6 +271,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             }
         } else if(task instanceof CreateRepositoryTask) {
             if(((CreateRepositoryTask)task).isSuccess()) {
+                Logger.i(this.getClass().getName(), "A new repository " + targetTranslation.getId() + " was created on the server");
                 PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation);
                 mTaskWatcher.watch(pullTask);
                 TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
@@ -314,7 +283,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             final String message = ((PushTargetTranslationTask)task).getMessage();
 
             if(status == PushTargetTranslationTask.Status.OK) {
-//                final String message = ((PullTargetTranslationTask)task).getMessage();
+                Logger.i(this.getClass().getName(), "The target translation " + targetTranslation.getId() + " was pushed to the server");
                 getListener().finishPublishing();
                 Handler hand = new Handler(Looper.getMainLooper());
                 hand.post(new Runnable() {
@@ -334,10 +303,6 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                                 }).show("PubFinished");
                     }
                 });
-                // TRICKY: we pull after pushing to handle auth errors and missing repos. Once pushed we must pull to retrieve latest info
-//                PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation);
-//                mTaskWatcher.watch(pullTask);
-//                TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
             } else {
                 notifyPublishFailed(targetTranslation);
             }
@@ -359,7 +324,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 .setNegativeButton(R.string.no, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-//                        notifyPublishFailed(targetTranslation);
+                        notifyPublishFailed(targetTranslation);
                     }
                 })
                 .show("PubAuthFailure");

@@ -45,6 +45,7 @@ public class UploadTargetTranslationTask extends ManagedTask {
         mUploadSucceeded = true;
         mUploadAuthFailure = false;
         if(AppContext.context().isNetworkAvailable()) {
+            publishProgress(-1, "Uploading translation");
             publishProgress(-1, AppContext.context().getResources().getString(R.string.loading));
             if(!AppContext.context().hasRegisteredKeys()) {
                 // register the keys

@@ -46,6 +46,7 @@ public class PullTargetTranslationTask extends ManagedTask {
     public void start() {
         Profile profile = AppContext.getProfile();
         if(AppContext.context().isNetworkAvailable() && profile != null && profile.gogsUser != null) {
+            publishProgress(-1, "Downloading updates");
             String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
             String remote = server + ":" + profile.gogsUser.getUsername() + "/" + this.targetTranslation.getId() + ".git";
             try {

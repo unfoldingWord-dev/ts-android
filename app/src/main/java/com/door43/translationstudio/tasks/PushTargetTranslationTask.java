@@ -43,6 +43,7 @@ public class PushTargetTranslationTask extends ManagedTask {
     public void start() {
         Profile profile = AppContext.getProfile();
         if(AppContext.context().isNetworkAvailable() && profile != null && profile.gogsUser != null) {
+            publishProgress(-1, "Uploading translation");
             String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
             String remote = server + ":" + profile.gogsUser.getUsername() + "/" + this.targetTranslation.getId() + ".git";
             try {
