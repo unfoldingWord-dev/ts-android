@@ -17,8 +17,10 @@ import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.util.tasks.ManagedTask;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.FileFileFilter;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 
 /**
@@ -104,7 +106,12 @@ public class UpdateAppTask extends ManagedTask {
     private void updateTargetTranslations() {
         // TRICKY: we manually list the target translations because they won't be viewable until updated
         File translatorDir = AppContext.getTranslator().getPath();
-        File[] dirs = translatorDir.listFiles();
+        File[] dirs = translatorDir.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.isDirectory() && !pathname.getName().equals("cache");
+            }
+        });
         if(dirs != null) {
             for (File tt : dirs) {
                 if (TargetTranslationMigrator.migrate(tt) == null) {

@@ -62,6 +62,7 @@ public class PullTargetTranslationTask extends ManagedTask {
     private String pull(Repo repo, String remote) {
         Git git;
         try {
+            repo.deleteRemote("origin");
             repo.setRemote("origin", remote);
             git = repo.getGit();
         } catch (IOException e) {

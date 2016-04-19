@@ -16,6 +16,7 @@ import org.unfoldingword.gogsclient.Response;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by joel on 4/18/16.
@@ -57,6 +58,15 @@ public class RegisterSSHKeysTask extends ManagedTask {
                 }
 
                 PublicKey keyTemplate = new PublicKey(keyName, keyString);
+                // delete old key
+                List<PublicKey> keys = api.listPublicKeys(profile.gogsUser);
+                for(PublicKey k:keys) {
+                    if(k.getTitle().equals(keyTemplate.getTitle())) {
+                        api.deletePublicKey(k, profile.gogsUser);
+                        break;
+                    }
+                }
+                // create new key
                 PublicKey key = api.createPublicKey(keyTemplate, profile.gogsUser);
                 if (key != null) {
                     success = true;

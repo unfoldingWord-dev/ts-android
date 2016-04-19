@@ -120,6 +120,8 @@ public class PushTargetTranslationTask extends ManagedTask {
                     }
                 } else if(cause instanceof NoRemoteRepositoryException) {
                     this.status = Status.NO_REMOTE_REPO;
+                } else if(cause.getMessage().contains("not permitted")) {
+                    this.status = Status.AUTH_FAILURE;
                 }
             }
             return null;

@@ -195,7 +195,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
      * 1. Pull - retreives any outstanding changes from the server. Also checks authentication (goto 2) , and existence of repo (goto 3)
      * 2. Register Keys - generates ssh keys and registers them with the gogs account. Then tries to pull again.
      * 3. Create Repo - creates a new repository in gogs. Then tries to pull again.
-     * 4. Push - pushes the target translation to the gogs repo.
+     * 4. Push - pushes the target translation to the gogs repo. If authentication fails goto 2
      * User intervention is required if there are merge conflicts.
      * @param task
      */
@@ -303,6 +303,9 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                                 }).show("PubFinished");
                     }
                 });
+            } else if(status == PushTargetTranslationTask.Status.AUTH_FAILURE) {
+                Logger.i(this.getClass().getName(), "Authentication failed");
+                showAuthFailure();
             } else {
                 notifyPublishFailed(targetTranslation);
             }
