@@ -1,12 +1,10 @@
 package com.door43.translationstudio.newui.home;
 
-import android.app.Activity;
-import android.app.Application;
+//import android.app.Activity;
 import android.app.DialogFragment;
-import android.app.FragmentManager;
-import android.app.ProgressDialog;
+//import android.app.FragmentManager;
+//import android.app.ProgressDialog;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
@@ -23,18 +21,24 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
-import com.door43.translationstudio.tasks.CloneTargetTranslationTask;
-import com.door43.translationstudio.tasks.GetCloudBackupsTask;
+//import com.door43.translationstudio.dialogs.CustomAlertDialog;
+//import com.door43.translationstudio.git.Repo;
+import com.door43.translationstudio.tasks.CloneRepositoryTask;
+import com.door43.translationstudio.tasks.GetUserRepositories;
 //import com.door43.translationstudio.tasks.KeyRegistration;
 import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 
 import org.apache.commons.io.FileUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.unfoldingword.gogsclient.Repository;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by joel on 11/6/2015.
@@ -44,11 +48,12 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
 //    private static final String STATE_RESTORE_HEAD = "state_restore_head";
     private GenericTaskWatcher taskWatcher;
     private RestoreFromCloudAdapter adapter;
-    private String[] targetTranslationSlugs = new String[0];
+//    private String[] targetTranslationSlugs = new String[0];
     private Translator translator;
 //    private Library library;
 //    private boolean restoreHEAD;
-    private OnNewKeyRegistrationListener mListener;
+//    private OnNewKeyRegistrationListener mListener;
+    private List<Repository> repositories = new ArrayList<>();
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -69,7 +74,7 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
             @Override
             public void onClick(View v) {
                 taskWatcher.stop();
-                GetCloudBackupsTask task = (GetCloudBackupsTask)TaskManager.getTask(GetCloudBackupsTask.TASK_ID);
+                GetUserRepositories task = (GetUserRepositories)TaskManager.getTask(GetUserRepositories.TASK_ID);
                 if(task != null) {
                     task.stop();
                     TaskManager.cancelTask(task);
@@ -85,36 +90,47 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String targetTranslationSlug = adapter.getItem(position);
+                Repository repo = adapter.getItem(position);
+                String targetTranslationSlug = repo.getName();
                 File tempDir = new File(AppContext.context().getCacheDir(), targetTranslationSlug + System.currentTimeMillis() + "/");
                 tempDir.mkdirs();
-                CloneTargetTranslationTask task = new CloneTargetTranslationTask(targetTranslationSlug, tempDir);
+                CloneRepositoryTask task = new CloneRepositoryTask(targetTranslationSlug, tempDir);
                 taskWatcher.watch(task);
-                TaskManager.addTask(task, CloneTargetTranslationTask.TASK_ID);
+                TaskManager.addTask(task, CloneRepositoryTask.TASK_ID);
             }
         });
 
         // connect to existing task
-        GetCloudBackupsTask checkTask = (GetCloudBackupsTask)TaskManager.getTask(GetCloudBackupsTask.TASK_ID);
-        CloneTargetTranslationTask cloneTask = (CloneTargetTranslationTask)TaskManager.getTask(CloneTargetTranslationTask.TASK_ID);
-        if(checkTask != null) {
-            taskWatcher.watch(checkTask);
-            // display loading icon
+        GetUserRepositories reposTask = (GetUserRepositories)TaskManager.getTask(GetUserRepositories.TASK_ID);
+        CloneRepositoryTask cloneTask = (CloneRepositoryTask)TaskManager.getTask(CloneRepositoryTask.TASK_ID);
+        if(reposTask != null) {
+            taskWatcher.watch(reposTask);
         } else if(cloneTask != null) {
             taskWatcher.watch(cloneTask);
         }
 
         if(savedInstanceState == null) {
-            if(cloneTask == null && checkTask == null) {
+            if(cloneTask == null && reposTask == null) {
                 // start task
-                checkTask = new GetCloudBackupsTask();
-                taskWatcher.watch(checkTask);
-                TaskManager.addTask(checkTask, GetCloudBackupsTask.TASK_ID);
+                reposTask = new GetUserRepositories();
+                taskWatcher.watch(reposTask);
+                TaskManager.addTask(reposTask, GetUserRepositories.TASK_ID);
             }
-        } else if (checkTask == null) {
+        } else if (reposTask == null) {
             // load existing data
-            targetTranslationSlugs = savedInstanceState.getStringArray(STATE_TARGET_TRANSLATIONS);
-            adapter.setTargetTranslations(targetTranslationSlugs);
+            String[] repoJsonArray = savedInstanceState.getStringArray(STATE_TARGET_TRANSLATIONS);
+            List<Repository> repoJsonList = new ArrayList<>();
+            for(String json:repoJsonArray) {
+                try {
+                    Repository repo = Repository.fromJSON(new JSONObject(json));
+                    if(json != null) {
+                        repoJsonList.add(repo);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            adapter.setRepositories(repoJsonList);
         }
 
         return v;
@@ -125,27 +141,11 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
         taskWatcher.stop();
         TaskManager.clearTask(task);
 
-        if(task instanceof GetCloudBackupsTask) {
-            if(!((GetCloudBackupsTask)task).uploadAuthFailure()) {
-
-                targetTranslationSlugs = ((GetCloudBackupsTask) task).getTargetTranslationSlugs();
-                Handler hand = new Handler(Looper.getMainLooper());
-                hand.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (targetTranslationSlugs.length > 0) {
-                            adapter.setTargetTranslations(targetTranslationSlugs);
-                        } else {
-                            notifyReadOnlineBackupsFailed(getActivity());
-                        }
-                    }
-                });
-            } else {
-                dismiss();
-                showAuthFailure();
-            }
-        } else if(task instanceof CloneTargetTranslationTask) {
-            File tempPath = ((CloneTargetTranslationTask)task).getLocalPath();
+        if(task instanceof GetUserRepositories) {
+            this.repositories = ((GetUserRepositories)task).getRepositories();
+            adapter.setRepositories(repositories);
+        } else if(task instanceof CloneRepositoryTask) {
+            File tempPath = ((CloneRepositoryTask)task).getLocalPath();
             tempPath = TargetTranslationMigrator.migrate(tempPath);
             TargetTranslation tempTargetTranslation = TargetTranslation.open(tempPath);
             if(tempTargetTranslation != null) {
@@ -181,97 +181,100 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
         }
     }
 
-    public void notifyReadOnlineBackupsFailed(Activity activity) {
-        FragmentManager fm = this.getFragmentManager();
-        if(null == fm) {
-            fm = activity.getFragmentManager();
-        }
-        CustomAlertDialog.Create(activity)
-                .setTitle(R.string.import_from_online)
-                .setMessage(R.string.no_backups_online)
-                .setNeutralButton(R.string.dismiss, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        dismiss();
-                    }
-                })
-                .show(fm, "NoBackups");
-    }
-
-    public void handleRegistrationResults(final Activity activity, boolean success) {
-        if(success) {
-            if(mListener != null) {
-                mListener.onNewKeyRegistration();
-            }
-        } else {
-            CustomAlertDialog.Create(activity)
-                    .setTitle(R.string.import_from_online)
-                    .setMessage(R.string.registration_failure)
-                    .setNeutralButton(R.string.dismiss, null)
-                    .show("RegistrationResults");
-        }
-    }
-
-    public void showAuthFailure() {
-        final Activity activity = getActivity();
-        final CustomAlertDialog dlg = CustomAlertDialog.Create(activity);
-        dlg.setTitle(R.string.import_from_online)
-            .setMessage(R.string.auth_failure_retry)
-            .setAutoDismiss(false)
-            .setPositiveButton(R.string.yes, new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    doKeyRegistration(activity, dlg);
-                }
-            })
-            .setNegativeButton(R.string.no, new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    notifyReadOnlineBackupsFailed(activity);
-                    dlg.dismiss();
-                }
-            })
-            .show("PubAuthFailure");
-    }
-
-    public void doKeyRegistration(final Activity activity, final CustomAlertDialog dlg) {
-
-        final ProgressDialog progressDialog = new ProgressDialog(activity);
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        progressDialog.setCancelable(false);
-        progressDialog.setCanceledOnTouchOutside(false);
-        progressDialog.setTitle(R.string.registering_keys);
-        progressDialog.setMessage("");
-        progressDialog.show();
-
-        AppContext.context().generateKeys();
-        final Handler hand = new Handler(Looper.getMainLooper());
-        Thread thread = new Thread() {
-            @Override
-            public void run() {
-//                KeyRegistration keyReg = new KeyRegistration();
-//                keyReg.registerKeys(new KeyRegistration.OnRegistrationFinishedListener() {
+//    public void notifyReadOnlineBackupsFailed(Activity activity) {
+//        FragmentManager fm = this.getFragmentManager();
+//        if(null == fm) {
+//            fm = activity.getFragmentManager();
+//        }
+//        CustomAlertDialog.Create(activity)
+//                .setTitle(R.string.import_from_online)
+//                .setMessage(R.string.no_backups_online)
+//                .setNeutralButton(R.string.dismiss, new View.OnClickListener() {
 //                    @Override
-//                    public void onRestoreFinish(final boolean registrationSuccess) {
-//                        hand.post(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                progressDialog.dismiss();
-//                                dlg.dismiss();
-//                                handleRegistrationResults(activity, registrationSuccess);
-//                            }
-//                        });
+//                    public void onClick(View v) {
+//                        dismiss();
 //                    }
-//                });
-            }
-        };
-        thread.start();
-    }
+//                })
+//                .show(fm, "NoBackups");
+//    }
+
+//    public void handleRegistrationResults(final Activity activity, boolean success) {
+//        if(success) {
+//            if(mListener != null) {
+//                mListener.onNewKeyRegistration();
+//            }
+//        } else {
+//            CustomAlertDialog.Create(activity)
+//                    .setTitle(R.string.import_from_online)
+//                    .setMessage(R.string.registration_failure)
+//                    .setNeutralButton(R.string.dismiss, null)
+//                    .show("RegistrationResults");
+//        }
+//    }
+
+//    public void showAuthFailure() {
+//        final Activity activity = getActivity();
+//        final CustomAlertDialog dlg = CustomAlertDialog.Create(activity);
+//        dlg.setTitle(R.string.import_from_online)
+//            .setMessage(R.string.auth_failure_retry)
+//            .setAutoDismiss(false)
+//            .setPositiveButton(R.string.yes, new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    doKeyRegistration(activity, dlg);
+//                }
+//            })
+//            .setNegativeButton(R.string.no, new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    notifyReadOnlineBackupsFailed(activity);
+//                    dlg.dismiss();
+//                }
+//            })
+//            .show("PubAuthFailure");
+//    }
+
+//    public void doKeyRegistration(final Activity activity, final CustomAlertDialog dlg) {
+//
+//        final ProgressDialog progressDialog = new ProgressDialog(activity);
+//        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+//        progressDialog.setCancelable(false);
+//        progressDialog.setCanceledOnTouchOutside(false);
+//        progressDialog.setTitle(R.string.registering_keys);
+//        progressDialog.setMessage("");
+//        progressDialog.show();
+//
+//        AppContext.context().generateKeys();
+//        final Handler hand = new Handler(Looper.getMainLooper());
+//        Thread thread = new Thread() {
+//            @Override
+//            public void run() {
+////                KeyRegistration keyReg = new KeyRegistration();
+////                keyReg.registerKeys(new KeyRegistration.OnRegistrationFinishedListener() {
+////                    @Override
+////                    public void onRestoreFinish(final boolean registrationSuccess) {
+////                        hand.post(new Runnable() {
+////                            @Override
+////                            public void run() {
+////                                progressDialog.dismiss();
+////                                dlg.dismiss();
+////                                handleRegistrationResults(activity, registrationSuccess);
+////                            }
+////                        });
+////                    }
+////                });
+//            }
+//        };
+//        thread.start();
+//    }
 
     @Override
     public void onSaveInstanceState(Bundle out) {
-        out.putStringArray(STATE_TARGET_TRANSLATIONS, this.targetTranslationSlugs);
-//        out.putBoolean(STATE_RESTORE_HEAD, this.restoreHEAD);
+        List<String> repoJsonList = new ArrayList<>();
+        for(Repository r:repositories) {
+            repoJsonList.add(r.toJSON().toString());
+        }
+        out.putStringArray(STATE_TARGET_TRANSLATIONS, repoJsonList.toArray(new String[repoJsonList.size()]));
         super.onSaveInstanceState(out);
     }
 
@@ -281,15 +284,15 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
         super.onDestroy();
     }
 
-    /**
-     * Sets the listener that will be called when new keys have been successfully registered.
-     * @param listener
-     */
-    public void setNewKeyRegistrationListener(OnNewKeyRegistrationListener listener) {
-        mListener = listener;
-    }
+//    /**
+//     * Sets the listener that will be called when new keys have been successfully registered.
+//     * @param listener
+//     */
+//    public void setNewKeyRegistrationListener(OnNewKeyRegistrationListener listener) {
+//        mListener = listener;
+//    }
 
-    public static interface OnNewKeyRegistrationListener {
-        public void onNewKeyRegistration();
-    }
+//    public static interface OnNewKeyRegistrationListener {
+//        public void onNewKeyRegistration();
+//    }
 }

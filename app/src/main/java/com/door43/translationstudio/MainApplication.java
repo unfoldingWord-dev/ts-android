@@ -458,22 +458,22 @@ public class MainApplication extends Application {
      * @return
      * @deprecated we will always try to push first and register if it fails
      */
-    public boolean hasRegisteredKeys() {
-        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
-        return settings.getBoolean("has_registered_with_server", false);
-    }
+//    public boolean hasRegisteredKeys() {
+//        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
+//        return settings.getBoolean("has_registered_with_server", false);
+//    }
 
     /**
      * Sets whether the client has sent it's ssh key to the server
      * @param hasRegistered
      * @deprecated
      */
-    public void setHasRegisteredKeys(Boolean hasRegistered) {
-        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putBoolean("has_registered_with_server", hasRegistered);
-        editor.apply();
-    }
+//    public void setHasRegisteredKeys(Boolean hasRegistered) {
+//        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
+//        SharedPreferences.Editor editor = settings.edit();
+//        editor.putBoolean("has_registered_with_server", hasRegistered);
+//        editor.apply();
+//    }
 
     /**
      * Checks if the app should opperate as if this is the first time it has opened.

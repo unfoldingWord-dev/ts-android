@@ -73,12 +73,12 @@ public class ImportDialog extends DialogFragment {
                 ft.addToBackStack(null);
 
                 RestoreFromCloudDialog dialog = new RestoreFromCloudDialog();
-                dialog.setNewKeyRegistrationListener(new RestoreFromCloudDialog.OnNewKeyRegistrationListener() {
-                    @Override
-                    public void onNewKeyRegistration() {
-                        importCloudButton.callOnClick();
-                    }
-                });
+//                dialog.setNewKeyRegistrationListener(new RestoreFromCloudDialog.OnNewKeyRegistrationListener() {
+//                    @Override
+//                    public void onNewKeyRegistration() {
+//                        importCloudButton.callOnClick();
+//                    }
+//                });
                 dialog.show(ft, ImportDialog.TAG);
             }
         });

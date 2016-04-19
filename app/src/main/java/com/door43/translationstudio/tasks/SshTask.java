@@ -37,19 +37,19 @@ public abstract class SshTask extends ManagedTask {
     @Override
     public void start() {
         if(AppContext.context().isNetworkAvailable()) {
-            if(!AppContext.context().hasRegisteredKeys()) {
-                // register the keys
-                if(AppContext.context().hasKeys()) {
-                    // open tcp connection with server
-                    publishProgress(-1, AppContext.context().getResources().getString(R.string.submitting_security_keys));
-                    registerKeys();
-                } else {
-                    Logger.w(this.getClass().getName(), "The ssh keys have not been generated");
-                    stop();
-                }
-            } else {
-                onRegistered();
-            }
+//            if(!AppContext.context().hasRegisteredKeys()) {
+//                // register the keys
+//                if(AppContext.context().hasKeys()) {
+//                    // open tcp connection with server
+//                    publishProgress(-1, AppContext.context().getResources().getString(R.string.submitting_security_keys));
+//                    registerKeys();
+//                } else {
+//                    Logger.w(this.getClass().getName(), "The ssh keys have not been generated");
+//                    stop();
+//                }
+//            } else {
+//                onRegistered();
+//            }
         } else {
             Logger.w(this.getClass().getName(), "The task '" + this.getClass().getName() + "' could not be completed becuase the network is not available");
             stop();

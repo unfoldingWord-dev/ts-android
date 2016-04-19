@@ -17,14 +17,14 @@ import java.io.File;
 /**
  * Clones a repository from the server
  */
-public class CloneTargetTranslationTask extends SshTask {
+public class CloneRepositoryTask extends SshTask {
 
     public static final String TASK_ID = "clone_target_translation";
     private final File localPath;
     private final String remote;
     private final String targetTranslationSlug;
 
-    public CloneTargetTranslationTask(String targetTranslationSlug, File dest) {
+    public CloneRepositoryTask(String targetTranslationSlug, File dest) {
         this.localPath = dest;
         this.targetTranslationSlug = targetTranslationSlug;
         String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
