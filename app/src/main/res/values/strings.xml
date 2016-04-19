@@ -690,6 +690,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="could_not_parse_chapter">Could not parse chapter: %s</string>
     <string name="missing_verses_in_section">No Verses in Section</string>
     <string name="error_prefix">Error: %s</string>
+    <string name="no_error">No errors Found</string>
     <string name="warning_prefix">Warning: %s</string>
     <string name="found_book">Found book: %s</string>
     <string name="importing_file">Importing: %s</string>
@@ -701,6 +702,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="reading_usfm">Reading USFM</string>
     <string name="importing_usfm">Importing USFM</string>
     <string name="import_from_sd_usfm">Import USFM from SD Card</string>
-    <string name="invalid_book_name_prompt">\'<xliff:g example="Mark.usfm" id="file_name">%1$s</xliff:g>\'\nhas invalid book name: \'<xliff:g example="marc" id="end_verse">%2$s</xliff:g>\'\nDo you wish to select a book name?</string>
+    <string name="invalid_book_name_prompt">\'<xliff:g example="Mark.usfm" id="file_name">%1$s</xliff:g>\'\nhas invalid book name: \'<xliff:g example="marc" id="book_name">%2$s</xliff:g>\'\nDo you wish to select a book name?</string>
     <string name="missing_book_name_prompt">\'<xliff:g example="Mark.usfm" id="file_name">%1$s</xliff:g>\'\nis missing book name\nDo you wish to select a book name?</string>
+    <string name="could_not_parse">Could not parse \'<xliff:g example="Mark.usfm" id="file_name">%1$s</xliff:g>\'</string>
+    <string name="no_chunk_list">No chunk list found for \'<xliff:g example="marc" id="book_name">%1$s</xliff:g>\'</string>
 </resources>

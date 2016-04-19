@@ -329,6 +329,9 @@ public class ImportUsfm {
         for (int i = 0; i <= mCurrentBook; i++) {
             String bookName = String.format(format, mFoundBooks.get(i));
             String errors = mErrors.get(i);
+            if(errors.isEmpty()) {
+                errors = mContext.getResources().getString(R.string.no_error);
+            }
             String currentResults = "\n" + (i+1) + " - " + bookName + "\n" + errors;
             results = results + currentResults + "\n";
         }
@@ -452,6 +455,17 @@ public class ImportUsfm {
         addMessage(error, false);
     }
 
+    /**
+     * add warning to error list
+     *
+     * @param resource
+     * @param error
+     */
+    private void addWarning(int resource, String error) {
+        String format = mContext.getResources().getString(resource);
+        String newWarning = String.format(format, error);
+        addWarning(newWarning);
+    }
 
     /**
      * unpack and import documents from zip stream
@@ -479,7 +493,7 @@ public class ImportUsfm {
                 updateStatus(R.string.found_book, name);
                 success = processBook(file);
                 if (!success) {
-                    addError("Could not parse " + getShortFilePath(file.toString()));
+                    addError(R.string.could_not_parse, getShortFilePath(file.toString()));
                 }
                 successOverall = successOverall && success;
             }
@@ -732,7 +746,7 @@ public class ImportUsfm {
             if (!haveChunksList) { // no chunk list
                 // TODO: 4/13/16 add support for processing by sections
 
-                addWarning("No chunk list found for " + mBookShortName);
+                addWarning(R.string.no_chunk_list, mBookShortName);
                 addBookMissingName(mBookName, mBookShortName, book);
                 return promptForName;
             } else { // has chunks
@@ -820,26 +834,6 @@ public class ImportUsfm {
 
         return true;
     }
-
-//    /**
-//     * copy output folder into downloads for testing
-//     * @return
-//     */
-//    public boolean copyProjectToDownloads() {
-//        File dest = null;
-//        try {
-//            File target = AppContext.getPublicDownloadsDirectory();
-//            dest = new File(target,"test");
-//            if(dest.exists()) {
-//                FileUtilities.safeDelete(dest);
-//            }
-//            FileUtils.copyDirectory(mTempOutput, dest);
-//        } catch (Exception e) {
-//            Logger.e(TAG, "error moving files to " + dest.toString(), e);
-//            return false;
-//        }
-//        return true;
-//    }
 
     /**
      * extract chapters in book
