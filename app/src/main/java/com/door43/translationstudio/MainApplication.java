@@ -451,8 +451,6 @@ public class MainApplication extends Application {
         catch(Exception e){
             showException(e);
         }
-        // require the app to re-submit generated keys to the server
-        setHasRegisteredKeys(false);
     }
 
     /**

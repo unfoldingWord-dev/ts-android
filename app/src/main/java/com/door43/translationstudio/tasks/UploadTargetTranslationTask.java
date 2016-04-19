@@ -51,14 +51,14 @@ public class UploadTargetTranslationTask extends ManagedTask {
                 // register the keys
                 if(AppContext.context().hasKeys()) {
                     // open tcp connection with server
-                    publishProgress(-1, AppContext.context().getResources().getString(R.string.submitting_security_keys));
-                    KeyRegistration keyReg = new KeyRegistration();
-                    keyReg.registerKeys(new KeyRegistration.OnRegistrationFinishedListener() {
-                        @Override
-                        public void onRestoreFinish(boolean registrationSuccess) {
-                            upload();
-                        }
-                    });
+//                    publishProgress(-1, AppContext.context().getResources().getString(R.string.submitting_security_keys));
+//                    KeyRegistration keyReg = new KeyRegistration();
+//                    keyReg.registerKeys(new KeyRegistration.OnRegistrationFinishedListener() {
+//                        @Override
+//                        public void onRestoreFinish(boolean registrationSuccess) {
+//                            upload();
+//                        }
+//                    });
                 } else {
                     Logger.w(this.getClass().getName(), "The ssh keys have not been generated");
                     mUploadSucceeded = false;

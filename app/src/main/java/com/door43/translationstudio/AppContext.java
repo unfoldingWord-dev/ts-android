@@ -21,6 +21,7 @@ import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.util.SdUtils;
+import com.door43.util.FileUtilities;
 import com.door43.util.StorageUtils;
 import com.door43.util.StringUtilities;
 import com.door43.util.Zip;
@@ -561,6 +562,7 @@ public class AppContext {
                 setUserString(PROFILE, profileString);
             } else {
                 setUserString(PROFILE, null);
+                FileUtilities.deleteRecursive(getKeysFolder());
             }
         } catch (JSONException e) {
             Logger.e(TAG, "setProfile: Failed to encode profile data", e);

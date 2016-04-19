@@ -27,7 +27,7 @@ public class KeyRegistration {
     private String mAuthServer;
     private int mAuthServerPort;
     private OnRegistrationFinishedListener mListener = null;
-    static private String TAG = KeyRegistration.class.getSimpleName();
+    static private String TAG = "";//KeyRegistration.class.getSimpleName();
 
     public void registerKeys(OnRegistrationFinishedListener listener) {
         mListener = listener;
@@ -129,7 +129,7 @@ public class KeyRegistration {
         try {
             JSONObject json = new JSONObject(serverMessage);
             if (json.has("ok")) {
-                AppContext.context().setHasRegisteredKeys(true);
+//                AppContext.context().setHasRegisteredKeys(true);
             } else {
                 Logger.e(TAG, "Key registration was refused", new Exception(json.getString("error")));
                 mUploadSucceeded = false;

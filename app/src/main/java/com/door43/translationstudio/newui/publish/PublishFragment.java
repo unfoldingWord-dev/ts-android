@@ -27,7 +27,6 @@ import com.door43.translationstudio.tasks.CreateRepositoryTask;
 import com.door43.translationstudio.tasks.PullTargetTranslationTask;
 import com.door43.translationstudio.tasks.PushTargetTranslationTask;
 import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
-import com.door43.translationstudio.tasks.UploadTargetTranslationTask;
 import com.door43.translationstudio.AppContext;
 import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.util.tasks.ManagedTask;
@@ -48,14 +47,14 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
     private static final String STATE_UPLOADED = "state_uploaded";
     private boolean mUploaded = false;
     private Button mUploadButton;
-    private GenericTaskWatcher mTaskWatcher;
+    private GenericTaskWatcher taskWatcher;
     private LinearLayout mUploadSuccess;
     private TargetTranslation targetTranslation;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_publish_publish, container, false);
+        View v = inflater.inflate(R.layout.fragment_publish_publish, container, false);
 
-        HtmlTextView explanationView = (HtmlTextView)rootView.findViewById(R.id.explanation);
+        HtmlTextView explanationView = (HtmlTextView)v.findViewById(R.id.explanation);
         explanationView.setHtmlFromString(getResources().getString(R.string.publishing_explanation), true);
 
         if(savedInstanceState != null) {
@@ -68,8 +67,8 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             throw new InvalidParameterException("a valid target translation id is required");
         }
 
-        mTaskWatcher = new GenericTaskWatcher(getActivity(), R.string.uploading);
-        mTaskWatcher.setOnFinishedListener(this);
+        taskWatcher = new GenericTaskWatcher(getActivity(), R.string.uploading);
+        taskWatcher.setOnFinishedListener(this);
 
         // receive uploaded status from activity (overrides save state from fragment)
         if(savedInstanceState == null) {
@@ -78,8 +77,8 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
 
         this.targetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
 
-        mUploadSuccess = (LinearLayout)rootView.findViewById(R.id.upload_success);
-        mUploadButton = (Button)rootView.findViewById(R.id.upload_button);
+        mUploadSuccess = (LinearLayout)v.findViewById(R.id.upload_success);
+        mUploadButton = (Button)v.findViewById(R.id.upload_button);
 
         if(mUploaded) {
             mUploadButton.setVisibility(View.GONE);
@@ -111,7 +110,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                         return;
                     }
                     PullTargetTranslationTask task = new PullTargetTranslationTask(targetTranslation);
-                    mTaskWatcher.watch(task);
+                    taskWatcher.watch(task);
                     TaskManager.addTask(task, PullTargetTranslationTask.TASK_ID);
                 } else {
                     Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.internet_not_available, Snackbar.LENGTH_LONG);
@@ -121,18 +120,13 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             }
         });
 
-        ImageView wifiIcon = (ImageView)rootView.findViewById(R.id.wifi_icon);
+        ImageView wifiIcon = (ImageView)v.findViewById(R.id.wifi_icon);
         ViewUtil.tintViewDrawable(wifiIcon, getResources().getColor(R.color.dark_secondary_text));
-
-        UploadTargetTranslationTask task = (UploadTargetTranslationTask)TaskManager.getTask(UploadTargetTranslationTask.TASK_ID);
-        if(task != null) {
-            mTaskWatcher.watch(task);
-        }
 
         final String filename = targetTranslation.getId() + ".zip";
 
         // export buttons
-        Button exportToApp = (Button)rootView.findViewById(R.id.backup_to_app);
+        Button exportToApp = (Button)v.findViewById(R.id.backup_to_app);
         exportToApp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -155,7 +149,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 }
             }
         });
-        Button exportToSD = (Button)rootView.findViewById(R.id.export_to_sdcard);
+        Button exportToSD = (Button)v.findViewById(R.id.export_to_sdcard);
         exportToSD.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -177,7 +171,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 }
             }
         });
-        Button exportToDevice = (Button)rootView.findViewById(R.id.backup_to_device);
+        Button exportToDevice = (Button)v.findViewById(R.id.backup_to_device);
         exportToDevice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -187,7 +181,22 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             }
         });
 
-        return rootView;
+        // Connect to existing tasks
+        PullTargetTranslationTask pullTask = (PullTargetTranslationTask)TaskManager.getTask(PullTargetTranslationTask.TASK_ID);
+        RegisterSSHKeysTask keysTask = (RegisterSSHKeysTask)TaskManager.getTask(RegisterSSHKeysTask.TASK_ID);
+        CreateRepositoryTask repoTask = (CreateRepositoryTask)TaskManager.getTask(CreateRepositoryTask.TASK_ID);
+        PushTargetTranslationTask pushTask = (PushTargetTranslationTask)TaskManager.getTask(PushTargetTranslationTask.TASK_ID);
+
+        if(pullTask != null) {
+            taskWatcher.watch(pullTask);
+        } else if (keysTask != null) {
+            taskWatcher.watch(keysTask);
+        } else if(repoTask != null) {
+            taskWatcher.watch(repoTask);
+        } else if(pushTask != null) {
+            taskWatcher.watch(pushTask);
+        }
+        return v;
     }
 
     /**
@@ -201,7 +210,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
      */
     @Override
     public void onFinished(final ManagedTask task) {
-        mTaskWatcher.stop();
+        taskWatcher.stop();
         if(task instanceof PullTargetTranslationTask) {
             PullTargetTranslationTask.Status status = ((PullTargetTranslationTask)task).getStatus();
             //  TRICKY: we continue to push for unknown status in case the repo was just created (the missing branch is an error)
@@ -216,8 +225,8 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                         @Override
                         public void onSuccess() {
                             // begin upload
-                            PushTargetTranslationTask task = new PushTargetTranslationTask(targetTranslation);
-                            mTaskWatcher.watch(task);
+                            PushTargetTranslationTask task = new PushTargetTranslationTask(targetTranslation, true);
+                            taskWatcher.watch(task);
                             TaskManager.addTask(task, PushTargetTranslationTask.TASK_ID);
                         }
 
@@ -245,13 +254,13 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 }
 
                 RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(false);
-                mTaskWatcher.watch(keyTask);
+                taskWatcher.watch(keyTask);
                 TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
             } else if(status == PullTargetTranslationTask.Status.NO_REMOTE_REPO) {
                 Logger.i(this.getClass().getName(), "The repository " + targetTranslation.getId() + " could not be found");
                 // create missing repo
                 CreateRepositoryTask repoTask = new CreateRepositoryTask(targetTranslation);
-                mTaskWatcher.watch(repoTask);
+                taskWatcher.watch(repoTask);
                 TaskManager.addTask(repoTask, CreateRepositoryTask.TASK_ID);
             } else if(status == PullTargetTranslationTask.Status.MERGE_CONFLICTS) {
                 Logger.i(this.getClass().getName(), "The server contains conflicting changes for " + targetTranslation.getId());
@@ -264,7 +273,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 Logger.i(this.getClass().getName(), "SSH keys were registered with the server");
                 // try to push again
                 PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation);
-                mTaskWatcher.watch(pullTask);
+                taskWatcher.watch(pullTask);
                 TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
             } else {
                 notifyPublishFailed(targetTranslation);
@@ -273,7 +282,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             if(((CreateRepositoryTask)task).isSuccess()) {
                 Logger.i(this.getClass().getName(), "A new repository " + targetTranslation.getId() + " was created on the server");
                 PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation);
-                mTaskWatcher.watch(pullTask);
+                taskWatcher.watch(pullTask);
                 TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
             } else {
                 notifyPublishFailed(targetTranslation);
@@ -300,7 +309,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                                         CustomAlertDialog.Create(getActivity())
                                                 .setTitle(R.string.project_uploaded).setMessage(message).setPositiveButton(R.string.dismiss, null).show("PubDetails");
                                     }
-                                }).show("PubFinished");
+                                }).show("publish-finished");
                     }
                 });
             } else if(status == PushTargetTranslationTask.Status.AUTH_FAILURE) {
@@ -320,7 +329,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                     @Override
                     public void onClick(View v) {
                         RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(true);
-                        mTaskWatcher.watch(keyTask);
+                        taskWatcher.watch(keyTask);
                         TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
                     }
                 })
@@ -330,7 +339,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                         notifyPublishFailed(targetTranslation);
                     }
                 })
-                .show("PubAuthFailure");
+                .show("auth-failed");
     }
 
     /**
@@ -367,7 +376,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                         dialog.setArguments(args);
                         dialog.show(ft, "bugDialog");
                     }
-                }).show("PublishFail");
+                }).show("publish-failed");
     }
 
     @Override
@@ -378,7 +387,9 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
 
     @Override
     public void onDestroy() {
-        mTaskWatcher.stop();
+        if(taskWatcher != null) {
+            taskWatcher.stop();
+        }
         super.onDestroy();
     }
 }

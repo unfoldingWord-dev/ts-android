@@ -26,7 +26,7 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.CloneTargetTranslationTask;
 import com.door43.translationstudio.tasks.GetCloudBackupsTask;
-import com.door43.translationstudio.tasks.KeyRegistration;
+//import com.door43.translationstudio.tasks.KeyRegistration;
 import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
@@ -249,20 +249,20 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
         Thread thread = new Thread() {
             @Override
             public void run() {
-                KeyRegistration keyReg = new KeyRegistration();
-                keyReg.registerKeys(new KeyRegistration.OnRegistrationFinishedListener() {
-                    @Override
-                    public void onRestoreFinish(final boolean registrationSuccess) {
-                        hand.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                progressDialog.dismiss();
-                                dlg.dismiss();
-                                handleRegistrationResults(activity, registrationSuccess);
-                            }
-                        });
-                    }
-                });
+//                KeyRegistration keyReg = new KeyRegistration();
+//                keyReg.registerKeys(new KeyRegistration.OnRegistrationFinishedListener() {
+//                    @Override
+//                    public void onRestoreFinish(final boolean registrationSuccess) {
+//                        hand.post(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                progressDialog.dismiss();
+//                                dlg.dismiss();
+//                                handleRegistrationResults(activity, registrationSuccess);
+//                            }
+//                        });
+//                    }
+//                });
             }
         };
         thread.start();

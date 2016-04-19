@@ -31,12 +31,14 @@ public class PushTargetTranslationTask extends ManagedTask {
 
     public static final String TASK_ID = "push_target_translation_task";
     private final TargetTranslation targetTranslation;
+    private final boolean pushTags;
     private Status status = Status.UNKNOWN;
     private String message = "";
 
-    public PushTargetTranslationTask(TargetTranslation targetTranslation) {
+    public PushTargetTranslationTask(TargetTranslation targetTranslation, boolean pushTags) {
         setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
         this.targetTranslation = targetTranslation;
+        this.pushTags = pushTags;
     }
 
     @Override
@@ -64,7 +66,7 @@ public class PushTargetTranslationTask extends ManagedTask {
             return null;
         }
         // TODO: we might want to get some progress feedback for the user
-        PushCommand pushCommand = git.push().setPushTags()
+        PushCommand pushCommand = git.push()
                 .setTransportConfigCallback(new TransportCallback())
                 .setRemote(remote)
                 .setProgressMonitor(new ProgressMonitor() {
@@ -95,6 +97,9 @@ public class PushTargetTranslationTask extends ManagedTask {
                 })
                 .setForce(false)
                 .setPushAll();
+        if(this.pushTags) {
+            pushCommand.setPushTags();
+        }
 
         try {
             Iterable<PushResult> result = pushCommand.call();

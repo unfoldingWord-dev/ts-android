@@ -22,6 +22,7 @@ import java.net.Socket;
 /**
  * Created by joel on 11/11/2015.
  */
+@Deprecated
 public abstract class SshTask extends ManagedTask {
 
     private final String server;
@@ -152,7 +153,6 @@ public abstract class SshTask extends ManagedTask {
         try {
             JSONObject json = new JSONObject(serverMessage);
             if (json.has("ok")) {
-                AppContext.context().setHasRegisteredKeys(true);
                 onRegistered();
             } else {
                 Logger.e(this.getClass().getName(), "Key registration was refused", new Exception(json.getString("error")));
