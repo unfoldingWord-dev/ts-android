@@ -219,55 +219,22 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
         return rootView;
     }
 
+    /**
+     * The publishing tasks are quite complicated so here's an overview in order:
+     * 1. Pull - retreives any outstanding changes from the server. Also checks authentication (goto 2) , and existence of repo (goto 3)
+     * 2. Register Keys - generates ssh keys and registers them with the gogs account. Then tries to pull again.
+     * 3. Create Repo - creates a new repository in gogs. Then tries to pull again.
+     * 4. Push - pushes the target translation to the gogs repo.
+     * User intervention is required if there are merge conflicts.
+     * @param task
+     */
     @Override
     public void onFinished(final ManagedTask task) {
         mTaskWatcher.stop();
-
-        if(task instanceof PushTargetTranslationTask) {
-            PushTargetTranslationTask.Status status =((PushTargetTranslationTask)task).getStatus();
-            final String message = ((PushTargetTranslationTask)task).getMessage();
-
-            if(status == PushTargetTranslationTask.Status.OK) {
-//                final String message = ((PullTargetTranslationTask)task).getMessage();
-                getListener().finishPublishing();
-                Handler hand = new Handler(Looper.getMainLooper());
-                hand.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mUploadButton.setVisibility(View.GONE);
-                        mUploadSuccess.setVisibility(View.VISIBLE);
-
-                        CustomAlertDialog.Create(getActivity())
-                                .setTitle(R.string.success).setMessage(R.string.project_uploaded).setPositiveButton(R.string.dismiss, null)
-                                .setNeutralButton(R.string.label_details, new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        CustomAlertDialog.Create(getActivity())
-                                                .setTitle(R.string.project_uploaded).setMessage(message).setPositiveButton(R.string.dismiss, null).show("PubDetails");
-                                    }
-                                }).show("PubFinished");
-                    }
-                });
-                // TRICKY: we pull after pushing to handle auth errors and missing repos. Once pushed we must pull to retrieve latest info
-//                PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation);
-//                mTaskWatcher.watch(pullTask);
-//                TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
-            } else {
-                notifyPublishFailed(targetTranslation);
-            }
-
-        } else if(task instanceof RegisterSSHKeysTask) {
-            if(((RegisterSSHKeysTask)task).isSuccess()) {
-                // try to push again
-                PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation);
-                mTaskWatcher.watch(pullTask);
-                TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
-            } else {
-                notifyPublishFailed(targetTranslation);
-            }
-        } else if(task instanceof PullTargetTranslationTask) {
+        if(task instanceof PullTargetTranslationTask) {
             PullTargetTranslationTask.Status status = ((PullTargetTranslationTask)task).getStatus();
-            //  TRICKY: we continue to push for unknown status in case the repo was just created
+            //  TRICKY: we continue to push for unknown status in case the repo was just created (the missing branch is an error)
+            // the pull task will catch any errors
             if(status == PullTargetTranslationTask.Status.RECEIVED_UPDATES
                     || status == PullTargetTranslationTask.Status.UP_TO_DATE
                     || status == PullTargetTranslationTask.Status.UNKNOWN) {
@@ -325,6 +292,15 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             } else {
                 notifyPublishFailed(targetTranslation);
             }
+        } else if(task instanceof RegisterSSHKeysTask) {
+            if(((RegisterSSHKeysTask)task).isSuccess()) {
+                // try to push again
+                PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation);
+                mTaskWatcher.watch(pullTask);
+                TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
+            } else {
+                notifyPublishFailed(targetTranslation);
+            }
         } else if(task instanceof CreateRepositoryTask) {
             if(((CreateRepositoryTask)task).isSuccess()) {
                 PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation);
@@ -333,6 +309,39 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             } else {
                 notifyPublishFailed(targetTranslation);
             }
+        } else if(task instanceof PushTargetTranslationTask) {
+            PushTargetTranslationTask.Status status =((PushTargetTranslationTask)task).getStatus();
+            final String message = ((PushTargetTranslationTask)task).getMessage();
+
+            if(status == PushTargetTranslationTask.Status.OK) {
+//                final String message = ((PullTargetTranslationTask)task).getMessage();
+                getListener().finishPublishing();
+                Handler hand = new Handler(Looper.getMainLooper());
+                hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mUploadButton.setVisibility(View.GONE);
+                        mUploadSuccess.setVisibility(View.VISIBLE);
+
+                        CustomAlertDialog.Create(getActivity())
+                                .setTitle(R.string.success).setMessage(R.string.project_uploaded).setPositiveButton(R.string.dismiss, null)
+                                .setNeutralButton(R.string.label_details, new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        CustomAlertDialog.Create(getActivity())
+                                                .setTitle(R.string.project_uploaded).setMessage(message).setPositiveButton(R.string.dismiss, null).show("PubDetails");
+                                    }
+                                }).show("PubFinished");
+                    }
+                });
+                // TRICKY: we pull after pushing to handle auth errors and missing repos. Once pushed we must pull to retrieve latest info
+//                PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation);
+//                mTaskWatcher.watch(pullTask);
+//                TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
+            } else {
+                notifyPublishFailed(targetTranslation);
+            }
+
         }
     }
 
