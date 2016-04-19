@@ -72,4 +72,5 @@ dependencies {
     compile project(':html-textview')
     compile project(':com.door43.tools.reporting')
     compile project(':com.door43.tools.security')
+    compile 'com.google.android.gms:play-services-appindexing:8.1.0'
 }

@@ -65,6 +65,8 @@ public class CustomAlertDialog extends DialogFragment {
     private boolean mAutoDismiss = true;
     private boolean mCancellable = true;
     private boolean mDialogDismissed = false;
+    private OnDismissListener mOnDismissListener = null;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -179,8 +181,21 @@ public class CustomAlertDialog extends DialogFragment {
 
     @Override
     public void onDismiss(DialogInterface dialog) {
+        super.onDismiss(dialog);
+        if(mOnDismissListener != null) {
+            mOnDismissListener.onDismiss();
+        }
+    }
+
+    public CustomAlertDialog setOnDismissListener(OnDismissListener listener) {
+        mOnDismissListener = listener;
+        return this;
+    }
+
+    @Override
+    public void onCancel(DialogInterface dialog) {
+        super.onCancel(dialog);
         if(mCancellable && !mDialogDismissed) {
-            mDialogDismissed = true;
             mNegativeButton.callOnClick();
         }
     }
@@ -188,9 +203,9 @@ public class CustomAlertDialog extends DialogFragment {
     @Override
     public void dismiss() {
         mDialogDismissed = true;
+        mNeutralListener = mPositiveListener = mNegativeListener = null;
         super.dismiss();
     }
-
 
     /**
      * Chainable - set context to use for resources
@@ -419,6 +434,11 @@ public class CustomAlertDialog extends DialogFragment {
         dlg.setContext(context);
         return dlg;
     }
+
+    public interface OnDismissListener {
+        void onDismiss();
+    }
+
 
 //    static public void test(final Activity context) {
 //

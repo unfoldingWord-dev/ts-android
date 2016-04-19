@@ -128,7 +128,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
 
         mDeveloperTools.add(new ToolItem("Test USFM Import", "Test USFM Import", 0, new ToolItem.ToolAction() {
             @Override
-            public void run() {
+            public void run() { //// TODO: 4/16/16 remove
                 boolean success = false;
 //                String file = "mrk.usfm.txt";
                 String file = "usfm.zip";

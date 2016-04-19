@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
-import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
@@ -31,7 +30,6 @@ import com.door43.widget.ViewUtil;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 
 /**
@@ -40,13 +38,12 @@ import java.io.InputStream;
 public class ImportDialog extends DialogFragment {
 
     private static final int IMPORT_PROJECT_FROM_SD_REQUEST = 142;
+    private static final int IMPORT_USFM_PROJECT_FROM_SD_REQUEST = 143;
     public static final String TAG = "importDialog";
     private static final String STATE_SETTING_DEVICE_ALIAS = "state_setting_device_alias";
-    private static final String STATE_SETTING_USFM_IMPORT = "state_setting_usfm_import";
     private boolean settingDeviceAlias = false;
     private boolean isDocumentFile = false;
 
-    private boolean mUsfmImport = false;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -61,17 +58,13 @@ public class ImportDialog extends DialogFragment {
 
         final Button importCloudButton = (Button)v.findViewById(R.id.import_from_cloud);
         Button importFromSDButton = (Button)v.findViewById(R.id.import_from_sd);
+        Button importFromSDUsfmButton = (Button)v.findViewById(R.id.import_from_sd_usfm);
         Button importFromFriend = (Button)v.findViewById(R.id.import_from_friend);
-
-        if(mUsfmImport) {
-            TextView label = (TextView)v.findViewById(R.id.title);
-            label.setText(R.string.label_import_usfm);
-        }
 
         if(savedInstanceState != null) {
             // check if returning from device alias dialog
             settingDeviceAlias = savedInstanceState.getBoolean(STATE_SETTING_DEVICE_ALIAS, false);
-            mUsfmImport = savedInstanceState.getBoolean(STATE_SETTING_USFM_IMPORT, false);
+
         }
 
         importCloudButton.setOnClickListener(new View.OnClickListener() {
@@ -97,7 +90,13 @@ public class ImportDialog extends DialogFragment {
         importFromSDButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                    doImportFromSdCard();
+                doImportFromSdCard(false);
+            }
+        });
+        importFromSDUsfmButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                doImportFromSdCard(true);
             }
         });
         importFromFriend.setOnClickListener(new View.OnClickListener() {
@@ -139,11 +138,7 @@ public class ImportDialog extends DialogFragment {
         return v;
     }
 
-    public void setUsfmImport(boolean usfmImport) {
-        this.mUsfmImport = usfmImport;
-    }
-
-    private void doImportFromSdCard() {
+    private void doImportFromSdCard(boolean doingUsfmImport) {
         String typeStr = null;
         Intent intent = new Intent(getActivity(), ImportFileChooserActivity.class);
         isDocumentFile = SdUtils.isSdCardPresentLollipop();
@@ -154,8 +149,8 @@ public class ImportDialog extends DialogFragment {
         }
 
         intent.setType(typeStr);
-        intent.putExtra(ImportFileChooserActivity.EXTRAS_RAW_FILE, mUsfmImport);
-        startActivityForResult(intent, IMPORT_PROJECT_FROM_SD_REQUEST);
+        intent.putExtra(ImportFileChooserActivity.EXTRAS_RAW_FILE, doingUsfmImport);
+        startActivityForResult(intent, doingUsfmImport ? IMPORT_USFM_PROJECT_FROM_SD_REQUEST : IMPORT_PROJECT_FROM_SD_REQUEST);
     }
 
     @Override
@@ -188,24 +183,56 @@ public class ImportDialog extends DialogFragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == IMPORT_PROJECT_FROM_SD_REQUEST) {
-            if((resultCode == Activity.RESULT_OK) && (data != null)) {
-                if(isDocumentFile) {
+        if (requestCode == IMPORT_PROJECT_FROM_SD_REQUEST) {
+            if ((resultCode == Activity.RESULT_OK) && (data != null)) {
+                if (isDocumentFile) {
                     Uri uri = data.getData();
-                    if(mUsfmImport) {
-                        ImportUsfmActivity.startActivityForUriImport(getActivity(),uri);
-                    } else {
-                        importUri(uri);
-                    }
+                    importUri(uri);
                 } else {
                     File file = new File(data.getData().getPath());
-                    if(mUsfmImport) {
-                        ImportUsfmActivity.startActivityForFileImport(getActivity(),file);
-                    } else {
-                        importFile(file);
-                    }
+                    importFile(file);
                 }
             }
+        } else if (requestCode == IMPORT_USFM_PROJECT_FROM_SD_REQUEST) {
+            if ((resultCode == Activity.RESULT_OK) && (data != null)) {
+                if (isDocumentFile) {
+                    Uri uri = data.getData();
+                    doUsfmImportUri(uri);
+                } else {
+                    String path = data.getData().getPath();
+                    doUsfmImportFile(path);
+                }
+            }
+        }
+    }
+
+    /**
+     * import USFM uri with fallback to standard import if tstudio uri
+     * @param uri
+     */
+    private void doUsfmImportUri(Uri uri) {
+        String path = uri.toString();
+        String ext = FilenameUtils.getExtension(path).toLowerCase();
+        boolean tstudio = ext.equalsIgnoreCase(Translator.ARCHIVE_EXTENSION);
+        if (tstudio) {
+            importUri(uri);
+        } else {
+            ImportUsfmActivity.startActivityForUriImport(getActivity(), uri);
+        }
+    }
+
+    /**
+     * import USFM file with fallback to standard import if tstudio file
+     * @param path
+     */
+    private void doUsfmImportFile(String path) {
+        File file = new File(path);
+        String ext = FilenameUtils.getExtension(path).toLowerCase();
+        boolean tstudio = ext.equalsIgnoreCase(Translator.ARCHIVE_EXTENSION);
+        if (tstudio) {
+            importFile(file);
+        } else {
+            ImportUsfmActivity.startActivityForFileImport(getActivity(), file);
         }
     }
 
@@ -276,7 +303,6 @@ public class ImportDialog extends DialogFragment {
     @Override
     public void onSaveInstanceState(Bundle out) {
         out.putBoolean(STATE_SETTING_DEVICE_ALIAS, settingDeviceAlias);
-        out.putBoolean(STATE_SETTING_USFM_IMPORT, mUsfmImport);
         super.onSaveInstanceState(out);
     }
 }

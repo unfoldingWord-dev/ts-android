@@ -54,24 +54,30 @@ public class ImportUsfm {
     private File mProjectFolder;
 
     private String mChapter;
-    private List<File> mSourceFiles;
+    private List<File> mSourceFiles; // raw list of files found in expanded package
     private HashMap<String, JSONArray> mChunks;
 
-    private List<File> mImportProjects;
+    private List<File> mImportProjects; // files that seem to be actual books.
     private List<String> mErrors;
-    private List<String> mFoundBooks;
+    private List<String> mFoundBooks; //descriptions of books from raw list
     private int mCurrentBook;
 
     private String mBookName;
     private String mBookShortName;
     private TargetLanguage mTargetLanguage;
     private Activity mContext;
-    private boolean mSuccess;
-    private UpdateStatusListener mUpdateListener;
+    private boolean mBookProcessSuccess;
+    private UpdateStatusListener mStatusUpdateListener;
     private int mCurrentChapter;
     private int mChaperCount;
-    private List<MissingNameItem> mMissingNames;
+    private List<MissingNameItem> mBooksMissingNames;
+    private boolean mCancel = false;
 
+    /**
+     * constructor
+     * @param context
+     * @param targetLanguage
+     */
     public ImportUsfm(Activity context, TargetLanguage targetLanguage) {
         mTempDir = null;
         mTempOutput = null;
@@ -81,7 +87,7 @@ public class ImportUsfm {
 
         createTempFolders();
 
-        mUpdateListener = null;
+        mStatusUpdateListener = null;
         mContext = context;
         mChunks = null;
 
@@ -92,8 +98,8 @@ public class ImportUsfm {
         mTargetLanguage = targetLanguage;
         mCurrentBook = 0;
 
-        mSuccess = false;
-        mMissingNames = new ArrayList<>();
+        mBookProcessSuccess = false;
+        mBooksMissingNames = new ArrayList<>();
         mCurrentChapter = 0;
         mChaperCount = 1;
 
@@ -102,56 +108,82 @@ public class ImportUsfm {
         mChapter = null;
     }
 
-    private ImportUsfm(Activity context, File mTempDir, File mTempOutput, File mTempDest,
-                       File mTempSrce, File mProjectFolder, String mChapter, List<File> mSourceFiles,
-                       List<File> mImportProjects, List<String> mErrors, List<String> mFoundBooks,
-                       int mCurrentBook, String mBookName, String mBookShortName, TargetLanguage mTargetLanguage,
-                       boolean mSuccess, int mCurrentChapter, int mChaperCount, List<MissingNameItem> mMissingNames) {
-        this.mUpdateListener = null;
+    /**
+     * constructor used to create new instance from JSON
+     * @param context
+     * @param tempDir
+     * @param tempOutput
+     * @param tempDest
+     * @param tempSrce
+     * @param projectFolder
+     * @param chapter
+     * @param sourceFiles
+     * @param importProjects
+     * @param errors
+     * @param foundBooks
+     * @param currentBook
+     * @param bookName
+     * @param bookShortName
+     * @param targetLanguage
+     * @param success
+     * @param currentChapter
+     * @param chaperCount
+     * @param bookMissingNames
+     */
+    private ImportUsfm(Activity context, File tempDir, File tempOutput, File tempDest,
+                       File tempSrce, File projectFolder, String chapter, List<File> sourceFiles,
+                       List<File> importProjects, List<String> errors, List<String> foundBooks,
+                       int currentBook, String bookName, String bookShortName, TargetLanguage targetLanguage,
+                       boolean success, int currentChapter, int chaperCount, List<MissingNameItem> bookMissingNames) {
+        this.mStatusUpdateListener = null;
         this.mContext = context;
         this.mChunks = null;
 
-        this.mTempDir = mTempDir;
-        this.mTempOutput = mTempOutput;
-        this.mTempDest = mTempDest;
-        this.mTempSrce = mTempSrce;
-        this.mProjectFolder = mProjectFolder;
-        this.mChapter = mChapter;
-        this.mSourceFiles = mSourceFiles;
-        this.mImportProjects = mImportProjects;
-        this.mErrors = mErrors;
-        this.mFoundBooks = mFoundBooks;
-        this.mCurrentBook = mCurrentBook;
-        this.mBookName = mBookName;
-        this.mBookShortName = mBookShortName;
-        this.mTargetLanguage = mTargetLanguage;
-        this.mSuccess = mSuccess;
-        this.mCurrentChapter = mCurrentChapter;
-        this.mChaperCount = mChaperCount;
-        this.mMissingNames = mMissingNames;
+        this.mTempDir = tempDir;
+        this.mTempOutput = tempOutput;
+        this.mTempDest = tempDest;
+        this.mTempSrce = tempSrce;
+        this.mProjectFolder = projectFolder;
+        this.mChapter = chapter;
+        this.mSourceFiles = sourceFiles;
+        this.mImportProjects = importProjects;
+        this.mErrors = errors;
+        this.mFoundBooks = foundBooks;
+        this.mCurrentBook = currentBook;
+        this.mBookName = bookName;
+        this.mBookShortName = bookShortName;
+        this.mTargetLanguage = targetLanguage;
+        this.mBookProcessSuccess = success;
+        this.mCurrentChapter = currentChapter;
+        this.mChaperCount = chaperCount;
+        this.mBooksMissingNames = bookMissingNames;
     }
 
+    /**
+     * generate JSON from object
+     * @return
+     */
     public JSONObject toJson() {
         try {
             JSONObject json = new JSONObject();
-            json.putOpt("mTempDir", mTempDir);
-            json.putOpt("mTempOutput", mTempOutput);
-            json.putOpt("mTempDest", mTempDest);
-            json.putOpt("mTempSrce", mTempSrce);
-            json.putOpt("mProjectFolder", mProjectFolder);
-            json.putOpt("mSourceFiles", toJsonFileArray(mSourceFiles));
-            json.putOpt("mImportProjects", toJsonFileArray(mImportProjects));
-            json.putOpt("mErrors", toJsonStringArray(mErrors));
-            json.putOpt("mFoundBooks", toJsonStringArray(mFoundBooks));
-            json.putOpt("mTargetLanguage", mTargetLanguage.toApiFormatJson());
-            json.putOpt("mCurrentBook", mCurrentBook);
-            json.putOpt("mSuccess", mSuccess);
-            json.putOpt("mMissingNames", MissingNameItem.toJsonArray(mMissingNames));
-            json.putOpt("mCurrentChapter", mCurrentChapter);
-            json.putOpt("mChaperCount", mChaperCount);
-            json.putOpt("mBookName", mBookName);
-            json.putOpt("mBookShortName", mBookShortName);
-            json.putOpt("mChapter", mChapter);
+            json.putOpt("TempDir", mTempDir);
+            json.putOpt("TempOutput", mTempOutput);
+            json.putOpt("TempDest", mTempDest);
+            json.putOpt("TempSrce", mTempSrce);
+            json.putOpt("ProjectFolder", mProjectFolder);
+            json.putOpt("SourceFiles", toJsonFileArray(mSourceFiles));
+            json.putOpt("ImportProjects", toJsonFileArray(mImportProjects));
+            json.putOpt("Errors", toJsonStringArray(mErrors));
+            json.putOpt("FoundBooks", toJsonStringArray(mFoundBooks));
+            json.putOpt("TargetLanguage", mTargetLanguage.toApiFormatJson());
+            json.putOpt("CurrentBook", mCurrentBook);
+            json.putOpt("Success", mBookProcessSuccess);
+            json.putOpt("MissingNames", MissingNameItem.toJsonArray(mBooksMissingNames));
+            json.putOpt("CurrentChapter", mCurrentChapter);
+            json.putOpt("ChaperCount", mChaperCount);
+            json.putOpt("BookName", mBookName);
+            json.putOpt("BookShortName", mBookShortName);
+            json.putOpt("Chapter", mChapter);
 
             return json;
         } catch (Exception e) {
@@ -159,56 +191,93 @@ public class ImportUsfm {
         }
     }
 
-    public static ImportUsfm generate(Activity context, String jsonStr) {
+    /**
+     * rebuild object from JSON string
+     * @param context
+     * @param jsonStr
+     * @return
+     */
+    public static ImportUsfm newInstance(Activity context, String jsonStr) {
         try {
             JSONObject jsonObject = new JSONObject(jsonStr);
-            return ImportUsfm.generate(context, jsonObject);
+            return ImportUsfm.newInstance(context, jsonObject);
         } catch (Exception e) {
             return null;
         }
     }
 
-    public static ImportUsfm generate(Activity context, JSONObject json) {
+    /**
+     * cancel any processing
+     * @param mCancel
+     */
+    public void setCancel(boolean mCancel) {
+        this.mCancel = mCancel;
+    }
+
+    /**
+     * rebuild object from JSON
+     * @param context
+     * @param json
+     * @return
+     */
+    public static ImportUsfm newInstance(Activity context, JSONObject json) {
         try {
             return new ImportUsfm(context,
-                    getOptFile(json,"mTempDir"),
-                    getOptFile(json,"mTempOutput"),
-                    getOptFile(json,"mTempDest"),
-                    getOptFile(json,"mTempSrce"),
-                    getOptFile(json,"mProjectFolder"),
-                    getOptString(json,"mChapter"),
-                    fromJsonArrayToFiles(getOptJsonArray(json,"mSourceFiles")),
-                    fromJsonArrayToFiles(getOptJsonArray(json,"mImportProjects")),
-                    fromJsonArrayToStrings(getOptJsonArray(json,"mErrors")),
-                    fromJsonArrayToStrings(getOptJsonArray(json,"mFoundBooks")),
-                    getOptInteger(json,"mCurrentBook"),
-                    getOptString(json,"mBookName"),
-                    getOptString(json,"mBookShortName"),
-                    TargetLanguage.generate(getOptJsonObject(json,"mTargetLanguage")),
-                    getOptBoolean(json,"mSuccess"),
-                    getOptInteger(json,"mCurrentChapter"),
-                    getOptInteger(json,"mChaperCount"),
-                    MissingNameItem.fromJsonArray(getOptJsonArray(json,"mMissingNames")));
+                    getOptFile(json,"TempDir"),
+                    getOptFile(json,"TempOutput"),
+                    getOptFile(json,"TempDest"),
+                    getOptFile(json,"TempSrce"),
+                    getOptFile(json,"ProjectFolder"),
+                    getOptString(json,"Chapter"),
+                    fromJsonArrayToFiles(getOptJsonArray(json,"SourceFiles")),
+                    fromJsonArrayToFiles(getOptJsonArray(json,"ImportProjects")),
+                    fromJsonArrayToStrings(getOptJsonArray(json,"Errors")),
+                    fromJsonArrayToStrings(getOptJsonArray(json,"FoundBooks")),
+                    getOptInteger(json,"CurrentBook"),
+                    getOptString(json,"BookName"),
+                    getOptString(json,"BookShortName"),
+                    TargetLanguage.generate(getOptJsonObject(json,"TargetLanguage")),
+                    getOptBoolean(json,"Success"),
+                    getOptInteger(json,"CurrentChapter"),
+                    getOptInteger(json,"ChaperCount"),
+                    MissingNameItem.fromJsonArray(getOptJsonArray(json,"MissingNames")));
 
         } catch (Exception e) {
             return null;
         }
     }
 
-
-
-    public MissingNameItem[] getMissingNames() {
-        return mMissingNames.toArray(new MissingNameItem[mMissingNames.size()]);
+    /**
+     * get list of books that we cant find valid names (resource IDs) for
+     * @return
+     */
+    public MissingNameItem[] getBooksMissingNames() {
+        return mBooksMissingNames.toArray(new MissingNameItem[mBooksMissingNames.size()]);
     }
 
-    public void addMissingName(String description, String invalidName, String contents) {
-        mMissingNames.add(new MissingNameItem(description, invalidName, contents));
+    /**
+     * used to keep list of books that are missing names (valid resource IDs)
+     * @param description
+     * @param invalidName
+     * @param contents
+     */
+    public void addBookMissingName(String description, String invalidName, String contents) {
+        mBooksMissingNames.add(new MissingNameItem(description, invalidName, contents));
     }
 
-    public void setListener(UpdateStatusListener listener) {
-        mUpdateListener = listener;
+    /**
+     * set status listener
+     * @param listener
+     */
+    public void setUpdateStatusListener(UpdateStatusListener listener) {
+        mStatusUpdateListener = listener;
     }
 
+    /**
+     * will update the status by calling listener.  Will display text and update
+     *   the percent complete
+     * @param text
+     */
     private void updateStatus(String text) {
         int fileCount = mSourceFiles.size();
         if (fileCount < 1) {
@@ -220,19 +289,30 @@ public class ImportUsfm {
         float percentage = 100.0f * (importAmountDone + bookAmountDone / fileCount);
         int percentDone = Math.round(percentage);
 
-        if (mUpdateListener != null) {
+        if (mStatusUpdateListener != null) {
             if (!isMissing(mBookShortName)) {
                 text = mBookShortName + " - " + text;
             }
-            mUpdateListener.statusUpdate(text, percentDone);
+            mStatusUpdateListener.statusUpdate(text, percentDone);
         }
     }
 
+    /**
+     * will update the status by calling listener.  Will display string resource and update
+     *   the percent complete
+     * @param resource
+     */
     private void updateStatus(int resource) {
         String status = mContext.getResources().getString(resource);
         updateStatus(status);
     }
 
+    /**
+     * will update the status by calling listener.  Will build status string using resource as string format
+     * and applying data to it. Will also update the percent complete.
+     * @param resource
+     * @param data
+     */
     private void updateStatus(int resource, String data) {
         String format = mContext.getResources().getString(resource);
         updateStatus(String.format(format, data));
@@ -248,7 +328,8 @@ public class ImportUsfm {
         String results = "";
         for (int i = 0; i <= mCurrentBook; i++) {
             String bookName = String.format(format, mFoundBooks.get(i));
-            String currentResults = "\n" + bookName + "\n" + mErrors.get(i);
+            String errors = mErrors.get(i);
+            String currentResults = "\n" + (i+1) + " - " + bookName + "\n" + errors;
             results = results + currentResults + "\n";
         }
 
@@ -256,7 +337,7 @@ public class ImportUsfm {
         results = language + "\n" + results;
 
         CustomAlertDialog.Create(mContext)
-                .setTitle(mSuccess ? R.string.title_import_usfm_summary : R.string.title_import_usfm_error)
+                .setTitle(mBookProcessSuccess ? R.string.title_import_usfm_summary : R.string.title_import_usfm_error)
                 .setMessage(results)
                 .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
                     @Override
@@ -273,6 +354,10 @@ public class ImportUsfm {
                 .show("results");
     }
 
+    /**
+     * returns string to use for language title
+     * @return
+     */
     public String getLanguageTitle() {
         String format;
         format = mContext.getResources().getString(R.string.selected_language);
@@ -281,17 +366,17 @@ public class ImportUsfm {
     }
 
     /**
-     * add error to error list
-     */
-    private void setBookName() {
-        setBookName(mBookShortName, mBookName);
-    }
-
-    /**
-     * add error to error list
+     * set book name
+     * @param bookShortName
+     * @param bookName
      */
     private void setBookName(String bookShortName, String bookName) {
-        mFoundBooks.add(mCurrentBook, bookShortName + " = " + bookName);
+        normalizeBookQueue();
+        String description = bookName;
+        if(!bookShortName.isEmpty()) {
+            description = bookShortName + " = " + bookName;
+        }
+        mFoundBooks.set(mCurrentBook, description);
     }
 
     /**
@@ -394,7 +479,7 @@ public class ImportUsfm {
                 updateStatus(R.string.found_book, name);
                 success = processBook(file);
                 if (!success) {
-                    addError("Could not parse " + file.toString());
+                    addError("Could not parse " + getShortFilePath(file.toString()));
                 }
                 successOverall = successOverall && success;
             }
@@ -408,7 +493,7 @@ public class ImportUsfm {
         }
 
         updateStatus(R.string.finished_loading);
-        mSuccess = successOverall;
+        mBookProcessSuccess = successOverall;
         return successOverall;
     }
 
@@ -427,8 +512,8 @@ public class ImportUsfm {
         }
 
         try {
-            String ext = FilenameUtils.getExtension(file.toString()).toLowerCase();
-            boolean zip = "zip".equals(ext);
+            String ext = FilenameUtils.getExtension(file.toString());
+            boolean zip = "zip".equalsIgnoreCase(ext);
             if (!zip) {
                 success = processBook(file);
             } else {
@@ -440,7 +525,7 @@ public class ImportUsfm {
             success = false;
         }
         updateStatus(R.string.finished_loading);
-        mSuccess = success;
+        mBookProcessSuccess = success;
         return success;
     }
 
@@ -461,8 +546,8 @@ public class ImportUsfm {
         String path = uri.toString();
 
         try {
-            String ext = FilenameUtils.getExtension(path).toLowerCase();
-            boolean zip = "zip".equals(ext);
+            String ext = FilenameUtils.getExtension(path);
+            boolean zip = "zip".equalsIgnoreCase(ext);
 
             InputStream usfmStream = AppContext.context().getContentResolver().openInputStream(uri);
             if (!zip) {
@@ -476,7 +561,7 @@ public class ImportUsfm {
             success = false;
         }
         updateStatus(R.string.finished_loading);
-        mSuccess = success;
+        mBookProcessSuccess = success;
         return success;
     }
 
@@ -505,7 +590,7 @@ public class ImportUsfm {
             success = false;
         }
         updateStatus(R.string.finished_loading);
-        mSuccess = success;
+        mBookProcessSuccess = success;
         return success;
     }
 
@@ -581,19 +666,23 @@ public class ImportUsfm {
     }
 
     private boolean processBook(String book, String name) {
-        return processBook1(book, name, true, null);
+        return processBook(book, name, true, null);
     }
 
     public boolean readText(String book, String name, boolean promptForName, String useName) {
         mCurrentBook = mFoundBooks.size();
-        return processBook1(book, name, promptForName, useName);
+        return processBook(book, name, promptForName, useName);
     }
 
-    private boolean processBook1(String book, String name, boolean promptForName, String useName) {
+    private boolean processBook(String book, String name, boolean promptForName, String useName) {
+        if(mCancel) {
+            return false;
+        }
         boolean successOverall = true;
         boolean success;
         mBookShortName = "";
-        setBookName("", name);
+        String description = getShortFilePath(name);
+        setBookName("", description);
         try {
             mCurrentChapter = 0;
             mChaperCount = 1;
@@ -621,13 +710,13 @@ public class ImportUsfm {
 
             if (isMissing(mBookShortName)) {
                 addError(R.string.missing_book_short_name);
-                addMissingName(name, null, book);
+                addBookMissingName(name, null, book);
                 return promptForName;
             }
 
             mBookShortName = mBookShortName.toLowerCase();
 
-            setBookName();
+            setBookName(mBookShortName, description);
 
             mTempDest = new File(mTempOutput, mBookShortName);
             mProjectFolder = new File(mTempDest, mBookShortName + "-" + mTargetLanguage.getId());
@@ -644,7 +733,7 @@ public class ImportUsfm {
                 // TODO: 4/13/16 add support for processing by sections
 
                 addWarning("No chunk list found for " + mBookShortName);
-                addMissingName(mBookName, mBookShortName, book);
+                addBookMissingName(mBookName, mBookShortName, book);
                 return promptForName;
             } else { // has chunks
 
@@ -654,6 +743,10 @@ public class ImportUsfm {
 
                 success = extractChaptersFromBook(book);
                 successOverall = successOverall && success;
+            }
+
+            if(mCancel) {
+                successOverall = false;
             }
 
             if (successOverall) {
@@ -673,6 +766,22 @@ public class ImportUsfm {
             return false;
         }
         return successOverall;
+    }
+
+    public String getShortFilePath(String name) {
+        String filename = name;
+        if(name != null) {
+            int pos = name.indexOf(mTempSrce.toString()); // try to strip off temp folder path
+            if (pos >= 0) {
+                filename = name.substring(pos + mTempSrce.toString().length() + 1);
+            } else { // otherwise we use just file name
+                String[] parts = name.split("/");
+                if (parts.length > 0) {
+                    filename = parts[parts.length - 1];
+                }
+            }
+        }
+        return filename;
     }
 
     private void extractBookID(String book) {
@@ -747,6 +856,9 @@ public class ImportUsfm {
         boolean successOverall = true;
         boolean success;
         while (matcher.find() && successOverall) {
+            if(mCancel) {
+                return false;
+            }
             section = text.subSequence(lastIndex, matcher.start()); // get section before this chapter marker
             success = breakUpChapter(section);
             successOverall = successOverall && success;
@@ -1234,16 +1346,22 @@ public class ImportUsfm {
     }
 
     static File getOptFile(JSONObject json, String key) {
-        return new File(getOptString(json,key));
+        String path = getOptString(json, key);
+        if(path != null) {
+            return new File(path);
+        }
+        return null;
     }
 
     static String getOptString(JSONObject json, String key) {
-        return (String) getOpt(json,key);
+        Object obj = getOpt(json, key);
+        return (String) obj;
     }
 
     static JSONObject getOptJsonObject(JSONObject json, String key) {
         try {
-            return (JSONObject) getOpt(json, key);
+            Object obj = getOpt(json, key);
+            return (JSONObject) obj;
         } catch (Exception e) {
             return new JSONObject();
         }
@@ -1251,7 +1369,8 @@ public class ImportUsfm {
 
     static JSONArray getOptJsonArray(JSONObject json, String key) {
         try {
-            return (JSONArray) getOpt(json, key);
+            Object obj = getOpt(json, key);
+            return (JSONArray) obj;
         } catch (Exception e) {
             return new JSONArray();
         }

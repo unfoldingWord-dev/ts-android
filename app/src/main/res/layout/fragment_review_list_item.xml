@@ -55,10 +55,10 @@
                     android:id="@+id/new_tab_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:padding="0dp"
                     android:layout_gravity="right|center"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:src="@drawable/icon_tabedit_normal"/>
+                    android:src="@drawable/icon_tabedit_normal"
+                    android:padding="@dimen/dialog_controls_margin" />
             </FrameLayout>
 
             <TextView
