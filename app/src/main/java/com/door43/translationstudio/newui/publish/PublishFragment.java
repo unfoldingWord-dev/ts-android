@@ -40,6 +40,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.merge.MergeStrategy;
 import org.sufficientlysecure.htmltextview.HtmlTextView;
 
 import java.io.File;
@@ -205,6 +206,13 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
         } else if(pushTask != null) {
             taskWatcher.watch(pushTask);
         }
+
+        // attach to dialogs
+        MergeConflictsDialog mergeConflictsDialog = (MergeConflictsDialog)getFragmentManager().findFragmentByTag(MergeConflictsDialog.TAG);
+        if(mergeConflictsDialog != null) {
+            attachMergeConflictListener(mergeConflictsDialog);
+        }
+
         return v;
     }
 
@@ -279,7 +287,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
         } else if(task instanceof RegisterSSHKeysTask) {
             if(((RegisterSSHKeysTask)task).isSuccess()) {
                 Logger.i(this.getClass().getName(), "SSH keys were registered with the server");
-                // try to push again
+                // try to pull again
                 PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation);
                 taskWatcher.watch(pullTask);
                 TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
@@ -358,31 +366,50 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             public void onKeepServer() {
                 try {
                     Git git = targetTranslation.getRepo().getGit();
+                    ResetCommand resetCommand = git.reset();
+                    resetCommand.setMode(ResetCommand.ResetType.HARD)
+                            .setRef("backup-master")
+                            .call();
 
+                    // try to pull again
+                    PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, MergeStrategy.THEIRS);
+                    taskWatcher.watch(pullTask);
+                    TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Logger.e(this.getClass().getName(), "Failed to keep server changes durring publish", e);
+                    notifyPublishFailed(targetTranslation);
                 }
-                // TODO: 4/20/16 continue pushing
             }
 
             @Override
             public void onKeepLocal() {
                 try {
                     Git git = targetTranslation.getRepo().getGit();
+                    ResetCommand resetCommand = git.reset();
+                    resetCommand.setMode(ResetCommand.ResetType.HARD)
+                            .setRef("backup-master")
+                            .call();
 
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    // try to pull again
+                    PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, MergeStrategy.OURS);
+                    taskWatcher.watch(pullTask);
+                    TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "Failed to keep local changes durring publish", e);
+                    notifyPublishFailed(targetTranslation);
                 }
-                // TODO: 4/20/16 continue pushing
             }
 
             @Override
             public void onCancel() {
                 try {
                     Git git = targetTranslation.getRepo().getGit();
-
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    ResetCommand resetCommand = git.reset();
+                    resetCommand.setMode(ResetCommand.ResetType.HARD)
+                            .setRef("backup-master")
+                            .call();
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "Failed to restore local changes", e);
                 }
                 // TODO: 4/20/16 notify canceled
             }
