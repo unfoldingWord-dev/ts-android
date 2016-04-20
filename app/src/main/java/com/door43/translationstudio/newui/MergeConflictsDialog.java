@@ -1,7 +1,11 @@
 package com.door43.translationstudio.newui;
 
+import android.app.DialogFragment;
+
 /**
- * Created by joel on 4/19/16.
+ * Displays a truncated list of merge conflicts to the user and
+ * provides options for handling them.
  */
-public class MergeConflictsDialog {
+public class MergeConflictsDialog extends DialogFragment {
+
 }

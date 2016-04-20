@@ -21,6 +21,8 @@ import org.eclipse.jgit.errors.NoRemoteRepositoryException;
 import org.eclipse.jgit.lib.ProgressMonitor;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by joel on 4/18/16.
@@ -31,6 +33,7 @@ public class PullTargetTranslationTask extends ManagedTask {
     private final TargetTranslation targetTranslation;
     private String message = "";
     private Status status = Status.UNKNOWN;
+    private Map<String, int[][]> conflicts = new HashMap<>();
 
     /**
      * todo: eventually we need to support pulling from a particular user.
@@ -104,7 +107,8 @@ public class PullTargetTranslationTask extends ManagedTask {
             PullResult result = pullCommand.call();
             MergeResult mergeResult = result.getMergeResult();
             if(mergeResult != null && mergeResult.getMergedCommits().length > 0) {
-                this.status = Status.RECEIVED_UPDATES;
+                this.status = Status.MERGE_CONFLICTS;
+                this.conflicts = mergeResult.getConflicts();
             } else {
                 this.status = Status.UP_TO_DATE;
             }
@@ -152,10 +156,13 @@ public class PullTargetTranslationTask extends ManagedTask {
         return status;
     }
 
+    public Map<String, int[][]> getConflicts() {
+        return conflicts;
+    }
+
     public enum Status {
         UP_TO_DATE,
         MERGE_CONFLICTS,
-        RECEIVED_UPDATES,
         OUT_OF_MEMORY,
         AUTH_FAILURE,
         NO_REMOTE_REPO,

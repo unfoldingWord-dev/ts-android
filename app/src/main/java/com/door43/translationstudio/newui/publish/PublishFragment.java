@@ -37,6 +37,7 @@ import org.sufficientlysecure.htmltextview.HtmlTextView;
 
 import java.io.File;
 import java.security.InvalidParameterException;
+import java.util.Map;
 
 
 /**
@@ -215,8 +216,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             PullTargetTranslationTask.Status status = ((PullTargetTranslationTask)task).getStatus();
             //  TRICKY: we continue to push for unknown status in case the repo was just created (the missing branch is an error)
             // the pull task will catch any errors
-            if(status == PullTargetTranslationTask.Status.RECEIVED_UPDATES
-                    || status == PullTargetTranslationTask.Status.UP_TO_DATE
+            if(status == PullTargetTranslationTask.Status.UP_TO_DATE
                     || status == PullTargetTranslationTask.Status.UNKNOWN) {
                 Logger.i(this.getClass().getName(), "Changes on the server were synced with " + targetTranslation.getId());
                 try {
@@ -264,7 +264,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 TaskManager.addTask(repoTask, CreateRepositoryTask.TASK_ID);
             } else if(status == PullTargetTranslationTask.Status.MERGE_CONFLICTS) {
                 Logger.i(this.getClass().getName(), "The server contains conflicting changes for " + targetTranslation.getId());
-                // TODO: 4/18/16 ask user how to handle conflicts
+                notifyMergeConflicts(((PullTargetTranslationTask)task).getConflicts());
             } else {
                 notifyPublishFailed(targetTranslation);
             }
@@ -320,6 +320,10 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             }
 
         }
+    }
+
+    private void notifyMergeConflicts(Map<String, int[][]> conflicts) {
+
     }
 
     public void showAuthFailure() {
