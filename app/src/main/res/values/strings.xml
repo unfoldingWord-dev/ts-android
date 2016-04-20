@@ -689,4 +689,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="restore_failed">The translation could not be restored</string>
     <string name="import_from_door43">Import from Door43</string>
     <string name="restore_from_door43">Restore from Door43</string>
+    <string name="title_chunk_conflicts">Chunk Conflicts</string>
+    <string name="chunk_conflict_description">A conflict was found between the translation on Door43 and your device.</string>
+    <string name="review_conflicts">Review differences</string>
+    <string name="keep_server_changes">Keep server changes</string>
+    <string name="keep_local_changes">Keep my changes</string>
 </resources>

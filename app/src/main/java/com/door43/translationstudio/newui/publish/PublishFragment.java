@@ -20,9 +20,12 @@ import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.Door43LoginDialog;
 import com.door43.translationstudio.newui.FeedbackDialog;
+import com.door43.translationstudio.newui.MergeConflictsDialog;
+import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.tasks.CreateRepositoryTask;
 import com.door43.translationstudio.tasks.PullTargetTranslationTask;
 import com.door43.translationstudio.tasks.PushTargetTranslationTask;
@@ -33,9 +36,14 @@ import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 import com.door43.widget.ViewUtil;
 
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ResetCommand;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.sufficientlysecure.htmltextview.HtmlTextView;
 
 import java.io.File;
+import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.Map;
 
@@ -323,7 +331,62 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
     }
 
     private void notifyMergeConflicts(Map<String, int[][]> conflicts) {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        MergeConflictsDialog dialog = new MergeConflictsDialog();
+        attachMergeConflictListener(dialog);
+        dialog.show(ft, MergeConflictsDialog.TAG);
+    }
 
+    private void attachMergeConflictListener(MergeConflictsDialog dialog) {
+        dialog.setOnClickListener(new MergeConflictsDialog.OnClickListener() {
+            @Override
+            public void onReview() {
+                // ask parent activity to navigate to a new activity
+                Intent intent = new Intent(getActivity(), TargetTranslationActivity.class);
+                Bundle args = new Bundle();
+                args.putString(AppContext.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
+                // TODO: 4/20/16 it woulid be nice to navigate directly to the first conflict
+//                args.putString(AppContext.EXTRA_CHAPTER_ID, chapterId);
+//                args.putString(AppContext.EXTRA_FRAME_ID, frameId);
+                args.putString(AppContext.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
+                intent.putExtras(args);
+                startActivity(intent);
+                getActivity().finish();
+            }
+
+            @Override
+            public void onKeepServer() {
+                try {
+                    Git git = targetTranslation.getRepo().getGit();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                // TODO: 4/20/16 continue pushing
+            }
+
+            @Override
+            public void onKeepLocal() {
+                try {
+                    Git git = targetTranslation.getRepo().getGit();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                // TODO: 4/20/16 continue pushing
+            }
+
+            @Override
+            public void onCancel() {
+                try {
+                    Git git = targetTranslation.getRepo().getGit();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                // TODO: 4/20/16 notify canceled
+            }
+        });
     }
 
     public void showAuthFailure() {
