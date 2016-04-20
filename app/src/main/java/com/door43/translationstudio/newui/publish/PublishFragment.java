@@ -324,7 +324,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
 
     public void showAuthFailure() {
         CustomAlertDialog.Create(getActivity())
-                .setTitle(R.string.upload_failed).setMessage(R.string.auth_failure_retry)
+                .setTitle(R.string.error).setMessage(R.string.auth_failure_retry)
                 .setPositiveButton(R.string.yes, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -350,7 +350,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
     private void notifyPublishFailed(final TargetTranslation targetTranslation) {
         final Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
         CustomAlertDialog.Create(getActivity())
-                .setTitle(R.string.publish)
+                .setTitle(R.string.error)
                 .setMessage(R.string.upload_failed)
                 .setPositiveButton(R.string.dismiss, null)
                 .setNeutralButton(R.string.menu_bug, new View.OnClickListener() {

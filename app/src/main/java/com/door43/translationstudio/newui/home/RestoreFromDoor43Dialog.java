@@ -4,6 +4,7 @@ import android.app.DialogFragment;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +26,7 @@ import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
 import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
+import com.door43.widget.ViewUtil;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONException;
@@ -39,7 +41,7 @@ import java.util.List;
 /**
  * Created by joel on 11/6/2015.
  */
-public class RestoreFromCloudDialog extends DialogFragment implements GenericTaskWatcher.OnFinishedListener {
+public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTaskWatcher.OnFinishedListener {
     private static final String STATE_REPOSITORIES = "state_repositories";
     private GenericTaskWatcher taskWatcher;
     private RestoreFromCloudAdapter adapter;
@@ -50,7 +52,7 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
-        View v = inflater.inflate(R.layout.dialog_restore_from_cloud, container, false);
+        View v = inflater.inflate(R.layout.dialog_restore_from_door43, container, false);
 
         this.taskWatcher = new GenericTaskWatcher(getActivity(), R.string.loading);
         this.taskWatcher.setOnFinishedListener(this);
@@ -88,6 +90,25 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
             }
         });
 
+        // restore state
+        if(savedInstanceState != null) {
+            String[] repoJsonArray = savedInstanceState.getStringArray(STATE_REPOSITORIES);
+            if(repoJsonArray != null) {
+                List<Repository> repoJsonList = new ArrayList<>();
+                for (String json : repoJsonArray) {
+                    try {
+                        Repository repo = Repository.fromJSON(new JSONObject(json));
+                        if (json != null) {
+                            repoJsonList.add(repo);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                adapter.setRepositories(repoJsonList);
+            }
+        }
+
         // connect to existing task
         GetUserRepositories reposTask = (GetUserRepositories) TaskManager.getTask(GetUserRepositories.TASK_ID);
         CloneRepositoryTask cloneTask = (CloneRepositoryTask) TaskManager.getTask(CloneRepositoryTask.TASK_ID);
@@ -95,30 +116,11 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
             taskWatcher.watch(reposTask);
         } else if (cloneTask != null) {
             taskWatcher.watch(cloneTask);
-        }
-
-        if (savedInstanceState == null) {
-            if (cloneTask == null && reposTask == null) {
-                // start task
-                reposTask = new GetUserRepositories();
-                taskWatcher.watch(reposTask);
-                TaskManager.addTask(reposTask, GetUserRepositories.TASK_ID);
-            }
-        } else if (reposTask == null) {
-            // load existing data
-            String[] repoJsonArray = savedInstanceState.getStringArray(STATE_REPOSITORIES);
-            List<Repository> repoJsonList = new ArrayList<>();
-            for (String json : repoJsonArray) {
-                try {
-                    Repository repo = Repository.fromJSON(new JSONObject(json));
-                    if (json != null) {
-                        repoJsonList.add(repo);
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-            adapter.setRepositories(repoJsonList);
+        } else if(repositories.size() == 0) {
+            // start task
+            reposTask = new GetUserRepositories();
+            taskWatcher.watch(reposTask);
+            TaskManager.addTask(reposTask, GetUserRepositories.TASK_ID);
         }
 
         return v;
@@ -172,7 +174,10 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
                         public void run() {
                             // todo: terrible hack. We should instead register a listener with the dialog
                             ((HomeActivity) getActivity()).notifyDatasetChanged();
-                            dismiss();
+
+                            Snackbar snack = Snackbar.make(RestoreFromDoor43Dialog.this.getView(), R.string.success, Snackbar.LENGTH_LONG);
+                            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                            snack.show();
                         }
                     });
                 } else if(status == CloneRepositoryTask.Status.AUTH_FAILURE) {
@@ -205,7 +210,7 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
 
     public void showAuthFailure() {
         CustomAlertDialog.Create(getActivity())
-                .setTitle(R.string.upload_failed).setMessage(R.string.auth_failure_retry)
+                .setTitle(R.string.error).setMessage(R.string.auth_failure_retry)
                 .setPositiveButton(R.string.yes, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
