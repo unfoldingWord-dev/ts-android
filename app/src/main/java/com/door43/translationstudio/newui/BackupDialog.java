@@ -21,8 +21,10 @@ import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
+import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.tasks.CreateRepositoryTask;
 import com.door43.translationstudio.tasks.PullTargetTranslationTask;
 import com.door43.translationstudio.tasks.PushTargetTranslationTask;
@@ -34,6 +36,9 @@ import com.door43.util.tasks.TaskManager;
 import com.door43.widget.ViewUtil;
 
 import org.apache.commons.io.IOUtils;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ResetCommand;
+import org.eclipse.jgit.merge.MergeStrategy;
 
 import java.io.File;
 import java.io.OutputStream;
@@ -87,22 +92,6 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
 
         taskWatcher = new GenericTaskWatcher(getActivity(), R.string.backup);
         taskWatcher.setOnFinishedListener(this);
-
-        // connect to existing tasks
-        PullTargetTranslationTask pullTask = (PullTargetTranslationTask)TaskManager.getTask(PullTargetTranslationTask.TASK_ID);
-        RegisterSSHKeysTask keysTask = (RegisterSSHKeysTask)TaskManager.getTask(RegisterSSHKeysTask.TASK_ID);
-        CreateRepositoryTask repoTask = (CreateRepositoryTask)TaskManager.getTask(CreateRepositoryTask.TASK_ID);
-        PushTargetTranslationTask pushTask = (PushTargetTranslationTask)TaskManager.getTask(PushTargetTranslationTask.TASK_ID);
-
-        if(pullTask != null) {
-            taskWatcher.watch(pullTask);
-        } else if (keysTask != null) {
-            taskWatcher.watch(keysTask);
-        } else if(repoTask != null) {
-            taskWatcher.watch(repoTask);
-        } else if(pushTask != null) {
-            taskWatcher.watch(pushTask);
-        }
 
         if(savedInstanceState != null) {
             // check if returning from device alias dialog
@@ -216,6 +205,28 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
                 }
             }
         });
+
+        // connect to existing tasks
+        PullTargetTranslationTask pullTask = (PullTargetTranslationTask)TaskManager.getTask(PullTargetTranslationTask.TASK_ID);
+        RegisterSSHKeysTask keysTask = (RegisterSSHKeysTask)TaskManager.getTask(RegisterSSHKeysTask.TASK_ID);
+        CreateRepositoryTask repoTask = (CreateRepositoryTask)TaskManager.getTask(CreateRepositoryTask.TASK_ID);
+        PushTargetTranslationTask pushTask = (PushTargetTranslationTask)TaskManager.getTask(PushTargetTranslationTask.TASK_ID);
+
+        if(pullTask != null) {
+            taskWatcher.watch(pullTask);
+        } else if (keysTask != null) {
+            taskWatcher.watch(keysTask);
+        } else if(repoTask != null) {
+            taskWatcher.watch(repoTask);
+        } else if(pushTask != null) {
+            taskWatcher.watch(pushTask);
+        }
+
+        // attach to dialogs
+        MergeConflictsDialog mergeConflictsDialog = (MergeConflictsDialog)getFragmentManager().findFragmentByTag(MergeConflictsDialog.TAG);
+        if(mergeConflictsDialog != null) {
+            attachMergeConflictListener(mergeConflictsDialog);
+        }
 
         return v;
     }
@@ -400,7 +411,87 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
     }
 
     private void notifyMergeConflicts(Map<String, int[][]> conflicts) {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        MergeConflictsDialog dialog = new MergeConflictsDialog();
+        attachMergeConflictListener(dialog);
+        dialog.show(ft, MergeConflictsDialog.TAG);
+    }
 
+    private void attachMergeConflictListener(MergeConflictsDialog dialog) {
+        dialog.setOnClickListener(new MergeConflictsDialog.OnClickListener() {
+            @Override
+            public void onReview() {
+                if(getActivity() instanceof  TargetTranslationActivity) {
+                    ((TargetTranslationActivity) getActivity()).notifyDatasetChanged();
+                    BackupDialog.this.dismiss();
+                    // TODO: 4/20/16 it woulid be nice to navigate directly to the first conflict
+                } else {
+                    // ask parent activity to navigate to a new activity
+                    Intent intent = new Intent(getActivity(), TargetTranslationActivity.class);
+                    Bundle args = new Bundle();
+                    args.putString(AppContext.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
+                    // TODO: 4/20/16 it woulid be nice to navigate directly to the first conflict
+//                args.putString(AppContext.EXTRA_CHAPTER_ID, chapterId);
+//                args.putString(AppContext.EXTRA_FRAME_ID, frameId);
+                    args.putString(AppContext.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
+                    intent.putExtras(args);
+                    startActivity(intent);
+                    getActivity().finish();
+                }
+            }
+
+            @Override
+            public void onKeepServer() {
+                try {
+                    Git git = targetTranslation.getRepo().getGit();
+                    ResetCommand resetCommand = git.reset();
+                    resetCommand.setMode(ResetCommand.ResetType.HARD)
+                            .setRef("backup-master")
+                            .call();
+
+                    // try to pull again
+                    PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, MergeStrategy.THEIRS);
+                    taskWatcher.watch(pullTask);
+                    TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "Failed to keep server changes durring publish", e);
+                    notifyBackupFailed(targetTranslation);
+                }
+            }
+
+            @Override
+            public void onKeepLocal() {
+                try {
+                    Git git = targetTranslation.getRepo().getGit();
+                    ResetCommand resetCommand = git.reset();
+                    resetCommand.setMode(ResetCommand.ResetType.HARD)
+                            .setRef("backup-master")
+                            .call();
+
+                    // try to pull again
+                    PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, MergeStrategy.OURS);
+                    taskWatcher.watch(pullTask);
+                    TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "Failed to keep local changes durring publish", e);
+                    notifyBackupFailed(targetTranslation);
+                }
+            }
+
+            @Override
+            public void onCancel() {
+                try {
+                    Git git = targetTranslation.getRepo().getGit();
+                    ResetCommand resetCommand = git.reset();
+                    resetCommand.setMode(ResetCommand.ResetType.HARD)
+                            .setRef("backup-master")
+                            .call();
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "Failed to restore local changes", e);
+                }
+                // TODO: 4/20/16 notify canceled
+            }
+        });
     }
 
     /**
