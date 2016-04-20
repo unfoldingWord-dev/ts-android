@@ -686,4 +686,5 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="still_possible_to_register_door43">You can still create or login to a Door43 account later</string>
     <string name="title_connect_door43">Connect To Door43</string>
     <string name="gogs_public_key_name">ts-android</string>
+    <string name="restore_failed">The translation could not be restored</string>
 </resources>

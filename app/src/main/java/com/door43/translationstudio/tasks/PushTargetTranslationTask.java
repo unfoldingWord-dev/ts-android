@@ -121,7 +121,7 @@ public class PushTargetTranslationTask extends ManagedTask {
                 if(subException != null) {
                     String detail = subException.getMessage();
                     if ("Auth fail".equals(detail)) {
-                        this.status = Status.AUTH_FAILURE; // we do special handling for auth failure
+                        this.status = Status.AUTH_FAILURE;
                     }
                 } else if(cause instanceof NoRemoteRepositoryException) {
                     this.status = Status.NO_REMOTE_REPO;

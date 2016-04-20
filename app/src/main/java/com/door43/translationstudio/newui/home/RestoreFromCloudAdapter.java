@@ -4,6 +4,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.AppContext;
@@ -76,11 +77,13 @@ public class RestoreFromCloudAdapter extends BaseAdapter {
         private final TextView projectName;
         private final TextView targetLanguageName;
         private final TextView repoUrl;
+        private final ImageView privacy;
         private Repository repository;
 
         public ViewHolder(View v) {
             projectName = (TextView)v.findViewById(R.id.project_name);
             targetLanguageName = (TextView)v.findViewById(R.id.target_language_name);
+            privacy = (ImageView)v.findViewById(R.id.privacy);
             repoUrl = (TextView)v.findViewById(R.id.repository_url);
             v.setTag(this);
         }
@@ -89,6 +92,11 @@ public class RestoreFromCloudAdapter extends BaseAdapter {
             projectName.setText("");
             targetLanguageName.setText("");
             this.repository = repository;
+            if(this.repository.getIsPrivate()) {
+                this.privacy.setImageResource(R.drawable.ic_lock_black_18dp);
+            } else {
+                this.privacy.setImageResource(R.drawable.ic_lock_open_black_18dp);
+            }
             repoUrl.setText(repository.getHtmlUrl());
             String[] repoName = this.repository.getFullName().split("/");
             if(repoName.length > 0) {
