@@ -141,7 +141,7 @@ public class AppContext {
      * @return
      */
     public static Translator getTranslator() {
-        return new Translator(mContext, new File(getPublicDirectory(), TARGET_TRANSLATIONS_DIR));
+        return new Translator(mContext, getProfile(), new File(getPublicDirectory(), TARGET_TRANSLATIONS_DIR));
     }
 
     /**
