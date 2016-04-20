@@ -1,5 +1,6 @@
 package com.door43.translationstudio.newui.publish;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Intent;
@@ -9,12 +10,15 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
+import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Scroller;
+import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
@@ -322,8 +326,16 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                                 .setNeutralButton(R.string.label_details, new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
-                                        CustomAlertDialog.Create(getActivity())
-                                                .setTitle(R.string.project_uploaded).setMessage(message).setPositiveButton(R.string.dismiss, null).show("PubDetails");
+                                        AlertDialog dialog = new AlertDialog.Builder(getActivity())
+                                                .setTitle(R.string.project_uploaded)
+                                                .setMessage(message)
+                                                .setPositiveButton(R.string.dismiss, null)
+                                                .show();
+                                        TextView textView = (TextView) dialog.findViewById(android.R.id.message);
+                                        textView.setMaxLines(5);
+                                        textView.setScroller(new Scroller(getActivity()));
+                                        textView.setVerticalScrollBarEnabled(true);
+                                        textView.setMovementMethod(new ScrollingMovementMethod());
                                     }
                                 }).show("publish-finished");
                     }
