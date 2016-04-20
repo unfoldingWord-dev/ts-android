@@ -175,7 +175,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
                             // todo: terrible hack. We should instead register a listener with the dialog
                             ((HomeActivity) getActivity()).notifyDatasetChanged();
 
-                            Snackbar snack = Snackbar.make(RestoreFromDoor43Dialog.this.getView(), R.string.success, Snackbar.LENGTH_LONG);
+                            Snackbar snack = Snackbar.make(RestoreFromDoor43Dialog.this.getView(), R.string.success, Snackbar.LENGTH_SHORT);
                             ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                             snack.show();
                         }

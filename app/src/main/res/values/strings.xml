@@ -406,7 +406,7 @@
     <string name="long_click_to_drag">Tap and hold to drag</string>
     <string name="feedback">Feedback</string>
     <string name="import_from_sd">Import from SD Card</string>
-    <string name="backup_online">Backup Online (requires internet)</string>
+    <string name="backup_to_door43">Backup to Door43</string>
     <string name="translation_export_failed">Translation could not be exported</string>
     <string name="invalid_file">Not a valid file</string>
     <string name="software_licenses" translatable="false">
