@@ -17,6 +17,7 @@ import android.widget.ImageButton;
 import android.widget.PopupMenu;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.ProfileActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.ArchiveDetails;
@@ -147,6 +148,12 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                                     e.printStackTrace();
                                     // todo notify user app could not be shared
                                 }
+                                return true;
+                            case R.id.action_log_out:
+                                AppContext.setProfile(null);
+                                Intent logoutIntent = new Intent(HomeActivity.this, ProfileActivity.class);
+                                startActivity(logoutIntent);
+                                finish();
                                 return true;
                             case R.id.action_settings:
                                 Intent intent = new Intent(HomeActivity.this, SettingsActivity.class);

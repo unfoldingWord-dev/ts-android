@@ -28,7 +28,7 @@ public class ImportExportTest extends InstrumentationTestCase {
         super.setUp();
         this.context = getInstrumentation().getContext();
         this.testsDir = new File(AppContext.context().getCacheDir(), "import_export_tests");
-        this.translator = new Translator(this.context, new File(this.testsDir, "translator"));
+        this.translator = new Translator(this.context, null, new File(this.testsDir, "translator"));
         this.library = AppContext.getLibrary();
     }
 

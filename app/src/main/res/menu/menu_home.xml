@@ -28,6 +28,12 @@
         android:icon="@drawable/ic_android_black_24dp"
         app:showAsAction="never" />
 
+    <item android:id="@+id/action_log_out"
+        android:title="@string/log_out"
+        android:orderInCategory="450"
+        android:icon="@drawable/ic_exit_to_app_black_24dp"
+        app:showAsAction="never" />
+
     <item android:id="@+id/action_settings"
         android:title="@string/action_settings"
         android:orderInCategory="500"

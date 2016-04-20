@@ -35,6 +35,11 @@
         android:defaultValue="@string/pref_default_git_server_port"/>
 
     <EditTextPreference
+        android:key="gogs_api"
+        android:title="@string/pref_title_gogs_api"
+        android:defaultValue="@string/pref_default_gogs_api"/>
+
+    <EditTextPreference
         android:key="media_server"
         android:title="@string/pref_title_media_server"
         android:defaultValue="@string/pref_default_media_server"/>

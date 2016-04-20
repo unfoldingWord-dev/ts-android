@@ -50,7 +50,7 @@
                 android:id="@+id/backup_to_cloud"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/backup_online"
+                android:text="@string/backup_to_door43"
                 android:drawableLeft="@drawable/ic_backup_secondary_24dp"
                 android:drawableStart="@drawable/ic_backup_secondary_24dp"
                 android:gravity="left|center_vertical"

@@ -1,59 +1,49 @@
 package com.door43.translationstudio;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
 import android.view.View;
 import android.widget.EditText;
 
+import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.R;
+import com.door43.translationstudio.TermsOfUseActivity;
 import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.home.HomeActivity;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class ProfileActivity extends BaseActivity {
-
-    private EditText mName;
-    private View mPrivacyNotice;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        mPrivacyNotice = findViewById(R.id.privacy_notice);
-        mName = (EditText)findViewById(R.id.name_edittext);
+        View loginDoor43 = findViewById(R.id.login_door43);
+        View registerDoor43 = findViewById(R.id.register_door43);
+        View registerOffline = findViewById(R.id.register_offline);
 
-        mPrivacyNotice.setOnClickListener(new View.OnClickListener() {
+        loginDoor43.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showPrivacyNotice(null);
+                Intent intent = new Intent(ProfileActivity.this, LoginDoor43Activity.class);
+                startActivity(intent);
             }
         });
-        findViewById(R.id.ok_button).setOnClickListener(new View.OnClickListener() {
+        registerDoor43.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final Profile profile = new Profile(mName.getText().toString());
-                if (profile.isValid()) {
-                    // confirm
-                    showPrivacyNotice(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            List<Profile> profiles = new ArrayList<>();
-                            profiles.add(profile);
-                            AppContext.setProfiles(profiles);
-                            openMainActivity();
-                        }
-                    });
-                } else {
-                    CustomAlertDialog.Create(ProfileActivity.this)
-                            .setMessage(R.string.complete_required_fields)
-                            .setPositiveButton(R.string.label_ok, null)
-                            .show("missing-fields");
-                }
+                Intent intent = new Intent(ProfileActivity.this, RegisterDoor43Activity.class);
+                startActivity(intent);
+            }
+        });
+        registerOffline.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ProfileActivity.this, RegisterOfflineActivity.class);
+                startActivity(intent);
             }
         });
         findViewById(R.id.cancel_button).setOnClickListener(new View.OnClickListener() {
@@ -68,24 +58,19 @@ public class ProfileActivity extends BaseActivity {
     public void onResume() {
         super.onResume();
 
-        List<Profile> profiles = AppContext.getProfiles();
-        if (profiles != null && profiles.size() > 0) {
-            openMainActivity();
+        if (AppContext.getProfile() != null) {
+            Intent intent = new Intent(this, TermsOfUseActivity.class);
+            startActivity(intent);
+            finish();
         }
-    }
-
-    private void openMainActivity() {
-        Intent intent = new Intent(this, HomeActivity.class);
-        startActivity(intent);
-        finish();
     }
 
     /**
      * Displays the privacy notice
      * @param listener if set the dialog will become a confirmation dialog
      */
-    public void showPrivacyNotice(View.OnClickListener listener) {
-        CustomAlertDialog privacy = CustomAlertDialog.Create(this)
+    public static void showPrivacyNotice(Activity context, View.OnClickListener listener) {
+        CustomAlertDialog privacy = CustomAlertDialog.Create(context)
                 .setTitle(R.string.privacy_notice)
                 .setIcon(R.drawable.ic_info_black_24dp)
                 .setMessage(R.string.publishing_privacy_notice);
