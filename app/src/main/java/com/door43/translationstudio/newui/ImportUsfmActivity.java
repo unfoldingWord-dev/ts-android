@@ -37,6 +37,9 @@ import java.io.File;
 import java.io.Serializable;
 
 
+/**
+ * Handles the workflow UI for importing a USFM file.
+ */
 public class ImportUsfmActivity extends BaseActivity implements TargetLanguageListFragment.OnItemClickListener, ProjectListFragment.OnItemClickListener {
 
     public static final int RESULT_DUPLICATE = 2;
@@ -273,20 +276,30 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                 if(mProgressDialog != null) {
                     mProgressDialog.hide();
 
-                    mUsfm.showResults(new ImportUsfm.OnFinishedListener() {
-                        @Override
-                        public void onFinished(final boolean success) {
-                            if (success) { // if user is OK to continue
-                                mProgressDialog.show();
-                                mProgressDialog.setProgress(0);
-                                mProgressDialog.setTitle(R.string.reading_usfm);
-                                mProgressDialog.setMessage("");
-                                doImportingWithProgress();
-                            } else {
-                                usfmImportDone(true);
-                            }
-                        }
-                    });
+                    String results = mUsfm.getResultsString();
+                    String language = mUsfm.getLanguageTitle();
+                    String message = language + "\n" + results;
+
+                    CustomAlertDialog.Create(ImportUsfmActivity.this)
+                            .setTitle(mUsfm.isProcessSuccess() ? R.string.title_import_usfm_summary : R.string.title_import_usfm_error)
+                            .setMessage(message)
+                            .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    mProgressDialog.show();
+                                    mProgressDialog.setProgress(0);
+                                    mProgressDialog.setTitle(R.string.reading_usfm);
+                                    mProgressDialog.setMessage("");
+                                    doImportingWithProgress();
+                                }
+                            })
+                            .setNegativeButton(R.string.menu_cancel, new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    usfmImportDone(true);
+                                }
+                            })
+                            .show("USFMresults");
                 }
             }
         });

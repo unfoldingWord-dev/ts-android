@@ -126,17 +126,6 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
             }
         });
 
-        mDeveloperTools.add(new ToolItem("Test USFM Import", "Test USFM Import", 0, new ToolItem.ToolAction() {
-            @Override
-            public void run() { //// TODO: 4/16/16 remove
-                boolean success = false;
-//                String file = "mrk.usfm.txt";
-                String file = "usfm.zip";
-                ImportUsfmActivity.startActivityForResourceImport(DeveloperToolsActivity.this,file);
-            }
-        }));
-
-
         // load tools
         mDeveloperTools.add(new ToolItem(getResources().getString(R.string.regenerate_keys), getResources().getString(R.string.regenerate_keys_description), 0, new ToolItem.ToolAction() {
             @Override

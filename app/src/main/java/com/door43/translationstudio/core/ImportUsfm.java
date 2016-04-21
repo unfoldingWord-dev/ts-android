@@ -5,12 +5,10 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
 import android.text.TextUtils;
-import android.view.View;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.spannables.USFMVerseSpan;
 import com.door43.util.Zip;
 
@@ -31,7 +29,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by blm on 4/2/16.
+ * For processing USFM input file or zip files into importable package.
  */
 public class ImportUsfm {
     public static final String TAG = ImportUsfm.class.getSimpleName();
@@ -65,8 +63,8 @@ public class ImportUsfm {
     private String mBookName;
     private String mBookShortName;
     private TargetLanguage mTargetLanguage;
-    private Activity mContext;
-    private boolean mBookProcessSuccess;
+    private Context mContext;
+    private boolean mProcessSuccess;
     private UpdateStatusListener mStatusUpdateListener;
     private int mCurrentChapter;
     private int mChaperCount;
@@ -78,7 +76,7 @@ public class ImportUsfm {
      * @param context
      * @param targetLanguage
      */
-    public ImportUsfm(Activity context, TargetLanguage targetLanguage) {
+    public ImportUsfm(Context context, TargetLanguage targetLanguage) {
         mTempDir = null;
         mTempOutput = null;
         mTempDest = null;
@@ -98,7 +96,7 @@ public class ImportUsfm {
         mTargetLanguage = targetLanguage;
         mCurrentBook = 0;
 
-        mBookProcessSuccess = false;
+        mProcessSuccess = false;
         mBooksMissingNames = new ArrayList<>();
         mCurrentChapter = 0;
         mChaperCount = 1;
@@ -153,7 +151,7 @@ public class ImportUsfm {
         this.mBookName = bookName;
         this.mBookShortName = bookShortName;
         this.mTargetLanguage = targetLanguage;
-        this.mBookProcessSuccess = success;
+        this.mProcessSuccess = success;
         this.mCurrentChapter = currentChapter;
         this.mChaperCount = chaperCount;
         this.mBooksMissingNames = bookMissingNames;
@@ -177,7 +175,7 @@ public class ImportUsfm {
             json.putOpt("FoundBooks", toJsonStringArray(mFoundBooks));
             json.putOpt("TargetLanguage", mTargetLanguage.toApiFormatJson());
             json.putOpt("CurrentBook", mCurrentBook);
-            json.putOpt("Success", mBookProcessSuccess);
+            json.putOpt("Success", mProcessSuccess);
             json.putOpt("MissingNames", MissingNameItem.toJsonArray(mBooksMissingNames));
             json.putOpt("CurrentChapter", mCurrentChapter);
             json.putOpt("ChaperCount", mChaperCount);
@@ -212,6 +210,14 @@ public class ImportUsfm {
      */
     public void setCancel(boolean mCancel) {
         this.mCancel = mCancel;
+    }
+
+    /**
+     * was processing successful overall
+     * @return
+     */
+    public boolean isProcessSuccess() {
+        return mProcessSuccess;
     }
 
     /**
@@ -319,13 +325,13 @@ public class ImportUsfm {
     }
 
     /**
-     * get error list
+     * get processing results as string
      */
-    public void showResults(final OnFinishedListener listener) {
+    public String getResultsString() {
         normalizeBookQueue();
         normalizeMessageQueue();
-        String format = mContext.getResources().getString(R.string.found_book);
         String results = "";
+        String format = mContext.getResources().getString(R.string.found_book);
         for (int i = 0; i <= mCurrentBook; i++) {
             String bookName = String.format(format, mFoundBooks.get(i));
             String errors = mErrors.get(i);
@@ -335,26 +341,7 @@ public class ImportUsfm {
             String currentResults = "\n" + (i+1) + " - " + bookName + "\n" + errors;
             results = results + currentResults + "\n";
         }
-
-        String language = getLanguageTitle();
-        results = language + "\n" + results;
-
-        CustomAlertDialog.Create(mContext)
-                .setTitle(mBookProcessSuccess ? R.string.title_import_usfm_summary : R.string.title_import_usfm_error)
-                .setMessage(results)
-                .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        listener.onFinished(true);
-                    }
-                })
-                .setNegativeButton(R.string.menu_cancel, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        listener.onFinished(false);
-                    }
-                })
-                .show("results");
+        return results;
     }
 
     /**
@@ -507,7 +494,7 @@ public class ImportUsfm {
         }
 
         updateStatus(R.string.finished_loading);
-        mBookProcessSuccess = successOverall;
+        mProcessSuccess = successOverall;
         return successOverall;
     }
 
@@ -539,7 +526,7 @@ public class ImportUsfm {
             success = false;
         }
         updateStatus(R.string.finished_loading);
-        mBookProcessSuccess = success;
+        mProcessSuccess = success;
         return success;
     }
 
@@ -575,7 +562,7 @@ public class ImportUsfm {
             success = false;
         }
         updateStatus(R.string.finished_loading);
-        mBookProcessSuccess = success;
+        mProcessSuccess = success;
         return success;
     }
 
@@ -604,7 +591,7 @@ public class ImportUsfm {
             success = false;
         }
         updateStatus(R.string.finished_loading);
-        mBookProcessSuccess = success;
+        mProcessSuccess = success;
         return success;
     }
 
