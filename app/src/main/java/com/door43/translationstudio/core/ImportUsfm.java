@@ -65,7 +65,7 @@ public class ImportUsfm {
     private String mBookName;
     private String mBookShortName;
     private TargetLanguage mTargetLanguage;
-    private Activity mContext;
+    private Context mContext;
     private boolean mBookProcessSuccess;
     private UpdateStatusListener mStatusUpdateListener;
     private int mCurrentChapter;
@@ -78,7 +78,7 @@ public class ImportUsfm {
      * @param context
      * @param targetLanguage
      */
-    public ImportUsfm(Activity context, TargetLanguage targetLanguage) {
+    public ImportUsfm(Context context, TargetLanguage targetLanguage) {
         mTempDir = null;
         mTempOutput = null;
         mTempDest = null;
@@ -321,25 +321,15 @@ public class ImportUsfm {
     /**
      * get error list
      */
-    public void showResults(final OnFinishedListener listener) {
+    public void showResults(Activity activity, final OnFinishedListener listener) {
         normalizeBookQueue();
         normalizeMessageQueue();
-        String format = mContext.getResources().getString(R.string.found_book);
-        String results = "";
-        for (int i = 0; i <= mCurrentBook; i++) {
-            String bookName = String.format(format, mFoundBooks.get(i));
-            String errors = mErrors.get(i);
-            if(errors.isEmpty()) {
-                errors = mContext.getResources().getString(R.string.no_error);
-            }
-            String currentResults = "\n" + (i+1) + " - " + bookName + "\n" + errors;
-            results = results + currentResults + "\n";
-        }
+        String results = getResultsString();
 
         String language = getLanguageTitle();
         results = language + "\n" + results;
 
-        CustomAlertDialog.Create(mContext)
+        CustomAlertDialog.Create(activity)
                 .setTitle(mBookProcessSuccess ? R.string.title_import_usfm_summary : R.string.title_import_usfm_error)
                 .setMessage(results)
                 .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
@@ -355,6 +345,21 @@ public class ImportUsfm {
                     }
                 })
                 .show("results");
+    }
+
+    public String getResultsString() {
+        String results = "";
+        String format = mContext.getResources().getString(R.string.found_book);
+        for (int i = 0; i <= mCurrentBook; i++) {
+            String bookName = String.format(format, mFoundBooks.get(i));
+            String errors = mErrors.get(i);
+            if(errors.isEmpty()) {
+                errors = mContext.getResources().getString(R.string.no_error);
+            }
+            String currentResults = "\n" + (i+1) + " - " + bookName + "\n" + errors;
+            results = results + currentResults + "\n";
+        }
+        return results;
     }
 
     /**

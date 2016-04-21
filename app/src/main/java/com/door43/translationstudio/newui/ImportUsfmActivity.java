@@ -273,7 +273,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                 if(mProgressDialog != null) {
                     mProgressDialog.hide();
 
-                    mUsfm.showResults(new ImportUsfm.OnFinishedListener() {
+                    mUsfm.showResults(ImportUsfmActivity.this, new ImportUsfm.OnFinishedListener() {
                         @Override
                         public void onFinished(final boolean success) {
                             if (success) { // if user is OK to continue
