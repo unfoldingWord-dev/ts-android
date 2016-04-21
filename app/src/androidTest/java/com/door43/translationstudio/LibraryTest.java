@@ -1,24 +1,15 @@
 package com.door43.translationstudio;
 
-import android.content.Context;
 import android.test.InstrumentationTestCase;
 
 import com.door43.translationstudio.core.ChunkMarker;
 import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.LibraryUpdates;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.ProjectCategory;
 import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
-import com.door43.translationstudio.AppContext;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 
 /**
  * Created by joel on 8/31/2015.

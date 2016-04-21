@@ -439,7 +439,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
             success = mUsfm.readFile(file);
         } else if (args.containsKey(EXTRA_USFM_IMPORT_RESOURCE_FILE)) {
             String importResourceFile = args.getString(EXTRA_USFM_IMPORT_RESOURCE_FILE);
-            success = mUsfm.readResourceFile(importResourceFile);
+            success = mUsfm.readResourceFile(this, importResourceFile);
         }
 
         return success;

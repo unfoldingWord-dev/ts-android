@@ -572,14 +572,14 @@ public class ImportUsfm {
      * @param fileName
      * @return
      */
-    public boolean readResourceFile(String fileName) {
+    public boolean readResourceFile(Context context, String fileName) {
         boolean success = true;
         updateStatus(R.string.initializing_import);
         String ext = FilenameUtils.getExtension(fileName).toLowerCase();
         boolean zip = "zip".equals(ext);
 
         try {
-            InputStream usfmStream = mContext.getAssets().open(fileName);
+            InputStream usfmStream = context.getAssets().open(fileName);
             if (!zip) {
                 String text = IOUtils.toString(usfmStream, "UTF-8");
                 success = processBook(text, fileName);
