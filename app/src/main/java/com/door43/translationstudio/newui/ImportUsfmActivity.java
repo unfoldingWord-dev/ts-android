@@ -620,6 +620,12 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
             case importingFiles:
                 // not resumable - presume completed
+                mCurrentState = eImportState.finished;
+
+            case finished:
+                if(mUsfm != null) {
+                    mUsfm.cleanup();
+                }
                 break;
         }
     }
@@ -650,6 +656,9 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
     }
 
     public void onSaveInstanceState(Bundle outState) {
+        eImportState currentState = mCurrentState; //capture state before it is changed
+        outState.putInt(STATE_CURRENT_STATE, currentState.getValue());
+
         if (mTargetLanguage != null) {
             outState.putString(STATE_TARGET_LANGUAGE_ID, mTargetLanguage.getId());
         } else {
@@ -657,11 +666,15 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         }
 
         if (mUsfm != null) { //save state and make sure it's not running
+            outState.putString(STATE_USFM, mUsfm.toJson().toString());
             mUsfm.setUpdateStatusListener(null);
             mUsfm.setCancel(true);
-            mUsfm.cleanup();
-            outState.putString(STATE_USFM, mUsfm.toJson().toString());
-        } else {
+
+            if((currentState == eImportState.processingFiles) // if doing initial processing, we clean up and start over
+                    || (currentState == eImportState.finished)) { // if finished we cleanup
+                mUsfm.cleanup();
+            }
+         } else {
             outState.remove(STATE_USFM);
         }
 
@@ -671,7 +684,6 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
             outState.remove(STATE_PROMPT_NAME_COUNTER);
         }
 
-        outState.putInt(STATE_CURRENT_STATE, mCurrentState.getValue());
         mProgressDialog = null;
 
         super.onSaveInstanceState(outState);
