@@ -451,29 +451,29 @@ public class MainApplication extends Application {
         catch(Exception e){
             showException(e);
         }
-        // require the app to re-submit generated keys to the server
-        setHasRegisteredKeys(false);
     }
 
     /**
      * Checks if the client has sent it's ssh key to the server
      * @return
+     * @deprecated we will always try to push first and register if it fails
      */
-    public boolean hasRegisteredKeys() {
-        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
-        return settings.getBoolean("has_registered_with_server", false);
-    }
+//    public boolean hasRegisteredKeys() {
+//        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
+//        return settings.getBoolean("has_registered_with_server", false);
+//    }
 
     /**
      * Sets whether the client has sent it's ssh key to the server
      * @param hasRegistered
+     * @deprecated
      */
-    public void setHasRegisteredKeys(Boolean hasRegistered) {
-        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putBoolean("has_registered_with_server", hasRegistered);
-        editor.apply();
-    }
+//    public void setHasRegisteredKeys(Boolean hasRegistered) {
+//        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
+//        SharedPreferences.Editor editor = settings.edit();
+//        editor.putBoolean("has_registered_with_server", hasRegistered);
+//        editor.apply();
+//    }
 
     /**
      * Checks if the app should opperate as if this is the first time it has opened.
@@ -499,23 +499,23 @@ public class MainApplication extends Application {
      * Checks if the client has accepted the terms of use
      * @return
      */
-    public boolean hasAcceptedTerms() {
-        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
-        int termsVersion = getResources().getInteger(R.integer.terms_of_use_version);
-        return settings.getBoolean("has_accepted_terms_v"+termsVersion, false);
-    }
+//    public boolean hasAcceptedTerms() {
+//        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
+//        int termsVersion = getResources().getInteger(R.integer.terms_of_use_version);
+//        return settings.getBoolean("has_accepted_terms_v"+termsVersion, false);
+//    }
 
     /**
      * Sets whether the client has accepted the terms of use.
      * @param hasAcceptedTerms
      */
-    public void setHasAcceptedTerms(Boolean hasAcceptedTerms) {
-        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
-        SharedPreferences.Editor editor = settings.edit();
-        int termsVersion = getResources().getInteger(R.integer.terms_of_use_version);
-        editor.putBoolean("has_accepted_terms_v"+termsVersion, hasAcceptedTerms);
-        editor.apply();
-    }
+//    public void setHasAcceptedTerms(Boolean hasAcceptedTerms) {
+//        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
+//        SharedPreferences.Editor editor = settings.edit();
+//        int termsVersion = getResources().getInteger(R.integer.terms_of_use_version);
+//        editor.putBoolean("has_accepted_terms_v"+termsVersion, hasAcceptedTerms);
+//        editor.apply();
+//    }
 
     /**
      * Returns an instance of the user preferences.

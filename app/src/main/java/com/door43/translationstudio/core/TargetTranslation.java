@@ -2,7 +2,6 @@ package com.door43.translationstudio.core;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
-import android.content.res.AssetManager;
 import android.support.annotation.Nullable;
 
 import com.door43.tools.reporting.Logger;
@@ -23,6 +22,7 @@ import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.TagCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -85,6 +85,7 @@ public class TargetTranslation {
     private String resourceName = null;
 
     private TranslationFormat mTranslationFormat;
+    private PersonIdent author = null;
 
     /**
      * Creates a new instance of the target translation
@@ -328,29 +329,6 @@ public class TargetTranslation {
         TargetTranslation targetTranslation = new TargetTranslation(targetTranslationDir);
         targetTranslation.addContributor(translator);
         return targetTranslation;
-    }
-
-    /**
-     * make sure the license file is present in folder
-     * @param targetTranslationDir
-     */
-    private static void ensureLicenseFilePresent(File targetTranslationDir) {
-        //ensure that there is a license file
-        try {
-            File license = new File(targetTranslationDir, LICENSE_FILE);
-            if(!license.exists()) {
-                AssetManager am = AppContext.context().getAssets();
-                String licenseSource = "LICENSE.md";
-                InputStream is = am.open(licenseSource);
-                if(is != null) {
-                        FileUtils.copyInputStreamToFile(is, license);
-                } else {
-                    Logger.e(TAG, "Failed to open license resource: " + licenseSource);
-                }
-            }
-        } catch (Exception e) {
-            Logger.e(TAG, "Failed to copy license file", e);
-        }
     }
 
     /**
@@ -963,6 +941,15 @@ public class TargetTranslation {
         return false;
     }
 
+    /**
+     * Sets the author to be used when making commits
+     * @param name
+     * @param email
+     */
+    public void setAuthor(String name, String email) {
+        this.author = new PersonIdent(name, email);
+    }
+
     public boolean commitSync(String filePattern) throws Exception {
         Git git = getRepo().getGit();
 
@@ -978,6 +965,9 @@ public class TargetTranslation {
         // commit changes
         final CommitCommand commit = git.commit();
         commit.setAll(true);
+        if(author != null) {
+            commit.setAuthor(author);
+        }
         commit.setMessage("auto save");
 
         try {
@@ -1036,39 +1026,38 @@ public class TargetTranslation {
      * @return true if successful
      */
     public void setPublished(final OnPublishedListener listener)  {
-        try {
-            Git git = getRepo().getGit();
-            final TagCommand tag = git.tag();
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss", Locale.US);
-            format.setTimeZone(TimeZone.getTimeZone("UTC"));
-            String name = "R2P=" + format.format(new Date());
-            tag.setName(name);
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    commitSync();
 
-            Thread thread = new Thread() {
-                @Override
-                public void run() {
-                    try {
-                        // don't tag if already tagged
-                        if(getPublishedStatus() != PublishStatus.IS_CURRENT) {
-                            tag.call();
-                            if (listener != null) {
-                                listener.onSuccess();
-                            }
-                        }
-                    } catch (Exception e) {
-                        if(listener != null) {
-                            listener.onFailed(e);
-                        }
+                    Git git = getRepo().getGit();
+                    final TagCommand tag = git.tag();
+                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd/HH.mm.ss", Locale.US);
+                    format.setTimeZone(TimeZone.getTimeZone("UTC"));
+                    String name = "R2P/" + format.format(new Date());
+                    tag.setName(name);
+                    if(author != null) {
+                        tag.setTagger(author);
+                    }
+
+                    // tag if not already
+                    if(getPublishedStatus() != PublishStatus.IS_CURRENT) {
+                        tag.call();
+                    }
+                    if (listener != null) {
+                        listener.onSuccess();
+                    }
+                } catch (Exception e) {
+                    if(listener != null) {
+                        listener.onFailed(e);
                     }
                 }
-            };
-            thread.start();
-
-        } catch (Exception e) {
-            if(listener != null) {
-                listener.onFailed(e);
             }
-        }
+        };
+        thread.start();
+
     }
 
     /**
@@ -1262,27 +1251,6 @@ public class TargetTranslation {
             commit = c;
         }
         return commit;
-    }
-
-    /**
-     * Sets whether or not this target translation is publishable
-     * @param publishable
-     * @param listener
-     * @throws Exception
-     * @deprecated this will go away after moving to gogs. Use setLegacyPublished(OnPublishedListener) instead
-     */
-    public void setLegacyPublished(boolean publishable, OnCommitListener listener) throws Exception {
-        File readyFile = new File(targetTranslationDir, "READY");
-        if(publishable) {
-            try {
-                readyFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            readyFile.delete();
-        }
-        commit(listener);
     }
 
     /**

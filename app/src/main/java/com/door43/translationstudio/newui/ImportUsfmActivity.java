@@ -37,6 +37,9 @@ import java.io.File;
 import java.io.Serializable;
 
 
+/**
+ * Handles the workflow UI for importing a USFM file.
+ */
 public class ImportUsfmActivity extends BaseActivity implements TargetLanguageListFragment.OnItemClickListener, ProjectListFragment.OnItemClickListener {
 
     public static final int RESULT_DUPLICATE = 2;
@@ -273,20 +276,30 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                 if(mProgressDialog != null) {
                     mProgressDialog.hide();
 
-                    mUsfm.showResults(ImportUsfmActivity.this, new ImportUsfm.OnFinishedListener() {
-                        @Override
-                        public void onFinished(final boolean success) {
-                            if (success) { // if user is OK to continue
-                                mProgressDialog.show();
-                                mProgressDialog.setProgress(0);
-                                mProgressDialog.setTitle(R.string.reading_usfm);
-                                mProgressDialog.setMessage("");
-                                doImportingWithProgress();
-                            } else {
-                                usfmImportDone(true);
-                            }
-                        }
-                    });
+                    String results = mUsfm.getResultsString();
+                    String language = mUsfm.getLanguageTitle();
+                    String message = language + "\n" + results;
+
+                    CustomAlertDialog.Create(ImportUsfmActivity.this)
+                            .setTitle(mUsfm.isProcessSuccess() ? R.string.title_import_usfm_summary : R.string.title_import_usfm_error)
+                            .setMessage(message)
+                            .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    mProgressDialog.show();
+                                    mProgressDialog.setProgress(0);
+                                    mProgressDialog.setTitle(R.string.reading_usfm);
+                                    mProgressDialog.setMessage("");
+                                    doImportingWithProgress();
+                                }
+                            })
+                            .setNegativeButton(R.string.menu_cancel, new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    usfmImportDone(true);
+                                }
+                            })
+                            .show("USFMresults");
                 }
             }
         });
@@ -607,6 +620,12 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
             case importingFiles:
                 // not resumable - presume completed
+                mCurrentState = eImportState.finished;
+
+            case finished:
+                if(mUsfm != null) {
+                    mUsfm.cleanup();
+                }
                 break;
         }
     }
@@ -637,6 +656,9 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
     }
 
     public void onSaveInstanceState(Bundle outState) {
+        eImportState currentState = mCurrentState; //capture state before it is changed
+        outState.putInt(STATE_CURRENT_STATE, currentState.getValue());
+
         if (mTargetLanguage != null) {
             outState.putString(STATE_TARGET_LANGUAGE_ID, mTargetLanguage.getId());
         } else {
@@ -644,11 +666,15 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         }
 
         if (mUsfm != null) { //save state and make sure it's not running
+            outState.putString(STATE_USFM, mUsfm.toJson().toString());
             mUsfm.setUpdateStatusListener(null);
             mUsfm.setCancel(true);
-            mUsfm.cleanup();
-            outState.putString(STATE_USFM, mUsfm.toJson().toString());
-        } else {
+
+            if((currentState == eImportState.processingFiles) // if doing initial processing, we clean up and start over
+                    || (currentState == eImportState.finished)) { // if finished we cleanup
+                mUsfm.cleanup();
+            }
+         } else {
             outState.remove(STATE_USFM);
         }
 
@@ -658,7 +684,6 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
             outState.remove(STATE_PROMPT_NAME_COUNTER);
         }
 
-        outState.putInt(STATE_CURRENT_STATE, mCurrentState.getValue());
         mProgressDialog = null;
 
         super.onSaveInstanceState(outState);

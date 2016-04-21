@@ -24,7 +24,6 @@ import android.widget.LinearLayout;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.newui.DeviceNetworkAliasDialog;
-import com.door43.translationstudio.newui.ProfileDialog;
 import com.door43.translationstudio.newui.legal.LegalDocumentActivity;
 import com.door43.translationstudio.service.BackupService;
 import com.door43.util.TTFAnalyzer;
@@ -72,9 +71,9 @@ public class SettingsActivity extends PreferenceActivity {
     public static final String KEY_PREF_LOGGING_LEVEL = "logging_level";
     public static final String KEY_PREF_BACKUP_INTERVAL = "backup_interval";
     public static final String KEY_PREF_DEVICE_ALIAS = "device_name";
-    public static final String KEY_PREF_PROFILES = "profiles";
     public static final String KEY_SDCARD_ACCESS_URI = "internal_uri_extsdcard";
     public static final String KEY_SDCARD_ACCESS_FLAGS = "internal_flags_extsdcard";
+    public static final String KEY_PREF_GOGS_API = "gogs_api";
 
     /**
      * TRICKY: this was added after API 19 to fix a vulnerability.
@@ -205,6 +204,7 @@ public class SettingsActivity extends PreferenceActivity {
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_GIT_SERVER));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTH_SERVER_PORT));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_GIT_SERVER_PORT));
+        bindPreferenceSummaryToValue(findPreference(KEY_PREF_GOGS_API));
 //        bindPreferenceSummaryToValue(findPreference(KEY_PREF_EXPORT_FORMAT));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_MEDIA_SERVER));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_LOGGING_LEVEL));
@@ -354,32 +354,6 @@ public class SettingsActivity extends PreferenceActivity {
             }
 
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_DEVICE_ALIAS));
-
-            final Preference profilesPref = findPreference(KEY_PREF_PROFILES);
-            profilesPref.setSummary(AppContext.getProfileSummary());
-            final ProfileDialog.OnDismissListener onDismissListener =
-                    new ProfileDialog.OnDismissListener() {
-                        @Override
-                        public void onDismiss() {
-                            profilesPref.setSummary(AppContext.getProfileSummary());
-                        }
-                    };
-            profilesPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    ProfileDialog d = new ProfileDialog();
-                    FragmentTransaction ft = getFragmentManager().beginTransaction();
-                    d.show(ft, ProfileDialog.TAG);
-                    d.setOnDismissListener(onDismissListener);
-                    return true;
-                }
-            });
-            // If the dialog was created from a previous incantation of this activity, tell it about
-            // the new place where it should persist its results.
-            Fragment prev = getFragmentManager().findFragmentByTag(ProfileDialog.TAG);
-            if (prev != null) {
-                ((ProfileDialog)prev).setOnDismissListener(onDismissListener);
-            }
 
             ListPreference fontPref = (ListPreference)findPreference(KEY_PREF_TRANSLATION_TYPEFACE);
             fontPref.setEntries(entries.toArray(new CharSequence[entries.size()]));

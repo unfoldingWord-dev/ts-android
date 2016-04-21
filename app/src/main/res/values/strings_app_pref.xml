@@ -8,4 +8,5 @@
     <string name="github_bug_report_repo" translatable="false">https://api.github.com/repos/unfoldingWord-dev/ts-android/issues</string>
     <string name="github_repo_api">https://api.github.com/repos/unfoldingWord-dev/ts-android</string>
     <string name="root_catalog_api">/ts/txt/2/catalog.json</string>
+    <string name="gogs_token_name">ts-android</string>
 </resources>

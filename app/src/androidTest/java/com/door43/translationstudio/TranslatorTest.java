@@ -34,7 +34,7 @@ public class TranslatorTest extends InstrumentationTestCase {
     protected void setUp() throws Exception {
         app = AppContext.context();
         mTranslatorDir = new File(app.getFilesDir(), "translator_test_translations");
-        mTranslator = new Translator(app, mTranslatorDir);
+        mTranslator = new Translator(app, null, mTranslatorDir);
         String server = app.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, app.getResources().getString(R.string.pref_default_media_server));
         rootApiUrl = server + app.getResources().getString(R.string.root_catalog_api);
         library = new Library(app, rootApiUrl);

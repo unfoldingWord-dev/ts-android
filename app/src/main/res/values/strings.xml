@@ -342,7 +342,7 @@
     <string name="publish">Publish</string>
     <string name="backup">Backup</string>
     <string name="attached_files">Attached files</string>
-    <string name="requires_internet">This will use your internet connection</string>
+    <string name="requires_internet">Requires internet access</string>
     <string name="input_required">Input cannot be empty</string>
     <string name="dismiss">Dismiss</string>
     <string name="done">Done</string>
@@ -406,7 +406,7 @@
     <string name="long_click_to_drag">Tap and hold to drag</string>
     <string name="feedback">Feedback</string>
     <string name="import_from_sd">Import from SD Card</string>
-    <string name="backup_online">Backup Online (requires internet)</string>
+    <string name="backup_to_door43">Backup to Door43</string>
     <string name="translation_export_failed">Translation could not be exported</string>
     <string name="invalid_file">Not a valid file</string>
     <string name="software_licenses" translatable="false">
@@ -666,6 +666,34 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="person_agrees_with_licenses">This person has agreed to the License Agreement, Statement of Faith, and Translation Guidelines</string>
     <string name="error_importing_unsupported_target_translation">The  translation of <xliff:g example="Open Bible Stories" id="project_name">%1$s</xliff:g> into <xliff:g example="Afaraf" id="language_name">%2$s</xliff:g> was created by a different version of <xliff:g example="translationStudio" id="app_name">%3$s</xliff:g> and cannot be opened. Please update your app and try again.</string>
     <string name="version">Version</string>
+    <string name="username">login name</string>
+    <string name="password">password</string>
+    <string name="password_confirm">re-type password</string>
+    <string name="logging_in">Logging in</string>
+    <string name="double_check_credentials">Double check your credentials and try again</string>
+    <string name="passwords_mismatch">Passwords do not match</string>
+    <string name="contributors">Contributors</string>
+    <string name="show_passwords">Show Passwords</string>
+    <string name="hide_passwords">Hide Passwords</string>
+    <string name="log_out">Log out</string>
+    <string name="gogs_username_already_exists">That username already exists</string>
+    <string name="registration_failed">Your account could not be created.</string>
+    <string name="title_door43_account_required">Door43 Account Required</string>
+    <string name="door43_account_required">You must connect to a Door43 account first.</string>
+    <string name="login_doo43">Login with Door43 Account</string>
+    <string name="register_door43">Create new Door43 Account</string>
+    <string name="create_offline_profile">Create offline Account</string>
+    <string name="still_possible_to_register_door43">You can still create or login to a Door43 account later</string>
+    <string name="title_connect_door43">Connect To Door43</string>
+    <string name="gogs_public_key_name">ts-android</string>
+    <string name="restore_failed">The translation could not be restored</string>
+    <string name="import_from_door43">Import from Door43</string>
+    <string name="restore_from_door43">Restore from Door43</string>
+    <string name="title_chunk_conflicts">Chunk Conflicts</string>
+    <string name="chunk_conflict_description">A conflict was found between the translation on Door43 and your device.</string>
+    <string name="review_conflicts">Review differences</string>
+    <string name="keep_server_changes">Keep server changes</string>
+    <string name="keep_local_changes">Keep my changes</string>
     <string name="title_activity_import_usfm_language">Import USFM Project - Select Language</string>
     <string name="title_activity_import_usfm_book">Import USFM Project - Select Book For: </string>
     <string name="label_import_usfm">Import USFM</string>

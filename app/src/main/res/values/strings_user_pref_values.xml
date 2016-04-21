@@ -23,11 +23,14 @@
 
     <string name="pref_default_auth_server_port" translatable="false">9095</string>
 
-    <string name="pref_default_git_server" translatable="false">gitolite3@ts.door43.org</string>
+    <string name="pref_default_git_server" translatable="false">git@git.door43.org</string>
 
     <string name="pref_default_git_server_port" translatable="false">9299</string>
 
+    <string name="pref_default_gogs_api" translatable="false">https://git.door43.org/api/v1</string>
+
     <string name="pref_default_media_server" translatable="false">https://api.unfoldingword.org</string>
+
 
     <!--<string name="pref_default_export_format" translatable="false">dokuwiki</string>-->
     <!--<string-array name="pref_export_format_values" translatable="false">-->
