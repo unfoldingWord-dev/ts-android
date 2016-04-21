@@ -96,7 +96,8 @@ public class Github {
     public String postRequest(String apiMethod, List<Pair<String, String>> headers, String payload) throws IOException {
         HttpURLConnection urlConnection = null;
         try {
-            URL url = new URL(mApiUrl + '/' + apiMethod);
+            String urlString = apiMethod.isEmpty() ? mApiUrl : mApiUrl + '/' + apiMethod;
+            URL url = new URL(urlString);
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("POST");
 

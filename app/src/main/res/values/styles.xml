@@ -164,6 +164,12 @@
         <item name="android:textSize">@dimen/button</item>
     </style>
 
+    <style name="Widget.Button.Blue.Small">
+        <item name="android:padding">8dp</item>
+        <item name="android:minWidth">64dp</item>
+        <item name="android:layout_height">36dp</item>
+    </style>
+
     <style name="Widget.Button.Orange">
         <item name="android:background">@color/warning</item>
         <item name="android:textColor">@color/white</item>

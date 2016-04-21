@@ -192,7 +192,6 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                         // disable screen rotation so we don't break things
     //                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
                         AppContext.context().generateKeys();
-                        AppContext.context().setHasRegisteredKeys(true);
                     }
 
                     @Override

@@ -5,12 +5,6 @@
         android:title="@string/device_name"
         android:defaultValue=""/>
 
-    <Preference
-        android:key="profiles"
-        android:title="@string/profile"
-        android:defaultValue="">
-    </Preference>
-
     <ListPreference
         android:key="translation_typeface"
         android:title="@string/pref_title_translation_typeface"

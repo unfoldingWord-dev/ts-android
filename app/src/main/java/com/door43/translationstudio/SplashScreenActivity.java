@@ -9,7 +9,6 @@ import android.widget.TextView;
 
 import com.door43.tools.reporting.GlobalExceptionHandler;
 import com.door43.translationstudio.newui.BaseActivity;
-import com.door43.translationstudio.newui.home.HomeActivity;
 import com.door43.translationstudio.tasks.InitializeLibraryTask;
 import com.door43.translationstudio.tasks.LoadTargetLanguagesTask;
 import com.door43.translationstudio.tasks.UpdateAppTask;
@@ -152,14 +151,20 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
     }
 
     @Override
-    public void onStart(ManagedTask task) {
-        if(task instanceof UpdateAppTask) {
-            mProgressTextView.setText(R.string.updating_app);
-        } else if(task instanceof InitializeLibraryTask) {
-            mProgressTextView.setText(R.string.preparing_for_first_use);
-        } else if(task instanceof LoadTargetLanguagesTask) {
-            mProgressTextView.setText(R.string.loading_languages);
-        }
+    public void onStart(final ManagedTask task) {
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                if(task instanceof UpdateAppTask) {
+                    mProgressTextView.setText(R.string.updating_app);
+                } else if(task instanceof InitializeLibraryTask) {
+                    mProgressTextView.setText(R.string.preparing_for_first_use);
+                } else if(task instanceof LoadTargetLanguagesTask) {
+                    mProgressTextView.setText(R.string.loading_languages);
+                }
+            }
+        });
     }
 
     @Override
