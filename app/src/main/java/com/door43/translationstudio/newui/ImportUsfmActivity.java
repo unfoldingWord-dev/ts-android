@@ -255,7 +255,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         Thread thread = new Thread() {
             @Override
             public void run() {
-                boolean success2 = mUsfm.readText(item.contents, item.description, false, resourceID);
+                boolean success2 = mUsfm.processText(item.contents, item.description, false, resourceID);
                 Logger.i(TAG, resourceID + " success = " + success2);
                 usfmPromptForNextName();
             }

@@ -44,6 +44,7 @@ public class ImportUsfm {
     public static final String CHAPTER_NUMBER_MARKER = "\\\\c\\s(\\d+(-\\d+)?)\\s";
     private static final Pattern PATTERN_CHAPTER_NUMBER_MARKER = Pattern.compile(CHAPTER_NUMBER_MARKER);
     private static final Pattern PATTERN_USFM_VERSE_SPAN = Pattern.compile(USFMVerseSpan.PATTERN);
+    public static final int END_MARKER = 999999;
 
     private File mTempDir;
     private File mTempOutput;
@@ -385,6 +386,19 @@ public class ImportUsfm {
      * add error to error list
      *
      * @param resource
+     * @param val1
+     * @param val2
+     * */
+    private void addError(int resource, String val1, String val2) {
+        String format = mContext.getResources().getString(resource);
+        String newError = String.format(format, val1, val2);
+        addError(newError);
+    }
+
+    /**
+     * add error to error list
+     *
+     * @param resource
      */
     private void addError(int resource) {
         String newError = mContext.getResources().getString(resource);
@@ -670,9 +684,11 @@ public class ImportUsfm {
         return processBook(book, name, true, null);
     }
 
-    public boolean readText(String book, String name, boolean promptForName, String useName) {
+    public boolean processText(String book, String name, boolean promptForName, String useName) {
         mCurrentBook = mFoundBooks.size();
-        return processBook(book, name, promptForName, useName);
+        boolean success = processBook(book, name, promptForName, useName);
+        mProcessSuccess = success;
+        return success;
     }
 
     private boolean processBook(String book, String name, boolean promptForName, String useName) {
@@ -852,6 +868,12 @@ public class ImportUsfm {
             success = breakUpChapter(section);
             successOverall = successOverall && success;
         }
+
+        if((mChapter == null) || (Integer.valueOf(mChapter) != mChunks.size())) {
+            String lastChapter = (mChapter != null) ? mChapter : "(null)";
+            addError(R.string.chapter_count_invalid, mChunks.size() + "", lastChapter);
+            return false;
+        }
         return successOverall;
     }
 
@@ -886,7 +908,7 @@ public class ImportUsfm {
                     lastFirst = first;
                 }
                 if (successOverall) {
-                    success = extractVerses(chapter, text, lastFirst, "999999");
+                    success = extractVerses(chapter, text, lastFirst, END_MARKER +"");
                     successOverall = successOverall && success;
                 }
 
@@ -976,6 +998,8 @@ public class ImportUsfm {
             int lastIndex = 0;
             String section = "";
             int currentVerse = 0;
+            int foundVerseCount = 0;
+            int endVerseRange = 0;
             boolean done = false;
             boolean matchesFound = false;
             while (matcher.find()) {
@@ -988,8 +1012,14 @@ public class ImportUsfm {
 
                 if (currentVerse >= start) {
                     section = section + text.subSequence(lastIndex, matcher.start()); // get section before this chunk marker
+                    if(endVerseRange > 0) {
+                        foundVerseCount += (endVerseRange - currentVerse + 1);
+                    } else {
+                        foundVerseCount++;
+                    }
                 }
 
+                endVerseRange = 0;
                 String verse = matcher.group(1);
                 try {
                     currentVerse = Integer.valueOf(verse);
@@ -999,6 +1029,7 @@ public class ImportUsfm {
                         return false;
                     }
                     currentVerse = Integer.valueOf(range[0]);
+                    endVerseRange = Integer.valueOf(range[1]);
                 }
                 lastIndex = matcher.start();
             }
@@ -1007,15 +1038,21 @@ public class ImportUsfm {
                 section = section + text.subSequence(lastIndex, text.length()); // get last section
             }
 
-            if (!section.isEmpty()) {
-                success = saveSection(chapter, firstVerse, section);
-                successOverall = successOverall && success;
-            } else {
-                String format = mContext.getResources().getString(R.string.could_not_find_verses_in_chapter);
-                String msg = String.format(format, start, end, chapter);
-                addError(msg);
-                return false;
+            if(start != 0) { // text before first verse is not a concern
+                if (section.isEmpty()) {
+                    String format = mContext.getResources().getString(R.string.could_not_find_verses_in_chapter);
+                    String msg = String.format(format, start, end - 1, chapter);
+                    addWarning(msg);
+                } else if ((end != END_MARKER) && (foundVerseCount != (end - start))) {
+                    String format = mContext.getResources().getString(R.string.missing_verses_in_chapter);
+                    int count = (end - start) - foundVerseCount;
+                    String msg = String.format(format, count, start, end - 1, chapter);
+                    addWarning(msg);
+                }
             }
+
+            success = saveSection(chapter, firstVerse, section);
+            successOverall = successOverall && success;
         }
         return successOverall;
     }

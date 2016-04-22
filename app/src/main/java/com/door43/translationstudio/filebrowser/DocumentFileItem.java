@@ -19,6 +19,7 @@ import java.io.File;
  * This class represents a single file item
  */
 public class DocumentFileItem {
+    public static final String ZIP = "zip";
     public final DocumentFile file;
     public final Context context;
     public final boolean isUpButton;
@@ -126,5 +127,16 @@ public class DocumentFileItem {
                 && file != null
                 && !file.isDirectory()
                 && FilenameUtils.getExtension(file.getName()).equalsIgnoreCase(Translator.ARCHIVE_EXTENSION);
+    }
+
+    /**
+     * Checks if this file is a zip file
+     * @return
+     */
+    public boolean isThisZipFile() {
+        return !isUpButton
+                && file != null
+                && !file.isDirectory()
+                && FilenameUtils.getExtension(file.getName()).equalsIgnoreCase(ZIP);
     }
 }

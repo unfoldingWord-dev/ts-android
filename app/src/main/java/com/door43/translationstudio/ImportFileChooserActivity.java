@@ -34,6 +34,7 @@ import java.util.List;
 public class ImportFileChooserActivity extends BaseActivity {
 
     public static final String EXTRAS_RAW_FILE = "extras_raw_file";
+    public static final String EXTRAS_NO_ZIPZ = "extras_no_zipz";
 
     public static final String FOLDER_KEY = "folder";
     public static final String FILE_PATH_KEY = "file_path";
@@ -53,6 +54,7 @@ public class ImportFileChooserActivity extends BaseActivity {
     private String mType;
 
     private boolean mRawFileSupport = false;
+    private boolean mNoZipFileSupport = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,7 +95,11 @@ public class ImportFileChooserActivity extends BaseActivity {
                         if (selectedItem.isTranslationArchive()) {
                             itemSelected = true;
                         } else if ( mRawFileSupport ) {
-                            itemSelected = true;
+                            if(mNoZipFileSupport && selectedItem.isThisZipFile()) {
+                                itemSelected = false;
+                            } else {
+                                itemSelected = true;
+                            }
                         }
                     }
                 }
@@ -160,9 +166,13 @@ public class ImportFileChooserActivity extends BaseActivity {
                         mFileList.setItemChecked(position, true);
                         return;
                     } else if(mRawFileSupport) {
-                        mAdapter.setSelectedPosition(position);
-                        mFileList.setItemChecked(position, true);
-                        return;
+                        if(mNoZipFileSupport && selectedItem.isThisZipFile()) {
+                            // ignore zips if support disabled
+                        } else {
+                            mAdapter.setSelectedPosition(position);
+                            mFileList.setItemChecked(position, true);
+                            return;
+                        }
                     }
                 }
 
@@ -176,6 +186,7 @@ public class ImportFileChooserActivity extends BaseActivity {
         mType = intent.getType();
         Bundle args = intent.getExtras();
         mRawFileSupport = args.getBoolean(EXTRAS_RAW_FILE, false);
+        mNoZipFileSupport = args.getBoolean(EXTRAS_NO_ZIPZ, false);
 
         showFolderFromSdCard();
     }

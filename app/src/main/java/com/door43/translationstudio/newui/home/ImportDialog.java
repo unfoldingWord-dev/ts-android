@@ -153,6 +153,7 @@ public class ImportDialog extends DialogFragment {
 
         intent.setType(typeStr);
         intent.putExtra(ImportFileChooserActivity.EXTRAS_RAW_FILE, doingUsfmImport);
+        intent.putExtra(ImportFileChooserActivity.EXTRAS_NO_ZIPZ, doingUsfmImport); // TODO: 4/22/16 this will need to be removed to enable zip file import
         startActivityForResult(intent, doingUsfmImport ? IMPORT_USFM_PROJECT_FROM_SD_REQUEST : IMPORT_PROJECT_FROM_SD_REQUEST);
     }
 
