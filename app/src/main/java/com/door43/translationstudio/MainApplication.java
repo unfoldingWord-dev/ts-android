@@ -392,7 +392,7 @@ public class MainApplication extends Application {
      * Checks if the ssh keys have already been generated
      * @return
      */
-    public boolean hasKeys() {
+    public boolean hasSSHKeys() {
         File keysDir = getKeysFolder();
         File privFile = new File(keysDir.getAbsolutePath()+"/id_rsa");
         File pubFile = new File(keysDir.getAbsolutePath()+"/id_rsa.pub");
@@ -430,10 +430,9 @@ public class MainApplication extends Application {
     }
 
     /**
-     * Generates a new RSA key pair for use with ssh, this also flags that the keys are not registered
-     * TODO: this should not be done on the main thread
+     * Generates a new RSA key pair for use with ssh
      */
-    public void generateKeys() {
+    public void generateSSHKeys() {
         JSch jsch = new JSch();
         int type = KeyPair.RSA;
         File keysDir = getKeysFolder();

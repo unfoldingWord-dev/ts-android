@@ -136,10 +136,6 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
             langTask.addOnStartListener(this);
             TaskManager.addTask(langTask, LoadTargetLanguagesTask.TASK_ID);
         } else if(task instanceof LoadTargetLanguagesTask) {
-            // Generate the ssh keys
-            if(!AppContext.context().hasKeys()) {
-                AppContext.context().generateKeys();
-            }
             openMainActivity();
         }
     }

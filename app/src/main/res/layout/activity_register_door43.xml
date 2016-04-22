@@ -4,5 +4,5 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.door43.translationstudio.RegisterDoor43Activity">
-    <include layout="@layout/fragment_create_door43_account"></include>
+    <include layout="@layout/fragment_register_door43_account"></include>
 </RelativeLayout>

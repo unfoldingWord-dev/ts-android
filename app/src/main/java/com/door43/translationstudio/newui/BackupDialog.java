@@ -346,7 +346,7 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
             } else if(status == PullTargetTranslationTask.Status.AUTH_FAILURE) {
                 Logger.i(this.getClass().getName(), "Authentication failed");
                 // if we have already tried ask the user if they would like to try again
-                if(AppContext.context().hasKeys()) {
+                if(AppContext.context().hasSSHKeys()) {
                     showAuthFailure();
                     return;
                 }
