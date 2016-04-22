@@ -108,8 +108,30 @@ public class Downloader {
     }
 
     /**
+     * Downloads the chunk markers for a project from the server
+     * @param projectSlug
+     * @param targetIndex
+     * @return
+     */
+    public boolean downloadChunkMarkerList(String projectSlug, Indexer targetIndex) {
+        Project project = targetIndex.getProject(projectSlug);
+        if(project != null && project.chunkMarkerCatalog != null
+                && (project.chunkMarkerCatalogLocalDateModified < project.chunkMarkerCatalogServerDateModified
+                || project.chunkMarkerCatalogServerDateModified == 0)) {
+            String catalog = request(project.chunkMarkerCatalog);
+            if(catalog != null) {
+                if(targetIndex.indexChunkMarkers(projectSlug, catalog)) {
+                    targetIndex.markChunkMarkerCatalogUpToDate(projectSlug);
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
      * Downloads the source languages for a project from the server
      * @param projectSlug
+     * @param targetIndex
      * @return
      */
     public boolean downloadSourceLanguageList(String projectSlug, Indexer targetIndex) {

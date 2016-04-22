@@ -19,7 +19,6 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -43,10 +42,12 @@ public class Translator {
 
     private final File mRootDir;
     private final Context mContext;
+    private Profile profile;
 
-    public Translator(Context context, File rootDir) {
+    public Translator(Context context, Profile profile, File rootDir) {
         mContext = context;
         mRootDir = rootDir;
+        this.profile = profile;
     }
 
     /**
@@ -106,10 +107,10 @@ public class Translator {
             translationFormat = TranslationFormat.MARKDOWN;
         }
 
-        String targetLanguageId = TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), projectSlug, translationType, resourceSlug);
-        TargetTranslation targetTranslation = getTargetTranslation(targetLanguageId);
+        String targetTranslationId = TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), projectSlug, translationType, resourceSlug);
+        TargetTranslation targetTranslation = getTargetTranslation(targetTranslationId);
         if(targetTranslation == null) {
-            File targetTranslationDir = new File(this.mRootDir, targetLanguageId);
+            File targetTranslationDir = new File(this.mRootDir, targetTranslationId);
             try {
                 PackageInfo pInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
                 return TargetTranslation.create(this.mContext, nativeSpeaker, translationFormat, targetLanguage, projectSlug, translationType, resourceSlug, pInfo, targetTranslationDir);
@@ -120,6 +121,18 @@ public class Translator {
         return targetTranslation;
     }
 
+    private void setTargetTranslationAuthor(TargetTranslation targetTranslation) {
+        if(profile != null && targetTranslation != null) {
+            String name = profile.getFullName();
+            String email = "";
+            if(profile.gogsUser != null) {
+                name = profile.gogsUser.fullName;
+                email = profile.gogsUser.email;
+            }
+            targetTranslation.setAuthor(name, email);
+        }
+    }
+
     /**
      * Returns a target translation if it exists
      * @param targetTranslationId
@@ -128,7 +141,9 @@ public class Translator {
     public TargetTranslation getTargetTranslation(String targetTranslationId) {
         if(targetTranslationId != null) {
             File targetTranslationDir = new File(mRootDir, targetTranslationId);
-            return TargetTranslation.open(targetTranslationDir);
+            TargetTranslation targetTranslation = TargetTranslation.open(targetTranslationDir);
+            setTargetTranslationAuthor(targetTranslation);
+            return targetTranslation;
         }
         return null;
     }
@@ -181,7 +196,7 @@ public class Translator {
      * @return
      * @throws Exception
      */
-    private JSONObject buildManifest(TargetTranslation targetTranslation) throws Exception {
+    private JSONObject buildArchiveManifest(TargetTranslation targetTranslation) throws Exception {
         targetTranslation.commit();
 
         // build manifest
@@ -238,7 +253,7 @@ public class Translator {
 
         targetTranslation.commitSync();
 
-        JSONObject manifestJson = buildManifest(targetTranslation);
+        JSONObject manifestJson = buildArchiveManifest(targetTranslation);
         File tempCache = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
         try {
             tempCache.mkdirs();

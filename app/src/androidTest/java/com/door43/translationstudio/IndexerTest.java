@@ -3,21 +3,12 @@ package com.door43.translationstudio;
 import android.content.Context;
 import android.test.InstrumentationTestCase;
 
-import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.core.CheckingQuestion;
 import com.door43.translationstudio.core.Indexer;
 import com.door43.translationstudio.core.IndexerSQLiteHelper;
 import com.door43.translationstudio.core.SourceTranslation;
-import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.core.Util;
-import com.door43.util.Zip;
-
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * Created by joel on 8/27/2015.

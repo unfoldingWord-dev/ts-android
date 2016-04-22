@@ -32,7 +32,26 @@ CREATE TABLE `project` (
   `source_language_catalog_url` TEXT NOT NULL,
   `source_language_catalog_local_modified_at` INTEGER NOT NULL DEFAULT 0,
   `source_language_catalog_server_modified_at` INTEGER NOT NULL DEFAULT 0,
+  `chunk_marker_catalog_url` TEXT NULL DEFAULT NULL,
+  `chunk_marker_catalog_local_modified_at` INTEGER NOT NULL DEFAULT 0,
+  `chunk_marker_catalog_server_modified_at` INTEGER NOT NULL DEFAULT 0,
   UNIQUE (`slug`)
+);
+
+
+-- ---
+-- Table 'chunk_marker'
+-- ---
+
+DROP TABLE IF EXISTS `chunk_marker`;
+
+CREATE TABLE `chunk_marker` (
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  `project_id` INTEGER NOT NULL,
+  `chapter_slug` TEXT NOT NULL,
+  `first_verse_slug` TEXT NOT NULL,
+  UNIQUE (`project_id`, 'chapter_slug', 'first_verse_slug'),
+  FOREIGN KEY (project_id) REFERENCES `project` (`id`) ON DELETE CASCADE
 );
 
 -- ---

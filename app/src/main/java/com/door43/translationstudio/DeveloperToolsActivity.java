@@ -44,6 +44,7 @@ import java.util.ArrayList;
 
 public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.OnProgressListener, ManagedTask.OnFinishedListener, DialogInterface.OnCancelListener {
 
+    public static final String INDEX_CHUNK_MARKERS_TASK_ID = "index_chunk_markers";
     private static final String TASK_PREP_FORCE_DOWNLOAD_ALL_PROJECTS = "prep_force_download_all_projects";
     private ArrayList<ToolItem> mDeveloperTools = new ArrayList<>();
     private ToolAdapter mAdapter;
@@ -143,56 +144,12 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
 
                     @Override
                     public void run() {
-                        // disable screen rotation so we don't break things
-//                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
-                        AppContext.context().generateKeys();
+                        AppContext.context().generateSSHKeys();
                     }
 
                     @Override
                     public void onPostExecute() {
                         dialog.dismiss();
-                        // re-enable screen rotation
-//                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
-                        AppContext.context().showToastMessage(R.string.success);
-                    }
-                }.start();
-            }
-        }));
-
-        mDeveloperTools.add(new ToolItem(getResources().getString(R.string.invalidate_keys), getResources().getString(R.string.invalidate_keys_description), 0, new ToolItem.ToolAction() {
-            @Override
-            public void run() {
-                final ProgressDialog dialog = new ProgressDialog(DeveloperToolsActivity.this);
-                dialog.setMessage(getResources().getString(R.string.loading));
-                dialog.setCancelable(false);
-                dialog.setCanceledOnTouchOutside(false);
-                dialog.show();
-                final Handler handle = new Handler(Looper.getMainLooper());
-                new ThreadableUI(DeveloperToolsActivity.this) {
-
-                    @Override
-                    public void onStop() {
-                        handle.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                dialog.dismiss();
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void run() {
-                        // disable screen rotation so we don't break things
-    //                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
-                        AppContext.context().generateKeys();
-                        AppContext.context().setHasRegisteredKeys(true);
-                    }
-
-                    @Override
-                    public void onPostExecute() {
-                        dialog.dismiss();
-                        // re-enable screen rotation
-    //                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
                         AppContext.context().showToastMessage(R.string.success);
                     }
                 }.start();
@@ -239,7 +196,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                             }
                         })
                         .setNegativeButton(R.string.no, null)
-                        .show("DownldAll");
+                        .show("DownloadAll");
             }
         }));
         mDeveloperTools.add(new ToolItem("Index tA", "Indexes the bundled tA json", 0, new ToolItem.ToolAction() {
@@ -285,6 +242,49 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                 Snackbar snack = Snackbar.make(findViewById(android.R.id.content), "indexing tA...", Snackbar.LENGTH_LONG);
                 ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                 snack.show();
+            }
+        }));
+        mDeveloperTools.add(new ToolItem("Index Chunk Markers", "Injects the chunk marker catalog url into the database and runs the update check", 0, new ToolItem.ToolAction() {
+            @Override
+            public void run() {
+                // manually inject chunk marker details into db
+                AppContext.getLibrary().manuallyInjectChunkMarkerCatalogUrl();
+
+                // run update check to index the chunk markers
+                GetLibraryUpdatesTask task = new GetLibraryUpdatesTask();
+                task.addOnProgressListener(DeveloperToolsActivity.this);
+                task.addOnFinishedListener(DeveloperToolsActivity.this);
+                TaskManager.addTask(task, INDEX_CHUNK_MARKERS_TASK_ID);
+//                ThreadableUI thread = new ThreadableUI(DeveloperToolsActivity.this) {
+//                    @Override
+//                    public void onStop() {
+//
+//                    }
+//
+//                    @Override
+//                    public void run() {
+//                        // manually inject chunk marker details into db
+//
+//                        // run update check to index the chunk markers
+//                        GetLibraryUpdatesTask task = new GetLibraryUpdatesTask();
+//                        task.addOnProgressListener(DeveloperToolsActivity.this);
+//                        task.addOnFinishedListener(DeveloperToolsActivity.this);
+//                        TaskManager.addTask(task, "just_check_for_updates");
+//                    }
+//
+//                    @Override
+//                    public void onPostExecute() {
+//                        CustomAlertDialog.Create(DeveloperToolsActivity.this)
+//                                .setTitle(R.string.success)
+//                                .setMessage("chunk markers has been indexed")
+//                                .setNeutralButton(R.string.dismiss, null)
+//                                .show("chunk-index-success");
+//                    }
+//                };
+//                thread.start();
+//                Snackbar snack = Snackbar.make(findViewById(android.R.id.content), "indexing chunk markers...", Snackbar.LENGTH_LONG);
+//                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+//                snack.show();
             }
         }));
         mDeveloperTools.add(new ToolItem(getResources().getString(R.string.export_source), getResources().getString(R.string.export_source_description), 0, new ToolItem.ToolAction() {
@@ -368,6 +368,10 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
     public void connectDownloadAllTask() {
         DownloadAllProjectsTask downloadAllTask = (DownloadAllProjectsTask)TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
         GetLibraryUpdatesTask getUpdatesTask = (GetLibraryUpdatesTask)TaskManager.getTask(GetLibraryUpdatesTask.TASK_ID);
+        if(getUpdatesTask == null) {
+            getUpdatesTask = (GetLibraryUpdatesTask)TaskManager.getTask(INDEX_CHUNK_MARKERS_TASK_ID);
+        }
+
         if(downloadAllTask != null) {
             downloadAllTask.addOnProgressListener(this);
             downloadAllTask.addOnFinishedListener(this);
@@ -383,10 +387,26 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
         TaskManager.clearTask(task);
 
         if(task instanceof GetLibraryUpdatesTask) {
-            DownloadAllProjectsTask newTask = new DownloadAllProjectsTask();
-            newTask.addOnProgressListener(this);
-            newTask.addOnFinishedListener(this);
-            TaskManager.addTask(newTask, DownloadAllProjectsTask.TASK_ID);
+            if(task.getTaskId().equals(INDEX_CHUNK_MARKERS_TASK_ID)) {
+                if(mDownloadProgressDialog != null && mDownloadProgressDialog.isShowing()) {
+                    mDownloadProgressDialog.dismiss();
+                }
+                mDownloadProgressDialog = null;
+                if(!task.isCanceled()) {
+                    CustomAlertDialog.Create(DeveloperToolsActivity.this)
+                            .setTitle(R.string.success)
+                            .setIcon(R.drawable.ic_done_black_24dp)
+                            .setMessage("Chunk Markers have been indexed")
+                            .setCancelableChainable(false)
+                            .setPositiveButton(R.string.label_ok, null)
+                            .show("Success");
+                }
+            } else {
+                DownloadAllProjectsTask newTask = new DownloadAllProjectsTask();
+                newTask.addOnProgressListener(this);
+                newTask.addOnFinishedListener(this);
+                TaskManager.addTask(newTask, DownloadAllProjectsTask.TASK_ID);
+            }
         }
 
         if(task instanceof DownloadAllProjectsTask) {
