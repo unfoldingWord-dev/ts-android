@@ -1,5 +1,5 @@
 # Created by https://www.gitignore.io
-
+.sync
 ### Android ###
 # Built application files
 *.apk

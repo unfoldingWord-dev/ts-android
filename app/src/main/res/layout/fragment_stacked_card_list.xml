@@ -28,7 +28,7 @@
             <Button
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="Term Title That is too long lsdfljsdf"
+                android:text="@string/label_close"
                 android:id="@+id/close_resources_drawer_btn"
                 android:drawableLeft="@drawable/ic_clear_black_24dp"
                 android:paddingLeft="@dimen/card_margin"
@@ -36,7 +36,7 @@
                 android:ellipsize="end"
                 android:lines="1"
                 android:animateLayoutChanges="true"
-                android:textAllCaps="false"
+                android:textAllCaps="true"
                 android:textSize="@dimen/headline"
                 android:background="?attr/selectableItemBackground"/>
 

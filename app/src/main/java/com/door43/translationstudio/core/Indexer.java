@@ -156,7 +156,7 @@ public class Indexer {
         try {
             items = new JSONArray(catalog);
         } catch (JSONException e) {
-            Logger.e(this.getClass().getName(), "Failed to the projects catalog", e);
+            Logger.e(this.getClass().getName(), "Failed to parse the projects catalog", e);
             return false;
         }
 
@@ -170,6 +170,7 @@ public class Indexer {
                     for(int j = 0; j < categoriesJson.length(); j ++) {
                         categorySlugs.add(categoriesJson.getString(j));
                     }
+                    // TODO: eventually we will pass in the chunk marker catalog info
                     mDatabaseHelper.addProject(mDatabase, project.getId(), project.sort, project.dateModified, project.sourceLanguageCatalog, project.sourceLanguageCatalogServerDateModified, categorySlugs.toArray(new String[categorySlugs.size()]));
                     mDatabase.yieldIfContendedSafely();
                 }
@@ -364,6 +365,10 @@ public class Indexer {
 
     public synchronized void markWordAssignmentsCatalogUpToDate(SourceTranslation sourceTranslation) {
         mDatabaseHelper.markWordAssignmentsCatalogUpToDate(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug);
+    }
+
+    public synchronized void markChunkMarkerCatalogUpToDate(String projectSlug) {
+        mDatabaseHelper.markChunkMarkerCatalogUpToDate(mDatabase, projectSlug);
     }
 
     /**
@@ -785,6 +790,38 @@ public class Indexer {
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Builds a chunks index from json
+     * @param projectSlug
+     * @param catalog
+     * @return
+     */
+    public synchronized boolean indexChunkMarkers(String projectSlug, String catalog) {
+        JSONArray items;
+        try {
+            items = new JSONArray(catalog);
+        } catch (JSONException e) {
+            Logger.e(this.getClass().getName(), "Failed to parse the chunk marker catalog for " + projectSlug, e);
+            return false;
+        }
+
+        long projectId = mDatabaseHelper.getProjectDBId(mDatabase, projectSlug);
+
+        if(projectId > 0) {
+            for (int i = 0; i < items.length(); i ++) {
+                try {
+                    JSONObject item = items.getJSONObject(i);
+
+                    mDatabaseHelper.addChunkMarker(mDatabase, item.getString("chp"), item.getString("firstvs"), projectId);
+                    mDatabase.yieldIfContendedSafely();
+                } catch (JSONException e) {
+                    Logger.w(this.getClass().getName(), "Failed to parse a chunk marker for " + projectSlug, e);
                 }
             }
         }
@@ -1255,11 +1292,30 @@ public class Indexer {
 
     public void setExpired() {
         mDatabase.execSQL("UPDATE `resource`"
-                + " SET `source_catalog_local_modified_at`=0,"
-                + " `translation_notes_catalog_local_modified_at`=0,"
-                + " `translation_words_catalog_local_modified_at`=0,"
-                + " `translation_word_assignments_catalog_local_modified_at`=0,"
-                + " `checking_questions_catalog_local_modified_at`=0"
+                        + " SET `source_catalog_local_modified_at`=0,"
+                        + " `translation_notes_catalog_local_modified_at`=0,"
+                        + " `translation_words_catalog_local_modified_at`=0,"
+                        + " `translation_word_assignments_catalog_local_modified_at`=0,"
+                        + " `checking_questions_catalog_local_modified_at`=0"
         );
+    }
+
+    /**
+     * This is a temporary method for injecting the chunk marker urls into the project table
+     *
+     * @return
+     * @deprecated you probably shouldn't use this method
+     */
+    public boolean manuallyInjectChunkMarkerUrls() {
+        return mDatabaseHelper.manuallyInjectChunkMarkerUrls(mDatabase);
+    }
+
+    /**
+     * Returns an array of chunk markers for the project
+     * @param projectSlug
+     * @return
+     */
+    public ChunkMarker[] getChunkMarkers(String projectSlug) {
+        return mDatabaseHelper.getChunkMarkers(mDatabase, projectSlug);
     }
 }

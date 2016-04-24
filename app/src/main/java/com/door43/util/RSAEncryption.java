@@ -63,7 +63,7 @@ public class RSAEncryption {
      * @param exp
      * @throws IOException
      */
-    private static void saveKeys(String fileName,BigInteger mod,BigInteger exp) throws IOException{
+    private static void saveKeys(String fileName,BigInteger mod,BigInteger exp) throws Exception {
         FileOutputStream fos = null;
         ObjectOutputStream oos = null;
 
@@ -92,7 +92,7 @@ public class RSAEncryption {
      * @param data
      * @throws IOException
      */
-    public static byte[] encryptData(String data, PublicKey pubKey) throws IOException {
+    public static byte[] encryptData(String data, PublicKey pubKey) throws Exception {
         byte[] dataToEncrypt = data.getBytes();
         byte[] encryptedData = null;
         try {
@@ -111,7 +111,7 @@ public class RSAEncryption {
      * @param data
      * @throws IOException
      */
-    public static String decryptData(byte[] data, PrivateKey privateKey) throws IOException {
+    public static String decryptData(byte[] data, PrivateKey privateKey) throws Exception {
         try {
 //            PrivateKey privateKey = readPrivateKeyFromFile(privFile.getAbsolutePath());
             Cipher cipher = Cipher.getInstance("RSA");
@@ -169,7 +169,7 @@ public class RSAEncryption {
      * @return PublicKey
      * @throws IOException
      */
-    public static PublicKey readPublicKeyFromFile(File file) throws IOException{
+    public static PublicKey readPublicKeyFromFile(File file) throws Exception{
         FileInputStream fis = null;
         ObjectInputStream ois = null;
         try {
@@ -206,7 +206,7 @@ public class RSAEncryption {
      * @return
      * @throws IOException
      */
-    public static PrivateKey readPrivateKeyFromFile(File file) throws IOException{
+    public static PrivateKey readPrivateKeyFromFile(File file) throws Exception{
         FileInputStream fis = null;
         ObjectInputStream ois = null;
         try {

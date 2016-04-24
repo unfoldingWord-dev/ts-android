@@ -19,10 +19,10 @@ import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.ImportFileChooserActivity;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.DeviceNetworkAliasDialog;
+import com.door43.translationstudio.newui.Door43LoginDialog;
 import com.door43.translationstudio.newui.ShareWithPeerDialog;
 import com.door43.translationstudio.util.SdUtils;
 import com.door43.widget.ViewUtil;
@@ -54,7 +54,7 @@ public class ImportDialog extends DialogFragment {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         View v = inflater.inflate(R.layout.dialog_import, container, false);
 
-        final Button importCloudButton = (Button)v.findViewById(R.id.import_from_cloud);
+        final Button restoreDoor43Button = (Button)v.findViewById(R.id.restore_from_door43);
         Button importFromSDButton = (Button)v.findViewById(R.id.import_from_sd);
         Button importFromFriend = (Button)v.findViewById(R.id.import_from_friend);
 
@@ -63,9 +63,18 @@ public class ImportDialog extends DialogFragment {
             settingDeviceAlias = savedInstanceState.getBoolean(STATE_SETTING_DEVICE_ALIAS, false);
         }
 
-        importCloudButton.setOnClickListener(new View.OnClickListener() {
+        restoreDoor43Button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // make sure we have a gogs user
+                if(AppContext.getProfile().gogsUser == null) {
+                    FragmentTransaction ft = getFragmentManager().beginTransaction();
+                    Door43LoginDialog dialog = new Door43LoginDialog();
+                    dialog.show(ft, Door43LoginDialog.TAG);
+                    return;
+                }
+
+                // open dialog for browsing repositories
                 FragmentTransaction ft = getFragmentManager().beginTransaction();
                 Fragment prev = getFragmentManager().findFragmentByTag(ImportDialog.TAG);
                 if (prev != null) {
@@ -73,13 +82,7 @@ public class ImportDialog extends DialogFragment {
                 }
                 ft.addToBackStack(null);
 
-                RestoreFromCloudDialog dialog = new RestoreFromCloudDialog();
-                dialog.setNewKeyRegistrationListener(new RestoreFromCloudDialog.OnNewKeyRegistrationListener() {
-                    @Override
-                    public void onNewKeyRegistration() {
-                        importCloudButton.callOnClick();
-                    }
-                });
+                RestoreFromDoor43Dialog dialog = new RestoreFromDoor43Dialog();
                 dialog.show(ft, ImportDialog.TAG);
             }
         });

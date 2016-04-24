@@ -124,7 +124,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
                 break;
 
             default:
-            case QUERY_ERROR:
+            case ERROR:
                 statusID = R.string.error;
                 break;
         }

@@ -298,7 +298,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
 
         // render the target chapter body
         if(mRenderedTargetBody[position] == null) {
-            TranslationFormat bodyFormat = mLibrary.getChapterBodyFormat(mSourceTranslation, chapter.getId());
+            TranslationFormat bodyFormat = mTargetTranslation.getFormat();
             String chapterBody = "";
             String[] frameSlugs = mLibrary.getFrameSlugs(mSourceTranslation, chapter.getId());
             for (String frameSlug : frameSlugs) {
@@ -309,7 +309,8 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
             RenderingGroup targetRendering = new RenderingGroup();
             if(Clickables.isClickableFormat(bodyFormat)) {
                 // TODO: add click listeners
-                Clickables.setupRenderingGroup(bodyFormat, targetRendering, null, null, true);
+                ClickableRenderingEngine renderer = Clickables.setupRenderingGroup(bodyFormat, targetRendering, null, null, true);
+                renderer.setVersesEnabled(true);
             } else {
                 targetRendering.addEngine(new DefaultRenderer());
             }

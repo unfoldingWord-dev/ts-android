@@ -19,10 +19,6 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.home.HomeActivity;
 import com.door43.translationstudio.AppContext;
 
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -55,6 +51,7 @@ public class BackupService extends Service {
         int backupIntervalMinutes = Integer.parseInt(pref.getString(SettingsActivity.KEY_PREF_BACKUP_INTERVAL, getResources().getString(R.string.pref_default_backup_interval)));
         if(backupIntervalMinutes > 0) {
             int backupInterval = backupIntervalMinutes * 60 * 1000;
+            int delay = 60 * 1000; // wait a minute for the app to finish booting
             Logger.i(this.getClass().getName(), "Backups running every " + backupIntervalMinutes + " minute/s");
             sRunning = true;
             sTimer.scheduleAtFixedRate(new TimerTask() {
@@ -62,7 +59,7 @@ public class BackupService extends Service {
                 public void run() {
                     runBackup();
                 }
-            }, 0, backupInterval);
+            }, delay, backupInterval);
             return START_STICKY;
         } else {
             Logger.i(this.getClass().getName(), "Backups are disabled");

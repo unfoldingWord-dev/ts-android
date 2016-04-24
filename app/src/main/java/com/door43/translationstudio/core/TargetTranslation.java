@@ -5,6 +5,7 @@ import android.content.pm.PackageInfo;
 import android.support.annotation.Nullable;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.git.Repo;
 import com.door43.util.Manifest;
 
@@ -21,6 +22,7 @@ import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.TagCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -31,20 +33,25 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * Created by joel on 8/29/2015.
  */
 public class TargetTranslation {
+    public static final String TAG = TargetTranslation.class.getSimpleName();
     public static final int PACKAGE_VERSION = 6; // the version of the target translation implementation
+    public static final String LICENSE_FILE = "LICENSE.md";
 
     private static final String FIELD_PARENT_DRAFT = "parent_draft";
     private static final String FIELD_FINISHED_CHUNKS = "finished_chunks";
@@ -73,6 +80,7 @@ public class TargetTranslation {
     private String resourceName = null;
 
     private TranslationFormat mTranslationFormat;
+    private PersonIdent author = null;
 
     /**
      * Creates a new instance of the target translation
@@ -280,7 +288,7 @@ public class TargetTranslation {
      * @return
      * @throws Exception
      */
-    public static TargetTranslation create(NativeSpeaker translator, TranslationFormat translationFormat, TargetLanguage targetLanguage, String projectId, TranslationType translationType, String resourceSlug, PackageInfo packageInfo, File targetTranslationDir) throws Exception {
+    public static TargetTranslation create(Context context, NativeSpeaker translator, TranslationFormat translationFormat, TargetLanguage targetLanguage, String projectId, TranslationType translationType, String resourceSlug, PackageInfo packageInfo, File targetTranslationDir) throws Exception {
         targetTranslationDir.mkdirs();
         Manifest manifest = Manifest.generate(targetTranslationDir);
 
@@ -303,6 +311,14 @@ public class TargetTranslation {
         JSONObject resourceJson = new JSONObject();
         resourceJson.put("id", resourceSlug);
         manifest.put(FIELD_RESOURCE, resourceJson);
+
+        File licenseFile = new File(targetTranslationDir, LICENSE_FILE);
+        InputStream is = context.getAssets().open(LICENSE_FILE);
+        if(is != null) {
+            FileUtils.copyInputStreamToFile(is, licenseFile);
+        } else {
+            throw new FileNotFoundException("The template LICENSE.md file could not be found in the assets");
+        }
 
         // return the new target translation
         TargetTranslation targetTranslation = new TargetTranslation(targetTranslationDir);
@@ -391,6 +407,33 @@ public class TargetTranslation {
             sourceTranslationsJson.put(translationJson);
             manifest.put(FIELD_SOURCE_TRANSLATIONS, sourceTranslationsJson);
         }
+    }
+
+    /**
+     * get list of source translation slugs used
+     */
+    public String[] getSourceTranslations() {
+
+        try {
+            List<String> sources = new ArrayList<>();
+
+            JSONArray sourceTranslationsJson = manifest.getJSONArray(FIELD_SOURCE_TRANSLATIONS);
+
+            for (int i = 0; i < sourceTranslationsJson.length(); i++) {
+                JSONObject obj = sourceTranslationsJson.getJSONObject(i);
+
+                String sourceLanguageSlug = obj.getString("language_id");
+                String resourceSlug = obj.getString("resource_id");
+
+                SourceTranslation sourceTranslation =  SourceTranslation.simple(this.projectId, sourceLanguageSlug, resourceSlug);
+                sources.add(sourceTranslation.getId());
+            }
+
+            return sources.toArray(new String[sources.size()]);
+        } catch(Exception e) {
+            Logger.e(TAG, "Error reading sources", e);
+        }
+        return new String[0]; // return empty array on error
     }
 
     /**
@@ -893,6 +936,15 @@ public class TargetTranslation {
         return false;
     }
 
+    /**
+     * Sets the author to be used when making commits
+     * @param name
+     * @param email
+     */
+    public void setAuthor(String name, String email) {
+        this.author = new PersonIdent(name, email);
+    }
+
     public boolean commitSync(String filePattern) throws Exception {
         Git git = getRepo().getGit();
 
@@ -908,6 +960,9 @@ public class TargetTranslation {
         // commit changes
         final CommitCommand commit = git.commit();
         commit.setAll(true);
+        if(author != null) {
+            commit.setAuthor(author);
+        }
         commit.setMessage("auto save");
 
         try {
@@ -966,38 +1021,38 @@ public class TargetTranslation {
      * @return true if successful
      */
     public void setPublished(final OnPublishedListener listener)  {
-        try {
-            Git git = getRepo().getGit();
-            final TagCommand tag = git.tag();
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss", Locale.US);
-            String name = "Published=" + format.format(new Date());
-            tag.setName(name);
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    commitSync();
 
-            Thread thread = new Thread() {
-                @Override
-                public void run() {
-                    try {
-                        // don't tag if already tagged
-                        if(getPublishedStatus() != PublishStatus.IS_CURRENT) {
-                            tag.call();
-                            if (listener != null) {
-                                listener.onSuccess();
-                            }
-                        }
-                    } catch (Exception e) {
-                        if(listener != null) {
-                            listener.onFailed(e);
-                        }
+                    Git git = getRepo().getGit();
+                    final TagCommand tag = git.tag();
+                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd/HH.mm.ss", Locale.US);
+                    format.setTimeZone(TimeZone.getTimeZone("UTC"));
+                    String name = "R2P/" + format.format(new Date());
+                    tag.setName(name);
+                    if(author != null) {
+                        tag.setTagger(author);
+                    }
+
+                    // tag if not already
+                    if(getPublishedStatus() != PublishStatus.IS_CURRENT) {
+                        tag.call();
+                    }
+                    if (listener != null) {
+                        listener.onSuccess();
+                    }
+                } catch (Exception e) {
+                    if(listener != null) {
+                        listener.onFailed(e);
                     }
                 }
-            };
-            thread.start();
-
-        } catch (Exception e) {
-            if(listener != null) {
-                listener.onFailed(e);
             }
-        }
+        };
+        thread.start();
+
     }
 
     /**
@@ -1044,7 +1099,7 @@ public class TargetTranslation {
 
             RevCommit head = getGitHead(getRepo());
             if(null == head) {
-                return PublishStatus.QUERY_ERROR;
+                return PublishStatus.ERROR;
             }
 
             if(head.getCommitTime() > lastTag.getCommitTime()) {
@@ -1057,7 +1112,7 @@ public class TargetTranslation {
             Logger.w(this.getClass().toString(), "Error checking published status", e);
         }
 
-        return PublishStatus.QUERY_ERROR;
+        return PublishStatus.ERROR;
     }
 
     /**
@@ -1148,7 +1203,7 @@ public class TargetTranslation {
         IS_CURRENT,
         NOT_CURRENT,
         NOT_PUBLISHED,
-        QUERY_ERROR
+        ERROR
     }
 
     /**
@@ -1191,27 +1246,6 @@ public class TargetTranslation {
             commit = c;
         }
         return commit;
-    }
-
-    /**
-     * Sets whether or not this target translation is publishable
-     * @param publishable
-     * @param listener
-     * @throws Exception
-     * @deprecated this will go away after moving to gogs. Use setLegacyPublished(OnPublishedListener) instead
-     */
-    public void setLegacyPublished(boolean publishable, OnCommitListener listener) throws Exception {
-        File readyFile = new File(targetTranslationDir, "READY");
-        if(publishable) {
-            try {
-                readyFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            readyFile.delete();
-        }
-        commit(listener);
     }
 
     /**

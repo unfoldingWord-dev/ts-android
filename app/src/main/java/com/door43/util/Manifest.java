@@ -1,6 +1,5 @@
 package com.door43.util;
 
-import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -195,7 +194,7 @@ public class Manifest {
      */
     private void save() {
         try {
-            FileUtils.writeStringToFile(mManifestFile, mManifest.toString());
+            FileUtilities.writeStringToFile(mManifestFile, mManifest.toString());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -216,7 +215,7 @@ public class Manifest {
     public void load() {
         String contents = "";
         try {
-            contents = FileUtils.readFileToString(mManifestFile);
+            contents = FileUtilities.readFileToString(mManifestFile);
         } catch (IOException e) {
             e.printStackTrace();
         }

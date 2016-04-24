@@ -7,6 +7,7 @@ import android.text.SpannedString;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.rendering.USXtoUSFMConverter;
 import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
@@ -41,10 +42,12 @@ public class Translator {
 
     private final File mRootDir;
     private final Context mContext;
+    private Profile profile;
 
-    public Translator(Context context, File rootDir) {
+    public Translator(Context context, Profile profile, File rootDir) {
         mContext = context;
         mRootDir = rootDir;
+        this.profile = profile;
     }
 
     /**
@@ -104,18 +107,30 @@ public class Translator {
             translationFormat = TranslationFormat.MARKDOWN;
         }
 
-        String targetLanguageId = TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), projectSlug, translationType, resourceSlug);
-        TargetTranslation targetTranslation = getTargetTranslation(targetLanguageId);
+        String targetTranslationId = TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), projectSlug, translationType, resourceSlug);
+        TargetTranslation targetTranslation = getTargetTranslation(targetTranslationId);
         if(targetTranslation == null) {
-            File targetTranslationDir = new File(this.mRootDir, targetLanguageId);
+            File targetTranslationDir = new File(this.mRootDir, targetTranslationId);
             try {
                 PackageInfo pInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
-                return TargetTranslation.create(nativeSpeaker, translationFormat, targetLanguage, projectSlug, translationType, resourceSlug, pInfo, targetTranslationDir);
+                return TargetTranslation.create(this.mContext, nativeSpeaker, translationFormat, targetLanguage, projectSlug, translationType, resourceSlug, pInfo, targetTranslationDir);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
         return targetTranslation;
+    }
+
+    private void setTargetTranslationAuthor(TargetTranslation targetTranslation) {
+        if(profile != null && targetTranslation != null) {
+            String name = profile.getFullName();
+            String email = "";
+            if(profile.gogsUser != null) {
+                name = profile.gogsUser.fullName;
+                email = profile.gogsUser.email;
+            }
+            targetTranslation.setAuthor(name, email);
+        }
     }
 
     /**
@@ -126,7 +141,9 @@ public class Translator {
     public TargetTranslation getTargetTranslation(String targetTranslationId) {
         if(targetTranslationId != null) {
             File targetTranslationDir = new File(mRootDir, targetTranslationId);
-            return TargetTranslation.open(targetTranslationDir);
+            TargetTranslation targetTranslation = TargetTranslation.open(targetTranslationDir);
+            setTargetTranslationAuthor(targetTranslation);
+            return targetTranslation;
         }
         return null;
     }
@@ -179,7 +196,7 @@ public class Translator {
      * @return
      * @throws Exception
      */
-    private JSONObject buildManifest(TargetTranslation targetTranslation) throws Exception {
+    private JSONObject buildArchiveManifest(TargetTranslation targetTranslation) throws Exception {
         targetTranslation.commit();
 
         // build manifest
@@ -228,12 +245,15 @@ public class Translator {
      */
     public void exportArchive(TargetTranslation targetTranslation, OutputStream out, String fileName) throws Exception {
         if(!FilenameUtils.getExtension(fileName).toLowerCase().equals(ARCHIVE_EXTENSION)) {
-            throw new Exception("Not a translationStudio archive");
+            throw new Exception("Output file must have '" + ARCHIVE_EXTENSION + "' extension");
+        }
+        if(targetTranslation == null) {
+            throw new Exception("Not a valid target translation");
         }
 
         targetTranslation.commitSync();
 
-        JSONObject manifestJson = buildManifest(targetTranslation);
+        JSONObject manifestJson = buildArchiveManifest(targetTranslation);
         File tempCache = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
         try {
             tempCache.mkdirs();
@@ -265,6 +285,9 @@ public class Translator {
 
         TargetTranslation t = createTargetTranslation(nativeSpeaker, targetLanguage, draftTranslation.projectSlug, TranslationType.TEXT, resourceSlug, draftTranslation.getFormat());
 
+        // convert legacy usx format to usfm
+        boolean convertToUSFM = draftTranslation.getFormat() == TranslationFormat.USX;
+
         try {
             if (t != null) {
                 // commit local changes to history
@@ -277,7 +300,8 @@ public class Translator {
                     t.applyChapterTitleTranslation(ct, c.title);
                     t.applyChapterReferenceTranslation(ct, c.reference);
                     for(Frame f:library.getFrames(draftTranslation, c.getId())) {
-                        t.applyFrameTranslation(t.getFrameTranslation(f), f.body);
+                        String text = convertToUSFM ? USXtoUSFMConverter.doConversion(f.body).toString() : f.body;
+                        t.applyFrameTranslation(t.getFrameTranslation(f), text);
                     }
                 }
                 // TODO: 3/23/2016 also import the front and back matter along with project title
@@ -505,7 +529,7 @@ public class Translator {
                         try {
                             PackageInfo pInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
                             // TRICKY: android only supports creating regular text translations
-                            targetTranslation = TargetTranslation.create(AppContext.getProfile().getNativeSpeaker(), format, targetLanguage, project.getId(), TranslationType.TEXT, Resource.REGULAR_SLUG, pInfo, targetTranslationDir);
+                            targetTranslation = TargetTranslation.create(this.mContext, AppContext.getProfile().getNativeSpeaker(), format, targetLanguage, project.getId(), TranslationType.TEXT, Resource.REGULAR_SLUG, pInfo, targetTranslationDir);
                         } catch (Exception e) {
                             Logger.e(Translator.class.getName(), "Failed to create target translation from DokuWiki", e);
                         }

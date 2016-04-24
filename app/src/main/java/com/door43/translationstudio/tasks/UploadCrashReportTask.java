@@ -7,8 +7,6 @@ import com.door43.translationstudio.AppContext;
 import com.door43.util.FileUtilities;
 import com.door43.util.tasks.ManagedTask;
 
-import org.apache.commons.io.FileUtils;
-
 import java.io.File;
 import java.io.IOException;
 
@@ -40,7 +38,7 @@ public class UploadCrashReportTask extends ManagedTask {
                 reporter.reportCrash(mMessage, new File(stacktraces[0]), logFile);
                 // empty the log
                 try {
-                    FileUtils.write(logFile, "");
+                    FileUtilities.writeStringToFile(logFile, "");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

@@ -43,6 +43,10 @@
         <activity
             android:name=".TermsOfUseActivity"
             android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".SplashScreenActivity"
+            android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -50,10 +54,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".SplashScreenActivity"
-            android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
@@ -67,7 +67,7 @@
             android:label="@string/title_activity_crash_reporter" />
         <activity
             android:name=".ImportFileChooserActivity"
-            android:label="@string/title_file_browser"></activity>
+            android:label="@string/title_file_browser" />
         <activity
             android:name=".device2device.DeviceToDeviceActivity"
             android:label="@string/title_activity_sharing"
@@ -119,12 +119,15 @@
         <activity
             android:name=".newui.home.HomeActivity"
             android:label="@string/title_activity_target_translations"
-            android:theme="@style/AppTheme.NoActionBar" >
+            android:theme="@style/AppTheme.NoActionBar">
+
             <!-- this does not work to register file extension -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data android:scheme="file" />
                 <data android:scheme="http" />
                 <data android:scheme="https" />
@@ -178,11 +181,14 @@
             android:name=".newui.draft.DraftActivity"
             android:label="@string/preview">
 
-            <!--android:theme="@style/AppTheme.NoActionBar"-->
+            <!-- android:theme="@style/AppTheme.NoActionBar" -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".newui.translate.TargetTranslationActivity" />
         </activity>
+        <activity android:name=".RegisterDoor43Activity" />
+        <activity android:name=".LoginDoor43Activity" />
+        <activity android:name=".RegisterOfflineActivity"></activity>
     </application>
 
 </manifest>
