@@ -1,12 +1,12 @@
 package com.door43.util;
 
-import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 
 /**
  * This class handles the management of a manifest file.
@@ -16,10 +16,6 @@ public class Manifest {
     private final File mManifestFile;
     private JSONObject mManifest = new JSONObject();
     public static final String MANIFEST_JSON = "manifest.json";
-    public static final String FINISHED_FRAMES = "finished_frames";
-    public static final String FINISHED_TITLES = "finished_titles";
-    public static final String FINISHED_REFERENCES = "finished_references";
-    public static final String TRANSLATORS = "translators";
 
     /**
      * Creates a new manifest object representing a file on the disk
@@ -131,6 +127,20 @@ public class Manifest {
     /**
      * Adds an element to the manifest
      * @param key
+     * @param obj
+     */
+    public void put(String key, Object obj) {
+        try {
+            mManifest.put(key, obj);
+            save();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Adds an element to the manifest
+     * @param key
      * @param json
      */
     public void put(String key, JSONArray json) {
@@ -184,7 +194,7 @@ public class Manifest {
      */
     private void save() {
         try {
-            FileUtils.writeStringToFile(mManifestFile, mManifest.toString());
+            FileUtilities.writeStringToFile(mManifestFile, mManifest.toString());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -202,10 +212,10 @@ public class Manifest {
     /**
      * Reads the manifest file from the disk
      */
-    private void load() {
+    public void load() {
         String contents = "";
         try {
-            contents = FileUtils.readFileToString(mManifestFile);
+            contents = FileUtilities.readFileToString(mManifestFile);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -219,5 +229,127 @@ public class Manifest {
                 mManifest = new JSONObject();
             }
         }
+    }
+
+    /**
+     * Uniquely merges the values of the array into the manifest
+     * @param newArray
+     * @param key
+     */
+    public void join(JSONArray newArray, String key) {
+        if(newArray != null && key != null) {
+            try {
+                if (!mManifest.has(key)) {
+                    mManifest.put(key, newArray);
+                } else {
+                    JSONArray array = mManifest.getJSONArray(key);
+                    for (int i = 0; i < newArray.length(); i++) {
+                        Object obj = newArray.get(i);
+                        if (!hasValueInArray(array, obj)) {
+                            array.put(obj);
+                        }
+                    }
+                    mManifest.put(key, array);
+                }
+                save();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Uniquely merges the keys of the object into the manifest
+     * @param newObj
+     * @param key
+     */
+    public void join(JSONObject newObj, String key) {
+        if(newObj != null && key != null) {
+            try {
+                if (!mManifest.has(key)) {
+                    mManifest.put(key, newObj);
+                } else {
+                    JSONObject obj = mManifest.getJSONObject(key);
+                    Iterator<String> newKeys = newObj.keys();
+                    while(newKeys.hasNext()) {
+                        String newObjKey = newKeys.next();
+                        if(!obj.has(newObjKey)) {
+                            obj.put(newObjKey, newObj.get(newObjKey));
+                        }
+                    }
+                    mManifest.put(key, obj);
+                }
+                save();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Checks if a value exists in the array
+     * @param array
+     * @param value
+     * @return
+     */
+    private static boolean hasValueInArray(JSONArray array, Object value) {
+        if(value != null  && array != null) {
+            try {
+                for (int i = 0; i < array.length(); i++) {
+                    if (value.equals(array.get(i))) {
+                        return true;
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if a value exist for the key
+     * @param json
+     * @param key
+     * @return
+     */
+    public static boolean valueExists(JSONObject json, String key) {
+        try {
+            if (json.has(key)) {
+                Object obj = json.get(key);
+                if(obj instanceof String) {
+                    return !((String) obj).isEmpty();
+                } else if(obj instanceof JSONArray) {
+                    return ((JSONArray)obj).length() > 0;
+                } else if(obj instanceof JSONObject) {
+                    return ((JSONObject)obj).keys().hasNext();
+                } else {
+                    return true;
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Removes a string value from an array
+     * @param array
+     * @param value
+     */
+    public static JSONArray removeValue(JSONArray array, String value) {
+        JSONArray updatedArray = new JSONArray();
+        for (int i = 0; i < array.length(); i++) {
+            try {
+                String content = array.getString(i);
+                if (!content.equals(value)) {
+                    updatedArray.put(content);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return updatedArray;
     }
 }

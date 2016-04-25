@@ -10,7 +10,6 @@ import com.door43.util.Zip;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -19,8 +18,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-
-import javax.xml.transform.Source;
 
 /**
  * Created by joel on 8/29/2015.
@@ -112,6 +109,14 @@ public class Library {
     }
 
     /**
+     * Downloads the chunk markers for this project from the server
+     * @param projectSlug
+     */
+    private void downloadChunkMarkerList(String projectSlug) {
+        mDownloader.downloadChunkMarkerList(projectSlug, mAppIndex);
+    }
+
+    /**
      * Downloads the source language catalog from the server
      * @param projectId
      */
@@ -134,6 +139,7 @@ public class Library {
             String[] projectIds = mAppIndex.getProjectSlugs();
             for (int i = 0; i < projectIds.length; i ++) {
                 String projectId = projectIds[i];
+                downloadChunkMarkerList(projectId);
                 downloadSourceLanguageList(projectId);
                 if(listener != null) {
                     if(!listener.onProgress((i + 1), projectIds.length)) {
@@ -173,6 +179,15 @@ public class Library {
         boolean success = mDownloader.downloadTargetLanguages(mAppIndex);
         mAppIndex.endTransaction(success);
         return success;
+    }
+
+    /**
+     * Returns an array of chunk markers for the project
+     * @param projectSlug
+     * @return
+     */
+    public ChunkMarker[] getChunkMarkers(String projectSlug) {
+        return mAppIndex.getChunkMarkers(projectSlug);
     }
 
     /**
@@ -247,7 +262,7 @@ public class Library {
             success = false;
         }
         if(listener != null) {
-            listener.onProgress(1, 5);
+            listener.onProgress(1, 6);
         }
 
         // words
@@ -255,16 +270,15 @@ public class Library {
             mAppIndex.markWordsCatalogUpToDate(sourceTranslation);
         }
         if(listener != null) {
-            listener.onProgress(2, 5);
+            listener.onProgress(2, 6);
         }
 
         // word assignments
-        // TODO: delete current translationWord assignments
         if(mDownloader.downloadWordAssignments(sourceTranslation, mAppIndex)) {
             mAppIndex.markWordAssignmentsCatalogUpToDate(sourceTranslation);
         }
         if(listener != null) {
-            listener.onProgress(3, 5);
+            listener.onProgress(3, 6);
         }
 
         // notes
@@ -272,7 +286,7 @@ public class Library {
             mAppIndex.markNotesCatalogUpToDate(sourceTranslation);
         }
         if(listener != null) {
-            listener.onProgress(4, 5);
+            listener.onProgress(4, 6);
         }
 
         // questions
@@ -280,8 +294,15 @@ public class Library {
             mAppIndex.markQuestionsCatalogUpToDate(sourceTranslation);
         }
         if(listener != null) {
-            listener.onProgress(5, 5);
+            listener.onProgress(5, 6);
         }
+
+        if(listener != null) {
+            listener.onProgress(6, 6);
+        }
+
+        // TODO: 4/5/2016 eventually ta
+
 
         // Images are not downloaded here; rather, fetched on demand since they're large.
 
@@ -471,7 +492,7 @@ public class Library {
      * @param sourceTranslation
      * @return
      */
-    private Resource getResource(SourceTranslation sourceTranslation) {
+    public Resource getResource(SourceTranslation sourceTranslation) {
         return getActiveIndex().getResource(SourceTranslation.simple(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug));
     }
 
@@ -963,6 +984,31 @@ public class Library {
         boolean success = getActiveIndex().indexTranslationAcademy(sourceTranslation, catalog);
         getActiveIndex().endTransaction(success);
         return success;
+    }
+
+    /**
+     * This is a temporary method so we can index chunk markers
+     * Chunk markers are not currently available in the api so we must inject the catalog urls manually
+     * @return
+     * @deprecated you probably shouldn't use this method
+     */
+    public boolean manuallyInjectChunkMarkerCatalogUrl() {
+        getActiveIndex().beginTransaction();
+        boolean success = false;
+        try {
+            success = getActiveIndex().manuallyInjectChunkMarkerUrls();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        getActiveIndex().endTransaction(success);
+        return success;
+    }
+
+    /**
+     * Resets all the date_modified values
+     */
+    public void setExpired() {
+        mAppIndex.setExpired();
     }
 
     public interface OnProgressListener {

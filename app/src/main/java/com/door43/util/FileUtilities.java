@@ -7,6 +7,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -15,49 +16,58 @@ import java.io.InputStreamReader;
  * This class provides some utility methods for handling files
  */
 public class FileUtilities {
+
     /**
      * Converts an input stream into a string
-     * @param is the input stream
+     * @param is
      * @return
      * @throws Exception
      */
-    public static String convertStreamToString(InputStream is) throws IOException {
+    public static String readStreamToString(InputStream is) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         StringBuilder sb = new StringBuilder();
-        String line = null;
+        String line;
         while ((line = reader.readLine()) != null) {
             sb.append(line).append("\n");
         }
-        reader.close();
         return sb.toString();
     }
 
     /**
      * Returns the contents of a file as a string
-     * @param f
+     * @param file
      * @return
      * @throws Exception
      */
-    public static String getStringFromFile(File f) throws IOException {
-        return getStringFromFile(f.getAbsolutePath());
+    public static String readFileToString(File file) throws IOException {
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(file);
+            String contents = readStreamToString(fis);
+            fis.close();
+            return contents;
+        } finally {
+            if(fis != null) {
+                fis.close();
+            }
+        }
     }
 
     /**
-     * Returns the contents of a file as a string
-     * @param filePath the path to the file
-     * @return
-     * @throws Exception
+     * Writes a string to a file
+     * @param file
+     * @param contents
+     * @throws IOException
      */
-    public static String getStringFromFile (String filePath) throws IOException {
-        File fl = new File(filePath);
-        if (fl.exists()) {
-            FileInputStream fin = new FileInputStream(fl);
-            String ret = convertStreamToString(fin);
-            //Make sure you close all streams.
-            fin.close();
-            return ret;
-        } else {
-            return null;
+    public static void writeStringToFile(File file, String contents) throws IOException {
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(file.getAbsolutePath());
+            fos.write(contents.getBytes());
+        } finally {
+            if(fos != null) {
+                fos.close();
+            }
         }
     }
 
@@ -93,12 +103,34 @@ public class FileUtilities {
                     }
                     return true;
                 } catch (IOException e) {
-                    Logger.e(FileUtilities.class.getName(), "Failed to copy the file", e);
+                    Logger.e(FileUtils.class.getName(), "Failed to copy the file", e);
                 }
             }
         }
         return false;
     }
 
-
+    /**
+     * Deletes a file/directory by first moving it to a temporary location then deleting it.
+     * This avoids an issue with FAT32 on some devices where you cannot create a file
+     * with the same name right after deleting it
+     * @param file
+     */
+    public static void safeDelete(File file) {
+        if(file != null && file.exists()) {
+            File temp = new File(file.getParentFile(), System.currentTimeMillis() + ".trash");
+            file.renameTo(temp);
+            try {
+                if (file.isDirectory()) {
+                    FileUtils.moveDirectoryToDirectory(file, temp, true);
+                } else {
+                    FileUtils.moveFile(file, temp);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            FileUtils.deleteQuietly(file); // just in case the move failed
+            FileUtils.deleteQuietly(temp);
+        }
+    }
 }

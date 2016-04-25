@@ -1,79 +1,103 @@
 package com.door43.translationstudio.core;
 
-import android.support.annotation.Nullable;
-
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import org.unfoldingword.gogsclient.Token;
+import org.unfoldingword.gogsclient.User;
 
 /**
- * Created by jshuma on 1/4/16.
+ * Represents a single user profile
  */
-public class Profile implements Serializable {
-    @Nullable public final String name;
-    @Nullable public final String email;
-    @Nullable public final String phone;
+public class Profile {
+    private static final long serialVersionUID = 0L;
+    private String fullName;
+    public User gogsUser;
+    private int termsOfUseLastAccepted = 0;
 
-    private static final String TAG_NAME = "name";
-    private static final String TAG_PHONE = "phone";
-    private static final String TAG_EMAIL = "email";
-
-    public Profile(String name, String email, String phone) {
-        this.name = name;
-        this.email = email;
-        this.phone = phone;
+    /**
+     * Creates a new profile
+     * @param fullName
+     */
+    public Profile(String fullName) {
+        this.fullName = fullName;
     }
 
     /**
-     * Indicates whether this object is sufficiently complete to be used.
-     *
-     * <p>This is where business logic for profile validation goes. Currently it consists of
-     * checking for the presence of a few fields, but other checks can be added here.</p>
-     * @return true if valid, otherwise false
+     * Returns the profile represented as a json object
+     * @return
      */
-    public boolean isValid() {
-        return name != null && !name.isEmpty() && email != null && !email.isEmpty();
-    }
-
-    public JSONObject encodeJsonObject() throws JSONException {
-        JSONObject o = new JSONObject();
-        o.put(TAG_NAME, name);
-        o.put(TAG_EMAIL, email);
-        o.put(TAG_PHONE, phone);
-        return o;
-    }
-
-    public static JSONArray encodeJsonArray(List<? extends Profile> persons) throws JSONException {
-        JSONArray a = new JSONArray();
-        for (Profile p : persons) {
-            a.put(p.encodeJsonObject());
+    public JSONObject toJSON() throws JSONException {
+        JSONObject json = new JSONObject();
+        json.put("serial_version_uid", serialVersionUID);
+        if(gogsUser != null) {
+            json.put("gogs_user", gogsUser.toJSON());
+            json.put("gogs_token", gogsUser.token.toJSON());
+        } else {
+            json.put("full_name", fullName);
         }
-        return a;
-    }
-
-    public static Profile decodeJsonObject(JSONObject o) {
-        String name = (String) o.opt(TAG_NAME);
-        String email = (String) o.opt(TAG_EMAIL);
-        String phone = (String) o.opt(TAG_PHONE);
-        return (name != null) ? new Profile(name, email, phone) : null;
+        json.put("terms_last_accepted", termsOfUseLastAccepted);
+        return json;
     }
 
     /**
-     * Given a JSONArray representing user preferences, return the objects encoded by this.
-     *
-     * @param a The JSONArray described
-     * @return The objects encoded, or an empty list. Never null.
-     * @throws JSONException on error
+     * Loads the user profile from json
+     * @param json
+     * @return
+     * @throws Exception
      */
-    public static List<Profile> decodeJsonArray(JSONArray a) throws JSONException {
-        List<Profile> profiles = new ArrayList<>(a.length());
-        for (int i = 0; i < a.length(); ++i) {
-            profiles.add(Profile.decodeJsonObject((JSONObject) a.get(i)));
+    public static Profile fromJSON(JSONObject json) throws Exception {
+        Profile profile = null;
+        if(json != null) {
+            long versionUID = json.getLong("serial_version_uid");
+            if(versionUID != serialVersionUID) {
+                throw new Exception("Unsupported profile version " + versionUID + ". Expected " + serialVersionUID);
+            }
+            String fullName = null;
+            if(json.has("full_name")) {
+                fullName = json.getString("full_name");
+            }
+            User gogsUser = null;
+            if(json.has("gogs_user")) {
+                gogsUser = User.fromJSON(json.getJSONObject("gogs_user"));
+            }
+            Token gogsToken = null;
+            if(json.has("gogs_token")) {
+                gogsToken = Token.fromJSON(json.getJSONObject("gogs_token"));
+            }
+            int termsLastAccepted = 0;
+            if(json.has("terms_last_accepted")) {
+                termsLastAccepted = json.getInt("terms_last_accepted");
+            }
+
+            if(gogsUser != null) {
+                fullName = gogsUser.fullName;
+                gogsUser.token = gogsToken;
+            }
+            profile = new Profile(fullName);
+            profile.gogsUser = gogsUser;
+            profile.setTermsOfUseLastAccepted(termsLastAccepted);
         }
-        return profiles;
+        return profile;
+    }
+
+    public String getFullName() {
+        return this.fullName;
+    }
+
+    /**
+     * Returns a native speaker version of this profile.
+     * This is used when recording translators who contribute to a translation
+     * @return
+     */
+    public NativeSpeaker getNativeSpeaker() {
+        return new NativeSpeaker(this.fullName);
+    }
+
+    public int getTermsOfUseLastAccepted() {
+        return termsOfUseLastAccepted;
+    }
+
+    public void setTermsOfUseLastAccepted(int termsOfUseLastAccepted) {
+        this.termsOfUseLastAccepted = termsOfUseLastAccepted;
     }
 }

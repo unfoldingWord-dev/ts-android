@@ -263,21 +263,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      * Forces the software keyboard to close
      */
     public void closeKeyboard() {
-        Activity activity = getActivity();
-        if(activity != null) {
-            if (activity.getCurrentFocus() != null) {
-                try {
-                    InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(), 0);
-                } catch (Exception e) {
-                }
-            } else {
-                try {
-                    activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-                } catch (Exception e) {
-                }
-            }
-        }
+        AppContext.closeKeyboard(getActivity());
     }
 
     @Override
@@ -417,6 +403,13 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         mListener.openTranslationMode(mode, extras);
     }
 
+    /**
+     * Restarts the auto commit timer
+     */
+    public void restartAutoCommitTimer() {
+        mListener.restartAutoCommitTimer();
+    }
+
     public void setRememberLastPosition(boolean rememberLastPosition) {
         this.mRememberLastPosition = rememberLastPosition;
     }
@@ -447,5 +440,10 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
          * @param mode
          */
         void openTranslationMode(TranslationViewMode mode, Bundle extras);
+
+        /**
+         * Restarts the timer to auto commit changes
+         */
+        void restartAutoCommitTimer();
     }
 }

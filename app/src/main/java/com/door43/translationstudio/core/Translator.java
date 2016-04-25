@@ -6,15 +6,15 @@ import android.text.Editable;
 import android.text.SpannedString;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.rendering.USXtoUSFMConverter;
 import com.door43.util.FileUtilities;
-import com.door43.util.Manifest;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -42,10 +42,12 @@ public class Translator {
 
     private final File mRootDir;
     private final Context mContext;
+    private Profile profile;
 
-    public Translator(Context context, File rootDir) {
+    public Translator(Context context, Profile profile, File rootDir) {
         mContext = context;
         mRootDir = rootDir;
+        this.profile = profile;
     }
 
     /**
@@ -65,7 +67,7 @@ public class Translator {
         mRootDir.list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
-                if(!filename.equalsIgnoreCase("cache")) {
+                if(!filename.equalsIgnoreCase("cache") && new File(dir, filename).isDirectory()) {
                     TargetTranslation translation = getTargetTranslation(filename);
                     if (translation != null) {
                         translations.add(translation);
@@ -88,18 +90,47 @@ public class Translator {
     }
 
     /**
-     * Initializes a new target translation
-     * @param targetLanguage the target language the project will be translated into
-     * @param projectId the id of the project that will be translated
-     * @return
+     * Creates a new Target Translation. If one already exists it will return it without changing anything.
+     * @param nativeSpeaker the human translator
+     * @param targetLanguage the language that is being translated into
+     * @param projectSlug the project that is being translated
+     * @param translationType the type of translation that is occurring
+     * @param resourceSlug the resource that is being created
+     * @param translationFormat the format of the translated text
+     * @return A new or existing Target Translation
      */
-    public TargetTranslation createTargetTranslation(TargetLanguage targetLanguage, String projectId) {
-        try {
-            return TargetTranslation.create(mContext, targetLanguage, projectId, mRootDir);
-        } catch (Exception e) {
-            e.printStackTrace();
+    public TargetTranslation createTargetTranslation(NativeSpeaker nativeSpeaker, TargetLanguage targetLanguage, String projectSlug, TranslationType translationType, String resourceSlug, TranslationFormat translationFormat) {
+        // TRICKY: force deprecated formats to use new formats
+        if(translationFormat == TranslationFormat.USX) {
+            translationFormat = TranslationFormat.USFM;
+        } else if(translationFormat == TranslationFormat.DEFAULT) {
+            translationFormat = TranslationFormat.MARKDOWN;
         }
-        return null;
+
+        String targetTranslationId = TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), projectSlug, translationType, resourceSlug);
+        TargetTranslation targetTranslation = getTargetTranslation(targetTranslationId);
+        if(targetTranslation == null) {
+            File targetTranslationDir = new File(this.mRootDir, targetTranslationId);
+            try {
+                PackageInfo pInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
+                return TargetTranslation.create(this.mContext, nativeSpeaker, translationFormat, targetLanguage, projectSlug, translationType, resourceSlug, pInfo, targetTranslationDir);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return targetTranslation;
+    }
+
+    private void setTargetTranslationAuthor(TargetTranslation targetTranslation) {
+        if(profile != null && targetTranslation != null) {
+            String name = profile.getFullName();
+            String email = "";
+            if(profile.gogsUser != null) {
+                name = profile.gogsUser.fullName;
+                email = profile.gogsUser.email;
+            }
+            targetTranslation.setAuthor(name, email);
+        }
     }
 
     /**
@@ -109,19 +140,10 @@ public class Translator {
      */
     public TargetTranslation getTargetTranslation(String targetTranslationId) {
         if(targetTranslationId != null) {
-            try {
-                String projectId = TargetTranslation.getProjectIdFromId(targetTranslationId);
-                String targetLanguageId = TargetTranslation.getTargetLanguageIdFromId(targetTranslationId);
-
-                File dir = TargetTranslation.generateTargetTranslationDir(targetTranslationId, mRootDir);
-                if(dir.exists()) {
-                    return new TargetTranslation(targetLanguageId, projectId, mRootDir);
-                } else {
-                    return null;
-                }
-            } catch (StringIndexOutOfBoundsException e) {
-                Logger.e(this.getClass().getName(), "Failed to retrieve the target translation '" + targetTranslationId + "'", e);
-            }
+            File targetTranslationDir = new File(mRootDir, targetTranslationId);
+            TargetTranslation targetTranslation = TargetTranslation.open(targetTranslationDir);
+            setTargetTranslationAuthor(targetTranslation);
+            return targetTranslation;
         }
         return null;
     }
@@ -132,17 +154,14 @@ public class Translator {
      */
     public void deleteTargetTranslation(String targetTranslationId) {
         if(targetTranslationId != null) {
-            try {
-                File dir = TargetTranslation.generateTargetTranslationDir(targetTranslationId, mRootDir);
-                FileUtils.deleteQuietly(dir);
-            } catch (StringIndexOutOfBoundsException e) {
-                e.printStackTrace();
-            }
+            File targetTranslationDir = new File(mRootDir, targetTranslationId);
+            FileUtilities.safeDelete(targetTranslationDir);
         }
     }
 
     /**
-     * Compiles all the spans within the text into human readable strings
+     * Compiles all the editable text back into source that could be either USX or USFM.  It replaces
+     *   the displayed text in spans with their mark-ups.
      * @param text
      * @return
      */
@@ -177,7 +196,7 @@ public class Translator {
      * @return
      * @throws Exception
      */
-    private JSONObject buildManifest(TargetTranslation targetTranslation) throws Exception {
+    private JSONObject buildArchiveManifest(TargetTranslation targetTranslation) throws Exception {
         targetTranslation.commit();
 
         // build manifest
@@ -226,12 +245,15 @@ public class Translator {
      */
     public void exportArchive(TargetTranslation targetTranslation, OutputStream out, String fileName) throws Exception {
         if(!FilenameUtils.getExtension(fileName).toLowerCase().equals(ARCHIVE_EXTENSION)) {
-            throw new Exception("Not a translationStudio archive");
+            throw new Exception("Output file must have '" + ARCHIVE_EXTENSION + "' extension");
+        }
+        if(targetTranslation == null) {
+            throw new Exception("Not a valid target translation");
         }
 
-        targetTranslation.commit();
+        targetTranslation.commitSync();
 
-        JSONObject manifestJson = buildManifest(targetTranslation);
+        JSONObject manifestJson = buildArchiveManifest(targetTranslation);
         File tempCache = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
         try {
             tempCache.mkdirs();
@@ -255,13 +277,21 @@ public class Translator {
      * @param library
      * @return
      */
-    public TargetTranslation importDraftTranslation(SourceTranslation draftTranslation, Library library) {
+    public TargetTranslation importDraftTranslation(NativeSpeaker nativeSpeaker, SourceTranslation draftTranslation, Library library) {
         TargetLanguage targetLanguage = library.getTargetLanguage(draftTranslation.sourceLanguageSlug);
-        TargetTranslation t = createTargetTranslation(targetLanguage, draftTranslation.projectSlug);
+        // TRICKY: for now android only supports "regular" or "obs" "text" translations
+        // TODO: we should technically check if the project contains more than one resource when determining if it needs a regular slug or not.
+        String resourceSlug = draftTranslation.projectSlug.equals("obs") ? "obs" : Resource.REGULAR_SLUG;
+
+        TargetTranslation t = createTargetTranslation(nativeSpeaker, targetLanguage, draftTranslation.projectSlug, TranslationType.TEXT, resourceSlug, draftTranslation.getFormat());
+
+        // convert legacy usx format to usfm
+        boolean convertToUSFM = draftTranslation.getFormat() == TranslationFormat.USX;
+
         try {
             if (t != null) {
                 // commit local changes to history
-                t.commit();
+                t.commitSync();
 
                 // begin import
                 t.applyProjectTitleTranslation(draftTranslation.getProjectTitle());
@@ -270,11 +300,13 @@ public class Translator {
                     t.applyChapterTitleTranslation(ct, c.title);
                     t.applyChapterReferenceTranslation(ct, c.reference);
                     for(Frame f:library.getFrames(draftTranslation, c.getId())) {
-                        t.applyFrameTranslation(t.getFrameTranslation(f), f.body);
+                        String text = convertToUSFM ? USXtoUSFMConverter.doConversion(f.body).toString() : f.body;
+                        t.applyFrameTranslation(t.getFrameTranslation(f), text);
                     }
                 }
+                // TODO: 3/23/2016 also import the front and back matter along with project title
                 t.setParentDraft(draftTranslation);
-                t.commit();
+                t.commitSync();
             }
         } catch (IOException e) {
             Logger.e(this.getClass().getName(), "Failed to import target translation", e);
@@ -286,16 +318,15 @@ public class Translator {
     }
 
      /**
-     * Imports target translations from an archive specified by file
-     * todo: we should have another method that will inspect the archive and return the details to the user so they can decide if they want to import it
+     * Imports a tstudio archive
      * @param file
-     * @return an array of target translation slugs
+     * @return an array of target translation slugs that were successfully imported
      */
     public String[] importArchive(File file) throws Exception {
         FileInputStream in = null;
         try {
             in = new FileInputStream(file);
-            return importArchive( in, file.toString());
+            return importArchive(in);
         } catch (Exception e) {
             throw e;
         } finally {
@@ -304,279 +335,57 @@ public class Translator {
     }
 
     /**
-     * Imports target translations from an archive in InputStream
-     * todo: we should have another method that will inspect the archive and return the details to the user so they can decide if they want to import it
+     * Imports a tstudio archive from an input stream
      * @param in
-     * @return an array of target translation slugs
+     * @return an array of target translation slugs that were successfully imported
      */
-    public String[] importArchive(InputStream in, final String name) throws Exception {
-        File tempCache = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
-        List<String> importedTargetTranslationSlugs = new ArrayList<>();
+    public String[] importArchive(InputStream in) throws Exception {
+        File archiveDir = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
+        List<String> importedSlugs = new ArrayList<>();
         try {
-            tempCache.mkdirs();
-            Zip.unzipFromStream(in, tempCache);
-            importArchiveFromTempCache(tempCache, importedTargetTranslationSlugs);
+            archiveDir.mkdirs();
+            Zip.unzipFromStream(in, archiveDir);
+
+            File[] targetTranslationDirs = ArchiveImporter.importArchive(archiveDir);
+            for(File newDir:targetTranslationDirs) {
+                TargetTranslation newTargetTranslation = TargetTranslation.open(newDir);
+                if(newTargetTranslation != null) {
+                    // TRICKY: the correct id is pulled from the manifest to avoid propogating bad folder names
+                    String targetTranslationId = newTargetTranslation.getId();
+                    File localDir = new File(mRootDir, targetTranslationId);
+                    TargetTranslation localTargetTranslation = TargetTranslation.open(localDir);
+                    if(localTargetTranslation != null) {
+                        // commit local changes to history
+                        if(localTargetTranslation != null) {
+                            localTargetTranslation.commitSync();
+                        }
+
+                        // merge translations
+                        try {
+                            localTargetTranslation.merge(newDir);
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                            continue;
+                        }
+                    }  else {
+                        // import new translation
+                        FileUtilities.safeDelete(localDir); // in case local was an invalid target translation
+                        FileUtils.moveDirectory(newDir, localDir);
+                    }
+                    // update the generator info. TRICKY: we re-open to get the updated manifest.
+                    TargetTranslation.updateGenerator(mContext, TargetTranslation.open(localDir));
+
+                    importedSlugs.add(targetTranslationId);
+                }
+            }
         } catch (Exception e) {
             throw e;
         } finally {
             IOUtils.closeQuietly(in);
-            FileUtils.deleteQuietly(tempCache);
+            FileUtils.deleteQuietly(archiveDir);
         }
 
-        return importedTargetTranslationSlugs.toArray(new String[importedTargetTranslationSlugs.size()]);
-    }
-
-    private void importArchiveFromTempCache(File tempCache, List<String> importedTargetTranslationSlugs) throws Exception {
-        File[] targetTranslationDirs = ArchiveImporter.importArchive(tempCache);
-        for(File newDir:targetTranslationDirs) {
-
-            File localDir = new File(mRootDir, newDir.getName());
-            if(localDir.exists()) {
-                // commit local changes to history
-                TargetTranslation targetTranslation = getTargetTranslation(localDir.getName());
-                if(targetTranslation != null) {
-                    targetTranslation.commit();
-                }
-
-                // clean out local translation (retaining history)
-                // TODO: 12/1/2015 there should be an option to discard local changes (though not it's history)
-//                    File[] oldFiles = localDir.listFiles(new FilenameFilter() {
-//                        @Override
-//                        public boolean accept(File dir, String filename) {
-//                            return !filename.equals(".git");
-//                        }
-//                    });
-//                    for(File f:oldFiles) {
-//                        FileUtils.deleteQuietly(f);
-//                    }
-
-                    // copy files into existing translation
-                    File[] newFiles = newDir.listFiles(new FilenameFilter() {
-                        @Override
-                        public boolean accept(File dir, String filename) {
-                            return !filename.equals(".git");
-                        }
-                    });
-                    for(File importedFile:newFiles) {
-                        File localFile = new File(localDir, importedFile.getName());
-                        if(importedFile.getName().equals("manifest.json")) {
-                            JSONObject localManifest = new JSONObject(FileUtils.readFileToString(localFile));
-                            JSONObject importedManifest = new JSONObject(FileUtils.readFileToString(importedFile));
-                            JSONObject mergedManifest = mergeManifests(localManifest, importedManifest);
-                            FileUtils.writeStringToFile(localFile, mergedManifest.toString(), false);
-                        } else {
-                            // merge the files
-                            mergeRecursively(importedFile, localFile);
-                        }
-                    }
-                } else {
-                    // import new translation
-                    FileUtils.moveDirectory(newDir, localDir);
-                }
-            // update the generator info
-            TargetTranslation.updateGenerator(mContext, getTargetTranslation(newDir.getName()));
-
-            importedTargetTranslationSlugs.add(newDir.getName());
-        }
-        if(targetTranslationDirs.length == 0) {
-            throw new Exception("The archive does not contain any valid target translations");
-        }
-    }
-
-    /**
-     * merges manifests
-     * @param localManifest
-     * @param importedManifest
-     * @throws IOException
-     */
-    private JSONObject mergeManifests(final JSONObject localManifest, final JSONObject importedManifest) {
-
-        try {
-            JSONObject mergedManifest = new JSONObject(importedManifest.toString());
-            mergeManifestsObjectArray(mergedManifest, localManifest, Manifest.TRANSLATORS);
-            mergeManifestsStringArray(mergedManifest, localManifest, Manifest.FINISHED_FRAMES);
-            mergeManifestsStringArray(mergedManifest, localManifest, Manifest.FINISHED_TITLES);
-            mergeManifestsStringArray(mergedManifest, localManifest, Manifest.FINISHED_REFERENCES);
-            return mergedManifest;
-        } catch (JSONException e) {
-            Logger.w(this.getClass().toString(), "mergeManifest exception", e);
-            return importedManifest;
-        }
-    }
-
-    /**
-     * merges arrays in manifest
-     * @param mergeManifest
-     * @param sourceManifest
-     * @throws IOException
-     */
-    private boolean mergeManifestsObjectArray(JSONObject mergeManifest, final JSONObject sourceManifest, final String key) {
-
-        try {
-            JSONArray sourceArray = sourceManifest.optJSONArray(key);
-            if(null == sourceArray) {
-                return true; // nothing to do
-            }
-
-            JSONArray mergedArray = mergeManifest.optJSONArray(key);
-            if(null == mergedArray) {
-                mergeManifest.put(key, sourceArray); // just copy
-                return true;
-            }
-
-            mergeObjectElementsInStringArray( mergedArray, sourceArray);
-            return true;
-        } catch (JSONException e) {
-            return false;
-        }
-    }
-
-    /**
-     * merges array elements
-     * @param mergeArray
-     * @param sourceArray
-     * @throws IOException
-     */
-    private boolean mergeObjectElementsInStringArray(JSONArray mergeArray, final JSONArray sourceArray) {
-        try {
-            for(int i = 0; i < sourceArray.length(); i++) {
-                JSONObject value = sourceArray.getJSONObject(i);
-                int position = findObjectInStringArray(mergeArray, value);
-                if (position < 0) { // if not found, append to merge array
-                    mergeArray.put(value);
-                }
-            }
-            return true;
-        } catch (JSONException e) {
-            return false;
-        }
-    }
-
-    /**
-     * merges array elements
-     * @param array
-     * @param value
-     * @return position of match
-     */
-    private int findObjectInStringArray(JSONArray array, final JSONObject value) {
-        if(null != value) {
-            try {
-
-                JSONArray valueKeys = value.names();
-
-                for (int i = 0; i < array.length(); i++) {
-                    JSONObject element = array.getJSONObject(i);
-                    JSONArray elementKeys = element.names();
-                    if(!elementKeys.equals(valueKeys)) {
-                        continue;
-                    }
-
-                    boolean matched = true;
-                    for(int j=0; j<elementKeys.length(); j++) {
-                        String key = elementKeys.getString(j);
-                        String elementValue = element.getString(key);
-                        String valueValue = value.getString(key);
-                        if(!elementValue.equals(valueValue)) {
-                            matched = false;
-                            break;
-                        }
-                    }
-
-                    if (matched) {
-                        return i;
-                    }
-                }
-            } catch (JSONException e) {}
-        }
-        return -1;
-    }
-
-
-    /**
-     * merges arrays in manifest
-     * @param mergeManifest
-     * @param sourceManifest
-     * @throws IOException
-     */
-    private boolean mergeManifestsStringArray(JSONObject mergeManifest, final JSONObject sourceManifest, final String key) {
-
-        try {
-            JSONArray sourceArray = sourceManifest.optJSONArray(key);
-            if(null == sourceArray) {
-                return true; // nothing to do
-            }
-
-            JSONArray mergedArray = mergeManifest.optJSONArray(key);
-            if(null == mergedArray) {
-                mergeManifest.put(key, sourceArray); // just copy
-                return true;
-            }
-
-            mergeElementsInStringArray( mergedArray, sourceArray);
-            return true;
-        } catch (JSONException e) {
-            return false;
-        }
-    }
-
-    /**
-     * merges array elements
-     * @param mergeArray
-     * @param sourceArray
-     * @throws IOException
-     */
-    private boolean mergeElementsInStringArray(JSONArray mergeArray, final JSONArray sourceArray) {
-        try {
-            for(int i = 0; i < sourceArray.length(); i++) {
-                String value = sourceArray.getString(i);
-                int position = findElementsInStringArray(mergeArray, value);
-                if (position < 0) { // if not found, append to merge array
-                    mergeArray.put(value);
-                }
-            }
-            return true;
-        } catch (JSONException e) {
-            return false;
-        }
-    }
-
-    /**
-     * merges array elements
-     * @param array
-     * @param value
-     * @return position of match
-     */
-    private int findElementsInStringArray(JSONArray array, final String value) {
-        if(null != value) {
-            try {
-                for (int i = 0; i < array.length(); i++) {
-                    String element = array.getString(i);
-                    if (value.equals(element)) {
-                        return i;
-                    }
-                }
-            } catch (JSONException e) {
-            }
-        }
-        return -1;
-    }
-
-    /**
-     * Recursively merges a file into another
-     * @param src
-     * @param dest
-     * @throws IOException
-     */
-    private void mergeRecursively(File src, File dest) throws IOException {
-        if(src.isDirectory()) {
-            File[] children = src.listFiles();
-            for(File child:children) {
-                mergeRecursively(child, new File(dest, child.getName()));
-            }
-        } else {
-            FileUtils.deleteQuietly(dest);
-            FileUtils.moveFile(src, dest);
-        }
+        return importedSlugs.toArray(new String[importedSlugs.size()]);
     }
 
     /**
@@ -606,6 +415,7 @@ public class Translator {
      * @param targetTranslation
      * @return
      */
+    @Deprecated
     public void exportDokuWiki(TargetTranslation targetTranslation, File outputFile) throws IOException {
         File tempDir = new File(getLocalCacheDir(), System.currentTimeMillis() + "");
         tempDir.mkdirs();
@@ -683,6 +493,7 @@ public class Translator {
      * @param file
      * @return
      */
+    @Deprecated
     public TargetTranslation importDokuWiki(Library library, File file) throws IOException {
         List<TargetTranslation> targetTranslations = new ArrayList<>();
         TargetTranslation targetTranslation = null;
@@ -708,7 +519,20 @@ public class Translator {
                         project = library.getProject(line, "en");
                         if(project == null) return null;
                         // create target translation
-                        targetTranslation = new TargetTranslation(targetLanguage.getId(), project.getId(), mRootDir);
+                        TranslationFormat format;
+                        if(project.getId() == "obs") {
+                            format = TranslationFormat.MARKDOWN;
+                        } else {
+                            format = TranslationFormat.USFM;
+                        }
+                        File targetTranslationDir = new File(mRootDir, TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), project.getId(), TranslationType.TEXT, Resource.REGULAR_SLUG));
+                        try {
+                            PackageInfo pInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
+                            // TRICKY: android only supports creating regular text translations
+                            targetTranslation = TargetTranslation.create(this.mContext, AppContext.getProfile().getNativeSpeaker(), format, targetLanguage, project.getId(), TranslationType.TEXT, Resource.REGULAR_SLUG, pInfo, targetTranslationDir);
+                        } catch (Exception e) {
+                            Logger.e(Translator.class.getName(), "Failed to create target translation from DokuWiki", e);
+                        }
                     } else if (!chapterId.isEmpty() && !frameId.isEmpty()) {
                         // retrieve chapter reference (end of chapter) and write chapter
                         ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(chapterId);
@@ -773,6 +597,7 @@ public class Translator {
      * @param archive
      * @return
      */
+    @Deprecated
     public boolean importDokuWikiArchive(Library library, File archive) throws IOException {
         String[] name = archive.getName().split("\\.");
         Boolean success = true;
@@ -813,5 +638,19 @@ public class Translator {
             FileUtilities.deleteRecursive(tempDir);
         }
         return success;
+    }
+
+    /**
+     * This will move a target translation into the root dir.
+     * Any existing target translation will be replaced
+     * @param tempTargetTranslation
+     * @throws IOException
+     */
+    public void restoreTargetTranslation(TargetTranslation tempTargetTranslation) throws IOException {
+        if(tempTargetTranslation != null) {
+            File destDir = new File(mRootDir, tempTargetTranslation.getId());
+            FileUtilities.safeDelete(destDir);
+            FileUtils.moveDirectory(tempTargetTranslation.getPath(), destDir);
+        }
     }
 }

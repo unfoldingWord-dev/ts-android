@@ -3,6 +3,7 @@ package com.door43.translationstudio.service;
 /**
  * Created by joel on 11/20/2015.
  */
+@Deprecated
 public enum PeerCommand {
     OK("ok"),
     @Deprecated

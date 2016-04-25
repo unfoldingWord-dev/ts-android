@@ -1,5 +1,6 @@
 package com.door43.translationstudio;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -8,8 +9,11 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.core.ArchiveDetails;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.TargetTranslation;
@@ -17,18 +21,20 @@ import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.util.SdUtils;
+import com.door43.util.FileUtilities;
 import com.door43.util.StorageUtils;
 import com.door43.util.StringUtilities;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
-import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * This class provides global access to the application context as well as other important tools
@@ -52,6 +58,7 @@ public class AppContext {
     public static final String EXTRA_CHAPTER_ID = "extra_chapter_id";
     public static final String EXTRA_FRAME_ID = "extra_frame_id";
     public static final String EXTRA_VIEW_MODE = "extra_view_mode_id";
+    private static final String PROFILE = "profile";
 
     public static final String TAG = AppContext.class.toString();
     private static MainApplication mContext;
@@ -82,6 +89,14 @@ public class AppContext {
             Logger.e(TAG, "Failed to create the library", e);
         }
         return null;
+    }
+
+    /**
+     * Returns the version of the terms of use
+     * @return
+     */
+    public static int getTermsOfUseVersion() {
+        return mContext.getResources().getInteger(R.integer.terms_of_use_version);
     }
 
     /**
@@ -126,7 +141,7 @@ public class AppContext {
      * @return
      */
     public static Translator getTranslator() {
-        return new Translator(mContext, new File(getPublicDirectory(), TARGET_TRANSLATIONS_DIR));
+        return new Translator(mContext, getProfile(), new File(getPublicDirectory(), TARGET_TRANSLATIONS_DIR));
     }
 
     /**
@@ -192,7 +207,57 @@ public class AppContext {
         dir.mkdirs();
         return dir;
     }
-    
+
+    /**
+     * Creates a backup of a target translation in all the right places
+     * @param targetTranslation the target translation that will be backed up
+     * @param orphaned if true this backup will be orphaned (time stamped)
+     * @return true if the backup was actually performed
+     */
+    public static boolean backupTargetTranslation(TargetTranslation targetTranslation, Boolean orphaned) throws Exception {
+        if(targetTranslation != null && getProfile() != null) {
+            String name = targetTranslation.getId();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss", Locale.US);
+            if (orphaned) {
+                name += "." + sdf.format(new Date());
+            }
+            File temp = null;
+            try {
+                temp = File.createTempFile(name, "." + Translator.ARCHIVE_EXTENSION);
+                targetTranslation.setDefaultContributor(getProfile().getNativeSpeaker());
+                getTranslator().exportArchive(targetTranslation, temp);
+                if (temp.exists() && temp.isFile()) {
+                    // copy into backup locations
+                    File downloadsBackup = new File(getPublicDownloadsDirectory(), name + "." + Translator.ARCHIVE_EXTENSION);
+                    File publicBackup = new File(getPublicDirectory(), "backups/" + name + "." + Translator.ARCHIVE_EXTENSION);
+                    downloadsBackup.getParentFile().mkdirs();
+                    publicBackup.getParentFile().mkdirs();
+
+                    // check if we need to backup
+                    if(!orphaned) {
+                        ArchiveDetails downloadsDetails = ArchiveDetails.newInstance(downloadsBackup, "en", getLibrary());
+                        ArchiveDetails publicDetails = ArchiveDetails.newInstance(publicBackup, "en", getLibrary());
+                        // TRICKY: we only generate backups with a single target translation inside.
+                        if(downloadsDetails != null && downloadsDetails.targetTranslationDetails[0].commitHash.equals(targetTranslation.getCommitHash())
+                            && publicDetails != null && publicDetails.targetTranslationDetails[0].commitHash.equals(targetTranslation.getCommitHash())) {
+                            return false;
+                        }
+                    }
+
+                    FileUtils.copyFile(temp, downloadsBackup);
+                    FileUtils.copyFile(temp, publicBackup);
+                    return true;
+                }
+            } catch (Exception e) {
+                if (temp != null) {
+                    FileUtils.deleteQuietly(temp);
+                }
+                throw e;
+            }
+        }
+        return false;
+    }
+
     /**
      * Returns the path to the public files directory.
      * Files saved in this directory will not be removed when the application is uninstalled
@@ -469,87 +534,39 @@ public class AppContext {
     }
 
     /**
-     * Returns information about the user of the application.
-     *
-     * <p>This is a readable collection of information, not a "live-updating" reference to storage.
-     * To change the profiles in use, call {@link #setProfiles(List)}</p>.
-     *
-     * @return A list of {@link Profile} objects; or an empty list if not set, or on error.
+     * Returns the current user profile
+     * @return
      */
-    @Nullable
-    public static List<Profile> getProfiles() {
+    public static Profile getProfile() {
+        String profileString = getUserString(PROFILE, null);
+
         try {
-            String profilesEncoded = getUserString(SettingsActivity.KEY_PREF_PROFILES, null);
-            if (profilesEncoded != null) {
-                JSONArray profilesJson = new JSONArray(profilesEncoded);
-                return Profile.decodeJsonArray(profilesJson);
+            if (profileString != null) {
+                return Profile.fromJSON(new JSONObject(profileString));
             }
+        } catch (Exception e) {
+            Logger.e(TAG, "Failed to parse the profile", e);
         }
-        catch (Exception e) {
-            // There are lots of ways for this to fail, none of which are particularly serious.
-            // In this case, log the result but allow the data to be lost.
-            Logger.e(TAG, "getProfiles: Failed to parse profile data", e);
-        }
-        return new ArrayList<Profile>();
+        return null;
     }
 
     /**
-     * Set the user's default profile, used to populate translator information when creating a new
-     * translation.
+     * Stores the user profile
      *
-     * <p>This persists the information but does not retain a reference to it. Changes to the
-     * argument made after this call are not persisted.</p>
-     *
-     * @param profiles A list of profile objects.
+     * @param profile
      */
-    public static void setProfiles(List<Profile> profiles) {
+    public static void setProfile(Profile profile) {
         try {
-            String profilesJson = Profile.encodeJsonArray(profiles).toString();
-            setUserString(SettingsActivity.KEY_PREF_PROFILES, profilesJson);
-        }
-        catch (JSONException e) {
-            // Failures to save are not particularly severe. Log and continue.
-            Logger.e(TAG, "setProfiles: Failed to encode profile data", e);
-        }
-    }
-
-    /**
-     * Returns a human-readable string summarizing the user's profile settings, suitable for
-     * display as a single string.
-     *
-     * @return A string, or the empty string if nothing is set
-     */
-    public static String getProfileSummary() {
-        List<Profile> profiles = getProfiles();
-
-        StringBuilder all = new StringBuilder();
-        StringBuilder single = new StringBuilder();
-
-        for (Profile profile : profiles) {
-            // Prepare a summary of the profile we're examining right now.
-            String[] fields = { profile.name, profile.email, profile.phone };
-            for (String field : fields) {
-                if (field == null || field.isEmpty()) {
-                    continue;
-                }
-
-                if (single.length() > 0) {
-                    single.append(", ");
-                }
-
-                single.append(field);
+            if(profile != null) {
+                String profileString = profile.toJSON().toString();
+                setUserString(PROFILE, profileString);
+            } else {
+                setUserString(PROFILE, null);
+                FileUtilities.deleteRecursive(getKeysFolder());
             }
-
-            // Add the single-profile summary to the overall summary. But only include it if
-            // this profile has a summary (i.e., prefer "foo, bar; baz" to "foo, bar; ; baz").
-            if (all.length() > 0 && single.length() > 0) {
-                all.append("; ");
-            }
-            all.append(single);
-            single.delete(0, single.length());
+        } catch (JSONException e) {
+            Logger.e(TAG, "setProfile: Failed to encode profile data", e);
         }
-
-        return all.toString();
     }
 
     /**
@@ -560,6 +577,27 @@ public class AppContext {
      */
     public static String getUserString(String preferenceKey, int defaultResource) {
         return getUserString(preferenceKey, mContext.getResources().getString(defaultResource));
+    }
+
+    /**
+     * Closes the keyboard in the given activity
+     * @param activity
+     */
+    public static void closeKeyboard(Activity activity) {
+        if(activity != null) {
+            if (activity.getCurrentFocus() != null) {
+                try {
+                    InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(), 0);
+                } catch (Exception e) {
+                }
+            } else {
+                try {
+                    activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+                } catch (Exception e) {
+                }
+            }
+        }
     }
 
     /**

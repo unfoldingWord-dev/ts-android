@@ -41,7 +41,6 @@ import com.door43.widget.VerticalSeekBar;
 import com.door43.widget.ViewUtil;
 import com.door43.translationstudio.newui.BaseActivity;
 
-import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -75,7 +74,18 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         final String targetTranslationId = args.getString(AppContext.EXTRA_TARGET_TRANSLATION_ID, null);
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         if (mTargetTranslation == null) {
-            throw new InvalidParameterException("a valid target translation id is required");
+            Logger.e(TAG ,"A valid target translation id is required. Received '" + targetTranslationId + "' but the translation could not be found");
+            finish();
+            return;
+        }
+
+        // open used source translations by default
+        if(AppContext.getOpenSourceTranslationIds(mTargetTranslation.getId()).length == 0) {
+            String[] slugs = mTargetTranslation.getSourceTranslations();
+            for (String slug : slugs) {
+                SourceTranslation sourceTranslation = AppContext.getLibrary().getSourceTranslation(slug);
+                AppContext.addOpenSourceTranslation(mTargetTranslation.getId(), sourceTranslation.getId());
+            }
         }
 
         // notify user that a draft translation exists the first time actvity starts
@@ -198,17 +208,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             }
         });
 
-        // schedule translation commits
-        mCommitTimer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    mTargetTranslation.commit();
-                } catch (Exception e) {
-                    Logger.e(TargetTranslationActivity.class.getName(), "Failed to commit the latest translation of " + targetTranslationId, e);
-                }
-            }
-        }, COMMIT_INTERVAL, COMMIT_INTERVAL);
+        restartAutoCommitTimer();
     }
 
     private void buildMenu() {
@@ -551,6 +551,29 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     }
 
+    /**
+     * Restart scheduled translation commits
+     */
+    public void restartAutoCommitTimer() {
+        mCommitTimer.cancel();
+        mCommitTimer = new Timer();
+        mCommitTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                if(mTargetTranslation != null) {
+                    try {
+                        mTargetTranslation.commit();
+                    } catch (Exception e) {
+                        Logger.e(TargetTranslationActivity.class.getName(), "Failed to commit the latest translation of " + mTargetTranslation.getId(), e);
+                    }
+                } else {
+                    Logger.w(TAG, "cannot auto commit target translation. The target translation is null.");
+                    mCommitTimer.cancel();
+                }
+            }
+        }, COMMIT_INTERVAL, COMMIT_INTERVAL);
+    }
+
     @Override
     public void onHasSourceTranslations() {
         TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
@@ -609,7 +632,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
 
         // Set the non-highlighted icons by default.
-        mReviewButton.setImageResource(R.drawable.ic_assignment_turned_in_inactive_24dp);
+        mReviewButton.setImageResource(R.drawable.icon_check_inactive);
         mChunkButton.setImageResource(R.drawable.icon_frame_inactive);
         mReadButton.setImageResource(R.drawable.icon_study_inactive);
 
@@ -634,7 +657,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 mChunkButton.setBackgroundColor(backgroundColor);
                 break;
             case REVIEW:
-                mReviewButton.setImageResource(R.drawable.ic_assignment_turned_in_white_24dp);
+                mReviewButton.setImageResource(R.drawable.icon_check_active);
                 mReviewButton.setBackgroundColor(backgroundColor);
                 break;
         }

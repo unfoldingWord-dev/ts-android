@@ -44,6 +44,8 @@ import org.json.JSONException;
 
 import java.io.File;
 import java.security.InvalidParameterException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -189,8 +191,13 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
 
         if(operationMode == MODE_SERVER) {
             title.setText(getResources().getString(R.string.backup_to_friend));
-            SourceTranslation sourceTranslatiohn = AppContext.getLibrary().getDefaultSourceTranslation(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
-            subTitle.setText(sourceTranslatiohn.getProjectTitle() + " - " + targetTranslation.getTargetLanguageName());
+            SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+            if(sourceTranslation != null) {
+                subTitle.setText(sourceTranslation.getProjectTitle() + " - " + targetTranslation.getTargetLanguageName());
+            } else {
+                Logger.w(this.getClass().getName(), "Could not find a default source translation for " + targetTranslation.getProjectId());
+                subTitle.setText(targetTranslation.getProjectId() + " - " + targetTranslation.getTargetLanguageName());
+            }
         } else {
             title.setText(getResources().getString(R.string.import_from_friend));
             subTitle.setText("");
@@ -218,32 +225,56 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
                                 final String targetTranslationSlug = request.context.getString("target_translation_id");
                                 String projectName = request.context.getString("project_name");
                                 String targetLanguageName = request.context.getString("target_language_name");
+                                int packageVersion = request.context.getInt("package_version");
+                                if(packageVersion <= TargetTranslation.PACKAGE_VERSION) {
+                                    final CustomAlertDialog dialog = CustomAlertDialog.Create(getActivity());
+                                    dialog.setTitle(peer.getName())
+                                            .setMessage(String.format(getResources().getString(R.string.confirm_import_target_translation), projectName + " - " + targetLanguageName))
+                                            .setPositiveButton(R.string.label_import, new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View v) {
+                                                    peer.dismissRequest(request);
+                                                    if (adapter != null) {
+                                                        adapter.notifyDataSetChanged();
+                                                    }
+                                                    clientService.requestTargetTranslation(peer, targetTranslationSlug);
+                                                    dialog.dismiss();
+                                                }
+                                            })
+                                            .setNegativeButton(R.string.dismiss, new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View v) {
+                                                    peer.dismissRequest(request);
+                                                    if (adapter != null) {
+                                                        adapter.notifyDataSetChanged();
+                                                    }
+                                                    dialog.dismiss();
+                                                }
+                                            })
+                                            .show("approve-request");
+                                } else {
+                                    // our app is to old to import this version of a target translation
+                                    Logger.w(ShareWithPeerDialog.class.getName(), "Could not import target translation with package version " + TargetTranslation.PACKAGE_VERSION + ". Supported version is " + TargetTranslation.PACKAGE_VERSION);
+                                    peer.dismissRequest(request);
+                                    if (adapter != null) {
+                                        adapter.notifyDataSetChanged();
+                                    }
+                                    final CustomAlertDialog dialog = CustomAlertDialog.Create(getActivity());
+                                    dialog.setTitle(peer.getName())
+                                            .setMessage(String.format(getResources().getString(R.string.error_importing_unsupported_target_translation), projectName, targetLanguageName, getResources().getString(R.string.app_name)))
+                                            .setNeutralButton(R.string.dismiss, null)
+                                            .show("approve-request");
+                                }
+                            } catch (JSONException e) {
+                                peer.dismissRequest(request);
+                                if (adapter != null) {
+                                    adapter.notifyDataSetChanged();
+                                }
                                 final CustomAlertDialog dialog = CustomAlertDialog.Create(getActivity());
                                 dialog.setTitle(peer.getName())
-                                        .setMessage(String.format(getResources().getString(R.string.confirm_import_target_translation), projectName + " - " + targetLanguageName))
-                                        .setPositiveButton(R.string.label_import, new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View v) {
-                                                peer.dismissRequest(request);
-                                                if(adapter != null) {
-                                                    adapter.notifyDataSetChanged();
-                                                }
-                                                clientService.requestTargetTranslation(peer, targetTranslationSlug);
-                                                dialog.dismiss();
-                                            }
-                                        })
-                                        .setNegativeButton(R.string.dismiss, new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View v) {
-                                                peer.dismissRequest(request);
-                                                if(adapter != null) {
-                                                    adapter.notifyDataSetChanged();
-                                                }
-                                                dialog.dismiss();
-                                            }
-                                        })
+                                        .setMessage(R.string.error)
+                                        .setNeutralButton(R.string.dismiss, null)
                                         .show("approve-request");
-                            } catch (JSONException e) {
                                 Logger.e(ShareWithPeerDialog.class.getName(), "Invalid request context", e);
                             }
                         } else {
@@ -307,8 +338,21 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
             RSAEncryption.generateKeys(privateKeyFile, publicKeyFile);
         }
         // TODO: 11/30/2015 we should use a shared interface for setting parameters so we don't have to manage two sets
-        intent.putExtra(ServerService.PARAM_PRIVATE_KEY, RSAEncryption.readPrivateKeyFromFile(privateKeyFile));
-        intent.putExtra(ServerService.PARAM_PUBLIC_KEY, RSAEncryption.getPublicKeyAsString(RSAEncryption.readPublicKeyFromFile(publicKeyFile)));
+        PrivateKey privateKey;
+        PublicKey publicKey;
+        try {
+            privateKey = RSAEncryption.readPrivateKeyFromFile(privateKeyFile);
+            publicKey = RSAEncryption.readPublicKeyFromFile(publicKeyFile);
+        } catch (Exception e) {
+            // try to regenerate the keys if loading fails
+            Logger.w(this.getClass().getName(), "Failed to load the p2p keys. Attempting to regenerate...", e);
+            RSAEncryption.generateKeys(privateKeyFile, publicKeyFile);
+            privateKey = RSAEncryption.readPrivateKeyFromFile(privateKeyFile);
+            publicKey = RSAEncryption.readPublicKeyFromFile(publicKeyFile);
+        }
+
+        intent.putExtra(ServerService.PARAM_PRIVATE_KEY, privateKey);
+        intent.putExtra(ServerService.PARAM_PUBLIC_KEY, RSAEncryption.getPublicKeyAsString(publicKey));
         intent.putExtra(ServerService.PARAM_DEVICE_ALIAS, AppContext.getDeviceNetworkAlias());
         Logger.i(this.getClass().getName(), "Starting service " + intent.getComponent().getClassName());
         getActivity().startService(intent);

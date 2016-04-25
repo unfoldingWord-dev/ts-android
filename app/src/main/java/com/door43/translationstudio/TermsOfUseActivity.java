@@ -2,11 +2,15 @@ package com.door43.translationstudio;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.view.View;
 import android.widget.Button;
 
+import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.newui.BaseActivity;
+import com.door43.translationstudio.newui.home.HomeActivity;
 import com.door43.translationstudio.newui.legal.LegalDocumentActivity;
+import com.door43.widget.ViewUtil;
 
 /**
  * This activity checks if the user has accepted the terms of use before continuing to load the app
@@ -17,15 +21,29 @@ public class TermsOfUseActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (AppContext.context().hasAcceptedTerms()) {
-            // skip to the splash screen if they have already accepted the terms of use
-            startSplashActivity();
+        final Profile profile = AppContext.getProfile();
+        final int termsVersion = AppContext.getTermsOfUseVersion();
+
+        if(profile == null) {
+            finish();
+            return;
+        }
+
+        if (termsVersion == profile.getTermsOfUseLastAccepted()) {
+            // skip terms if already accepted
+            startMainActivity();
         } else {
             setContentView(R.layout.activity_terms);
             Button rejectBtn = (Button)findViewById(R.id.reject_terms_btn);
             rejectBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    // log out
+                    AppContext.setProfile(null);
+
+                    // return to login
+                    Intent intent = new Intent(TermsOfUseActivity.this, ProfileActivity.class);
+                    startActivity(intent);
                     finish();
                 }
             });
@@ -33,8 +51,9 @@ public class TermsOfUseActivity extends BaseActivity {
             acceptBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    AppContext.context().setHasAcceptedTerms(true);
-                    startSplashActivity();
+                    profile.setTermsOfUseLastAccepted(termsVersion);
+                    AppContext.setProfile(profile);
+                    startMainActivity();
                 }
             });
             Button licenseBtn = (Button)findViewById(R.id.license_btn);
@@ -64,9 +83,9 @@ public class TermsOfUseActivity extends BaseActivity {
     /**
      * Continues to the splash screen where local resources will be loaded
      */
-    private void startSplashActivity() {
-        Intent splashIntent = new Intent(this, SplashScreenActivity.class);
-        startActivity(splashIntent);
+    private void startMainActivity() {
+        Intent intent = new Intent(this, HomeActivity.class);
+        startActivity(intent);
         finish();
     }
 

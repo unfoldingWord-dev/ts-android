@@ -4,9 +4,8 @@ import com.door43.tools.reporting.GithubReporter;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.AppContext;
+import com.door43.util.FileUtilities;
 import com.door43.util.tasks.ManagedTask;
-
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,11 +31,15 @@ public class UploadBugReportTask extends ManagedTask {
 
         if(githubTokenIdentifier != 0) {
             GithubReporter reporter = new GithubReporter(AppContext.context(), githubUrl, AppContext.context().getResources().getString(githubTokenIdentifier));
-            reporter.reportBug(mNotes, logFile);
+            try {
+                reporter.reportBug(mNotes, logFile);
+            } catch (IOException e) {
+                Logger.e(this.getClass().getName(), "Failed to submit the bug report", e);
+            }
 
             // empty the log
             try {
-                FileUtils.write(logFile, "");
+                FileUtilities.writeStringToFile(logFile, "");
             } catch (IOException e) {
                 e.printStackTrace();
             }

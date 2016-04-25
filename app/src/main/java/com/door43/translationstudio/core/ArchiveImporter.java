@@ -56,8 +56,9 @@ public class ArchiveImporter {
         // migrate target translations
         List<File> validTargetTranslations = new ArrayList<>();
         for(File dir:targetTranslationDirs) {
-            if(TargetTranslationMigrator.migrate(dir)) {
-                validTargetTranslations.add(dir);
+            File migratedDir = TargetTranslationMigrator.migrate(dir);
+            if(migratedDir != null) {
+                validTargetTranslations.add(migratedDir);
             }
         }
         return validTargetTranslations.toArray(new File[validTargetTranslations.size()]);
@@ -107,8 +108,8 @@ public class ArchiveImporter {
 //        for(String targetTranslationId:translationDirs) {
 //            targetTranslationId = StringUtilities.ltrim(targetTranslationId, '\\');
 //            try {
-//                String projectSlug = TargetTranslation.getProjectIdFromId(targetTranslationId);
-//                String targetLanguageSlug = TargetTranslation.getTargetLanguageIdFromId(targetTranslationId);
+//                String projectSlug = TargetTranslation.getProjectSlugFromId(targetTranslationId);
+//                String targetLanguageSlug = TargetTranslation.getTargetLanguageSlugFromId(targetTranslationId);
 //            } catch (Exception e) {
 //                e.printStackTrace();
 //                continue;

@@ -13,6 +13,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.io.Serializable;
 
 /**
@@ -28,7 +29,13 @@ public class CheckForLatestReleaseTask extends ManagedTask {
     public void start() {
         String githubApiUrl = AppContext.context().getResources().getString(R.string.github_repo_api);
         Github github = new Github(githubApiUrl);
-        String latestRelease = github.getLatestRelease();
+        String latestRelease;
+        try {
+            latestRelease = github.getLatestRelease();
+        } catch (IOException e) {
+            Logger.e(CheckForLatestReleaseTask.class.getName(), "Failed to check for the latest release", e);
+            latestRelease = null;
+        }
         if(latestRelease != null) {
             try {
                 JSONObject latestReleaseJson = new JSONObject(latestRelease);

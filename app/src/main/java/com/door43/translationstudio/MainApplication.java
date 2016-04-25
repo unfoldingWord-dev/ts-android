@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.multidex.MultiDex;
 import android.text.TextUtils;
@@ -50,7 +51,7 @@ public class MainApplication extends Application {
     private static Activity mMainActivity;
 //    private Term mSelectedKeyTerm;
     private boolean mShowImportantTerms;
-    public static final String STACKTRACE_DIR = "stacktrace";
+    public static final String STACKTRACE_DIR = "crashes";
     private boolean mClosingProgressDialog = false;
 
     @Override
@@ -66,7 +67,7 @@ public class MainApplication extends Application {
         // initialize basic functions with link to main application
         new AppContext(this);
 
-        File dir = new File(getExternalCacheDir(), STACKTRACE_DIR);
+        File dir = new File(AppContext.getPublicDirectory(), STACKTRACE_DIR);
         GlobalExceptionHandler.register(dir);
 
         // configure logger
@@ -86,7 +87,7 @@ public class MainApplication extends Application {
     }
 
     public void configureLogger(int minLogLevel) {
-        Logger.configure(new File(getExternalCacheDir(), "log.txt"), Logger.Level.getLevel(minLogLevel));
+        Logger.configure(new File(AppContext.getPublicDirectory(), "log.txt"), Logger.Level.getLevel(minLogLevel));
     }
 
 //    /**
@@ -391,7 +392,7 @@ public class MainApplication extends Application {
      * Checks if the ssh keys have already been generated
      * @return
      */
-    public boolean hasKeys() {
+    public boolean hasSSHKeys() {
         File keysDir = getKeysFolder();
         File privFile = new File(keysDir.getAbsolutePath()+"/id_rsa");
         File pubFile = new File(keysDir.getAbsolutePath()+"/id_rsa.pub");
@@ -430,9 +431,8 @@ public class MainApplication extends Application {
 
     /**
      * Generates a new RSA key pair for use with ssh
-     * TODO: this should not be done on the main thread
      */
-    public void generateKeys() {
+    public void generateSSHKeys() {
         JSch jsch = new JSch();
         int type = KeyPair.RSA;
         File keysDir = getKeysFolder();
@@ -450,29 +450,29 @@ public class MainApplication extends Application {
         catch(Exception e){
             showException(e);
         }
-        // require the app to re-submit generated keys to the server
-        setHasRegisteredKeys(false);
     }
 
     /**
      * Checks if the client has sent it's ssh key to the server
      * @return
+     * @deprecated we will always try to push first and register if it fails
      */
-    public boolean hasRegisteredKeys() {
-        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
-        return settings.getBoolean("has_registered_with_server", false);
-    }
+//    public boolean hasRegisteredKeys() {
+//        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
+//        return settings.getBoolean("has_registered_with_server", false);
+//    }
 
     /**
      * Sets whether the client has sent it's ssh key to the server
      * @param hasRegistered
+     * @deprecated
      */
-    public void setHasRegisteredKeys(Boolean hasRegistered) {
-        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putBoolean("has_registered_with_server", hasRegistered);
-        editor.apply();
-    }
+//    public void setHasRegisteredKeys(Boolean hasRegistered) {
+//        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
+//        SharedPreferences.Editor editor = settings.edit();
+//        editor.putBoolean("has_registered_with_server", hasRegistered);
+//        editor.apply();
+//    }
 
     /**
      * Checks if the app should opperate as if this is the first time it has opened.
@@ -498,23 +498,23 @@ public class MainApplication extends Application {
      * Checks if the client has accepted the terms of use
      * @return
      */
-    public boolean hasAcceptedTerms() {
-        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
-        int termsVersion = getResources().getInteger(R.integer.terms_of_use_version);
-        return settings.getBoolean("has_accepted_terms_v"+termsVersion, false);
-    }
+//    public boolean hasAcceptedTerms() {
+//        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
+//        int termsVersion = getResources().getInteger(R.integer.terms_of_use_version);
+//        return settings.getBoolean("has_accepted_terms_v"+termsVersion, false);
+//    }
 
     /**
      * Sets whether the client has accepted the terms of use.
      * @param hasAcceptedTerms
      */
-    public void setHasAcceptedTerms(Boolean hasAcceptedTerms) {
-        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
-        SharedPreferences.Editor editor = settings.edit();
-        int termsVersion = getResources().getInteger(R.integer.terms_of_use_version);
-        editor.putBoolean("has_accepted_terms_v"+termsVersion, hasAcceptedTerms);
-        editor.apply();
-    }
+//    public void setHasAcceptedTerms(Boolean hasAcceptedTerms) {
+//        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
+//        SharedPreferences.Editor editor = settings.edit();
+//        int termsVersion = getResources().getInteger(R.integer.terms_of_use_version);
+//        editor.putBoolean("has_accepted_terms_v"+termsVersion, hasAcceptedTerms);
+//        editor.apply();
+//    }
 
     /**
      * Returns an instance of the user preferences.

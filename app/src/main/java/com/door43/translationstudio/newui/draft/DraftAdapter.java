@@ -17,9 +17,10 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
+import com.door43.translationstudio.rendering.ClickableRenderingEngine;
+import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
-import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.widget.ViewUtil;
@@ -107,9 +108,9 @@ public class DraftAdapter extends RecyclerView.Adapter<DraftAdapter.ViewHolder> 
             String chapterBody = mLibrary.getChapterBody(mDraftTranslation, chapter.getId());
             TranslationFormat bodyFormat = mLibrary.getChapterBodyFormat(mDraftTranslation, chapter.getId());
             RenderingGroup sourceRendering = new RenderingGroup();
-            if (bodyFormat == TranslationFormat.USX) {
+            if (Clickables.isClickableFormat(bodyFormat)) {
                 // TODO: add click listeners
-                USXRenderer renderer = new USXRenderer(null, new Span.OnClickListener() {
+                Span.OnClickListener noteClickListener = new Span.OnClickListener() {
                     @Override
                     public void onClick(View view, Span span, int start, int end) {
                         if(span instanceof NoteSpan) {
@@ -125,8 +126,8 @@ public class DraftAdapter extends RecyclerView.Adapter<DraftAdapter.ViewHolder> 
                     public void onLongClick(View view, Span span, int start, int end) {
 
                     }
-                });
-                sourceRendering.addEngine(renderer);
+                };
+                ClickableRenderingEngine renderer = Clickables.setupRenderingGroup(bodyFormat, sourceRendering, null, noteClickListener, true);
 
                 // In read mode (and only in read mode), pull leading major section headings out for
                 // display above chapter headings.

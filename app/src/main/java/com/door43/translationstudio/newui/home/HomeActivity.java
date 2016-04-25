@@ -2,6 +2,7 @@ package com.door43.translationstudio.newui.home;
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
@@ -16,8 +17,10 @@ import android.widget.ImageButton;
 import android.widget.PopupMenu;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.ProfileActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.core.ArchiveDetails;
 import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.Frame;
@@ -36,11 +39,15 @@ import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationAct
 import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.AppContext;
+import com.door43.util.Zip;
 import com.door43.widget.ViewUtil;
 
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Locale;
 
@@ -142,6 +149,12 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                                     // todo notify user app could not be shared
                                 }
                                 return true;
+                            case R.id.action_log_out:
+                                AppContext.setProfile(null);
+                                Intent logoutIntent = new Intent(HomeActivity.this, ProfileActivity.class);
+                                startActivity(logoutIntent);
+                                finish();
+                                return true;
                             case R.id.action_settings:
                                 Intent intent = new Intent(HomeActivity.this, SettingsActivity.class);
                                 startActivity(intent);
@@ -154,8 +167,74 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
             }
         });
 
+        Intent intent = getIntent();
+        if(intent != null) {
+            String action = intent.getAction();
+            if(action != null) {
+                if (action.compareTo(Intent.ACTION_VIEW) == 0 || action.compareTo(Intent.ACTION_DEFAULT) == 0) {
+                    String scheme = intent.getScheme();
+                    ContentResolver resolver = getContentResolver();
+                    Uri contentUri = intent.getData();
+                    File tempFile = null;
+                    if (scheme.compareTo(ContentResolver.SCHEME_FILE) == 0) {
+                        finish();
+                        // TODO: 3/23/2016 we need to finish adding support for importing by clicking on a file.
+                        // the import needs to be ran in a task and a loading dialog should be displayed.
+                        try {
+                            tempFile = File.createTempFile("targettranslation", "." + Translator.ARCHIVE_EXTENSION);
+                            FileUtils.copyInputStreamToFile(resolver.openInputStream(contentUri), tempFile);
+                            ArchiveDetails details = ArchiveDetails.newInstance(tempFile, Locale.getDefault().getLanguage(), mLibrary);
+                            String names = "";
+                            for (ArchiveDetails.TargetTranslationDetails td : details.targetTranslationDetails) {
+                                names = td.projectName + " - " + td.targetLanguageName + ", ";
+                            }
+                            names = names.replaceAll(", $", "");
+                            final File archiveFile = tempFile;
+                            CustomAlertDialog.Create(this)
+                                    .setTitle(R.string.label_import)
+                                    .setMessage(String.format(getResources().getString(R.string.confirm_import_target_translation), names))
+                                    .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            FileUtils.deleteQuietly(archiveFile);
+                                            HomeActivity.this.finish();
+                                        }
+                                    })
+                                    .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            // TODO: 3/23/2016 import the file!
+                                            try {
+                                                String[] importedSlugs = AppContext.getTranslator().importArchive(archiveFile);
+                                                if (importedSlugs.length > 0) {
+                                                    // TODO: 3/23/2016 success!
+                                                    HomeActivity.this.notifyDatasetChanged();
+                                                } else {
+                                                    // TODO: 3/23/2016 nothing could be imported
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            } finally {
+                                                FileUtils.deleteQuietly(archiveFile);
+                                                HomeActivity.this.finish();
+                                            }
+                                        }
+                                    })
+                                    .show("confirm_import");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            if (tempFile != null) {
+                                FileUtils.deleteQuietly(tempFile);
+                            }
+                            finish();
+                        }
+                    }
+                }
+            }
+        }
+
         // open last project when starting the first time
-        if(savedInstanceState == null) {
+        if (savedInstanceState == null) {
             TargetTranslation targetTranslation = getLastOpened();
             if (targetTranslation != null) {
                 onItemClick(targetTranslation);
@@ -186,6 +265,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
     @Override
     public void onResume() {
         super.onResume();
+        AppContext.setLastFocusTargetTranslation(null);
 
         int numTranslations = mTranslator.getTargetTranslations().length;
         if(numTranslations > 0 && mFragment instanceof WelcomeFragment) {
@@ -261,6 +341,10 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                     ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                     snack.show();
                 }
+            } else if( NewTargetTranslationActivity.RESULT_ERROR == resultCode) {
+                Snackbar snack = Snackbar.make(findViewById(android.R.id.content), getResources().getString(R.string.error), Snackbar.LENGTH_LONG);
+                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                snack.show();
             }
         }
     }

@@ -297,7 +297,7 @@ public class ServerService extends NetworkService {
                 TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationSlug);
                 if(targetTranslation != null) {
                     try {
-                        targetTranslation.applyDefaultTranslatorsIfNoneSpecified();
+                        targetTranslation.setDefaultContributor(AppContext.getProfile().getNativeSpeaker());
                         translator.exportArchive(targetTranslation, exportFile);
                         if(exportFile.exists()) {
                             ServerSocket fileSocket = openWriteSocket(new OnSocketEventListener() {
@@ -379,6 +379,7 @@ public class ServerService extends NetworkService {
                 try {
                     JSONObject json = new JSONObject();
                     json.put("target_translation_id", targetTranslation.getId());
+                    json.put("package_version", TargetTranslation.PACKAGE_VERSION);
                     json.put("project_name", sourceTranslation.getProjectTitle());
                     json.put("target_language_name", targetTranslation.getTargetLanguageName());
                     json.put("progress", library.getTranslationProgress(targetTranslation));

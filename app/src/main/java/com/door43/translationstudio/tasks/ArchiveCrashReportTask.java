@@ -16,7 +16,7 @@ public class ArchiveCrashReportTask extends ManagedTask {
 
     @Override
     public void start() {
-        File dir = new File(AppContext.context().getExternalCacheDir(), AppContext.context().STACKTRACE_DIR);
+        File dir = new File(AppContext.getPublicDirectory(), AppContext.context().STACKTRACE_DIR);
         String[] files = dir.list(new FilenameFilter() {
             @Override
             public boolean accept(File file, String s) {

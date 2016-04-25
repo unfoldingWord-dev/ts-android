@@ -2,10 +2,8 @@ package com.door43.translationstudio.newui.newtranslation;
 
 import android.app.SearchManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v4.view.MenuItemCompat;
-import android.support.v7.app.AlertDialog;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
 import android.view.Menu;
@@ -14,10 +12,12 @@ import android.view.View;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
-import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.Resource;
+import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
@@ -25,12 +25,15 @@ import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.AppContext;
 
+import java.util.Locale;
+
 public class NewTargetTranslationActivity extends BaseActivity implements TargetLanguageListFragment.OnItemClickListener, ProjectListFragment.OnItemClickListener {
 
     public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
     public static final int RESULT_DUPLICATE = 2;
     private static final String STATE_TARGET_TRANSLATION_ID = "state_target_translation_id";
     private static final String STATE_TARGET_LANGUAGE_ID = "state_target_language_id";
+    public static final int RESULT_ERROR = 3;
     private TargetLanguage mSelectedTargetLanguage = null;
     private Searchable mFragment;
     private String mNewTargetTranslationId = null;
@@ -85,16 +88,28 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     @Override
     public void onItemClick(String projectId) {
         Translator translator = AppContext.getTranslator();
-        TargetTranslation existingTranslation = translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId));
+        // TRICKY: android only supports translating regular text projects
+        String resourceSlug = projectId.equals("obs") ? "obs" : Resource.REGULAR_SLUG;
+        TargetTranslation existingTranslation = translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId, TranslationType.TEXT, resourceSlug));
         if(existingTranslation == null) {
             // create new target translation
-            TargetTranslation targetTranslation = AppContext.getTranslator().createTargetTranslation(mSelectedTargetLanguage, projectId);
-            mNewTargetTranslationId = targetTranslation.getId();
+            SourceLanguage sourceLanguage = AppContext.getLibrary().getPreferredSourceLanguage(projectId, Locale.getDefault().getLanguage()); // get project name
+            // TODO: 3/2/2016 eventually the format will be specified in the project
+            SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(projectId, sourceLanguage.getId());
+            TargetTranslation targetTranslation = AppContext.getTranslator().createTargetTranslation(AppContext.getProfile().getNativeSpeaker(), mSelectedTargetLanguage, projectId, TranslationType.TEXT, resourceSlug, sourceTranslation.getFormat());
+            if(targetTranslation != null) {
+                mNewTargetTranslationId = targetTranslation.getId();
 
-            Intent data = new Intent();
-            data.putExtra(EXTRA_TARGET_TRANSLATION_ID, mNewTargetTranslationId);
-            setResult(RESULT_OK, data);
-            finish();
+                Intent data = new Intent();
+                data.putExtra(EXTRA_TARGET_TRANSLATION_ID, mNewTargetTranslationId);
+                setResult(RESULT_OK, data);
+                finish();
+            } else {
+                AppContext.getTranslator().deleteTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId, TranslationType.TEXT, resourceSlug));
+                Intent data = new Intent();
+                setResult(RESULT_ERROR, data);
+                finish();
+            }
         } else {
             // that translation already exists
             Intent data = new Intent();

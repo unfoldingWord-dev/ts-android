@@ -238,8 +238,6 @@
     <string name="waiting_for_device">Waiting for device</string>
     <string name="label_back">Back</string>
     <string name="bug_report">Describe the problem you are experiencing</string>
-    <!-- @deprecated -->
-    <string name="terms_additional">And you must agree to the statement of faith and translation guidelines.</string>
     <string name="project_library">Library</string>
     <string name="title_verse">Verse</string>
     <string name="title_note">Note</string>
@@ -247,8 +245,6 @@
     <string name="label_name">Name</string>
     <string name="label_email">Email</string>
     <string name="label_phone">Phone</string>
-    <string name="contact_form_description">Please provide your contact information. This will be securely transferred to the server when you publish</string>
-    <string name="profile_information_required">Please provide your name (or pseudonym) and email address.</string>
     <string name="verse_out_of_bounds">Choose a verse between <xliff:g example="1" id="number">%1$s</xliff:g> and <xliff:g example="100" id="number">%2$s</xliff:g></string>
     <string name="no_key_terms">There are no Words</string>
     <string name="title_activity_developer">Developer Tools</string>
@@ -342,11 +338,11 @@
     <string name="confirm">Confirm</string>
     <string name="selected">Selected</string>
     <string name="available">Available</string>
-    <string name="action_translations">My Translations</string>
+    <string name="action_translations">Home</string>
     <string name="publish">Publish</string>
     <string name="backup">Backup</string>
     <string name="attached_files">Attached files</string>
-    <string name="requires_internet">This will use your internet connection</string>
+    <string name="requires_internet">Requires internet access</string>
     <string name="input_required">Input cannot be empty</string>
     <string name="dismiss">Dismiss</string>
     <string name="done">Done</string>
@@ -379,10 +375,10 @@
     <string name="email">Email Address</string>
     <string name="phone">Phone Number</string>
     <string name="profile">Profile</string>
-    <string name="enter_profile_defaults">Enter default profile information</string>
+    <string name="default_translator">Default translator name</string>
     <string name="project_title_complex">Project: <xliff:g example="Genesis" id="project">%1$s</xliff:g></string>
     <!-- A warning shown, when publishing, indicating that names/pseudonyms (but not email or phone number) are published in the catealog -->
-    <string name="publishing_privacy_notice">Your name or pseudonym will be published along with your translation in the unfoldingWord catalog. We do not publish your email address or phone number.</string>
+    <string name="publishing_privacy_notice">Your name or pseudonym will be published along with your translation in the unfoldingWord catalog.</string>
     <string name="publish_to_unfoldingword">Publish your project directly to unfoldingWord</string>
     <string name="checking_for_updates">Checking for updates</string>
     <string name="download">Download</string>
@@ -410,7 +406,7 @@
     <string name="long_click_to_drag">Tap and hold to drag</string>
     <string name="feedback">Feedback</string>
     <string name="import_from_sd">Import from SD Card</string>
-    <string name="backup_online">Backup Online (requires internet)</string>
+    <string name="backup_to_door43">Backup to Door43</string>
     <string name="translation_export_failed">Translation could not be exported</string>
     <string name="invalid_file">Not a valid file</string>
     <string name="software_licenses" translatable="false">
@@ -643,4 +639,59 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="draft_translation_exists">A draft of this translation is available</string>
     <string name="print_failed">Failed to print</string>
     <string name="printing">Printing</string>
+    <string name="label_undo">Undo</string>
+    <string name="label_redo">Redo</string>
+    <string name="restored_to_time">Restored to %s</string>
+    <string name="restoring_end">Reached End of Archive</string>
+    <string name="title_add_footnote">Add Footnote</string>
+    <string name="add_footnote_title">Title:</string>
+    <string name="add_footnote">Footnote:</string>
+    <string name="add_footnote_title_prompt">Enter Title</string>
+    <string name="add_footnote_prompt">Enter Footnote</string>
+    <string name="title_footnote_invalid">Invalid Footnote</string>
+    <string name="footnote_confirm_delete">Are you sure you want to delete footnote?</string>
+    <string name="footnote_label">Footnote</string>
+    <string name="footnote_title_empty">Footnote Title cannot be empty</string>
+    <string name="footnote_message_empty">Footnote cannot be empty</string>
+    <string name="who_translated_notice">Who contributed to this translation?</string>
+    <string name="privacy_notice">Privacy Notice</string>
+    <string name="need_translator_notice">Please add a contributor</string>
+    <string name="duplicate_native_speaker">A contributor with that name has already been added</string>
+    <string name="edit_contributor">Edit Contributor</string>
+    <string name="registration_failure">Registration Failed. PLease check your internet connection</string>
+    <string name="auth_failure_retry">Authentication Failed. Retry?</string>
+    <string name="registering_keys">Registering with server</string>
+    <string name="invalidate_keys" translatable="false">Invalidate SSH Keys</string>
+    <string name="invalidate_keys_description" translatable="false">Sets keys invalid for auth testing</string>
+    <string name="person_agrees_with_licenses">This person has agreed to the License Agreement, Statement of Faith, and Translation Guidelines</string>
+    <string name="error_importing_unsupported_target_translation">The  translation of <xliff:g example="Open Bible Stories" id="project_name">%1$s</xliff:g> into <xliff:g example="Afaraf" id="language_name">%2$s</xliff:g> was created by a different version of <xliff:g example="translationStudio" id="app_name">%3$s</xliff:g> and cannot be opened. Please update your app and try again.</string>
+    <string name="version">Version</string>
+    <string name="username">login name</string>
+    <string name="password">password</string>
+    <string name="password_confirm">re-type password</string>
+    <string name="logging_in">Logging in</string>
+    <string name="double_check_credentials">Double check your credentials and try again</string>
+    <string name="passwords_mismatch">Passwords do not match</string>
+    <string name="contributors">Contributors</string>
+    <string name="show_passwords">Show Passwords</string>
+    <string name="hide_passwords">Hide Passwords</string>
+    <string name="log_out">Log out</string>
+    <string name="gogs_username_already_exists">That username already exists</string>
+    <string name="registration_failed">Your account could not be created.</string>
+    <string name="title_door43_account_required">Door43 Account Required</string>
+    <string name="door43_account_required">You must connect to a Door43 account first.</string>
+    <string name="login_doo43">Login with Door43 Account</string>
+    <string name="register_door43">Create new Door43 Account</string>
+    <string name="create_offline_profile">Create offline Account</string>
+    <string name="still_possible_to_register_door43">You can still create or login to a Door43 account later</string>
+    <string name="title_connect_door43">Connect To Door43</string>
+    <string name="gogs_public_key_name">ts-android</string>
+    <string name="restore_failed">The translation could not be restored</string>
+    <string name="import_from_door43">Import from Door43</string>
+    <string name="restore_from_door43">Restore from Door43</string>
+    <string name="title_chunk_conflicts">Chunk Conflicts</string>
+    <string name="chunk_conflict_description">A conflict was found between the translation on Door43 and your device.</string>
+    <string name="review_conflicts">Review differences</string>
+    <string name="keep_server_changes">Keep server changes</string>
+    <string name="keep_local_changes">Keep my changes</string>
 </resources>

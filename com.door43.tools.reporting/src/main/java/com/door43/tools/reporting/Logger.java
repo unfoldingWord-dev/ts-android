@@ -2,8 +2,6 @@ package com.door43.tools.reporting;
 
 import android.util.Log;
 
-import org.apache.commons.io.FileUtils;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;

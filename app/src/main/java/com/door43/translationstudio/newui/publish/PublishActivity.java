@@ -290,7 +290,7 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
         updateIndicatorsForStep(mCurrentStep);
         switch(mCurrentStep) {
             case STEP_PROFILE:
-                mFragment = new ProfileFragment();
+                mFragment = new TranslatorsFragment();
                 break;
             case STEP_REVIEW:
                 mFragment = new ReviewFragment();
@@ -306,6 +306,13 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
 
         Bundle args = getIntent().getExtras();
         String sourceTranslationId = AppContext.getSelectedSourceTranslationId(mTargetTranslation.getId());
+        // TRICKY: if the user has not chosen a source translation (this is an empty translation) the id will be null
+        if(sourceTranslationId == null) {
+            SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(mTargetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+            if(sourceTranslation != null) {
+                sourceTranslationId = sourceTranslation.getId();
+            }
+        }
         args.putSerializable(PublishStepFragment.ARG_SOURCE_TRANSLATION_ID, sourceTranslationId);
         args.putBoolean(PublishStepFragment.ARG_PUBLISH_FINISHED, mPublishFinished);
         mFragment.setArguments(args);

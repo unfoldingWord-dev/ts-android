@@ -19,10 +19,6 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.home.HomeActivity;
 import com.door43.translationstudio.AppContext;
 
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -32,7 +28,6 @@ import java.util.TimerTask;
  */
 public class BackupService extends Service {
     private final Timer sTimer = new Timer();
-    private boolean mFirstRun = true;
     private static boolean sRunning = false;
 
     @Override
@@ -56,17 +51,15 @@ public class BackupService extends Service {
         int backupIntervalMinutes = Integer.parseInt(pref.getString(SettingsActivity.KEY_PREF_BACKUP_INTERVAL, getResources().getString(R.string.pref_default_backup_interval)));
         if(backupIntervalMinutes > 0) {
             int backupInterval = backupIntervalMinutes * 60 * 1000;
+            int delay = 60 * 1000; // wait a minute for the app to finish booting
             Logger.i(this.getClass().getName(), "Backups running every " + backupIntervalMinutes + " minute/s");
             sRunning = true;
             sTimer.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
-                    if (!mFirstRun) {
-                        runBackup();
-                    }
-                    mFirstRun = false;
+                    runBackup();
                 }
-            }, 0, backupInterval);
+            }, delay, backupInterval);
             return START_STICKY;
         } else {
             Logger.i(this.getClass().getName(), "Backups are disabled");
@@ -105,7 +98,7 @@ public class BackupService extends Service {
 
             // commit pending changes
             try {
-                t.commit();
+                t.commitSync();
             } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "Failed to commit changes before backing up", e);
                 continue;
@@ -113,56 +106,10 @@ public class BackupService extends Service {
 
             // run backup if there are translations
             if(t.numTranslated() > 0) {
-
-                // retreive commit hash
-                String tag;
                 try {
-                    tag = t.getCommitHash();
+                    backupPerformed = AppContext.backupTargetTranslation(t, false) ? true : backupPerformed;
                 } catch (Exception e) {
-                    Logger.w(this.getClass().getName(), "Failed to read commit hash", e);
-                    continue;
-                }
-
-                // check if backup is required
-                if (tag != null) {
-                    File primaryBackupDir = new File(AppContext.getPublicDirectory(), "backups/" + t.getId() + "/");
-                    File primaryBackupFile = new File(primaryBackupDir, tag + "." + Translator.ARCHIVE_EXTENSION);
-                    File downloadBackupDir = new File(AppContext.getPublicDownloadsDirectory(), "backups/" + t.getId() + "/");
-                    File downloadBackupFile = new File(downloadBackupDir, tag + "." + Translator.ARCHIVE_EXTENSION);
-                    // e.g. ../../backups/uw-obs-de/[commit hash].tstudio
-                    if (!downloadBackupFile.exists()) {
-
-                        // peform backup
-                        File archive = new File(AppContext.getPublicDownloadsDirectory(), t.getId() + ".temp." + Translator.ARCHIVE_EXTENSION);
-                        try {
-                            t.applyDefaultTranslatorsIfNoneSpecified();
-                            translator.exportArchive(t, archive);
-                        } catch (Exception e) {
-                            Logger.e(this.getClass().getName(), "Failed to export the target translation " + t.getId(), e);
-                            continue;
-                        }
-                        if (archive.exists() && archive.isFile()) {
-                            // move into backup
-                            FileUtils.deleteQuietly(downloadBackupDir);
-                            FileUtils.deleteQuietly(primaryBackupDir);
-                            downloadBackupDir.mkdirs();
-                            primaryBackupDir.mkdirs();
-                            try {
-                                // backup to downloads directory
-                                FileUtils.copyFile(archive, downloadBackupFile);
-                                // backup to a slightly less public area (used for auto restore)
-                                FileUtils.copyFile(archive, primaryBackupFile);
-                                backupPerformed = true;
-                            } catch (IOException e) {
-                                Logger.e(this.getClass().getName(), "Failed to copy the backup archive for target translation: " + t.getId(), e);
-                            }
-                            archive.delete();
-                        } else {
-                            Logger.w(this.getClass().getName(), "Failed to export the target translation: " + t.getId());
-                        }
-                    }
-                } else {
-                    Logger.w(this.getClass().getName(), "Could not find the commit hash");
+                    Logger.e(this.getClass().getName(), "Failed to backup the target translation " + t.getId(), e);
                 }
             }
         }

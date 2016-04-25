@@ -4,7 +4,11 @@ package com.door43.translationstudio.core;
  * Represents different text formats
  */
 public enum TranslationFormat {
+    USFM("usfm"),
+    MARKDOWN("markdown"),
+    @Deprecated
     DEFAULT("default"),
+    @Deprecated
     USX("usx");
 
     TranslationFormat(String s) {
