@@ -1,11 +1,14 @@
 package com.door43.translationstudio.newui.newlanguage;
 
 import android.content.Context;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.BaseAdapter;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
@@ -115,6 +118,22 @@ public class NewLanguagePageAdapter extends BaseAdapter {
         mContentsView = listView;
     }
 
+   /**
+     * go through children of listView and update their enable state
+     * @param exceptView - view to skip (likely the dependent question view)
+     */
+    private void updateDisplayedQuestions(View exceptView) {
+
+        if(mContentsView != null) {
+            for (int i = 0; i < mContentsView.getChildCount(); i++) {
+                View v = mContentsView.getChildAt(i);
+                if ((v != null) && (v != exceptView)) {
+                    setEnableForView(v);
+                }
+            }
+        }
+    }
+
     /**
      * determine if this view should be enabled and update enable state
      * @param v
@@ -127,6 +146,20 @@ public class NewLanguagePageAdapter extends BaseAdapter {
                 enableQuestion(v, holder, shouldEnable(item));
             }
         }
+    }
+
+    /**
+     * checks to see if there are other views that are dependent on this view.
+     * @param id
+     * @return
+     */
+    private boolean hasDependencies(long id) {
+        for (NewLanguageQuestion question : mQuestions) {
+            if(question.conditionalID == id) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -188,13 +221,34 @@ public class NewLanguagePageAdapter extends BaseAdapter {
 
             holder.question.setText(item.question);
 
+            final boolean hasDependencies = hasDependencies(item.id);
+            final View thisView = v;
+
             enableQuestion(v, holder, shouldEnable(item));
 
             if (item.type == NewLanguageQuestion.QuestionType.INPUT_TYPE_BOOLEAN) {
                 holder.radioButtonYes.setChecked(item.isBooleanAnswerTrue());
+                holder.radioButtonYes.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        setCheckedState(isChecked, true, item, hasDependencies, thisView);
+                    }
+                });
+
                 holder.radioButtonNo.setChecked(item.isBooleanAnswerFalse());
-             } else {
-                holder.answer.setHint(item.helpText);
+                holder.radioButtonNo.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        setCheckedState(isChecked, false, item, hasDependencies, thisView);
+                    }
+                });
+
+            } else {
+                String help = item.helpText == null ? "" : item.helpText;
+                if(help.length() < 10) {
+                    help += "          ";
+                }
+                holder.answer.setHint(help);
                 holder.answer.setText(item.getAnswerNotNull());
 
                 holder.answer.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -207,10 +261,40 @@ public class NewLanguagePageAdapter extends BaseAdapter {
                         }
                     }
                 });
+
+                holder.answer.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                        boolean intiallyEmpty = item.isAnswerEmpty();
+                        item.answer = s.toString();
+                        boolean currentlyEmpty = item.isAnswerEmpty();
+                        boolean emptyStateChanged = (intiallyEmpty != currentlyEmpty);
+
+                        if (hasDependencies && emptyStateChanged) {
+                            updateDisplayedQuestions(thisView);
+                        }
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {}
+                });
+
             }
         }
 
         return v;
+    }
+
+    private void setCheckedState(boolean clickedYes, boolean newAnswer, NewLanguageQuestion item, boolean hasDependencies, View thisView) {
+        if(clickedYes) {
+            item.setAnswer(newAnswer);
+            if (hasDependencies) {
+                updateDisplayedQuestions(thisView);
+            }
+        }
     }
 
     /**

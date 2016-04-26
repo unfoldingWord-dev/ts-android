@@ -235,6 +235,10 @@ public class NewLanguageQuestion {
                         return f;
                     }
                 }
+
+                if("string".equalsIgnoreCase(name)) { // alternate for string type
+                    return QuestionType.INPUT_TYPE_STRING;
+                }
             }
             return null;
         }
