@@ -83,7 +83,7 @@ public class NewLanguageAPI {
                     String questionaireID = language.getString(API_QUESTIONNAIRE_ID);
                     if(sourceLangID.equals(langSlug)) {
                         JSONArray questionsStr = language.getJSONArray(API_QUESTIONS);
-                        packageQuestions(Integer.valueOf(questionaireID), questionsStr);
+                        return packageQuestions(Integer.valueOf(questionaireID), questionsStr);
                     }
                 }
             }
@@ -111,7 +111,7 @@ public class NewLanguageAPI {
                 JSONObject question = questions.getJSONObject(j);
                 int sort = Integer.valueOf(question.getString(API_SORT));
 
-                while(questionList.size() <= j) {  // make sure item will fit
+                while(questionList.size() <= sort) {  // make sure item will fit
                     questionList.add(null);
                 }
 
@@ -135,11 +135,18 @@ public class NewLanguageAPI {
                 int id = Integer.valueOf(question.getString(API_ID));
 
                 int k = j + 1;
-                if(isNextQuestionAdjacent( questionList, id, k)) {
+                JSONObject nextQuestion = getNextDependentQuestion( questionList, id, k);
+                if(nextQuestion != null) {
+
+                    if(mPageData.length() > 1) {
+                        pushPage();
+                    }
+
                     addQuestion(question);
+                    addQuestion(nextQuestion);
                     int lastPos = k;
-                    lastPos = getDependentQuestions(questionList, j, id, k, lastPos);
-                    j = lastPos - 1; //skip over the dependent questions
+                    lastPos = getDependentQuestions(questionList, id, k+1, lastPos);
+                    j = lastPos; //skip over the dependent questions
                     continue;
                 }
 
@@ -168,18 +175,12 @@ public class NewLanguageAPI {
         return null;
     }
 
-    private int getDependentQuestions(List<JSONObject> questionList, int j, int id, int k, int lastPos) throws Exception {
-        if(mPageData.length() > 0) {
-            pushPage();
-        }
-
-        addQuestion(questionList.get(k));
-
-        // get all the dependent questions
-        for (k = j + 2; k < questionList.size(); k++) {
-            if(isNextQuestionAdjacent( questionList, id, k)) {
+    private int getDependentQuestions(List<JSONObject> questionList, int id, int k, int lastPos) throws Exception {
+        for (; k < questionList.size(); k++) {
+            JSONObject nextQuestion = getNextDependentQuestion( questionList, id, k);
+            if(nextQuestion != null) {
                 lastPos = k;
-                addQuestion(questionList.get(k));
+                addQuestion(nextQuestion);
             } else {
                 break;
             }
@@ -189,25 +190,26 @@ public class NewLanguageAPI {
         return lastPos;
     }
 
-    private boolean isNextQuestionAdjacent(List<JSONObject> questionList, int id, int pos) throws Exception {
-        if(pos < questionList.size()) {
-            return false;
+    private JSONObject getNextDependentQuestion(List<JSONObject> questionList, int id, int pos) throws Exception {
+        if(pos >= questionList.size()) {
+            return null;
         }
 
         JSONObject questionNext = questionList.get(pos);
 
         // find adjacent dependencies
-        Object depends_on = questionNext.get(API_DEPENDS_ON);
-        if (depends_on == null) {
-            return false;
+        long dependsOn;
+        try {
+            dependsOn = questionNext.getLong(API_DEPENDS_ON);
+        } catch (Exception e) {
+            dependsOn = -1;
         }
 
-        int dependsOn = (Integer) depends_on;
         if (id != dependsOn) {
-            return false;
+            return null;
         }
 
-        return true;
+        return questionNext;
     }
 
     private void addQuestion(JSONObject question) throws JSONException {
@@ -216,7 +218,14 @@ public class NewLanguageAPI {
         String helpText = question.getString(API_HELP);
         boolean required = question.getBoolean(API_REQUIRED);
         String inputType = question.getString(API_INPUT_TYPE);
-        long dependsOn = question.getLong(API_DEPENDS_ON);
+
+        long dependsOn;
+        try {
+            dependsOn = question.getLong(API_DEPENDS_ON);
+        } catch (Exception e) {
+            dependsOn = -1;
+        }
+
         addQuestion(Long.valueOf(id), questionString, helpText, inputType, required, dependsOn);
     }
 
