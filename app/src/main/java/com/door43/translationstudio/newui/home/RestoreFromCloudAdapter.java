@@ -62,33 +62,6 @@ public class RestoreFromCloudAdapter extends BaseAdapter {
 
         holder.setRepository(getItem(position));
 
-        ??
-        String targetTranslationID = getItem(position);
-        holder.projectName.setText(targetTranslationID);
-        holder.targetLanguageName.setText("");
-        try {
-            String projectSlug = TargetTranslation.getProjectSlugFromId(targetTranslationID);
-            String targetLanguageSlug = TargetTranslation.getTargetLanguageSlugFromId(targetTranslationID);
-
-            Project p = library.getProject(projectSlug, Locale.getDefault().getLanguage());
-            if(p != null) {
-                holder.projectName.setText(p.name);
-            }
-            TargetLanguage tl = library.getTargetLanguage(targetLanguageSlug);
-            if(tl != null) {
-                holder.targetLanguageName.setText(tl.name);
-            } else if(NewLanguagePackage.isNewLanguageCode(targetLanguageSlug)) { // see if temp language
-                holder.targetLanguageName.setText(targetLanguageSlug); // default to just show temp language code
-
-                String name = lookupNewLanguageName(targetLanguageSlug); // see if language is already loaded and get name
-                if(name != null) {
-                    holder.targetLanguageName.setText(name + "-" + targetLanguageSlug);
-                }
-            }
-        } catch (StringIndexOutOfBoundsException e) {
-            e.printStackTrace();
-        }
-
         return v;
     }
 
@@ -149,6 +122,12 @@ public class RestoreFromCloudAdapter extends BaseAdapter {
                     TargetLanguage tl = library.getTargetLanguage(targetLanguageSlug);
                     if (tl != null) {
                         targetLanguageName.setText(tl.name);
+                    } else if(NewLanguagePackage.isNewLanguageCode(targetLanguageSlug)) { // see if temp language
+                        targetLanguageName.setText(targetLanguageSlug); // default to just show temp language code
+                        String name = lookupNewLanguageName(targetLanguageSlug); // see if language is already loaded and get name
+                        if(name != null) {
+                            targetLanguageName.setText(name + "-" + targetLanguageSlug);
+                        }
                     }
                 } catch (StringIndexOutOfBoundsException e) {
                     e.printStackTrace();

@@ -1,11 +1,18 @@
 package com.door43.translationstudio.newui.newlanguage;
 
+import android.content.Context;
+
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.core.NewLanguageQuestion;
 
+import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by blm on 3/21/16.
@@ -18,7 +25,22 @@ public class NewLanguageAPI {
     public static final String QUESTIONNAIRE_META_KEY = "meta";
     public static final String QUESTIONAIRE_DATA_KEY = "data";
     public static final String QUESTIONNAIRE_ORDER_KEY = "order";
+
     public static final String TAG = NewLanguageAPI.class.getSimpleName();
+    public static final int QUESTIONS_PER_PAGE = 3;
+
+    public static final String API_LANGUAGES = "languages";
+    public static final String API_SLUG = "slug";
+    public static final String API_QUESTIONNAIRE_ID = "questionnaire_id";
+    public static final String API_ID = "id";
+    public static final String API_REQUIRED = "required";
+    public static final String API_TEXT = "text";
+    public static final String API_HELP = "help";
+    public static final String API_INPUT_TYPE = "input_type";
+    public static final String API_SORT = "sort";
+    public static final String API_DEPENDS_ON = "depends_on";
+    public static final String API_QUESTIONS = "questions";
+
     private JSONArray mPageData;
     private JSONArray mPageMeta;
 
@@ -28,11 +50,50 @@ public class NewLanguageAPI {
         
     }
     
-    public JSONObject readQuestionnaire() {
-        return createTestQuestionaire(); // TODO: 3/21/16 change to read from API
+    public JSONObject readQuestionnaire(Context context, String sourceLangID) {
+        try {
+            InputStream is = context.getResources().getAssets().open("newLanguageQuestionaire.json");
+            if(is != null) {
+                String data = IOUtils.toString(is);
+                return getQuestionsFromApi(data, sourceLangID);
+            }
+        } catch (Exception e) {
+            Logger.e(TAG,"Error getting questionnaire",e);
+        }
+
+        return null;
     }
 
-    private JSONObject createTestQuestionaire() {
+    /**
+     * parse API new language data into new object.  Returns null if error.
+     *
+     * @param jsonStr
+     * @return
+     */
+    private JSONObject getQuestionsFromApi(String jsonStr, String sourceLangID) {
+        List<NewLanguageQuestion> questions = new ArrayList<>();
+        try {
+            JSONObject apiData = new JSONObject(jsonStr);
+            JSONArray languages = apiData.getJSONArray(API_LANGUAGES);
+
+            if(languages != null) {
+                for (int i = 0; i < languages.length(); i++) {
+                    JSONObject language = languages.getJSONObject(i);
+                    String langSlug = language.getString(API_SLUG);
+                    String questionaireID = language.getString(API_QUESTIONNAIRE_ID);
+                    if(sourceLangID.equals(langSlug)) {
+                        JSONArray questionsStr = language.getJSONArray(API_QUESTIONS);
+                        packageQuestions(Integer.valueOf(questionaireID), questionsStr);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Logger.e(TAG, "Failed to parse data", e);
+        }
+        return null;
+    }
+
+    private JSONObject packageQuestions(int questionaireID, JSONArray questions) {
         JSONObject questionnaire = new JSONObject();
         mData = new JSONArray();
         mMeta = new JSONArray();
@@ -44,60 +105,60 @@ public class NewLanguageAPI {
             mPageData = new JSONArray();
             mPageMeta = new JSONArray();
 
-            addQuestion(1, "1. What do you call your language?", "(Enter Answer Here)", INPUT_TYPE_STRING, required);
-            addQuestion(2, "1.1  Does that have a special meaning?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(3, "1.2  Do you have other names for your language?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            pushPage();
+            // group dependencies
+            List<JSONObject> questionList = new ArrayList<>();
+            for (int j = 0; j < questions.length(); j++) {
+                JSONObject question = questions.getJSONObject(j);
+                int sort = Integer.valueOf(question.getString(API_SORT));
 
-            addQuestion(4, "2. Other people have a different name for your language?", "(Enter Answer Here)", INPUT_TYPE_BOOLEAN, required);
-            addQuestion(5, "2.1. What do they call it?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(6, "2.2. Who calls it that?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(7, "2.3. Does that have a special meaning?  What does it mean?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            pushPage();
+                while(questionList.size() <= j) {  // make sure item will fit
+                    questionList.add(null);
+                }
 
-            addQuestion(8, "3. Where else do people speak just the same way as you do?", "(Enter Answer Here)", INPUT_TYPE_STRING, required);
-            addQuestion(9, "4. Where do people speak just a little bit differently?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(10, "4.1. Have you yourself gone to these places?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(11, "4.2. Do people from there also come here?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(12, "4.3. Do you have a name for this other dialect in your own language?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            pushPage();
+                questionList.set(sort, question);
+            }
 
-            addQuestion(13, "5. Where do people speak very differently?", "(Enter Answer Here)", INPUT_TYPE_STRING, required);
-            addQuestion(14, "5.1. How much of their speech do you understand? (few words, main ideas, most, all)", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(15, "5.2. Have you yourself gone to these places?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(16, "5.3. Do people from there come here?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(17, "5.4. Do you have a name for this other dialect in your own language?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            pushPage();
+            // remove missing items
+            int j = 0;
+            while ( j < questionList.size() ) {
+                JSONObject question = questionList.get(j);
+                if( null == question) {
+                    questionList.remove(j);
+                } else {
+                    j++;
+                }
+            }
 
-            addQuestion(18, "6. Where do people speak your own language the most purely?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(19, "6.1. Why do you say that is the most pure?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(20, "6.2. Have you yourself gone to these places?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(21, "6.3. Do people from there come here?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            pushPage();
+            for ( j = 0; j < questionList.size(); j++) {
+                JSONObject question = questionList.get(j);
 
-            addQuestion(22, "7. Where is your language spoken badly?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(23, "7.1. Why do you say that it is spoken badly?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(24, "7.2. Have you yourself gone to these places?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(25, "7.3. Have people from there come here?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            pushPage();
+                int id = Integer.valueOf(question.getString(API_ID));
 
-            addQuestion(26, "8. What do you call the language people speak in [large place, 1-2  day’s march distance]?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(27, "8.1. Do people understand you when you speak your language there?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(28, "8.2. If a man from there come here, can everybody understand his speech?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            addQuestion(29, "8.3. Even the women and children?", "(Enter Answer Here)", INPUT_TYPE_STRING, not_required);
-            pushPage();
+                int k = j + 1;
+                if(isNextQuestionAdjacent( questionList, id, k)) {
+                    addQuestion(question);
+                    int lastPos = k;
+                    lastPos = getDependentQuestions(questionList, j, id, k, lastPos);
+                    j = lastPos - 1; //skip over the dependent questions
+                    continue;
+                }
 
-            addQuestion(30, "9. What other places do you travel to?", "(Enter Answer Here)", INPUT_TYPE_STRING, required);
-            addQuestion(31, "10. Do many people travel outside from here?", "(Enter Answer Here)", INPUT_TYPE_STRING, required);
-            pushPage();
+                addQuestion(question);
 
-            questionnaire.put(QUESTIONNAIRE_ID_KEY, 1010);
+                if(mPageData.length() >= QUESTIONS_PER_PAGE) {
+                    pushPage();
+                }
+            }
+
+            if(mPageData.length() > 0) {
+                pushPage();
+            }
+
+            questionnaire.put(QUESTIONNAIRE_ID_KEY, questionaireID);
             JSONObject meta = new JSONObject();
             meta.put(QUESTIONNAIRE_ORDER_KEY, mMeta);
             questionnaire.put(QUESTIONNAIRE_META_KEY, meta);
             questionnaire.put(QUESTIONAIRE_DATA_KEY, mData);
-//            String formatted = questionnaire.toString(2);
-//            Logger.i(TAG,"created: " + formatted);
             return questionnaire;
 
         } catch (Exception e) {
@@ -107,11 +168,63 @@ public class NewLanguageAPI {
         return null;
     }
 
-    private void addQuestion(long id, String question, String helpText, String inputType, boolean required) throws JSONException {
-        addQuestion( id, question, helpText, inputType, required, Long.toString(id));
+    private int getDependentQuestions(List<JSONObject> questionList, int j, int id, int k, int lastPos) throws Exception {
+        if(mPageData.length() > 0) {
+            pushPage();
+        }
+
+        addQuestion(questionList.get(k));
+
+        // get all the dependent questions
+        for (k = j + 2; k < questionList.size(); k++) {
+            if(isNextQuestionAdjacent( questionList, id, k)) {
+                lastPos = k;
+                addQuestion(questionList.get(k));
+            } else {
+                break;
+            }
+        }
+
+        pushPage();
+        return lastPos;
+    }
+
+    private boolean isNextQuestionAdjacent(List<JSONObject> questionList, int id, int pos) throws Exception {
+        if(pos < questionList.size()) {
+            return false;
+        }
+
+        JSONObject questionNext = questionList.get(pos);
+
+        // find adjacent dependencies
+        Object depends_on = questionNext.get(API_DEPENDS_ON);
+        if (depends_on == null) {
+            return false;
+        }
+
+        int dependsOn = (Integer) depends_on;
+        if (id != dependsOn) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private void addQuestion(JSONObject question) throws JSONException {
+        String id = question.getString(API_ID);
+        String questionString = question.getString(API_TEXT);
+        String helpText = question.getString(API_HELP);
+        boolean required = question.getBoolean(API_REQUIRED);
+        String inputType = question.getString(API_INPUT_TYPE);
+        long dependsOn = question.getLong(API_DEPENDS_ON);
+        addQuestion(Long.valueOf(id), questionString, helpText, inputType, required, dependsOn);
+    }
+
+    private void addQuestion(long id, String question, String helpText, String inputType, boolean required, long dependsOn) throws JSONException {
+        addQuestion( id, question, helpText, inputType, required, dependsOn, Long.toString(id));
     }
     
-    private void addQuestion(long id, String question, String helpText, String inputType, boolean required, String query) throws JSONException {
+    private void addQuestion(long id, String question, String helpText, String inputType, boolean required, long dependsOn, String query) throws JSONException {
         JSONObject questionData = new JSONObject();
         questionData.put(NewLanguageQuestion.ID_KEY,id);
         questionData.put(NewLanguageQuestion.QUESTION_KEY,question);
@@ -119,6 +232,7 @@ public class NewLanguageAPI {
         questionData.put(NewLanguageQuestion.INPUT_TYPE_KEY,inputType);
         questionData.put(NewLanguageQuestion.REQUIRED_KEY,required);
         questionData.put(NewLanguageQuestion.QUERY_KEY,query);
+        questionData.put(NewLanguageQuestion.CONDITIONAL_ID_KEY,dependsOn);
         mPageData.put(questionData);
         mPageMeta.put(id);
     }

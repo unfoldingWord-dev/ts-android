@@ -101,7 +101,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         mQuestionPages = new ArrayList<>();
 
         try {
-            JSONObject questionnaire = (new NewLanguageAPI()).readQuestionnaire();
+            JSONObject questionnaire = (new NewLanguageAPI()).readQuestionnaire(this, "en"); // TODO: 4/25/16 get actual language
 
             JSONArray questionsJson = questionnaire.getJSONArray(NewLanguageAPI.QUESTIONAIRE_DATA_KEY);
             JSONObject questionaireMeta = questionnaire.getJSONObject(NewLanguageAPI.QUESTIONNAIRE_META_KEY);

@@ -34,6 +34,7 @@ public class NewLanguagePackage {
     private static final String TEMP_LANGUAGE_PREFIX = "qaa-x-";
     public static final String NEW_LANGUAGES_FOLDER = "new_languages";
     public static final String NEW_LANGUAGE_FILE_EXTENSION = ".json";
+
     private static int NEW_LANGUAGE_NAME_ID = 1;
 
     final public long questionaireID;

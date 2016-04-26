@@ -147,38 +147,6 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
                         dialog.show(ft, Door43LoginDialog.TAG);
                         return;
                     }
-                    ??
-//                    try {
-//                        final Handler hand = new Handler(Looper.getMainLooper());
-//                        mTargetTranslation.setLegacyPublished(false, new TargetTranslation.OnCommitListener() {
-//                            @Override
-//                            public void onCommit(boolean success) {
-//                                if (!success) {
-//                                    hand.post(new Runnable() {
-//                                        @Override
-//                                        public void run() {
-//                                            notifyBackupFailed(mTargetTranslation);
-//                                        }
-//                                    });
-//                                } else {
-//
-//                                    NewLanguagePackage newLang = NewLanguagePackage.open(mTargetTranslation.getPath());
-//                                    if(newLang != null) {
-//                                        // TODO: 3/23/16 add upload to new language API in tD
-//                                    }
-//
-//                                    // begin upload
-//                                    UploadTargetTranslationTask task = new UploadTargetTranslationTask(mTargetTranslation);
-//                                    mTaskWatcher.watch(task);
-//                                    TaskManager.addTask(task, UploadTargetTranslationTask.TASK_ID);
-//                                }
-//                            }
-//                        });
-//                    } catch (Exception e) {
-//                        Logger.e(BackupDialog.class.getName(), "Failed to mark target translation " + mTargetTranslation.getId() + " as not publishable", e);
-//                        notifyBackupFailed(mTargetTranslation);
-//                        return;
-//                    }
 
                     PullTargetTranslationTask task = new PullTargetTranslationTask(targetTranslation);
                     taskWatcher.watch(task);
@@ -373,6 +341,8 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
             if(status == PullTargetTranslationTask.Status.UP_TO_DATE
                     || status == PullTargetTranslationTask.Status.UNKNOWN) {
                 Logger.i(this.getClass().getName(), "Changes on the server were synced with " + targetTranslation.getId());
+
+                // TODO: 4/25/16 need to add upload of new language to API
 
                 PushTargetTranslationTask pushtask = new PushTargetTranslationTask(targetTranslation, false);
                 taskWatcher.watch(pushtask);
