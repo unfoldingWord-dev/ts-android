@@ -88,12 +88,21 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         super.onSaveInstanceState(outState);
     }
 
+    /**
+     * create new questions page with these questions
+     * @param page
+     * @return
+     */
     private List<NewLanguageQuestion> pushPage(List<NewLanguageQuestion> page) {
         mQuestionPages.add(page);
         List<NewLanguageQuestion> newPage = new ArrayList<>();
         return newPage;
     }
 
+    /**
+     * get questionnaire from API
+     * @return
+     */
     private List<List<NewLanguageQuestion>> readQuestionnaire() {
         HashMap<Long,Integer> idIndex = new HashMap<>();
         List<NewLanguageQuestion> questions = new ArrayList<>();
@@ -135,6 +144,12 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         return mQuestionPages;
    }
 
+    /**
+     * extract answers to questions from JSON
+     * @param answersJson
+     * @param page
+     * @return
+     */
     private boolean parseAnswers(String answersJson, int page) {
         try {
             List<NewLanguageQuestion> mPage = mQuestionPages.get(page);
@@ -163,10 +178,15 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         return true;
     }
 
-    public static List<NewLanguageQuestion> parseJsonStrIntoQuestions(String answersJson) {
+    /**
+     * parse json string of questions into list of new language questions
+     * @param questionsJson
+     * @return
+     */
+    public static List<NewLanguageQuestion> parseJsonStrIntoQuestions(String questionsJson) {
         List<NewLanguageQuestion> page = null;
         try {
-            JSONArray answers = new JSONArray(answersJson);
+            JSONArray answers = new JSONArray(questionsJson);
             page = parseJsonIntoQuestions( answers);
 
         } catch (Exception e) {
@@ -177,6 +197,11 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         return page;
     }
 
+    /**
+     * parse json questions into list of new language questions
+     * @param answers
+     * @return
+     */
     public static List<NewLanguageQuestion> parseJsonIntoQuestions(JSONArray answers) {
         List<NewLanguageQuestion> page = new ArrayList<>();
         try {
@@ -197,6 +222,11 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         return page;
     }
 
+    /**
+     * parse json string of question pages into list of question pages
+     * @param pagesJsonStr
+     * @return
+     */
     public static List<List<NewLanguageQuestion>> parseJsonStrIntoPages(String pagesJsonStr) {
         List<List<NewLanguageQuestion>> pages = new ArrayList<>();
         try {
@@ -340,10 +370,10 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
                 mergedQuestions.addAll(questions);
             }
 
-            NewLanguagePackage newLang = NewLanguagePackage.newInstance(mQuestionnaireID, mergedQuestions, "uncertain"); // TODO: 3/17/16 need to determine region for new language
+            NewLanguagePackage newLang = NewLanguagePackage.newInstance(mQuestionnaireID, mergedQuestions);
             String newLanguageDataStr = newLang.toJson().toString(2);
 
-//            String apiString = newLang.newLanguageAPIString();
+            JSONObject api = NewLanguageAPI.getPostData(newLang); // TODO: 4/28/16 remove
 
             Intent data = new Intent();
             data.putExtra(NewTargetTranslationActivity.EXTRA_NEW_LANGUAGE_DATA, newLanguageDataStr);
@@ -389,32 +419,6 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         mFragment.setArguments(args);
         mFragment.setOnEventListener(this);
         getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
-    }
-
-    private class ViewHolder {
-        private final LinearLayout mButtonLayout;
-        private final ImageView mActiveView;
-        private final ImageView mDoneView;
-        private final TextView mStepView;
-        private final TextView mTitleView;
-        private final ImageView mCircleView;
-        private boolean mVisited = false;
-        private boolean mDone;
-
-        public ViewHolder(LinearLayout buttonLayout, ImageView activeView, ImageView doneView, TextView stepView, TextView titleView, ImageView circleView) {
-            mButtonLayout = buttonLayout;
-            mActiveView = activeView;
-            mDoneView = doneView;
-            mStepView = stepView;
-            mTitleView = titleView;
-            mCircleView = circleView;
-        }
-
-        public void onSaveInstanceState(Bundle out) {
-            out.putInt(STATE_LANGUAGE_STEP, mCurrentPage);
-            out.putBoolean(STATE_NEW_LANGUAGE_FINISHED, mLanguageFinished);
-            out.putString(STATE_NEW_LANGUAGE_QUESTIONS, getQuestionPages().toString());
-        }
     }
 }
 

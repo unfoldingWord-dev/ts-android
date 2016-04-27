@@ -6,13 +6,14 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 
 /**
- * Created by blm on 3/17/16.
+ * For getting target language and will also support new languages
  */
 public class TargetLanguageUtility {
 
     /**
      * get target language from database with fallback to creating it directly if new language
      * @param targetLanguageID
+     * @param targetTranslationID
      * @return
      */
     // TODO: 3/17/16 this is temporary implementation until we determine a long term solution
@@ -24,7 +25,7 @@ public class TargetLanguageUtility {
             if(targetTranslation != null) {
                 NewLanguagePackage newlang = NewLanguagePackage.open(targetTranslation.getPath());
                 if (newlang != null) {
-                    TargetLanguage targetNewLanguage = new TargetLanguage(targetTranslation.getId(), targetTranslation.getTargetLanguageName(), newlang.region, targetTranslation.getTargetLanguageDirection());
+                    TargetLanguage targetNewLanguage = new TargetLanguage(targetTranslation.getId(), targetTranslation.getTargetLanguageName(), "uncertain", targetTranslation.getTargetLanguageDirection());
                     return targetNewLanguage;
                 }
             }

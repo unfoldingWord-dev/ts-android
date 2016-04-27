@@ -17,64 +17,70 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Created by blm on 3/17/16.
+ * Class for writing and parsing new language answer file
  */
 public class NewLanguagePackage {
-    public static final String REQUEST_ID = "request_id";
-    public static final String TEMP_CODE = "temp_code";
-    public static final String QUESTIONAIRE_ID = "questionaire_id";
-    public static final String ANSWERS = "answers";
     public static final String LANGUAGE_NAME = "language_name";
 
     public static final String QUESTION_ANSWER = "answer";
-    public static final String QUESTION_ID = "question_id";
     public static final String TAG = NewLanguagePackage.class.getSimpleName();
-    public static final String REGION = "region";
 
     private static final String TEMP_LANGUAGE_PREFIX = "qaa-x-";
     public static final String NEW_LANGUAGES_FOLDER = "new_languages";
     public static final String NEW_LANGUAGE_FILE_EXTENSION = ".json";
-    public static final String APP = "app";
-    public static final String TS_ANDROID = "ts-android";
-    public static final String REQUESTER = "requester";
 
+    public static final String API_APP = "app";
+    public static final String API_REQUESTER = "requester";
+    public static final String API_QUESTIONNAIRE_ID = "questionnaire_id";
+    public static final String API_ANSWER = "text";
+    public static final String API_QUESTION_ID = "question_id";
+    public static final String API_REQUEST_ID = "request_id";
+    public static final String API_TEMP_CODE = "temp_code";
+    public static final String API_ANSWERS = "answers";
+
+    public static final String NEW_LANGUAGE_FILE_NAME = "new_language.json";
     private static int NEW_LANGUAGE_NAME_ID = 0;
+    public static final String TS_ANDROID = "ts-android";
 
     final public long questionaireID;
     final public String tempLanguageCode;
     final public String languageName;
-    final public String region;
     final public String requestID;
+    final public String requester;
+    final public String app;
     final public JSONArray answersJson;
 
-    NewLanguagePackage(long questionaireID, String tempLanguageCode, String languageName, String requestID, String region, JSONArray answersJson) {
+    NewLanguagePackage(long questionaireID, String tempLanguageCode, String languageName, String requestID, String requestor, String app, JSONArray answersJson) {
         this.questionaireID = questionaireID;
         this.tempLanguageCode = tempLanguageCode;
         this.requestID = requestID;
         this.answersJson = answersJson;
-        this.region = region;
         this.languageName = languageName;
+        this.requester = requestor;
+        this.app = app;
     }
 
     /**
      * create a new language instance
      *
+     * @param questionaireID
      * @param questions
-     * @param region
      * @return
      * @throws JSONException
      */
-    public static NewLanguagePackage newInstance(long questionaireID, List<NewLanguageQuestion> questions, String region) throws JSONException {
+    public static NewLanguagePackage newInstance(long questionaireID, List<NewLanguageQuestion> questions) throws JSONException {
 
         JSONArray answers = questionsToJsonAnswers(questions);
         String requestID = UUID.randomUUID().toString();
         String tempLanguageCode = getNewLanguageCode();
+        String requestor = AppContext.getProfile().getFullName();
+        String app = TS_ANDROID;
 
         JSONObject nameAnswer = getQuestionForID(answers, NewLanguagePackage.NEW_LANGUAGE_NAME_ID);
         if(nameAnswer != null) {
             String nLangName = nameAnswer.getString(NewLanguagePackage.QUESTION_ANSWER);
             if(!nLangName.isEmpty()) {
-                NewLanguagePackage newLang = new NewLanguagePackage(questionaireID, tempLanguageCode, nLangName, requestID, region, answers);
+                NewLanguagePackage newLang = new NewLanguagePackage(questionaireID, tempLanguageCode, nLangName, requestID, requestor, app, answers);
                 return newLang;
             }
         }
@@ -92,18 +98,15 @@ public class NewLanguagePackage {
         try {
             JSONObject newLanguageData = new JSONObject(jsonStr);
 
-            String requestID = newLanguageData.getString(REQUEST_ID);
-            String tempLanguageCode = newLanguageData.getString(TEMP_CODE);
+            String requestID = newLanguageData.getString(API_REQUEST_ID);
+            String tempLanguageCode = newLanguageData.getString(API_TEMP_CODE);
             String languageName = newLanguageData.getString(LANGUAGE_NAME);
-            long questionaireID = newLanguageData.getLong(QUESTIONAIRE_ID);
-            JSONArray answers = newLanguageData.getJSONArray(ANSWERS);
+            long questionaireID = newLanguageData.getLong(API_QUESTIONNAIRE_ID);
+            String requester = newLanguageData.getString(API_REQUESTER);
+            String app = newLanguageData.getString(API_APP);
+            JSONArray answers = newLanguageData.getJSONArray(API_ANSWERS);
 
-            String region = "uncertain";
-            if (newLanguageData.has(REGION)) {
-                region = newLanguageData.getString(REGION);
-            }
-
-            return new NewLanguagePackage(questionaireID, tempLanguageCode, languageName, requestID, region, answers);
+            return new NewLanguagePackage(questionaireID, tempLanguageCode, languageName, requestID, requester, app, answers);
 
         } catch (Exception e) {
             Logger.e(TAG, "Failed to parse data", e);
@@ -119,12 +122,12 @@ public class NewLanguagePackage {
      */
     public JSONObject toJson() throws JSONException {
         JSONObject newLanguageData = new JSONObject();
-        newLanguageData.put(REQUEST_ID, requestID);
-        newLanguageData.put(TEMP_CODE, tempLanguageCode);
+        newLanguageData.put(API_REQUEST_ID, requestID);
+        newLanguageData.put(API_TEMP_CODE, tempLanguageCode);
         newLanguageData.put(LANGUAGE_NAME, languageName);
-        newLanguageData.put(QUESTIONAIRE_ID, questionaireID);
-        newLanguageData.put(ANSWERS, answersJson);
-        newLanguageData.put(REGION, region);
+        newLanguageData.put(API_ANSWERS, answersJson);
+        newLanguageData.put(API_REQUESTER, requester);
+        newLanguageData.put(API_APP, app);
         return newLanguageData;
     }
 
@@ -169,7 +172,7 @@ public class NewLanguagePackage {
      */
     public static NewLanguagePackage open(File sourceFolder) {
 
-        File newLanguageFile = new File(sourceFolder, "new_language.json");
+        File newLanguageFile = new File(sourceFolder, NEW_LANGUAGE_FILE_NAME);
         return openFile(newLanguageFile);
     }
 
@@ -216,47 +219,10 @@ public class NewLanguagePackage {
 
         for (int i = 0; i < answersJson.length(); i++) {
             JSONObject answer = answersJson.getJSONObject(i);
-            long qid = answer.getLong(QUESTION_ID);
+            long qid = answer.getLong(API_QUESTION_ID);
             if (qid == id) {
                 return answer;
             }
-        }
-
-        return null;
-    }
-
-    /**
-     * generate the JSON to be posted to new language API
-     * @return
-     */
-    public JSONObject newLanguageAPI()  {
-        try {
-            JSONObject apis = new JSONObject();
-            apis.put(REQUEST_ID, AppContext.udid());
-            apis.put(TEMP_CODE, getNewLanguageCode());
-            apis.put(QUESTIONAIRE_ID, questionaireID);
-            apis.put(APP, TS_ANDROID);
-            Profile profile = AppContext.getProfile();
-            apis.put(REQUESTER, profile.gogsUser.getUsername());
-            apis.put(ANSWERS, answersJson);
-            return apis;
-
-        } catch (Exception e) {
-            Logger.e(TAG, "Could not create API json", e);
-        }
-
-        return null;
-    }
-
-    /**
-     * generate the JSON to be posted to new language API
-     * @return
-     */
-    public String newLanguageAPIString()  {
-        JSONObject api = newLanguageAPI();
-
-        if(api != null) {
-            return api.toString();
         }
 
         return null;
@@ -274,7 +240,7 @@ public class NewLanguagePackage {
 
         for (NewLanguageQuestion question : questions) {
             JSONObject answer = new JSONObject();
-            answer.put(QUESTION_ID, question.id);
+            answer.put(API_QUESTION_ID, question.id);
             answer.put(QUESTION_ANSWER, question.answer);
 //            answer.put("question", question.question); // useful for debugging
             questionsJson.put(answer);

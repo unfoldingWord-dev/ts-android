@@ -8,7 +8,7 @@ import com.door43.translationstudio.newui.newlanguage.NewLanguageAPI;
 import org.json.JSONObject;
 
 /**
- * Created by blm on 3/9/16.
+ * Wrapper for new language questions
  */
 public class NewLanguageQuestion {
     public static final String ID_KEY = "id";
@@ -22,6 +22,7 @@ public class NewLanguageQuestion {
 
     public static final String TRUE_STR = "YES";
     public static final String FALSE_STR = "NO";
+    public static final String TAG = NewLanguageQuestion.class.getSimpleName();
 
     public long id;
     public String question;
@@ -32,6 +33,17 @@ public class NewLanguageQuestion {
     public String query;
     public long conditionalID = -1;
 
+    /**
+     * constructor
+     * @param id
+     * @param question
+     * @param helpText
+     * @param answer
+     * @param type
+     * @param required
+     * @param query
+     * @param conditionalID
+     */
     public NewLanguageQuestion(long id, String question, String helpText, String answer,
                                QuestionType type, boolean required, String query,
                                long conditionalID) {
@@ -133,7 +145,7 @@ public class NewLanguageQuestion {
             results.put(QUERY_KEY, query);
             return results;
         } catch (Exception e) {
-
+            Logger.e(TAG,"json creation error", e);
         }
         return null;
     }
@@ -152,7 +164,7 @@ public class NewLanguageQuestion {
             results.put(REQUIRED_KEY, required);
             results.put(QUERY_KEY, query);
         } catch (Exception e) {
-
+            Logger.e(TAG,"json parse error", e);
         }
         return results;
     }

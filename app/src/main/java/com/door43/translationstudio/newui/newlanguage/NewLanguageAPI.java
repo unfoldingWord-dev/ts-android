@@ -3,6 +3,8 @@ package com.door43.translationstudio.newui.newlanguage;
 import android.content.Context;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.core.NewLanguagePackage;
 import com.door43.translationstudio.core.NewLanguageQuestion;
 
 import org.apache.commons.io.IOUtils;
@@ -29,36 +31,66 @@ public class NewLanguageAPI {
     public static final String TAG = NewLanguageAPI.class.getSimpleName();
     public static final int QUESTIONS_PER_PAGE = 3;
 
-    public static final String API_LANGUAGES = "languages";
-    public static final String API_SLUG = "slug";
-    public static final String API_QUESTIONNAIRE_ID = "questionnaire_id";
-    public static final String API_ID = "id";
-    public static final String API_REQUIRED = "required";
-    public static final String API_TEXT = "text";
-    public static final String API_HELP = "help";
-    public static final String API_INPUT_TYPE = "input_type";
-    public static final String API_SORT = "sort";
-    public static final String API_DEPENDS_ON = "depends_on";
-    public static final String API_QUESTIONS = "questions";
+    public static final String API_READ_LANGUAGES = "languages";
+    public static final String API_READ_QUESTIONS_LANGUAGE_SLUG = "slug";
+    public static final String API_READ_QUESTION_ID = "id";
+    public static final String API_READ_QUESTION_TEXT = "text";
+    public static final String API_READ_HELP = "help";
+    public static final String API_READ_INPUT_TYPE = "input_type";
+    public static final String API_READ_SORT = "sort";
+    public static final String API_READ_DEPENDS_ON = "depends_on";
+    public static final String API_READ_QUESTIONS = "questions";
+    public static final String API_READ_REQUIRED = "required";
 
     private JSONArray mPageData;
     private JSONArray mPageMeta;
 
     private JSONArray mData;
     private JSONArray mMeta;
+
     public NewLanguageAPI() {
         
     }
     
     public JSONObject readQuestionnaire(Context context, String sourceLangID) {
         try {
-            InputStream is = context.getResources().getAssets().open("newLanguageQuestionaire.json");
+            InputStream is = context.getResources().getAssets().open("newLanguageQuestionaire.json"); // // TODO: 4/28/16 replace with library call
             if(is != null) {
                 String data = IOUtils.toString(is);
-                return getQuestionsFromApi(data, sourceLangID);
+                return parseQuestionsFromApi(data, sourceLangID);
             }
         } catch (Exception e) {
             Logger.e(TAG,"Error getting questionnaire",e);
+        }
+
+        return null;
+    }
+
+    /**
+     * generate the data to be posted to new language API
+     * @return
+     */
+    public static JSONObject getPostData(NewLanguagePackage pkg)  {
+        try {
+            JSONObject apis = new JSONObject();
+            apis.put(NewLanguagePackage.API_REQUEST_ID, AppContext.udid());
+            apis.put(NewLanguagePackage.API_TEMP_CODE, pkg.tempLanguageCode);
+            apis.put(NewLanguagePackage.API_QUESTIONNAIRE_ID, pkg.questionaireID+"");
+            apis.put(NewLanguagePackage.API_APP, pkg.app);
+            apis.put(NewLanguagePackage.API_REQUESTER, pkg.requester);
+            JSONArray answers = new JSONArray();
+            for (int i = 0; i < pkg.answersJson.length(); i++) {
+                JSONObject answer = pkg.answersJson.getJSONObject(i);
+                JSONObject obj = new JSONObject();
+                obj.put(NewLanguagePackage.API_QUESTION_ID, answer.getInt(NewLanguagePackage.API_QUESTION_ID));
+                obj.put(NewLanguagePackage.API_ANSWER, answer.optString(NewLanguagePackage.QUESTION_ANSWER,""));
+                answers.put(obj);
+            }
+            apis.put(NewLanguagePackage.API_ANSWERS, answers.toString());
+            return apis;
+
+        } catch (Exception e) {
+            Logger.e(TAG, "Could not create API json", e);
         }
 
         return null;
@@ -70,19 +102,19 @@ public class NewLanguageAPI {
      * @param jsonStr
      * @return
      */
-    private JSONObject getQuestionsFromApi(String jsonStr, String sourceLangID) {
+    private JSONObject parseQuestionsFromApi(String jsonStr, String sourceLangID) {
         List<NewLanguageQuestion> questions = new ArrayList<>();
         try {
             JSONObject apiData = new JSONObject(jsonStr);
-            JSONArray languages = apiData.getJSONArray(API_LANGUAGES);
+            JSONArray languages = apiData.getJSONArray(API_READ_LANGUAGES);
 
             if(languages != null) {
                 for (int i = 0; i < languages.length(); i++) {
                     JSONObject language = languages.getJSONObject(i);
-                    String langSlug = language.getString(API_SLUG);
-                    String questionaireID = language.getString(API_QUESTIONNAIRE_ID);
+                    String langSlug = language.getString(API_READ_QUESTIONS_LANGUAGE_SLUG);
+                    String questionaireID = language.getString(NewLanguagePackage.API_QUESTIONNAIRE_ID);
                     if(sourceLangID.equals(langSlug)) {
-                        JSONArray questionsStr = language.getJSONArray(API_QUESTIONS);
+                        JSONArray questionsStr = language.getJSONArray(API_READ_QUESTIONS);
                         return packageQuestions(Integer.valueOf(questionaireID), questionsStr);
                     }
                 }
@@ -109,7 +141,7 @@ public class NewLanguageAPI {
             List<JSONObject> questionList = new ArrayList<>();
             for (int j = 0; j < questions.length(); j++) {
                 JSONObject question = questions.getJSONObject(j);
-                int sort = Integer.valueOf(question.getString(API_SORT));
+                int sort = Integer.valueOf(question.getString(API_READ_SORT));
 
                 while(questionList.size() <= sort) {  // make sure item will fit
                     questionList.add(null);
@@ -132,7 +164,7 @@ public class NewLanguageAPI {
             for ( j = 0; j < questionList.size(); j++) {
                 JSONObject question = questionList.get(j);
 
-                int id = Integer.valueOf(question.getString(API_ID));
+                int id = Integer.valueOf(question.getString(API_READ_QUESTION_ID));
 
                 int k = j + 1;
                 JSONObject nextQuestion = getNextDependentQuestion( questionList, id, k);
@@ -198,13 +230,7 @@ public class NewLanguageAPI {
         JSONObject questionNext = questionList.get(pos);
 
         // find adjacent dependencies
-        long dependsOn;
-        try {
-            dependsOn = questionNext.getLong(API_DEPENDS_ON);
-        } catch (Exception e) {
-            dependsOn = -1;
-        }
-
+        long dependsOn = questionNext.optLong(API_READ_DEPENDS_ON, -1);
         if (id != dependsOn) {
             return null;
         }
@@ -213,19 +239,12 @@ public class NewLanguageAPI {
     }
 
     private void addQuestion(JSONObject question) throws JSONException {
-        String id = question.getString(API_ID);
-        String questionString = question.getString(API_TEXT);
-        String helpText = question.getString(API_HELP);
-        boolean required = question.getBoolean(API_REQUIRED);
-        String inputType = question.getString(API_INPUT_TYPE);
-
-        long dependsOn;
-        try {
-            dependsOn = question.getLong(API_DEPENDS_ON);
-        } catch (Exception e) {
-            dependsOn = -1;
-        }
-
+        String id = question.getString(API_READ_QUESTION_ID);
+        String questionString = question.getString(API_READ_QUESTION_TEXT);
+        String helpText = question.getString(API_READ_HELP);
+        boolean required = question.getBoolean(API_READ_REQUIRED);
+        String inputType = question.getString(API_READ_INPUT_TYPE);
+        long dependsOn = question.optLong(API_READ_DEPENDS_ON, -1);
         addQuestion(Long.valueOf(id), questionString, helpText, inputType, required, dependsOn);
     }
 
