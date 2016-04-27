@@ -22,7 +22,8 @@
                 android:id="@+id/scroll_view"
 
                 android:scrollIndicators="right"
-                android:fastScrollAlwaysVisible="true">
+                android:fastScrollAlwaysVisible="true"
+                android:scrollbars="vertical">
 
                 <LinearLayout
                     android:layout_width="match_parent"

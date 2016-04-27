@@ -288,8 +288,8 @@ public class NewLanguagePageAdapter extends BaseAdapter {
         return v;
     }
 
-    private void setCheckedState(boolean clickedYes, boolean newAnswer, NewLanguageQuestion item, boolean hasDependencies, View thisView) {
-        if(clickedYes) {
+    private void setCheckedState(boolean checked, boolean newAnswer, NewLanguageQuestion item, boolean hasDependencies, View thisView) {
+        if(checked) {
             item.setAnswer(newAnswer);
             if (hasDependencies) {
                 updateDisplayedQuestions(thisView);

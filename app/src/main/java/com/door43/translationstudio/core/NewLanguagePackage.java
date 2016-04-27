@@ -35,7 +35,7 @@ public class NewLanguagePackage {
     public static final String NEW_LANGUAGES_FOLDER = "new_languages";
     public static final String NEW_LANGUAGE_FILE_EXTENSION = ".json";
 
-    private static int NEW_LANGUAGE_NAME_ID = 1;
+    private static int NEW_LANGUAGE_NAME_ID = 0;
 
     final public long questionaireID;
     final public String tempLanguageCode;
