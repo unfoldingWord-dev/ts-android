@@ -343,6 +343,9 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
                 Logger.i(this.getClass().getName(), "Changes on the server were synced with " + targetTranslation.getId());
 
                 // TODO: 4/25/16 need to add upload of new language to API
+//                File path = targetTranslation.getPath();
+//                NewLanguagePackage newLanguage = NewLanguagePackage.open(path);
+//                String post = newLanguage.newLanguageAPIString();
 
                 PushTargetTranslationTask pushtask = new PushTargetTranslationTask(targetTranslation, false);
                 taskWatcher.watch(pushtask);

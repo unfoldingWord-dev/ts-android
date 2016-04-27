@@ -343,6 +343,8 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
             NewLanguagePackage newLang = NewLanguagePackage.newInstance(mQuestionnaireID, mergedQuestions, "uncertain"); // TODO: 3/17/16 need to determine region for new language
             String newLanguageDataStr = newLang.toJson().toString(2);
 
+//            String apiString = newLang.newLanguageAPIString();
+
             Intent data = new Intent();
             data.putExtra(NewTargetTranslationActivity.EXTRA_NEW_LANGUAGE_DATA, newLanguageDataStr);
             setResult(RESULT_OK, data);

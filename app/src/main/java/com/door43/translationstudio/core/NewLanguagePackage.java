@@ -34,6 +34,9 @@ public class NewLanguagePackage {
     private static final String TEMP_LANGUAGE_PREFIX = "qaa-x-";
     public static final String NEW_LANGUAGES_FOLDER = "new_languages";
     public static final String NEW_LANGUAGE_FILE_EXTENSION = ".json";
+    public static final String APP = "app";
+    public static final String TS_ANDROID = "ts-android";
+    public static final String REQUESTER = "requester";
 
     private static int NEW_LANGUAGE_NAME_ID = 0;
 
@@ -223,6 +226,43 @@ public class NewLanguagePackage {
     }
 
     /**
+     * generate the JSON to be posted to new language API
+     * @return
+     */
+    public JSONObject newLanguageAPI()  {
+        try {
+            JSONObject apis = new JSONObject();
+            apis.put(REQUEST_ID, AppContext.udid());
+            apis.put(TEMP_CODE, getNewLanguageCode());
+            apis.put(QUESTIONAIRE_ID, questionaireID);
+            apis.put(APP, TS_ANDROID);
+            Profile profile = AppContext.getProfile();
+            apis.put(REQUESTER, profile.gogsUser.getUsername());
+            apis.put(ANSWERS, answersJson);
+            return apis;
+
+        } catch (Exception e) {
+            Logger.e(TAG, "Could not create API json", e);
+        }
+
+        return null;
+    }
+
+    /**
+     * generate the JSON to be posted to new language API
+     * @return
+     */
+    public String newLanguageAPIString()  {
+        JSONObject api = newLanguageAPI();
+
+        if(api != null) {
+            return api.toString();
+        }
+
+        return null;
+    }
+
+    /**
      * extracts answer data from list of questions.  This is in new_language.json format
      *
      * @param questions
@@ -236,7 +276,7 @@ public class NewLanguagePackage {
             JSONObject answer = new JSONObject();
             answer.put(QUESTION_ID, question.id);
             answer.put(QUESTION_ANSWER, question.answer);
-            answer.put("question", question.question); // useful for debugging
+//            answer.put("question", question.question); // useful for debugging
             questionsJson.put(answer);
         }
 
