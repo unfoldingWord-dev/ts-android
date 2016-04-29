@@ -4,9 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
@@ -37,6 +34,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
     public static final String EXTRA_CALLING_ACTIVITY = "extra_calling_activity";
     public static final String EXTRA_NEW_LANGUAGE_QUESTIONS = "extra_new_language_questions";
     public static final String STATE_NEW_LANGUAGE_QUESTION_ID = "state_new_language_question_id";
+    public static final String EXTRA_NEW_LANGUAGE_QUESTIONS_JSON = "extra_new_language_questions_json";
 
     private int mCurrentPage = 0;
     public static final int ACTIVITY_HOME = 1001;
@@ -44,7 +42,6 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
     private NewLanguagePageFragment mFragment;
     private List<List<NewLanguageQuestion>> mQuestionPages;
     private long mQuestionnaireID = -1;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,7 +59,10 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
             mQuestionPages = parseJsonStrIntoPages(questions);
             mQuestionnaireID = savedInstanceState.getLong(STATE_NEW_LANGUAGE_QUESTION_ID, -1);
         } else {
-            mQuestionPages = readQuestionnaire();
+            Intent intent = getIntent();
+            Bundle args = intent.getExtras();
+            String questions = args.getString(EXTRA_NEW_LANGUAGE_QUESTIONS_JSON,null);
+            mQuestionPages = getQuestionPages(questions);
         }
 
         // inject fragments
@@ -82,7 +82,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
     protected void onSaveInstanceState(Bundle outState) {
         outState.putInt(STATE_LANGUAGE_STEP, mCurrentPage);
         outState.putBoolean(STATE_NEW_LANGUAGE_FINISHED, mLanguageFinished);
-        String questions = getQuestionPages().toString();
+        String questions = getQuestionPagesAsJson().toString();
         outState.putString(STATE_NEW_LANGUAGE_QUESTIONS, questions);
         outState.putLong(STATE_NEW_LANGUAGE_QUESTION_ID,mQuestionnaireID);
         super.onSaveInstanceState(outState);
@@ -103,14 +103,14 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
      * get questionnaire from API
      * @return
      */
-    private List<List<NewLanguageQuestion>> readQuestionnaire() {
+    private List<List<NewLanguageQuestion>> getQuestionPages(String questionsJsonStr) {
         HashMap<Long,Integer> idIndex = new HashMap<>();
         List<NewLanguageQuestion> questions = new ArrayList<>();
         List<NewLanguageQuestion> page = new ArrayList<>();
         mQuestionPages = new ArrayList<>();
 
         try {
-            JSONObject questionnaire = (new NewLanguageAPI()).readQuestionnaire(this, "en"); // TODO: 4/25/16 get actual language
+            JSONObject questionnaire = (new NewLanguageAPI()).readQuestionnaire(this, questionsJsonStr, "en"); // TODO: 4/25/16 get actual language
 
             JSONArray questionsJson = questionnaire.getJSONArray(NewLanguageAPI.QUESTIONAIRE_DATA_KEY);
             JSONObject questionaireMeta = questionnaire.getJSONObject(NewLanguageAPI.QUESTIONNAIRE_META_KEY);
@@ -254,10 +254,10 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
      * @param page
      * @return
      */
-    private JSONArray getQuestions(int page) {
+    private JSONArray getQuestionsForPage(int page) {
         try {
             List<NewLanguageQuestion> mPage = mQuestionPages.get(page);
-            return getQuestions(mPage);
+            return getQuestionsAsJson(mPage);
 
         } catch (Exception e) {
             Logger.w(TAG, "could not generate questions", e);
@@ -271,7 +271,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
      * @param questions
      * @return
      */
-    public static JSONArray getQuestions(List<NewLanguageQuestion> questions) {
+    public static JSONArray getQuestionsAsJson(List<NewLanguageQuestion> questions) {
         JSONArray answers = new JSONArray();
         if(null != questions) {
             try {
@@ -295,11 +295,11 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
      * get all questions in JSONArray format
      * @return
      */
-    private JSONArray getQuestionPages() {
+    private JSONArray getQuestionPagesAsJson() {
         JSONArray pages = new JSONArray();
         try {
             for (int i = 0; i < mQuestionPages.size(); i++) {
-                JSONArray page = getQuestions(i);
+                JSONArray page = getQuestionsForPage(i);
                 pages.put(page);
             }
 
@@ -409,13 +409,17 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
             mCurrentPage = page;
         }
 
+        String titleFormat = getResources().getString(R.string.new_lang_question_n);
+        String title = String.format(titleFormat, mCurrentPage + 1, mQuestionPages.size());
+        setTitle(title);
+
         mFragment = new NewLanguagePageFragment();
 
         Bundle args = getIntent().getExtras();
         args.putBoolean(NewLanguagePageFragment.ARG_NEW_LANG_FINISHED, mLanguageFinished);
         args.putBoolean(NewLanguagePageFragment.ARG_FIRST_PAGE, mCurrentPage == 0);
         args.putBoolean(NewLanguagePageFragment.ARG_LAST_PAGE, mCurrentPage == (mQuestionPages.size() - 1));
-        args.putString(NewLanguageActivity.EXTRA_NEW_LANGUAGE_QUESTIONS, getQuestions(mCurrentPage).toString());
+        args.putString(NewLanguageActivity.EXTRA_NEW_LANGUAGE_QUESTIONS, getQuestionsForPage(mCurrentPage).toString());
         mFragment.setArguments(args);
         mFragment.setOnEventListener(this);
         getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();

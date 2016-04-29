@@ -51,14 +51,24 @@ public class NewLanguageAPI {
     public NewLanguageAPI() {
         
     }
-    
-    public JSONObject readQuestionnaire(Context context, String sourceLangID) {
+
+    /**
+     * read and parse the questionnaire
+     * @param context
+     * @param questionsJsonStr - optional questions data - if null then data is fetched from API
+     * @param sourceLangID
+     * @return
+     */
+    public JSONObject readQuestionnaire(Context context, String questionsJsonStr, String sourceLangID) {
         try {
-            InputStream is = context.getResources().getAssets().open("newLanguageQuestionaire.json"); // // TODO: 4/28/16 replace with library call
-            if(is != null) {
-                String data = IOUtils.toString(is);
-                return parseQuestionsFromApi(data, sourceLangID);
+            if(questionsJsonStr == null) {
+                InputStream is = context.getResources().getAssets().open("newLanguageQuestionaire.json"); // // TODO: 4/28/16 replace with library call
+                if (is != null) {
+                    questionsJsonStr = IOUtils.toString(is);
+                }
             }
+            return parseQuestionsFromApi(questionsJsonStr, sourceLangID);
+
         } catch (Exception e) {
             Logger.e(TAG,"Error getting questionnaire",e);
         }
@@ -68,6 +78,7 @@ public class NewLanguageAPI {
 
     /**
      * generate the data to be posted to new language API
+     * @param pkg
      * @return
      */
     public static JSONObject getPostData(NewLanguagePackage pkg)  {
@@ -100,6 +111,7 @@ public class NewLanguageAPI {
      * parse API new language data into new object.  Returns null if error.
      *
      * @param jsonStr
+     * @param sourceLangID
      * @return
      */
     private JSONObject parseQuestionsFromApi(String jsonStr, String sourceLangID) {
@@ -115,7 +127,7 @@ public class NewLanguageAPI {
                     String questionaireID = language.getString(NewLanguagePackage.API_QUESTIONNAIRE_ID);
                     if(sourceLangID.equals(langSlug)) {
                         JSONArray questionsStr = language.getJSONArray(API_READ_QUESTIONS);
-                        return packageQuestions(Integer.valueOf(questionaireID), questionsStr);
+                        return splitQuestionsIntoPages(Integer.valueOf(questionaireID), questionsStr);
                     }
                 }
             }
@@ -125,7 +137,14 @@ public class NewLanguageAPI {
         return null;
     }
 
-    private JSONObject packageQuestions(int questionaireID, JSONArray questions) {
+    /**
+     * take the long list of questions and split into small pages
+     *
+     * @param questionaireID
+     * @param questions
+     * @return
+     */
+    private JSONObject splitQuestionsIntoPages(int questionaireID, JSONArray questions) {
         JSONObject questionnaire = new JSONObject();
         mData = new JSONArray();
         mMeta = new JSONArray();
@@ -167,7 +186,7 @@ public class NewLanguageAPI {
                 int id = Integer.valueOf(question.getString(API_READ_QUESTION_ID));
 
                 int k = j + 1;
-                JSONObject nextQuestion = getNextDependentQuestion( questionList, id, k);
+                JSONObject nextQuestion = getDependentQuestion( questionList, id, k);
                 if(nextQuestion != null) {
 
                     if(mPageData.length() > 1) {
@@ -207,9 +226,19 @@ public class NewLanguageAPI {
         return null;
     }
 
+    /**
+     * find the dependent questions that follow question id
+     *
+     * @param questionList
+     * @param id
+     * @param k
+     * @param lastPos
+     * @return
+     * @throws Exception
+     */
     private int getDependentQuestions(List<JSONObject> questionList, int id, int k, int lastPos) throws Exception {
         for (; k < questionList.size(); k++) {
-            JSONObject nextQuestion = getNextDependentQuestion( questionList, id, k);
+            JSONObject nextQuestion = getDependentQuestion( questionList, id, k);
             if(nextQuestion != null) {
                 lastPos = k;
                 addQuestion(nextQuestion);
@@ -222,7 +251,16 @@ public class NewLanguageAPI {
         return lastPos;
     }
 
-    private JSONObject getNextDependentQuestion(List<JSONObject> questionList, int id, int pos) throws Exception {
+    /**
+     * get the question if it is dependent on question id.  Otherwise return null.
+     *
+     * @param questionList
+     * @param id
+     * @param pos
+     * @return
+     * @throws Exception
+     */
+    private JSONObject getDependentQuestion(List<JSONObject> questionList, int id, int pos) throws Exception {
         if(pos >= questionList.size()) {
             return null;
         }
@@ -238,6 +276,11 @@ public class NewLanguageAPI {
         return questionNext;
     }
 
+    /**
+     * add question in json to list
+     * @param question
+     * @throws JSONException
+     */
     private void addQuestion(JSONObject question) throws JSONException {
         String id = question.getString(API_READ_QUESTION_ID);
         String questionString = question.getString(API_READ_QUESTION_TEXT);
@@ -248,10 +291,32 @@ public class NewLanguageAPI {
         addQuestion(Long.valueOf(id), questionString, helpText, inputType, required, dependsOn);
     }
 
+    /**
+     * add question to list
+     * @param id
+     * @param question
+     * @param helpText
+     * @param inputType
+     * @param required
+     * @param dependsOn
+     * @throws JSONException
+     */
     private void addQuestion(long id, String question, String helpText, String inputType, boolean required, long dependsOn) throws JSONException {
         addQuestion( id, question, helpText, inputType, required, dependsOn, Long.toString(id));
     }
-    
+
+    /**
+     * add question to list
+     *
+     * @param id
+     * @param question
+     * @param helpText
+     * @param inputType
+     * @param required
+     * @param dependsOn
+     * @param query
+     * @throws JSONException
+     */
     private void addQuestion(long id, String question, String helpText, String inputType, boolean required, long dependsOn, String query) throws JSONException {
         JSONObject questionData = new JSONObject();
         questionData.put(NewLanguageQuestion.ID_KEY,id);
@@ -264,7 +329,11 @@ public class NewLanguageAPI {
         mPageData.put(questionData);
         mPageMeta.put(id);
     }
-    
+
+    /**
+     * move current question list into a new page
+     * @throws JSONException
+     */
     private void pushPage( ) throws JSONException {
         for(int i = 0; i <mPageData.length(); i++) {
             mData.put(mPageData.getJSONObject(i));

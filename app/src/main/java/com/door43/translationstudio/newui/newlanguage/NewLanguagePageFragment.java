@@ -9,7 +9,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.NewLanguagePackage;
 import com.door43.translationstudio.core.NewLanguageQuestion;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BaseFragment;
@@ -88,7 +87,7 @@ public class NewLanguagePageFragment extends BaseFragment {
                 @Override
                 public void onClick(View v) {
                     saveAnswers();
-                    getListener().previousPage(NewLanguageActivity.getQuestions(mQuestions).toString());
+                    getListener().previousPage(NewLanguageActivity.getQuestionsAsJson(mQuestions).toString());
                 }
             });
         } else {
@@ -102,7 +101,7 @@ public class NewLanguagePageFragment extends BaseFragment {
     public void onSaveInstanceState(Bundle outState) {
         saveAnswers();
         cleanup();
-        String questionsJson = NewLanguageActivity.getQuestions(mQuestions).toString();
+        String questionsJson = NewLanguageActivity.getQuestionsAsJson(mQuestions).toString();
         outState.putString(NewLanguageActivity.EXTRA_NEW_LANGUAGE_QUESTIONS, questionsJson);
         outState.putInt(EXTRA_NEW_LANGUAGE_FOCUS_POSITION, mAdapter.getFocusedPosition());
         outState.putInt(EXTRA_NEW_LANGUAGE_SELECTION, mAdapter.getSelection());
@@ -246,7 +245,7 @@ public class NewLanguagePageFragment extends BaseFragment {
      * move to next page, or if last page then finished
      */
     private void doNext() {
-        String answers = NewLanguageActivity.getQuestions(mQuestions).toString();
+        String answers = NewLanguageActivity.getQuestionsAsJson(mQuestions).toString();
         if (mLastPage) {
             getListener().finishLanguageRequest(answers);
         } else {
