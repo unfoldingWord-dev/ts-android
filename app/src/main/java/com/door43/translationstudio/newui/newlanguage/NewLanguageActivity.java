@@ -13,6 +13,7 @@ import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -93,8 +94,8 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
      * @param page
      * @return
      */
-    private List<NewLanguageQuestion> pushPage(List<NewLanguageQuestion> page) {
-        mQuestionPages.add(page);
+    private static List<NewLanguageQuestion> pushPage(List<List<NewLanguageQuestion>> questionPages, List<NewLanguageQuestion> page) {
+        questionPages.add(page);
         List<NewLanguageQuestion> newPage = new ArrayList<>();
         return newPage;
     }
@@ -104,45 +105,65 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
      * @return
      */
     private List<List<NewLanguageQuestion>> getQuestionPages(String questionsJsonStr) {
-        HashMap<Long,Integer> idIndex = new HashMap<>();
-        List<NewLanguageQuestion> questions = new ArrayList<>();
-        List<NewLanguageQuestion> page = new ArrayList<>();
-        mQuestionPages = new ArrayList<>();
+        List<List<NewLanguageQuestion>> questionPages = new ArrayList<>();
 
         try {
             JSONObject questionnaire = (new NewLanguageAPI()).readQuestionnaire(this, questionsJsonStr, "en"); // TODO: 4/25/16 get actual language
-
-            JSONArray questionsJson = questionnaire.getJSONArray(NewLanguageAPI.QUESTIONAIRE_DATA_KEY);
-            JSONObject questionaireMeta = questionnaire.getJSONObject(NewLanguageAPI.QUESTIONNAIRE_META_KEY);
-            mQuestionnaireID = questionnaire.getLong(NewLanguageAPI.QUESTIONNAIRE_ID_KEY);
-            JSONArray questionaireOrder = questionaireMeta.getJSONArray(NewLanguageAPI.QUESTIONNAIRE_ORDER_KEY);
-
-            for(int i = 0; i < questionsJson.length(); i++) {
-
-                // get question
-                JSONObject questionJson = questionsJson.getJSONObject(i);
-                NewLanguageQuestion questionObj = NewLanguageQuestion.parse(questionJson);
-                questions.add(questionObj);
-                idIndex.put(questionObj.id, i);
-            }
-
-            for(int i = 0; i < questionaireOrder.length(); i++) {
-                JSONArray pageOrderJson = questionaireOrder.getJSONArray(i);
-                for(int j = 0; j < pageOrderJson.length(); j++) {
-                    Long id = pageOrderJson.getLong(j);
-                    int index = idIndex.get(id);
-                    page.add(questions.get(index));
-                }
-                page = pushPage(page);
-            }
+            mQuestionnaireID = getQuestionnaireID(questionnaire);
+            getQuestionPages(questionPages, questionnaire);
 
         } catch (Exception e) {
             Logger.e(TAG,"Error parsing questionnaire",e);
             return null;
         }
 
-        return mQuestionPages;
+        return questionPages;
    }
+
+    /**
+     * get questionaire ID number from json
+     * @param questionnaire
+     * @return
+     * @throws JSONException
+     */
+    public static long getQuestionnaireID(JSONObject questionnaire) throws JSONException {
+        return questionnaire.getLong(NewLanguageAPI.QUESTIONNAIRE_ID_KEY);
+    }
+
+    /**
+     * get questions from json and divide into pages
+     * @param questionPages
+     * @param questionnaire
+     * @throws JSONException
+     */
+    public static void getQuestionPages(List<List<NewLanguageQuestion>> questionPages, JSONObject questionnaire) throws JSONException {
+        HashMap<Long,Integer> idIndex = new HashMap<>();
+        List<NewLanguageQuestion> questions = new ArrayList<>();
+        List<NewLanguageQuestion> page = new ArrayList<>();
+
+        JSONArray questionsJson = questionnaire.getJSONArray(NewLanguageAPI.QUESTIONAIRE_DATA_KEY);
+        JSONObject questionaireMeta = questionnaire.getJSONObject(NewLanguageAPI.QUESTIONNAIRE_META_KEY);
+        JSONArray questionaireOrder = questionaireMeta.getJSONArray(NewLanguageAPI.QUESTIONNAIRE_ORDER_KEY);
+
+        for(int i = 0; i < questionsJson.length(); i++) {
+
+            // get question
+            JSONObject questionJson = questionsJson.getJSONObject(i);
+            NewLanguageQuestion questionObj = NewLanguageQuestion.parse(questionJson);
+            questions.add(questionObj);
+            idIndex.put(questionObj.id, i);
+        }
+
+        for(int i = 0; i < questionaireOrder.length(); i++) {
+            JSONArray pageOrderJson = questionaireOrder.getJSONArray(i);
+            for(int j = 0; j < pageOrderJson.length(); j++) {
+                Long id = pageOrderJson.getLong(j);
+                int index = idIndex.get(id);
+                page.add(questions.get(index));
+            }
+            page = pushPage(questionPages, page);
+        }
+    }
 
     /**
      * extract answers to questions from JSON
