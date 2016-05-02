@@ -73,14 +73,18 @@ public class NewLanguagePackage {
         JSONArray answers = questionsToJsonAnswers(questions);
         String requestID = UUID.randomUUID().toString();
         String tempLanguageCode = getNewLanguageCode();
-        String requestor = AppContext.getProfile().getFullName();
+        String requester = "";
+        Profile profile = AppContext.getProfile();
+        if(profile != null) {
+            requester = profile.getFullName();
+        }
         String app = TS_ANDROID;
 
         JSONObject nameAnswer = getQuestionForID(answers, NewLanguagePackage.NEW_LANGUAGE_NAME_ID);
         if(nameAnswer != null) {
             String nLangName = nameAnswer.getString(NewLanguagePackage.QUESTION_ANSWER);
             if(!nLangName.isEmpty()) {
-                NewLanguagePackage newLang = new NewLanguagePackage(questionaireID, tempLanguageCode, nLangName, requestID, requestor, app, answers);
+                NewLanguagePackage newLang = new NewLanguagePackage(questionaireID, tempLanguageCode, nLangName, requestID, requester, app, answers);
                 return newLang;
             }
         }

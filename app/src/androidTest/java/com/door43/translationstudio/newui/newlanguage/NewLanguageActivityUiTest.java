@@ -3,11 +3,9 @@ package com.door43.translationstudio.newui.newlanguage;
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
-import org.hamcrest.TypeSafeMatcher;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,7 +29,6 @@ import com.door43.translationstudio.core.NewLanguageQuestion;
 import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
 import com.door43.translationstudio.tasks.UploadCrashReportTask;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -40,19 +37,21 @@ import java.util.List;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.closeSoftKeyboard;
+import static android.support.test.espresso.action.ViewActions.scrollTo;
 import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.hasSibling;
 import static android.support.test.espresso.matcher.ViewMatchers.isAssignableFrom;
-import static android.support.test.espresso.matcher.ViewMatchers.withChild;
+import static android.support.test.espresso.matcher.ViewMatchers.isChecked;
 import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
+import static android.support.test.espresso.matcher.ViewMatchers.withHint;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.*;
@@ -67,6 +66,8 @@ public class NewLanguageActivityUiTest {
     List<List<NewLanguageQuestion>> mQuestionPages;
     long mQuestionnaireID;
     Context mAppContext;
+    Field mf_resultCode;
+    Field mf_resultData;
 
 
     @Rule
@@ -87,64 +88,33 @@ public class NewLanguageActivityUiTest {
     public void fillAllPages() throws Exception {
 
         //given
-        String fileName = "new_language/fullQuestionaire.json";
+        String fileName = "new_language/partialQuestionaire.json";
         Intent intent = getIntentForTestFile(fileName);
-        int pageCount = 11;
+        int pageCount = 4;
         int pageNum = 0;
         mActivityRule.launchActivity(intent);
         NewLanguageActivity currentActivity = mActivityRule.getActivity();
+        captureResultData();
         thenTitlePageCountShouldMatch(pageCount, pageNum);
         boolean expectedBoolean = true;
+        boolean hideKeyboard = true;
+        boolean requiredOnly = false;
+        boolean doDone = true;
 
         //when
-        fillAllPages(true, false, expectedBoolean);
+        fillAllPages(doDone, requiredOnly, expectedBoolean, hideKeyboard);
 
         //then
         int resultCode = getResultCode(currentActivity);
         String key = NewTargetTranslationActivity.EXTRA_NEW_LANGUAGE_DATA;
         JSONObject jsonData = getJsonData(currentActivity, key);
+        clearResultData();
         assertTrue("The result code is not ok. ", resultCode == Activity.RESULT_OK);
         JSONArray answers = jsonData.getJSONArray("answers");
         assertTrue("The result data is empty. ", answers != null);
         verifyAnswers(answers, expectedBoolean);
+        currentActivity.finish();
     }
-
-    private void verifyAnswers(JSONArray answers, boolean expectedAnswer) throws Exception {
-        for (int i = 0; i < answers.length(); i++) {
-            JSONObject answer = answers.getJSONObject(i);
-            int id = answer.getInt("question_id");
-            String answerText =  answer.getString("answer");
-
-            NewLanguageQuestion newLanguageQuestion = findQuestion(id);
-
-            String expected;
-            if(newLanguageQuestion.type == NewLanguageQuestion.QuestionType.INPUT_TYPE_STRING) {
-                expected = generateAnswerForQuestion(id);
-            } else {
-                expected = expectedAnswer ? NewLanguageQuestion.TRUE_STR : NewLanguageQuestion.FALSE_STR;
-            }
-            assertEquals("Question " + id + " mismatch", expected, answerText);
-        }
-    }
-
-    private JSONObject getJsonData(NewLanguageActivity currentActivity, String key) throws NoSuchFieldException, IllegalAccessException, JSONException {
-        Intent resultData = getResultData(currentActivity);
-        String jsonDataStr = resultData.getStringExtra(key);
-        return new JSONObject(jsonDataStr);
-    }
-
-    private Intent getResultData(NewLanguageActivity currentActivity) throws NoSuchFieldException, IllegalAccessException {
-        Field f = Activity.class.getDeclaredField("mResultData"); //NoSuchFieldException
-        f.setAccessible(true);
-        return (Intent) f.get(currentActivity);
-    }
-
-    private int getResultCode(NewLanguageActivity currentActivity) throws NoSuchFieldException, IllegalAccessException {
-        Field f = Activity.class.getDeclaredField("mResultCode"); //NoSuchFieldException
-        f.setAccessible(true);
-        return f.getInt(currentActivity);
-    }
-
 
     @Test
     public void fillPageBoolean() throws Exception {
@@ -154,13 +124,17 @@ public class NewLanguageActivityUiTest {
         Intent intent = getIntentForTestFile(fileName);
         int pageCount = 11;
         int pageNum = 0;
+        boolean hideKeyboard = false;
+        boolean requiredOnly = false;
+        boolean valueForBooleans = false;
+        boolean doNext = true;
         mActivityRule.launchActivity(intent);
         thenTitlePageCountShouldMatch(pageCount, pageNum);
-        fillPage(pageNum, true, false, false);
+        fillPage(pageNum, true, false, false, hideKeyboard);
         thenTitlePageCountShouldMatch(pageCount, pageNum + 1);
 
         //when
-        fillPage(pageNum + 1, true, false, false);
+        fillPage(pageNum + 1, doNext, requiredOnly, valueForBooleans, hideKeyboard);
 
         //then
         thenTitlePageCountShouldMatch(pageCount, pageNum + 2);
@@ -175,29 +149,37 @@ public class NewLanguageActivityUiTest {
         Intent intent = getIntentForTestFile(fileName);
         int pageCount = 11;
         int pageNum = 0;
+        boolean hideKeyboard = false;
+        boolean requiredOnly = true;
+        boolean valueForBooleans = true;
+        boolean doNext = true;
         mActivityRule.launchActivity(intent);
         thenTitlePageCountShouldMatch(pageCount, pageNum);
 
         //when
-        fillPage(pageNum, true, true, true);
+        fillPage(pageNum, doNext, requiredOnly, valueForBooleans, hideKeyboard);
 
         //then
         thenShouldHaveMissingAnswerDialog();
     }
 
     @Test
-    public void fillPage() throws Exception {
+    public void fillPageNotRequired() throws Exception {
 
         //given
         String fileName = "new_language/fullQuestionaire.json";
         Intent intent = getIntentForTestFile(fileName);
         int pageCount = 11;
         int pageNum = 0;
+        boolean hideKeyboard = false;
+        boolean requiredOnly = false;
+        boolean valueForBooleans = false;
+        boolean doNext = true;
         mActivityRule.launchActivity(intent);
         thenTitlePageCountShouldMatch(pageCount, pageNum);
 
         //when
-        fillPage(pageNum, true, false, false);
+        fillPage(pageNum, doNext, requiredOnly, valueForBooleans, hideKeyboard);
 
         //then
         int pageNumExpected = 1;
@@ -234,9 +216,10 @@ public class NewLanguageActivityUiTest {
         Intent intent = getIntentForTestFile(fileName);
         int pageCount = 11;
         int pageNum = 0;
+        boolean hideKeyboard = true;
         mActivityRule.launchActivity(intent);
         thenTitlePageCountShouldMatch(pageCount, pageNum);
-        addEditText(0, 0, "language_name");
+        addEditText(0, 0, "language_name", hideKeyboard);
 
         //when
 //        currentActivity.recreate();
@@ -257,9 +240,10 @@ public class NewLanguageActivityUiTest {
         Intent intent = getIntentForTestFile(fileName);
         int pageCount = 11;
         int pageNum = 0;
+        boolean hideKeyboard = true;
         mActivityRule.launchActivity(intent);
         thenTitlePageCountShouldMatch(pageCount, pageNum);
-        addEditText(0, 0, "language_name");
+        addEditText(0, 0, "language_name", hideKeyboard);
 
         //when
 //        currentActivity.recreate();
@@ -269,6 +253,52 @@ public class NewLanguageActivityUiTest {
 
         //then
         thenTitlePageCountShouldMatch(pageCount, pageNum);
+    }
+
+    private void verifyAnswers(JSONArray answers, boolean expectedAnswer) throws Exception {
+        for (int i = 0; i < answers.length(); i++) {
+            JSONObject answer = answers.getJSONObject(i);
+            int id = answer.getInt("question_id");
+            String answerText =  answer.getString("answer");
+
+            NewLanguageQuestion newLanguageQuestion = findQuestion(id);
+
+            String expected;
+            if(newLanguageQuestion.type == NewLanguageQuestion.QuestionType.INPUT_TYPE_STRING) {
+                expected = generateAnswerForQuestion(id);
+            } else {
+                expected = expectedAnswer ? NewLanguageQuestion.TRUE_STR : NewLanguageQuestion.FALSE_STR;
+            }
+            assertEquals("Question " + id + " mismatch", expected, answerText);
+        }
+    }
+
+    private JSONObject getJsonData(NewLanguageActivity currentActivity, String key) throws NoSuchFieldException, IllegalAccessException, JSONException {
+        Intent resultData = getResultData(currentActivity);
+        String jsonDataStr = resultData.getStringExtra(key);
+        return new JSONObject(jsonDataStr);
+    }
+
+    private void captureResultData() throws NoSuchFieldException {
+        mf_resultData = Activity.class.getDeclaredField("mResultData"); //NoSuchFieldException
+        mf_resultData.setAccessible(true);
+        mf_resultCode = Activity.class.getDeclaredField("mResultCode"); //NoSuchFieldException
+        mf_resultCode.setAccessible(true);
+    }
+
+    private void clearResultData() throws NoSuchFieldException {
+        mf_resultData.setAccessible(false);
+        mf_resultData = null;
+        mf_resultCode.setAccessible(false);
+        mf_resultCode = null;
+    }
+
+    private Intent getResultData(NewLanguageActivity currentActivity) throws NoSuchFieldException, IllegalAccessException {
+        return (Intent) mf_resultData.get(currentActivity);
+    }
+
+    private int getResultCode(NewLanguageActivity currentActivity) throws NoSuchFieldException, IllegalAccessException {
+        return mf_resultCode.getInt(currentActivity);
     }
 
     private void thenShouldHaveRequiredAnswerDialog() {
@@ -310,23 +340,23 @@ public class NewLanguageActivityUiTest {
         onView(withId(R.id.dialog_content)).check(matches(withText(R.string.answers_missing_continue)));
     }
 
-    private void fillAllPages(boolean doDone, boolean requiredOnly, boolean valueForBooleans) {
+    private void fillAllPages(boolean doDone, boolean requiredOnly, boolean valueForBooleans, boolean hideKeyboard) {
         int pageCount = mQuestionPages.size();
 
         for (int i = 0; i < pageCount - 1; i++) {
 
-            fillPage(i, true, requiredOnly, valueForBooleans);
+            fillPage(i, true, requiredOnly, valueForBooleans, hideKeyboard);
             thenTitlePageCountShouldMatch( pageCount, i + 1);
         }
 
-        fillPage(pageCount - 1, false, requiredOnly, valueForBooleans);
+        fillPage(pageCount - 1, false, requiredOnly, valueForBooleans, hideKeyboard);
 
         if(doDone) {
             onView(withId(R.id.done_button)).perform(click());
         }
     }
 
-    private void fillPage(int pageNum, boolean doNext, boolean requiredOnly, boolean valueForBooleans) {
+    private void fillPage(int pageNum, boolean doNext, boolean requiredOnly, boolean valueForBooleans, boolean hideKeyboard) {
         List<NewLanguageQuestion> questions = mQuestionPages.get(pageNum);
 
         for (int i = 0; i < questions.size(); i++) {
@@ -338,7 +368,7 @@ public class NewLanguageActivityUiTest {
                     setBoolean(pageNum, i, value);
                 } else {
                     String text = generateAnswerForQuestion(question.id);
-                    addEditText(pageNum, i, text);
+                    addEditText(pageNum, i, text, hideKeyboard);
                 }
             }
         }
@@ -356,22 +386,31 @@ public class NewLanguageActivityUiTest {
         return questionNum % 2 == 1;
     }
 
-    private void addEditText(int pageNum, int questionNum, String newText) {
-        String questionText = mQuestionPages.get(pageNum).get(questionNum).question;
-        onView(allOf(withId(R.id.edit_text), hasSibling(withText(questionText))))
-                .perform(typeText(newText), closeSoftKeyboard());
+    // TODO: 5/1/16 check initial value
+    private void addEditText(int pageNum, int questionNum, String newText, boolean hideKeyboard) {
+        NewLanguageQuestion question = mQuestionPages.get(pageNum).get(questionNum);
+        String questionText = question.question;
+        ViewInteraction interaction = onView(allOf(withId(R.id.edit_text), hasSibling(withText(questionText))));
+        interaction.perform(scrollTo());
+        interaction.perform( typeText(newText));
+//        interaction.check(matches(withHint(question.helpText))); // doesn't seem to work on second question
+        if(hideKeyboard) {
+            interaction.perform(closeSoftKeyboard());
+        }
+        interaction.check(matches(withText(newText)));
     }
 
+    // TODO: 5/1/16 check initial value
     private void setBoolean(int pageNum, int questionNum, boolean value) {
         String questionText = mQuestionPages.get(pageNum).get(questionNum).question;
         Matcher<View> parent = allOf(withClassName(endsWith("RadioGroup")), hasSibling(withText(questionText)));
-        if(value) {
-            onView(allOf(withId(R.id.radio_button_yes), withParent(parent)))
-                    .perform(click());
-        } else {
-            onView(allOf(withId(R.id.radio_button_no), withParent(parent)))
-                    .perform(click());
-        }
+
+        int resource = value ? R.id.radio_button_yes : R.id.radio_button_no;
+        int oppositeResource = !value ? R.id.radio_button_yes : R.id.radio_button_no;
+        ViewInteraction interaction = onView(allOf(withId(resource), withParent(parent)));
+        interaction.perform(scrollTo(), click());
+        interaction.check(matches(isChecked()));
+        onView(allOf(withId(oppositeResource), withParent(parent))).check(matches(not(isChecked())));
     }
 
     private void getQuestionPages() throws Exception {
