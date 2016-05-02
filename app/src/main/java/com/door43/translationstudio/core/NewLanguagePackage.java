@@ -73,7 +73,7 @@ public class NewLanguagePackage {
         JSONArray answers = questionsToJsonAnswers(questions);
         String requestID = UUID.randomUUID().toString();
         String tempLanguageCode = getNewLanguageCode();
-        String requester = "";
+        String requester = "(null)";
         Profile profile = AppContext.getProfile();
         if(profile != null) {
             requester = profile.getFullName();
