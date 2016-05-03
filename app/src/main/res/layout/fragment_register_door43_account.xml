@@ -92,6 +92,7 @@
                     android:layout_weight="1"
                     android:singleLine="true"
                     android:lines="1"
+                    android:inputType="textEmailAddress"
                     android:maxLines="1"
                     android:background="@drawable/edit_text"
                     android:textSize="@dimen/title"

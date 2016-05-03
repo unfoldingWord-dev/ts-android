@@ -18,8 +18,8 @@ android {
     defaultConfig {
         applicationId "com.translationstudio.androidapp"
         minSdkVersion 15
-        targetSdkVersion 23
-        versionCode 123
+        targetSdkVersion 22
+        versionCode 126
         versionName "7.0"
         multiDexEnabled = true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
