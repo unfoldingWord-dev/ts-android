@@ -2,6 +2,7 @@ package com.door43.translationstudio.core;
 
 import android.content.Context;
 import android.test.InstrumentationTestCase;
+import android.text.TextUtils;
 
 import com.door43.translationstudio.AppContext;
 

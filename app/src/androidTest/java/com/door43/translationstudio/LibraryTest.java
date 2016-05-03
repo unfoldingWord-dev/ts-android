@@ -40,6 +40,16 @@ public class LibraryTest extends InstrumentationTestCase {
         assertTrue(markers.length > 0);
     }
 
+    public void test04ChunkMarkers() throws Exception {
+        ChunkMarker[] markers = mLibrary.getChunkMarkers("rev");
+        assertTrue(markers.length > 0);
+    }
+
+    public void test05ChunkMarkers() throws Exception {
+        ChunkMarker[] markers = mLibrary.getChunkMarkers("psa");
+        assertTrue(markers.length > 0);
+    }
+
 //    public void test03DownloadTargetLanguages() throws Exception {
 //        mLibrary.downloadTargetLanguages();
 //        assertTrue(mLibrary.getTargetLanguages().length > 0);
