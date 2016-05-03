@@ -132,6 +132,7 @@ public class NewLanguagePackage {
         newLanguageData.put(API_ANSWERS, answersJson);
         newLanguageData.put(API_REQUESTER, requester);
         newLanguageData.put(API_APP, app);
+        newLanguageData.put(API_QUESTIONNAIRE_ID, questionaireID);
         return newLanguageData;
     }
 

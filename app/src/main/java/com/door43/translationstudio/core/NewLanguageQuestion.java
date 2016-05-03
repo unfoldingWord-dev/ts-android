@@ -23,6 +23,7 @@ public class NewLanguageQuestion {
     public static final String TRUE_STR = "YES";
     public static final String FALSE_STR = "NO";
     public static final String TAG = NewLanguageQuestion.class.getSimpleName();
+    public static final int NO_DEPENDENCY = -1;
 
     public long id;
     public String question;
@@ -31,7 +32,7 @@ public class NewLanguageQuestion {
     public boolean required;
     public QuestionType type;
     public String query;
-    public long conditionalID = -1;
+    public long conditionalID = NO_DEPENDENCY;
 
     /**
      * constructor
@@ -89,7 +90,7 @@ public class NewLanguageQuestion {
     public static NewLanguageQuestion newInstance(Context context, long id, int questionResID, int hintResID,
                                                   QuestionType type, boolean required, String query) {
 
-        return newInstance(context, id, questionResID, hintResID, type, required, query, -1);
+        return newInstance(context, id, questionResID, hintResID, type, required, query, NO_DEPENDENCY);
 
     }
 
@@ -102,10 +103,7 @@ public class NewLanguageQuestion {
         try {
             long id = json.getLong(ID_KEY);
             String question = json.getString(QUESTION_KEY);
-            String answer = null;
-            if(json.has(NewLanguageQuestion.ANSWER_KEY)) {
-                answer = json.getString(NewLanguageQuestion.ANSWER_KEY);
-            }
+            String answer = json.optString(NewLanguageQuestion.ANSWER_KEY, null);
             String hint = json.getString(HELP_TEXT_KEY);
             boolean required = json.getBoolean(REQUIRED_KEY);
             String typeStr = json.getString(INPUT_TYPE_KEY);
@@ -113,12 +111,10 @@ public class NewLanguageQuestion {
             if(null == type) { // default to string input
                 type = QuestionType.INPUT_TYPE_STRING;
             }
-            long conditional = -1;
-            if(json.has(NewLanguageQuestion.CONDITIONAL_ID_KEY)) {
-                conditional = json.getLong(CONDITIONAL_ID_KEY);
-            }
+            long conditional = json.optLong(CONDITIONAL_ID_KEY, NO_DEPENDENCY);
             String query = json.getString(QUERY_KEY);
             return new NewLanguageQuestion(id,question,hint,answer,type,required, query, conditional);
+
         } catch (Exception e) {
             Logger.e(NewLanguageQuestion.class.getSimpleName(),"Error parsing json: " + json.toString(),e);
         }

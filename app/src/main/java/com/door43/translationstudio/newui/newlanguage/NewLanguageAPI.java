@@ -101,7 +101,7 @@ public class NewLanguageAPI {
             return apis;
 
         } catch (Exception e) {
-            Logger.e(TAG, "Could not create API json", e);
+            Logger.e(TAG, "Could not create API post data", e);
         }
 
         return null;

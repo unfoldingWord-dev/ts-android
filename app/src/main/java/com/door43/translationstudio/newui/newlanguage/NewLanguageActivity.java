@@ -36,6 +36,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
     public static final String EXTRA_NEW_LANGUAGE_QUESTIONS = "extra_new_language_questions";
     public static final String STATE_NEW_LANGUAGE_QUESTION_ID = "state_new_language_question_id";
     public static final String EXTRA_NEW_LANGUAGE_QUESTIONS_JSON = "extra_new_language_questions_json";
+    public static final String STATE_NEW_LANGUAGE_TITLE = "state_new_language_title";
 
     private int mCurrentPage = 0;
     public static final int ACTIVITY_HOME = 1001;
@@ -59,6 +60,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
             String questions = savedInstanceState.getString(STATE_NEW_LANGUAGE_QUESTIONS);
             mQuestionPages = parseJsonStrIntoPages(questions);
             mQuestionnaireID = savedInstanceState.getLong(STATE_NEW_LANGUAGE_QUESTION_ID, -1);
+            setTitle(savedInstanceState.getString(STATE_NEW_LANGUAGE_TITLE));
         } else {
             Intent intent = getIntent();
             Bundle args = intent.getExtras();
@@ -86,6 +88,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         String questions = getQuestionPagesAsJson().toString();
         outState.putString(STATE_NEW_LANGUAGE_QUESTIONS, questions);
         outState.putLong(STATE_NEW_LANGUAGE_QUESTION_ID,mQuestionnaireID);
+        outState.putString(STATE_NEW_LANGUAGE_TITLE, getTitle().toString());
         super.onSaveInstanceState(outState);
     }
 

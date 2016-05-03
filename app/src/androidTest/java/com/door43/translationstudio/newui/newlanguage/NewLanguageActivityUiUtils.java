@@ -12,6 +12,8 @@ import org.junit.Rule;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.ViewInteraction;
@@ -79,6 +81,21 @@ public class NewLanguageActivityUiUtils {
         mStringToBetyped = "Espresso";
         UploadCrashReportTask.archiveErrorLogs();
         mTestContext = InstrumentationRegistry.getContext();
+    }
+
+    /**
+     * force page orientation change
+     */
+    protected void rotateScreen() {
+        Context context = InstrumentationRegistry.getTargetContext();
+        int orientation
+                = context.getResources().getConfiguration().orientation;
+
+        Activity activity = mActivityRule.getActivity();
+        activity.setRequestedOrientation(
+                (orientation == Configuration.ORIENTATION_PORTRAIT) ?
+                        ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE :
+                        ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     }
 
     /**
@@ -181,6 +198,34 @@ public class NewLanguageActivityUiUtils {
     protected void thenShouldHaveMissingAnswerDialog() {
         onView(withId(R.id.dialog_title)).check(matches(withText(R.string.answers_missing_title)));
         onView(withId(R.id.dialog_content)).check(matches(withText(R.string.answers_missing_continue)));
+    }
+
+    /**
+     * iteratively fill all the question pages with canned answers
+     *
+     * @param doDone
+     * @param requiredOnly
+     * @param valueForBooleans
+     * @param hideKeyboard
+     */
+    protected void fillAllPagesAndRotate(boolean doDone, boolean requiredOnly, boolean valueForBooleans, boolean hideKeyboard) {
+        int pageCount = mQuestionPages.size();
+
+        for (int i = 0; i < pageCount - 1; i++) {
+
+            fillPage(i, false, requiredOnly, valueForBooleans, hideKeyboard);
+            rotateScreen();
+            verifyPageLayout( pageCount, i);
+
+            onView(withId(R.id.next_button)).perform(click());
+            verifyPageLayout( pageCount, i + 1);
+        }
+
+        fillPage(pageCount - 1, false, requiredOnly, valueForBooleans, hideKeyboard);
+
+        if(doDone) {
+            onView(withId(R.id.done_button)).perform(click());
+        }
     }
 
     /**
@@ -316,7 +361,7 @@ public class NewLanguageActivityUiUtils {
     }
 
     /**
-     * verify check states of boolean answer 
+     * verify check states of boolean answer
      * @param pageNum
      * @param questionNum
      * @param yesChecked
@@ -399,6 +444,19 @@ public class NewLanguageActivityUiUtils {
     }
 
     /**
+     * verify title for page
+     * @param pageCount
+     * @param pageNum
+     */
+    protected void thenTitlePageCountShouldNotMatch(int pageCount, int pageNum) {
+        mAppContext = InstrumentationRegistry.getTargetContext();
+        String titleFormat = mAppContext.getResources().getString(R.string.new_lang_question_n);
+
+        String title = String.format(titleFormat, pageNum + 1, pageCount);
+        notMatchToolbarTitle(title);
+    }
+
+    /**
      * verify navigation buttons displayed on page
      * @param pageCount
      * @param pageNum
@@ -448,6 +506,17 @@ public class NewLanguageActivityUiUtils {
             CharSequence title) {
         return onView(isAssignableFrom(Toolbar.class))
                 .check(matches(withToolbarTitle(is(title))));
+    }
+
+    /**
+     * get interaction for toolbar with title
+     * @param title
+     * @return
+     */
+    private static ViewInteraction notMatchToolbarTitle(
+            CharSequence title) {
+        return onView(isAssignableFrom(Toolbar.class))
+                .check(matches(not(withToolbarTitle(is(title)))));
     }
 
     /**
