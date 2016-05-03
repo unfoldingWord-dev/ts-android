@@ -728,6 +728,10 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
      * user cancelled import
      */
     private void cancelled() {
+        if (mUsfm != null) {
+            mUsfm.cleanup();
+        }
+
         Intent data = new Intent();
         setResult(RESULT_CANCELED, data);
         finish();
@@ -737,6 +741,10 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
      * user completed import
      */
     private void finished() {
+        if (mUsfm != null) {
+            mUsfm.cleanup();
+        }
+
         Intent data = new Intent();
         setResult(RESULT_OK, data);
         finish();
