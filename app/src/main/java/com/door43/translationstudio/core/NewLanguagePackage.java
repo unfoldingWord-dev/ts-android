@@ -23,6 +23,7 @@ public class NewLanguagePackage {
     public static final String LANGUAGE_NAME = "language_name";
 
     public static final String QUESTION_ANSWER = "answer";
+    public static final String UPLOADED = "uploaded";
     public static final String TAG = NewLanguagePackage.class.getSimpleName();
 
     private static final String TEMP_LANGUAGE_PREFIX = "qaa-x-";
@@ -50,7 +51,13 @@ public class NewLanguagePackage {
     final public String app;
     final public JSONArray answersJson;
 
+    private boolean uploaded;
+
     NewLanguagePackage(long questionaireID, String tempLanguageCode, String languageName, String requestID, String requestor, String app, JSONArray answersJson) {
+        this( questionaireID, tempLanguageCode, languageName, requestID, requestor, app, answersJson, false);
+    }
+
+    private NewLanguagePackage(long questionaireID, String tempLanguageCode, String languageName, String requestID, String requestor, String app, JSONArray answersJson, boolean uploaded) {
         this.questionaireID = questionaireID;
         this.tempLanguageCode = tempLanguageCode;
         this.requestID = requestID;
@@ -58,6 +65,7 @@ public class NewLanguagePackage {
         this.languageName = languageName;
         this.requester = requestor;
         this.app = app;
+        this.uploaded = uploaded;
     }
 
     /**
@@ -92,6 +100,14 @@ public class NewLanguagePackage {
         return null;
     }
 
+    public void setUploaded(boolean uploaded) {
+        this.uploaded = uploaded;
+    }
+
+    public boolean isUploaded() {
+        return uploaded;
+    }
+
     /**
      * parse JSON string data into new object.  Returns null if error.
      *
@@ -109,8 +125,9 @@ public class NewLanguagePackage {
             String requester = newLanguageData.getString(API_REQUESTER);
             String app = newLanguageData.getString(API_APP);
             JSONArray answers = newLanguageData.getJSONArray(API_ANSWERS);
+            boolean uploaded = newLanguageData.optBoolean(UPLOADED, false);
 
-            return new NewLanguagePackage(questionaireID, tempLanguageCode, languageName, requestID, requester, app, answers);
+            return new NewLanguagePackage(questionaireID, tempLanguageCode, languageName, requestID, requester, app, answers, uploaded);
 
         } catch (Exception e) {
             Logger.e(TAG, "Failed to parse data", e);
@@ -133,6 +150,7 @@ public class NewLanguagePackage {
         newLanguageData.put(API_REQUESTER, requester);
         newLanguageData.put(API_APP, app);
         newLanguageData.put(API_QUESTIONNAIRE_ID, questionaireID);
+        newLanguageData.put(UPLOADED, uploaded);
         return newLanguageData;
     }
 

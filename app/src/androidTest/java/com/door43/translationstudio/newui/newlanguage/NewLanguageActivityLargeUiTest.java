@@ -58,6 +58,7 @@ public class NewLanguageActivityLargeUiTest extends NewLanguageActivityUiUtils {
         rotateScreen();
         onView(withId(R.id.previous_button)).perform(click());
         rotateScreen();
+
         //then
         pageNumExpected = 0;
         verifyPageLayout(pageCount, pageNumExpected);
@@ -126,7 +127,6 @@ public class NewLanguageActivityLargeUiTest extends NewLanguageActivityUiUtils {
 
         //when
         try {
-//            onView(withId(R.id.toolbar)).perform(pressKey(KeyEvent.KEYCODE_HOME));
             onView(withContentDescription(R.string.abc_action_bar_up_description)).perform(click());
         } catch (NoActivityResumedException e) {
             appExit  = true;

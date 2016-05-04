@@ -398,7 +398,7 @@ public class NewLanguageActivityUiUtils {
     private void getQuestionPages() throws Exception {
         mQuestionPages = new ArrayList<>();
 
-        JSONObject questionnaire = (new NewLanguageAPI()).readQuestionnaire(mTestContext, mQuestions, "en"); // TODO: 4/25/16 get actual language
+        JSONObject questionnaire = (new NewLanguageAPI()).readQuestionnaireIntoPages(mTestContext, mQuestions, "en"); // TODO: 4/25/16 get actual language
         mQuestionnaireID = NewLanguageActivity.getQuestionnaireID(questionnaire);
         NewLanguageActivity.getQuestionPages(mQuestionPages, questionnaire);
     }

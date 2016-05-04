@@ -40,6 +40,7 @@ public class NewLanguagePackageTest extends InstrumentationTestCase {
         assertEquals("requestID", expected.requestID,actual.requestID);
         assertEquals("requester", expected.requester,actual.requester);
         assertEquals("app", expected.app,actual.app);
+        assertEquals("uploaded", expected.isUploaded(),actual.isUploaded());
         assertEquals("same number of answers", expected.answersJson.length(),actual.answersJson.length());
         for (int i = 0; i < expected.answersJson.length(); i++) {
             JSONObject expectedAnswer = expected.answersJson.getJSONObject(i);

@@ -111,7 +111,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         List<List<NewLanguageQuestion>> questionPages = new ArrayList<>();
 
         try {
-            JSONObject questionnaire = (new NewLanguageAPI()).readQuestionnaire(this, questionsJsonStr, "en"); // TODO: 4/25/16 get actual language
+            JSONObject questionnaire = (new NewLanguageAPI()).readQuestionnaireIntoPages(this, questionsJsonStr, "en"); // TODO: 4/25/16 get actual language
             mQuestionnaireID = getQuestionnaireID(questionnaire);
             getQuestionPages(questionPages, questionnaire);
 
@@ -388,16 +388,11 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
 
             mLanguageFinished = true;
 
-            List<NewLanguageQuestion> mergedQuestions = new ArrayList<>();
-            for (int i = 0; i < mQuestionPages.size(); i++) {
-                List<NewLanguageQuestion> questions = mQuestionPages.get(i);
-                mergedQuestions.addAll(questions);
-            }
-
+            List<NewLanguageQuestion> mergedQuestions = mergePagesOfNewLanguageQuestions(mQuestionPages);
             NewLanguagePackage newLang = NewLanguagePackage.newInstance(mQuestionnaireID, mergedQuestions);
             String newLanguageDataStr = newLang.toJson().toString(2);
 
-            JSONObject api = NewLanguageAPI.getPostData(newLang); // TODO: 4/28/16 remove
+            HashMap<String, String> api = NewLanguageAPI.getPostData(newLang); // TODO: 4/28/16 remove
 
             Intent data = new Intent();
             data.putExtra(NewTargetTranslationActivity.EXTRA_NEW_LANGUAGE_DATA, newLanguageDataStr);
@@ -407,6 +402,15 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         } catch(Exception e) {
             Logger.e(TAG,"Error getting question data",e);
         }
+    }
+
+    public static List<NewLanguageQuestion> mergePagesOfNewLanguageQuestions(List<List<NewLanguageQuestion>> questionPages) {
+        List<NewLanguageQuestion> mergedQuestions = new ArrayList<>();
+        for (int i = 0; i < questionPages.size(); i++) {
+            List<NewLanguageQuestion> questions = questionPages.get(i);
+            mergedQuestions.addAll(questions);
+        }
+        return mergedQuestions;
     }
 
     public void cleanup() {
