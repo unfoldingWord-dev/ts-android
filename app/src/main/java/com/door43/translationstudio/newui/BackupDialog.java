@@ -19,12 +19,12 @@ import android.widget.Button;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.NewLanguagePackage;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
+import com.door43.translationstudio.newui.newlanguage.NewLanguageAPI;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.tasks.CreateRepositoryTask;
 import com.door43.translationstudio.tasks.PullTargetTranslationTask;
@@ -147,6 +147,8 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
                         dialog.show(ft, Door43LoginDialog.TAG);
                         return;
                     }
+
+                    (new NewLanguageAPI()).uploadAnswersToAPI(targetTranslation, null);
 
                     PullTargetTranslationTask task = new PullTargetTranslationTask(targetTranslation);
                     taskWatcher.watch(task);
@@ -342,7 +344,6 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
                     || status == PullTargetTranslationTask.Status.UNKNOWN) {
                 Logger.i(this.getClass().getName(), "Changes on the server were synced with " + targetTranslation.getId());
 
-                // TODO: 4/25/16 need to add upload of new language to API
 //                File path = targetTranslation.getPath();
 //                NewLanguagePackage newLanguage = NewLanguagePackage.open(path);
 //                String post = newLanguage.newLanguageAPIString();

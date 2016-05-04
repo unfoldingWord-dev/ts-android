@@ -7,6 +7,7 @@ import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.core.NewLanguagePackage;
 import com.door43.translationstudio.core.NewLanguageQuestion;
+import com.door43.translationstudio.core.TargetTranslation;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -18,6 +19,7 @@ import org.unfoldingword.gogsclient.User;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
@@ -386,10 +388,35 @@ public class NewLanguageAPI {
         mPageMeta = new JSONArray();
     }
 
-    public void postToApiIfNeeded(final NewLanguagePackage nlPackage, final OnRequestFinished listener) {
+    /**
+     * upload new language answers to API
+     * @param targetTranslation
+     * @param listener
+     */
+    public void uploadAnswersToAPI(TargetTranslation targetTranslation, final OnRequestFinished listener) {
+
+        final File folder = targetTranslation.getPath();
+        final NewLanguagePackage pkg = NewLanguagePackage.open(folder);
+        uploadAnswersToAPI(pkg, new OnRequestFinished() {
+            @Override
+            public void onRequestFinished(boolean success, Response response) {
+                if(success) {
+                    pkg.commit(folder); // save changes
+                    updateListener(listener, success, response);
+                }
+            }
+        });
+    }
+
+    /**
+     * will upload answers to API if they haven't been uploaded
+     * @param nlPackage
+     * @param listener - optional
+     */
+    public void uploadAnswersToAPI(final NewLanguagePackage nlPackage, final OnRequestFinished listener) {
 
         if(nlPackage.isUploaded())  { // check if already done
-            listener.onRequestFinished(true, null);
+            updateListener(listener, true, null);
             return;
         }
 
@@ -411,14 +438,29 @@ public class NewLanguageAPI {
                     if(success) {
                         nlPackage.setUploaded(true);
                     }
-                    listener.onRequestFinished(success, response);
+                    updateListener(listener, success, response);
                 } catch (Exception e) {
                     Logger.e(TAG, "Error sending to New Language API", e);
-                    listener.onRequestFinished(false, response);
+                    updateListener(listener, false, response);
                 }
             }
         };
         postThread.start();
+    }
+
+
+    private void updateListener(OnRequestFinished listener, boolean success, Response response) {
+        if(!success) {
+            String data = "(null)";
+            if((response != null) && (response.data != null)) {
+                data = response.data;
+            }
+            Logger.e(TAG, "new language upload failed response: " + data, response.exception);
+        }
+
+        if(listener != null) {
+            listener.onRequestFinished(success,response);
+        }
     }
 
     /**

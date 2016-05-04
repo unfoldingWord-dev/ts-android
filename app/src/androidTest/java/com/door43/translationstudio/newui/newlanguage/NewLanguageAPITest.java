@@ -1,18 +1,30 @@
 package com.door43.translationstudio.newui.newlanguage;
 
+import android.content.pm.PackageInfo;
 import android.support.test.runner.AndroidJUnit4;
 import android.test.suitebuilder.annotation.LargeTest;
 
+import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.core.LanguageDirection;
+import com.door43.translationstudio.core.NativeSpeaker;
 import com.door43.translationstudio.core.NewLanguagePackage;
 import com.door43.translationstudio.core.NewLanguageQuestion;
+import com.door43.translationstudio.core.Resource;
+import com.door43.translationstudio.core.TargetLanguage;
+import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationFormat;
+import com.door43.translationstudio.core.TranslationType;
 
+import org.apache.commons.io.FileUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.unfoldingword.gogsclient.Response;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +40,7 @@ public class NewLanguageAPITest {
     private NewLanguageAPI mApi;
     private String mUrl;
     private String mSourceLangID;
+    private File mTempDir;
 
     @Before
     public void setup() {
@@ -35,18 +48,73 @@ public class NewLanguageAPITest {
         mUrl = "http://td-demo.unfoldingword.org/api/questionnaire/";
         mApi.setNewLangUrl(mUrl);
         mSourceLangID = "en-x-demo2";
+    }
 
+    @After
+    public void tearDown() {
+        if(mTempDir != null) {
+            FileUtils.deleteQuietly(mTempDir);
+            mTempDir = null;
+        }
     }
 
     @Test
-    public void postQuestionnaireLowLevel() throws JSONException, UnsupportedEncodingException, InterruptedException {
+    public void postQuestionnaireFromTarget() throws Exception {
+        //given
+        final CountDownLatch signal = new CountDownLatch(1);
+        NewLanguagePackage newLang = getQuestionaireAndFillAnswers(mSourceLangID);
+        final JSONObject uploadSuccess = new JSONObject();
+        TargetTranslation targetTranslation = createDummyTargetTranslationPackage(newLang);
+
+        //when
+        mApi.uploadAnswersToAPI(targetTranslation, new NewLanguageAPI.OnRequestFinished() {
+            @Override
+            public void onRequestFinished(boolean success, Response response) {
+                try {
+                    uploadSuccess.put("success", success);
+                    if(response != null) {
+                        uploadSuccess.putOpt("responseData", response.data);
+                        uploadSuccess.putOpt("responseException", response.exception);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                signal.countDown();
+            }
+        });
+
+        //then
+        signal.await(30, TimeUnit.SECONDS);
+        assertTrue(uploadSuccess.getBoolean("success"));
+        assertNull(uploadSuccess.opt("responseException"));
+        assertNotNull(uploadSuccess.optString("responseData"));
+    }
+
+    private TargetTranslation createDummyTargetTranslationPackage(NewLanguagePackage newLang) throws Exception {
+        mTempDir = new File(AppContext.context().getCacheDir(), System.currentTimeMillis() + "");
+        mTempDir.mkdirs();
+
+        PackageInfo pinfo = AppContext.context().getPackageManager().getPackageInfo(AppContext.context().getPackageName(), 0);
+        TargetLanguage targetLanguage = new TargetLanguage(newLang.tempLanguageCode, newLang.languageName, "uncertain", LanguageDirection.LeftToRight);
+        NativeSpeaker speaker = new NativeSpeaker("testing");
+        TargetTranslation targetTranslation = TargetTranslation.create(AppContext.context(),
+                speaker, TranslationFormat.USFM, targetLanguage, "aae_obs_text_obs",
+                TranslationType.TEXT, Resource.REGULAR_SLUG, pinfo, mTempDir);
+        targetTranslation.commit();
+        newLang.commit(mTempDir);
+        return targetTranslation;
+    }
+
+
+    @Test
+    public void postQuestionnaire() throws JSONException, UnsupportedEncodingException, InterruptedException {
         //given
         final CountDownLatch signal = new CountDownLatch(1);
         NewLanguagePackage newLang = getQuestionaireAndFillAnswers(mSourceLangID);
         final JSONObject uploadSuccess = new JSONObject();
 
         //when
-        mApi.postToApiIfNeeded(newLang, new NewLanguageAPI.OnRequestFinished() {
+        mApi.uploadAnswersToAPI(newLang, new NewLanguageAPI.OnRequestFinished() {
             @Override
             public void onRequestFinished(boolean success, Response response) {
                 try {

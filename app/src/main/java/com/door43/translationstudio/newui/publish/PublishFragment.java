@@ -29,6 +29,7 @@ import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.Door43LoginDialog;
 import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.MergeConflictsDialog;
+import com.door43.translationstudio.newui.newlanguage.NewLanguageAPI;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.tasks.CreateRepositoryTask;
 import com.door43.translationstudio.tasks.PullTargetTranslationTask;
@@ -120,6 +121,9 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                         dialog.show(ft, Door43LoginDialog.TAG);
                         return;
                     }
+
+                    (new NewLanguageAPI()).uploadAnswersToAPI(targetTranslation, null);
+
                     PullTargetTranslationTask task = new PullTargetTranslationTask(targetTranslation);
                     taskWatcher.watch(task);
                     TaskManager.addTask(task, PullTargetTranslationTask.TASK_ID);

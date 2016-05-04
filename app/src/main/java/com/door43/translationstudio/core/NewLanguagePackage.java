@@ -54,10 +54,6 @@ public class NewLanguagePackage {
     private boolean uploaded;
 
     NewLanguagePackage(long questionaireID, String tempLanguageCode, String languageName, String requestID, String requestor, String app, JSONArray answersJson) {
-        this( questionaireID, tempLanguageCode, languageName, requestID, requestor, app, answersJson, false);
-    }
-
-    private NewLanguagePackage(long questionaireID, String tempLanguageCode, String languageName, String requestID, String requestor, String app, JSONArray answersJson, boolean uploaded) {
         this.questionaireID = questionaireID;
         this.tempLanguageCode = tempLanguageCode;
         this.requestID = requestID;
@@ -65,6 +61,11 @@ public class NewLanguagePackage {
         this.languageName = languageName;
         this.requester = requestor;
         this.app = app;
+        this.uploaded = false;
+    }
+
+    private NewLanguagePackage(long questionaireID, String tempLanguageCode, String languageName, String requestID, String requestor, String app, JSONArray answersJson, boolean uploaded) {
+        this( questionaireID, tempLanguageCode, languageName, requestID, requestor, app, answersJson);
         this.uploaded = uploaded;
     }
 
