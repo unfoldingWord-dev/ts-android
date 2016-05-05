@@ -62,6 +62,4 @@ public class NewLanguagePackageTest extends InstrumentationTestCase {
         }
         return questions;
     }
-
-
 }

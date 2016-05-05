@@ -1,13 +1,17 @@
 package com.door43.translationstudio.newui.newlanguage;
 
+import android.app.Activity;
 import android.content.Context;
 import android.util.Base64;
+import android.view.View;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NewLanguagePackage;
 import com.door43.translationstudio.core.NewLanguageQuestion;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -30,6 +34,9 @@ import java.util.List;
 import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
+
+import android.os.Handler;
+import android.os.Looper;
 
 /**
  * Created by blm on 3/21/16.
@@ -56,7 +63,9 @@ public class NewLanguageAPI {
     public static final String API_READ_DEPENDS_ON = "depends_on";
     public static final String API_READ_QUESTIONS = "questions";
     public static final String API_READ_REQUIRED = "required";
-    public static final String NEW_LANGUAGE_URL = "http://td.unfoldingword.org/api/questionnaire/";
+    public static final String NEW_LANGUAGE_URL  = "http://td.unfoldingword.org/api/questionnaire/";
+    public static final String NEW_LANGUAGE_URL_DEBUG = "http://td-demo.unfoldingword.org/api/questionnaire/";
+    public static final String DUPLICATE_KEY_ERROR = "duplicate key value violates unique constraint \\\"td_templanguage_code_key\\\"";
 
     private int readTimeout = 5000;
     private int connectionTimeout = 5000;
@@ -70,8 +79,9 @@ public class NewLanguageAPI {
 
     private String mNewLangUrl = NEW_LANGUAGE_URL;
 
+
     public NewLanguageAPI() {
-        
+
     }
 
     public void setNewLangUrl(String mNewLangUrl) {
@@ -106,16 +116,30 @@ public class NewLanguageAPI {
      * read and parse the questionnaire
      * @return
      */
-    public JSONObject readQuestionnaireFromServer() {
-        try {
-            Response response = doRequest(mNewLangUrl, null, null, "GET");
-            String questionsJsonStr = response.data;
-            return new JSONObject(questionsJsonStr);
+    public Response readQuestionnaireFromServer() {
 
-        } catch (Exception e) {
-            Logger.e(TAG,"Error reading questionnaire",e);
+        return doRequest(mNewLangUrl, null, null, "GET");
+    }
+
+    /**
+     * extract questionnaire from response.data
+     * @param response
+     * @return
+     */
+    public JSONObject parseServerFetchResponse(Response response) {
+        if(response != null) {
+            try {
+                JSONObject questionnaire = new JSONObject(response.data);
+
+                //make sure it has list of languages
+                JSONArray languages = questionnaire.getJSONArray(API_READ_LANGUAGES);
+
+                return questionnaire;
+
+            } catch (Exception e) {
+                Logger.e(TAG, "Error parsing questionnaire", e);
+            }
         }
-
         return null;
     }
 
@@ -389,11 +413,11 @@ public class NewLanguageAPI {
     }
 
     /**
-     * upload new language answers to API
+     * upload new language answers to API, if listener is null, then default will be to put up warning dialog if error
      * @param targetTranslation
      * @param listener
      */
-    public void uploadAnswersToAPI(TargetTranslation targetTranslation, final OnRequestFinished listener) {
+    public void uploadAnswersToAPI(final Activity activity, TargetTranslation targetTranslation, final OnRequestFinished listener) {
 
         final File folder = targetTranslation.getPath();
         final NewLanguagePackage pkg = NewLanguagePackage.open(folder);
@@ -403,6 +427,20 @@ public class NewLanguageAPI {
                 if(success) {
                     pkg.commit(folder); // save changes
                     updateListener(listener, success, response);
+                } else { // failed
+                    if((listener == null) && (activity != null)) {
+                        Handler mHand = new Handler(Looper.getMainLooper());
+                        mHand.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                final CustomAlertDialog dialog = CustomAlertDialog.Create(activity);
+                                dialog.setTitle(R.string.new_lang_api_upload_failure_title)
+                                        .setMessageHtml(R.string.new_lang_api_upload_failure)
+                                        .setPositiveButton(R.string.confirm, null)
+                                        .show("new_language_upload_failed");
+                            }
+                        });
+                    }
                 }
             }
         });
@@ -432,9 +470,17 @@ public class NewLanguageAPI {
                     if(response.exception != null) { // reflect errors
                         throw response.exception;
                     }
-                    JSONObject jsonResponse = new JSONObject(response.data);
+
+                    String responseData = getResponseData(response);
+                    JSONObject jsonResponse = new JSONObject(responseData);
                     String status = jsonResponse.getString("status");
                     boolean success = "success".equalsIgnoreCase(status);
+                    if(!success) {
+                        if(responseData.indexOf(DUPLICATE_KEY_ERROR) >= 0) {
+                            success = true; // if already uploaded, then we don't need to keep trying
+                        }
+                    }
+
                     if(success) {
                         nlPackage.setUploaded(true);
                     }
@@ -451,16 +497,21 @@ public class NewLanguageAPI {
 
     private void updateListener(OnRequestFinished listener, boolean success, Response response) {
         if(!success) {
-            String data = "(null)";
-            if((response != null) && (response.data != null)) {
-                data = response.data;
-            }
+            String data = getResponseData(response);
             Logger.e(TAG, "new language upload failed response: " + data, response.exception);
         }
 
         if(listener != null) {
             listener.onRequestFinished(success,response);
         }
+    }
+
+    private String getResponseData(Response response) {
+        String data = "(null)";
+        if((response != null) && (response.data != null)) {
+            data = response.data;
+        }
+        return data;
     }
 
     /**
@@ -539,15 +590,19 @@ public class NewLanguageAPI {
             responseCode = conn.getResponseCode();
 
             if(isRequestMethodReadable(conn.getRequestMethod())) {
-                // read response
-                InputStream is = conn.getInputStream();
-                BufferedInputStream bis = new BufferedInputStream(is);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                int current;
-                while ((current = bis.read()) != -1) {
-                    baos.write((byte) current);
+                try {
+                    // read response
+                    InputStream is = conn.getInputStream();
+                    BufferedInputStream bis = new BufferedInputStream(is);
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    int current;
+                    while ((current = bis.read()) != -1) {
+                        baos.write((byte) current);
+                    }
+                    responseData = baos.toString("UTF-8");
+                } catch (Exception e) {
+                    //no response data
                 }
-                responseData = baos.toString("UTF-8");
             }
         } catch (Exception e) {
             exception = e;

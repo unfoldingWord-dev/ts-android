@@ -148,7 +148,7 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
                         return;
                     }
 
-                    (new NewLanguageAPI()).uploadAnswersToAPI(targetTranslation, null);
+                    (new NewLanguageAPI()).uploadAnswersToAPI(getActivity(), targetTranslation, null);
 
                     PullTargetTranslationTask task = new PullTargetTranslationTask(targetTranslation);
                     taskWatcher.watch(task);

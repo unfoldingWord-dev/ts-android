@@ -59,6 +59,42 @@ public class NewLanguageAPITest {
     }
 
     @Test
+    public void postQuestionnaireFromTargetDuplicateCode() throws Exception {
+        //given
+        final CountDownLatch signal = new CountDownLatch(1);
+        NewLanguagePackage newLang = getQuestionaireAndFillAnswers(mSourceLangID);
+        final JSONObject uploadSuccess = new JSONObject();
+        TargetTranslation targetTranslation = createDummyTargetTranslationPackage(newLang);
+        mApi.uploadAnswersToAPI(null, targetTranslation, null); // send once
+        newLang.setUploaded(false); // reset to force upload next backup
+        newLang.commit(mTempDir);
+
+        //when
+        mApi.uploadAnswersToAPI(null, targetTranslation, new NewLanguageAPI.OnRequestFinished() { // now send duplicate
+            @Override
+            public void onRequestFinished(boolean success, Response response) {
+                try {
+                    uploadSuccess.put("success", success);
+                    if(response != null) {
+                        uploadSuccess.putOpt("responseData", response.data);
+                        uploadSuccess.putOpt("responseException", response.exception);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                signal.countDown();
+            }
+        });
+
+        //then
+        signal.await(30, TimeUnit.SECONDS);
+        assertTrue(uploadSuccess.getBoolean("success"));
+        assertNull(uploadSuccess.opt("responseException"));
+        assertNotNull(uploadSuccess.optString("responseData"));
+        assertTrue(uploadSuccess.optString("responseData").indexOf(NewLanguageAPI.DUPLICATE_KEY_ERROR) >= 0);
+    }
+
+    @Test
     public void postQuestionnaireFromTarget() throws Exception {
         //given
         final CountDownLatch signal = new CountDownLatch(1);
@@ -67,7 +103,7 @@ public class NewLanguageAPITest {
         TargetTranslation targetTranslation = createDummyTargetTranslationPackage(newLang);
 
         //when
-        mApi.uploadAnswersToAPI(targetTranslation, new NewLanguageAPI.OnRequestFinished() {
+        mApi.uploadAnswersToAPI(null, targetTranslation, new NewLanguageAPI.OnRequestFinished() {
             @Override
             public void onRequestFinished(boolean success, Response response) {
                 try {
@@ -142,11 +178,29 @@ public class NewLanguageAPITest {
         //given
 
         //when
-        JSONObject response = mApi.readQuestionnaireFromServer();
+        Response response = mApi.readQuestionnaireFromServer();
 
         //then
         assertNotNull(response);
-        assertTrue(response.getJSONArray("languages").getJSONObject(0).getInt("questionnaire_id") > 0);
+        verifyQuestionnaireID(response);
+    }
+
+    private void verifyQuestionnaireID(Response response) throws JSONException {
+        JSONObject questionnaire = mApi.parseServerFetchResponse(response);
+        assertTrue(questionnaire.getJSONArray("languages").getJSONObject(0).getInt("questionnaire_id") > 0);
+    }
+
+    @Test
+    public void getQuestionnaireInvalidURL() throws JSONException {
+        //given
+        mApi.setNewLangUrl(NewLanguageAPI.NEW_LANGUAGE_URL_DEBUG + "dummy/");
+
+        //when
+        Response response = mApi.readQuestionnaireFromServer();
+
+        //then
+        assertNotNull(response);
+        assertNull(mApi.parseServerFetchResponse(response));
     }
 
     @Test
@@ -155,11 +209,11 @@ public class NewLanguageAPITest {
         mApi.setNewLangUrl(NewLanguageAPI.NEW_LANGUAGE_URL);
 
         //when
-        JSONObject response = mApi.readQuestionnaireFromServer();
+        Response response = mApi.readQuestionnaireFromServer();
 
         //then
         assertNotNull(response);
-        assertTrue(response.getJSONArray("languages").getJSONObject(0).getInt("questionnaire_id") > 0);
+        verifyQuestionnaireID(response);
     }
 
     private NewLanguagePackage getQuestionaireAndFillAnswers(String sourceLangID) throws JSONException {
@@ -179,7 +233,7 @@ public class NewLanguageAPITest {
     }
 
     private String getQuestions() throws JSONException {
-        JSONObject response = mApi.readQuestionnaireFromServer();
+        Response response = mApi.readQuestionnaireFromServer();
         return response.toString();
     }
 }

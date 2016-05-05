@@ -703,4 +703,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="keep_server_changes">Keep server changes</string>
     <string name="keep_local_changes">Keep my changes</string>
     <string name="new_lang_question_n">New Language Questions - Page <xliff:g example="1" id="page_num">%1$d</xliff:g> of <xliff:g example="10" id="page_count">%2$d</xliff:g></string>
+    <string name="new_lang_api_upload_failure_title">New Language Error</string>
+    <string name="new_lang_api_upload_failure">We could not save the answers to the New Language Questionnaire.  We will try again the next time you</string>
 </resources>

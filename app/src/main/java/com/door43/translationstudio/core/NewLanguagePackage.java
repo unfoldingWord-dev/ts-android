@@ -144,6 +144,7 @@ public class NewLanguagePackage {
      */
     public JSONObject toJson() throws JSONException {
         JSONObject newLanguageData = new JSONObject();
+        newLanguageData.put(UPLOADED, uploaded);
         newLanguageData.put(API_REQUEST_ID, requestID);
         newLanguageData.put(API_TEMP_CODE, tempLanguageCode);
         newLanguageData.put(LANGUAGE_NAME, languageName);
@@ -151,7 +152,6 @@ public class NewLanguagePackage {
         newLanguageData.put(API_REQUESTER, requester);
         newLanguageData.put(API_APP, app);
         newLanguageData.put(API_QUESTIONNAIRE_ID, questionaireID);
-        newLanguageData.put(UPLOADED, uploaded);
         return newLanguageData;
     }
 
