@@ -21,7 +21,7 @@ import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.CloneRepositoryTask;
-import com.door43.translationstudio.tasks.GetUserRepositories;
+import com.door43.translationstudio.tasks.GetUserRepositoriesTask;
 import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
 import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.util.tasks.ManagedTask;
@@ -64,7 +64,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
             @Override
             public void onClick(View v) {
                 taskWatcher.stop();
-                GetUserRepositories task = (GetUserRepositories) TaskManager.getTask(GetUserRepositories.TASK_ID);
+                GetUserRepositoriesTask task = (GetUserRepositoriesTask) TaskManager.getTask(GetUserRepositoriesTask.TASK_ID);
                 if (task != null) {
                     task.stop();
                     TaskManager.cancelTask(task);
@@ -110,7 +110,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
         }
 
         // connect to existing task
-        GetUserRepositories reposTask = (GetUserRepositories) TaskManager.getTask(GetUserRepositories.TASK_ID);
+        GetUserRepositoriesTask reposTask = (GetUserRepositoriesTask) TaskManager.getTask(GetUserRepositoriesTask.TASK_ID);
         CloneRepositoryTask cloneTask = (CloneRepositoryTask) TaskManager.getTask(CloneRepositoryTask.TASK_ID);
         if (reposTask != null) {
             taskWatcher.watch(reposTask);
@@ -118,9 +118,9 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
             taskWatcher.watch(cloneTask);
         } else if(repositories.size() == 0) {
             // start task
-            reposTask = new GetUserRepositories();
+            reposTask = new GetUserRepositoriesTask();
             taskWatcher.watch(reposTask);
-            TaskManager.addTask(reposTask, GetUserRepositories.TASK_ID);
+            TaskManager.addTask(reposTask, GetUserRepositoriesTask.TASK_ID);
         }
 
         return v;
@@ -131,8 +131,8 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
         taskWatcher.stop();
         TaskManager.clearTask(task);
 
-        if (task instanceof GetUserRepositories) {
-            this.repositories = ((GetUserRepositories) task).getRepositories();
+        if (task instanceof GetUserRepositoriesTask) {
+            this.repositories = ((GetUserRepositoriesTask) task).getRepositories();
             adapter.setRepositories(repositories);
         } else if (task instanceof CloneRepositoryTask) {
             if (!task.isCanceled()) {
