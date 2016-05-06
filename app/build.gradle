@@ -6,7 +6,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.0.0'
+        classpath 'com.android.tools.build:gradle:2.1.0'
     }
 }
 
@@ -18,7 +18,7 @@ android {
     defaultConfig {
         applicationId "com.translationstudio.androidapp"
         minSdkVersion 15
-        targetSdkVersion 22
+        targetSdkVersion 23
         versionCode 126
         versionName "7.0"
         multiDexEnabled = true
