@@ -19,7 +19,7 @@ android {
         applicationId "com.translationstudio.androidapp"
         minSdkVersion 15
         targetSdkVersion 23
-        versionCode 126
+        versionCode 127
         versionName "7.0"
         multiDexEnabled = true
     }
