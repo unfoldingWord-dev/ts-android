@@ -130,6 +130,17 @@ public class DocumentFileItem {
     }
 
     /**
+     * Checks if this file is a translation archive
+     * @return
+     */
+    public boolean isFileMatchesExtension(String extension) {
+        return !isUpButton
+                && file != null
+                && !file.isDirectory()
+                && FilenameUtils.getExtension(file.getName()).equalsIgnoreCase(extension);
+    }
+
+    /**
      * Checks if this file is a zip file
      * @return
      */

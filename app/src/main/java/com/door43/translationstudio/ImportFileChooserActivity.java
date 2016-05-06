@@ -33,8 +33,7 @@ import java.util.List;
  */
 public class ImportFileChooserActivity extends BaseActivity {
 
-    public static final String EXTRAS_RAW_FILE = "extras_raw_file";
-    public static final String EXTRAS_NO_ZIPZ = "extras_no_zipz";
+    public static final String EXTRAS_ACCEPTED_EXTENSIONS = "extras_accepted_file_extensions";
 
     public static final String FOLDER_KEY = "folder";
     public static final String FILE_PATH_KEY = "file_path";
@@ -53,8 +52,7 @@ public class ImportFileChooserActivity extends BaseActivity {
     private DocumentFile mCurrentDir;
     private String mType;
 
-    private boolean mRawFileSupport = false;
-    private boolean mNoZipFileSupport = false;
+    private String[] mAcceptedExtensions = { Translator.ARCHIVE_EXTENSION };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,16 +89,8 @@ public class ImportFileChooserActivity extends BaseActivity {
                 int position = mFileList.getCheckedItemPosition();
                 if (position >= 0) {
                     selectedItem = mAdapter.getItem(position);
-                    if (!selectedItem.file.isDirectory()) {
-                        if (selectedItem.isTranslationArchive()) {
-                            itemSelected = true;
-                        } else if ( mRawFileSupport ) {
-                            if(mNoZipFileSupport && selectedItem.isThisZipFile()) {
-                                itemSelected = false;
-                            } else {
-                                itemSelected = true;
-                            }
-                        }
+                    if (isUsableFileName(selectedItem)) {
+                        itemSelected = true;
                     }
                 }
 
@@ -161,34 +151,45 @@ public class ImportFileChooserActivity extends BaseActivity {
                     loadDocFileList(selectedItem.file);
                     return;
                 } else {   // file item selected
-                    if (selectedItem.isTranslationArchive()) {
+                    if (isUsableFileName(selectedItem)) {
                         mAdapter.setSelectedPosition(position);
                         mFileList.setItemChecked(position, true);
                         return;
-                    } else if(mRawFileSupport) {
-                        if(mNoZipFileSupport && selectedItem.isThisZipFile()) {
-                            // ignore zips if support disabled
-                        } else {
-                            mAdapter.setSelectedPosition(position);
-                            mFileList.setItemChecked(position, true);
-                            return;
-                        }
                     }
                 }
 
                 //clear selections
                 mAdapter.setSelectedPosition(-1);
                 mFileList.clearChoices();
-             }
+            }
         });
 
         Intent intent = getIntent();
         mType = intent.getType();
         Bundle args = intent.getExtras();
-        mRawFileSupport = args.getBoolean(EXTRAS_RAW_FILE, false);
-        mNoZipFileSupport = args.getBoolean(EXTRAS_NO_ZIPZ, false);
+        if(args != null) {
+            String extenstions = args.getString(EXTRAS_ACCEPTED_EXTENSIONS, null);
+            if (extenstions != null) {
+                mAcceptedExtensions = extenstions.split(",");
+            }
+        }
 
         showFolderFromSdCard();
+    }
+
+    /**
+     * returns true if the filename extension for item matches list that we are accepting
+     * @param item
+     * @return
+     */
+    private boolean isUsableFileName(DocumentFileItem item) {
+
+        for (String acceptedExtension : mAcceptedExtensions) {
+            if (item.isFileMatchesExtension(acceptedExtension)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

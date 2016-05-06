@@ -152,8 +152,9 @@ public class ImportDialog extends DialogFragment {
         }
 
         intent.setType(typeStr);
-        intent.putExtra(ImportFileChooserActivity.EXTRAS_RAW_FILE, doingUsfmImport);
-        intent.putExtra(ImportFileChooserActivity.EXTRAS_NO_ZIPZ, doingUsfmImport); // TODO: 4/22/16 this will need to be removed to enable zip file import
+        if(doingUsfmImport) {
+            intent.putExtra(ImportFileChooserActivity.EXTRAS_ACCEPTED_EXTENSIONS, "usfm");
+        }
         startActivityForResult(intent, doingUsfmImport ? IMPORT_USFM_PROJECT_FROM_SD_REQUEST : IMPORT_PROJECT_FROM_SD_REQUEST);
     }
 
@@ -217,12 +218,7 @@ public class ImportDialog extends DialogFragment {
     private void doUsfmImportUri(Uri uri) {
         String path = uri.toString();
         String ext = FilenameUtils.getExtension(path).toLowerCase();
-        boolean tstudio = ext.equalsIgnoreCase(Translator.ARCHIVE_EXTENSION);
-        if (tstudio) {
-            importUri(uri);
-        } else {
-            ImportUsfmActivity.startActivityForUriImport(getActivity(), uri);
-        }
+        ImportUsfmActivity.startActivityForUriImport(getActivity(), uri);
     }
 
     /**

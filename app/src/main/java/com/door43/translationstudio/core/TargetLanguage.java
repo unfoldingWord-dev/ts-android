@@ -79,10 +79,10 @@ public class TargetLanguage implements Comparable {
             json.put("lr", this.region);
             return json;
         } catch (Exception e) {
-            return null;
+            e.printStackTrace();
         }
+        return null;
     }
-
 
     public LanguageDirection getDirection() {
         return direction;

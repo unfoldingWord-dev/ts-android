@@ -186,6 +186,7 @@ public class ImportUsfm {
 
             return json;
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
@@ -201,6 +202,7 @@ public class ImportUsfm {
             JSONObject jsonObject = new JSONObject(jsonStr);
             return ImportUsfm.newInstance(context, jsonObject);
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
@@ -250,6 +252,7 @@ public class ImportUsfm {
                     MissingNameItem.fromJsonArray(getOptJsonArray(json,"MissingNames")));
 
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
@@ -1313,6 +1316,7 @@ public class ImportUsfm {
             JSONArray jsonArray = new JSONArray(jsonStr);
             return fromJsonArrayToFiles(jsonArray);
         } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -1341,6 +1345,7 @@ public class ImportUsfm {
             JSONArray jsonArray = new JSONArray(jsonStr);
             return fromJsonArrayToStrings(jsonArray);
         } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -1401,6 +1406,7 @@ public class ImportUsfm {
                 return obj;
             }
         } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }

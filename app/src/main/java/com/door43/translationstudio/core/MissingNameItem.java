@@ -35,6 +35,7 @@ public class MissingNameItem {
 
             return jsonObject;
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
@@ -46,6 +47,7 @@ public class MissingNameItem {
             String contents = (String) getOpt(jsonObject,"contents");
             return new MissingNameItem(description, invalidName, contents);
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
@@ -63,6 +65,7 @@ public class MissingNameItem {
             JSONArray jsonArray = new JSONArray(jsonStr);
             return fromJsonArray(jsonArray);
         } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -88,6 +91,7 @@ public class MissingNameItem {
                 return json.get(key);
             }
         } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }
