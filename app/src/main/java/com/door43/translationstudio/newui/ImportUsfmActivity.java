@@ -51,6 +51,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
     public static final String STATE_USFM = "state_usfm";
     public static final String STATE_CURRENT_STATE = "state_current_state";
     public static final String STATE_PROMPT_NAME_COUNTER = "state_prompt_name_counter";
+    public static final String STATE_FINISH_SUCCESS = "state_finish_success";
     private Searchable mFragment;
 
     public static final String TAG = ImportUsfmActivity.class.getSimpleName();
@@ -62,6 +63,8 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
     private ImportUsfm mUsfm;
     private Handler mHand;
     private eImportState mCurrentState = eImportState.needLanguage;
+    private CustomAlertDialog mStatusDialog;
+    private boolean mFinishedSuccess = false;
 
 
     @Override
@@ -73,7 +76,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
             if (savedInstanceState != null) {
                 mFragment = (Searchable) getFragmentManager().findFragmentById(R.id.fragment_container);
             } else {
-                startState(eImportState.needLanguage);
+                setActivityStateTo(eImportState.needLanguage);
             }
         }
     }
@@ -194,7 +197,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
             mHand.post(new Runnable() {
                 @Override
                 public void run() {
-                    startState(eImportState.promptingForBookName);
+                    setActivityStateTo(eImportState.promptingForBookName);
                 }
             });
         }
@@ -219,8 +222,8 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                 message = String.format(format, description);
             }
 
-            CustomAlertDialog dlg = CustomAlertDialog.Create(ImportUsfmActivity.this);
-            dlg.setTitle(R.string.title_activity_import_usfm_language)
+            mStatusDialog = CustomAlertDialog.Create(ImportUsfmActivity.this);
+            mStatusDialog.setTitle(R.string.title_activity_import_usfm_language)
                     .setMessage(message)
                     .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
                         @Override
@@ -268,7 +271,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
      * that user wants to import.
      */
     private void usfmVerifyImport() {
-        mCurrentState = eImportState.showingResults;
+        mCurrentState = eImportState.showingProcessingResults;
 
         mHand.post(new Runnable() {
             @Override
@@ -280,8 +283,8 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                     String language = mUsfm.getLanguageTitle();
                     String message = language + "\n" + results;
 
-                    CustomAlertDialog.Create(ImportUsfmActivity.this)
-                            .setTitle(mUsfm.isProcessSuccess() ? R.string.title_import_usfm_summary : R.string.title_import_usfm_error)
+                    mStatusDialog = CustomAlertDialog.Create(ImportUsfmActivity.this);
+                    mStatusDialog.setTitle(mUsfm.isProcessSuccess() ? R.string.title_import_usfm_summary : R.string.title_import_usfm_error)
                             .setMessage(message)
                             .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
                                 @Override
@@ -312,11 +315,8 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
      */
     private void usfmImportDone(boolean cancelled) {
         mCurrentState = eImportState.finished;
-        mUsfm.cleanup();
-        if(mProgressDialog != null) {
-            mProgressDialog.dismiss();
-            mProgressDialog = null;
-        }
+        cleanupUsfmImport();
+
         if (cancelled) {
             cancelled();
         } else {
@@ -336,6 +336,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                 final Translator translator = AppContext.getTranslator();
                 int count = 0;
                 int size = imports.length;
+                boolean success = true;
                 try {
                     for (File newDir : imports) {
 
@@ -361,6 +362,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                                     localTargetTranslation.merge(newDir);
                                 } catch (Exception e) {
                                     e.printStackTrace();
+                                    success = false;
                                     continue;
                                 }
                             } else {
@@ -377,17 +379,44 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
                 } catch (Exception e) {
                     Logger.e(TAG, "Failed to import folder " + imports.toString());
+                    success = false;
                 }
 
+                mFinishedSuccess = success;
                 mHand.post(new Runnable() {
                     @Override
                     public void run() {
-                        usfmImportDone(false);
+                        usfmShowImportResults();
                     }
                 });
             }
         };
         thread.start();
+    }
+
+
+    /**
+     * show results of import
+     */
+    private void usfmShowImportResults() {
+        mCurrentState = eImportState.showingImportResults;
+
+        mStatusDialog = CustomAlertDialog.Create(ImportUsfmActivity.this);
+        mStatusDialog.setTitle(mUsfm.isProcessSuccess() ? R.string.title_import_usfm_results : R.string.title_import_usfm_error)
+                .setMessage(mFinishedSuccess ? R.string.import_usfm_success : R.string.import_usfm_failed)
+                .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mProgressDialog.show();
+                        mProgressDialog.setProgress(0);
+                        mProgressDialog.setTitle(R.string.reading_usfm);
+                        mProgressDialog.setMessage("");
+                        usfmImportDone(false);
+                    }
+                })
+                .show("USFMImportResults");
+
+        cleanupUsfmImport();
     }
 
     /**
@@ -571,9 +600,11 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                 mCount = new Counter(count + 1); // backup one
                 mMissingNameItems = mUsfm.getBooksMissingNames();
             }
+
+            savedInstanceState.getBoolean(STATE_FINISH_SUCCESS, false);
         }
 
-        startState(mCurrentState);
+        setActivityStateTo(mCurrentState);
     }
 
     /**
@@ -582,7 +613,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
      *
      * @param currentState
      */
-    private void startState(eImportState currentState) {
+    private void setActivityStateTo(eImportState currentState) {
         mCurrentState = currentState;
 
         if (mUsfm != null) {
@@ -613,9 +644,13 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                 }
                 // otherwise we go down to showing results
 
-            case showingResults:
+            case showingProcessingResults:
                 showProgressDialog();
                 usfmVerifyImport();
+                break;
+
+            case showingImportResults:
+                usfmShowImportResults();
                 break;
 
             case importingFiles:
@@ -641,12 +676,16 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                 setBook(null);
                 break;
 
-            case showingResults:
+            case showingProcessingResults:
             case processingFiles:
                 if (mUsfm != null) {
                     mUsfm.cleanup();
                 }
-                startState(eImportState.needLanguage);
+                setActivityStateTo(eImportState.needLanguage);
+                break;
+
+            case showingImportResults:
+                usfmImportDone(false);
                 break;
 
             default:
@@ -656,6 +695,12 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
     }
 
     public void onSaveInstanceState(Bundle outState) {
+
+        if(mStatusDialog != null) {
+            mStatusDialog.dismiss();
+        }
+        mStatusDialog = null;
+
         eImportState currentState = mCurrentState; //capture state before it is changed
         outState.putInt(STATE_CURRENT_STATE, currentState.getValue());
 
@@ -683,6 +728,8 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         } else {
             outState.remove(STATE_PROMPT_NAME_COUNTER);
         }
+
+        outState.putBoolean(STATE_FINISH_SUCCESS, mFinishedSuccess);
 
         mProgressDialog = null;
 
@@ -728,9 +775,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
      * user cancelled import
      */
     private void cancelled() {
-        if (mUsfm != null) {
-            mUsfm.cleanup();
-        }
+        cleanupUsfmImport();
 
         Intent data = new Intent();
         setResult(RESULT_CANCELED, data);
@@ -741,13 +786,22 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
      * user completed import
      */
     private void finished() {
-        if (mUsfm != null) {
-            mUsfm.cleanup();
-        }
+        cleanupUsfmImport();
 
         Intent data = new Intent();
         setResult(RESULT_OK, data);
         finish();
+    }
+
+    private void cleanupUsfmImport() {
+        if (mUsfm != null) {
+            mUsfm.cleanup();
+            mUsfm = null;
+        }
+        if(mProgressDialog != null) {
+            mProgressDialog.dismiss();
+            mProgressDialog = null;
+        }
     }
 
     public interface OnFinishedListener {
@@ -765,9 +819,10 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         needLanguage(0),
         processingFiles(1),
         promptingForBookName(2),
-        showingResults(3),
+        showingProcessingResults(3),
         importingFiles(4),
-        finished(5);
+        showingImportResults(5),
+        finished(6);
 
 
         private int _value;

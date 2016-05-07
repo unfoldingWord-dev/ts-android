@@ -697,9 +697,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="title_activity_import_usfm_language">Import USFM Project - Select Language</string>
     <string name="title_activity_import_usfm_book">Import USFM Project - Select Book For: </string>
     <string name="label_import_usfm">Import USFM</string>
+    <string name="import_usfm_success">USFM file Import Success</string>
+    <string name="import_usfm_failed">USFM file Import Failed</string>
     <string name="title_import_usfm_error_book">Error Importing USFM book \'%s\'</string>
     <string name="title_import_usfm_error">Error Importing USFM</string>
-    <string name="title_import_usfm_summary">USFM Import Summary</string>
+    <string name="title_processing_usfm_summary">USFM Processing Summary</string>
+    <string name="title_import_usfm_results">USFM Import Results</string>
     <string name="zip_read_error">Error reading Zip</string>
     <string name="file_read_error">Error reading File</string>
     <string name="file_write_error">Error writing File</string>
