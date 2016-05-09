@@ -337,15 +337,33 @@ public class ImportUsfm {
         String results = "";
         String format = mContext.getResources().getString(R.string.found_book);
         for (int i = 0; i <= mCurrentBook; i++) {
-            String bookName = String.format(format, mFoundBooks.get(i));
+            String bookName = mFoundBooks.get(i);
+            String bookNameCleaned = getCleanedBookName(format, bookName);
             String errors = mErrors.get(i);
             if(errors.isEmpty()) {
                 errors = mContext.getResources().getString(R.string.no_error);
             }
-            String currentResults = "\n" + (i+1) + " - " + bookName + "\n" + errors;
+            String currentResults = "\n" + (i+1) + " - " + bookNameCleaned + "\n" + errors;
             results = results + currentResults + "\n";
         }
         return results;
+    }
+
+    /**
+     * cleanup uri escape characters
+     * @param format
+     * @param bookName
+     * @return
+     */
+    private String getCleanedBookName(String format, String bookName) {
+        String cleaned = bookName;
+        String[] parts = bookName.split("%3A");
+        if(parts.length == 2) { //look for URI prefix
+            cleaned = "SD_CARD/" + parts[1];
+        }
+        cleaned = Uri.decode(cleaned);
+
+        return String.format(format, cleaned);
     }
 
     /**

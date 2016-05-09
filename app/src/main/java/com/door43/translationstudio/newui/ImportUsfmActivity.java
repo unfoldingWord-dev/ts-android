@@ -284,7 +284,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                     String message = language + "\n" + results;
 
                     mStatusDialog = CustomAlertDialog.Create(ImportUsfmActivity.this);
-                    mStatusDialog.setTitle(mUsfm.isProcessSuccess() ? R.string.title_import_usfm_summary : R.string.title_import_usfm_error)
+                    mStatusDialog.setTitle(mUsfm.isProcessSuccess() ? R.string.title_processing_usfm_summary : R.string.title_import_usfm_error)
                             .setMessage(message)
                             .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
                                 @Override
@@ -362,7 +362,6 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                                     localTargetTranslation.merge(newDir);
                                 } catch (Exception e) {
                                     e.printStackTrace();
-                                    success = false;
                                     continue;
                                 }
                             } else {
@@ -402,15 +401,11 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         mCurrentState = eImportState.showingImportResults;
 
         mStatusDialog = CustomAlertDialog.Create(ImportUsfmActivity.this);
-        mStatusDialog.setTitle(mUsfm.isProcessSuccess() ? R.string.title_import_usfm_results : R.string.title_import_usfm_error)
+        mStatusDialog.setTitle(mFinishedSuccess ? R.string.title_import_usfm_results : R.string.title_import_usfm_error)
                 .setMessage(mFinishedSuccess ? R.string.import_usfm_success : R.string.import_usfm_failed)
                 .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        mProgressDialog.show();
-                        mProgressDialog.setProgress(0);
-                        mProgressDialog.setTitle(R.string.reading_usfm);
-                        mProgressDialog.setMessage("");
                         usfmImportDone(false);
                     }
                 })
@@ -731,6 +726,9 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
         outState.putBoolean(STATE_FINISH_SUCCESS, mFinishedSuccess);
 
+        if(mProgressDialog != null) {
+            mProgressDialog.dismiss();
+        }
         mProgressDialog = null;
 
         super.onSaveInstanceState(outState);

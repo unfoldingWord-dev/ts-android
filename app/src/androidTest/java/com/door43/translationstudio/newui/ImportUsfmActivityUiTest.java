@@ -116,12 +116,13 @@ public class ImportUsfmActivityUiTest {
         //when
         thenShouldShowMissingBookNameDialog();
         onView(withId(R.id.positiveButton)).perform(click());
-        onView(withText("Bible: NT")).perform(click());
-        onView(withText("Mark")).perform(click());
+        clickOnViewText("Bible: NT");
+        clickOnViewText("Mark");
 
         //then
+        matchSummaryDialog(R.string.title_processing_usfm_summary, "mrk", true);
         rotateScreen();
-        matchSummaryDialog(R.string.title_import_usfm_summary, "mrk", true);
+        matchSummaryDialog(R.string.title_processing_usfm_summary, "mrk", true);
     }
 
 
@@ -133,16 +134,19 @@ public class ImportUsfmActivityUiTest {
         Intent intent = getIntentForTestFile(testFile);
         mActivityRule.launchActivity(intent);
         checkDisplayState(R.string.title_activity_import_usfm_language, true);
-
-        //when
         onView(withText("aa")).perform(click());
         boolean seen = waitWhileDisplayed(R.string.reading_usfm);
-        matchSummaryDialog(R.string.title_import_usfm_summary, "mrk", true);
+        matchSummaryDialog(R.string.title_processing_usfm_summary, "mrk", true);
         rotateScreen();
+        matchSummaryDialog(R.string.title_processing_usfm_summary, "mrk", true);
+
+        //when
+        onView(withId(R.id.positiveButton)).perform(click());
 
         //then
-        matchSummaryDialog(R.string.title_import_usfm_summary, "mrk", true);
+        matchImportResultsDialog(true);
         rotateScreen();
+        matchImportResultsDialog(true);
     }
 
     /**
@@ -152,9 +156,51 @@ public class ImportUsfmActivityUiTest {
      * @param noErrors
      */
     protected void matchSummaryDialog(int title, String book, boolean noErrors) {
+        for(int i = 0; i < 10; i++) { // wait until dialog is displayed
+            try {
+                thenShouldHaveSummaryDialog(title);
+                break;
+            } catch (Exception e) {
+            }
+        }
         thenShouldHaveSummaryDialog(title);
         shouldHaveFoundBook(book);
         checkForImportErrors(noErrors);
+    }
+
+    /**
+     * wait until view with text is shown
+     * @param matchText
+     */
+    protected void clickOnViewText(String matchText) {
+        for(int i = 0; i < 10; i++) { // wait until dialog is displayed
+            try {
+                onView(withText(matchText)).check(matches(withText(matchText)));
+                break;
+            } catch (Exception e) {
+            }
+        }
+        onView(withText(matchText)).check(matches(withText(matchText)));
+        onView(withText(matchText)).perform(click());
+
+    }
+
+    /**
+     * match expected values on summary dialog
+     * @param success
+     */
+    protected void matchImportResultsDialog(boolean success) {
+        int matchTitle = success ? R.string.title_import_usfm_results : R.string.title_import_usfm_error;
+        int matchText = success ? R.string.import_usfm_success : R.string.import_usfm_failed;
+        for(int i = 0; i < 10; i++) { // wait until dialog is displayed
+            try {
+                thenShouldHaveSummaryDialog( matchTitle );
+                break;
+            } catch (Exception e) {
+            }
+        }
+        thenShouldHaveSummaryDialog( matchTitle );
+        onView(withId(R.id.dialog_content)).check(matches(withText(matchText)));
     }
 
     /**
@@ -181,6 +227,12 @@ public class ImportUsfmActivityUiTest {
     }
 
     protected void thenShouldShowMissingBookNameDialog() {
+        for(int i = 0; i < 10; i++) { // wait until displayed
+            try {
+                onView(withId(R.id.dialog_title)).check(matches(withText(R.string.title_activity_import_usfm_language)));
+            } catch (Exception e) {
+            }
+        }
         onView(withId(R.id.dialog_title)).check(matches(withText(R.string.title_activity_import_usfm_language)));
     }
 
