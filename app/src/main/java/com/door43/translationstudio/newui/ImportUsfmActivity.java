@@ -339,6 +339,10 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                 final int numSteps = 4;
                 final float subStepSize = 100f / (float) numSteps  / (float) size;
 
+                if(mProgressDialog != null) {
+                    mProgressDialog.setTitle(R.string.importing_usfm);
+                }
+
                 boolean success = true;
                 try {
                     for (File newDir : imports) {
@@ -615,7 +619,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                 mMissingNameItems = mUsfm.getBooksMissingNames();
             }
 
-            savedInstanceState.getBoolean(STATE_FINISH_SUCCESS, false);
+            mFinishedSuccess = savedInstanceState.getBoolean(STATE_FINISH_SUCCESS, false);
         }
 
         setActivityStateTo(mCurrentState);

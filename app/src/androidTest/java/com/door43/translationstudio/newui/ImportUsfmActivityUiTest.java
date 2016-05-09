@@ -120,6 +120,7 @@ public class ImportUsfmActivityUiTest {
         clickOnViewText("Mark");
 
         //then
+        boolean seen2 = waitWhileDisplayed(R.string.reading_usfm);
         matchSummaryDialog(R.string.title_processing_usfm_summary, "mrk", true);
         rotateScreen();
         matchSummaryDialog(R.string.title_processing_usfm_summary, "mrk", true);
@@ -130,20 +131,21 @@ public class ImportUsfmActivityUiTest {
     public void markValid() throws Exception {
 
         //given
-        String testFile = "usfm/mrk.usfm.txt";
+        String testFile = "usfm/66-JUD.usfm";
         Intent intent = getIntentForTestFile(testFile);
         mActivityRule.launchActivity(intent);
         checkDisplayState(R.string.title_activity_import_usfm_language, true);
         onView(withText("aa")).perform(click());
         boolean seen = waitWhileDisplayed(R.string.reading_usfm);
-        matchSummaryDialog(R.string.title_processing_usfm_summary, "mrk", true);
+        matchSummaryDialog(R.string.title_processing_usfm_summary, "jud", true);
         rotateScreen();
-        matchSummaryDialog(R.string.title_processing_usfm_summary, "mrk", true);
+        matchSummaryDialog(R.string.title_processing_usfm_summary, "jud", true);
 
         //when
         onView(withId(R.id.positiveButton)).perform(click());
 
         //then
+        boolean seen2 = waitWhileDisplayed(R.string.importing_usfm);
         matchImportResultsDialog(true);
         rotateScreen();
         matchImportResultsDialog(true);
@@ -156,14 +158,7 @@ public class ImportUsfmActivityUiTest {
      * @param noErrors
      */
     protected void matchSummaryDialog(int title, String book, boolean noErrors) {
-        for(int i = 0; i < 10; i++) { // wait until dialog is displayed
-            try {
-                thenShouldHaveSummaryDialog(title);
-                break;
-            } catch (Exception e) {
-            }
-        }
-        thenShouldHaveSummaryDialog(title);
+        thenShouldHaveDialogTitle(title);
         shouldHaveFoundBook(book);
         checkForImportErrors(noErrors);
     }
@@ -173,7 +168,7 @@ public class ImportUsfmActivityUiTest {
      * @param matchText
      */
     protected void clickOnViewText(String matchText) {
-        for(int i = 0; i < 10; i++) { // wait until dialog is displayed
+        for(int i = 0; i < 20; i++) { // wait until dialog is displayed
             try {
                 onView(withText(matchText)).check(matches(withText(matchText)));
                 break;
@@ -182,7 +177,6 @@ public class ImportUsfmActivityUiTest {
         }
         onView(withText(matchText)).check(matches(withText(matchText)));
         onView(withText(matchText)).perform(click());
-
     }
 
     /**
@@ -192,14 +186,7 @@ public class ImportUsfmActivityUiTest {
     protected void matchImportResultsDialog(boolean success) {
         int matchTitle = success ? R.string.title_import_usfm_results : R.string.title_import_usfm_error;
         int matchText = success ? R.string.import_usfm_success : R.string.import_usfm_failed;
-        for(int i = 0; i < 10; i++) { // wait until dialog is displayed
-            try {
-                thenShouldHaveSummaryDialog( matchTitle );
-                break;
-            } catch (Exception e) {
-            }
-        }
-        thenShouldHaveSummaryDialog( matchTitle );
+        thenShouldHaveDialogTitle( matchTitle );
         onView(withId(R.id.dialog_content)).check(matches(withText(matchText)));
     }
 
@@ -227,17 +214,19 @@ public class ImportUsfmActivityUiTest {
     }
 
     protected void thenShouldShowMissingBookNameDialog() {
-        for(int i = 0; i < 10; i++) { // wait until displayed
+        thenShouldHaveDialogTitle(R.string.title_activity_import_usfm_language);
+    }
+
+    protected void thenShouldHaveDialogTitle(int title) {
+        String titleStr = AppContext.context().getResources().getString(title);
+        for(int i = 0; i < 20; i++) { // wait until displayed
             try {
-                onView(withId(R.id.dialog_title)).check(matches(withText(R.string.title_activity_import_usfm_language)));
+                onView(withId(R.id.dialog_title)).check(matches(withText(titleStr)));
+                break;
             } catch (Exception e) {
             }
         }
-        onView(withId(R.id.dialog_title)).check(matches(withText(R.string.title_activity_import_usfm_language)));
-    }
-
-    protected void thenShouldHaveSummaryDialog(int title) {
-        onView(withId(R.id.dialog_title)).check(matches(withText(title)));
+        onView(withId(R.id.dialog_title)).check(matches(withText(titleStr)));
     }
 
     /**
@@ -258,14 +247,17 @@ public class ImportUsfmActivityUiTest {
     private boolean waitWhileDisplayed(String text) {
         boolean done = false;
         boolean viewSeen = false;
-        ViewInteraction interaction = onView(withText(text));
-        while(!done) {
+        int maxCount = 1000; // sanity limit
+        for (int i = 0; (i < maxCount) && !done ; i++) {
             try {
-                interaction.check(matches(isCompletelyDisplayed()));
+                onView(withText(text)).check(matches(isCompletelyDisplayed()));
                 viewSeen = true;
             } catch (Exception e) {
                 done = true;
             }
+        }
+        if(!done) {
+            String msg = "Max count reached";
         }
         return viewSeen;
     }
