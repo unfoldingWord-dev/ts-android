@@ -381,6 +381,7 @@ public class SettingsActivity extends PreferenceActivity {
 //            bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTOSAVE));
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTH_SERVER));
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_GIT_SERVER));
+            bindPreferenceSummaryToValue(findPreference(KEY_PREF_GOGS_API));
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTH_SERVER_PORT));
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_GIT_SERVER_PORT));
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_MEDIA_SERVER));
