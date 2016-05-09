@@ -336,17 +336,23 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                 final Translator translator = AppContext.getTranslator();
                 int count = 0;
                 int size = imports.length;
+                final int numSteps = 4;
+                final float subStepSize = 100f / (float) numSteps  / (float) size;
+
                 boolean success = true;
                 try {
                     for (File newDir : imports) {
 
                         String filename = newDir.getName().toString();
-                        String format = getResources().getString(R.string.importing_file);
                         float progress = 100f * count++ / (float) size;
-                        updateProcessUsfmProgress(String.format(format, filename), Math.round(progress));
+                        updateImportProgress(filename, progress);
 
                         TargetTranslation newTargetTranslation = TargetTranslation.open(newDir);
                         if (newTargetTranslation != null) {
+                            newTargetTranslation.commitSync();
+
+                            updateImportProgress(filename, progress + subStepSize);
+
                             // TRICKY: the correct id is pulled from the manifest to avoid propagating bad folder names
                             String targetTranslationId = newTargetTranslation.getId();
                             File localDir = new File(translator.getPath(), targetTranslationId);
@@ -357,11 +363,14 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                                     localTargetTranslation.commitSync();
                                 }
 
+                                updateImportProgress(filename, progress + 2*subStepSize);
+
                                 // merge translations
                                 try {
                                     localTargetTranslation.merge(newDir);
                                 } catch (Exception e) {
-                                    e.printStackTrace();
+                                    Logger.e(TAG, "Failed to merge import folder " + newDir.toString(), e);
+                                    success = false;
                                     continue;
                                 }
                             } else {
@@ -377,7 +386,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                     updateProcessUsfmProgress("", 100);
 
                 } catch (Exception e) {
-                    Logger.e(TAG, "Failed to import folder " + imports.toString());
+                    Logger.e(TAG, "Failed to import folder " + imports.toString(), e);
                     success = false;
                 }
 
@@ -391,6 +400,16 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
             }
         };
         thread.start();
+    }
+
+    /**
+     * update the import progress dialog
+     * @param filename
+     * @param progress
+     */
+    private void updateImportProgress(String filename, float progress) {
+        String format = getResources().getString(R.string.importing_file);
+        updateProcessUsfmProgress(String.format(format, filename), Math.round(progress));
     }
 
 
