@@ -76,7 +76,7 @@ public class ImportUsfmActivityUiTest {
             mTempDir = null;
             mTestFile = null;
         }
-        mActivityRule.getActivity().finish();
+        finishActivity();
     }
 
     @Test
@@ -219,7 +219,7 @@ public class ImportUsfmActivityUiTest {
 
     protected void thenShouldHaveDialogTitle(int title) {
         String titleStr = AppContext.context().getResources().getString(title);
-        for(int i = 0; i < 20; i++) { // wait until displayed
+        for(int i = 0; i < 40; i++) { // wait until displayed
             try {
                 onView(withId(R.id.dialog_title)).check(matches(withText(titleStr)));
                 break;
@@ -321,6 +321,16 @@ public class ImportUsfmActivityUiTest {
                 (orientation == Configuration.ORIENTATION_PORTRAIT) ?
                         ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE :
                         ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    }
+
+    /**
+     *     finsih activity if still running
+     */
+    private void finishActivity() {
+        Activity activity = mActivityRule.getActivity();
+        if(activity != null) {
+            activity.finish();
+        }
     }
 
     /**

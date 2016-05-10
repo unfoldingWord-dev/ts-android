@@ -202,8 +202,13 @@ public class CustomAlertDialog extends DialogFragment {
 
     @Override
     public void dismiss() {
+
+        // clear windows and listeners
         mDialogDismissed = true;
         mNeutralListener = mPositiveListener = mNegativeListener = null;
+        mEditText = null;
+        mContentView = null;
+        mContext = null;
         super.dismiss();
     }
 

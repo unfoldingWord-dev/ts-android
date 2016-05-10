@@ -65,6 +65,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
     private eImportState mCurrentState = eImportState.needLanguage;
     private CustomAlertDialog mStatusDialog;
     private boolean mFinishedSuccess = false;
+    private boolean mShuttingDown = false;
 
 
     @Override
@@ -131,6 +132,10 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
      * creates and displays progress dialog if not yet created, otherwise reuses existing dialog
      */
     private void showProgressDialog() {
+        if(mShuttingDown) {
+            return;
+        }
+
         if (null == mProgressDialog) {
             mHand = new Handler(Looper.getMainLooper());
 
@@ -271,12 +276,16 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
      * that user wants to import.
      */
     private void usfmVerifyImport() {
+        if(mShuttingDown) {
+            return;
+        }
+
         mCurrentState = eImportState.showingProcessingResults;
 
         mHand.post(new Runnable() {
             @Override
             public void run() {
-                if(mProgressDialog != null) {
+                if (mProgressDialog != null) {
                     mProgressDialog.hide();
 
                     String results = mUsfm.getResultsString();
@@ -421,6 +430,10 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
      * show results of import
      */
     private void usfmShowImportResults() {
+        if(mShuttingDown) {
+            return;
+        }
+
         mCurrentState = eImportState.showingImportResults;
 
         mStatusDialog = CustomAlertDialog.Create(ImportUsfmActivity.this);
@@ -600,6 +613,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
     public void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
+        mShuttingDown = false;
         if (savedInstanceState != null) {
             String targetLanguageId = savedInstanceState.getString(STATE_TARGET_LANGUAGE_ID, null);
             if (targetLanguageId != null) {
@@ -620,9 +634,15 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
             }
 
             mFinishedSuccess = savedInstanceState.getBoolean(STATE_FINISH_SUCCESS, false);
-        }
 
-        setActivityStateTo(mCurrentState);
+            mHand = new Handler(Looper.getMainLooper());
+            mHand.post(new Runnable() {
+                @Override
+                public void run() {
+                    setActivityStateTo(mCurrentState);
+                }
+            });
+        }
     }
 
     /**
@@ -632,6 +652,11 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
      * @param currentState
      */
     private void setActivityStateTo(eImportState currentState) {
+        if(mShuttingDown) {
+            return;
+        }
+
+        Logger.i(TAG, "setActivityStateTo(" + currentState + ")");
         mCurrentState = currentState;
 
         if (mUsfm != null) {
@@ -714,10 +739,17 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
     public void onSaveInstanceState(Bundle outState) {
 
+        mShuttingDown = true;
+
         if(mStatusDialog != null) {
             mStatusDialog.dismiss();
         }
         mStatusDialog = null;
+
+        if(mProgressDialog != null) {
+            mProgressDialog.dismiss();
+        }
+        mProgressDialog = null;
 
         eImportState currentState = mCurrentState; //capture state before it is changed
         outState.putInt(STATE_CURRENT_STATE, currentState.getValue());
@@ -748,11 +780,6 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         }
 
         outState.putBoolean(STATE_FINISH_SUCCESS, mFinishedSuccess);
-
-        if(mProgressDialog != null) {
-            mProgressDialog.dismiss();
-        }
-        mProgressDialog = null;
 
         super.onSaveInstanceState(outState);
     }
