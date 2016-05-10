@@ -6,6 +6,8 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -210,6 +212,14 @@ public class SettingsActivity extends PreferenceActivity {
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_LOGGING_LEVEL));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_BACKUP_INTERVAL));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_TYPEFACE_SIZE));
+
+        final Preference appVersionPref = findPreference("app_version");
+        try {
+            PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+            appVersionPref.setSummary(pInfo.versionName + " - " + pInfo.versionCode);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     /** {@inheritDoc} */
@@ -361,6 +371,14 @@ public class SettingsActivity extends PreferenceActivity {
             bindPreferenceSummaryToValue(fontPref);
 
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_TYPEFACE_SIZE));
+
+            final Preference appVersionPref = findPreference("app_version");
+            try {
+                PackageInfo pInfo = AppContext.context().getPackageManager().getPackageInfo(AppContext.context().getPackageName(), 0);
+                appVersionPref.setSummary(pInfo.versionName + " - " + pInfo.versionCode);
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
         }
     }
 
