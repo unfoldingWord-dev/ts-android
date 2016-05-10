@@ -33,6 +33,9 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         mTargetLanguage = library.getTargetLanguage("es");
         mTestContext = getInstrumentation().getContext();
         mAppContext = AppContext.context();
+        if(AppContext.getProfile() == null) { // make sure this is initialized
+            AppContext.setProfile(new Profile("testing"));
+        }
     }
 
     @Override
@@ -199,10 +202,10 @@ public class ImportUsfmTest extends InstrumentationTestCase {
     }
 
     public void verifyResults(boolean success, boolean expected, JSONArray expectedBooks) throws JSONException {
-        assertEquals("results", expected, success);
-        assertEquals("results", expected, mUsfm.isProcessSuccess());
         String results = mUsfm.getResultsString();
         assertTrue("results text should not be empty", !results.isEmpty());
+        assertEquals("results", expected, success);
+        assertEquals("results", expected, mUsfm.isProcessSuccess());
         String[] resultLines = results.split("\n");
 
         int missingNamesCount = 0;
