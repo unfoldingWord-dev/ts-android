@@ -13,11 +13,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Retrieves a list of target translations that have been backed up to the server
+ * Created by joel on 5/10/16.
  */
-public class GetUserRepositories extends ManagedTask {
-    public static final String TASK_ID = "get_target_translation_backups";
+public class SearchGogsRepositoriesTask extends ManagedTask {
+    public static final String TASK_ID = "search_repositories";
+    private final String query;
     private List<Repository> repositories = new ArrayList<>();
+
+    public SearchGogsRepositoriesTask(String query) {
+        this.query = query == null ? "" : query;
+    }
 
     @Override
     public void start() {
@@ -26,12 +31,19 @@ public class GetUserRepositories extends ManagedTask {
             Profile profile = AppContext.getProfile();
 
             if(profile != null && profile.gogsUser != null) {
-                this.repositories = api.listRepos(profile.gogsUser);
+                List<Repository> repos = api.searchRepos(query, 0, 30);
+                // fetch additional information about the repos (clone urls)
+                for(Repository repo:repos) {
+                    repo = api.getRepo(repo, profile.gogsUser);
+                    if(repo != null) {
+                        this.repositories.add(repo);
+                    }
+                }
             }
         }
     }
 
     public List<Repository> getRepositories() {
-        return repositories;
+        return this.repositories;
     }
 }
