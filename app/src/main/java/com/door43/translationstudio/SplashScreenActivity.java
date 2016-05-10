@@ -1,9 +1,13 @@
 package com.door43.translationstudio;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -37,33 +41,36 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
         if(savedInstanceState != null) {
             mProgressTextView.setText(savedInstanceState.getString("message"));
         }
-
-        // check if we crashed
-        File dir = new File(AppContext.getPublicDirectory(), AppContext.context().STACKTRACE_DIR);
-        String[] files = GlobalExceptionHandler.getStacktraces(dir);
-        if (files.length > 0) {
-            Intent intent = new Intent(this, CrashReporterActivity.class);
-            startActivity(intent);
-            finish();
-        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
-        // connect to tasks
-        boolean isWorking = false;
-        isWorking = connectToTask(LoadTargetLanguagesTask.TASK_ID) ? true : isWorking;
-        isWorking = connectToTask(InitializeLibraryTask.TASK_ID) ? true : isWorking;
-        isWorking = connectToTask(UpdateAppTask.TASK_ID) ? true : isWorking;
+        if(!waitingForPermissions()) {
+            // check if we crashed
+            File dir = new File(AppContext.getPublicDirectory(), AppContext.context().STACKTRACE_DIR);
+            String[] files = GlobalExceptionHandler.getStacktraces(dir);
+            if (files.length > 0) {
+                Intent intent = new Intent(this, CrashReporterActivity.class);
+                startActivity(intent);
+                finish();
+                return;
+            }
 
-        // start new task
-        if (!isWorking) {
-            UpdateAppTask updateTask = new UpdateAppTask(AppContext.context());
-            updateTask.addOnFinishedListener(this);
-            updateTask.addOnStartListener(this);
-            TaskManager.addTask(updateTask, UpdateAppTask.TASK_ID);
+            // connect to tasks
+            boolean isWorking = false;
+            isWorking = connectToTask(LoadTargetLanguagesTask.TASK_ID) ? true : isWorking;
+            isWorking = connectToTask(InitializeLibraryTask.TASK_ID) ? true : isWorking;
+            isWorking = connectToTask(UpdateAppTask.TASK_ID) ? true : isWorking;
+
+            // start new task
+            if (!isWorking) {
+                UpdateAppTask updateTask = new UpdateAppTask(AppContext.context());
+                updateTask.addOnFinishedListener(this);
+                updateTask.addOnStartListener(this);
+                TaskManager.addTask(updateTask, UpdateAppTask.TASK_ID);
+            }
         }
     }
 

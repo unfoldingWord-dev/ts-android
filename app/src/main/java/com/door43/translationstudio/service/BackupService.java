@@ -1,15 +1,18 @@
 package com.door43.translationstudio.service;
 
+import android.Manifest;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
@@ -92,30 +95,34 @@ public class BackupService extends Service {
      */
     private void runBackup() {
         boolean backupPerformed = false;
-        Translator translator = AppContext.getTranslator();
-        TargetTranslation[] targetTranslations = translator.getTargetTranslations();
-        for(TargetTranslation t:targetTranslations) {
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+            Translator translator = AppContext.getTranslator();
+            TargetTranslation[] targetTranslations = translator.getTargetTranslations();
+            for (TargetTranslation t : targetTranslations) {
 
-            // commit pending changes
-            try {
-                t.commitSync();
-            } catch (Exception e) {
-                Logger.e(this.getClass().getName(), "Failed to commit changes before backing up", e);
-                continue;
-            }
-
-            // run backup if there are translations
-            if(t.numTranslated() > 0) {
+                // commit pending changes
                 try {
-                    backupPerformed = AppContext.backupTargetTranslation(t, false) ? true : backupPerformed;
+                    t.commitSync();
                 } catch (Exception e) {
-                    Logger.e(this.getClass().getName(), "Failed to backup the target translation " + t.getId(), e);
+                    Logger.e(this.getClass().getName(), "Failed to commit changes before backing up", e);
+                    continue;
+                }
+
+                // run backup if there are translations
+                if (t.numTranslated() > 0) {
+                    try {
+                        backupPerformed = AppContext.backupTargetTranslation(t, false) ? true : backupPerformed;
+                    } catch (Exception e) {
+                        Logger.e(this.getClass().getName(), "Failed to backup the target translation " + t.getId(), e);
+                    }
                 }
             }
-        }
-
-        if(backupPerformed) {
-            onBackupComplete();
+            if (backupPerformed) {
+                onBackupComplete();
+            }
+        } else {
+            Logger.i(this.getClass().getName(), "Missing permission to write to external storage. Automatic backups skipped.");
         }
     }
 
