@@ -1,17 +1,25 @@
 package com.door43.translationstudio.newui.publish;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.method.LinkMovementMethod;
 import android.text.method.ScrollingMovementMethod;
+import android.text.style.ClickableSpan;
+import android.text.style.StyleSpan;
+import android.text.style.UnderlineSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -309,7 +317,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             }
         } else if(task instanceof PushTargetTranslationTask) {
             PushTargetTranslationTask.Status status =((PushTargetTranslationTask)task).getStatus();
-            final String message = ((PushTargetTranslationTask)task).getMessage();
+            final String uploadDetails = ((PushTargetTranslationTask)task).getMessage();
 
             if(status == PushTargetTranslationTask.Status.OK) {
                 Logger.i(this.getClass().getName(), "The target translation " + targetTranslation.getId() + " was pushed to the server");
@@ -321,25 +329,38 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                         mUploadButton.setVisibility(View.GONE);
                         mUploadSuccess.setVisibility(View.VISIBLE);
 
-                        String destinationMessage = getPublishedUrl(getActivity(), targetTranslation);
+                        final String publishedUrl = getPublishedUrl(targetTranslation);
+                        String format = getActivity().getResources().getString(R.string.project_uploaded_to);
+                        final String destinationMessage = String.format(format, publishedUrl);
 
-                        CustomAlertDialog.Create(getActivity())
-                                .setTitle(R.string.success).setMessage(destinationMessage).setPositiveButton(R.string.dismiss, null)
+                        ClickableSpan clickableSpan = new ClickableSpan() {
+                            @Override
+                            public void onClick(View textView) {
+                                openBrowserToUrl(publishedUrl);
+                            }
+                        };
+
+                        final SpannableString clickableDestinationMessage = getClickableText(publishedUrl, destinationMessage, clickableSpan);
+
+                        final CustomAlertDialog dlg = CustomAlertDialog.Create(getActivity());
+                        dlg.setTitle(R.string.success)
+                                .setMessage(clickableDestinationMessage)
+                                .setAutoDismiss(false)
+                                .setPositiveButton(R.string.dismiss, new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        dlg.dismiss();
+                                    }
+                                })
                                 .setNeutralButton(R.string.label_details, new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
-                                        AlertDialog dialog = new AlertDialog.Builder(getActivity())
-                                                .setTitle(R.string.project_uploaded)
-                                                .setMessage(message)
-                                                .setPositiveButton(R.string.dismiss, null)
-                                                .show();
-                                        TextView textView = (TextView) dialog.findViewById(android.R.id.message);
-                                        textView.setMaxLines(5);
-                                        textView.setScroller(new Scroller(getActivity()));
-                                        textView.setVerticalScrollBarEnabled(true);
-                                        textView.setMovementMethod(new ScrollingMovementMethod());
+                                        showDetails(uploadDetails);
                                     }
-                                }).show("publish-finished");
+                                })
+                                .show("publish-finished");
+
+                        applyClickableMessageToDialog(clickableDestinationMessage, dlg);
                     }
                 });
             } else if(status == PushTargetTranslationTask.Status.AUTH_FAILURE) {
@@ -353,12 +374,79 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
     }
 
     /**
+     * display the upload details
+     * @param destinationMessage
+     */
+    private void showDetails(String destinationMessage) {
+        AlertDialog dialog = new AlertDialog.Builder(getActivity())
+                .setTitle(R.string.project_uploaded)
+                .setMessage(destinationMessage)
+                .setPositiveButton(R.string.dismiss, null)
+                .show();
+        TextView textView = (TextView) dialog.findViewById(android.R.id.message);
+        textView.setMaxLines(5);
+        textView.setScroller(new Scroller(getActivity()));
+        textView.setVerticalScrollBarEnabled(true);
+        textView.setMovementMethod(new ScrollingMovementMethod());
+    }
+
+    /**
+     * put clickable message in dialog
+     * @param clickableMessage
+     * @param dlg
+     */
+    private void applyClickableMessageToDialog(final SpannableString clickableMessage, final CustomAlertDialog dlg) {
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() { // wait until dialog has been created
+            @Override
+            public void run() {
+                try {
+                    Dialog dialog = dlg.getDialog();
+                    TextView textView = (TextView) dialog.findViewById(R.id.dialog_content);
+                    textView.setText(clickableMessage);
+                    textView.setMovementMethod(LinkMovementMethod.getInstance());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    /**
+     * make selected text clickable
+     * @param textToClick
+     * @param entireText
+     * @param clickableSpan
+     * @return
+     */
+    private SpannableString getClickableText(String textToClick, String entireText, ClickableSpan clickableSpan) {
+        int startIndex = entireText.indexOf(textToClick);
+        int lastIndex;
+        if(startIndex < 0) { // if not found
+            startIndex = 0;
+            lastIndex = textToClick.length();
+        } else {
+            lastIndex = startIndex + textToClick.length();
+        }
+
+        SpannableString clickable = new SpannableString(entireText);
+        clickable.setSpan(clickableSpan,startIndex,lastIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set click
+        clickable.setSpan(new UnderlineSpan(),startIndex,lastIndex,0); // underline
+        clickable.setSpan(new StyleSpan(Typeface.BOLD),startIndex,lastIndex,0); // make bold
+        return clickable;
+    }
+
+    private void openBrowserToUrl(String publishedUrl) {
+        Uri uri = Uri.parse(publishedUrl);
+        startActivity(new Intent(Intent.ACTION_VIEW, uri));
+    }
+
+    /**
      * generate the url where the user can see that the published target is stored
-     * @param context
      * @param targetTranslation
      * @return
      */
-    static public String getPublishedUrl(Context context, TargetTranslation targetTranslation) {
+    public static String getPublishedUrl(TargetTranslation targetTranslation) {
         String userName = "";
         Profile profile = AppContext.getProfile();
         if(profile != null && profile.gogsUser != null) {
@@ -377,9 +465,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             server = parts[1];
         }
 
-        String url = "https://" + server + "/" + userName + "/" + targetTranslation.getId();
-        String format = context.getResources().getString(R.string.project_uploaded_to);
-        return String.format(format, url);
+        return "https://" + server + "/" + userName + "/" + targetTranslation.getId();
     }
 
     private void notifyMergeConflicts(Map<String, int[][]> conflicts) {
