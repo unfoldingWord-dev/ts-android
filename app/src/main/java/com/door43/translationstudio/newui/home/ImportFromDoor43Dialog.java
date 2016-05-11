@@ -94,18 +94,18 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
         if(savedInstanceState != null) {
             String[] repoJsonArray = savedInstanceState.getStringArray(STATE_REPOSITORIES);
             if(repoJsonArray != null) {
-                List<Repository> repoJsonList = new ArrayList<>();
+//                List<Repository> repoJsonList = new ArrayList<>();
                 for (String json : repoJsonArray) {
                     try {
                         Repository repo = Repository.fromJSON(new JSONObject(json));
                         if (json != null) {
-                            repoJsonList.add(repo);
+                            repositories.add(repo);
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
                 }
-                adapter.setRepositories(repoJsonList);
+                adapter.setRepositories(repositories);
             }
         }
 

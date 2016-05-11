@@ -694,4 +694,5 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="review_conflicts">Review differences</string>
     <string name="keep_server_changes">Keep server changes</string>
     <string name="keep_local_changes">Keep my changes</string>
+    <string name="translation_name">translation name</string>
 </resources>
