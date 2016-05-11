@@ -74,7 +74,9 @@ public class UploadCrashReportTask extends ManagedTask {
     public static void archiveErrorLogs() {
         File stacktraceDir = new File(AppContext.getPublicDirectory(), AppContext.context().STACKTRACE_DIR);
         String[] stacktraces = GlobalExceptionHandler.getStacktraces(stacktraceDir);
-        archiveStackTraces( stacktraceDir, stacktraces);
+        if(stacktraces.length > 0) {
+            archiveStackTraces(stacktraceDir, stacktraces);
+        }
     }
 
     @Override
