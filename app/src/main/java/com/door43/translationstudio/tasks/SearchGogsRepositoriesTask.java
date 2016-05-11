@@ -18,10 +18,12 @@ import java.util.List;
 public class SearchGogsRepositoriesTask extends ManagedTask {
     public static final String TASK_ID = "search_repositories";
     private final String query;
+    private final int uid;
     private List<Repository> repositories = new ArrayList<>();
 
-    public SearchGogsRepositoriesTask(String query) {
+    public SearchGogsRepositoriesTask(int uid, String query) {
         this.query = query == null ? "" : query;
+        this.uid = uid;
     }
 
     @Override
@@ -31,7 +33,7 @@ public class SearchGogsRepositoriesTask extends ManagedTask {
             Profile profile = AppContext.getProfile();
 
             if(profile != null && profile.gogsUser != null) {
-                List<Repository> repos = api.searchRepos(query, 0, 30);
+                List<Repository> repos = api.searchRepos(query, uid, 20);
                 // fetch additional information about the repos (clone urls)
                 for(Repository repo:repos) {
                     repo = api.getRepo(repo, profile.gogsUser);

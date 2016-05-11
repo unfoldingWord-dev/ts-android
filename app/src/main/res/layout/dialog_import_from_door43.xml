@@ -37,15 +37,15 @@
                     android:layout_weight="1"
                     android:hint="@string/username"
                     android:textSize="@dimen/body"
-                    android:textColor="@color/light_primary_text"
+                    android:textColor="@color/dark_primary_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
                 <EditText
-                    android:id="@+id/project_name"
+                    android:id="@+id/translation_id"
                     android:layout_weight="1"
                     android:hint="@string/translation_name"
                     android:textSize="@dimen/body"
-                    android:textColor="@color/light_primary_text"
+                    android:textColor="@color/dark_primary_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
             </LinearLayout>
