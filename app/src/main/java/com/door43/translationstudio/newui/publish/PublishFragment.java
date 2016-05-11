@@ -3,6 +3,7 @@ package com.door43.translationstudio.newui.publish;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -22,6 +23,8 @@ import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
@@ -318,8 +321,10 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                         mUploadButton.setVisibility(View.GONE);
                         mUploadSuccess.setVisibility(View.VISIBLE);
 
+                        String destinationMessage = getPublishedUrl(getActivity(), targetTranslation);
+
                         CustomAlertDialog.Create(getActivity())
-                                .setTitle(R.string.success).setMessage(R.string.project_uploaded).setPositiveButton(R.string.dismiss, null)
+                                .setTitle(R.string.success).setMessage(destinationMessage).setPositiveButton(R.string.dismiss, null)
                                 .setNeutralButton(R.string.label_details, new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
@@ -345,6 +350,36 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             }
 
         }
+    }
+
+    /**
+     * generate the url where the user can see that the published target is stored
+     * @param context
+     * @param targetTranslation
+     * @return
+     */
+    static public String getPublishedUrl(Context context, TargetTranslation targetTranslation) {
+        String userName = "";
+        Profile profile = AppContext.getProfile();
+        if(profile != null && profile.gogsUser != null) {
+            userName = profile.gogsUser.getUsername();
+        }
+
+        String server = "";
+        try {
+            server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        String[] parts = server.split("git@");
+        if(parts.length == 2) {
+            server = parts[1];
+        }
+
+        String url = "https://" + server + "/" + userName + "/" + targetTranslation.getId();
+        String format = context.getResources().getString(R.string.project_uploaded_to);
+        return String.format(format, url);
     }
 
     private void notifyMergeConflicts(Map<String, int[][]> conflicts) {
