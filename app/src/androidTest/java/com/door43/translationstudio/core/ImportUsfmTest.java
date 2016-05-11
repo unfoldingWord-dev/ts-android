@@ -5,6 +5,7 @@ import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.tasks.UploadCrashReportTask;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -30,6 +31,7 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         super.setUp();
         mExpectedBooks = new JSONArray();
         Library library = AppContext.getLibrary();
+        UploadCrashReportTask.archiveErrorLogs();
         mTargetLanguage = library.getTargetLanguage("es");
         mTestContext = getInstrumentation().getContext();
         mAppContext = AppContext.context();

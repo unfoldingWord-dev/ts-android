@@ -28,6 +28,7 @@ import android.view.View;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Profile;
+import com.door43.translationstudio.tasks.UploadCrashReportTask;
 
 
 import java.io.File;
@@ -64,6 +65,7 @@ public class ImportUsfmActivityUiTest {
     @Before
     public void setUp() {
         mTestContext = InstrumentationRegistry.getContext();
+        UploadCrashReportTask.archiveErrorLogs();
         if(AppContext.getProfile() == null) { // make sure this is initialized
             AppContext.setProfile(new Profile("testing"));
         }
