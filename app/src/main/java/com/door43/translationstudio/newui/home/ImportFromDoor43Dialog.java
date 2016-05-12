@@ -166,7 +166,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
                 // TODO: 5/11/16 query for repos. group together. id task with user id.
                 // TODO: 5/11/16 it may be better to create a wrapper task that will handle searching for users and their repos.
                 // then we just need to worry about one task here. It would also keep the loading dialog working like expected.
-                
+
 
 //                SearchGogsRepositoriesTask reposTask = new SearchGogsRepositoriesTask(user.getId(), query);
 //                taskWatcher.watch(reposTask);
