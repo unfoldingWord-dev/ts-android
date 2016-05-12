@@ -21,6 +21,7 @@ import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.filebrowser.DocumentFileBrowserAdapter;
 import com.door43.translationstudio.filebrowser.DocumentFileItem;
 import com.door43.translationstudio.newui.BaseActivity;
+import com.door43.translationstudio.newui.home.ImportDialog;
 import com.door43.translationstudio.util.SdUtils;
 
 import java.io.File;
@@ -31,6 +32,9 @@ import java.util.List;
  * Created by blm on 12/31/15.
  */
 public class ImportFileChooserActivity extends BaseActivity {
+
+    public static final String EXTRAS_ACCEPTED_EXTENSIONS = "extras_accepted_file_extensions";
+
     public static final String FOLDER_KEY = "folder";
     public static final String FILE_PATH_KEY = "file_path";
     public static final String SD_CARD_TYPE = "sd_card";
@@ -48,6 +52,7 @@ public class ImportFileChooserActivity extends BaseActivity {
     private DocumentFile mCurrentDir;
     private String mType;
 
+    private String[] mAcceptedExtensions = { Translator.ARCHIVE_EXTENSION };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,10 +89,8 @@ public class ImportFileChooserActivity extends BaseActivity {
                 int position = mFileList.getCheckedItemPosition();
                 if (position >= 0) {
                     selectedItem = mAdapter.getItem(position);
-                    if (!selectedItem.file.isDirectory()) {
-                        if (selectedItem.isTranslationArchive()) {
-                            itemSelected = true;
-                        }
+                    if (isUsableFileName(selectedItem)) {
+                        itemSelected = true;
                     }
                 }
 
@@ -148,7 +151,7 @@ public class ImportFileChooserActivity extends BaseActivity {
                     loadDocFileList(selectedItem.file);
                     return;
                 } else {   // file item selected
-                    if (selectedItem.isTranslationArchive()) {
+                    if (isUsableFileName(selectedItem)) {
                         mAdapter.setSelectedPosition(position);
                         mFileList.setItemChecked(position, true);
                         return;
@@ -158,13 +161,35 @@ public class ImportFileChooserActivity extends BaseActivity {
                 //clear selections
                 mAdapter.setSelectedPosition(-1);
                 mFileList.clearChoices();
-             }
+            }
         });
 
         Intent intent = getIntent();
         mType = intent.getType();
+        Bundle args = intent.getExtras();
+        if(args != null) {
+            String extenstions = args.getString(EXTRAS_ACCEPTED_EXTENSIONS, null);
+            if (extenstions != null) {
+                mAcceptedExtensions = extenstions.split(",");
+            }
+        }
 
         showFolderFromSdCard();
+    }
+
+    /**
+     * returns true if the filename extension for item matches list that we are accepting
+     * @param item
+     * @return
+     */
+    private boolean isUsableFileName(DocumentFileItem item) {
+
+        for (String acceptedExtension : mAcceptedExtensions) {
+            if (item.isFileMatchesExtension(acceptedExtension)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

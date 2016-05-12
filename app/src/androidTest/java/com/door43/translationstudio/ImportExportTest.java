@@ -3,10 +3,7 @@ package com.door43.translationstudio;
 import android.content.Context;
 import android.test.InstrumentationTestCase;
 
-import com.door43.translationstudio.AppContext;
-import com.door43.translationstudio.Util;
 import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.Translator;

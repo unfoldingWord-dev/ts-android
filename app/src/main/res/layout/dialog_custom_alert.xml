@@ -5,9 +5,10 @@
     android:animateLayoutChanges="true">
     <LinearLayout
         android:orientation="vertical"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:animateLayoutChanges="true">
+
 
         <LinearLayout
             android:orientation="horizontal"
@@ -60,7 +61,6 @@
                 android:layout_marginLeft="@dimen/dialog_content_margin"
                 android:layout_marginRight="@dimen/dialog_content_margin" />
         </LinearLayout>
-
 
         <RelativeLayout
             android:layout_width="wrap_content"
