@@ -336,7 +336,8 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                         ClickableSpan clickableSpan = new ClickableSpan() {
                             @Override
                             public void onClick(View textView) {
-                                openBrowserToUrl(publishedUrl);
+                                Uri uri = Uri.parse(publishedUrl);
+                                startActivity(new Intent(Intent.ACTION_VIEW, uri));
                             }
                         };
 
@@ -434,11 +435,6 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
         clickable.setSpan(new UnderlineSpan(),startIndex,lastIndex,0); // underline
         clickable.setSpan(new StyleSpan(Typeface.BOLD),startIndex,lastIndex,0); // make bold
         return clickable;
-    }
-
-    private void openBrowserToUrl(String publishedUrl) {
-        Uri uri = Uri.parse(publishedUrl);
-        startActivity(new Intent(Intent.ACTION_VIEW, uri));
     }
 
     /**
