@@ -2,15 +2,11 @@ package com.door43.translationstudio;
 
 import android.test.InstrumentationTestCase;
 
-import com.door43.translationstudio.MainApplication;
-import com.door43.translationstudio.R;
-import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.CheckingQuestion;
 import com.door43.translationstudio.core.Downloader;
 import com.door43.translationstudio.core.Indexer;
 import com.door43.translationstudio.core.IndexerSQLiteHelper;
 import com.door43.translationstudio.core.SourceTranslation;
-import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.core.TranslationWord;
 
 /**

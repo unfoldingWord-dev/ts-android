@@ -6,6 +6,8 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -58,6 +60,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
     private Library mLibrary;
     private Translator mTranslator;
     private Fragment mFragment;
+    private boolean mUsfmImport = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -273,6 +276,16 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
             mFragment = new TargetTranslationListFragment();
             mFragment.setArguments(getIntent().getExtras());
             getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
+
+            // load list after fragment created
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                            ((TargetTranslationListFragment) mFragment).reloadList();
+                    }
+               });
+
         } else if(numTranslations == 0 && mFragment instanceof TargetTranslationListFragment) {
             // display welcome screen
             mFragment = new WelcomeFragment();

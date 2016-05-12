@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.FragmentManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -62,6 +63,10 @@ public class CustomAlertDialog extends DialogFragment {
     private Activity mContext;
 
     private boolean mAutoDismiss = true;
+    private boolean mCancellable = true;
+    private boolean mDialogDismissed = false;
+    private OnDismissListener mOnDismissListener = null;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -172,6 +177,39 @@ public class CustomAlertDialog extends DialogFragment {
         }
 
         return rootView;
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        super.onDismiss(dialog);
+        if(mOnDismissListener != null) {
+            mOnDismissListener.onDismiss();
+        }
+    }
+
+    public CustomAlertDialog setOnDismissListener(OnDismissListener listener) {
+        mOnDismissListener = listener;
+        return this;
+    }
+
+    @Override
+    public void onCancel(DialogInterface dialog) {
+        super.onCancel(dialog);
+        if(mCancellable && !mDialogDismissed) {
+            mNegativeButton.callOnClick();
+        }
+    }
+
+    @Override
+    public void dismiss() {
+
+        // clear windows and listeners
+        mDialogDismissed = true;
+        mNeutralListener = mPositiveListener = mNegativeListener = null;
+        mEditText = null;
+        mContentView = null;
+        mContext = null;
+        super.dismiss();
     }
 
     /**
@@ -361,6 +399,7 @@ public class CustomAlertDialog extends DialogFragment {
      */
     public CustomAlertDialog setCancelableChainable(boolean cancelable) {
         super.setCancelable(cancelable);
+        mCancellable = cancelable;
         return this;
     }
 
@@ -400,6 +439,11 @@ public class CustomAlertDialog extends DialogFragment {
         dlg.setContext(context);
         return dlg;
     }
+
+    public interface OnDismissListener {
+        void onDismiss();
+    }
+
 
 //    static public void test(final Activity context) {
 //

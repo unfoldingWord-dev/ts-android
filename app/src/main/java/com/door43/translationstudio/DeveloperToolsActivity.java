@@ -20,6 +20,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.core.ImportUsfm;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceTranslation;
@@ -27,6 +28,7 @@ import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.dialogs.ErrorLogDialog;
 import com.door43.translationstudio.newui.BaseActivity;
+import com.door43.translationstudio.newui.ImportUsfmActivity;
 import com.door43.translationstudio.tasks.GetLibraryUpdatesTask;
 import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
 import com.door43.translationstudio.util.ToolAdapter;
@@ -37,8 +39,11 @@ import com.door43.util.tasks.TaskManager;
 import com.door43.util.tasks.ThreadableUI;
 import com.door43.widget.ViewUtil;
 
+import org.apache.commons.io.IOUtils;
+
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 
@@ -46,6 +51,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
 
     public static final String INDEX_CHUNK_MARKERS_TASK_ID = "index_chunk_markers";
     private static final String TASK_PREP_FORCE_DOWNLOAD_ALL_PROJECTS = "prep_force_download_all_projects";
+    public static final String TAG = DeveloperToolsActivity.class.getSimpleName();
     private ArrayList<ToolItem> mDeveloperTools = new ArrayList<>();
     private ToolAdapter mAdapter;
     private String mVersionName;
