@@ -8,22 +8,27 @@ import com.door43.util.tasks.ManagedTask;
 
 import org.unfoldingword.gogsclient.GogsAPI;
 import org.unfoldingword.gogsclient.Repository;
+import org.unfoldingword.gogsclient.User;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by joel on 5/10/16.
+ * Searches for repositories in gogs
  */
 public class SearchGogsRepositoriesTask extends ManagedTask {
-    public static final String TASK_ID = "search_repositories";
+    public static final String TASK_ID = "search_gogs_repositories";
     private final String query;
     private final int uid;
+    private final User authUser;
+    private final int limit;
     private List<Repository> repositories = new ArrayList<>();
 
-    public SearchGogsRepositoriesTask(int uid, String query) {
+    public SearchGogsRepositoriesTask(User authUser, int uid, String query, int limit) {
         this.query = query == null ? "" : query;
         this.uid = uid;
+        this.authUser = authUser;
+        this.limit = limit;
     }
 
     @Override
@@ -33,10 +38,10 @@ public class SearchGogsRepositoriesTask extends ManagedTask {
             Profile profile = AppContext.getProfile();
 
             if(profile != null && profile.gogsUser != null) {
-                List<Repository> repos = api.searchRepos(query, uid, 20);
+                List<Repository> repos = api.searchRepos(this.query, this.uid, this.limit);
                 // fetch additional information about the repos (clone urls)
                 for(Repository repo:repos) {
-                    repo = api.getRepo(repo, profile.gogsUser);
+                    repo = api.getRepo(repo, this.authUser);
                     if(repo != null) {
                         this.repositories.add(repo);
                     }

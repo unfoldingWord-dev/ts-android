@@ -22,6 +22,7 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
+import com.door43.translationstudio.tasks.AdvancedGogsRepoSearchTask;
 import com.door43.translationstudio.tasks.CloneRepositoryTask;
 import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
 import com.door43.translationstudio.tasks.SearchGogsRepositoriesTask;
@@ -55,7 +56,6 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
     private File cloneDestDir;
     private EditText repoEditText;
     private EditText userEditText;
-    private List<User> users = new ArrayList<>();
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -86,24 +86,19 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
         v.findViewById(R.id.search_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String username = userEditText.getText().toString();
-                String query = repoEditText.getText().toString();
-                // if username has changed search for the user then the query
-                // if no query is given then list the repos from the user
-                // if no username but has query then just search repos
-                // if nothing then do nothing
-                boolean usernameChanged = true;
-                if(!username.isEmpty() && usernameChanged) {
-                    Profile profile = AppContext.getProfile();
-                    if(profile != null && profile.gogsUser != null) {
-                        SearchGogsUsersTask userTask = new SearchGogsUsersTask(profile.gogsUser, username, 3);
-                        taskWatcher.watch(userTask);
-                        TaskManager.addTask(userTask, SearchGogsUsersTask.TASK_ID);
-                    }
-                } else if(!query.isEmpty()) {
-                    SearchGogsRepositoriesTask reposTask = new SearchGogsRepositoriesTask(0, query);
-                    taskWatcher.watch(reposTask);
-                    TaskManager.addTask(reposTask, SearchGogsRepositoriesTask.TASK_ID);
+                String userQuery = userEditText.getText().toString();
+                String repoQuery = repoEditText.getText().toString();
+
+//                boolean usernameChanged = true;
+
+                Profile profile = AppContext.getProfile();
+                if(profile != null && profile.gogsUser != null) {
+                    AdvancedGogsRepoSearchTask task = new AdvancedGogsRepoSearchTask(profile.gogsUser, userQuery, repoQuery, 100);
+                    TaskManager.addTask(task, AdvancedGogsRepoSearchTask.TASK_ID);
+                    taskWatcher.watch(task);
+                } else {
+                    AppContext.context().showToastMessage(R.string.login_doo43);
+                    dismiss();
                 }
             }
         });
@@ -143,10 +138,10 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
         }
 
         // connect to existing task
-        SearchGogsRepositoriesTask reposTask = (SearchGogsRepositoriesTask) TaskManager.getTask(SearchGogsRepositoriesTask.TASK_ID);
+        AdvancedGogsRepoSearchTask searchTask = (AdvancedGogsRepoSearchTask) TaskManager.getTask(AdvancedGogsRepoSearchTask.TASK_ID);
         CloneRepositoryTask cloneTask = (CloneRepositoryTask) TaskManager.getTask(CloneRepositoryTask.TASK_ID);
-        if (reposTask != null) {
-            taskWatcher.watch(reposTask);
+        if (searchTask != null) {
+            taskWatcher.watch(searchTask);
         } else if (cloneTask != null) {
             taskWatcher.watch(cloneTask);
         }
@@ -159,25 +154,9 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
         taskWatcher.stop();
         TaskManager.clearTask(task);
 
-        if (task instanceof SearchGogsUsersTask) {
-            this.users = ((SearchGogsUsersTask)task).getUsers();
-            for(User user:users) {
-                String query = this.repoEditText.getText().toString().trim();
-                // TODO: 5/11/16 query for repos. group together. id task with user id.
-                // TODO: 5/11/16 it may be better to create a wrapper task that will handle searching for users and their repos.
-                // then we just need to worry about one task here. It would also keep the loading dialog working like expected.
-
-
-//                SearchGogsRepositoriesTask reposTask = new SearchGogsRepositoriesTask(user.getId(), query);
-//                taskWatcher.watch(reposTask);
-//                TaskManager.addTask(reposTask, SearchGogsRepositoriesTask.TASK_ID);
-            }
-
-            // TODO: 5/11/16 begin searching for repos for the top 2 users
-        } else if (task instanceof SearchGogsRepositoriesTask) {
-            this.repositories = ((SearchGogsRepositoriesTask) task).getRepositories();
+        if (task instanceof AdvancedGogsRepoSearchTask) {
+            this.repositories = ((AdvancedGogsRepoSearchTask) task).getRepositories();
             adapter.setRepositories(repositories);
-
         } else if (task instanceof CloneRepositoryTask) {
             if (!task.isCanceled()) {
                 CloneRepositoryTask.Status status = ((CloneRepositoryTask)task).getStatus();
