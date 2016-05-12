@@ -43,19 +43,39 @@ public class UploadCrashReportTask extends ManagedTask {
                     e.printStackTrace();
                 }
 
-                // archive extra stacktraces
-                File archiveDir = new File(stacktraceDir, "archive");
-                archiveDir.mkdirs();
-                for (String filePath:stacktraces) {
-                    File traceFile = new File(filePath);
-                    if (traceFile.exists()) {
-                        FileUtilities.moveOrCopy(traceFile, new File(archiveDir, traceFile.getName()));
-                        if(traceFile.exists()) {
-                            traceFile.delete();
-                        }
-                    }
+                archiveStackTraces(stacktraceDir, stacktraces);
+            }
+        }
+    }
+
+    /**
+     * archive the stack traces
+     * @param stacktraceDir
+     * @param stacktraces
+     */
+    private static void archiveStackTraces(File stacktraceDir, String[] stacktraces) {
+        // archive extra stacktraces
+        File archiveDir = new File(stacktraceDir, "archive");
+        archiveDir.mkdirs();
+        for (String filePath:stacktraces) {
+            File traceFile = new File(filePath);
+            if (traceFile.exists()) {
+                FileUtilities.moveOrCopy(traceFile, new File(archiveDir, traceFile.getName()));
+                if(traceFile.exists()) {
+                    traceFile.delete();
                 }
             }
+        }
+    }
+
+    /**
+     * move error files into archive
+     */
+    public static void archiveErrorLogs() {
+        File stacktraceDir = new File(AppContext.getPublicDirectory(), AppContext.context().STACKTRACE_DIR);
+        String[] stacktraces = GlobalExceptionHandler.getStacktraces(stacktraceDir);
+        if(stacktraces.length > 0) {
+            archiveStackTraces(stacktraceDir, stacktraces);
         }
     }
 

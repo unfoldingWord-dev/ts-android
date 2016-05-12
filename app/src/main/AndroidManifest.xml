@@ -185,6 +185,10 @@
         <activity android:name=".RegisterDoor43Activity" />
         <activity android:name=".LoginDoor43Activity" />
         <activity android:name=".RegisterOfflineActivity"></activity>
+        <activity
+            android:name=".newui.ImportUsfmActivity"
+            android:label="@string/title_activity_import_usfm_language">
+        </activity>
     </application>
 
 </manifest>

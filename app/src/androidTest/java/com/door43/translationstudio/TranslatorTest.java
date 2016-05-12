@@ -2,9 +2,6 @@ package com.door43.translationstudio;
 
 import android.test.InstrumentationTestCase;
 
-import com.door43.translationstudio.MainApplication;
-import com.door43.translationstudio.R;
-import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.NativeSpeaker;
 import com.door43.translationstudio.core.Resource;
@@ -14,7 +11,6 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.AppContext;
 
 import org.apache.commons.io.FileUtils;
 
