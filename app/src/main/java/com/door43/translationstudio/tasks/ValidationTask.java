@@ -4,10 +4,12 @@ import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.ProjectTranslation;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.publish.ValidationItem;
 import com.door43.translationstudio.AppContext;
@@ -45,6 +47,18 @@ public class ValidationTask extends ManagedTask {
         // validate chapters
         int lastValidChapterIndex = -1;
         List<ValidationItem> chapterValidations = new ArrayList<>();
+
+        //check for project title
+        String projectTitle = sourceTranslation.getProjectTitle();
+        if(projectTitle != null) {
+            ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
+            boolean isFinished = projectTranslation.isTitleFinished();
+            if(!isFinished) {
+                mValidations.add(ValidationItem.generateInvalidGroup(projectTitle, sourceLanguage));
+                mValidations.add(ValidationItem.generateInvalidFrame(projectTitle, sourceLanguage, projectTranslation.getTitle(), targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, "1", "1"));
+            }
+        }
+
         for(int i = 0; i < chapters.length; i ++) {
             Chapter chapter = chapters[i];
             // TODO: validate title and reference
