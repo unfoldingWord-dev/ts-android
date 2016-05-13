@@ -89,11 +89,11 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
                 String userQuery = userEditText.getText().toString();
                 String repoQuery = repoEditText.getText().toString();
 
-//                boolean usernameChanged = true;
+                AppContext.closeKeyboard(getActivity());
 
                 Profile profile = AppContext.getProfile();
                 if(profile != null && profile.gogsUser != null) {
-                    AdvancedGogsRepoSearchTask task = new AdvancedGogsRepoSearchTask(profile.gogsUser, userQuery, repoQuery, 100);
+                    AdvancedGogsRepoSearchTask task = new AdvancedGogsRepoSearchTask(profile.gogsUser, userQuery, repoQuery, 50);
                     TaskManager.addTask(task, AdvancedGogsRepoSearchTask.TASK_ID);
                     taskWatcher.watch(task);
                 } else {

@@ -60,11 +60,7 @@ public class AdvancedGogsRepoSearchTask extends ManagedTask {
                     // find repos in users
                     SearchGogsRepositoriesTask searchReposTask = new SearchGogsRepositoriesTask(this.authUser, user.getId(), this.repoQuery, this.dataPoolLimit);
                     delegate(searchReposTask);
-                    List<Repository> repos = searchReposTask.getRepositories();
-                    Iterator<Repository> ri = repos.iterator();
-                    while(ri.hasNext() && this.repositories.size() < this.limit) {
-                        this.repositories.add(ri.next());
-                    }
+                    this.repositories.addAll(searchReposTask.getRepositories());
                     if(this.repositories.size() >= this.limit) break;
                 }
             } else {
