@@ -130,6 +130,17 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         listItems.add(projectTitleItem);
 
         for(Chapter c:chapters) {
+            // put in map for easier retrieval
+            mChapters.put(c.getId(), c);
+
+            String[] chapterFrameSlugs = mLibrary.getFrameSlugs(mSourceTranslation, c.getId());
+            boolean setStartPosition = startingChapterSlug != null && c.getId().equals(startingChapterSlug) && chapterFrameSlugs.length > 0;
+
+            // default starting selection is first item in chapter
+            if(setStartPosition) {
+                setListStartPosition(listItems.size());
+            }
+
             // add title and reference cards for chapter
             if(!c.title.isEmpty()) {
                 ListItem item = new ListItem(null, c.getId());
@@ -141,15 +152,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 item.isChapterReference = true;
                 listItems.add(item);
             }
-            // put in map for easier retrieval
-            mChapters.put(c.getId(), c);
 
-            String[] chapterFrameSlugs = mLibrary.getFrameSlugs(mSourceTranslation, c.getId());
-            boolean setStartPosition = startingChapterSlug != null && c.getId().equals(startingChapterSlug) && chapterFrameSlugs.length > 0;
-                // identify starting selection
-            if(setStartPosition) {
-                setListStartPosition(listItems.size());
-            }
+            // identify starting frame selection
             for(String frameSlug:chapterFrameSlugs) {
                 if(setStartPosition && startingFrameSlug != null && frameSlug.equals(startingFrameSlug)) {
                     setListStartPosition(listItems.size());
