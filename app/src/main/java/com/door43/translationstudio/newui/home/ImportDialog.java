@@ -61,11 +61,36 @@ public class ImportDialog extends DialogFragment {
         Button importFromSDButton = (Button)v.findViewById(R.id.import_from_sd);
         Button importFromSDUsfmButton = (Button)v.findViewById(R.id.import_from_sd_usfm);
         Button importFromFriend = (Button)v.findViewById(R.id.import_from_friend);
+        Button importDoor43Button = (Button)v.findViewById(R.id.import_from_door43);
 
         if(savedInstanceState != null) {
             // check if returning from device alias dialog
             settingDeviceAlias = savedInstanceState.getBoolean(STATE_SETTING_DEVICE_ALIAS, false);
         }
+
+        importDoor43Button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // make sure we have a gogs user
+                if(AppContext.getProfile().gogsUser == null) {
+                    FragmentTransaction ft = getFragmentManager().beginTransaction();
+                    Door43LoginDialog dialog = new Door43LoginDialog();
+                    dialog.show(ft, Door43LoginDialog.TAG);
+                    return;
+                }
+
+                // open dialog for browsing repositories
+                FragmentTransaction ft = getFragmentManager().beginTransaction();
+                Fragment prev = getFragmentManager().findFragmentByTag(ImportDialog.TAG);
+                if (prev != null) {
+                    ft.remove(prev);
+                }
+                ft.addToBackStack(null);
+
+                ImportFromDoor43Dialog dialog = new ImportFromDoor43Dialog();
+                dialog.show(ft, ImportDialog.TAG);
+            }
+        });
 
         restoreDoor43Button.setOnClickListener(new View.OnClickListener() {
             @Override
