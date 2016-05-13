@@ -175,47 +175,8 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                         // TODO: 3/23/2016 we need to finish adding support for importing by clicking on a file.
                         // the import needs to be ran in a task and a loading dialog should be displayed.
                         try {
-                            tempFile = File.createTempFile("targettranslation", "." + Translator.ARCHIVE_EXTENSION);
-                            FileUtils.copyInputStreamToFile(resolver.openInputStream(contentUri), tempFile);
-                            ArchiveDetails details = ArchiveDetails.newInstance(tempFile, Locale.getDefault().getLanguage(), mLibrary);
-                            String names = "";
-                            for (ArchiveDetails.TargetTranslationDetails td : details.targetTranslationDetails) {
-                                names = td.projectName + " - " + td.targetLanguageName + ", ";
-                            }
-                            names = names.replaceAll(", $", "");
+                            tempFile = importFromUri(resolver, contentUri);
 
-                            final File archiveDir = AppContext.getTranslator().unpackArchive(tempFile);
-                            final File[] targetTranslationDirs = ArchiveImporter.importArchive(archiveDir);
-                            boolean alreadyPresent = AppContext.getTranslator().isExistingProject(targetTranslationDirs);
-
-                            final CustomAlertDialog dlg = CustomAlertDialog.Create(this);
-                            dlg.setTitle(R.string.label_import)
-                                    .setMessage(String.format(getResources().getString(R.string.confirm_import_target_translation), names))
-                                    .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            FileUtils.deleteQuietly(archiveDir);
-                                            HomeActivity.this.finish();
-                                        }
-                                    })
-                                    .setPositiveButton(R.string.label_restore, new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            doArchiveImport(targetTranslationDirs, archiveDir, true);
-                                        }
-                                    });
-
-                            if(alreadyPresent) { // add merge option
-                                dlg.setNeutralButton(R.string.label_import, new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        doArchiveImport(targetTranslationDirs, archiveDir, false);
-                                        dlg.dismiss();
-                                    }
-                                });
-                            }
-
-                            dlg.show("confirm_import");
                         } catch (Exception e) {
                             e.printStackTrace();
                             if (tempFile != null) {
@@ -224,7 +185,6 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                             finish();
                         }
 
-                        FileUtils.deleteQuietly(tempFile);
                         return;
                     }
                 }
@@ -242,15 +202,80 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
     }
 
     /**
+     * take the URI passed, copy to file and then import
+     * @param resolver
+     * @param contentUri
+     * @return
+     * @throws Exception
+     */
+    private File importFromUri(ContentResolver resolver, Uri contentUri) throws Exception {
+        File tempFile = File.createTempFile("targettranslation", "." + Translator.ARCHIVE_EXTENSION);
+        FileUtils.copyInputStreamToFile(resolver.openInputStream(contentUri), tempFile);
+        ArchiveDetails details = ArchiveDetails.newInstance(tempFile, Locale.getDefault().getLanguage(), mLibrary);
+        String names = "";
+        boolean alreadyPresent = false;
+        for (ArchiveDetails.TargetTranslationDetails td : details.targetTranslationDetails) {
+            names = td.projectName + " - " + td.targetLanguageName + ", ";
+
+            String targetTranslationId = td.targetTranslationSlug;
+            File localDir = new File(AppContext.getTranslator().getPath(), targetTranslationId);
+            TargetTranslation localTargetTranslation = TargetTranslation.open(localDir);
+            if ((localTargetTranslation != null)) {
+                alreadyPresent = true;
+            }
+        }
+        names = names.replaceAll(", $", "");
+
+        displayImportVerification( tempFile, names, alreadyPresent);
+        return tempFile;
+    }
+
+    /**
+     * show dialog to verify that we want to import, restore or cancel.
+     * @param tempFile
+     * @param names
+     * @param alreadyPresent
+     */
+    private void displayImportVerification(final File tempFile, String names, boolean alreadyPresent) {
+        final CustomAlertDialog dlg = CustomAlertDialog.Create(this);
+        dlg.setTitle(R.string.label_import)
+                .setMessage(String.format(getResources().getString(R.string.confirm_import_target_translation), names))
+                .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        FileUtils.deleteQuietly(tempFile);
+                        HomeActivity.this.finish();
+                    }
+                })
+                .setPositiveButton(R.string.label_restore, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        doArchiveImport( tempFile, true);
+                    }
+                });
+
+        if(alreadyPresent) { // add merge option
+            dlg.setNeutralButton(R.string.label_import, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    doArchiveImport( tempFile, false);
+                    dlg.dismiss();
+                }
+            });
+        }
+
+        dlg.show("confirm_import");
+    }
+
+    /**
      * import specified file
-     * @param targetTranslationDirs -directories of found translations
-     * @param archiveDir
+     * @param tempFile
      * @param overwrite
      */
-    private void doArchiveImport(File[] targetTranslationDirs, File archiveDir, boolean overwrite) {
+    private void doArchiveImport(File tempFile, boolean overwrite) {
         // TODO: 3/23/2016 import the file!
         try {
-            String[] importedSlugs = AppContext.getTranslator().importTargetTranslationDirs(targetTranslationDirs, overwrite);
+            String[] importedSlugs = AppContext.getTranslator().importArchive(tempFile, overwrite);
             if (importedSlugs.length > 0) {
                 // TODO: 3/23/2016 success!
                 HomeActivity.this.notifyDatasetChanged();
@@ -260,7 +285,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            FileUtils.deleteQuietly(archiveDir);
+            FileUtils.deleteQuietly(tempFile);
             HomeActivity.this.finish();
         }
     }
