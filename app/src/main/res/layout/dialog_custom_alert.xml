@@ -1,137 +1,117 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:card_view="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:layout_width="wrap_content"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true">
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:layout_marginRight="@dimen/dialog_content_margin"
-        android:layout_marginLeft="@dimen/dialog_content_margin"
-        android:layout_marginTop="@dimen/dialog_content_margin"
-        android:layout_marginBottom="@dimen/dialog_controls_margin"
-        android:layout_weight="0.0">
-
-        <ImageView
-            android:id="@+id/dialog_icon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:layout_marginRight="@dimen/dialog_controls_margin"
-            android:src="@drawable/ic_folder_open_black_24dp"
-            android:visibility="visible" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Title"
-            android:textSize="@dimen/headline"
-            android:gravity="left|center"
-            android:id="@+id/dialog_title"
-             />
-
-    </LinearLayout>
-
     <LinearLayout
         android:orientation="vertical"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="@dimen/dialog_controls_margin"
-        android:layout_marginTop="@dimen/dialog_controls_margin"
-        android:paddingRight="@dimen/dialog_content_margin"
-        android:paddingLeft="@dimen/dialog_content_margin"
-        android:id="@+id/content_layout"
-        android:layout_weight="1.0">
+        android:animateLayoutChanges="true">
 
-        <ScrollView
-            android:orientation="horizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:scrollbars="vertical"
-            >
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/body"
-                android:layout_gravity="left"
-                android:textColor="@color/dark_secondary_text"
-                android:text="Here is an example content that is wider."
-                android:id="@+id/dialog_content"
-                android:gravity="left|center"
-                android:layout_marginRight="@dimen/dialog_content_margin"
-                android:layout_weight="1.0" />
-
-        </ScrollView>
-    </LinearLayout>
-
-
-    <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="right"
-        android:layout_weight="0.0">
 
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="end"
-            android:id="@+id/controlsLayout"
-            android:layout_marginBottom="@dimen/dialog_controls_margin">
-            android:layout_marginLeft="@dimen/dialog_content_margin">
+            android:gravity="center"
+            android:layout_marginRight="@dimen/dialog_content_margin"
+            android:layout_marginLeft="@dimen/dialog_content_margin"
+            android:layout_marginTop="@dimen/dialog_content_margin"
+            android:layout_marginBottom="@dimen/dialog_content_margin">
 
-            <Button
-                android:id="@+id/hiddenButton"
+            <ImageView
+                android:id="@+id/dialog_icon"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="@string/print"
-                android:textColor="@color/dark_secondary_text"
-                android:textSize="@dimen/button"
-                android:background="?attr/selectableItemBackground"
-                android:capitalize="words"
-                android:visibility="invisible" />
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_marginRight="@dimen/dialog_controls_margin"
+                android:src="@drawable/ic_folder_open_black_24dp"
+                android:visibility="visible" />
 
-            <Button
-                android:id="@+id/negativeButton"
+            <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="@string/title_cancel"
-                android:textColor="?attr/colorAccent"
-                android:textSize="@dimen/button"
-                android:background="?attr/selectableItemBackground"
-                android:layout_marginLeft="@dimen/dialog_content_margin"
-                android:capitalize="words" />
+                android:layout_height="wrap_content"
+                android:text="Title"
+                android:textSize="@dimen/headline"
+                android:gravity="left|center"
+                android:id="@+id/dialog_title"
+                />
 
-            <Button
-                android:id="@+id/neutralButton"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="@string/neutral"
-                android:textColor="?attr/colorAccent"
-                android:textSize="@dimen/button"
-                android:background="?attr/selectableItemBackground"
-                android:layout_marginLeft="@dimen/dialog_content_margin"
-                android:capitalize="words" />
-
-            <Button
-                android:id="@+id/positiveButton"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="@string/confirm"
-                android:textColor="?attr/colorAccent"
-                android:textSize="@dimen/button"
-                android:background="?attr/selectableItemBackground"
-                android:layout_marginLeft="@dimen/dialog_content_margin"
-                android:layout_marginRight="@dimen/dialog_content_margin"
-                android:capitalize="words" />
         </LinearLayout>
 
-    </RelativeLayout>
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_marginBottom="@dimen/dialog_controls_margin"
+            android:paddingRight="@dimen/dialog_content_margin"
+            android:id="@+id/content_layout">
 
-</LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/body"
+                android:layout_gravity="left|center_vertical"
+                android:textColor="@color/dark_secondary_text"
+                android:text="Here is an example content that is wider."
+                android:id="@+id/dialog_content"
+                android:gravity="left|center"
+                android:layout_marginLeft="@dimen/dialog_content_margin"
+                android:layout_marginRight="@dimen/dialog_content_margin" />
+        </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right">
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:id="@+id/controlsLayout"
+                android:layout_marginBottom="@dimen/dialog_controls_margin">
+
+
+                <Button
+                    android:id="@+id/negativeButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="@string/title_cancel"
+                    android:textColor="?attr/colorAccent"
+                    android:textSize="@dimen/button"
+                    android:background="?attr/selectableItemBackground"
+                    android:layout_marginLeft="@dimen/dialog_content_margin"
+                    android:capitalize="words" />
+
+                <Button
+                    android:id="@+id/neutralButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="@string/neutral"
+                    android:textColor="?attr/colorAccent"
+                    android:textSize="@dimen/button"
+                    android:background="?attr/selectableItemBackground"
+                    android:layout_marginLeft="@dimen/dialog_content_margin"
+                    android:capitalize="words" />
+
+                <Button
+                    android:id="@+id/positiveButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="@string/confirm"
+                    android:textColor="?attr/colorAccent"
+                    android:textSize="@dimen/button"
+                    android:background="?attr/selectableItemBackground"
+                    android:layout_marginLeft="@dimen/dialog_content_margin"
+                    android:layout_marginRight="@dimen/dialog_content_margin"
+                    android:capitalize="words" />
+            </LinearLayout>
+
+        </RelativeLayout>
+
+    </LinearLayout>
+</ScrollView>
