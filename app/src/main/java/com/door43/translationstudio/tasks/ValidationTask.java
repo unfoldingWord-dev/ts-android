@@ -71,12 +71,12 @@ public class ValidationTask extends ManagedTask {
             List<ValidationItem> frameValidations = new ArrayList<>();
 
             ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(chapter.getId());
-            if((chapter.title != null)  && !chapterTranslation.isTitleFinished()) {
+            if((chapter.title != null) && (!chapter.title.isEmpty()) && !chapterTranslation.isTitleFinished()) {
                 chapterIsValid = false;
                 frameValidations.add(ValidationItem.generateInvalidFrame(chapter.title, sourceLanguage, chapterTranslation.title, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapter.getId(), "00"));
             }
 
-            if((chapter.reference != null) && !chapterTranslation.isReferenceFinished()) {
+            if((chapter.reference != null) && (!chapter.reference.isEmpty()) && !chapterTranslation.isReferenceFinished()) {
                 chapterIsValid = false;
                 frameValidations.add(ValidationItem.generateInvalidFrame(chapter.reference, sourceLanguage, chapterTranslation.reference, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapter.getId(), "00"));
             }
