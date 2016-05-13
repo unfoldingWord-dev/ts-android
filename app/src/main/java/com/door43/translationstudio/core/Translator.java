@@ -317,16 +317,26 @@ public class Translator {
         return t;
     }
 
-     /**
+    /**
      * Imports a tstudio archive
      * @param file
      * @return an array of target translation slugs that were successfully imported
      */
     public String[] importArchive(File file) throws Exception {
+        return importArchive( file, false);
+    }
+
+   /**
+    * Imports a tstudio archive
+    * @param file
+    * @param overwrite - if true then local changes are clobbered
+    * @return an array of target translation slugs that were successfully imported
+    */
+    public String[] importArchive(File file, boolean overwrite) throws Exception {
         FileInputStream in = null;
         try {
             in = new FileInputStream(file);
-            return importArchive(in);
+            return importArchive(in, overwrite);
         } catch (Exception e) {
             throw e;
         } finally {
@@ -340,44 +350,22 @@ public class Translator {
      * @return an array of target translation slugs that were successfully imported
      */
     public String[] importArchive(InputStream in) throws Exception {
-        File archiveDir = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
-        List<String> importedSlugs = new ArrayList<>();
+        return importArchive( in, false);
+    }
+
+    /**
+     * Imports a tstudio archive from an input stream
+     * @param in
+     * @param overwrite - if true then local changes are clobbered
+     * @return an array of target translation slugs that were successfully imported
+     */
+    public String[] importArchive(InputStream in, boolean overwrite) throws Exception {
+        String[] importedSlugs = {};
+        File archiveDir = null;
         try {
-            archiveDir.mkdirs();
-            Zip.unzipFromStream(in, archiveDir);
-
+            archiveDir = unpackArchive(in);
             File[] targetTranslationDirs = ArchiveImporter.importArchive(archiveDir);
-            for(File newDir:targetTranslationDirs) {
-                TargetTranslation newTargetTranslation = TargetTranslation.open(newDir);
-                if(newTargetTranslation != null) {
-                    // TRICKY: the correct id is pulled from the manifest to avoid propogating bad folder names
-                    String targetTranslationId = newTargetTranslation.getId();
-                    File localDir = new File(mRootDir, targetTranslationId);
-                    TargetTranslation localTargetTranslation = TargetTranslation.open(localDir);
-                    if(localTargetTranslation != null) {
-                        // commit local changes to history
-                        if(localTargetTranslation != null) {
-                            localTargetTranslation.commitSync();
-                        }
-
-                        // merge translations
-                        try {
-                            localTargetTranslation.merge(newDir);
-                        } catch(Exception e) {
-                            e.printStackTrace();
-                            continue;
-                        }
-                    }  else {
-                        // import new translation
-                        FileUtilities.safeDelete(localDir); // in case local was an invalid target translation
-                        FileUtils.moveDirectory(newDir, localDir);
-                    }
-                    // update the generator info. TRICKY: we re-open to get the updated manifest.
-                    TargetTranslation.updateGenerator(mContext, TargetTranslation.open(localDir));
-
-                    importedSlugs.add(targetTranslationId);
-                }
-            }
+            importTargetTranslationDirs(targetTranslationDirs, overwrite);
         } catch (Exception e) {
             throw e;
         } finally {
@@ -385,7 +373,108 @@ public class Translator {
             FileUtils.deleteQuietly(archiveDir);
         }
 
+        return importedSlugs;
+    }
+
+    /**
+     * do importing
+     * @param targetTranslationDirs
+     * @param overwrite
+     * @return
+     * @throws Exception
+     */
+    public String[] importTargetTranslationDirs(File[] targetTranslationDirs, boolean overwrite) throws Exception {
+        List<String> importedSlugs = new ArrayList<>();
+        for(File newDir:targetTranslationDirs) {
+            TargetTranslation newTargetTranslation = TargetTranslation.open(newDir);
+            if(newTargetTranslation != null) {
+                // TRICKY: the correct id is pulled from the manifest to avoid propagating bad folder names
+                String targetTranslationId = newTargetTranslation.getId();
+                File localDir = new File(mRootDir, targetTranslationId);
+                TargetTranslation localTargetTranslation = TargetTranslation.open(localDir);
+                if((localTargetTranslation != null) && !overwrite) {
+                    // commit local changes to history
+                    if(localTargetTranslation != null) {
+                        localTargetTranslation.commitSync();
+                    }
+
+                    // merge translations
+                    try {
+                        localTargetTranslation.merge(newDir);
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                        continue;
+                    }
+                }  else {
+                    // import new translation
+                    FileUtilities.safeDelete(localDir); // in case local was an invalid target translation
+                    FileUtils.moveDirectory(newDir, localDir);
+                }
+                // update the generator info. TRICKY: we re-open to get the updated manifest.
+                TargetTranslation.updateGenerator(mContext, TargetTranslation.open(localDir));
+
+                importedSlugs.add(targetTranslationId);
+            }
+        }
         return importedSlugs.toArray(new String[importedSlugs.size()]);
+    }
+
+    /**
+     * Imports a tstudio archive
+     * @param file
+     * @return an array of target translation slugs that were successfully imported
+     */
+    public File unpackArchive(File file) throws Exception {
+        FileInputStream in = null;
+        try {
+            in = new FileInputStream(file);
+            return unpackArchive(in);
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            IOUtils.closeQuietly(in);
+        }
+    }
+
+    /**
+     * Unpacks a tstudio archive from an input stream
+     * @param in
+     * @return an array of target translation slugs that were successfully imported
+     */
+    public File unpackArchive(InputStream in) throws Exception {
+        File archiveDir = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
+        try {
+            archiveDir.mkdirs();
+            Zip.unzipFromStream(in, archiveDir);
+            return archiveDir;
+        } catch (Exception e) {
+            FileUtils.deleteQuietly(archiveDir);
+            throw e;
+        } finally {
+            IOUtils.closeQuietly(in);
+        }
+    }
+
+    /**
+     * checks imported target translations to see if we already have a similar project
+     * @param targetTranslationDirs
+     * @return
+     * @throws Exception
+     */
+    public boolean isExistingProject(File[] targetTranslationDirs) throws Exception {
+        for (File newDir : targetTranslationDirs) {
+            TargetTranslation newTargetTranslation = TargetTranslation.open(newDir);
+            if (newTargetTranslation != null) {
+                // TRICKY: the correct id is pulled from the manifest to avoid propagating bad folder names
+                String targetTranslationId = newTargetTranslation.getId();
+                File localDir = new File(mRootDir, targetTranslationId);
+                TargetTranslation localTargetTranslation = TargetTranslation.open(localDir);
+                if ((localTargetTranslation != null)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

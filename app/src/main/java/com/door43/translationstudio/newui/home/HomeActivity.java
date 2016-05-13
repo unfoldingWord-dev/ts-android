@@ -23,16 +23,11 @@ import com.door43.translationstudio.ProfileActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.ArchiveDetails;
-import com.door43.translationstudio.core.Chapter;
-import com.door43.translationstudio.core.ChapterTranslation;
-import com.door43.translationstudio.core.Frame;
-import com.door43.translationstudio.core.FrameTranslation;
+import com.door43.translationstudio.core.ArchiveImporter;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
-import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
@@ -41,16 +36,11 @@ import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationAct
 import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.AppContext;
-import com.door43.util.Zip;
 import com.door43.widget.ViewUtil;
 
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Locale;
 
 public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
@@ -179,8 +169,9 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                     ContentResolver resolver = getContentResolver();
                     Uri contentUri = intent.getData();
                     File tempFile = null;
+                    Logger.i(TAG,"Opening: " + contentUri.toString());
                     if (scheme.compareTo(ContentResolver.SCHEME_FILE) == 0) {
-                        finish();
+//                        finish();
                         // TODO: 3/23/2016 we need to finish adding support for importing by clicking on a file.
                         // the import needs to be ran in a task and a loading dialog should be displayed.
                         try {
@@ -192,38 +183,39 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                                 names = td.projectName + " - " + td.targetLanguageName + ", ";
                             }
                             names = names.replaceAll(", $", "");
-                            final File archiveFile = tempFile;
-                            CustomAlertDialog.Create(this)
-                                    .setTitle(R.string.label_import)
+
+                            final File archiveDir = AppContext.getTranslator().unpackArchive(tempFile);
+                            final File[] targetTranslationDirs = ArchiveImporter.importArchive(archiveDir);
+                            boolean alreadyPresent = AppContext.getTranslator().isExistingProject(targetTranslationDirs);
+
+                            final CustomAlertDialog dlg = CustomAlertDialog.Create(this);
+                            dlg.setTitle(R.string.label_import)
                                     .setMessage(String.format(getResources().getString(R.string.confirm_import_target_translation), names))
                                     .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
                                         @Override
                                         public void onClick(View v) {
-                                            FileUtils.deleteQuietly(archiveFile);
+                                            FileUtils.deleteQuietly(archiveDir);
                                             HomeActivity.this.finish();
                                         }
                                     })
-                                    .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
+                                    .setPositiveButton(R.string.label_restore, new View.OnClickListener() {
                                         @Override
                                         public void onClick(View v) {
-                                            // TODO: 3/23/2016 import the file!
-                                            try {
-                                                String[] importedSlugs = AppContext.getTranslator().importArchive(archiveFile);
-                                                if (importedSlugs.length > 0) {
-                                                    // TODO: 3/23/2016 success!
-                                                    HomeActivity.this.notifyDatasetChanged();
-                                                } else {
-                                                    // TODO: 3/23/2016 nothing could be imported
-                                                }
-                                            } catch (Exception e) {
-                                                e.printStackTrace();
-                                            } finally {
-                                                FileUtils.deleteQuietly(archiveFile);
-                                                HomeActivity.this.finish();
-                                            }
+                                            doArchiveImport(targetTranslationDirs, archiveDir, true);
                                         }
-                                    })
-                                    .show("confirm_import");
+                                    });
+
+                            if(alreadyPresent) { // add merge option
+                                dlg.setNeutralButton(R.string.label_import, new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        doArchiveImport(targetTranslationDirs, archiveDir, false);
+                                        dlg.dismiss();
+                                    }
+                                });
+                            }
+
+                            dlg.show("confirm_import");
                         } catch (Exception e) {
                             e.printStackTrace();
                             if (tempFile != null) {
@@ -231,6 +223,9 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                             }
                             finish();
                         }
+
+                        FileUtils.deleteQuietly(tempFile);
+                        return;
                     }
                 }
             }
@@ -243,6 +238,30 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                 onItemClick(targetTranslation);
                 return;
             }
+        }
+    }
+
+    /**
+     * import specified file
+     * @param targetTranslationDirs -directories of found translations
+     * @param archiveDir
+     * @param overwrite
+     */
+    private void doArchiveImport(File[] targetTranslationDirs, File archiveDir, boolean overwrite) {
+        // TODO: 3/23/2016 import the file!
+        try {
+            String[] importedSlugs = AppContext.getTranslator().importTargetTranslationDirs(targetTranslationDirs, overwrite);
+            if (importedSlugs.length > 0) {
+                // TODO: 3/23/2016 success!
+                HomeActivity.this.notifyDatasetChanged();
+            } else {
+                // TODO: 3/23/2016 nothing could be imported
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            FileUtils.deleteQuietly(archiveDir);
+            HomeActivity.this.finish();
         }
     }
 
