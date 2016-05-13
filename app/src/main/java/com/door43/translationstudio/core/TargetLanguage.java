@@ -65,6 +65,25 @@ public class TargetLanguage implements Comparable {
         );
     }
 
+    /**
+     * Formats the object as json
+     * @return
+     * @throws JSONException
+     */
+    public JSONObject toApiFormatJson() {
+        try {
+            JSONObject json = new JSONObject();
+            json.put("ld", this.direction.toString());
+            json.put("lc", this.code);
+            json.put("ln", this.name);
+            json.put("lr", this.region);
+            return json;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public LanguageDirection getDirection() {
         return direction;
     }
