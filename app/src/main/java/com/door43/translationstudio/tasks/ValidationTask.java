@@ -1,6 +1,7 @@
 package com.door43.translationstudio.tasks;
 
 import com.door43.translationstudio.core.Chapter;
+import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.Library;
@@ -55,19 +56,31 @@ public class ValidationTask extends ManagedTask {
             boolean isFinished = projectTranslation.isTitleFinished();
             if(!isFinished) {
                 mValidations.add(ValidationItem.generateInvalidGroup(projectTitle, sourceLanguage));
-                mValidations.add(ValidationItem.generateInvalidFrame(projectTitle, sourceLanguage, projectTranslation.getTitle(), targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, "1", "1"));
+                mValidations.add(ValidationItem.generateInvalidFrame(projectTitle, sourceLanguage, projectTranslation.getTitle(), targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, "0", "0"));
             }
         }
 
         for(int i = 0; i < chapters.length; i ++) {
             Chapter chapter = chapters[i];
-            // TODO: validate title and reference
+
             Frame[] frames = library.getFrames(sourceTranslation, chapter.getId());
 
             // validate frames
             int lastValidFrameIndex = -1;
             boolean chapterIsValid = true;
             List<ValidationItem> frameValidations = new ArrayList<>();
+
+            ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(chapter.getId());
+            if((chapter.title != null)  && !chapterTranslation.isTitleFinished()) {
+                chapterIsValid = false;
+                frameValidations.add(ValidationItem.generateInvalidFrame(chapter.title, sourceLanguage, chapterTranslation.title, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapter.getId(), "00"));
+            }
+
+            if((chapter.reference != null) && !chapterTranslation.isReferenceFinished()) {
+                chapterIsValid = false;
+                frameValidations.add(ValidationItem.generateInvalidFrame(chapter.reference, sourceLanguage, chapterTranslation.reference, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapter.getId(), "00"));
+            }
+
             for(int j = 0; j < frames.length; j ++) {
                 Frame frame = frames[j];
                 FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(frame);
