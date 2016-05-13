@@ -121,7 +121,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                     mCount = new Counter(mMissingNameItems.length);
                     usfmPromptForNextName();
                 } else {
-                    usfmVerifyImport();
+                    usfmShowProcessingResults();
                 }
             }
         };
@@ -195,7 +195,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
         if (mCount != null) {
             if (mCount.isEmpty()) {
-                usfmVerifyImport();
+                usfmShowProcessingResults();
                 return;
             }
 
@@ -275,7 +275,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
      * processing of all books in file finished, show processing results and verify
      * that user wants to import.
      */
-    private void usfmVerifyImport() {
+    private void usfmShowProcessingResults() {
         if(mShuttingDown) {
             return;
         }
@@ -288,14 +288,26 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                 if (mProgressDialog != null) {
                     mProgressDialog.hide();
 
+                    boolean processSuccess = mUsfm.isProcessSuccess();
                     String results = mUsfm.getResultsString();
                     String language = mUsfm.getLanguageTitle();
                     String message = language + "\n" + results;
 
+                    View.OnClickListener continueListener = null;
+
                     mStatusDialog = CustomAlertDialog.Create(ImportUsfmActivity.this);
-                    mStatusDialog.setTitle(mUsfm.isProcessSuccess() ? R.string.title_processing_usfm_summary : R.string.title_import_usfm_error)
+
+                    mStatusDialog.setTitle(processSuccess ? R.string.title_processing_usfm_summary : R.string.title_import_usfm_error)
                             .setMessage(message)
-                            .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
+                            .setNegativeButton(R.string.menu_cancel, new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    usfmImportDone(true);
+                                }
+                            });
+
+                    if(processSuccess) { // only show continue if successful processing
+                        mStatusDialog.setPositiveButton(R.string.label_continue, new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
                                     mProgressDialog.show();
@@ -304,14 +316,10 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                                     mProgressDialog.setMessage("");
                                     doImportingWithProgress();
                                 }
-                            })
-                            .setNegativeButton(R.string.menu_cancel, new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    usfmImportDone(true);
-                                }
-                            })
-                            .show("USFMresults");
+                        });
+                    }
+
+                    mStatusDialog.show("USFMresults");
                 }
             }
         });
@@ -689,7 +697,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
             case showingProcessingResults:
                 showProgressDialog();
-                usfmVerifyImport();
+                usfmShowProcessingResults();
                 break;
 
             case showingImportResults:

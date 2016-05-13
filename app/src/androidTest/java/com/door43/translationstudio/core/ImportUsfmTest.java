@@ -177,6 +177,34 @@ public class ImportUsfmTest extends InstrumentationTestCase {
     }
 
 
+    public void test10ImportJudeNoVerses() throws Exception {
+        //given
+        String source = "jude.no_verses.usfm";
+        addExpectedBook(source, "", false, false);
+        boolean expectSucccess = false;
+        mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
+
+        //when
+        boolean success = mUsfm.readResourceFile(mTestContext, "usfm/" + source);
+
+        //then
+        verifyResults( success, expectSucccess, mExpectedBooks);
+    }
+
+    public void test11ImportJudeNoChapter() throws Exception {
+        //given
+        String source = "jude.no_chapter_or_verses.usfm";
+        addExpectedBook(source, "", false, false);
+        boolean expectSucccess = false;
+        mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
+
+        //when
+        boolean success = mUsfm.readResourceFile(mTestContext, "usfm/" + source);
+
+        //then
+        verifyResults( success, expectSucccess, mExpectedBooks);
+    }
+
 
     public void addExpectedBook(String filename, String book, boolean success, boolean missingName) throws JSONException {
         JSONObject expectedBook = new JSONObject();
