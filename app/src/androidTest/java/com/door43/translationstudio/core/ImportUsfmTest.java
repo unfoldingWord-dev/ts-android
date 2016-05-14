@@ -315,7 +315,7 @@ public class ImportUsfmTest extends InstrumentationTestCase {
                     File chapterPath = new File(project, chapter.getId());
                     assertTrue("Chapter missing " + chapterPath.toString(), chapterPath.exists());
 
-                    // verify chunks
+                    // verify chunks?  may not be necessary because of migration
                 }
             }
         }

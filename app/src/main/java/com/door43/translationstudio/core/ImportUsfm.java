@@ -71,6 +71,7 @@ public class ImportUsfm {
     private int mChaperCount;
     private List<MissingNameItem> mBooksMissingNames;
     private boolean mCancel = false;
+    private Chapter[] mChapters;
 
     /**
      * constructor
@@ -774,6 +775,8 @@ public class ImportUsfm {
                 addBookMissingName(mBookName, mBookShortName, book);
                 return promptForName;
             } else { // has chunks
+                SourceTranslation sourceTranslation = AppContext.getLibrary().getSourceTranslation(mBookShortName, "en", "ulb");
+                mChapters = AppContext.getLibrary().getChapters(sourceTranslation);
 
                 mChunks = new HashMap<>(); // clear old map
                 addChunks(mBookShortName, markers);
@@ -909,7 +912,7 @@ public class ImportUsfm {
         boolean success = true;
         if (!isMissing(mChapter)) {
             try {
-                String chapter = getChapterKey(mChapter);
+                String chapter = getChapterFolderName(mChapter);
                 if (null == chapter) {
                     addError(R.string.could_not_find_chapter, mChapter);
                     return false;
@@ -917,7 +920,7 @@ public class ImportUsfm {
 
                 mCurrentChapter = Integer.valueOf(mChapter);
 
-                JSONArray versebreaks = mChunks.get(chapter);
+                JSONArray versebreaks = getVerseBreaks(chapter);
 
                 updateStatus(R.string.processing_chapter, new Integer(mChaperCount - mCurrentChapter + 1).toString());
 
@@ -939,10 +942,10 @@ public class ImportUsfm {
                 return false;
             }
         } else { // save stuff before first chapter
-            String chapter1 = getChapterKey("1"); // to get width of chapters
+            String chapter1 = getChapterFolderName("1"); // to get width of chapters
             String first = "00";
             try {
-                JSONArray versebreaks = mChunks.get(chapter1);
+                JSONArray versebreaks = getVerseBreaks(chapter1);
                 first = (String) versebreaks.get(0);
             } catch (JSONException e) {
                 Logger.e(TAG, "Could not get first verse of chapter 1", e);
@@ -958,23 +961,65 @@ public class ImportUsfm {
         return successOverall;
     }
 
-    private String getChapterKey(String mChapter) {
-        String chapter = mChapter;
+    /**
+     * get the chapter name with the appropriate zero padding expected by app
+     * @param findChapter
+     * @return
+     */
+    private String getChapterFolderName(String findChapter) {
+        try {
+            int chapter = Integer.valueOf(findChapter);
+            if (chapter > 0) { // first check in expected location
+                Chapter chapterN = mChapters[chapter - 1];
+                if (Integer.valueOf(chapterN.getId()) == chapter) {
+                    return chapterN.getId();
+                }
+            }
+
+            for (Chapter chapterN : mChapters) { //search for chapter match
+                if (Integer.valueOf(chapterN.getId()) == chapter) {
+                    return chapterN.getId();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        addError(R.string.could_not_find_chapter, findChapter);
+        return null;
+    }
+
+     /**
+      * get the chapter key to use in the format used by the chunk markers
+      * @param findChapter
+      * @return
+      */
+    private JSONArray getVerseBreaks(String findChapter) {
+        String chapter = findChapter;
         if (mChunks.containsKey(chapter)) {
-            return chapter;
+            return mChunks.get(chapter);
         }
 
         chapter = "0" + chapter;
         if (mChunks.containsKey(chapter)) {
-            return chapter;
+            return mChunks.get(chapter);
         }
 
         chapter = "0" + chapter;
         if (mChunks.containsKey(chapter)) {
-            return chapter;
+            return mChunks.get(chapter);
         }
 
-        addError(R.string.could_not_find_chapter, mChapter);
+        //try removing leading spaces
+        chapter = findChapter;
+        while( !chapter.isEmpty() && (chapter.charAt(0) == '0') ) {
+            chapter = chapter.substring(1);
+            if (mChunks.containsKey(chapter)) {
+                return mChunks.get(chapter);
+            }
+        }
+
+        addError(R.string.could_not_find_chapter, findChapter);
         return null;
     }
 
@@ -1072,7 +1117,7 @@ public class ImportUsfm {
                 }
             }
 
-            success = saveSection(chapter, firstVerse, section);
+            success = saveSection(getChapterFolderName(chapter), firstVerse, section);
             successOverall = successOverall && success;
         }
         return successOverall;
@@ -1193,7 +1238,7 @@ public class ImportUsfm {
                 return false;
             }
 
-            saveSection(mChapter, firstVerse, section);
+            saveSection(getChapterFolderName(mChapter), firstVerse, section);
         }
         return true;
     }
