@@ -737,11 +737,6 @@ public class ImportUsfm {
 //            boolean hasSections = isPresent(book, PATTERN_SECTION_MARKER);
             boolean hasVerses = isPresent(book, PATTERN_USFM_VERSE_SPAN);
 
-            if (!hasVerses) {
-                addError(R.string.no_verse);
-                return false;
-            }
-
             if (useName != null) {
                 mBookShortName = useName;
             }
@@ -755,6 +750,11 @@ public class ImportUsfm {
             mBookShortName = mBookShortName.toLowerCase();
 
             setBookName(mBookShortName, description);
+
+            if (!hasVerses) {
+                addError(R.string.no_verse);
+                return false;
+            }
 
             mTempDest = new File(mTempOutput, mBookShortName);
             mProjectFolder = new File(mTempDest, mBookShortName + "-" + mTargetLanguage.getId());

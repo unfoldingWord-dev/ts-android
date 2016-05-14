@@ -153,6 +153,26 @@ public class ImportUsfmActivityUiTest {
         matchImportResultsDialog(true);
     }
 
+    @Test
+    public void judeNoVerses() throws Exception {
+
+        //given
+        String testFile = "usfm/jude.no_verses.usfm";
+        Intent intent = getIntentForTestFile(testFile);
+        mActivityRule.launchActivity(intent);
+        checkDisplayState(R.string.title_activity_import_usfm_language, true);
+
+        //when
+        onView(withText("aa")).perform(click());
+        boolean seen = waitWhileDisplayed(R.string.reading_usfm);
+
+        //then
+        matchSummaryDialog(R.string.title_import_usfm_error, "jud", false);
+        rotateScreen();
+        matchSummaryDialog(R.string.title_import_usfm_error, "jud", false);
+        rotateScreen();
+    }
+
     /**
      * match expected values on summary dialog
      * @param title
@@ -161,7 +181,9 @@ public class ImportUsfmActivityUiTest {
      */
     protected void matchSummaryDialog(int title, String book, boolean noErrors) {
         thenShouldHaveDialogTitle(title);
-        shouldHaveFoundBook(book);
+        if(book != null) {
+            shouldHaveFoundBook(book);
+        }
         checkForImportErrors(noErrors);
     }
 
