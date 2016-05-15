@@ -3,6 +3,7 @@ package com.door43.translationstudio.core;
 import android.content.Context;
 import android.test.InstrumentationTestCase;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.tasks.UploadCrashReportTask;
 
@@ -304,6 +305,7 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         }
         assertTrue(bookLine + " not found", bookFound);
 
+
         // verify chapters and verses
         if(noErrorsExpected && !book.isEmpty()) {
             SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(book.toLowerCase(), "en", "ulb");
@@ -315,7 +317,12 @@ public class ImportUsfmTest extends InstrumentationTestCase {
                     File chapterPath = new File(project, chapter.getId());
                     assertTrue("Chapter missing " + chapterPath.toString(), chapterPath.exists());
 
-                    // verify chunks?  may not be necessary because of migration
+                    // verify chunks
+                    String[] chapterFrameSlugs = mLibrary.getFrameSlugs(sourceTranslation, chapter.getId());
+                    for (String chapterFrameSlug : chapterFrameSlugs) {
+                        File chunkPath = new File(chapterPath, chapterFrameSlug + ".txt");
+                        assertTrue("Chunk missing " + chunkPath.toString(), chunkPath.exists());
+                    }
                 }
             }
         }
