@@ -90,8 +90,7 @@ public class USFMRenderer extends ClickableRenderingEngine {
         CharSequence out = in;
 
         out = trimWhitespace(out);
-        out = renderLineBreaks(out);
-        // TODO: this will strip out new lines. Eventually we may want to convert these to paragraphs.
+//        out = renderLineBreaks(out);  // TODO: Eventually we may want to convert these to paragraphs.
         out = renderWhiteSpace(out);
         out = renderMajorSectionHeading(out);
         out = renderSectionHeading(out);
