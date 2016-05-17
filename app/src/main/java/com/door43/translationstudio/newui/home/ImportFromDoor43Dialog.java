@@ -11,18 +11,22 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
+import com.door43.translationstudio.tasks.AdvancedGogsRepoSearchTask;
 import com.door43.translationstudio.tasks.CloneRepositoryTask;
-import com.door43.translationstudio.tasks.GetUserRepositoriesTask;
 import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
+import com.door43.translationstudio.tasks.SearchGogsRepositoriesTask;
+import com.door43.translationstudio.tasks.SearchGogsUsersTask;
 import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
@@ -32,6 +36,7 @@ import org.apache.commons.io.FileUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.unfoldingword.gogsclient.Repository;
+import org.unfoldingword.gogsclient.User;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,20 +44,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by joel on 11/6/2015.
+ * Created by joel on 5/10/16.
  */
-public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTaskWatcher.OnFinishedListener {
+public class ImportFromDoor43Dialog extends DialogFragment implements GenericTaskWatcher.OnFinishedListener {
     private static final String STATE_REPOSITORIES = "state_repositories";
     private GenericTaskWatcher taskWatcher;
     private RestoreFromCloudAdapter adapter;
     private Translator translator;
     private List<Repository> repositories = new ArrayList<>();
-    private String cloneSSHUrl;
+    private String cloneHtmlUrl;
     private File cloneDestDir;
+    private EditText repoEditText;
+    private EditText userEditText;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
-        View v = inflater.inflate(R.layout.dialog_restore_from_door43, container, false);
+        View v = inflater.inflate(R.layout.dialog_import_from_door43, container, false);
 
         this.taskWatcher = new GenericTaskWatcher(getActivity(), R.string.loading);
         this.taskWatcher.setOnFinishedListener(this);
@@ -64,13 +71,35 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
             @Override
             public void onClick(View v) {
                 taskWatcher.stop();
-                GetUserRepositoriesTask task = (GetUserRepositoriesTask) TaskManager.getTask(GetUserRepositoriesTask.TASK_ID);
+                SearchGogsRepositoriesTask task = (SearchGogsRepositoriesTask) TaskManager.getTask(SearchGogsRepositoriesTask.TASK_ID);
                 if (task != null) {
                     task.stop();
                     TaskManager.cancelTask(task);
                     TaskManager.clearTask(task);
                 }
                 dismiss();
+            }
+        });
+        userEditText = (EditText)v.findViewById(R.id.username);
+        repoEditText = (EditText)v.findViewById(R.id.translation_id);
+
+        v.findViewById(R.id.search_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String userQuery = userEditText.getText().toString();
+                String repoQuery = repoEditText.getText().toString();
+
+                AppContext.closeKeyboard(getActivity());
+
+                Profile profile = AppContext.getProfile();
+                if(profile != null && profile.gogsUser != null) {
+                    AdvancedGogsRepoSearchTask task = new AdvancedGogsRepoSearchTask(profile.gogsUser, userQuery, repoQuery, 50);
+                    TaskManager.addTask(task, AdvancedGogsRepoSearchTask.TASK_ID);
+                    taskWatcher.watch(task);
+                } else {
+                    AppContext.context().showToastMessage(R.string.login_doo43);
+                    dismiss();
+                }
             }
         });
 
@@ -83,8 +112,8 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
                 Repository repo = adapter.getItem(position);
                 String repoName = repo.getFullName().replace("/", "-");
                 cloneDestDir = new File(AppContext.context().getCacheDir(), repoName + System.currentTimeMillis() + "/");
-                cloneSSHUrl = repo.getSshUrl();
-                CloneRepositoryTask task = new CloneRepositoryTask(cloneSSHUrl, cloneDestDir);
+                cloneHtmlUrl = repo.getHtmlUrl();
+                CloneRepositoryTask task = new CloneRepositoryTask(cloneHtmlUrl, cloneDestDir);
                 taskWatcher.watch(task);
                 TaskManager.addTask(task, CloneRepositoryTask.TASK_ID);
             }
@@ -109,17 +138,12 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
         }
 
         // connect to existing task
-        GetUserRepositoriesTask reposTask = (GetUserRepositoriesTask) TaskManager.getTask(GetUserRepositoriesTask.TASK_ID);
+        AdvancedGogsRepoSearchTask searchTask = (AdvancedGogsRepoSearchTask) TaskManager.getTask(AdvancedGogsRepoSearchTask.TASK_ID);
         CloneRepositoryTask cloneTask = (CloneRepositoryTask) TaskManager.getTask(CloneRepositoryTask.TASK_ID);
-        if (reposTask != null) {
-            taskWatcher.watch(reposTask);
+        if (searchTask != null) {
+            taskWatcher.watch(searchTask);
         } else if (cloneTask != null) {
             taskWatcher.watch(cloneTask);
-        } else if(repositories.size() == 0) {
-            // start task
-            reposTask = new GetUserRepositoriesTask();
-            taskWatcher.watch(reposTask);
-            TaskManager.addTask(reposTask, GetUserRepositoriesTask.TASK_ID);
         }
 
         return v;
@@ -130,8 +154,8 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
         taskWatcher.stop();
         TaskManager.clearTask(task);
 
-        if (task instanceof GetUserRepositoriesTask) {
-            this.repositories = ((GetUserRepositoriesTask) task).getRepositories();
+        if (task instanceof AdvancedGogsRepoSearchTask) {
+            this.repositories = ((AdvancedGogsRepoSearchTask) task).getRepositories();
             adapter.setRepositories(repositories);
         } else if (task instanceof CloneRepositoryTask) {
             if (!task.isCanceled()) {
@@ -143,34 +167,36 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
                     Logger.i(this.getClass().getName(), "Repository cloned from " + cloneUrl);
                     tempPath = TargetTranslationMigrator.migrate(tempPath);
                     TargetTranslation tempTargetTranslation = TargetTranslation.open(tempPath);
-                    boolean restoreFailed = false;
+                    boolean importFailed = false;
                     if (tempTargetTranslation != null) {
                         TargetTranslation existingTargetTranslation = translator.getTargetTranslation(tempTargetTranslation.getId());
-                        // create orphaned backup of existing target translation
                         if (existingTargetTranslation != null) {
+                            // merge target translation
                             try {
-                                AppContext.backupTargetTranslation(existingTargetTranslation, true);
+                                existingTargetTranslation.merge(tempPath);
                             } catch (Exception e) {
-                                Logger.e(this.getClass().getName(), "Failed to backup the target translation", e);
+                                Logger.e(this.getClass().getName(), "Failed to merge the target translation", e);
+                                notifyImportFailed();
+                                importFailed = true;
                             }
-                        }
-
-                        // restore the new target translation
-                        try {
-                            translator.restoreTargetTranslation(tempTargetTranslation);
-                        } catch (IOException e) {
-                            Logger.e(this.getClass().getName(), "Failed to import the target translation " + tempTargetTranslation.getId(), e);
-                            notifyRestoreFailed();
-                            restoreFailed = true;
+                        } else {
+                            // restore the new target translation
+                            try {
+                                translator.restoreTargetTranslation(tempTargetTranslation);
+                            } catch (IOException e) {
+                                Logger.e(this.getClass().getName(), "Failed to import the target translation " + tempTargetTranslation.getId(), e);
+                                notifyImportFailed();
+                                importFailed = true;
+                            }
                         }
                     } else {
                         Logger.e(this.getClass().getName(), "Failed to open the online backup");
-                        notifyRestoreFailed();
-                        restoreFailed = true;
+                        notifyImportFailed();
+                        importFailed = true;
                     }
                     FileUtils.deleteQuietly(tempPath);
 
-                    if(!restoreFailed) {
+                    if(!importFailed) {
                         Handler hand = new Handler(Looper.getMainLooper());
                         hand.post(new Runnable() {
                             @Override
@@ -178,7 +204,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
                                 // todo: terrible hack. We should instead register a listener with the dialog
                                 ((HomeActivity) getActivity()).notifyDatasetChanged();
 
-                                Snackbar snack = Snackbar.make(RestoreFromDoor43Dialog.this.getView(), R.string.success, Snackbar.LENGTH_SHORT);
+                                Snackbar snack = Snackbar.make(ImportFromDoor43Dialog.this.getView(), R.string.success, Snackbar.LENGTH_SHORT);
                                 ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                                 snack.show();
                             }
@@ -196,18 +222,19 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
                     taskWatcher.watch(keyTask);
                     TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
                 } else {
-                    notifyRestoreFailed();
+                    notifyImportFailed();
                 }
             }
+
         } else if(task instanceof RegisterSSHKeysTask) {
             if(((RegisterSSHKeysTask)task).isSuccess()) {
                 Logger.i(this.getClass().getName(), "SSH keys were registered with the server");
                 // try to clone again
-                CloneRepositoryTask pullTask = new CloneRepositoryTask(cloneSSHUrl, cloneDestDir);
+                CloneRepositoryTask pullTask = new CloneRepositoryTask(cloneHtmlUrl, cloneDestDir);
                 taskWatcher.watch(pullTask);
                 TaskManager.addTask(pullTask, CloneRepositoryTask.TASK_ID);
             } else {
-                notifyRestoreFailed();
+                notifyImportFailed();
             }
         }
     }
@@ -226,20 +253,19 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
                 .setNegativeButton(R.string.no, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        notifyRestoreFailed();
+                        notifyImportFailed();
                     }
                 })
                 .show("auth-failed");
     }
 
-    public void notifyRestoreFailed() {
+    public void notifyImportFailed() {
         CustomAlertDialog.Create(getActivity())
                 .setTitle(R.string.error)
                 .setMessage(R.string.restore_failed)
                 .setPositiveButton(R.string.dismiss, null)
                 .show("publish-failed");
     }
-
 
     @Override
     public void onSaveInstanceState(Bundle out) {

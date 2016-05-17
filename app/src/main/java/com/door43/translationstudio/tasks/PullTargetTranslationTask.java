@@ -12,12 +12,16 @@ import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.TransportCallback;
 import com.door43.util.tasks.ManagedTask;
 
+import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.DeleteBranchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.PullResult;
+import org.eclipse.jgit.api.ResetCommand;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.errors.NoRemoteRepositoryException;
 import org.eclipse.jgit.lib.ProgressMonitor;
@@ -28,7 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by joel on 4/18/16.
+ * Pulls down changes from a remote target translation repository
  */
 public class PullTargetTranslationTask extends ManagedTask {
 
@@ -143,12 +147,22 @@ public class PullTargetTranslationTask extends ManagedTask {
             if(mergeResult != null && mergeResult.getConflicts() != null && mergeResult.getConflicts().size() > 0) {
                 this.status = Status.MERGE_CONFLICTS;
                 this.conflicts = mergeResult.getConflicts();
+
+                // revert manifest merge conflict to avoid corruption
+                if(this.conflicts.containsKey("manifest.json")) {
+                    try {
+                        git.checkout()
+                                .setStage(CheckoutCommand.Stage.OURS)
+                                .addPath("manifest.json")
+                                .call();
+                    } catch (CheckoutConflictException e) {
+                        // failed to reset manifest.json
+                        Logger.e(this.getClass().getName(), e.getMessage(), e);
+                    }
+                }
             } else {
                 this.status = Status.UP_TO_DATE;
             }
-            // TODO: 4/18/16 check if there were merge conflicts
-            // TODO: 4/18/16 parse result
-            // TODO: 4/18/16 check if updates were downloaded or if we are up to date
             return "message";
         } catch (TransportException e) {
             Logger.e(this.getClass().getName(), e.getMessage(), e);
