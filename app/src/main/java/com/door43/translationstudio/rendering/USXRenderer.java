@@ -91,7 +91,7 @@ public class USXRenderer extends ClickableRenderingEngine {
 
         out = trimWhitespace(out);
 //        out = renderLineBreaks(out); // TODO: Eventually we may want to convert these to paragraphs.
-        out = renderWhiteSpace(out);
+//        out = renderWhiteSpace(out);
         out = renderMajorSectionHeading(out);
         out = renderSectionHeading(out);
         out = renderParagraph(out);
