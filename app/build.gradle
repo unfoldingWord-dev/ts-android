@@ -47,6 +47,7 @@ android {
     }
     useLibrary  'org.apache.http.legacy'
 }
+
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile files('libs/json-simple-1.1.1.jar')
