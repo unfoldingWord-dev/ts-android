@@ -318,7 +318,7 @@ public class Translator {
     }
 
     /**
-     * Imports a tstudio archive
+     * Imports a tstudio archive, uses default of merge, not overwrite
      * @param file
      * @return an array of target translation slugs that were successfully imported
      */
@@ -345,7 +345,7 @@ public class Translator {
     }
 
     /**
-     * Imports a tstudio archive from an input stream
+     * Imports a tstudio archive from an input stream, uses default of merge, not overwrite
      * @param in
      * @return an array of target translation slugs that were successfully imported
      */
