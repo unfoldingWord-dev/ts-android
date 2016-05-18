@@ -14,23 +14,23 @@ public class ImportProjectsTask extends ManagedTask {
 
     private File projectsFolder;
     private boolean overwrite;
-    public boolean mSuccess;
+    private String[] importedSlugs;
 
     public ImportProjectsTask(File projectsFolder, boolean overwrite) {
         this.projectsFolder = projectsFolder;
         this.overwrite = overwrite;
-        mSuccess = false;
     }
 
     @Override
     public void start() {
-        mSuccess = false;
-
         try {
-            String[] importedSlugs = AppContext.getTranslator().importArchive(projectsFolder, overwrite);
-            mSuccess = (importedSlugs.length > 0);
+            importedSlugs = AppContext.getTranslator().importArchive(projectsFolder, overwrite);
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public String[] getImportedSlugs() {
+        return importedSlugs;
     }
 }

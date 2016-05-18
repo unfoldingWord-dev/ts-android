@@ -222,7 +222,9 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
             hand.post(new Runnable() {
                 @Override
                 public void run() {
-                    showImportResults(mExamineTask.mContentUri.toString(), mExamineTask.mProjectsFound, importTask.mSuccess);
+                    String[] importedSlugs = importTask.getImportedSlugs();
+                    boolean success = (importedSlugs != null) && (importedSlugs.length > 0);
+                    showImportResults(mExamineTask.mContentUri.toString(), mExamineTask.mProjectsFound, success);
                 }
             });
             mExamineTask.cleanup();
