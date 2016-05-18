@@ -61,8 +61,7 @@ public class ExamineImportsForCollisionsTask extends ManagedTask {
                 mProjectsFound += td.projectName + " - " + td.targetLanguageName + ", ";
 
                 String targetTranslationId = td.targetTranslationSlug;
-                File localDir = new File(AppContext.getTranslator().getPath(), targetTranslationId);
-                TargetTranslation localTargetTranslation = TargetTranslation.open(localDir);
+                TargetTranslation localTargetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
                 if ((localTargetTranslation != null)) {
                     mAlreadyPresent = true;
                 }
