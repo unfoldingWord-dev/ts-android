@@ -139,12 +139,6 @@
     <!-- This is the license agreement to use the app. It is formatted as HTML. -->
     <string name="license">
 <![CDATA[
-<h2>unfoldingWord | Open Bible Stories</h2>
-<h2>an unrestricted visual mini-Bible in any language</h2>
-<p><a href="http://openbiblestories.com" title="http://openbiblestories.com" >http://openbiblestories.com</a>
-<br/>Open Bible Stories, v. 4
-<br/>Created by Distant Shores Media (<a href="http://distantshores.org" title="http://distantshores.org" >http://distantshores.org</a>) and the Door43 world missions community (<a href="http://door43.org" title="http://door43.org" >http://door43.org</a>).
-</p>
 <h2>License:</h2>
 <p>This work is made available under a Creative Commons Attribution-ShareAlike 4.0 International License (<a href="http://creativecommons.org/licenses/by-sa/4.0/" title="http://creativecommons.org/licenses/by-sa/4.0/" >http://creativecommons.org/licenses/by-sa/4.0/</a>).
 <br/>
@@ -159,9 +153,8 @@
 <br/><b>&#8226; ShareAlike</b> - If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original.
 <br/>
 <br/><b>Use of trademarks:</b> unfoldingWord is a trademark of Distant Shores Media and may not be included on any derivative works created from this content. Unaltered content from <a href="http://unfoldingword.org" title="http://unfoldingword.org" >http://unfoldingword.org</a> must include the unfoldingWord logo when distributed to others. But if you alter the content in any way, you must remove the unfoldingWord logo before distributing your work.
-<br/>
-<br/><b>Attribution of artwork:</b> All images used in these stories are © Sweet Publishing (<a href="http://www.sweetpublishing.com" title="www.sweetpublishing.com" >www.sweetpublishing.com</a>) and are made available under a Creative Commons Attribution-Share Alike License (<a href="http://creativecommons.org/licenses/by-sa/3.0" title="http://creativecommons.org/licenses/by-sa/3.0" >http://creativecommons.org/licenses/by-sa/3.0</a>).
-</p>]]>    </string>
+</p>]]>
+    </string>
     <string name="choose_a_project">Please open a project</string>
     <string name="choose_a_chapter">Please open a chapter</string>
     <string name="title_activity_crash_reporter">Error Report</string>
