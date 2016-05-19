@@ -440,7 +440,7 @@ public class PdfPrinter extends PdfPageEventHelper {
 //            document.add(paragraph);
 //        }
 
-        mCurrentParagraph = new Paragraph("", bodyFont);
+        mCurrentParagraph = null;
         parseHtml( document, license, 0);
 
         nextParagraph(document);
@@ -483,8 +483,11 @@ public class PdfPrinter extends PdfPageEventHelper {
                 addHtmlChunk(foundHtml.enclosed, underlineBodyFont);
             } else if("br".equals(foundHtml.html)) { // line break
                 nextParagraph(document);
-            } else { // anything else just strip off the html tag
+            } else if("p".equals(foundHtml.html)) { // line break
+                blankLine(document);
+                parseHtml( document, foundHtml.enclosed, 0);
                 nextParagraph(document);
+            } else { // anything else just strip off the html tag
                 parseHtml( document, foundHtml.enclosed, 0);
             }
 
@@ -499,15 +502,22 @@ public class PdfPrinter extends PdfPageEventHelper {
 
     /**
      * add text to current paragraph, trim white space
-     * @param beforeText
+     * @param text
      * @param font
      * @throws DocumentException
      */
-    private void addHtmlChunk(String beforeText, Font font) throws DocumentException {
-        beforeText = beforeText.trim();
-        beforeText = beforeText.replace("\n","");
-        if(!beforeText.isEmpty()) {
-            Chunk chunk = new Chunk(beforeText, font);
+    private void addHtmlChunk(String text, Font font) throws DocumentException {
+        if((text != null) && !text.isEmpty()) {
+            Character c = text.charAt(0);
+            text = text.replace("\n","");
+            while((text.length() > 1) && ("  ".equals(text.substring(0,2)))) { // remove extra leading space
+                text = text.substring(1);
+            }
+            while((text.length() > 1) && ("  ".equals(text.substring(text.length() - 2)))) { // remove extra leading space
+                text = text.substring(0, text.length() - 1);
+            }
+
+            Chunk chunk = new Chunk(text, font);
             addChunkToParagraph(chunk);
         }
     }
@@ -521,7 +531,7 @@ public class PdfPrinter extends PdfPageEventHelper {
         if(mCurrentParagraph != null) {
             document.add(mCurrentParagraph);
         }
-        mCurrentParagraph = new Paragraph("", bodyFont);
+        mCurrentParagraph = null;
     }
 
     /**
