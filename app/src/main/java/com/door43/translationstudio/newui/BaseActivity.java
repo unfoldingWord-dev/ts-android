@@ -76,7 +76,8 @@ public abstract class BaseActivity extends AppCompatActivity {
             }
         }
     }
-        @Override
+
+    @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         switch(requestCode) {
