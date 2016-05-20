@@ -4,6 +4,7 @@ import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,6 +53,7 @@ public class LegalDocumentDialog extends DialogFragment {
             // load the string
             String licenseString = getResources().getString(resourceId);
             mLicenseText.setText(Html.fromHtml(licenseString));
+            mLicenseText.setMovementMethod(LinkMovementMethod.getInstance());
         }
 
         // enable button

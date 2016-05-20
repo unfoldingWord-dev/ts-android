@@ -52,6 +52,7 @@ public class TargetTranslation {
     public static final String TAG = TargetTranslation.class.getSimpleName();
     public static final int PACKAGE_VERSION = 6; // the version of the target translation implementation
     public static final String LICENSE_FILE = "LICENSE.md";
+    public static final String OBS_LICENSE_FILE = "OBS_LICENSE.md";
 
     private static final String FIELD_PARENT_DRAFT = "parent_draft";
     private static final String FIELD_FINISHED_CHUNKS = "finished_chunks";
@@ -318,7 +319,12 @@ public class TargetTranslation {
         manifest.put(FIELD_MANIFEST_RESOURCE, resourceJson);
 
         File licenseFile = new File(targetTranslationDir, LICENSE_FILE);
-        InputStream is = context.getAssets().open(LICENSE_FILE);
+        InputStream is;
+        if(projectId.toLowerCase().equals("obs")) {
+            is = context.getAssets().open(OBS_LICENSE_FILE);
+        } else {
+            is = context.getAssets().open(LICENSE_FILE);
+        }
         if(is != null) {
             FileUtils.copyInputStreamToFile(is, licenseFile);
         } else {
