@@ -349,6 +349,7 @@
     <string name="translate_first">Please provide a translation first</string>
     <string name="consecutive_verse_markers">Verse markers are placed too close to each other. Please verify marker positions.</string>
     <string name="outoforder_verse_markers">Verse markers are out of order</string>
+    <string name="outofrange_verse_marker">Verse marker is out of range</string>
     <string name="failed_to_commit_chunk">The chunk could not be saved</string>
     <string name="title_activity_publish">Publish Translation</string>
 
