@@ -5,8 +5,8 @@ import android.content.pm.PackageInfo;
 import android.support.annotation.Nullable;
 
 import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.git.Repo;
+import com.door43.translationstudio.util.NumericStringComparator;
 import com.door43.util.Manifest;
 
 import org.apache.commons.io.FileUtils;
@@ -1326,7 +1326,7 @@ public class TargetTranslation {
                 return new File(dir, filename).isDirectory() && !filename.equals(".git");
             }
         });
-        Arrays.sort(chapterSlugs);
+        Arrays.sort(chapterSlugs, new NumericStringComparator());
         List<ChapterTranslation> chapterTranslations = new ArrayList<>();
         if(chapterSlugs != null) {
             for (String slug : chapterSlugs) {
@@ -1389,7 +1389,7 @@ public class TargetTranslation {
                 return !filename.equals("reference.txt") && !filename.equals("title.txt");
             }
         });
-        Arrays.sort(frameFileNames);
+        Arrays.sort(frameFileNames, new NumericStringComparator());
         List<FrameTranslation> frameTranslations = new ArrayList<>();
         if(frameFileNames != null) {
             for (String fileName : frameFileNames) {
