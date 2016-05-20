@@ -550,7 +550,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     mgr.showSoftInput(holder.mTargetEditableBody, InputMethodManager.SHOW_IMPLICIT);
 
                     // TRICKY: there may be changes to translation
-                    item.loadTranslations(mSourceTranslation, mTargetTranslation, chapter, frame);
+                     item.loadTranslations(mSourceTranslation, mTargetTranslation, chapter, frame);
 
                     // re-render for editing mode
                     item.renderedTargetBody = renderSourceText(item.bodyTranslation, item.translationFormat, holder, item, true);
@@ -1070,7 +1070,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             int lastVerseSeen = 0;
             while (matcher.find()) {
                 int currentVerse = Integer.valueOf(matcher.group(1));
-                if (currentVerse < lastVerseSeen) {
+                if (currentVerse <= lastVerseSeen) {
                     success = false;
                     break;
                 } else {
@@ -1441,6 +1441,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                     text = TextUtils.concat(pin.toCharSequence(), text);
                                     item.renderedTargetBody = text;
                                     editText.setText(text);
+                                    String translation = Translator.compileTranslation((Editable)editText.getText());
+                                    mTargetTranslation.applyFrameTranslation(frameTranslation, translation);
+
+                                    // Reload, so that bodyTranslation and other data are kept in sync.
+                                    item.loadTranslations(mSourceTranslation, mTargetTranslation, null, frame);
                                 }
                             } else if(event.getAction() == DragEvent.ACTION_DRAG_ENTERED) {
                                 hasEntered = true;
