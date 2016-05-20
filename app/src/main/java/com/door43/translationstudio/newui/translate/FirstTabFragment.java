@@ -113,13 +113,15 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
             // save open source language tabs
             for(String id:sourceTranslationIds) {
                 SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
-                AppContext.addOpenSourceTranslation(targetTranslationId, sourceTranslation.getId());
-                TargetTranslation targetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
-                if(targetTranslation != null) {
-                    try {
-                        targetTranslation.addSourceTranslation(sourceTranslation);
-                    } catch (JSONException e) {
-                        Logger.e(this.getClass().getName(), "Failed to record source translation (" + sourceTranslation.getId() + ") usage in the target translation " + targetTranslation.getId(), e);
+                if(sourceTranslation != null) {
+                    AppContext.addOpenSourceTranslation(targetTranslationId, sourceTranslation.getId());
+                    TargetTranslation targetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
+                    if (targetTranslation != null) {
+                        try {
+                            targetTranslation.addSourceTranslation(sourceTranslation);
+                        } catch (JSONException e) {
+                            Logger.e(this.getClass().getName(), "Failed to record source translation (" + sourceTranslation.getId() + ") usage in the target translation " + targetTranslation.getId(), e);
+                        }
                     }
                 }
             }

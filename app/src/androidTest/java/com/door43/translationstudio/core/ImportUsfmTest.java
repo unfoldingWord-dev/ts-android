@@ -208,6 +208,63 @@ public class ImportUsfmTest extends InstrumentationTestCase {
     }
 
 
+    public void test12ImportPhpNoChapter1() throws Exception {
+        //given
+        String source = "php_usfm_NoC1.usfm";
+        addExpectedBook(source, "php", false, false);
+        boolean expectSucccess = false;
+        mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
+
+        //when
+        boolean success = mUsfm.readResourceFile(mTestContext, "usfm/" + source);
+
+        //then
+        verifyResults( success, expectSucccess, mExpectedBooks);
+    }
+
+    public void test13ImportPhpNoChapter2() throws Exception {
+        //given
+        String source = "php_usfm_NoC2.usfm";
+        addExpectedBook(source, "php", false, false);
+        boolean expectSucccess = false;
+        mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
+
+        //when
+        boolean success = mUsfm.readResourceFile(mTestContext, "usfm/" + source);
+
+        //then
+        verifyResults( success, expectSucccess, mExpectedBooks);
+    }
+
+    public void test14ImportPhpChapter3OutOfOrder() throws Exception {
+        //given
+        String source = "php_usfm_C3_out_of_order.usfm";
+        addExpectedBook(source, "php", false, false);
+        boolean expectSucccess = false;
+        mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
+
+        //when
+        boolean success = mUsfm.readResourceFile(mTestContext, "usfm/" + source);
+
+        //then
+        verifyResults( success, expectSucccess, mExpectedBooks);
+    }
+
+    public void test15ImportPhpChapter3OutOfOrder() throws Exception {
+        //given
+        String source = "php_usfm_missing_last_chapter.usfm";
+        addExpectedBook(source, "php", false, false);
+        boolean expectSucccess = false;
+        mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
+
+        //when
+        boolean success = mUsfm.readResourceFile(mTestContext, "usfm/" + source);
+
+        //then
+        verifyResults( success, expectSucccess, mExpectedBooks);
+    }
+
+
     public void addExpectedBook(String filename, String book, boolean success, boolean missingName) throws JSONException {
         JSONObject expectedBook = new JSONObject();
         expectedBook.put("filename", filename);

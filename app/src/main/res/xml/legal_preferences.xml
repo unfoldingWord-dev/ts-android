@@ -16,4 +16,8 @@
     <Preference android:key="software_licenses" android:title="@string/pref_title_software_licenses">
         <intent android:action="com.activity.LegalDocumentActivity" />
     </Preference>
+
+    <Preference android:key="attribution" android:title="@string/pref_title_attribution">
+        <intent android:action="com.activity.LegalDocumentActivity" />
+    </Preference>
 </PreferenceScreen>

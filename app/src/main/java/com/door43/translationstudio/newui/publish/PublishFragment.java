@@ -497,6 +497,8 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                             .setRef("backup-master")
                             .call();
 
+                    targetTranslation.commitSync();
+
                     // try to pull again
                     PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, MergeStrategy.THEIRS);
                     taskWatcher.watch(pullTask);
@@ -515,6 +517,8 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                     resetCommand.setMode(ResetCommand.ResetType.HARD)
                             .setRef("backup-master")
                             .call();
+
+                    targetTranslation.commitSync();
 
                     // try to pull again
                     PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, MergeStrategy.OURS);

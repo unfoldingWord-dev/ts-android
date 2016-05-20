@@ -5,8 +5,8 @@ import android.content.pm.PackageInfo;
 import android.support.annotation.Nullable;
 
 import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.git.Repo;
+import com.door43.translationstudio.util.NumericStringComparator;
 import com.door43.util.Manifest;
 
 import org.apache.commons.io.FileUtils;
@@ -52,6 +52,7 @@ public class TargetTranslation {
     public static final String TAG = TargetTranslation.class.getSimpleName();
     public static final int PACKAGE_VERSION = 6; // the version of the target translation implementation
     public static final String LICENSE_FILE = "LICENSE.md";
+    public static final String OBS_LICENSE_FILE = "OBS_LICENSE.md";
 
     private static final String FIELD_PARENT_DRAFT = "parent_draft";
     private static final String FIELD_FINISHED_CHUNKS = "finished_chunks";
@@ -318,7 +319,12 @@ public class TargetTranslation {
         manifest.put(FIELD_MANIFEST_RESOURCE, resourceJson);
 
         File licenseFile = new File(targetTranslationDir, LICENSE_FILE);
-        InputStream is = context.getAssets().open(LICENSE_FILE);
+        InputStream is;
+        if(projectId.toLowerCase().equals("obs")) {
+            is = context.getAssets().open(OBS_LICENSE_FILE);
+        } else {
+            is = context.getAssets().open(LICENSE_FILE);
+        }
         if(is != null) {
             FileUtils.copyInputStreamToFile(is, licenseFile);
         } else {
@@ -1326,7 +1332,7 @@ public class TargetTranslation {
                 return new File(dir, filename).isDirectory() && !filename.equals(".git");
             }
         });
-        Arrays.sort(chapterSlugs);
+        Arrays.sort(chapterSlugs, new NumericStringComparator());
         List<ChapterTranslation> chapterTranslations = new ArrayList<>();
         if(chapterSlugs != null) {
             for (String slug : chapterSlugs) {
@@ -1389,7 +1395,7 @@ public class TargetTranslation {
                 return !filename.equals("reference.txt") && !filename.equals("title.txt");
             }
         });
-        Arrays.sort(frameFileNames);
+        Arrays.sort(frameFileNames, new NumericStringComparator());
         List<FrameTranslation> frameTranslations = new ArrayList<>();
         if(frameFileNames != null) {
             for (String fileName : frameFileNames) {

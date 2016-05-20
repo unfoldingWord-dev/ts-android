@@ -101,6 +101,9 @@ public class UpdateAppTask extends ManagedTask {
             Looper.prepare();
             PreferenceManager.setDefaultValues(AppContext.context(), R.xml.general_preferences, true);
         }
+        if(lastVersion < 130) {
+            AppContext.context().deleteDatabase(Library.DATABASE_NAME);
+        }
     }
 
     /**
