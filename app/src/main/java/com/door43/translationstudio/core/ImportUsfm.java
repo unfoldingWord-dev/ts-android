@@ -55,6 +55,7 @@ public class ImportUsfm {
     private File mProjectFolder;
 
     private String mChapter;
+    private int mLastChapter;
     private List<File> mSourceFiles; // raw list of files found in expanded package
     private HashMap<String, JSONArray> mChunks;
 
@@ -890,6 +891,7 @@ public class ImportUsfm {
         int lastIndex = 0;
         CharSequence section;
         mChapter = null;
+        mLastChapter = 0;
         boolean successOverall = true;
         boolean success;
         while (matcher.find() && successOverall) {
@@ -899,6 +901,9 @@ public class ImportUsfm {
             section = text.subSequence(lastIndex, matcher.start()); // get section before this chapter marker
             success = breakUpChapter(section);
             successOverall = successOverall && success;
+            if(!success) {
+                break;
+            }
             mChapter = matcher.group(1); // chapter number for next section
             lastIndex = matcher.start();
         }
@@ -909,10 +914,12 @@ public class ImportUsfm {
             successOverall = successOverall && success;
         }
 
-        if((mChapter == null) || (Integer.valueOf(mChapter) != mChunks.size())) {
-            String lastChapter = (mChapter != null) ? mChapter : "(null)";
-            addError(R.string.chapter_count_invalid, mChunks.size() + "", lastChapter);
-            return false;
+        if (successOverall) {
+            if ((mChapter == null) || (Integer.valueOf(mChapter) != mChunks.size())) {
+                String lastChapter = (mChapter != null) ? mChapter : "(null)";
+                addError(R.string.chapter_count_invalid, mChunks.size() + "", lastChapter);
+                return false;
+            }
         }
         return successOverall;
     }
@@ -935,6 +942,22 @@ public class ImportUsfm {
                 }
 
                 mCurrentChapter = Integer.valueOf(mChapter);
+                int expectedChapter = mLastChapter + 1;
+                if(mCurrentChapter != expectedChapter) { // if out of order
+                    if (mCurrentChapter > expectedChapter) { // if gap
+                        Logger.e(TAG, "missing chapter " + expectedChapter);
+                        addError(R.string.missing_chapter_n, expectedChapter + "");
+                        return false;
+                    } else if (mCurrentChapter == expectedChapter) {
+                        Logger.e(TAG, "duplicate chapter " + mChapter);
+                        addError(R.string.duplicate_chapter, mChapter);
+                        return false;
+                    } else {
+                        Logger.e(TAG, "out of order chapter " + mChapter + " after " + mLastChapter);
+                        addError(R.string.chapter_out_of_order, mChapter, mLastChapter + "");
+                        return false;
+                    }
+                }
 
                 JSONArray versebreaks = getVerseBreaksObj(chapter);
 
@@ -952,6 +975,8 @@ public class ImportUsfm {
                     successOverall = successOverall && success;
                 }
 
+                mLastChapter++;
+
             } catch (Exception e) {
                 Logger.e(TAG, "error parsing chapter " + mChapter, e);
                 addError(R.string.could_not_parse_chapter, mChapter);
@@ -959,7 +984,7 @@ public class ImportUsfm {
             }
         } else { // save stuff before first chapter
             String chapter1 = getChapterFolderName("1"); // to get width of chapters
-            String verse0 = "0"; // this will come before first fragment even if it's "00"
+            String verse0 = "before"; // this will come before first fragment even if it's "00"
             String chapter0 = "0000".substring(0, chapter1.length()); // match length of chapter 1
             success = saveSection(chapter0, verse0, text);
             successOverall = successOverall && success;
