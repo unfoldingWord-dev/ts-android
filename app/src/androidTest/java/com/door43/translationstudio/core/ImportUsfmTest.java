@@ -3,6 +3,7 @@ package com.door43.translationstudio.core;
 import android.content.Context;
 import android.test.InstrumentationTestCase;
 
+import com.door43.tools.reporting.FileUtils;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.tasks.UploadCrashReportTask;
@@ -13,6 +14,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 
 
@@ -362,6 +364,7 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         }
         assertTrue(bookLine + " not found", bookFound);
 
+        String chunk;
 
         // verify chapters and verses
         if(noErrorsExpected && !book.isEmpty()) {
@@ -378,6 +381,12 @@ public class ImportUsfmTest extends InstrumentationTestCase {
                     String[] chapterFrameSlugs = mLibrary.getFrameSlugs(sourceTranslation, chapter.getId());
                     for (String chapterFrameSlug : chapterFrameSlugs) {
                         File chunkPath = new File(chapterPath, chapterFrameSlug + ".txt");
+                        try {
+                            chunk = FileUtils.readFileToString(chunkPath);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            fail("Could not read chunk " + chunkPath.toString());
+                        }
                         assertTrue("Chunk missing " + chunkPath.toString(), chunkPath.exists());
                     }
                 }

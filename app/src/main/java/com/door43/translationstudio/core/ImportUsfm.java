@@ -494,6 +494,19 @@ public class ImportUsfm {
     }
 
     /**
+     * add warning to error list
+     *
+     * @param resource
+     * @param val1
+     * @param val2
+     * */
+    private void addWarning(int resource, String val1, String val2) {
+        String format = mContext.getResources().getString(resource);
+        String newWarning = String.format(format, val1, val2);
+        addWarning(newWarning);
+    }
+
+    /**
      * unpack and import documents from zip stream
      *
      * @param usfmStream
@@ -898,30 +911,89 @@ public class ImportUsfm {
             if(mCancel) {
                 return false;
             }
+
+            success = true;
             section = text.subSequence(lastIndex, matcher.start()); // get section before this chapter marker
-            success = breakUpChapter(section);
+
+            String chapter = matcher.group(1); // chapter number for next section
+            mCurrentChapter = Integer.valueOf(chapter);
+            if(mCurrentChapter > mChunks.size()) { //make sure in range
+                break;
+            }
+
+            int expectedChapter = mLastChapter + 1;
+            if(mCurrentChapter != expectedChapter) { // if out of order
+                if (mCurrentChapter > expectedChapter) { // if gap
+
+                    success = processChapterGap(section, mLastChapter, mCurrentChapter);
+                    mLastChapter = mCurrentChapter - 1;
+
+                } else if (mCurrentChapter == expectedChapter) {
+                    Logger.e(TAG, "duplicate chapter " + mChapter);
+                    addError(R.string.duplicate_chapter, mChapter);
+                    return false;
+                } else {
+                    Logger.e(TAG, "out of order chapter " + mChapter + " after " + mLastChapter);
+                    addError(R.string.chapter_out_of_order, mChapter, mLastChapter + "");
+                    return false;
+                }
+            } else {
+                success = breakUpChapter( section, mChapter);
+            }
+
             successOverall = successOverall && success;
             if(!success) {
                 break;
             }
-            mChapter = matcher.group(1); // chapter number for next section
-            lastIndex = matcher.start();
+
+            mLastChapter++;
+            mChapter = chapter; // chapter number for next section
+            lastIndex = matcher.end();
         }
 
         if (successOverall) {
             section = text.subSequence(lastIndex, text.length()); // get last section
-            success = breakUpChapter(section);
+            success = breakUpChapter(section, mChapter);
+            mLastChapter = Integer.valueOf(mChapter);
             successOverall = successOverall && success;
         }
 
         if (successOverall) {
-            if ((mChapter == null) || (Integer.valueOf(mChapter) != mChunks.size())) {
-                String lastChapter = (mChapter != null) ? mChapter : "(null)";
-                addError(R.string.chapter_count_invalid, mChunks.size() + "", lastChapter);
-                return false;
+            mCurrentChapter = Integer.valueOf(mChapter);
+            if ((mChapter == null) || (mCurrentChapter != mChunks.size())) {
+
+                if(mCurrentChapter < mChunks.size()) {
+                    success = processChapterGap("", mCurrentChapter, mChunks.size() + 1);
+                    successOverall = successOverall && success;
+                } else  {
+                    String lastChapter = (mChapter != null) ? mChapter : "(null)";
+                    addWarning(R.string.chapter_count_invalid, mChunks.size() + "", lastChapter);
+                    return false;
+                }
             }
         }
         return successOverall;
+    }
+
+    /**
+     * handle missing chapters in book
+     * @param section
+     * @param missingStart
+     * @param missingEnd
+     * @return
+     */
+    private boolean processChapterGap(CharSequence section, int missingStart, int missingEnd) {
+        boolean success;
+        Logger.e(TAG, "missing chapter " + missingStart);
+        addWarning(R.string.missing_chapter_n, missingStart + "");
+        success = breakUpChapter(section, missingStart + "");
+
+        for(int i = missingStart + 1; i < missingEnd; i++) { // skip missing gaps
+            Logger.e(TAG, "missing chapter " + i);
+            addWarning(R.string.missing_chapter_n, i + "");
+            breakUpChapter("", i + "");
+        }
+        return success;
     }
 
     /**
@@ -930,38 +1002,21 @@ public class ImportUsfm {
      * @param text
      * @return
      */
-    private boolean breakUpChapter(CharSequence text) {
+    private boolean breakUpChapter(CharSequence text, String currentChapterStr) {
         boolean successOverall = true;
         boolean success = true;
-        if (!isMissing(mChapter)) {
+        if (!isMissing(currentChapterStr)) {
             try {
-                String chapter = getChapterFolderName(mChapter);
+                String chapter = getChapterFolderName(currentChapterStr);
                 if (null == chapter) {
-                    addError(R.string.could_not_find_chapter, mChapter);
+                    addError(R.string.could_not_find_chapter, currentChapterStr);
                     return false;
-                }
-
-                mCurrentChapter = Integer.valueOf(mChapter);
-                int expectedChapter = mLastChapter + 1;
-                if(mCurrentChapter != expectedChapter) { // if out of order
-                    if (mCurrentChapter > expectedChapter) { // if gap
-                        Logger.e(TAG, "missing chapter " + expectedChapter);
-                        addError(R.string.missing_chapter_n, expectedChapter + "");
-                        return false;
-                    } else if (mCurrentChapter == expectedChapter) {
-                        Logger.e(TAG, "duplicate chapter " + mChapter);
-                        addError(R.string.duplicate_chapter, mChapter);
-                        return false;
-                    } else {
-                        Logger.e(TAG, "out of order chapter " + mChapter + " after " + mLastChapter);
-                        addError(R.string.chapter_out_of_order, mChapter, mLastChapter + "");
-                        return false;
-                    }
                 }
 
                 JSONArray versebreaks = getVerseBreaksObj(chapter);
 
-                updateStatus(R.string.processing_chapter, new Integer(mChaperCount - mCurrentChapter + 1).toString());
+                int currentChapter = Integer.valueOf(chapter);
+                updateStatus(R.string.processing_chapter, new Integer(mChaperCount - currentChapter + 1).toString());
 
                 String lastFirst = null;
                 for (int i = 0; (i < versebreaks.length()) && success; i++) {
@@ -975,20 +1030,17 @@ public class ImportUsfm {
                     successOverall = successOverall && success;
                 }
 
-                mLastChapter++;
-
             } catch (Exception e) {
-                Logger.e(TAG, "error parsing chapter " + mChapter, e);
-                addError(R.string.could_not_parse_chapter, mChapter);
+                Logger.e(TAG, "error parsing chapter " + currentChapterStr, e);
+                addError(R.string.could_not_parse_chapter, currentChapterStr);
                 return false;
             }
         } else { // save stuff before first chapter
             String chapter1 = getChapterFolderName("1"); // to get width of chapters
-            String verse0 = "before"; // this will come before first fragment even if it's "00"
             String chapter0 = "0000".substring(0, chapter1.length()); // match length of chapter 1
-            success = saveSection(chapter0, verse0, text);
+            success = saveSection(".", "before", text);
             successOverall = successOverall && success;
-            success = saveSection(chapter0, "title", mBookName);
+            success = saveSection(".", "title", mBookName);
             successOverall = successOverall && success;
         }
         return successOverall;
@@ -1089,9 +1141,8 @@ public class ImportUsfm {
      */
     private boolean extractVerses(String chapter, CharSequence text, String start, String end) {
         boolean success = true;
-        if (null == start) { // we need to capture stuff before first verse
-            String verse0 = "0";
-            start = verse0;
+        if (null == start) { // skip over stuff before verse 1 for now
+            return true;
         }
 
         int startVerse = Integer.valueOf(start);
@@ -1132,6 +1183,15 @@ public class ImportUsfm {
                 }
 
                 if (currentVerse >= start) {
+                    if( (currentVerse == 1) && (start == 1) ){ // pick up initial content of chapter
+                        lastIndex = 0; // get everything before this first verse
+                    }
+
+                    if(end == END_MARKER) { // just include everything to end
+                        done = false;
+                        break;
+                    }
+
                     section = section + text.subSequence(lastIndex, matcher.start()); // get section before this chunk marker
                     if(endVerseRange > 0) {
                         foundVerseCount += (endVerseRange - currentVerse + 1);
