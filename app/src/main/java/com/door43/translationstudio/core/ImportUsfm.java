@@ -907,11 +907,13 @@ public class ImportUsfm {
         mLastChapter = 0;
         boolean successOverall = true;
         boolean success;
+        boolean foundChapter = false;
         while (matcher.find() && successOverall) {
             if(mCancel) {
                 return false;
             }
 
+            foundChapter = true;
             success = true;
             section = text.subSequence(lastIndex, matcher.start()); // get section before this chapter marker
 
@@ -951,6 +953,12 @@ public class ImportUsfm {
             lastIndex = matcher.end();
         }
 
+        if(!foundChapter) { // if no chapters found
+            Logger.e(TAG, "no chapters" );
+            addError(R.string.no_chapter);
+            return false;
+        }
+
         if (successOverall) {
             section = text.subSequence(lastIndex, text.length()); // get last section
             success = breakUpChapter(section, mChapter);
@@ -984,12 +992,16 @@ public class ImportUsfm {
      */
     private boolean processChapterGap(CharSequence section, int missingStart, int missingEnd) {
         boolean success;
-        Logger.e(TAG, "missing chapter " + missingStart);
-        addWarning(R.string.missing_chapter_n, missingStart + "");
+        if(missingStart <= 0) { // if first chapter is missing, then we start processing there
+            missingStart = 1;
+            Logger.w(TAG, "missing chapter " + missingStart);
+            addWarning(R.string.missing_chapter_n, missingStart + "");
+        }
+
         success = breakUpChapter(section, missingStart + "");
 
         for(int i = missingStart + 1; i < missingEnd; i++) { // skip missing gaps
-            Logger.e(TAG, "missing chapter " + i);
+            Logger.w(TAG, "missing chapter " + i);
             addWarning(R.string.missing_chapter_n, i + "");
             breakUpChapter("", i + "");
         }
