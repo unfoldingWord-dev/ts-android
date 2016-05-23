@@ -1099,9 +1099,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             while (matcher.find()) {
                 int currentVerse = Integer.valueOf(matcher.group(1));
                 if (currentVerse <= lastVerseSeen) {
-                    error = R.string.outoforder_verse_markers;
-                    success = false;
-                    break;
+                    if (currentVerse == lastVerseSeen) {
+                        error = R.string.duplicate_verse_marker;
+                        success = false;
+                        break;
+                    } else {
+                        error = R.string.outoforder_verse_markers;
+                        success = false;
+                        break;
+                    }
                 } else if( (currentVerse < lowVerse) || (currentVerse > highVerse) ) {
                     error = R.string.outofrange_verse_marker;
                     success = false;
