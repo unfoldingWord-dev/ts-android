@@ -317,16 +317,26 @@ public class Translator {
         return t;
     }
 
-     /**
-     * Imports a tstudio archive
+    /**
+     * Imports a tstudio archive, uses default of merge, not overwrite
      * @param file
      * @return an array of target translation slugs that were successfully imported
      */
     public String[] importArchive(File file) throws Exception {
+        return importArchive( file, false);
+    }
+
+   /**
+    * Imports a tstudio archive
+    * @param file
+    * @param overwrite - if true then local changes are clobbered
+    * @return an array of target translation slugs that were successfully imported
+    */
+    public String[] importArchive(File file, boolean overwrite) throws Exception {
         FileInputStream in = null;
         try {
             in = new FileInputStream(file);
-            return importArchive(in);
+            return importArchive(in, overwrite);
         } catch (Exception e) {
             throw e;
         } finally {
@@ -335,11 +345,21 @@ public class Translator {
     }
 
     /**
-     * Imports a tstudio archive from an input stream
+     * Imports a tstudio archive from an input stream, uses default of merge, not overwrite
      * @param in
      * @return an array of target translation slugs that were successfully imported
      */
     public String[] importArchive(InputStream in) throws Exception {
+        return importArchive( in, false);
+    }
+
+    /**
+     * Imports a tstudio archive from an input stream
+     * @param in
+     * @param overwrite - if true then local changes are clobbered
+     * @return an array of target translation slugs that were successfully imported
+     */
+    public String[] importArchive(InputStream in, boolean overwrite) throws Exception {
         File archiveDir = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
         List<String> importedSlugs = new ArrayList<>();
         try {
@@ -354,7 +374,7 @@ public class Translator {
                     String targetTranslationId = newTargetTranslation.getId();
                     File localDir = new File(mRootDir, targetTranslationId);
                     TargetTranslation localTargetTranslation = TargetTranslation.open(localDir);
-                    if(localTargetTranslation != null) {
+                    if((localTargetTranslation != null) && !overwrite) {
                         // commit local changes to history
                         if(localTargetTranslation != null) {
                             localTargetTranslation.commitSync();
