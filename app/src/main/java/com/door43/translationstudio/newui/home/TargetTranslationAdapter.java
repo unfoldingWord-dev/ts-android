@@ -2,6 +2,8 @@ package com.door43.translationstudio.newui.home;
 
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,33 +12,39 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.AppContext;
-import com.door43.util.tasks.ThreadableUI;
+import com.door43.translationstudio.tasks.CalculateTargetTranslationProgressTask;
+import com.door43.util.tasks.ManagedTask;
+import com.door43.util.tasks.TaskManager;
 import com.door43.widget.ViewUtil;
 import com.filippudak.ProgressPieView.ProgressPieView;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Created by joel on 9/3/2015.
  */
-public class TargetTranslationAdapter extends BaseAdapter {
+public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask.OnFinishedListener {
     private final Context mContext;
     private TargetTranslation[] mTranslations;
     private OnInfoClickListener mInfoClickListener = null;
-    private int[] mTranslationProgress;
-    private boolean[] mTranslationProgressCalculated;
+    private Map<String, Integer> mTranslationProgress = new HashMap<>();
+    private List<String> mTranslationProgressCalculated = new ArrayList<>();
+    private List<ViewHolder> holders = new ArrayList<>();
 
     public TargetTranslationAdapter(Context context) {
         mContext = context;
         mTranslations = new TargetTranslation[0];
-        mTranslationProgress = new int[0];
-        mTranslationProgressCalculated = new boolean[0];
     }
 
     /**
@@ -74,13 +82,35 @@ public class TargetTranslationAdapter extends BaseAdapter {
         if(convertView == null) {
             v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_target_translation_list_item, null);
             holder = new ViewHolder(v, parent.getContext());
+            holders.add(holder);
         } else {
             holder = (ViewHolder)v.getTag();
         }
 
-        // render view
         final TargetTranslation targetTranslation = getItem(position);
         final Library library = AppContext.getLibrary();
+        holder.currentTargetTranslation = targetTranslation;
+        holder.mProgressView.setVisibility(View.INVISIBLE);
+
+        // calculate translation progress
+        if(!mTranslationProgressCalculated.contains(targetTranslation.getId())) {
+            String taskId = CalculateTargetTranslationProgressTask.TASK_ID + targetTranslation.getId();
+            CalculateTargetTranslationProgressTask calcTask = (CalculateTargetTranslationProgressTask) TaskManager.getTask(taskId);
+            if(calcTask != null) {
+                // attach listener
+                calcTask.removeAllOnFinishedListener();
+                calcTask.addOnFinishedListener(this);
+            } else {
+                calcTask = new CalculateTargetTranslationProgressTask(library, targetTranslation);
+                calcTask.addOnFinishedListener(this);
+                TaskManager.addTask(calcTask, CalculateTargetTranslationProgressTask.TASK_ID + targetTranslation.getId());
+                TaskManager.groupTask(calcTask, "calc-translation-progress");
+            }
+        } else {
+            holder.setProgress(mTranslationProgress.get(targetTranslation.getId()));
+        }
+
+        // render view
         Project project = library.getProject(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
         if(project != null) {
             if(!targetTranslation.getResourceSlug().equals(Resource.REGULAR_SLUG) && !targetTranslation.getResourceSlug().equals("obs")) {
@@ -93,47 +123,6 @@ public class TargetTranslationAdapter extends BaseAdapter {
             holder.mTitleView.setText(targetTranslation.getProjectId());
         }
         holder.mLanguageView.setText(targetTranslation.getTargetLanguageName());
-
-        // calculate translation progress
-        if(!mTranslationProgressCalculated[position] && holder.mCalculatingProgressForPosition != position) {
-            holder.mCalculatingProgressForPosition = position;
-            final ViewHolder staticHolder = holder;
-            if(holder.mProgressTask != null) {
-                holder.mProgressTask.stop();
-            }
-            holder.mProgressTask = new ThreadableUI(mContext) {
-                private int progress = 0;
-
-                @Override
-                public void onStop() {
-                    staticHolder.mCalculatingProgressForPosition = -1;
-                }
-
-                @Override
-                public void run() {
-                    // TODO: this method should respond correctly to thread interruptions
-                    progress = Math.round(library.getTranslationProgress(targetTranslation) * 100);
-                    progress = progress > 100 ? 100 : (progress < 0 ? 0 : progress); // limit range of calculated progress
-                }
-
-                @Override
-                public void onPostExecute() {
-                    if (!isInterrupted()) {
-                        mTranslationProgress[position] = progress;
-                        mTranslationProgressCalculated[position] = true;
-                        staticHolder.mProgressView.setProgress(progress);
-                        staticHolder.mProgressView.setVisibility(View.VISIBLE);
-                        // TODO: animate in progress view (pin)
-                    }
-                    staticHolder.mCalculatingProgressForPosition = -1;
-                }
-            };
-            holder.mProgressTask.start();
-            holder.mProgressView.setVisibility(View.INVISIBLE);
-        } else {
-            holder.mProgressView.setProgress(mTranslationProgress[position]);
-            holder.mProgressView.setVisibility(View.VISIBLE);
-        }
 
         // TODO: finish rendering project icon
         holder.mInfoButton.setOnClickListener(new View.OnClickListener() {
@@ -149,24 +138,46 @@ public class TargetTranslationAdapter extends BaseAdapter {
 
     public void changeData(TargetTranslation[] targetTranslations) {
         mTranslations = targetTranslations;
-        mTranslationProgress = new int[targetTranslations.length];
-        mTranslationProgressCalculated = new boolean[targetTranslations.length];
-        // TODO: scheduele calcualtions
+        mTranslationProgress = new HashMap<>();
+        mTranslationProgressCalculated = new ArrayList<>();
         notifyDataSetChanged();
+    }
+
+    @Override
+    public void onFinished(ManagedTask task) {
+        TaskManager.clearTask(task);
+        // save progress
+        final int progress = ((CalculateTargetTranslationProgressTask)task).translationProgress;
+        final TargetTranslation targetTranslation = ((CalculateTargetTranslationProgressTask)task).targetTranslation;
+        mTranslationProgress.put(targetTranslation.getId(), progress);
+        mTranslationProgressCalculated.add(targetTranslation.getId());
+
+        // update view holders
+        for(final ViewHolder holder:holders) {
+            if(holder.currentTargetTranslation.getId().endsWith(targetTranslation.getId())) {
+                Handler hand = new Handler(Looper.getMainLooper());
+                hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        holder.setProgress(progress);
+                    }
+                });
+                break;
+            }
+        }
     }
 
     public interface OnInfoClickListener {
         void onClick(String targetTranslationId);
     }
 
-    public static class ViewHolder {
+    public class ViewHolder {
         public ImageView mIconView;
         public TextView mTitleView;
         public TextView mLanguageView;
         public ProgressPieView mProgressView;
         public ImageButton mInfoButton;
-        public ThreadableUI mProgressTask;
-        public int mCalculatingProgressForPosition = -1;
+        public TargetTranslation currentTargetTranslation;
 
         public ViewHolder(View view, Context context) {
             mIconView = (ImageView) view.findViewById(R.id.projectIcon);
@@ -177,6 +188,11 @@ public class TargetTranslationAdapter extends BaseAdapter {
             mInfoButton = (ImageButton) view.findViewById(R.id.infoButton);
             ViewUtil.tintViewDrawable(mInfoButton, context.getResources().getColor(R.color.dark_disabled_text));
             view.setTag(this);
+        }
+
+        public void setProgress(int progress) {
+            mProgressView.setProgress(progress);
+            mProgressView.setVisibility(View.VISIBLE);
         }
     }
 }

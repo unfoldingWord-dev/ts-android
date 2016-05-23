@@ -67,7 +67,8 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         String targetTranslationId = args.getString(AppContext.EXTRA_TARGET_TRANSLATION_ID, null);
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         if(mTargetTranslation == null) {
-            throw new InvalidParameterException("a valid target translation id is required");
+            Logger.e(getClass().getName() ,"A valid target translation id is required. Received '" + targetTranslationId + "' but the translation could not be found");
+            getActivity().finish();
         }
 
         String chapterId = args.getString(AppContext.EXTRA_CHAPTER_ID, AppContext.getLastFocusChapterId(targetTranslationId));

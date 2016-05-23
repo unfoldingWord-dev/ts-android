@@ -22,17 +22,10 @@ import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.ProfileActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
-import com.door43.translationstudio.core.ArchiveDetails;
-import com.door43.translationstudio.core.Chapter;
-import com.door43.translationstudio.core.ChapterTranslation;
-import com.door43.translationstudio.core.Frame;
-import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
-import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
@@ -41,19 +34,19 @@ import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationAct
 import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.AppContext;
-import com.door43.util.Zip;
+import com.door43.translationstudio.tasks.ExamineImportsForCollisionsTask;
+import com.door43.translationstudio.tasks.ImportProjectsTask;
+import com.door43.util.tasks.GenericTaskWatcher;
+import com.door43.util.tasks.ManagedTask;
+import com.door43.util.tasks.TaskManager;
 import com.door43.widget.ViewUtil;
 
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Locale;
 
-public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
+public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnFinishedListener, WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
     private static final int REQUEST_CODE_STORAGE_ACCESS = 42;
     private static final int NEW_TARGET_TRANSLATION_REQUEST = 1;
     public static final String TAG = HomeActivity.class.getSimpleName();
@@ -61,6 +54,8 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
     private Translator mTranslator;
     private Fragment mFragment;
     private boolean mUsfmImport = false;
+    private GenericTaskWatcher taskWatcher;
+    private ExamineImportsForCollisionsTask mExamineTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -170,7 +165,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
             }
         });
 
-        Intent intent = getIntent();
+        Intent intent = getIntent(); // check if user is trying to open a tstudio file
         if(intent != null) {
             String action = intent.getAction();
             if(action != null) {
@@ -178,59 +173,13 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                     String scheme = intent.getScheme();
                     ContentResolver resolver = getContentResolver();
                     Uri contentUri = intent.getData();
-                    File tempFile = null;
-                    if (scheme.compareTo(ContentResolver.SCHEME_FILE) == 0) {
-                        finish();
-                        // TODO: 3/23/2016 we need to finish adding support for importing by clicking on a file.
-                        // the import needs to be ran in a task and a loading dialog should be displayed.
-                        try {
-                            tempFile = File.createTempFile("targettranslation", "." + Translator.ARCHIVE_EXTENSION);
-                            FileUtils.copyInputStreamToFile(resolver.openInputStream(contentUri), tempFile);
-                            ArchiveDetails details = ArchiveDetails.newInstance(tempFile, Locale.getDefault().getLanguage(), mLibrary);
-                            String names = "";
-                            for (ArchiveDetails.TargetTranslationDetails td : details.targetTranslationDetails) {
-                                names = td.projectName + " - " + td.targetLanguageName + ", ";
-                            }
-                            names = names.replaceAll(", $", "");
-                            final File archiveFile = tempFile;
-                            CustomAlertDialog.Create(this)
-                                    .setTitle(R.string.label_import)
-                                    .setMessage(String.format(getResources().getString(R.string.confirm_import_target_translation), names))
-                                    .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            FileUtils.deleteQuietly(archiveFile);
-                                            HomeActivity.this.finish();
-                                        }
-                                    })
-                                    .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            // TODO: 3/23/2016 import the file!
-                                            try {
-                                                String[] importedSlugs = AppContext.getTranslator().importArchive(archiveFile);
-                                                if (importedSlugs.length > 0) {
-                                                    // TODO: 3/23/2016 success!
-                                                    HomeActivity.this.notifyDatasetChanged();
-                                                } else {
-                                                    // TODO: 3/23/2016 nothing could be imported
-                                                }
-                                            } catch (Exception e) {
-                                                e.printStackTrace();
-                                            } finally {
-                                                FileUtils.deleteQuietly(archiveFile);
-                                                HomeActivity.this.finish();
-                                            }
-                                        }
-                                    })
-                                    .show("confirm_import");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            if (tempFile != null) {
-                                FileUtils.deleteQuietly(tempFile);
-                            }
-                            finish();
-                        }
+                    Logger.i(TAG,"Opening: " + contentUri.toString());
+                    if (scheme.compareTo(ContentResolver.SCHEME_CONTENT) == 0) {
+                        importFromUri(resolver, contentUri);
+                        return;
+                    } else if (scheme.compareTo(ContentResolver.SCHEME_FILE) == 0) {
+                        importFromUri(resolver, contentUri);
+                        return;
                     }
                 }
             }
@@ -244,6 +193,130 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                 return;
             }
         }
+    }
+
+    @Override
+    public void onFinished(ManagedTask task) {
+        taskWatcher.stop();
+        if (task instanceof ExamineImportsForCollisionsTask) {
+            final ExamineImportsForCollisionsTask examineTask = (ExamineImportsForCollisionsTask) task;
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (examineTask.mSuccess) {
+                        displayImportVerification();
+                    } else {
+                        Logger.e(TAG, "Could not process content URI: " + examineTask.mContentUri.toString());
+                        showImportResults(mExamineTask.mContentUri.toString(), null, false);
+                        examineTask.cleanup();
+                    }
+                }
+            });
+
+
+        } else if (task instanceof ImportProjectsTask) {
+
+            final ImportProjectsTask importTask = (ImportProjectsTask) task;
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    String[] importedSlugs = importTask.getImportedSlugs();
+                    boolean success = (importedSlugs != null) && (importedSlugs.length > 0);
+                    showImportResults(mExamineTask.mContentUri.toString(), mExamineTask.mProjectsFound, success);
+                }
+            });
+            mExamineTask.cleanup();
+        }
+    }
+
+    /**
+     * display the final import Results.
+     */
+    private void showImportResults(String projectPath, String projectNames, boolean success) {
+        final CustomAlertDialog dlg = CustomAlertDialog.Create(this);
+        String message;
+        if(success) {
+            String format = AppContext.context().getResources().getString(R.string.import_project_success);
+            message = String.format(format, projectNames, projectPath);
+        } else {
+            String format = AppContext.context().getResources().getString(R.string.import_failed);
+            message = format + "\n" + projectPath;
+        }
+
+        dlg.setTitle(success ? R.string.title_import_Success : R.string.title_import_Failed)
+                .setMessage(message)
+                .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mExamineTask.cleanup();
+                        HomeActivity.this.finish();
+                    }
+                })
+                .show("USFMImportResults2");
+    }
+
+    /**
+     * begin the uri import
+     * @param resolver
+     * @param contentUri
+     * @return
+     * @throws Exception
+     */
+    private void importFromUri(ContentResolver resolver, Uri contentUri) {
+        if(null == taskWatcher) {
+            taskWatcher = new GenericTaskWatcher(this, R.string.import_project);
+            taskWatcher.setOnFinishedListener(this);
+        }
+
+        mExamineTask = new ExamineImportsForCollisionsTask(resolver, contentUri);
+        taskWatcher.watch(mExamineTask);
+        TaskManager.addTask(mExamineTask, ExamineImportsForCollisionsTask.TASK_ID);
+    }
+
+    /**
+     * show dialog to verify that we want to import, restore or cancel.
+     */
+    private void displayImportVerification() {
+        final CustomAlertDialog dlg = CustomAlertDialog.Create(this);
+        dlg.setTitle(R.string.label_import)
+                .setMessage(String.format(getResources().getString(R.string.confirm_import_target_translation), mExamineTask.mProjectsFound))
+                .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mExamineTask.cleanup();
+                        HomeActivity.this.finish();
+                    }
+                })
+                .setPositiveButton(R.string.label_restore, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        doArchiveImport(true);
+                    }
+                });
+
+        if(mExamineTask.mAlreadyPresent) { // add merge option
+            dlg.setNeutralButton(R.string.label_import, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    doArchiveImport(false);
+                    dlg.dismiss();
+                }
+            });
+        }
+
+        dlg.show("confirm_import");
+    }
+
+    /**
+     * import specified file
+     * @param overwrite
+     */
+    private void doArchiveImport(boolean overwrite) {
+        ImportProjectsTask importTask = new ImportProjectsTask(mExamineTask.mProjectsFolder, overwrite);
+        taskWatcher.watch(importTask);
+        TaskManager.addTask(importTask, ImportProjectsTask.TASK_ID);
     }
 
     /**
