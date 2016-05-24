@@ -1204,26 +1204,46 @@ public class ImportUsfm {
                         break;
                     }
 
-                    section = section + text.subSequence(lastIndex, matcher.start()); // get section before this chunk marker
-                    if(endVerseRange > 0) {
-                        foundVerseCount += (endVerseRange - currentVerse + 1);
-                    } else {
-                        foundVerseCount++;
+                    while(true) { // find the end of the section
+
+                        if(endVerseRange > 0) {
+                            foundVerseCount += (endVerseRange - currentVerse + 1);
+                        } else {
+                            foundVerseCount++;
+                        }
+
+                        String verse = matcher.group(1);
+                        int[] verseRange = getVerseRange(verse);
+                        if(null == verseRange) {
+                            break;
+                        }
+                        currentVerse = verseRange[0];
+                        endVerseRange = verseRange[1];
+
+                        if (currentVerse >= end) {
+                             break;
+                        }
+
+                        boolean found = matcher.find();
+                        if(!found) {
+                            break;
+                        }
                     }
+
+                    section = section + text.subSequence(lastIndex, matcher.start()); // get section before this chunk marker
+                    done = true;
+                    break;
                 }
 
-                endVerseRange = 0;
+
                 String verse = matcher.group(1);
-                try {
-                    currentVerse = Integer.valueOf(verse);
-                } catch (NumberFormatException e) { // might be a range in format 12-13
-                    String[] range = verse.split("-");
-                    if (range.length != 2) {
-                        return false;
-                    }
-                    currentVerse = Integer.valueOf(range[0]);
-                    endVerseRange = Integer.valueOf(range[1]);
+                int[] verseRange = getVerseRange(verse);
+                if(null == verseRange) {
+                    return false;
                 }
+                currentVerse = verseRange[0];
+                endVerseRange = verseRange[1];
+
                 lastIndex = matcher.start();
             }
 
@@ -1232,14 +1252,20 @@ public class ImportUsfm {
             }
 
             if(start != 0) { // text before first verse is not a concern
+                int delta = foundVerseCount - (end - start);
                 if (section.isEmpty()) {
                     String format = mContext.getResources().getString(R.string.could_not_find_verses_in_chapter);
                     String msg = String.format(format, start, end - 1, chapter);
                     addWarning(msg);
-                } else if ((end != END_MARKER) && (foundVerseCount != (end - start))) {
-                    String format = mContext.getResources().getString(R.string.missing_verses_in_chapter);
-                    int count = (end - start) - foundVerseCount;
-                    String msg = String.format(format, count, start, end - 1, chapter);
+                } else if ((end != END_MARKER) && (delta != 0)) {
+                    String format;
+                    if(delta < 0) {
+                        delta = -delta;
+                        format = mContext.getResources().getString(R.string.missing_verses_in_chapter);
+                    } else {
+                        format = mContext.getResources().getString(R.string.extra_verses_in_chapter);
+                    }
+                    String msg = String.format(format, delta, start, end - 1, chapter);
                     addWarning(msg);
                 }
             }
@@ -1249,6 +1275,31 @@ public class ImportUsfm {
             successOverall = successOverall && success;
         }
         return successOverall;
+    }
+
+    /**
+     * get verse range
+     * @param verse
+     * @return
+     */
+    private int[] getVerseRange(String verse) {
+        int[] verseRange;
+        int currentVerse;
+        int endVerseRange;
+        try {
+            int currentVers = Integer.valueOf(verse);
+            verseRange = new int[] {currentVers, 0};
+        } catch (NumberFormatException e) { // might be a range in format 12-13
+            String[] range = verse.split("-");
+            if (range.length < 2) {
+                verseRange = null;
+            } else {
+                currentVerse = Integer.valueOf(range[0]);
+                endVerseRange = Integer.valueOf(range[1]);
+                verseRange = new int[]{currentVerse, endVerseRange};
+            }
+        }
+        return verseRange;
     }
 
     /**

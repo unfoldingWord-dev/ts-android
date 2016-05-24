@@ -4,8 +4,8 @@ import android.content.Context;
 import android.test.InstrumentationTestCase;
 
 import com.door43.tools.reporting.FileUtils;
-import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.spannables.USFMVerseSpan;
 import com.door43.translationstudio.tasks.UploadCrashReportTask;
 
 import org.apache.commons.io.IOUtils;
@@ -16,6 +16,8 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -57,13 +59,14 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         addExpectedBook(source, "mrk", true, false);
         boolean expectSucccess = true;
         boolean expectNoEmptyChunks = true;
+        boolean exactVerseCount = true;
         mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
 
         //when
         boolean success = mUsfm.readResourceFile(mTestContext, "usfm/" + source);
 
         //then
-        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks);
+        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks, exactVerseCount);
     }
 
     public void test02ImportMarkMissingName() throws Exception {
@@ -72,13 +75,14 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         addExpectedBook(source, "", false, true);
         boolean expectNoEmptyChunks = true;
         boolean expectSucccess = true;
+        boolean exactVerseCount = true;
         mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
 
         //when
         boolean success = mUsfm.readResourceFile(mTestContext, "usfm/" + source);
 
         //then
-        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks);
+        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks, exactVerseCount);
     }
 
     public void test03ImportMarkMissingNameForce() throws Exception {
@@ -88,6 +92,7 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         addExpectedBook(source, useName, true, false);
         boolean expectSucccess = true;
         boolean expectNoEmptyChunks = true;
+        boolean exactVerseCount = true;
         mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
         InputStream usfmStream = mTestContext.getAssets().open("usfm/" + source);
         String text = IOUtils.toString(usfmStream, "UTF-8");
@@ -96,7 +101,7 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         boolean success = mUsfm.processText(text, source, false, useName);
 
         //then
-        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks);
+        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks, exactVerseCount);
     }
 
     public void test04ValidImportPsalms() throws Exception {
@@ -105,13 +110,14 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         addExpectedBook(source, "psa", true, false);
         boolean expectNoEmptyChunks = true;
         boolean expectSucccess = true;
+        boolean exactVerseCount = false;
         mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
 
         //when
         boolean success = mUsfm.readResourceFile(mTestContext, "usfm/" + source);
 
         //then
-        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks);
+        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks, exactVerseCount);
     }
 
     public void test05ImportMarkNoChapters() throws Exception {
@@ -120,13 +126,14 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         addExpectedBook(source, "mrk", false, false);
         boolean expectNoEmptyChunks = true;
         boolean expectSucccess = false;
+        boolean exactVerseCount = true;
         mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
 
         //when
         boolean success = mUsfm.readResourceFile(mTestContext, "usfm/" + source);
 
         //then
-        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks);
+        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks, exactVerseCount);
     }
 
     public void test06ImportMarkMissingChapters() throws Exception {
@@ -135,13 +142,14 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         addExpectedBook(source, "mrk", false, false);
         boolean expectSucccess = true;
         boolean expectNoEmptyChunks = false;
+        boolean exactVerseCount = true;
         mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
 
         //when
         boolean success = mUsfm.readResourceFile(mTestContext, "usfm/" + source);
 
         //then
-        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks);
+        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks, exactVerseCount);
     }
 
     public void test07ImportMarkNoVerses() throws Exception {
@@ -150,13 +158,14 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         addExpectedBook(source, "mrk", false, false);
         boolean expectSucccess = true;
         boolean expectNoEmptyChunks = false;
+        boolean exactVerseCount = true;
         mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
 
         //when
         boolean success = mUsfm.readResourceFile(mTestContext, "usfm/" + source);
 
         //then
-        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks);
+        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks, exactVerseCount);
     }
 
     public void test08ImportMarkMissingVerse() throws Exception {
@@ -165,13 +174,14 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         addExpectedBook(source, "mrk", false, false);
         boolean expectSucccess = true;
         boolean expectNoEmptyChunks = true;
+        boolean exactVerseCount = false;
         mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
 
         //when
         boolean success = mUsfm.readResourceFile(mTestContext, "usfm/" + source);
 
         //then
-        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks);
+        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks, exactVerseCount);
     }
 
     public void test09ImportMarkEmptyChapter() throws Exception {
@@ -180,13 +190,14 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         addExpectedBook(source, "mrk", false, false);
         boolean expectSucccess = true;
         boolean expectNoEmptyChunks = false;
+        boolean exactVerseCount = true;
         mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
 
         //when
         boolean success = mUsfm.readResourceFile(mTestContext, "usfm/" + source);
 
         //then
-        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks);
+        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks, exactVerseCount);
     }
 
 
@@ -196,13 +207,14 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         addExpectedBook(source, "jud", false, false);
         boolean expectSucccess = false;
         boolean expectNoEmptyChunks = true;
+        boolean exactVerseCount = true;
         mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
 
         //when
         boolean success = mUsfm.readResourceFile(mTestContext, "usfm/" + source);
 
         //then
-        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks);
+        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks, exactVerseCount);
     }
 
     public void test11ImportJudeNoChapter() throws Exception {
@@ -211,13 +223,14 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         addExpectedBook(source, "jud", false, false);
         boolean expectSucccess = false;
         boolean expectNoEmptyChunks = true;
+        boolean exactVerseCount = true;
         mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
 
         //when
         boolean success = mUsfm.readResourceFile(mTestContext, "usfm/" + source);
 
         //then
-        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks);
+        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks, exactVerseCount);
     }
 
 
@@ -227,13 +240,14 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         addExpectedBook(source, "php", false, false);
         boolean expectSucccess = true;
         boolean expectNoEmptyChunks = false;
+        boolean exactVerseCount = true;
         mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
 
         //when
         boolean success = mUsfm.readResourceFile(mTestContext, "usfm/" + source);
 
         //then
-        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks);
+        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks, exactVerseCount);
     }
 
     public void test13ImportPhpNoChapter2() throws Exception {
@@ -242,13 +256,14 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         addExpectedBook(source, "php", false, false);
         boolean expectSucccess = true;
         boolean expectNoEmptyChunks = false;
+        boolean exactVerseCount = true;
         mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
 
         //when
         boolean success = mUsfm.readResourceFile(mTestContext, "usfm/" + source);
 
         //then
-        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks);
+        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks, exactVerseCount);
     }
 
     public void test14ImportPhpChapter3OutOfOrder() throws Exception {
@@ -257,13 +272,14 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         addExpectedBook(source, "php", false, false);
         boolean expectSucccess = false;
         boolean expectNoEmptyChunks = true;
+        boolean exactVerseCount = true;
         mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
 
         //when
         boolean success = mUsfm.readResourceFile(mTestContext, "usfm/" + source);
 
         //then
-        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks);
+        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks, exactVerseCount);
     }
 
     public void test15ImportPhpMissingLastChapter() throws Exception {
@@ -272,13 +288,14 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         addExpectedBook(source, "php", false, false);
         boolean expectSucccess = true;
         boolean expectNoEmptyChunks = false;
+        boolean exactVerseCount = true;
         mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
 
         //when
         boolean success = mUsfm.readResourceFile(mTestContext, "usfm/" + source);
 
         //then
-        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks);
+        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks, exactVerseCount);
     }
 
     public void test16ImportPhpNoChapter1Marker() throws Exception {
@@ -287,13 +304,14 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         addExpectedBook(source, "php", false, false);
         boolean expectSucccess = true;
         boolean expectNoEmptyChunks = true;
+        boolean exactVerseCount = true;
         mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
 
         //when
         boolean success = mUsfm.readResourceFile(mTestContext, "usfm/" + source);
 
         //then
-        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks);
+        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks, exactVerseCount);
     }
 
     public void test17ImportPhpNoChapter2Marker() throws Exception {
@@ -302,13 +320,14 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         addExpectedBook(source, "php", false, false);
         boolean expectSucccess = true;
         boolean expectNoEmptyChunks = false;
+        boolean exactVerseCount = true;
         mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
 
         //when
         boolean success = mUsfm.readResourceFile(mTestContext, "usfm/" + source);
 
         //then
-        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks);
+        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks, exactVerseCount);
     }
 
     public void test18ImportPhpMissingLastChapterMarker() throws Exception {
@@ -317,13 +336,30 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         addExpectedBook(source, "php", true, false);
         boolean expectSucccess = true;
         boolean expectNoEmptyChunks = false;
+        boolean exactVerseCount = true;
         mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
 
         //when
         boolean success = mUsfm.readResourceFile(mTestContext, "usfm/" + source);
 
         //then
-        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks);
+        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks, exactVerseCount);
+    }
+
+    public void test19ImportJudeOutOfOrderVerses() throws Exception {
+        //given
+        String source = "jude.out_order_verses.usfm";
+        addExpectedBook(source, "jud", false, false);
+        boolean expectSucccess = true;
+        boolean expectNoEmptyChunks = true;
+        boolean exactVerseCount = false;
+        mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
+
+        //when
+        boolean success = mUsfm.readResourceFile(mTestContext, "usfm/" + source);
+
+        //then
+        verifyResults( success, expectSucccess, mExpectedBooks, expectNoEmptyChunks, exactVerseCount);
     }
 
 
@@ -353,7 +389,7 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         return object.getBoolean("success");
     }
 
-    public void verifyResults(boolean success, boolean expected, JSONArray expectedBooks, boolean noEmptyChunks) throws JSONException {
+    public void verifyResults(boolean success, boolean expected, JSONArray expectedBooks, boolean noEmptyChunks, boolean exactVerseCount) throws JSONException {
         String results = mUsfm.getResultsString();
         assertTrue("results text should not be empty", !results.isEmpty());
         assertEquals("results", expected, success);
@@ -368,7 +404,7 @@ public class ImportUsfmTest extends InstrumentationTestCase {
             String book = getBook(object);
             boolean expectedsuccess = getSuccess(object);
             boolean missingName = getMissingName(object);
-            verifyBookResults(resultLines, fileName, book, expectedsuccess, noEmptyChunks, success);
+            verifyBookResults(resultLines, fileName, book, expectedsuccess, noEmptyChunks, success, exactVerseCount);
             if(missingName) {
                 findMissingName( fileName);
                 missingNamesCount++;
@@ -390,7 +426,7 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         assertTrue(filename + " should be missing name ", found);
     }
 
-    public void verifyBookResults(String[] results, String filename, String book, boolean noErrorsExpected, boolean noEmptyChunks, boolean success) {
+    public void verifyBookResults(String[] results, String filename, String book, boolean noErrorsExpected, boolean noEmptyChunks, boolean success, boolean exactVerseCount) {
         String bookLine = filename;
         if(!book.isEmpty()) {
             bookLine = book.toLowerCase() + " = " + filename;
@@ -443,14 +479,29 @@ public class ImportUsfmTest extends InstrumentationTestCase {
 
                     // verify chunks
                     String[] chapterFrameSlugs = mLibrary.getFrameSlugs(sourceTranslation, chapter.getId());
-                    for (String chapterFrameSlug : chapterFrameSlugs) {
+                    for (int i = 0; i < chapterFrameSlugs.length; i++) {
+                        String chapterFrameSlug = chapterFrameSlugs[i];
+                        int expectCount = -1;
+                        if(i + 1 < chapterFrameSlugs.length) {
+                            String nextSlug = chapterFrameSlugs[i+1];
+                            int nextStart = Integer.valueOf(nextSlug);
+                            if(nextStart > 0) {
+                                expectCount = nextStart - Integer.valueOf(chapterFrameSlug);
+                            }
+                        }
+
                         File chunkPath = new File(chapterPath, chapterFrameSlug + ".txt");
                         assertTrue("Chunk missing " + chunkPath.toString(), chunkPath.exists());
                         try {
                             chunk = FileUtils.readFileToString(chunkPath);
+                            int count = getVerseCount(chunk);
                             if(noEmptyChunks) {
                                 boolean emptyChunk = chunk.isEmpty();
                                 assertTrue("Chunk is empty " + chunkPath.toString(),!emptyChunk);
+                                assertTrue("VerseCount should not be zero: " + count + " in chunk " + chunkPath.toString(), count > 0);
+                                if((expectCount >= 0) && exactVerseCount) {
+                                    assertEquals("Verse Count" + " in chunk " + chunkPath.toString(), expectCount, count);
+                                }
                             }
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -461,4 +512,62 @@ public class ImportUsfmTest extends InstrumentationTestCase {
             }
         }
     }
+
+    private static final Pattern PATTERN_USFM_VERSE_SPAN = Pattern.compile(USFMVerseSpan.PATTERN);
+
+    /**
+     * get verse count
+     */
+    private int getVerseCount(String text) {
+        int foundVerseCount = 0;
+        Pattern pattern = PATTERN_USFM_VERSE_SPAN;
+        Matcher matcher = pattern.matcher(text);
+        int currentVerse = 0;
+        int endVerseRange = 0;
+
+        while (matcher.find()) {
+
+            String verse = matcher.group(1);
+            int[] verseRange = getVerseRange(verse);
+            if (null == verseRange) {
+                break;
+            }
+            currentVerse = verseRange[0];
+            endVerseRange = verseRange[1];
+
+            if (endVerseRange > 0) {
+                foundVerseCount += (endVerseRange - currentVerse + 1);
+            } else {
+                foundVerseCount++;
+            }
+        }
+        return foundVerseCount;
+    }
+
+    /**
+     * parse verse number to get range
+     * @param verse
+     * @return
+     */
+    private int[] getVerseRange(String verse) {
+        int[] verseRange;
+        int currentVerse;
+        int endVerseRange;
+        try {
+            int currentVers = Integer.valueOf(verse);
+            verseRange = new int[] {currentVers, 0};
+        } catch (NumberFormatException e) { // might be a range in format 12-13
+            String[] range = verse.split("-");
+            if (range.length < 2) {
+                verseRange = null;
+            } else {
+                currentVerse = Integer.valueOf(range[0]);
+                endVerseRange = Integer.valueOf(range[1]);
+                verseRange = new int[]{currentVerse, endVerseRange};
+            }
+        }
+        return verseRange;
+    }
+
+
 }

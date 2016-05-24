@@ -741,6 +741,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="could_not_find_chapter">Could not find chapter: %s</string>
     <string name="could_not_find_verses_in_chapter">No verses in range <xliff:g example="1" id="start_verse">%1$d</xliff:g> to <xliff:g example="2" id="end_verse">%2$d</xliff:g> in chapter: <xliff:g example="05" id="chapter">%3$s</xliff:g></string>
     <string name="missing_verses_in_chapter">Missing <xliff:g example="2" id="verse_count">%1$d</xliff:g> verse(s) in range <xliff:g example="1" id="start_verse">%2$d</xliff:g> to <xliff:g example="2" id="end_verse">%3$d</xliff:g> in chapter: <xliff:g example="05" id="chapter">%4$s</xliff:g></string>
+    <string name="extra_verses_in_chapter">Extra <xliff:g example="2" id="verse_count">%1$d</xliff:g> verse(s) in range <xliff:g example="1" id="start_verse">%2$d</xliff:g> to <xliff:g example="2" id="end_verse">%3$d</xliff:g> in chapter: <xliff:g example="05" id="chapter">%4$s</xliff:g></string>
     <string name="could_not_parse_chapter">Could not parse chapter: %s</string>
     <string name="missing_chapter_n">Missing chapter %s - will try to recover</string>
     <string name="duplicate_chapter">Duplicate chapter: %s</string>
