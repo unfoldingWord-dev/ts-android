@@ -11,7 +11,7 @@
         app:showAsAction="never" />
 
     <item android:id="@+id/action_import"
-        android:title="@string/label_import"
+        android:title="@string/label_import_export"
         android:orderInCategory="200"
         android:icon="@drawable/ic_file_download_black_24dp"
         app:showAsAction="never" />

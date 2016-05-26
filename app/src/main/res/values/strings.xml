@@ -592,6 +592,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="action_download_updates">Download updates</string>
     <string name="list_may_be_outdated">The list may be out of date</string>
     <string name="label_import">Import</string>
+    <string name="label_import_restore">Import/Restore</string>
     <string name="import_from_online">Import from Online (requires internet)</string>
     <string name="automatic_backups">Automatic Backups</string>
     <string name="export_to_sd">Export to SD Card</string>
