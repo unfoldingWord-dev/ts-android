@@ -33,14 +33,14 @@ public class TranslatorTest extends InstrumentationTestCase {
         mTranslator = new Translator(app, null, mTranslatorDir);
         String server = app.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, app.getResources().getString(R.string.pref_default_media_server));
         rootApiUrl = server + app.getResources().getString(R.string.root_catalog_api);
-        library = new Library(app, rootApiUrl);
+        library = new Library(app, rootApiUrl, null);
     }
 
     public void test01Clean() throws Exception {
         library.delete();
         FileUtils.deleteQuietly(mTranslatorDir);
         AppContext.deployDefaultLibrary();
-        library = new Library(app, rootApiUrl);
+        library = new Library(app, rootApiUrl, null);
         assertTrue(library.exists());
     }
 
