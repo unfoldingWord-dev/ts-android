@@ -67,7 +67,8 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         String targetTranslationId = args.getString(AppContext.EXTRA_TARGET_TRANSLATION_ID, null);
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         if(mTargetTranslation == null) {
-            throw new InvalidParameterException("a valid target translation id is required");
+            Logger.e(getClass().getName() ,"A valid target translation id is required. Received '" + targetTranslationId + "' but the translation could not be found");
+            getActivity().finish();
         }
 
         String chapterId = args.getString(AppContext.EXTRA_CHAPTER_ID, AppContext.getLastFocusChapterId(targetTranslationId));
@@ -348,16 +349,17 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
             // save open source language tabs
             for(String id:sourceTranslationIds) {
                 SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
-                AppContext.addOpenSourceTranslation(targetTranslationId, sourceTranslation.getId());
-                TargetTranslation targetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
-                if(targetTranslation != null) {
-                    try {
-                        targetTranslation.addSourceTranslation(sourceTranslation);
-                    } catch (JSONException e) {
-                        Logger.e(this.getClass().getName(), "Failed to record source translation (" + sourceTranslation.getId() + ") usage in the target translation " + targetTranslation.getId(), e);
+                if(sourceTranslation != null) {
+                    AppContext.addOpenSourceTranslation(targetTranslationId, sourceTranslation.getId());
+                    TargetTranslation targetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
+                    if (targetTranslation != null) {
+                        try {
+                            targetTranslation.addSourceTranslation(sourceTranslation);
+                        } catch (JSONException e) {
+                            Logger.e(this.getClass().getName(), "Failed to record source translation (" + sourceTranslation.getId() + ") usage in the target translation " + targetTranslation.getId(), e);
+                        }
                     }
                 }
-
             }
             String selectedSourceTranslationId = AppContext.getSelectedSourceTranslationId(targetTranslationId);
             mAdapter.setSourceTranslation(selectedSourceTranslationId);

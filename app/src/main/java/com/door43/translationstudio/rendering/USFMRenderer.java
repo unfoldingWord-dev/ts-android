@@ -103,7 +103,7 @@ public class USFMRenderer extends ClickableRenderingEngine {
         if(!mRenderLinebreaks) {
             out = renderLineBreaks(out);  // TODO: Eventually we may want to convert these to paragraphs.
         }
-        out = renderWhiteSpace(out);
+//        out = renderWhiteSpace(out);
         out = renderMajorSectionHeading(out);
         out = renderSectionHeading(out);
         out = renderParagraph(out);
@@ -364,12 +364,14 @@ public class USFMRenderer extends ClickableRenderingEngine {
                             verse.setOnClickListener(mVerseListener);
                             out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), insert, verse.toCharSequence());
                         } else {
-                            // exclude invalid verse
-                            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()));
+                            // for now we go ahead and render invalid verse
+                            verse.setOnClickListener(mVerseListener);
+                            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), insert, verse.toCharSequence());
                         }
                     } else {
-                        // exclude duplicate verse
-                        out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()));
+                        // for now we go ahead and render duplicate verse
+                        verse.setOnClickListener(mVerseListener);
+                        out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), insert, verse.toCharSequence());
                     }
                 } else {
                     // failed to parse the verse

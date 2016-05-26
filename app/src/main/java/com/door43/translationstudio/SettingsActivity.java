@@ -197,6 +197,7 @@ public class SettingsActivity extends PreferenceActivity {
         bindPreferenceClickToLegalDocument(findPreference("statement_of_faith"), R.string.statement_of_faith);
         bindPreferenceClickToLegalDocument(findPreference("translation_guidelines"), R.string.translation_guidlines);
         bindPreferenceClickToLegalDocument(findPreference("software_licenses"), R.string.software_licenses);
+        bindPreferenceClickToLegalDocument(findPreference("attribution"), R.string.attribution);
 
         // Bind the summaries of EditText/List/Dialog/Ringtone preferences to
         // their values. When their values change, their summaries are updated
@@ -420,6 +421,7 @@ public class SettingsActivity extends PreferenceActivity {
             bindPreferenceClickToLegalDocument(findPreference("statement_of_faith"), R.string.statement_of_faith);
             bindPreferenceClickToLegalDocument(findPreference("translation_guidelines"), R.string.translation_guidlines);
             bindPreferenceClickToLegalDocument(findPreference("software_licenses"), R.string.software_licenses);
+            bindPreferenceClickToLegalDocument(findPreference("attribution"), R.string.attribution);
         }
     }
 

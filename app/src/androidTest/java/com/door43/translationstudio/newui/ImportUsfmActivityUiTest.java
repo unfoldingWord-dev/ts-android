@@ -82,10 +82,10 @@ public class ImportUsfmActivityUiTest {
     }
 
     @Test
-    public void markOnlyOneChapter() throws Exception {
+    public void markNoChapter() throws Exception {
 
         //given
-        String testFile = "usfm/mrk.usfm_one_chapter.txt";
+        String testFile = "usfm/mrk_no_chapter.usfm";
         Intent intent = getIntentForTestFile(testFile);
         mActivityRule.launchActivity(intent);
         checkDisplayState(R.string.title_activity_import_usfm_language, true);
@@ -106,7 +106,7 @@ public class ImportUsfmActivityUiTest {
     public void markNoId() throws Exception {
 
         //given
-        String testFile = "usfm/mrk.usfm_no_id.txt";
+        String testFile = "usfm/mrk_no_id.usfm";
         Intent intent = getIntentForTestFile(testFile);
         mActivityRule.launchActivity(intent);
         checkDisplayState(R.string.title_activity_import_usfm_language, true);

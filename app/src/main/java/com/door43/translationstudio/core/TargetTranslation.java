@@ -5,12 +5,13 @@ import android.content.pm.PackageInfo;
 import android.support.annotation.Nullable;
 
 import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.git.Repo;
+import com.door43.translationstudio.util.NumericStringComparator;
 import com.door43.util.Manifest;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.AddCommand;
+import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.DeleteBranchCommand;
@@ -21,6 +22,7 @@ import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.TagCommand;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
@@ -52,6 +54,7 @@ public class TargetTranslation {
     public static final String TAG = TargetTranslation.class.getSimpleName();
     public static final int PACKAGE_VERSION = 6; // the version of the target translation implementation
     public static final String LICENSE_FILE = "LICENSE.md";
+    public static final String OBS_LICENSE_FILE = "OBS_LICENSE.md";
 
     private static final String FIELD_PARENT_DRAFT = "parent_draft";
     private static final String FIELD_FINISHED_CHUNKS = "finished_chunks";
@@ -318,7 +321,12 @@ public class TargetTranslation {
         manifest.put(FIELD_MANIFEST_RESOURCE, resourceJson);
 
         File licenseFile = new File(targetTranslationDir, LICENSE_FILE);
-        InputStream is = context.getAssets().open(LICENSE_FILE);
+        InputStream is;
+        if(projectId.toLowerCase().equals("obs")) {
+            is = context.getAssets().open(OBS_LICENSE_FILE);
+        } else {
+            is = context.getAssets().open(LICENSE_FILE);
+        }
         if(is != null) {
             FileUtils.copyInputStreamToFile(is, licenseFile);
         } else {
@@ -1187,9 +1195,10 @@ public class TargetTranslation {
         MergeResult result = merge.call();
 
         // merge manifests
+        // TODO: 5/25/16 merge notes
         manifest.join(importedManifest.getJSONArray(FIELD_TRANSLATORS), FIELD_TRANSLATORS);
         manifest.join(importedManifest.getJSONArray(FIELD_FINISHED_CHUNKS), FIELD_FINISHED_CHUNKS);
-        manifest.join(importedManifest.getJSONObject(FIELD_SOURCE_TRANSLATIONS), FIELD_SOURCE_TRANSLATIONS);
+        manifest.join(importedManifest.getJSONArray(FIELD_SOURCE_TRANSLATIONS), FIELD_SOURCE_TRANSLATIONS);
 
         // add missing parent draft status
         if((!manifest.has(FIELD_PARENT_DRAFT) || !Manifest.valueExists(manifest.getJSONObject(FIELD_PARENT_DRAFT), "resource_id"))
@@ -1326,7 +1335,7 @@ public class TargetTranslation {
                 return new File(dir, filename).isDirectory() && !filename.equals(".git");
             }
         });
-        Arrays.sort(chapterSlugs);
+        Arrays.sort(chapterSlugs, new NumericStringComparator());
         List<ChapterTranslation> chapterTranslations = new ArrayList<>();
         if(chapterSlugs != null) {
             for (String slug : chapterSlugs) {
@@ -1389,7 +1398,7 @@ public class TargetTranslation {
                 return !filename.equals("reference.txt") && !filename.equals("title.txt");
             }
         });
-        Arrays.sort(frameFileNames);
+        Arrays.sort(frameFileNames, new NumericStringComparator());
         List<FrameTranslation> frameTranslations = new ArrayList<>();
         if(frameFileNames != null) {
             for (String fileName : frameFileNames) {
