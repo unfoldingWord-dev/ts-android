@@ -1661,7 +1661,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
                 }
             };
-            Clickables.setupRenderingGroup(format, renderingGroup, null, noteClickListener, false, editable);
+
+            Clickables.setupRenderingGroup(format, renderingGroup, null, noteClickListener, false);
+            if(editable) {
+                renderingGroup.setVersesEnabled(false);
+            }
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
