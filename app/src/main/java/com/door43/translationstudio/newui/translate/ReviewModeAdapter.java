@@ -1060,32 +1060,33 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             success = false;
         }
 
-        Matcher matcher;
-        int lowVerse = -1;
-        int highVerse = 999999999;
-        int[] range = frame.getVerseRange();
-        if( (range != null) && (range.length > 0)) {
-            lowVerse = range[0];
-            highVerse = lowVerse;
-            if (range.length > 1) {
-                highVerse = range[1];
+        if(frame != null) {
+            Matcher matcher;
+            int lowVerse = -1;
+            int highVerse = 999999999;
+            int[] range = frame.getVerseRange();
+            if ((range != null) && (range.length > 0)) {
+                lowVerse = range[0];
+                highVerse = lowVerse;
+                if (range.length > 1) {
+                    highVerse = range[1];
+                }
             }
-        }
 
-        // Check for contiguous verse numbers.
-        if (success) {
-            if(format == TranslationFormat.USFM) {
-                matcher = USFM_CONSECUTIVE_VERSE_MARKERS.matcher(item.bodyTranslation);
-            } else {
-                matcher = CONSECUTIVE_VERSE_MARKERS.matcher(item.bodyTranslation);
+            // Check for contiguous verse numbers.
+            if (success) {
+                if (format == TranslationFormat.USFM) {
+                    matcher = USFM_CONSECUTIVE_VERSE_MARKERS.matcher(item.bodyTranslation);
+                } else {
+                    matcher = CONSECUTIVE_VERSE_MARKERS.matcher(item.bodyTranslation);
+                }
+                if (matcher.find()) {
+                    Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.consecutive_verse_markers, Snackbar.LENGTH_LONG);
+                    ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
+                    snack.show();
+                    success = false;
+                }
             }
-            if (matcher.find()) {
-                Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.consecutive_verse_markers, Snackbar.LENGTH_LONG);
-                ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
-                snack.show();
-                success = false;
-            }
-        }
 
         // Check for out-of-order verse markers.
         if (success) {
@@ -1131,8 +1132,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 success = mTargetTranslation.finishChapterTitle(chapter);
             } else if (item.isProjectTitle) {
                 success = mTargetTranslation.closeProjectTitle();
-            } else {
+            } else if(frame != null){
                 success = mTargetTranslation.finishFrame(frame);
+            } else {
+                success = false;
             }
 
             if (!success) {
@@ -1148,7 +1151,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             try {
                 mTargetTranslation.commit();
             } catch (Exception e) {
-                Logger.e(TAG, "Failed to commit translation of " + mTargetTranslation.getId() + ":" + frame.getComplexId(), e);
+                String frameComplexId = frame == null ? "" : ":" + frame.getComplexId();
+                Logger.e(TAG, "Failed to commit translation of " + mTargetTranslation.getId() + frameComplexId, e);
             }
             item.isEditing = false;
             item.renderedTargetBody = null;
