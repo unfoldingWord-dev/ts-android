@@ -30,6 +30,7 @@ public class USXRenderer extends ClickableRenderingEngine {
 
     private Span.OnClickListener mNoteListener;
     private Span.OnClickListener mVerseListener;
+    private boolean mRenderLinebreaks = false;
     private boolean mRenderVerses = true;
     private int[] mExpectedVerseRange = new int[0];
     private boolean mSuppressLeadingMajorSectionHeadings = false;
@@ -65,7 +66,7 @@ public class USXRenderer extends ClickableRenderingEngine {
      * @param enable default is false
      */
     public void setLinebreaksEnabled(boolean enable) {
-        // not implemented in USX
+        mRenderLinebreaks = enable;
     }
 
     /**
@@ -99,7 +100,9 @@ public class USXRenderer extends ClickableRenderingEngine {
         CharSequence out = in;
 
         out = trimWhitespace(out);
-//        out = renderLineBreaks(out); // TODO: Eventually we may want to convert these to paragraphs.
+        if(!mRenderLinebreaks) {
+            out = renderLineBreaks(out);  // TODO: Eventually we may want to convert these to paragraphs.
+        }
 //        out = renderWhiteSpace(out);
         out = renderMajorSectionHeading(out);
         out = renderSectionHeading(out);
