@@ -650,9 +650,18 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             .setPositiveButton(R.string.confirm, new View.OnClickListener() {
                                         @Override
                                         public void onClick(View v) {
-                                            if(!item.isEditing) { // make sure to capture verse marker changes
-                                                item.renderedTargetBody = holder.mTargetEditableBody.getText();
+                                             // make sure to capture recent changes
+                                            Editable changes = holder.mTargetEditableBody.getText();
+                                            item.renderedTargetBody = changes;
+                                            item.bodyTranslation = Translator.compileTranslation(changes); // get XML for footnote
+                                            if (mTargetTranslation.getFormat() == TranslationFormat.USFM) { // do some verse marker cleanup
+                                                CharSequence fixed = USFMVerseSpan.fixIncompleteVerseMarkers(item.bodyTranslation);
+                                                if (fixed != item.bodyTranslation) { // if fix was made, apply it
+                                                    item.bodyTranslation = fixed.toString();
+                                                }
                                             }
+                                            mTargetTranslation.applyFrameTranslation(item.frameTranslation, item.bodyTranslation); // save change
+
                                             boolean success = onConfirmChunk(item, chapter, frame, mTargetTranslation.getFormat());
                                             holder.mDoneSwitch.setChecked(success);
                                         }
@@ -749,7 +758,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private void renderTargetBody(ListItem item, ViewHolder holder, Frame frame) {
         // render body
         if(item.isTranslationFinished || item.isEditing) {
-            item.renderedTargetBody = renderSourceText(item.bodyTranslation, item.translationFormat, holder, item, true);
+            item.renderedTargetBody = renderSourceText(item.bodyTranslation, item.translationFormat, holder, item, item.isEditing && !item.isTranslationFinished);
         } else {
             item.renderedTargetBody = renderTargetText(item.bodyTranslation, item.translationFormat, frame, item.frameTranslation, holder, item);
         }
