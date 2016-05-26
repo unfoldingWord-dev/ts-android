@@ -2,6 +2,7 @@ package com.door43.translationstudio.tasks;
 
 import android.os.Process;
 
+import com.door43.tools.reporting.FileUtils;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
@@ -10,6 +11,7 @@ import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.TransportCallback;
+import com.door43.util.Manifest;
 import com.door43.util.tasks.ManagedTask;
 
 import org.eclipse.jgit.api.CheckoutCommand;
@@ -109,6 +111,8 @@ public class PullTargetTranslationTask extends ManagedTask {
             return null;
         }
 
+        Manifest localManifest = Manifest.generate(this.targetTranslation.getPath());
+
         // TODO: we might want to get some progress feedback for the user
         PullCommand pullCommand = git.pull()
                 .setTransportConfigCallback(new TransportCallback())
@@ -152,12 +156,16 @@ public class PullTargetTranslationTask extends ManagedTask {
                 if(this.conflicts.containsKey("manifest.json")) {
                     try {
                         git.checkout()
-                                .setStage(CheckoutCommand.Stage.OURS)
+                                .setStage(CheckoutCommand.Stage.THEIRS)
                                 .addPath("manifest.json")
                                 .call();
+                        Manifest remoteManifest = Manifest.generate(this.targetTranslation.getPath());
+                        localManifest = TargetTranslation.mergeManifests(localManifest, remoteManifest);
                     } catch (CheckoutConflictException e) {
                         // failed to reset manifest.json
                         Logger.e(this.getClass().getName(), e.getMessage(), e);
+                    } finally {
+                        localManifest.save();
                     }
                 }
             } else {
