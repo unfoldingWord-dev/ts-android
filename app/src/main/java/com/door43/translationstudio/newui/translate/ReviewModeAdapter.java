@@ -566,6 +566,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
                     // TRICKY: there may be changes to translation
                     item.loadTranslations(mSourceTranslation, mTargetTranslation, chapter, frame);
+
+                    if(mTargetTranslation.getFormat() == TranslationFormat.USFM) { // do some verse marker cleanup
+                        CharSequence fixed = USFMVerseSpan.fixIncompleteVerseMarkers(item.bodyTranslation);
+                        if(fixed != item.bodyTranslation) { // if fix was made, apply it
+                            item.bodyTranslation = fixed.toString();
+                            mTargetTranslation.applyFrameTranslation(item.frameTranslation, item.bodyTranslation);
+                        }
+                    }
+
                     // re-render for verse mode
                     item.renderedTargetBody = renderTargetText(item.bodyTranslation, item.translationFormat, frame, item.frameTranslation, holder, item);
                     holder.mTargetBody.setText(item.renderedTargetBody);
@@ -1088,39 +1097,40 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
             }
 
-        // Check for out-of-order verse markers.
-        if (success) {
-            int error = 0;
-            if(format == TranslationFormat.USFM) {
-                matcher = USFM_VERSE_MARKER.matcher(item.bodyTranslation);
-            } else {
-                matcher = VERSE_MARKER.matcher(item.bodyTranslation);
-            }
-            int lastVerseSeen = 0;
-            while (matcher.find()) {
-                int currentVerse = Integer.valueOf(matcher.group(1));
-                if (currentVerse <= lastVerseSeen) {
-                    if (currentVerse == lastVerseSeen) {
-                        error = R.string.duplicate_verse_marker;
+            // Check for out-of-order verse markers.
+            if (success) {
+                int error = 0;
+                if (format == TranslationFormat.USFM) {
+                    matcher = USFM_VERSE_MARKER.matcher(item.bodyTranslation);
+                } else {
+                    matcher = VERSE_MARKER.matcher(item.bodyTranslation);
+                }
+                int lastVerseSeen = 0;
+                while (matcher.find()) {
+                    int currentVerse = Integer.valueOf(matcher.group(1));
+                    if (currentVerse <= lastVerseSeen) {
+                        if (currentVerse == lastVerseSeen) {
+                            error = R.string.duplicate_verse_marker;
+                            success = false;
+                            break;
+                        } else {
+                            error = R.string.outoforder_verse_markers;
+                            success = false;
+                            break;
+                        }
+                    } else if ((currentVerse < lowVerse) || (currentVerse > highVerse)) {
+                        error = R.string.outofrange_verse_marker;
                         success = false;
                         break;
                     } else {
-                        error = R.string.outoforder_verse_markers;
-                        success = false;
-                        break;
+                        lastVerseSeen = currentVerse;
                     }
-                } else if( (currentVerse < lowVerse) || (currentVerse > highVerse) ) {
-                    error = R.string.outofrange_verse_marker;
-                    success = false;
-                    break;
-                } else {
-                    lastVerseSeen = currentVerse;
                 }
-            }
-            if (!success) {
-                Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), error, Snackbar.LENGTH_LONG);
-                ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
-                snack.show();
+                if (!success) {
+                    Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), error, Snackbar.LENGTH_LONG);
+                    ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
+                    snack.show();
+                }
             }
         }
 
@@ -1642,7 +1652,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
                 }
             };
-            Clickables.setupRenderingGroup(format, renderingGroup, null, noteClickListener, false);
+            Clickables.setupRenderingGroup(format, renderingGroup, null, noteClickListener, false, editable);
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));

@@ -2,12 +2,15 @@ package com.door43.translationstudio.spannables;
 
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.AppContext;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,6 +20,7 @@ import java.util.regex.Pattern;
  */
 public class USFMVerseSpan extends VerseSpan {
     public static final String PATTERN = "\\\\v\\s(\\d+(-\\d+)?)\\s";
+    public static final String INCOMPLETE_PATTERN = "\\\\v\\s(\\d+(-\\d+)?)";
     private int mStartVerseNumber = 0;
     private int mEndVerseNumber = 0;
     //    private int mVerseNumber = -1;
@@ -146,5 +150,38 @@ public class USFMVerseSpan extends VerseSpan {
             // verse range
             return new int[]{startVerse, endVerse};
         }
+    }
+
+    /**
+     * fix verse markers missing the terminating space after verse number.
+     * @param in
+     * @return
+     */
+    public static CharSequence fixIncompleteVerseMarkers(CharSequence in) {
+        CharSequence out = "";
+
+        Pattern pattern = Pattern.compile(USFMVerseSpan.INCOMPLETE_PATTERN);
+        Matcher matcher = pattern.matcher(in);
+        int lastIndex = 0;
+        List<Integer> foundVerses = new ArrayList<>();
+        while(matcher.find()) {
+
+            int nextPos = matcher.end();
+            if(nextPos >= in.length()) {
+                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.end()), " "); // make valid by adding terminating space
+                break;
+            }
+
+            Character c = in.charAt(nextPos);
+            if(c == ' ') { // if properly terminated, nothing to do
+                continue;
+            }
+
+            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.end()), " "); // make valid by adding terminating space
+
+            lastIndex = matcher.end();
+        }
+        out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
+        return out;
     }
 }

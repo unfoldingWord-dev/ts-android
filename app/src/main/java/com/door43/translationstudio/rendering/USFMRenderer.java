@@ -346,8 +346,8 @@ public class USFMRenderer extends ClickableRenderingEngine {
                     out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.end()));
                 }
             } else {
-                // exclude verse from display
-                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()));
+                // just display USFM for verse
+                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.end()));
             }
             lastIndex = matcher.end();
         }
