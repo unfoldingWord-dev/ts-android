@@ -60,6 +60,15 @@ public class USXRenderer extends ClickableRenderingEngine {
     }
 
     /**
+     * if set to true, then line breaks will be shown in the output.
+     *
+     * @param enable default is false
+     */
+    public void setLinebreaksEnabled(boolean enable) {
+        // not implemented in USX
+    }
+
+    /**
      * Specifies an inclusive range of verses expected in the input.
      * If a verse is not found it will be inserted at the front of the input.
      * @param verseRange

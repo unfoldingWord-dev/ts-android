@@ -1476,6 +1476,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             };
 
             ClickableRenderingEngine renderer = Clickables.setupRenderingGroup(format, renderingGroup, verseClickListener, noteClickListener, true);
+            renderer.setLinebreaksEnabled(true);
             renderer.setPopulateVerseMarkers(frame.getVerseRange());
 
         } else {
@@ -1595,6 +1596,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
             };
             Clickables.setupRenderingGroup(format, renderingGroup, null, noteClickListener, false);
+            if(editable) {
+                renderingGroup.setLinebreaksEnabled(true);
+            }
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
