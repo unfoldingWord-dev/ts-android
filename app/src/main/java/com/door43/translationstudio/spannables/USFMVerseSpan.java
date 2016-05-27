@@ -19,8 +19,7 @@ import java.util.regex.Pattern;
  * TODO: we need to provide support for rendering with a range of verses as well as provide accessor methods to the ranged verse numbers
  */
 public class USFMVerseSpan extends VerseSpan {
-    public static final String PATTERN = "\\\\v\\s(\\d+(-\\d+)?)\\s";
-    public static final String INCOMPLETE_PATTERN = "\\\\v\\s(\\d+(-\\d+)?)";
+    public static final String PATTERN = "\\\\v\\s(\\d+(-\\d+)?)\\s?";
     private int mStartVerseNumber = 0;
     private int mEndVerseNumber = 0;
     //    private int mVerseNumber = -1;
@@ -117,7 +116,7 @@ public class USFMVerseSpan extends VerseSpan {
      */
     public static int[] getVerseRange(CharSequence text) {
         // locate verse range
-        Pattern pattern = Pattern.compile(USFMVerseSpan.PATTERN);
+        Pattern pattern = Pattern.compile(PATTERN);
         Matcher matcher = pattern.matcher(text);
         int numVerses = 0;
         int startVerse = 0;
@@ -150,38 +149,5 @@ public class USFMVerseSpan extends VerseSpan {
             // verse range
             return new int[]{startVerse, endVerse};
         }
-    }
-
-    /**
-     * fix verse markers missing the terminating space after verse number.
-     * @param in
-     * @return
-     */
-    public static CharSequence fixIncompleteVerseMarkers(CharSequence in) {
-        CharSequence out = "";
-
-        Pattern pattern = Pattern.compile(USFMVerseSpan.INCOMPLETE_PATTERN);
-        Matcher matcher = pattern.matcher(in);
-        int lastIndex = 0;
-        List<Integer> foundVerses = new ArrayList<>();
-        while(matcher.find()) {
-
-            int nextPos = matcher.end();
-            if(nextPos >= in.length()) {
-                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.end()), " "); // make valid by adding terminating space
-                break;
-            }
-
-            Character c = in.charAt(nextPos);
-            if(c == ' ') { // if properly terminated, nothing to do
-                continue;
-            }
-
-            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.end()), " "); // make valid by adding terminating space
-
-            lastIndex = matcher.end();
-        }
-        out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
-        return out;
     }
 }

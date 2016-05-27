@@ -567,14 +567,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     // TRICKY: there may be changes to translation
                     item.loadTranslations(mSourceTranslation, mTargetTranslation, chapter, frame);
 
-                    if(mTargetTranslation.getFormat() == TranslationFormat.USFM) { // do some verse marker cleanup
-                        CharSequence fixed = USFMVerseSpan.fixIncompleteVerseMarkers(item.bodyTranslation);
-                        if(fixed != item.bodyTranslation) { // if fix was made, apply it
-                            item.bodyTranslation = fixed.toString();
-                            mTargetTranslation.applyFrameTranslation(item.frameTranslation, item.bodyTranslation);
-                        }
-                    }
-
                     // re-render for verse mode
                     item.renderedTargetBody = renderTargetText(item.bodyTranslation, item.translationFormat, frame, item.frameTranslation, holder, item);
                     holder.mTargetBody.setText(item.renderedTargetBody);
@@ -643,6 +635,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
+                    // make sure to capture verse marker changes changes before dialog is displayed
+                    Editable changes = holder.mTargetEditableBody.getText();
+                    item.renderedTargetBody = changes;
+                    String newBody = Translator.compileTranslation(changes);
+                    item.bodyTranslation = newBody;
 
                     CustomAlertDialog.Create(mContext)
                             .setTitle(R.string.chunk_checklist_title)
@@ -746,7 +743,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private void renderTargetBody(ListItem item, ViewHolder holder, Frame frame) {
         // render body
         if(item.isTranslationFinished || item.isEditing) {
-            item.renderedTargetBody = renderSourceText(item.bodyTranslation, item.translationFormat, holder, item, item.isEditing && !item.isTranslationFinished);
+            item.renderedTargetBody = renderSourceText(item.bodyTranslation, item.translationFormat, holder, item, true);
         } else {
             item.renderedTargetBody = renderTargetText(item.bodyTranslation, item.translationFormat, frame, item.frameTranslation, holder, item);
         }
@@ -1040,7 +1037,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     private static final Pattern USFM_CONSECUTIVE_VERSE_MARKERS =
-            Pattern.compile("(" + USFMVerseSpan.PATTERN + "){2}");
+            Pattern.compile("\\\\v\\s(\\d+(-\\d+)?)\\s*\\\\v\\s(\\d+(-\\d+)?)");
 
     private static final Pattern USFM_VERSE_MARKER =
             Pattern.compile(USFMVerseSpan.PATTERN);
@@ -1653,7 +1650,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             Clickables.setupRenderingGroup(format, renderingGroup, null, noteClickListener, false);
             if(editable) {
-                renderingGroup.setVersesEnabled(false);
+                if(!item.isTranslationFinished) {
+                    renderingGroup.setVersesEnabled(false);
+                }
                 renderingGroup.setLinebreaksEnabled(true);
             }
         } else {
