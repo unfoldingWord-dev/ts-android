@@ -70,14 +70,14 @@ public class PullTargetTranslationTask extends ManagedTask {
     @Override
     public void start() {
         Profile profile = AppContext.getProfile();
-        if(AppContext.context().isNetworkAvailable() && profile != null && profile.gogsUser != null) {
+        if(targetTranslation != null && AppContext.context().isNetworkAvailable() && profile != null && profile.gogsUser != null) {
             publishProgress(-1, "Downloading updates");
             String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
             String remote = server + ":" + profile.gogsUser.getUsername() + "/" + this.targetTranslation.getId() + ".git";
             try {
                 this.targetTranslation.commitSync();
             } catch (Exception e) {
-                e.printStackTrace();
+                Logger.w(this.getClass().getName(), "Failed to commit the target translation " + targetTranslation.getId(), e);
             }
             Repo repo = this.targetTranslation.getRepo();
             createBackupBranch(repo);
