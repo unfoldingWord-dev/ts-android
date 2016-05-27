@@ -34,6 +34,19 @@ public class RenderingGroup {
     }
 
     /**
+     * if set to true, then line breaks will be shown in the output.
+     *
+     * @param enable default is false
+     */
+    public void setLinebreaksEnabled(boolean enable) {
+        for (RenderingEngine engine : mEngines) {
+            if(engine instanceof ClickableRenderingEngine) {
+                ((ClickableRenderingEngine) engine).setLinebreaksEnabled(enable);
+            }
+        }
+    }
+
+    /**
      * Begins the rendering operations
      */
     public CharSequence start() {

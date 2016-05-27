@@ -61,6 +61,7 @@ public class AppContext {
     private static final String PROFILE = "profile";
 
     public static final String TAG = AppContext.class.toString();
+    private static final String ASSETS_DIR = "assets";
     private static MainApplication mContext;
     public static final Bundle args = new Bundle();
 
@@ -84,7 +85,7 @@ public class AppContext {
         String server = mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, mContext.getResources().getString(R.string.pref_default_media_server));
         String rootApiUrl = server + mContext.getResources().getString(R.string.root_catalog_api);
         try {
-            return new Library(mContext, rootApiUrl);
+            return new Library(mContext, rootApiUrl, new File(getPublicDirectory(), ASSETS_DIR));
         } catch (IOException e) {
             Logger.e(TAG, "Failed to create the library", e);
         }

@@ -243,11 +243,9 @@ public class PdfPrinter extends PdfPageEventHelper {
      */
     private void addContent(Document document) throws DocumentException, IOException {
         for(ChapterTranslation c:targetTranslation.getChapterTranslations()) {
-            if(!includeIncomplete && !c.isTitleFinished() && !library.getChapter(sourceTranslation, c.getId()).title.isEmpty()) {
-                continue;
+            if(includeIncomplete || c.isTitleFinished() || library.getChapter(sourceTranslation, c.getId()).title.isEmpty()) {
+                addChapterPage(document, c);
             }
-
-            addChapterPage(document, c);
 
             // chapter body
             for(FrameTranslation f:targetTranslation.getFrameTranslations(c.getId(), this.format)) {

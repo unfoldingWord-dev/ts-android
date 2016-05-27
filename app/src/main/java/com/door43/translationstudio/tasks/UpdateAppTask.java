@@ -94,14 +94,11 @@ public class UpdateAppTask extends ManagedTask {
         if(lastVersion < 111) {
             upgradePre111();
         }
-        if(lastVersion < 119) {
-            AppContext.context().deleteDatabase(Library.DATABASE_NAME);
-        }
         if(lastVersion < 122) {
             Looper.prepare();
             PreferenceManager.setDefaultValues(AppContext.context(), R.xml.general_preferences, true);
         }
-        if(lastVersion < 130) {
+        if(lastVersion < 134) {
             AppContext.context().deleteDatabase(Library.DATABASE_NAME);
         }
     }
