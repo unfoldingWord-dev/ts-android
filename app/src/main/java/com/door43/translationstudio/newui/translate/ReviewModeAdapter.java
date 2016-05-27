@@ -650,18 +650,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             .setPositiveButton(R.string.confirm, new View.OnClickListener() {
                                         @Override
                                         public void onClick(View v) {
-                                             // make sure to capture recent changes
-                                            Editable changes = holder.mTargetEditableBody.getText();
-                                            item.renderedTargetBody = changes;
-                                            item.bodyTranslation = Translator.compileTranslation(changes); // get XML for footnote
-                                            if (mTargetTranslation.getFormat() == TranslationFormat.USFM) { // do some verse marker cleanup
-                                                CharSequence fixed = USFMVerseSpan.fixIncompleteVerseMarkers(item.bodyTranslation);
-                                                if (fixed != item.bodyTranslation) { // if fix was made, apply it
-                                                    item.bodyTranslation = fixed.toString();
-                                                }
-                                            }
-                                            mTargetTranslation.applyFrameTranslation(item.frameTranslation, item.bodyTranslation); // save change
-
                                             boolean success = onConfirmChunk(item, chapter, frame, mTargetTranslation.getFormat());
                                             holder.mDoneSwitch.setChecked(success);
                                         }
