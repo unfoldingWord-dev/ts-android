@@ -493,27 +493,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     history.reset();
                     prepareTranslationUI(holder, item);
                 }
-
-                // update view if pasting text
-                // TRICKY: anything worth rendering will need to change by at least 7 characters
-                // <a></a> <-- at least 7 characters are required to create a tag for rendering.
-                int minDeviation = 7;
-                if(count - before > minDeviation) {
-                    int scrollX = holder.mTargetEditableBody.getScrollX();
-                    int scrollY = holder.mTargetEditableBody.getScrollX();
-                    int selection = holder.mTargetEditableBody.getSelectionStart();
-
-                    holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
-                    holder.mTargetEditableBody.setText(item.renderedTargetBody);
-                    holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
-
-                    holder.mTargetEditableBody.scrollTo(scrollX, scrollY);
-                    if (selection > holder.mTargetEditableBody.length()) {
-                        selection = holder.mTargetEditableBody.length();
-                    }
-                    holder.mTargetEditableBody.setSelection(selection);
-                    holder.mTargetEditableBody.clearFocus();
-                }
             }
 
             @Override
@@ -590,26 +569,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         });
 
         prepareTranslationUI(holder, item);
-        // display verse/editing mode
-//        if(item.isEditing) {
-//            holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
-//            holder.mAddNoteButton.setVisibility(View.VISIBLE);
-//            holder.mUndoButton.setVisibility(View.VISIBLE);
-//            holder.mRedoButton.setVisibility(View.VISIBLE);
-//            holder.mTargetBody.setVisibility(View.GONE);
-//            holder.mTargetEditableBody.setVisibility(View.VISIBLE);
-//            holder.mTargetEditableBody.setEnableLines(true);
-//            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
-//        } else {
-//            holder.mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
-//            holder.mUndoButton.setVisibility(View.GONE);
-//            holder.mRedoButton.setVisibility(View.GONE);
-//            holder.mAddNoteButton.setVisibility(View.GONE);
-//            holder.mTargetBody.setVisibility(View.VISIBLE);
-//            holder.mTargetEditableBody.setVisibility(View.GONE);
-//            holder.mTargetEditableBody.setEnableLines(false);
-//            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
-//        }
 
         // disable listener
         holder.mDoneSwitch.setOnCheckedChangeListener(null);
