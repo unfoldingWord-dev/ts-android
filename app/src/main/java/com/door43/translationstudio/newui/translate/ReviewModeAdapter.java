@@ -493,27 +493,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     history.reset();
                     prepareTranslationUI(holder, item);
                 }
-
-                // update view if pasting text
-                // TRICKY: anything worth rendering will need to change by at least 7 characters
-                // <a></a> <-- at least 7 characters are required to create a tag for rendering.
-                int minDeviation = 7;
-                if(count - before > minDeviation) {
-                    int scrollX = holder.mTargetEditableBody.getScrollX();
-                    int scrollY = holder.mTargetEditableBody.getScrollX();
-                    int selection = holder.mTargetEditableBody.getSelectionStart();
-
-                    holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
-                    holder.mTargetEditableBody.setText(item.renderedTargetBody);
-                    holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
-
-                    holder.mTargetEditableBody.scrollTo(scrollX, scrollY);
-                    if (selection > holder.mTargetEditableBody.length()) {
-                        selection = holder.mTargetEditableBody.length();
-                    }
-                    holder.mTargetEditableBody.setSelection(selection);
-                    holder.mTargetEditableBody.clearFocus();
-                }
             }
 
             @Override
@@ -566,6 +545,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
                     // TRICKY: there may be changes to translation
                     item.loadTranslations(mSourceTranslation, mTargetTranslation, chapter, frame);
+
                     // re-render for verse mode
                     item.renderedTargetBody = renderTargetText(item.bodyTranslation, item.translationFormat, frame, item.frameTranslation, holder, item);
                     holder.mTargetBody.setText(item.renderedTargetBody);
@@ -589,26 +569,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         });
 
         prepareTranslationUI(holder, item);
-        // display verse/editing mode
-//        if(item.isEditing) {
-//            holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
-//            holder.mAddNoteButton.setVisibility(View.VISIBLE);
-//            holder.mUndoButton.setVisibility(View.VISIBLE);
-//            holder.mRedoButton.setVisibility(View.VISIBLE);
-//            holder.mTargetBody.setVisibility(View.GONE);
-//            holder.mTargetEditableBody.setVisibility(View.VISIBLE);
-//            holder.mTargetEditableBody.setEnableLines(true);
-//            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
-//        } else {
-//            holder.mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
-//            holder.mUndoButton.setVisibility(View.GONE);
-//            holder.mRedoButton.setVisibility(View.GONE);
-//            holder.mAddNoteButton.setVisibility(View.GONE);
-//            holder.mTargetBody.setVisibility(View.VISIBLE);
-//            holder.mTargetEditableBody.setVisibility(View.GONE);
-//            holder.mTargetEditableBody.setEnableLines(false);
-//            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
-//        }
 
         // disable listener
         holder.mDoneSwitch.setOnCheckedChangeListener(null);
@@ -634,6 +594,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
+                    // make sure to capture verse marker changes changes before dialog is displayed
+                    Editable changes = holder.mTargetEditableBody.getText();
+                    item.renderedTargetBody = changes;
+                    String newBody = Translator.compileTranslation(changes);
+                    item.bodyTranslation = newBody;
 
                     CustomAlertDialog.Create(mContext)
                             .setTitle(R.string.chunk_checklist_title)
@@ -641,9 +606,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             .setPositiveButton(R.string.confirm, new View.OnClickListener() {
                                         @Override
                                         public void onClick(View v) {
-                                            if(!item.isEditing) { // make sure to capture verse marker changes
-                                                item.renderedTargetBody = holder.mTargetEditableBody.getText();
-                                            }
                                             boolean success = onConfirmChunk(item, chapter, frame, mTargetTranslation.getFormat());
                                             holder.mDoneSwitch.setChecked(success);
                                         }
@@ -1034,7 +996,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     private static final Pattern USFM_CONSECUTIVE_VERSE_MARKERS =
-            Pattern.compile("(" + USFMVerseSpan.PATTERN + "){2}");
+            Pattern.compile("\\\\v\\s(\\d+(-\\d+)?)\\s*\\\\v\\s(\\d+(-\\d+)?)");
 
     private static final Pattern USFM_VERSE_MARKER =
             Pattern.compile(USFMVerseSpan.PATTERN);
@@ -1100,9 +1062,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 while (matcher.find()) {
                     int currentVerse = Integer.valueOf(matcher.group(1));
                     if (currentVerse <= lastVerseSeen) {
-                        error = R.string.outoforder_verse_markers;
-                        success = false;
-                        break;
+                        if (currentVerse == lastVerseSeen) {
+                            error = R.string.duplicate_verse_marker;
+                            success = false;
+                            break;
+                        } else {
+                            error = R.string.outoforder_verse_markers;
+                            success = false;
+                            break;
+                        }
                     } else if ((currentVerse < lowVerse) || (currentVerse > highVerse)) {
                         error = R.string.outofrange_verse_marker;
                         success = false;
@@ -1638,8 +1606,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
                 }
             };
+
             Clickables.setupRenderingGroup(format, renderingGroup, null, noteClickListener, false);
             if(editable) {
+                if(!item.isTranslationFinished) {
+                    renderingGroup.setVersesEnabled(false);
+                }
                 renderingGroup.setLinebreaksEnabled(true);
             }
         } else {
