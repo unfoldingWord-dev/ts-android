@@ -566,6 +566,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
                     // TRICKY: there may be changes to translation
                     item.loadTranslations(mSourceTranslation, mTargetTranslation, chapter, frame);
+
                     // re-render for verse mode
                     item.renderedTargetBody = renderTargetText(item.bodyTranslation, item.translationFormat, frame, item.frameTranslation, holder, item);
                     holder.mTargetBody.setText(item.renderedTargetBody);
@@ -634,6 +635,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
+                    // make sure to capture verse marker changes changes before dialog is displayed
+                    Editable changes = holder.mTargetEditableBody.getText();
+                    item.renderedTargetBody = changes;
+                    String newBody = Translator.compileTranslation(changes);
+                    item.bodyTranslation = newBody;
 
                     CustomAlertDialog.Create(mContext)
                             .setTitle(R.string.chunk_checklist_title)
@@ -641,9 +647,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             .setPositiveButton(R.string.confirm, new View.OnClickListener() {
                                         @Override
                                         public void onClick(View v) {
-                                            if(!item.isEditing) { // make sure to capture verse marker changes
-                                                item.renderedTargetBody = holder.mTargetEditableBody.getText();
-                                            }
                                             boolean success = onConfirmChunk(item, chapter, frame, mTargetTranslation.getFormat());
                                             holder.mDoneSwitch.setChecked(success);
                                         }
@@ -1034,7 +1037,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     private static final Pattern USFM_CONSECUTIVE_VERSE_MARKERS =
-            Pattern.compile("(" + USFMVerseSpan.PATTERN + "){2}");
+            Pattern.compile("\\\\v\\s(\\d+(-\\d+)?)\\s*\\\\v\\s(\\d+(-\\d+)?)");
 
     private static final Pattern USFM_VERSE_MARKER =
             Pattern.compile(USFMVerseSpan.PATTERN);
@@ -1100,9 +1103,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 while (matcher.find()) {
                     int currentVerse = Integer.valueOf(matcher.group(1));
                     if (currentVerse <= lastVerseSeen) {
-                        error = R.string.outoforder_verse_markers;
-                        success = false;
-                        break;
+                        if (currentVerse == lastVerseSeen) {
+                            error = R.string.duplicate_verse_marker;
+                            success = false;
+                            break;
+                        } else {
+                            error = R.string.outoforder_verse_markers;
+                            success = false;
+                            break;
+                        }
                     } else if ((currentVerse < lowVerse) || (currentVerse > highVerse)) {
                         error = R.string.outofrange_verse_marker;
                         success = false;
@@ -1638,8 +1647,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
                 }
             };
+
             Clickables.setupRenderingGroup(format, renderingGroup, null, noteClickListener, false);
             if(editable) {
+                if(!item.isTranslationFinished) {
+                    renderingGroup.setVersesEnabled(false);
+                }
                 renderingGroup.setLinebreaksEnabled(true);
             }
         } else {

@@ -36,5 +36,4 @@ public class Clickables {
         renderingGroup.addEngine(renderer);
         return renderer;
     }
-
 }
