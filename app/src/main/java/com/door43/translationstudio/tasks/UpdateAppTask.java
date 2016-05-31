@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 
 import com.door43.tools.reporting.Logger;
@@ -60,6 +61,9 @@ public class UpdateAppTask extends ManagedTask {
         updateBuildNumbers();
 
         if (pInfo != null) {
+            // use current version if fresh install
+            lastVersionCode = lastVersionCode == 0 ? pInfo.versionCode : lastVersionCode;
+
             // record latest version
             editor.putInt("last_version_code", pInfo.versionCode);
             editor.apply();
@@ -90,11 +94,12 @@ public class UpdateAppTask extends ManagedTask {
         if(lastVersion < 111) {
             upgradePre111();
         }
-        if(lastVersion < 119) {
-            AppContext.context().deleteDatabase(Library.DATABASE_NAME);
-        }
         if(lastVersion < 122) {
+            Looper.prepare();
             PreferenceManager.setDefaultValues(AppContext.context(), R.xml.general_preferences, true);
+        }
+        if(lastVersion < 134) {
+            AppContext.context().deleteDatabase(Library.DATABASE_NAME);
         }
     }
 

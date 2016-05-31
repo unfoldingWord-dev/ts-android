@@ -5,12 +5,13 @@ import android.content.pm.PackageInfo;
 import android.support.annotation.Nullable;
 
 import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.git.Repo;
+import com.door43.translationstudio.util.NumericStringComparator;
 import com.door43.util.Manifest;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.AddCommand;
+import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.DeleteBranchCommand;
@@ -21,6 +22,7 @@ import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.TagCommand;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
@@ -52,19 +54,25 @@ public class TargetTranslation {
     public static final String TAG = TargetTranslation.class.getSimpleName();
     public static final int PACKAGE_VERSION = 6; // the version of the target translation implementation
     public static final String LICENSE_FILE = "LICENSE.md";
+    public static final String OBS_LICENSE_FILE = "OBS_LICENSE.md";
 
     private static final String FIELD_PARENT_DRAFT = "parent_draft";
     private static final String FIELD_FINISHED_CHUNKS = "finished_chunks";
     private static final String FIELD_TRANSLATORS = "translators";
-    private static final String FIELD_TARGET_LANGUAGE = "target_language";
-    private static final String FIELD_FORMAT = "format";
-    private static final String FIELD_RESOURCE = "resource";
-    private static final String FIELD_SOURCE_TRANSLATIONS = "source_translations";
-    private static final String FIELD_PACKAGE_VERSION = "package_version";
-    private static final String FIELD_PROJECT = "project";
-    private static final String FIELD_GENERATOR = "generator";
-    private static final String FIELD_TRANSLATION_TYPE = "type";
-    private static final String FIELD_TRANSLATION_FORMAT = "format";
+
+    public static final String FIELD_MANIFEST_TARGET_LANGUAGE = "target_language";
+    public static final String FIELD_MANIFEST_FORMAT = "format";
+    public static final String FIELD_MANIFEST_RESOURCE = "resource";
+    public static final String FIELD_SOURCE_TRANSLATIONS = "source_translations";
+    public static final String FIELD_MANIFEST_PACKAGE_VERSION = "package_version";
+    public static final String FIELD_MANIFEST_PROJECT = "project";
+    public static final String FIELD_MANIFEST_GENERATOR = "generator";
+    public static final String FIELD_MANIFEST_TRANSLATION_TYPE = "type";
+    public static final String FIELD_TRANSLATION_FORMAT = "format";
+    public static final String FIELD_MANIFEST_ID = "id";
+    public static final String FIELD_MANIFEST_NAME = "name";
+    public static final String FIELD_MANIFEST_BUILD = "build";
+    public static final String APPLICATION_NAME = "ts-android";
 
     private final File targetTranslationDir;
     private final Manifest manifest;
@@ -91,26 +99,26 @@ public class TargetTranslation {
         this.manifest = Manifest.generate(targetTranslationDir);
 
         // target language
-        JSONObject targetLanguageJson = this.manifest.getJSONObject(FIELD_TARGET_LANGUAGE);
-        this.targetLanguageId = targetLanguageJson.getString("id");
-        this.targetLanguageName = Manifest.valueExists(targetLanguageJson, "name") ? targetLanguageJson.getString("name") : this.targetLanguageId.toUpperCase();
+        JSONObject targetLanguageJson = this.manifest.getJSONObject(FIELD_MANIFEST_TARGET_LANGUAGE);
+        this.targetLanguageId = targetLanguageJson.getString(FIELD_MANIFEST_ID);
+        this.targetLanguageName = Manifest.valueExists(targetLanguageJson, FIELD_MANIFEST_NAME) ? targetLanguageJson.getString(FIELD_MANIFEST_NAME) : this.targetLanguageId.toUpperCase();
         this.targetLanguageDirection = LanguageDirection.get(targetLanguageJson.getString("direction"));
 
         // project
-        JSONObject projectJson = this.manifest.getJSONObject(FIELD_PROJECT);
-        this.projectId = projectJson.getString("id");
-        this.projectName = Manifest.valueExists(projectJson, "name") ? projectJson.getString("name") : this.projectId.toUpperCase();
+        JSONObject projectJson = this.manifest.getJSONObject(FIELD_MANIFEST_PROJECT);
+        this.projectId = projectJson.getString(FIELD_MANIFEST_ID);
+        this.projectName = Manifest.valueExists(projectJson, FIELD_MANIFEST_NAME) ? projectJson.getString(FIELD_MANIFEST_NAME) : this.projectId.toUpperCase();
 
         // translation type
-        JSONObject typeJson = this.manifest.getJSONObject("type");
-        this.translationType = TranslationType.get(typeJson.getString("id"));
-        this.translationTypeName = Manifest.valueExists(typeJson, "name") ? typeJson.getString("name") : this.translationType.toString().toUpperCase();
+        JSONObject typeJson = this.manifest.getJSONObject(FIELD_MANIFEST_TRANSLATION_TYPE);
+        this.translationType = TranslationType.get(typeJson.getString(FIELD_MANIFEST_ID));
+        this.translationTypeName = Manifest.valueExists(typeJson, FIELD_MANIFEST_NAME) ? typeJson.getString(FIELD_MANIFEST_NAME) : this.translationType.toString().toUpperCase();
 
         if(this.translationType == TranslationType.TEXT) {
             // resource
-            JSONObject resourceJson = this.manifest.getJSONObject("resource");
-            this.resourceSlug = resourceJson.getString("id");
-            this.resourceName = Manifest.valueExists(resourceJson, "name") ? resourceJson.getString("name") : this.resourceSlug.toUpperCase();
+            JSONObject resourceJson = this.manifest.getJSONObject(FIELD_MANIFEST_RESOURCE);
+            this.resourceSlug = resourceJson.getString(FIELD_MANIFEST_ID);
+            this.resourceName = Manifest.valueExists(resourceJson, FIELD_MANIFEST_NAME) ? resourceJson.getString(FIELD_MANIFEST_NAME) : this.resourceSlug.toUpperCase();
         }
 
         mTranslationFormat = readTranslationFormat();
@@ -224,10 +232,10 @@ public class TargetTranslation {
 
     public static String fetchProjectID(Manifest manifest) {
         String projectIdStr = "";
-        JSONObject projectIdJson = manifest.getJSONObject(FIELD_PROJECT);
+        JSONObject projectIdJson = manifest.getJSONObject(FIELD_MANIFEST_PROJECT);
         if(projectIdJson != null) {
             try {
-                projectIdStr = projectIdJson.getString("id");
+                projectIdStr = projectIdJson.getString(FIELD_MANIFEST_ID);
             } catch(Exception e) {
                 projectIdStr = "";
             }
@@ -237,10 +245,10 @@ public class TargetTranslation {
 
     public static TranslationType fetchTranslationType(Manifest manifest) {
         String translationTypeStr = "";
-        JSONObject typeJson = manifest.getJSONObject(FIELD_TRANSLATION_TYPE);
+        JSONObject typeJson = manifest.getJSONObject(FIELD_MANIFEST_TRANSLATION_TYPE);
         if(typeJson != null) {
             try {
-                translationTypeStr = typeJson.getString("id");
+                translationTypeStr = typeJson.getString(FIELD_MANIFEST_ID);
             } catch(Exception e) {
                 translationTypeStr = "";
             }
@@ -259,7 +267,7 @@ public class TargetTranslation {
             if (manifestFile.exists()) {
                 try {
                     JSONObject manifest = new JSONObject(FileUtils.readFileToString(manifestFile));
-                    int version = manifest.getInt(FIELD_PACKAGE_VERSION);
+                    int version = manifest.getInt(FIELD_MANIFEST_PACKAGE_VERSION);
                     if (version == PACKAGE_VERSION) {
                         return new TargetTranslation(targetTranslationDir);
                     } else {
@@ -294,26 +302,31 @@ public class TargetTranslation {
 
         // build new manifest
         JSONObject projectJson = new JSONObject();
-        projectJson.put("id", projectId);
-        projectJson.put("name", "");
-        manifest.put(FIELD_PROJECT, projectJson);
+        projectJson.put(FIELD_MANIFEST_ID, projectId);
+        projectJson.put(FIELD_MANIFEST_NAME, "");
+        manifest.put(FIELD_MANIFEST_PROJECT, projectJson);
         JSONObject typeJson = new JSONObject();
-        typeJson.put("id", translationType);
-        typeJson.put("name", translationType.getName());
-        manifest.put(FIELD_TRANSLATION_TYPE, typeJson);
+        typeJson.put(FIELD_MANIFEST_ID, translationType);
+        typeJson.put(FIELD_MANIFEST_NAME, translationType.getName());
+        manifest.put(FIELD_MANIFEST_TRANSLATION_TYPE, typeJson);
         JSONObject generatorJson = new JSONObject();
-        generatorJson.put("name", "ts-android");
-        generatorJson.put("build", packageInfo.versionCode);
-        manifest.put(FIELD_GENERATOR, generatorJson);
-        manifest.put(FIELD_PACKAGE_VERSION, PACKAGE_VERSION);
-        manifest.put(FIELD_TARGET_LANGUAGE, targetLanguage.toJson());
-        manifest.put(FIELD_FORMAT, translationFormat);
+        generatorJson.put(FIELD_MANIFEST_NAME, APPLICATION_NAME);
+        generatorJson.put(FIELD_MANIFEST_BUILD, packageInfo.versionCode);
+        manifest.put(FIELD_MANIFEST_GENERATOR, generatorJson);
+        manifest.put(FIELD_MANIFEST_PACKAGE_VERSION, PACKAGE_VERSION);
+        manifest.put(FIELD_MANIFEST_TARGET_LANGUAGE, targetLanguage.toJson());
+        manifest.put(FIELD_MANIFEST_FORMAT, translationFormat);
         JSONObject resourceJson = new JSONObject();
-        resourceJson.put("id", resourceSlug);
-        manifest.put(FIELD_RESOURCE, resourceJson);
+        resourceJson.put(FIELD_MANIFEST_ID, resourceSlug);
+        manifest.put(FIELD_MANIFEST_RESOURCE, resourceJson);
 
         File licenseFile = new File(targetTranslationDir, LICENSE_FILE);
-        InputStream is = context.getAssets().open(LICENSE_FILE);
+        InputStream is;
+        if(projectId.toLowerCase().equals("obs")) {
+            is = context.getAssets().open(OBS_LICENSE_FILE);
+        } else {
+            is = context.getAssets().open(LICENSE_FILE);
+        }
         if(is != null) {
             FileUtils.copyInputStreamToFile(is, licenseFile);
         } else {
@@ -334,10 +347,10 @@ public class TargetTranslation {
      */
     public static void updateGenerator(Context context, TargetTranslation targetTranslation) throws Exception{
         JSONObject generatorJson = new JSONObject();
-        generatorJson.put("name", "ts-android");
+        generatorJson.put(FIELD_MANIFEST_NAME, "ts-android");
         PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
-        generatorJson.put("build", pInfo.versionCode);
-        targetTranslation.manifest.put(FIELD_GENERATOR, generatorJson);
+        generatorJson.put(FIELD_MANIFEST_BUILD, pInfo.versionCode);
+        targetTranslation.manifest.put(FIELD_MANIFEST_GENERATOR, generatorJson);
     }
 
     /**
@@ -1155,6 +1168,13 @@ public class TargetTranslation {
      * @throws Exception
      */
     public boolean merge(File newDir) throws Exception {
+        // commit everything
+        TargetTranslation importedTargetTranslation = TargetTranslation.open(newDir);
+        if(importedTargetTranslation != null) {
+            importedTargetTranslation.commitSync();
+        }
+        commitSync();
+
         Manifest importedManifest = Manifest.generate(newDir);
         Repo repo = getRepo();
 
@@ -1182,21 +1202,34 @@ public class TargetTranslation {
         MergeResult result = merge.call();
 
         // merge manifests
-        manifest.join(importedManifest.getJSONArray(FIELD_TRANSLATORS), FIELD_TRANSLATORS);
-        manifest.join(importedManifest.getJSONArray(FIELD_FINISHED_CHUNKS), FIELD_FINISHED_CHUNKS);
-        manifest.join(importedManifest.getJSONObject(FIELD_SOURCE_TRANSLATIONS), FIELD_SOURCE_TRANSLATIONS);
-
-        // add missing parent draft status
-        if((!manifest.has(FIELD_PARENT_DRAFT) || !Manifest.valueExists(manifest.getJSONObject(FIELD_PARENT_DRAFT), "resource_id"))
-            && importedManifest.has(FIELD_PARENT_DRAFT)) {
-            manifest.put(FIELD_PARENT_DRAFT, importedManifest.getJSONObject(FIELD_PARENT_DRAFT));
-        }
+        mergeManifests(manifest, importedManifest);
 
         if (result.getMergeStatus().equals(MergeResult.MergeStatus.CONFLICTING)) {
             System.out.println(result.getConflicts().toString());
             return false;
         }
         return true;
+    }
+
+    /**
+     * Merges two manifest files together
+     * @param original
+     * @param imported
+     * @return
+     */
+    public static Manifest mergeManifests(Manifest original, Manifest imported) {
+        // merge manifests
+        // TODO: 5/25/16 merge notes
+        original.join(imported.getJSONArray(FIELD_TRANSLATORS), FIELD_TRANSLATORS);
+        original.join(imported.getJSONArray(FIELD_FINISHED_CHUNKS), FIELD_FINISHED_CHUNKS);
+        original.join(imported.getJSONArray(FIELD_SOURCE_TRANSLATIONS), FIELD_SOURCE_TRANSLATIONS);
+
+        // add missing parent draft status
+        if((!original.has(FIELD_PARENT_DRAFT) || !Manifest.valueExists(original.getJSONObject(FIELD_PARENT_DRAFT), "resource_id"))
+                && imported.has(FIELD_PARENT_DRAFT)) {
+            original.put(FIELD_PARENT_DRAFT, imported.getJSONObject(FIELD_PARENT_DRAFT));
+        }
+        return original;
     }
 
     public enum PublishStatus {
@@ -1321,7 +1354,7 @@ public class TargetTranslation {
                 return new File(dir, filename).isDirectory() && !filename.equals(".git");
             }
         });
-        Arrays.sort(chapterSlugs);
+        Arrays.sort(chapterSlugs, new NumericStringComparator());
         List<ChapterTranslation> chapterTranslations = new ArrayList<>();
         if(chapterSlugs != null) {
             for (String slug : chapterSlugs) {
@@ -1384,7 +1417,7 @@ public class TargetTranslation {
                 return !filename.equals("reference.txt") && !filename.equals("title.txt");
             }
         });
-        Arrays.sort(frameFileNames);
+        Arrays.sort(frameFileNames, new NumericStringComparator());
         List<FrameTranslation> frameTranslations = new ArrayList<>();
         if(frameFileNames != null) {
             for (String fileName : frameFileNames) {

@@ -21,7 +21,7 @@ import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.CloneRepositoryTask;
-import com.door43.translationstudio.tasks.GetUserRepositories;
+import com.door43.translationstudio.tasks.GetUserRepositoriesTask;
 import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
 import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.util.tasks.ManagedTask;
@@ -64,7 +64,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
             @Override
             public void onClick(View v) {
                 taskWatcher.stop();
-                GetUserRepositories task = (GetUserRepositories) TaskManager.getTask(GetUserRepositories.TASK_ID);
+                GetUserRepositoriesTask task = (GetUserRepositoriesTask) TaskManager.getTask(GetUserRepositoriesTask.TASK_ID);
                 if (task != null) {
                     task.stop();
                     TaskManager.cancelTask(task);
@@ -94,23 +94,22 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
         if(savedInstanceState != null) {
             String[] repoJsonArray = savedInstanceState.getStringArray(STATE_REPOSITORIES);
             if(repoJsonArray != null) {
-                List<Repository> repoJsonList = new ArrayList<>();
                 for (String json : repoJsonArray) {
                     try {
                         Repository repo = Repository.fromJSON(new JSONObject(json));
                         if (json != null) {
-                            repoJsonList.add(repo);
+                            repositories.add(repo);
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
                 }
-                adapter.setRepositories(repoJsonList);
+                adapter.setRepositories(repositories);
             }
         }
 
         // connect to existing task
-        GetUserRepositories reposTask = (GetUserRepositories) TaskManager.getTask(GetUserRepositories.TASK_ID);
+        GetUserRepositoriesTask reposTask = (GetUserRepositoriesTask) TaskManager.getTask(GetUserRepositoriesTask.TASK_ID);
         CloneRepositoryTask cloneTask = (CloneRepositoryTask) TaskManager.getTask(CloneRepositoryTask.TASK_ID);
         if (reposTask != null) {
             taskWatcher.watch(reposTask);
@@ -118,9 +117,9 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
             taskWatcher.watch(cloneTask);
         } else if(repositories.size() == 0) {
             // start task
-            reposTask = new GetUserRepositories();
+            reposTask = new GetUserRepositoriesTask();
             taskWatcher.watch(reposTask);
-            TaskManager.addTask(reposTask, GetUserRepositories.TASK_ID);
+            TaskManager.addTask(reposTask, GetUserRepositoriesTask.TASK_ID);
         }
 
         return v;
@@ -131,8 +130,8 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
         taskWatcher.stop();
         TaskManager.clearTask(task);
 
-        if (task instanceof GetUserRepositories) {
-            this.repositories = ((GetUserRepositories) task).getRepositories();
+        if (task instanceof GetUserRepositoriesTask) {
+            this.repositories = ((GetUserRepositoriesTask) task).getRepositories();
             adapter.setRepositories(repositories);
         } else if (task instanceof CloneRepositoryTask) {
             if (!task.isCanceled()) {
@@ -144,6 +143,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
                     Logger.i(this.getClass().getName(), "Repository cloned from " + cloneUrl);
                     tempPath = TargetTranslationMigrator.migrate(tempPath);
                     TargetTranslation tempTargetTranslation = TargetTranslation.open(tempPath);
+                    boolean restoreFailed = false;
                     if (tempTargetTranslation != null) {
                         TargetTranslation existingTargetTranslation = translator.getTargetTranslation(tempTargetTranslation.getId());
                         // create orphaned backup of existing target translation
@@ -161,25 +161,29 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
                         } catch (IOException e) {
                             Logger.e(this.getClass().getName(), "Failed to import the target translation " + tempTargetTranslation.getId(), e);
                             notifyRestoreFailed();
+                            restoreFailed = true;
                         }
                     } else {
                         Logger.e(this.getClass().getName(), "Failed to open the online backup");
                         notifyRestoreFailed();
+                        restoreFailed = true;
                     }
                     FileUtils.deleteQuietly(tempPath);
 
-                    Handler hand = new Handler(Looper.getMainLooper());
-                    hand.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            // todo: terrible hack. We should instead register a listener with the dialog
-                            ((HomeActivity) getActivity()).notifyDatasetChanged();
+                    if(!restoreFailed) {
+                        Handler hand = new Handler(Looper.getMainLooper());
+                        hand.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                // todo: terrible hack. We should instead register a listener with the dialog
+                                ((HomeActivity) getActivity()).notifyDatasetChanged();
 
-                            Snackbar snack = Snackbar.make(RestoreFromDoor43Dialog.this.getView(), R.string.success, Snackbar.LENGTH_SHORT);
-                            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                            snack.show();
-                        }
-                    });
+                                Snackbar snack = Snackbar.make(RestoreFromDoor43Dialog.this.getView(), R.string.success, Snackbar.LENGTH_SHORT);
+                                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                                snack.show();
+                            }
+                        });
+                    }
                 } else if(status == CloneRepositoryTask.Status.AUTH_FAILURE) {
                     Logger.i(this.getClass().getName(), "Authentication failed");
                     // if we have already tried ask the user if they would like to try again

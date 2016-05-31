@@ -6,6 +6,8 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -195,6 +197,7 @@ public class SettingsActivity extends PreferenceActivity {
         bindPreferenceClickToLegalDocument(findPreference("statement_of_faith"), R.string.statement_of_faith);
         bindPreferenceClickToLegalDocument(findPreference("translation_guidelines"), R.string.translation_guidlines);
         bindPreferenceClickToLegalDocument(findPreference("software_licenses"), R.string.software_licenses);
+        bindPreferenceClickToLegalDocument(findPreference("attribution"), R.string.attribution);
 
         // Bind the summaries of EditText/List/Dialog/Ringtone preferences to
         // their values. When their values change, their summaries are updated
@@ -210,6 +213,14 @@ public class SettingsActivity extends PreferenceActivity {
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_LOGGING_LEVEL));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_BACKUP_INTERVAL));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_TYPEFACE_SIZE));
+
+        final Preference appVersionPref = findPreference("app_version");
+        try {
+            PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+            appVersionPref.setSummary(pInfo.versionName + " - " + pInfo.versionCode);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     /** {@inheritDoc} */
@@ -361,6 +372,14 @@ public class SettingsActivity extends PreferenceActivity {
             bindPreferenceSummaryToValue(fontPref);
 
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_TYPEFACE_SIZE));
+
+            final Preference appVersionPref = findPreference("app_version");
+            try {
+                PackageInfo pInfo = AppContext.context().getPackageManager().getPackageInfo(AppContext.context().getPackageName(), 0);
+                appVersionPref.setSummary(pInfo.versionName + " - " + pInfo.versionCode);
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -381,6 +400,7 @@ public class SettingsActivity extends PreferenceActivity {
 //            bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTOSAVE));
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTH_SERVER));
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_GIT_SERVER));
+            bindPreferenceSummaryToValue(findPreference(KEY_PREF_GOGS_API));
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTH_SERVER_PORT));
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_GIT_SERVER_PORT));
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_MEDIA_SERVER));
@@ -401,6 +421,7 @@ public class SettingsActivity extends PreferenceActivity {
             bindPreferenceClickToLegalDocument(findPreference("statement_of_faith"), R.string.statement_of_faith);
             bindPreferenceClickToLegalDocument(findPreference("translation_guidelines"), R.string.translation_guidlines);
             bindPreferenceClickToLegalDocument(findPreference("software_licenses"), R.string.software_licenses);
+            bindPreferenceClickToLegalDocument(findPreference("attribution"), R.string.attribution);
         }
     }
 

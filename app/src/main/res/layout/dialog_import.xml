@@ -12,6 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/dialog_content_margin">
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -19,7 +20,7 @@
             android:layout_marginBottom="@dimen/dialog_content_margin"
             android:textColor="@color/dark_primary_text"
             android:textSize="@dimen/headline"
-            android:id="@+id/textView13" />
+            android:id="@+id/title" />
 
         <LinearLayout
             android:orientation="vertical"
@@ -32,6 +33,24 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/import_from_sd"
+                android:drawableLeft="@drawable/icon_import_sd_dark"
+                android:drawableStart="@drawable/icon_import_sd_dark"
+                android:gravity="left|center_vertical"
+                android:drawablePadding="10dp"
+                android:textAllCaps="false"
+                android:textColor="@color/dark_primary_text"
+                style="@style/Widget.Button.Secondary" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="1px"
+                android:background="@color/list_separator"/>
+
+            <Button
+                android:id="@+id/import_from_sd_usfm"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/import_from_sd_usfm"
                 android:drawableLeft="@drawable/icon_import_sd_dark"
                 android:drawableStart="@drawable/icon_import_sd_dark"
                 android:gravity="left|center_vertical"
@@ -81,8 +100,27 @@
                 android:layout_height="1px"
                 android:background="@color/list_separator"/>
 
+            <Button
+                android:id="@+id/import_from_door43"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/import_from_door43"
+                android:drawableLeft="@drawable/ic_cloud_download_secondary_24dp"
+                android:drawableStart="@drawable/ic_cloud_download_secondary_24dp"
+                android:gravity="left|center_vertical"
+                android:drawablePadding="10dp"
+                android:textColor="@color/dark_primary_text"
+                android:textAllCaps="false"
+                style="@style/Widget.Button.Secondary" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="1px"
+                android:background="@color/list_separator"/>
+
         </LinearLayout>
     </LinearLayout>
+
     <LinearLayout
         android:orientation="horizontal"
         android:padding="@dimen/dialog_controls_margin"

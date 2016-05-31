@@ -61,6 +61,7 @@ import com.door43.translationstudio.rendering.ClickableRenderingEngine;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.USFMNoteSpan;
 import com.door43.translationstudio.spannables.Span;
+import com.door43.translationstudio.spannables.USFMVerseSpan;
 import com.door43.translationstudio.spannables.VerseSpan;
 import com.door43.util.tasks.ThreadableUI;
 import com.door43.widget.ViewUtil;
@@ -130,6 +131,17 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         listItems.add(projectTitleItem);
 
         for(Chapter c:chapters) {
+            // put in map for easier retrieval
+            mChapters.put(c.getId(), c);
+
+            String[] chapterFrameSlugs = mLibrary.getFrameSlugs(mSourceTranslation, c.getId());
+            boolean setStartPosition = startingChapterSlug != null && c.getId().equals(startingChapterSlug) && chapterFrameSlugs.length > 0;
+
+            // default starting selection is first item in chapter
+            if(setStartPosition) {
+                setListStartPosition(listItems.size());
+            }
+
             // add title and reference cards for chapter
             if(!c.title.isEmpty()) {
                 ListItem item = new ListItem(null, c.getId());
@@ -141,15 +153,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 item.isChapterReference = true;
                 listItems.add(item);
             }
-            // put in map for easier retrieval
-            mChapters.put(c.getId(), c);
 
-            String[] chapterFrameSlugs = mLibrary.getFrameSlugs(mSourceTranslation, c.getId());
-            boolean setStartPosition = startingChapterSlug != null && c.getId().equals(startingChapterSlug) && chapterFrameSlugs.length > 0;
-                // identify starting selection
-            if(setStartPosition) {
-                setListStartPosition(listItems.size());
-            }
+            // identify starting frame selection
             for(String frameSlug:chapterFrameSlugs) {
                 if(setStartPosition && startingFrameSlug != null && frameSlug.equals(startingFrameSlug)) {
                     setListStartPosition(listItems.size());
@@ -488,27 +493,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     history.reset();
                     prepareTranslationUI(holder, item);
                 }
-
-                // update view if pasting text
-                // TRICKY: anything worth rendering will need to change by at least 7 characters
-                // <a></a> <-- at least 7 characters are required to create a tag for rendering.
-                int minDeviation = 7;
-                if(count - before > minDeviation) {
-                    int scrollX = holder.mTargetEditableBody.getScrollX();
-                    int scrollY = holder.mTargetEditableBody.getScrollX();
-                    int selection = holder.mTargetEditableBody.getSelectionStart();
-
-                    holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
-                    holder.mTargetEditableBody.setText(item.renderedTargetBody);
-                    holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
-
-                    holder.mTargetEditableBody.scrollTo(scrollX, scrollY);
-                    if (selection > holder.mTargetEditableBody.length()) {
-                        selection = holder.mTargetEditableBody.length();
-                    }
-                    holder.mTargetEditableBody.setSelection(selection);
-                    holder.mTargetEditableBody.clearFocus();
-                }
             }
 
             @Override
@@ -546,7 +530,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     mgr.showSoftInput(holder.mTargetEditableBody, InputMethodManager.SHOW_IMPLICIT);
 
                     // TRICKY: there may be changes to translation
-                    item.loadTranslations(mSourceTranslation, mTargetTranslation, chapter, frame);
+                     item.loadTranslations(mSourceTranslation, mTargetTranslation, chapter, frame);
 
                     // re-render for editing mode
                     item.renderedTargetBody = renderSourceText(item.bodyTranslation, item.translationFormat, holder, item, true);
@@ -561,6 +545,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
                     // TRICKY: there may be changes to translation
                     item.loadTranslations(mSourceTranslation, mTargetTranslation, chapter, frame);
+
                     // re-render for verse mode
                     item.renderedTargetBody = renderTargetText(item.bodyTranslation, item.translationFormat, frame, item.frameTranslation, holder, item);
                     holder.mTargetBody.setText(item.renderedTargetBody);
@@ -584,26 +569,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         });
 
         prepareTranslationUI(holder, item);
-        // display verse/editing mode
-//        if(item.isEditing) {
-//            holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
-//            holder.mAddNoteButton.setVisibility(View.VISIBLE);
-//            holder.mUndoButton.setVisibility(View.VISIBLE);
-//            holder.mRedoButton.setVisibility(View.VISIBLE);
-//            holder.mTargetBody.setVisibility(View.GONE);
-//            holder.mTargetEditableBody.setVisibility(View.VISIBLE);
-//            holder.mTargetEditableBody.setEnableLines(true);
-//            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
-//        } else {
-//            holder.mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
-//            holder.mUndoButton.setVisibility(View.GONE);
-//            holder.mRedoButton.setVisibility(View.GONE);
-//            holder.mAddNoteButton.setVisibility(View.GONE);
-//            holder.mTargetBody.setVisibility(View.VISIBLE);
-//            holder.mTargetEditableBody.setVisibility(View.GONE);
-//            holder.mTargetEditableBody.setEnableLines(false);
-//            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
-//        }
 
         // disable listener
         holder.mDoneSwitch.setOnCheckedChangeListener(null);
@@ -629,6 +594,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
+                    // make sure to capture verse marker changes changes before dialog is displayed
+                    Editable changes = holder.mTargetEditableBody.getText();
+                    item.renderedTargetBody = changes;
+                    String newBody = Translator.compileTranslation(changes);
+                    item.bodyTranslation = newBody;
 
                     CustomAlertDialog.Create(mContext)
                             .setTitle(R.string.chunk_checklist_title)
@@ -636,10 +606,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             .setPositiveButton(R.string.confirm, new View.OnClickListener() {
                                         @Override
                                         public void onClick(View v) {
-                                            if(!item.isEditing) { // make sure to capture verse marker changes
-                                                item.renderedTargetBody = holder.mTargetEditableBody.getText();
-                                            }
-                                            boolean success = onConfirmChunk(item, chapter, frame);
+                                            boolean success = onConfirmChunk(item, chapter, frame, mTargetTranslation.getFormat());
                                             holder.mDoneSwitch.setChecked(success);
                                         }
                                     }
@@ -1028,6 +995,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         thread.start();
     }
 
+    private static final Pattern USFM_CONSECUTIVE_VERSE_MARKERS =
+            Pattern.compile("\\\\v\\s(\\d+(-\\d+)?)\\s*\\\\v\\s(\\d+(-\\d+)?)");
+
+    private static final Pattern USFM_VERSE_MARKER =
+            Pattern.compile(USFMVerseSpan.PATTERN);
+
     private static final Pattern CONSECUTIVE_VERSE_MARKERS =
             Pattern.compile("(<verse [^>]+/>\\s*){2}");
 
@@ -1038,7 +1011,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * Performs some validation, and commits changes if ready.
      * @return true if the section was successfully confirmed; otherwise false.
      */
-    private boolean onConfirmChunk(final ListItem item, final Chapter chapter, final Frame frame) {
+    private boolean onConfirmChunk(final ListItem item, final Chapter chapter, final Frame frame, TranslationFormat format) {
         boolean success = true; // So far, so good.
 
         // Check for empty translation.
@@ -1049,34 +1022,68 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             success = false;
         }
 
-        // Check for contiguous verse numbers.
-        if (success) {
-            Matcher matcher = CONSECUTIVE_VERSE_MARKERS.matcher(item.bodyTranslation);
-            if (matcher.find()) {
-                Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.consecutive_verse_markers, Snackbar.LENGTH_LONG);
-                ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
-                snack.show();
-                success = false;
-            }
-        }
-
-        // Check for out-of-order verse markers.
-        if (success) {
-            Matcher matcher = VERSE_MARKER.matcher(item.bodyTranslation);
-            int lastVerseSeen = 0;
-            while (matcher.find()) {
-                int currentVerse = Integer.valueOf(matcher.group(1));
-                if (currentVerse < lastVerseSeen) {
-                    success = false;
-                    break;
-                } else {
-                    lastVerseSeen = currentVerse;
+        if(frame != null) {
+            Matcher matcher;
+            int lowVerse = -1;
+            int highVerse = 999999999;
+            int[] range = frame.getVerseRange();
+            if ((range != null) && (range.length > 0)) {
+                lowVerse = range[0];
+                highVerse = lowVerse;
+                if (range.length > 1) {
+                    highVerse = range[1];
                 }
             }
-            if (!success) {
-                Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.outoforder_verse_markers, Snackbar.LENGTH_LONG);
-                ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
-                snack.show();
+
+            // Check for contiguous verse numbers.
+            if (success) {
+                if (format == TranslationFormat.USFM) {
+                    matcher = USFM_CONSECUTIVE_VERSE_MARKERS.matcher(item.bodyTranslation);
+                } else {
+                    matcher = CONSECUTIVE_VERSE_MARKERS.matcher(item.bodyTranslation);
+                }
+                if (matcher.find()) {
+                    Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.consecutive_verse_markers, Snackbar.LENGTH_LONG);
+                    ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
+                    snack.show();
+                    success = false;
+                }
+            }
+
+            // Check for out-of-order verse markers.
+            if (success) {
+                int error = 0;
+                if (format == TranslationFormat.USFM) {
+                    matcher = USFM_VERSE_MARKER.matcher(item.bodyTranslation);
+                } else {
+                    matcher = VERSE_MARKER.matcher(item.bodyTranslation);
+                }
+                int lastVerseSeen = 0;
+                while (matcher.find()) {
+                    int currentVerse = Integer.valueOf(matcher.group(1));
+                    if (currentVerse <= lastVerseSeen) {
+                        if (currentVerse == lastVerseSeen) {
+                            error = R.string.duplicate_verse_marker;
+                            success = false;
+                            break;
+                        } else {
+                            error = R.string.outoforder_verse_markers;
+                            success = false;
+                            break;
+                        }
+                    } else if ((currentVerse < lowVerse) || (currentVerse > highVerse)) {
+                        error = R.string.outofrange_verse_marker;
+                        success = false;
+                        break;
+                    } else {
+                        lastVerseSeen = currentVerse;
+                    }
+                }
+                if (!success) {
+                    Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), error, Snackbar.LENGTH_LONG);
+                    ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
+                    snack.show();
+                }
             }
         }
 
@@ -1088,8 +1095,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 success = mTargetTranslation.finishChapterTitle(chapter);
             } else if (item.isProjectTitle) {
                 success = mTargetTranslation.closeProjectTitle();
-            } else {
+            } else if(frame != null){
                 success = mTargetTranslation.finishFrame(frame);
+            } else {
+                success = false;
             }
 
             if (!success) {
@@ -1105,7 +1114,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             try {
                 mTargetTranslation.commit();
             } catch (Exception e) {
-                Logger.e(TAG, "Failed to commit translation of " + mTargetTranslation.getId() + ":" + frame.getComplexId(), e);
+                String frameComplexId = frame == null ? "" : ":" + frame.getComplexId();
+                Logger.e(TAG, "Failed to commit translation of " + mTargetTranslation.getId() + frameComplexId, e);
             }
             item.isEditing = false;
             item.renderedTargetBody = null;
@@ -1437,6 +1447,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                     text = TextUtils.concat(pin.toCharSequence(), text);
                                     item.renderedTargetBody = text;
                                     editText.setText(text);
+                                    String translation = Translator.compileTranslation((Editable)editText.getText());
+                                    mTargetTranslation.applyFrameTranslation(frameTranslation, translation);
+
+                                    // Reload, so that bodyTranslation and other data are kept in sync.
+                                    item.loadTranslations(mSourceTranslation, mTargetTranslation, null, frame);
                                 }
                             } else if(event.getAction() == DragEvent.ACTION_DRAG_ENTERED) {
                                 hasEntered = true;
@@ -1472,6 +1487,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             };
 
             ClickableRenderingEngine renderer = Clickables.setupRenderingGroup(format, renderingGroup, verseClickListener, noteClickListener, true);
+            renderer.setLinebreaksEnabled(true);
             renderer.setPopulateVerseMarkers(frame.getVerseRange());
 
         } else {
@@ -1590,7 +1606,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
                 }
             };
+
             Clickables.setupRenderingGroup(format, renderingGroup, null, noteClickListener, false);
+            if(editable) {
+                if(!item.isTranslationFinished) {
+                    renderingGroup.setVersesEnabled(false);
+                }
+                renderingGroup.setLinebreaksEnabled(true);
+            }
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
