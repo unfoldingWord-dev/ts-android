@@ -350,6 +350,7 @@
     <string name="consecutive_verse_markers">Verse markers are placed too close to each other. Please verify marker positions.</string>
     <string name="outoforder_verse_markers">Verse markers are out of order</string>
     <string name="outofrange_verse_marker">Verse marker is out of range</string>
+    <string name="duplicate_verse_marker">Duplicate verse marker</string>
     <string name="failed_to_commit_chunk">The chunk could not be saved</string>
     <string name="title_activity_publish">Publish Translation</string>
 
@@ -592,6 +593,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="action_download_updates">Download updates</string>
     <string name="list_may_be_outdated">The list may be out of date</string>
     <string name="label_import">Import</string>
+    <string name="label_import_restore">Import/Restore</string>
     <string name="import_from_online">Import from Online (requires internet)</string>
     <string name="automatic_backups">Automatic Backups</string>
     <string name="export_to_sd">Export to SD Card</string>
@@ -741,8 +743,9 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="could_not_find_chapter">Could not find chapter: %s</string>
     <string name="could_not_find_verses_in_chapter">No verses in range <xliff:g example="1" id="start_verse">%1$d</xliff:g> to <xliff:g example="2" id="end_verse">%2$d</xliff:g> in chapter: <xliff:g example="05" id="chapter">%3$s</xliff:g></string>
     <string name="missing_verses_in_chapter">Missing <xliff:g example="2" id="verse_count">%1$d</xliff:g> verse(s) in range <xliff:g example="1" id="start_verse">%2$d</xliff:g> to <xliff:g example="2" id="end_verse">%3$d</xliff:g> in chapter: <xliff:g example="05" id="chapter">%4$s</xliff:g></string>
+    <string name="extra_verses_in_chapter">Extra <xliff:g example="2" id="verse_count">%1$d</xliff:g> verse(s) in range <xliff:g example="1" id="start_verse">%2$d</xliff:g> to <xliff:g example="2" id="end_verse">%3$d</xliff:g> in chapter: <xliff:g example="05" id="chapter">%4$s</xliff:g></string>
     <string name="could_not_parse_chapter">Could not parse chapter: %s</string>
-    <string name="missing_chapter_n">Missing chapter: %s</string>
+    <string name="missing_chapter_n">Missing chapter %s - will try to recover</string>
     <string name="duplicate_chapter">Duplicate chapter: %s</string>
     <string name="chapter_out_of_order">Chapter out of order: \'<xliff:g example="4" id="found">%1$s</xliff:g>\' after \'<xliff:g example="2" id="previous">%1$s</xliff:g>\'</string>
     <string name="missing_verses_in_section">No Verses in Section</string>
@@ -764,6 +767,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="could_not_parse">Could not parse \'<xliff:g example="Mark.usfm" id="file_name">%1$s</xliff:g>\'</string>
     <string name="no_chunk_list">No chunk list found for \'<xliff:g example="marc" id="book_name">%1$s</xliff:g>\'</string>
     <string name="chapter_count_invalid">Expected <xliff:g example="16" id="chunk_count">%1$s</xliff:g> chapters, but last chapter was <xliff:g example="15" id="chapter_count">%2$s</xliff:g></string>
+    <string name="no_chapter">No chapter found</string>
     <string name="label_restore">Restore</string>
     <string name="title_import_Success">Import Success</string>
     <string name="title_import_Failed">Import Failed!</string>

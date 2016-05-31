@@ -11,6 +11,7 @@ import com.door43.util.Manifest;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.AddCommand;
+import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.DeleteBranchCommand;
@@ -21,6 +22,7 @@ import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.TagCommand;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
@@ -1166,6 +1168,13 @@ public class TargetTranslation {
      * @throws Exception
      */
     public boolean merge(File newDir) throws Exception {
+        // commit everything
+        TargetTranslation importedTargetTranslation = TargetTranslation.open(newDir);
+        if(importedTargetTranslation != null) {
+            importedTargetTranslation.commitSync();
+        }
+        commitSync();
+
         Manifest importedManifest = Manifest.generate(newDir);
         Repo repo = getRepo();
 
@@ -1193,21 +1202,34 @@ public class TargetTranslation {
         MergeResult result = merge.call();
 
         // merge manifests
-        manifest.join(importedManifest.getJSONArray(FIELD_TRANSLATORS), FIELD_TRANSLATORS);
-        manifest.join(importedManifest.getJSONArray(FIELD_FINISHED_CHUNKS), FIELD_FINISHED_CHUNKS);
-        manifest.join(importedManifest.getJSONObject(FIELD_SOURCE_TRANSLATIONS), FIELD_SOURCE_TRANSLATIONS);
-
-        // add missing parent draft status
-        if((!manifest.has(FIELD_PARENT_DRAFT) || !Manifest.valueExists(manifest.getJSONObject(FIELD_PARENT_DRAFT), "resource_id"))
-            && importedManifest.has(FIELD_PARENT_DRAFT)) {
-            manifest.put(FIELD_PARENT_DRAFT, importedManifest.getJSONObject(FIELD_PARENT_DRAFT));
-        }
+        mergeManifests(manifest, importedManifest);
 
         if (result.getMergeStatus().equals(MergeResult.MergeStatus.CONFLICTING)) {
             System.out.println(result.getConflicts().toString());
             return false;
         }
         return true;
+    }
+
+    /**
+     * Merges two manifest files together
+     * @param original
+     * @param imported
+     * @return
+     */
+    public static Manifest mergeManifests(Manifest original, Manifest imported) {
+        // merge manifests
+        // TODO: 5/25/16 merge notes
+        original.join(imported.getJSONArray(FIELD_TRANSLATORS), FIELD_TRANSLATORS);
+        original.join(imported.getJSONArray(FIELD_FINISHED_CHUNKS), FIELD_FINISHED_CHUNKS);
+        original.join(imported.getJSONArray(FIELD_SOURCE_TRANSLATIONS), FIELD_SOURCE_TRANSLATIONS);
+
+        // add missing parent draft status
+        if((!original.has(FIELD_PARENT_DRAFT) || !Manifest.valueExists(original.getJSONObject(FIELD_PARENT_DRAFT), "resource_id"))
+                && imported.has(FIELD_PARENT_DRAFT)) {
+            original.put(FIELD_PARENT_DRAFT, imported.getJSONObject(FIELD_PARENT_DRAFT));
+        }
+        return original;
     }
 
     public enum PublishStatus {

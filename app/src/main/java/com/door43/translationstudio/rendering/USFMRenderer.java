@@ -30,6 +30,7 @@ public class USFMRenderer extends ClickableRenderingEngine {
 
     private Span.OnClickListener mNoteListener;
     private Span.OnClickListener mVerseListener;
+    private boolean mRenderLinebreaks = false;
     private boolean mRenderVerses = true;
     private int[] mExpectedVerseRange = new int[0];
     private boolean mSuppressLeadingMajorSectionHeadings = false;
@@ -57,6 +58,15 @@ public class USFMRenderer extends ClickableRenderingEngine {
      */
     public void setVersesEnabled(boolean enable) {
         mRenderVerses = enable;
+    }
+
+    /**
+     * if set to true, then line breaks will be shown in the output.
+     *
+     * @param enable default is false
+     */
+    public void setLinebreaksEnabled(boolean enable) {
+        mRenderLinebreaks = enable;
     }
 
     /**
@@ -90,7 +100,9 @@ public class USFMRenderer extends ClickableRenderingEngine {
         CharSequence out = in;
 
         out = trimWhitespace(out);
-//        out = renderLineBreaks(out);  // TODO: Eventually we may want to convert these to paragraphs.
+        if(!mRenderLinebreaks) {
+            out = renderLineBreaks(out);  // TODO: Eventually we may want to convert these to paragraphs.
+        }
 //        out = renderWhiteSpace(out);
         out = renderMajorSectionHeading(out);
         out = renderSectionHeading(out);
@@ -144,7 +156,7 @@ public class USFMRenderer extends ClickableRenderingEngine {
             lastIndex = matcher.end();
         }
         out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
-        return out;
+        return stripCarriageReturns(out);
     }
 
     /**
@@ -234,6 +246,26 @@ public class USFMRenderer extends ClickableRenderingEngine {
             lastIndex = matcher.end();
         }
         out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
+        return out;
+    }
+
+    /**
+     * Strips out new lines and replaces them with a single space
+     * @param in
+     * @return
+     */
+    public CharSequence stripCarriageReturns(CharSequence in) {
+        if((in == null) || (in.length() <= 0)) {
+            return in;
+        }
+
+        String remove = "\r";
+        String[] parts = in.toString().split(remove);
+        if( (parts == null) || (parts.length <= 1)) {
+            return in;
+        }
+
+        String out = TextUtils.join("",parts);
         return out;
     }
 
@@ -346,8 +378,8 @@ public class USFMRenderer extends ClickableRenderingEngine {
                     out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.end()));
                 }
             } else {
-                // exclude verse from display
-                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()));
+                // just display USFM for verse
+                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.end()));
             }
             lastIndex = matcher.end();
         }
