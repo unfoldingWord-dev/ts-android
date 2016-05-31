@@ -192,7 +192,7 @@ public class Manifest {
     /**
      * Saves the manifest to the disk
      */
-    private void save() {
+    public void save() {
         try {
             FileUtilities.writeStringToFile(mManifestFile, mManifest.toString());
         } catch (IOException e) {

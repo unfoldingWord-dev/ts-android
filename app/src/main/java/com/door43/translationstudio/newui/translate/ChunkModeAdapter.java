@@ -731,27 +731,6 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                 String translation = Translator.compileTranslation((Editable)s);
                 mTargetTranslation.applyFrameTranslation(frameTranslation, translation);
                 item.renderedTargetBody = renderText(translation, mTargetFormat);
-
-                // update view
-                // TRICKY: anything worth updating will need to change by at least 7 characters
-                // <a></a> <-- at least 7 characters are required to create a tag for rendering.
-                int minDeviation = 7;
-                if(count - before > minDeviation) {
-                    int scrollX = holder.mTargetBody.getScrollX();
-                    int scrollY = holder.mTargetBody.getScrollX();
-                    int selection = holder.mTargetBody.getSelectionStart();
-
-                    holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
-                    holder.mTargetBody.setText(TextUtils.concat(item.renderedTargetBody, "\n"));
-                    holder.mTargetBody.addTextChangedListener(holder.mTextWatcher);
-
-                    holder.mTargetBody.scrollTo(scrollX, scrollY);
-                    if(selection > holder.mTargetBody.length()) {
-                        selection = holder.mTargetBody.length();
-                    }
-                    holder.mTargetBody.setSelection(selection);
-                    holder.mTargetBody.clearFocus();
-                }
             }
 
             @Override

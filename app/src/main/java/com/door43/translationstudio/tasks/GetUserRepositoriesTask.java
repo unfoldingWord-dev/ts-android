@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Retrieves a list of target translations that have been backed up to the server
  */
-public class GetUserRepositories extends ManagedTask {
+public class GetUserRepositoriesTask extends ManagedTask {
     public static final String TASK_ID = "get_target_translation_backups";
     private List<Repository> repositories = new ArrayList<>();
 

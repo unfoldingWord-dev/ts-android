@@ -84,7 +84,6 @@ public class TargetLanguage implements Comparable {
         return null;
     }
 
-
     public LanguageDirection getDirection() {
         return direction;
     }

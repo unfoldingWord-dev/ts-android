@@ -30,6 +30,7 @@ public class USXRenderer extends ClickableRenderingEngine {
 
     private Span.OnClickListener mNoteListener;
     private Span.OnClickListener mVerseListener;
+    private boolean mRenderLinebreaks = false;
     private boolean mRenderVerses = true;
     private int[] mExpectedVerseRange = new int[0];
     private boolean mSuppressLeadingMajorSectionHeadings = false;
@@ -57,6 +58,15 @@ public class USXRenderer extends ClickableRenderingEngine {
      */
     public void setVersesEnabled(boolean enable) {
         mRenderVerses = enable;
+    }
+
+    /**
+     * if set to true, then line breaks will be shown in the output.
+     *
+     * @param enable default is false
+     */
+    public void setLinebreaksEnabled(boolean enable) {
+        mRenderLinebreaks = enable;
     }
 
     /**
@@ -90,9 +100,10 @@ public class USXRenderer extends ClickableRenderingEngine {
         CharSequence out = in;
 
         out = trimWhitespace(out);
-        out = renderLineBreaks(out);
-        // TODO: this will strip out new lines. Eventually we may want to convert these to paragraphs.
-        out = renderWhiteSpace(out);
+        if(!mRenderLinebreaks) {
+            out = renderLineBreaks(out);  // TODO: Eventually we may want to convert these to paragraphs.
+        }
+//        out = renderWhiteSpace(out);
         out = renderMajorSectionHeading(out);
         out = renderSectionHeading(out);
         out = renderParagraph(out);

@@ -19,14 +19,14 @@ android {
         applicationId "com.translationstudio.androidapp"
         minSdkVersion 15
         targetSdkVersion 23
-        versionCode 128
-        versionName "7.0"
+        versionCode 137
+        versionName "8.0"
         multiDexEnabled = true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     dexOptions {
         incremental true
-        javaMaxHeapSize "4g"
+        javaMaxHeapSize "5g"
     }
     buildTypes {
         release {
@@ -69,7 +69,7 @@ dependencies {
     compile 'org.apmem.tools:layouts:1.10'
     compile 'com.itextpdf:itextpdf:5.5.7'
     compile 'com.facebook.rebound:rebound:0.3.8'
-    compile 'org.unfoldingword.tools:gogs-client:1.3.4'
+    compile 'org.unfoldingword.tools:gogs-client:1.6.0'
     compile project(':html-textview')
     compile project(':com.door43.tools.reporting')
     compile project(':com.door43.tools.security')

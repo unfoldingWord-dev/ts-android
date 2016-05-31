@@ -79,6 +79,7 @@ public class LoginDoor43Task extends ManagedTask {
                 this.user = null;
                 Response response = api.getLastResponse();
                 Logger.w(LoginDoor43Task.class.getName(), "gogs api responded with " + response.code + ": " + response.toString(), response.exception);
+                return;
             }
 
             // set missing full_name

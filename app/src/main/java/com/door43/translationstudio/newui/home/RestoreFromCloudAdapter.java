@@ -118,6 +118,8 @@ public class RestoreFromCloudAdapter extends BaseAdapter {
                     Project p = library.getProject(projectSlug, Locale.getDefault().getLanguage());
                     if (p != null) {
                         projectName.setText(p.name);
+                    } else {
+                        projectName.setText(targetTranslationSlug);
                     }
                     TargetLanguage tl = library.getTargetLanguage(targetLanguageSlug);
                     if (tl != null) {
@@ -131,6 +133,7 @@ public class RestoreFromCloudAdapter extends BaseAdapter {
                     }
                 } catch (StringIndexOutOfBoundsException e) {
                     e.printStackTrace();
+                    projectName.setText(targetTranslationSlug);
                 }
             }
         }

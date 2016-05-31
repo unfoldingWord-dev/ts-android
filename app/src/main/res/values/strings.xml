@@ -349,6 +349,8 @@
     <string name="translate_first">Please provide a translation first</string>
     <string name="consecutive_verse_markers">Verse markers are placed too close to each other. Please verify marker positions.</string>
     <string name="outoforder_verse_markers">Verse markers are out of order</string>
+    <string name="outofrange_verse_marker">Verse marker is out of range</string>
+    <string name="duplicate_verse_marker">Duplicate verse marker</string>
     <string name="failed_to_commit_chunk">The chunk could not be saved</string>
     <string name="title_activity_publish">Publish Translation</string>
 
@@ -570,9 +572,28 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 </p>
 ]]>
     </string>
+    <string name="attribution" translatable="false">
+<![CDATA[
+<h2>unfoldingWord | Open Bible Stories</h2>
+<h2>an unrestricted visual mini-Bible in any language</h2>
+<p><a href="http://openbiblestories.com">http://openbiblestories.com</a></p>
+<p>Open Bible Stories, v. 4</p>
+<p>Created by Distant Shores Media (<a href="http://distantshores.org">http://distantshores.org</a>) and the Door43 world missions community (<a href="http://door43.org">http://door43.org</a>).</p>
+<p>
+Use of trademarks: unfoldingWord is a trademark of Distant Shores Media and may not be included on any derivative works created from this content.
+    Unaltered content from <a href="http://unfoldingword.org">http://unfoldingword.org</a> must include the <strong>unfoldingWord</strong> logo when distributed to others.
+    But if you alter the content in any way, you must remove the <strong>unfoldingWord</strong> logo before distributing your work.
+</p>
+<p>
+Attribution of artwork: All images used in these stories are © Sweet Publishing (<a href="https://sweetpublishing.com/">www.sweetpublishing.com</a>) and are made available
+    under a Creative Commons Attribution-Share Alike License (<a href="http://creativecommons.org/licenses/by-sa/3.0">http://creativecommons.org/licenses/by-sa/3.0</a>).
+</p>
+]]>
+    </string>
     <string name="action_download_updates">Download updates</string>
     <string name="list_may_be_outdated">The list may be out of date</string>
     <string name="label_import">Import</string>
+    <string name="label_import_restore">Import/Restore</string>
     <string name="import_from_online">Import from Online (requires internet)</string>
     <string name="automatic_backups">Automatic Backups</string>
     <string name="export_to_sd">Export to SD Card</string>
@@ -702,6 +723,82 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     <string name="review_conflicts">Review differences</string>
     <string name="keep_server_changes">Keep server changes</string>
     <string name="keep_local_changes">Keep my changes</string>
+    <string name="translation_name">translation name</string>
+    <string name="project_uploaded_to">Project successfully uploaded.\nYou can view it at:\n\n<xliff:g example="http:/test.com/test" id="destination_url">%1$s</xliff:g></string>
+    <string name="label_open">Open</string>
+    <string name="title_activity_import_usfm_language">Import USFM Project - Select Language</string>
+    <string name="title_activity_import_usfm_book">Import USFM Project - Select Book For: </string>
+    <string name="label_import_usfm">Import USFM</string>
+    <string name="import_usfm_success">USFM file Import Success</string>
+    <string name="import_usfm_failed">USFM file Import Failed</string>
+    <string name="title_import_usfm_error_book">Error Importing USFM book \'%s\'</string>
+    <string name="title_import_usfm_error">Error Importing USFM</string>
+    <string name="title_processing_usfm_summary">USFM Processing Summary</string>
+    <string name="title_import_usfm_results">USFM Import Results</string>
+    <string name="zip_read_error">Error reading Zip</string>
+    <string name="file_read_error">Error reading File</string>
+    <string name="file_write_error">Error writing File</string>
+    <string name="file_write_for_verse">Error writing verse %s</string>
+    <string name="file_read_error_detail">Error reading File \'%s\'</string>
+    <string name="missing_book_short_name">Missing book short name (\\id or \\toc3)</string>
+    <string name="missing_book_name">Missing book name (\\toc1)</string>
+    <string name="missing_language">Missing language</string>
+    <string name="no_section_no_verse">No section nor verse markers found</string>
+    <string name="no_verse">No verse markers found</string>
+    <string name="no_section_no_chunk">No sections found and no chunking breakdown list</string>
+    <string name="book_parse_error">Error parsing book</string>
+    <string name="error_reading_file">Error reading file: %s</string>
+    <string name="could_not_find_chapter">Could not find chapter: %s</string>
+    <string name="could_not_find_verses_in_chapter">No verses in range <xliff:g example="1" id="start_verse">%1$d</xliff:g> to <xliff:g example="2" id="end_verse">%2$d</xliff:g> in chapter: <xliff:g example="05" id="chapter">%3$s</xliff:g></string>
+    <string name="missing_verses_in_chapter">Missing <xliff:g example="2" id="verse_count">%1$d</xliff:g> verse(s) in range <xliff:g example="1" id="start_verse">%2$d</xliff:g> to <xliff:g example="2" id="end_verse">%3$d</xliff:g> in chapter: <xliff:g example="05" id="chapter">%4$s</xliff:g></string>
+    <string name="extra_verses_in_chapter">Extra <xliff:g example="2" id="verse_count">%1$d</xliff:g> verse(s) in range <xliff:g example="1" id="start_verse">%2$d</xliff:g> to <xliff:g example="2" id="end_verse">%3$d</xliff:g> in chapter: <xliff:g example="05" id="chapter">%4$s</xliff:g></string>
+    <string name="could_not_parse_chapter">Could not parse chapter: %s</string>
+    <string name="missing_chapter_n">Missing chapter %s - will try to recover</string>
+    <string name="duplicate_chapter">Duplicate chapter: %s</string>
+    <string name="chapter_out_of_order">Chapter out of order: \'<xliff:g example="4" id="found">%1$s</xliff:g>\' after \'<xliff:g example="2" id="previous">%1$s</xliff:g>\'</string>
+    <string name="missing_verses_in_section">No Verses in Section</string>
+    <string name="error_prefix">Error: %s</string>
+    <string name="no_error">No errors Found</string>
+    <string name="warning_prefix">Warning: %s</string>
+    <string name="found_book">Found book: %s</string>
+    <string name="importing_file">Importing: %s</string>
+    <string name="selected_language">Selected Language: %s</string>
+    <string name="initializing_import">Initializing Import</string>
+    <string name="finished_loading">Finished Loading Books</string>
+    <string name="processing_chapter">Processing Chapter: %s</string>
+    <string name="building_manifest">Building Manifest</string>
+    <string name="reading_usfm">Reading USFM</string>
+    <string name="importing_usfm">Importing USFM</string>
+    <string name="import_from_sd_usfm">Import USFM from SD Card</string>
+    <string name="invalid_book_name_prompt">\'<xliff:g example="Mark.usfm" id="file_name">%1$s</xliff:g>\'\nhas invalid book name: \'<xliff:g example="marc" id="book_name">%2$s</xliff:g>\'\nDo you wish to select a book name?</string>
+    <string name="missing_book_name_prompt">\'<xliff:g example="Mark.usfm" id="file_name">%1$s</xliff:g>\'\nis missing book name\nDo you wish to select a book name?</string>
+    <string name="could_not_parse">Could not parse \'<xliff:g example="Mark.usfm" id="file_name">%1$s</xliff:g>\'</string>
+    <string name="no_chunk_list">No chunk list found for \'<xliff:g example="marc" id="book_name">%1$s</xliff:g>\'</string>
+    <string name="chapter_count_invalid">Expected <xliff:g example="16" id="chunk_count">%1$s</xliff:g> chapters, but last chapter was <xliff:g example="15" id="chapter_count">%2$s</xliff:g></string>
+    <string name="no_chapter">No chapter found</string>
+    <string name="label_restore">Restore</string>
+    <string name="title_import_Success">Import Success</string>
+    <string name="title_import_Failed">Import Failed!</string>
+    <string name="import_project_success">Success Importing <xliff:g example="Mark" id="project">%1$s</xliff:g> from:\n<xliff:g example="/downloads/file.tx" id="path">%2$s</xliff:g></string>
+    <string name="table_of_contents">Table of Contents </string>
+    <string name="license_pdf">
+<![CDATA[
+<h2>License:</h2>
+<p>This work is made available under a Creative Commons Attribution-ShareAlike 4.0 International License (<a href="http://creativecommons.org/licenses/by-sa/4.0/" title="http://creativecommons.org/licenses/by-sa/4.0/" >http://creativecommons.org/licenses/by-sa/4.0/</a>).
+<br/>
+<br/>You are free to:
+<br/>
+<br/><b>&#8226; Share</b> - copy and redistribute the material in any medium or format
+<br/><b>&#8226; Adapt</b> - remix, transform, and build upon the material for any purpose, even commercially.
+<br/>
+<br/>Under the following conditions:
+<br/>
+<br/><b>&#8226; Attribution</b> - You must attribute the work as follows: “Original work available at <a href="http://unfoldingword.org" title="http://unfoldingword.org" >http://unfoldingword.org</a>”. Attribution statements in derivative works should not in any way suggest that we endorse you or your use of this work.
+<br/><b>&#8226; ShareAlike</b> - If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original.
+<br/>
+<br/><b>Use of trademarks:</b> unfoldingWord is a trademark of Distant Shores Media and may not be included on any derivative works created from this content. Unaltered content from <a href="http://unfoldingword.org" title="http://unfoldingword.org" >http://unfoldingword.org</a> must include the unfoldingWord logo when distributed to others. But if you alter the content in any way, you must remove the unfoldingWord logo before distributing your work.
+</p>]]>
+    </string>
     <string name="new_lang_question_n">New Language Questions - Page <xliff:g example="1" id="page_num">%1$d</xliff:g> of <xliff:g example="10" id="page_count">%2$d</xliff:g></string>
     <string name="new_lang_api_upload_failure_title">New Language Error</string>
     <string name="new_lang_api_upload_failure">We could not save the answers to the New Language Questionnaire.  We will try again the next time you</string>

@@ -15,6 +15,13 @@ public abstract class ClickableRenderingEngine extends RenderingEngine {
     public abstract void setVersesEnabled(boolean enable);
 
     /**
+     * if set to true, then line breaks will be shown in the output.
+     *
+     * @param enable default is false
+     */
+    public abstract void setLinebreaksEnabled(boolean enable);
+
+    /**
      * Specifies an inclusive range of verses expected in the input.
      * If a verse is not found it will be inserted at the front of the input.
      * @param verseRange

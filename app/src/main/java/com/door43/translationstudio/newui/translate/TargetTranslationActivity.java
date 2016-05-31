@@ -84,7 +84,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             String[] slugs = mTargetTranslation.getSourceTranslations();
             for (String slug : slugs) {
                 SourceTranslation sourceTranslation = AppContext.getLibrary().getSourceTranslation(slug);
-                AppContext.addOpenSourceTranslation(mTargetTranslation.getId(), sourceTranslation.getId());
+                if(sourceTranslation != null) {
+                    AppContext.addOpenSourceTranslation(mTargetTranslation.getId(), sourceTranslation.getId());
+                }
             }
         }
 

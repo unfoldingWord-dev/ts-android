@@ -31,14 +31,23 @@ public class Library {
     private final Indexer mAppIndex;
     public static String DATABASE_NAME = "app";
     private final Context mContext;
+    private final File mAssetsDir;
     private Downloader mDownloader;
     private static IndexerSQLiteHelper appIndexHelper;
 
-    public Library(Context context, String rootApiUrl) throws IOException {
+    /**
+     *
+     * @param context
+     * @param rootApiUrl the api url
+     * @param assetsDir the directory where binary assets are stored such as images from the api
+     * @throws IOException
+     */
+    public Library(Context context, String rootApiUrl, File assetsDir) throws IOException {
         initalizeHelpers(context);
         mContext = context;
         mAppIndex = new Indexer(context, DATABASE_NAME, appIndexHelper);
         mDownloader = new Downloader(rootApiUrl);
+        mAssetsDir = assetsDir;
     }
 
     /**
@@ -70,7 +79,7 @@ public class Library {
      * @return
      */
     public File getImagesDir() {
-        File file = new File(mContext.getFilesDir(), IMAGES_DIR);
+        File file = new File(mAssetsDir, IMAGES_DIR);
         file.mkdirs();
         return file;
     }
@@ -317,7 +326,7 @@ public class Library {
     public Boolean downloadImages(OnProgressListener listener) {
         boolean success = mDownloader.downloadImages(listener);
         if(!success) {
-            FileUtils.deleteQuietly(AppContext.getLibrary().getImagesDir());
+            FileUtils.deleteQuietly(getImagesDir());
         }
         return success;
     }
@@ -329,8 +338,8 @@ public class Library {
      * statement as to the freshness of the information downloaded.</p>
      * @return true if the download is complete
      */
-    public boolean imagesPresent() {
-        String[] names =  AppContext.getLibrary().getImagesDir().list(new FilenameFilter() {
+    public boolean hasImages() {
+        String[] names =  getImagesDir().list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
                 return !new File(dir, filename).isDirectory();

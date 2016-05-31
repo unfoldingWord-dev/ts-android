@@ -2,9 +2,6 @@ package com.door43.translationstudio;
 
 import android.test.InstrumentationTestCase;
 
-import com.door43.translationstudio.MainApplication;
-import com.door43.translationstudio.R;
-import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.NativeSpeaker;
 import com.door43.translationstudio.core.Resource;
@@ -14,7 +11,6 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.AppContext;
 
 import org.apache.commons.io.FileUtils;
 
@@ -37,14 +33,14 @@ public class TranslatorTest extends InstrumentationTestCase {
         mTranslator = new Translator(app, null, mTranslatorDir);
         String server = app.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, app.getResources().getString(R.string.pref_default_media_server));
         rootApiUrl = server + app.getResources().getString(R.string.root_catalog_api);
-        library = new Library(app, rootApiUrl);
+        library = new Library(app, rootApiUrl, null);
     }
 
     public void test01Clean() throws Exception {
         library.delete();
         FileUtils.deleteQuietly(mTranslatorDir);
         AppContext.deployDefaultLibrary();
-        library = new Library(app, rootApiUrl);
+        library = new Library(app, rootApiUrl, null);
         assertTrue(library.exists());
     }
 
