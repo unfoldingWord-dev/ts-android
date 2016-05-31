@@ -22,6 +22,9 @@ import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.ProfileActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.TargetLanguageUtility;
+
+import com.door43.translationstudio.core.ArchiveDetails;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetLanguage;
@@ -457,7 +460,7 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
     public void onItemClick(TargetTranslation targetTranslation) {
         // validate project (make sure it was downloaded)
         Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
-        TargetLanguage targetLanguage = AppContext.getLibrary().getTargetLanguage(targetTranslation.getTargetLanguageId());
+        TargetLanguage targetLanguage = TargetLanguageUtility.getTargetLanguageWithFallback(targetTranslation.getTargetLanguageId(), targetTranslation.getId());
 
         if(project == null || targetLanguage == null || !AppContext.getLibrary().projectHasSource(project.getId())) {
             Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.missing_project, Snackbar.LENGTH_LONG);
