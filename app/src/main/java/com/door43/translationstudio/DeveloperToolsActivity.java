@@ -20,7 +20,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.core.ImportUsfm;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceTranslation;
@@ -28,8 +27,7 @@ import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.dialogs.ErrorLogDialog;
 import com.door43.translationstudio.newui.BaseActivity;
-import com.door43.translationstudio.newui.ImportUsfmActivity;
-import com.door43.translationstudio.tasks.GetLibraryUpdatesTask;
+import com.door43.translationstudio.tasks.CheckForLibraryUpdatesTask;
 import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
 import com.door43.translationstudio.util.ToolAdapter;
 import com.door43.translationstudio.util.ToolItem;
@@ -39,11 +37,8 @@ import com.door43.util.tasks.TaskManager;
 import com.door43.util.tasks.ThreadableUI;
 import com.door43.widget.ViewUtil;
 
-import org.apache.commons.io.IOUtils;
-
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 
@@ -195,10 +190,10 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                             @Override
                             public void onClick(View v) {
                                 // create new prep task
-                                GetLibraryUpdatesTask task = new GetLibraryUpdatesTask();
+                                CheckForLibraryUpdatesTask task = new CheckForLibraryUpdatesTask();
                                 task.addOnProgressListener(DeveloperToolsActivity.this);
                                 task.addOnFinishedListener(DeveloperToolsActivity.this);
-                                TaskManager.addTask(task, GetLibraryUpdatesTask.TASK_ID);
+                                TaskManager.addTask(task, CheckForLibraryUpdatesTask.TASK_ID);
                             }
                         })
                         .setNegativeButton(R.string.no, null)
@@ -257,7 +252,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                 AppContext.getLibrary().manuallyInjectChunkMarkerCatalogUrl();
 
                 // run update check to index the chunk markers
-                GetLibraryUpdatesTask task = new GetLibraryUpdatesTask();
+                CheckForLibraryUpdatesTask task = new CheckForLibraryUpdatesTask();
                 task.addOnProgressListener(DeveloperToolsActivity.this);
                 task.addOnFinishedListener(DeveloperToolsActivity.this);
                 TaskManager.addTask(task, INDEX_CHUNK_MARKERS_TASK_ID);
@@ -272,7 +267,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
 //                        // manually inject chunk marker details into db
 //
 //                        // run update check to index the chunk markers
-//                        GetLibraryUpdatesTask task = new GetLibraryUpdatesTask();
+//                        CheckForLibraryUpdatesTask task = new CheckForLibraryUpdatesTask();
 //                        task.addOnProgressListener(DeveloperToolsActivity.this);
 //                        task.addOnFinishedListener(DeveloperToolsActivity.this);
 //                        TaskManager.addTask(task, "just_check_for_updates");
@@ -373,9 +368,9 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
      */
     public void connectDownloadAllTask() {
         DownloadAllProjectsTask downloadAllTask = (DownloadAllProjectsTask)TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
-        GetLibraryUpdatesTask getUpdatesTask = (GetLibraryUpdatesTask)TaskManager.getTask(GetLibraryUpdatesTask.TASK_ID);
+        CheckForLibraryUpdatesTask getUpdatesTask = (CheckForLibraryUpdatesTask)TaskManager.getTask(CheckForLibraryUpdatesTask.TASK_ID);
         if(getUpdatesTask == null) {
-            getUpdatesTask = (GetLibraryUpdatesTask)TaskManager.getTask(INDEX_CHUNK_MARKERS_TASK_ID);
+            getUpdatesTask = (CheckForLibraryUpdatesTask)TaskManager.getTask(INDEX_CHUNK_MARKERS_TASK_ID);
         }
 
         if(downloadAllTask != null) {
@@ -392,7 +387,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
     public void onFinished(final ManagedTask task) {
         TaskManager.clearTask(task);
 
-        if(task instanceof GetLibraryUpdatesTask) {
+        if(task instanceof CheckForLibraryUpdatesTask) {
             if(task.getTaskId().equals(INDEX_CHUNK_MARKERS_TASK_ID)) {
                 if(mDownloadProgressDialog != null && mDownloadProgressDialog.isShowing()) {
                     mDownloadProgressDialog.dismiss();
@@ -464,7 +459,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                         mDownloadProgressDialog.setCanceledOnTouchOutside(false);
 //                        mProgressDialog.setOnCancelListener(ServerLibraryActivity.this);
                         mDownloadProgressDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
-                        if(task instanceof GetLibraryUpdatesTask) {
+                        if(task instanceof CheckForLibraryUpdatesTask) {
                             mDownloadProgressDialog.setTitle(getResources().getString(R.string.checking_for_updates));
                         } else if(task instanceof DownloadAllProjectsTask) {
                             mDownloadProgressDialog.setTitle(getResources().getString(R.string.downloading));

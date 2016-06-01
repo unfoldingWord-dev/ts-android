@@ -191,6 +191,17 @@ public class Library {
     }
 
     /**
+     * Downloads the new language questionnaire from the server
+     * @return
+     */
+    public boolean downloadNewLanguageQuestionnaire() {
+        mAppIndex.beginTransaction();
+        boolean success = mDownloader.downloadNewLanguageQuestionnaire(mAppIndex);
+        mAppIndex.endTransaction(success);
+        return success;
+    }
+
+    /**
      * Returns an array of chunk markers for the project
      * @param projectSlug
      * @return

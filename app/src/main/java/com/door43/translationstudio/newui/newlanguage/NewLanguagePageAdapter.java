@@ -155,7 +155,7 @@ public class NewLanguagePageAdapter extends BaseAdapter {
      */
     private boolean hasDependencies(long id) {
         for (NewLanguageQuestion question : mQuestions) {
-            if(question.conditionalID == id) {
+            if(question.reliantQuestionId == id) {
                 return true;
             }
         }
@@ -177,7 +177,7 @@ public class NewLanguagePageAdapter extends BaseAdapter {
      * @return
      */
     protected boolean shouldEnable(NewLanguageQuestion item) {
-        long dependencyID = item.conditionalID;
+        long dependencyID = item.reliantQuestionId;
         NewLanguageQuestion dependency =  getQuestionByID(dependencyID);
         return NewLanguagePackage.isDependencyMet(dependency);
     }

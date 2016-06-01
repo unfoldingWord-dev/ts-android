@@ -410,6 +410,46 @@ CREATE TABLE `resource__translation_academy_volume` (
   FOREIGN KEY (translation_academy_volume_id) REFERENCES `translation_academy_volume` (`id`) ON DELETE CASCADE
 );
 
+
+-- ---
+-- Table 'new_target_language_questionnaire'
+--
+-- ---
+
+DROP TABLE IF EXISTS `new_target_language_questionnaire`;
+
+CREATE TABLE `new_target_language_questionnaire` (
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  `questionnaire_td_id` INTEGER NOT NULL,
+  `language_slug` TEXT NOT NULL,
+  `language_name` TEXT NOT NULL,
+  `language_direction` TEXT NOT NULL,
+  UNIQUE (`questionnaire_td_id`)
+);
+
+
+-- ---
+-- Table 'new_target_language_question'
+--
+-- ---
+
+DROP TABLE IF EXISTS `new_target_language_question`;
+
+CREATE TABLE `new_target_language_question` (
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  `new_target_language_questionnaire_id` INTEGER NOT NULL,
+  `question_td_id` INTEGER NOT NULL,
+  `text` TEXT NOT NULL,
+  `help` TEXT NOT NULL,
+  `is_required` INTEGER NOT NULL DEFAULT 0,
+  `input_type` TEXT NOT NULL,
+  `sort` INTEGER NOT NULL DEFAULT 0,
+  `depends_on` INTEGER DEFAULT NULL,
+  UNIQUE (`question_td_id`, `new_target_language_questionnaire_id`),
+  FOREIGN KEY (new_target_language_questionnaire_id) REFERENCES `new_target_language_questionnaire` (`id`) ON DELETE CASCADE
+);
+
+
 -- ---
 -- Indexes
 -- ---

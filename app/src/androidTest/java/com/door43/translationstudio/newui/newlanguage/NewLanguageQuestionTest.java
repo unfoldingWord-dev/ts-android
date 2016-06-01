@@ -6,9 +6,6 @@ import com.door43.translationstudio.core.NewLanguageQuestion;
 
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created by blm on 5/2/16.
  */
@@ -64,7 +61,7 @@ public class NewLanguageQuestionTest  extends InstrumentationTestCase {
         assertEquals("required", expected.required, actual.required);
         assertEquals("type", expected.type, actual.type);
         assertEquals("query", expected.query, actual.query);
-        assertEquals("conditionalID", expected.conditionalID, actual.conditionalID);
+        assertEquals("reliantQuestionId", expected.reliantQuestionId, actual.reliantQuestionId);
     }
 
 }

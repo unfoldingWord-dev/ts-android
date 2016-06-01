@@ -328,4 +328,18 @@ public class Downloader {
         }
         return false;
     }
+
+    /**
+     * Downloads the new language questionnaire from the server
+     * @param targetIndex
+     * @return
+     */
+    public boolean downloadNewLanguageQuestionnaire(Indexer targetIndex) {
+        // TODO: 10/19/2015 don't hardcode the url
+        String catalog = request("http://td.unfoldingword.org/api/questionnaire");
+        if(catalog != null) {
+            return targetIndex.indexNewLanguageQuestionnaire(catalog);
+        }
+        return false;
+    }
 }

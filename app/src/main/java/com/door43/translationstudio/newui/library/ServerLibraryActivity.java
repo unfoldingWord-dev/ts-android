@@ -1,6 +1,5 @@
 package com.door43.translationstudio.newui.library;
 
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
@@ -24,9 +23,9 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BaseActivity;
+import com.door43.translationstudio.tasks.CheckForLibraryUpdatesTask;
 import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
 import com.door43.translationstudio.tasks.DownloadUpdatesTask;
-import com.door43.translationstudio.tasks.GetLibraryUpdatesTask;
 import com.door43.translationstudio.AppContext;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
@@ -74,10 +73,10 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
 
         if(savedInstanceState == null) {
             // check for available updates
-            GetLibraryUpdatesTask getUpdatesTask = new GetLibraryUpdatesTask();
+            CheckForLibraryUpdatesTask getUpdatesTask = new CheckForLibraryUpdatesTask();
             getUpdatesTask.addOnFinishedListener(this);
             getUpdatesTask.addOnProgressListener(this);
-            TaskManager.addTask(getUpdatesTask, GetLibraryUpdatesTask.TASK_ID);
+            TaskManager.addTask(getUpdatesTask, CheckForLibraryUpdatesTask.TASK_ID);
         } else {
             // populated cached data
             Library serverLibrary = AppContext.getLibrary();
@@ -87,7 +86,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
             // connect to tasks
             DownloadAllProjectsTask downloadAllTask = (DownloadAllProjectsTask)TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
             DownloadUpdatesTask downloadUpdatesTask = (DownloadUpdatesTask)TaskManager.getTask(DownloadUpdatesTask.TASK_ID);
-            GetLibraryUpdatesTask getUpdatesTask = (GetLibraryUpdatesTask)TaskManager.getTask(GetLibraryUpdatesTask.TASK_ID);
+            CheckForLibraryUpdatesTask getUpdatesTask = (CheckForLibraryUpdatesTask)TaskManager.getTask(CheckForLibraryUpdatesTask.TASK_ID);
             if(downloadAllTask != null) {
                 downloadAllTask.addOnProgressListener(this);
                 downloadAllTask.addOnFinishedListener(this);
@@ -284,7 +283,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
             downloadUpdatesTask.removeOnFinishedListener(this);
             downloadUpdatesTask.removeOnProgressListener(this);
         }
-        GetLibraryUpdatesTask getLibraryUpdatesTask = (GetLibraryUpdatesTask)TaskManager.getTask(GetLibraryUpdatesTask.TASK_ID);
+        CheckForLibraryUpdatesTask getLibraryUpdatesTask = (CheckForLibraryUpdatesTask)TaskManager.getTask(CheckForLibraryUpdatesTask.TASK_ID);
         if(getLibraryUpdatesTask != null) {
             getLibraryUpdatesTask.removeOnFinishedListener(this);
             getLibraryUpdatesTask.removeOnProgressListener(this);
@@ -371,7 +370,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                         mProgressDialog.setCanceledOnTouchOutside(false);
                         mProgressDialog.setOnCancelListener(ServerLibraryActivity.this);
                         mProgressDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
-                        if(task instanceof GetLibraryUpdatesTask) {
+                        if(task instanceof CheckForLibraryUpdatesTask) {
                             mProgressDialog.setTitle(getResources().getString(R.string.checking_for_updates));
                         } else if(task instanceof DownloadAllProjectsTask) {
                             mProgressDialog.setTitle(getResources().getString(R.string.downloading));
@@ -421,7 +420,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
         if(downloadUpdatesTask != null) {
             TaskManager.cancelTask(downloadUpdatesTask);
         }
-        GetLibraryUpdatesTask getLibraryUpdatesTask = (GetLibraryUpdatesTask) TaskManager.getTask(GetLibraryUpdatesTask.TASK_ID);
+        CheckForLibraryUpdatesTask getLibraryUpdatesTask = (CheckForLibraryUpdatesTask) TaskManager.getTask(CheckForLibraryUpdatesTask.TASK_ID);
         if(getLibraryUpdatesTask != null) {
             TaskManager.cancelTask(getLibraryUpdatesTask);
             // warn user they may not see all the available updates

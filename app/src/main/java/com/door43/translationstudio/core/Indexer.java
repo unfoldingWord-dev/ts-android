@@ -458,6 +458,44 @@ public class Indexer {
     }
 
     /**
+     * Builds an index of all the new language questionnaires
+     * @param catalog
+     * @return
+     */
+    public boolean indexNewLanguageQuestionnaire(String catalog) {
+        JSONArray items;
+        try {
+            JSONObject json = new JSONObject(catalog);
+            items = json.getJSONArray("languages");
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        for (int i = 0; i < items.length(); i ++) {
+            try {
+                JSONObject item = items.getJSONObject(i);
+                NewLanguageQuestionnaire questionnaire = NewLanguageQuestionnaire.generate(item);
+                if(questionnaire != null) {
+                    long dbId = mDatabaseHelper.addNewLanguageQuestionnaire(mDatabase, questionnaire.door43Id, questionnaire.languageSlug, questionnaire.languageName, questionnaire.languageDirection);
+                    JSONArray questionsJson = item.getJSONArray("questions");
+                    for(int j = 0; j < questionsJson.length(); j ++) {
+                        JSONObject questionJson = questionsJson.getJSONObject(j);
+                        NewLanguageQuestion question = NewLanguageQuestion.generate(questionJson);
+                        if(question != null) {
+                            mDatabaseHelper.addNewLanguageQuestion(mDatabase, question.id, question.question, question.helpText, question.type, question.required, question.reliantQuestionId);
+                        }
+                        mDatabase.yieldIfContendedSafely();
+                    }
+                }
+                mDatabase.yieldIfContendedSafely();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
      * Builds a notes index from json
      *
      * @param sourceTranslation

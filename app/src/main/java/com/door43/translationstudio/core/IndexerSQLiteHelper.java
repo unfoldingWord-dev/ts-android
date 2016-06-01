@@ -19,7 +19,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
 
     // TRICKY: when you bump the db version you should run the library tests to generate a new index.
     // Note that the extract test will fail.
-    private static final int DATABASE_VERSION = 5;
+    private static final int DATABASE_VERSION = 6;
     private final String databaseName;
     private final String schema;
 
@@ -126,6 +126,35 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
                     "  `first_verse_slug` TEXT NOT NULL," +
                     "  UNIQUE (`project_id`, 'chapter_slug', 'first_verse_slug')," +
                     "  FOREIGN KEY (project_id) REFERENCES `project` (`id`) ON DELETE CASCADE" +
+                    ");");
+
+            db.setTransactionSuccessful();
+            db.endTransaction();
+        }
+        if(oldVersion < 6) {
+            db.beginTransaction();
+
+            // add tables for the new target language questionnaire
+            db.execSQL("CREATE TABLE `new_target_language_questionnaire` (\n" +
+                    "  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n" +
+                    "  `questionnaire_td_id` INTEGER NOT NULL,\n" +
+                    "  `language_slug` TEXT NOT NULL,\n" +
+                    "  `language_name` TEXT NOT NULL,\n" +
+                    "  `language_direction` TEXT NOT NULL,\n" +
+                    "  UNIQUE (`questionnaire_td_id`)\n" +
+                    ");");
+            db.execSQL("CREATE TABLE `new_target_language_question` (\n" +
+                    "  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n" +
+                    "  `new_target_language_questionnaire_id` INTEGER NOT NULL,\n" +
+                    "  `question_td_id` INTEGER NOT NULL,\n" +
+                    "  `text` TEXT NOT NULL,\n" +
+                    "  `help` TEXT NOT NULL,\n" +
+                    "  `is_required` INTEGER NOT NULL DEFAULT 0,\n" +
+                    "  `input_type` TEXT NOT NULL,\n" +
+                    "  `sort` INTEGER NOT NULL DEFAULT 0,\n" +
+                    "  `depends_on` INTEGER DEFAULT NULL,\n" +
+                    "  UNIQUE (`question_td_id`, `new_target_language_questionnaire_id`),\n" +
+                    "  FOREIGN KEY (new_target_language_questionnaire_id) REFERENCES `new_target_language_questionnaire` (`id`) ON DELETE CASCADE\n" +
                     ");");
 
             db.setTransactionSuccessful();
@@ -2193,5 +2222,51 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         }
         cursor.close();
         return chunkMarkers.toArray(new ChunkMarker[chunkMarkers.size()]);
+    }
+
+    /**
+     * Returns an array of new target language questionnaires
+     * @param db
+     * @return
+     */
+    public NewLanguageQuestionnaire[] getNewLanguageQuestionnaires(SQLiteDatabase db) {
+        List<NewLanguageQuestionnaire> questionnaires = new ArrayList<>();
+        Cursor cursor = db.rawQuery("SELECT `id`, `questionnaire_td_id`, `language_slug`, `language_name`, `language_direction` FROM `new_target_language_questionnaire`", null);
+        cursor.moveToFirst();
+        while(!cursor.isAfterLast()) {
+            questionnaires.add(new NewLanguageQuestionnaire(cursor.getLong(0), cursor.getInt(1), cursor.getString(2), cursor.getString(3), cursor.getString(4)));
+        }
+        cursor.close();
+
+        for(NewLanguageQuestionnaire q:questionnaires) {
+            q.loadQuestions(getNewLanguageQuestions(db, q.dbId));
+        }
+
+        return questionnaires.toArray(new NewLanguageQuestionnaire[questionnaires.size()]);
+    }
+
+    /**
+     * Returns an array of new target language questions for the questionnaire
+     * @param db
+     * @param questionnaireId
+     * @return
+     */
+    private NewLanguageQuestion[] getNewLanguageQuestions(SQLiteDatabase db, long questionnaireId) {
+        List<NewLanguageQuestion> questions = new ArrayList<>();
+        Cursor cursor = db.rawQuery("SELECT `question_td_id`, `text`, `help`, `input_type`,"
+                + " `is_required`, `depends_on`"
+                + " FROM `new_target_language_question`"
+                + " WHERE `new_target_language_questionnaire_id`=" + questionnaireId
+                + " ORDER BY `sort` ASC", null);
+        cursor.moveToFirst();
+        while(!cursor.isAfterLast()) {
+            questions.add(new NewLanguageQuestion(cursor.getInt(0), cursor.getString(1),
+                    cursor.getString(2), "",
+                    NewLanguageQuestion.QuestionType.get(cursor.getString(3)),
+                    cursor.getInt(4) == 1, "", cursor.getInt(5)));
+        }
+        cursor.close();
+
+        return questions.toArray(new NewLanguageQuestion[questions.size()]);
     }
 }

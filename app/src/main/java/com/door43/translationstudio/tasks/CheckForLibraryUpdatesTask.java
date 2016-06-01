@@ -8,7 +8,7 @@ import com.door43.util.tasks.ManagedTask;
 /**
  * Gets a list of projects that are available for download from the server
  */
-public class GetLibraryUpdatesTask extends ManagedTask {
+public class CheckForLibraryUpdatesTask extends ManagedTask {
     public static final String TASK_ID  = "get_available_source_translations_task";
     private int mMaxProgress = 100;
     private LibraryUpdates mUpdates = null;
@@ -39,6 +39,8 @@ public class GetLibraryUpdatesTask extends ManagedTask {
         }
         // make sure we have the most recent target languages
         library.downloadTargetLanguages();
+        // make sure we have the most recent new target language questionnaire
+        library.downloadNewLanguageQuestionnaire();
     }
 
     @Override

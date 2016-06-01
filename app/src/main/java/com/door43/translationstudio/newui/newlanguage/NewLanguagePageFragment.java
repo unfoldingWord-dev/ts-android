@@ -168,8 +168,8 @@ public class NewLanguagePageFragment extends BaseFragment {
      * @return
      */
     private boolean shouldHaveAnswer( NewLanguageQuestion question) {
-        if (question.conditionalID >= 0) {
-            NewLanguageQuestion conditionalQuestion = getQuestionPositionByID(mQuestions,mQuestionIndex,question.conditionalID);
+        if (question.reliantQuestionId >= 0) {
+            NewLanguageQuestion conditionalQuestion = getQuestionPositionByID(mQuestions,mQuestionIndex,question.reliantQuestionId);
             if(conditionalQuestion != null) {
                 if (conditionalQuestion.type == NewLanguageQuestion.QuestionType.INPUT_TYPE_BOOLEAN) {
                     return conditionalQuestion.isBooleanAnswerTrue();

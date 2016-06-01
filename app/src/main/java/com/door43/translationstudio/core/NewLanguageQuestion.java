@@ -32,7 +32,7 @@ public class NewLanguageQuestion {
     public boolean required;
     public QuestionType type;
     public String query;
-    public long conditionalID = NO_DEPENDENCY;
+    public long reliantQuestionId = NO_DEPENDENCY;
 
     /**
      * constructor
@@ -43,18 +43,18 @@ public class NewLanguageQuestion {
      * @param type
      * @param required
      * @param query
-     * @param conditionalID
+     * @param reliantQuestionId
      */
     public NewLanguageQuestion(long id, String question, String helpText, String answer,
                                QuestionType type, boolean required, String query,
-                               long conditionalID) {
+                               long reliantQuestionId) {
         this.id = id;
         this.question = question;
         this.helpText = helpText;
         this.answer = answer;
         this.required = required;
         this.type = type;
-        this.conditionalID = conditionalID;
+        this.reliantQuestionId = reliantQuestionId;
         this.query = query;
     }
 
@@ -137,7 +137,7 @@ public class NewLanguageQuestion {
             }
             results.put(REQUIRED_KEY, required);
             results.put(INPUT_TYPE_KEY, type.toString());
-            results.put(CONDITIONAL_ID_KEY, conditionalID);
+            results.put(CONDITIONAL_ID_KEY, reliantQuestionId);
             results.put(QUERY_KEY, query);
             return results;
         } catch (Exception e) {
