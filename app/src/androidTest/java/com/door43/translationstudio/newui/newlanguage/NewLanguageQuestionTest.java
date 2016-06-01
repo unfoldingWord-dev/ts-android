@@ -14,42 +14,38 @@ public class NewLanguageQuestionTest  extends InstrumentationTestCase {
     public void test01ToJson()  {
         //given
         boolean required = true;
-        NewLanguageQuestion.QuestionType type = NewLanguageQuestion.QuestionType.INPUT_TYPE_BOOLEAN;
-        long conditionalID = NewLanguageQuestion.NO_DEPENDENCY;
+        NewLanguageQuestion.InputType type = NewLanguageQuestion.InputType.Boolean;
+        long conditionalID = -1;
         String questionText = "QQ";
         String hintText = "HH";
-        String answerText = "AA";
         int id = 111;
-        String query = "query";
-        NewLanguageQuestion question = new NewLanguageQuestion(id, questionText, hintText, answerText,
-                type, required, query, conditionalID);
+        NewLanguageQuestion question = new NewLanguageQuestion(id, questionText, hintText,
+                type, required, conditionalID, 0);
 
         //when
         JSONObject json = question.toJson();
 
         //then
-        NewLanguageQuestion actual = NewLanguageQuestion.parse(json);
+        NewLanguageQuestion actual = NewLanguageQuestion.generate(json);
         assertQuestionsEqual(question, actual);
     }
 
     public void test02ToJson()  {
         //given
         boolean required = false;
-        NewLanguageQuestion.QuestionType type = NewLanguageQuestion.QuestionType.INPUT_TYPE_STRING;
+        NewLanguageQuestion.InputType type = NewLanguageQuestion.InputType.String;
         long conditionalID = 15;
         String questionText = "Q";
         String hintText = "H";
-        String answerText = "A";
         int id = 11111;
-        String query = "query2";
-        NewLanguageQuestion question = new NewLanguageQuestion(id, questionText, hintText, answerText,
-                type, required, query, conditionalID);
+        NewLanguageQuestion question = new NewLanguageQuestion(id, questionText, hintText,
+                type, required, conditionalID, 0);
 
         //when
         JSONObject json = question.toJson();
 
         //then
-        NewLanguageQuestion actual = NewLanguageQuestion.parse(json);
+        NewLanguageQuestion actual = NewLanguageQuestion.generate(json);
         assertQuestionsEqual(question, actual);
     }
 
@@ -57,10 +53,9 @@ public class NewLanguageQuestionTest  extends InstrumentationTestCase {
         assertEquals("id", expected.id, actual.id);
         assertEquals("question", expected.question, actual.question);
         assertEquals("helpText", expected.helpText, actual.helpText);
-        assertEquals("answer", expected.answer, actual.answer);
+//        assertEquals("answer", expected.answer, actual.answer);
         assertEquals("required", expected.required, actual.required);
         assertEquals("type", expected.type, actual.type);
-        assertEquals("query", expected.query, actual.query);
         assertEquals("reliantQuestionId", expected.reliantQuestionId, actual.reliantQuestionId);
     }
 

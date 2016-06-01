@@ -477,13 +477,13 @@ public class Indexer {
                 JSONObject item = items.getJSONObject(i);
                 NewLanguageQuestionnaire questionnaire = NewLanguageQuestionnaire.generate(item);
                 if(questionnaire != null) {
-                    long dbId = mDatabaseHelper.addNewLanguageQuestionnaire(mDatabase, questionnaire.door43Id, questionnaire.languageSlug, questionnaire.languageName, questionnaire.languageDirection);
+                    long questionnaireDBId = mDatabaseHelper.addNewLanguageQuestionnaire(mDatabase, questionnaire.door43Id, questionnaire.languageSlug, questionnaire.languageName, questionnaire.languageDirection);
                     JSONArray questionsJson = item.getJSONArray("questions");
                     for(int j = 0; j < questionsJson.length(); j ++) {
                         JSONObject questionJson = questionsJson.getJSONObject(j);
                         NewLanguageQuestion question = NewLanguageQuestion.generate(questionJson);
                         if(question != null) {
-                            mDatabaseHelper.addNewLanguageQuestion(mDatabase, question.id, question.question, question.helpText, question.type, question.required, question.reliantQuestionId);
+                            mDatabaseHelper.addNewLanguageQuestion(mDatabase, questionnaireDBId, question.id, question.question, question.helpText, question.type, question.required, question.sort, question.reliantQuestionId);
                         }
                         mDatabase.yieldIfContendedSafely();
                     }
@@ -493,6 +493,7 @@ public class Indexer {
                 e.printStackTrace();
             }
         }
+        return true;
     }
 
     /**
@@ -1355,5 +1356,17 @@ public class Indexer {
      */
     public ChunkMarker[] getChunkMarkers(String projectSlug) {
         return mDatabaseHelper.getChunkMarkers(mDatabase, projectSlug);
+    }
+
+    /**
+     * Returns an array of new language questionnaires
+     * @return
+     */
+    public NewLanguageQuestionnaire[] getNewLanguageQuestionnaire() {
+        return mDatabaseHelper.getNewLanguageQuestionnaires(mDatabase);
+    }
+
+    public void deleteNewLanguageQuestionnaires() {
+        mDatabaseHelper.deleteNewLanguageQuestionnaires(mDatabase);
     }
 }

@@ -171,10 +171,10 @@ public class NewLanguagePageFragment extends BaseFragment {
         if (question.reliantQuestionId >= 0) {
             NewLanguageQuestion conditionalQuestion = getQuestionPositionByID(mQuestions,mQuestionIndex,question.reliantQuestionId);
             if(conditionalQuestion != null) {
-                if (conditionalQuestion.type == NewLanguageQuestion.QuestionType.INPUT_TYPE_BOOLEAN) {
+                if (conditionalQuestion.type == NewLanguageQuestion.InputType.Boolean) {
                     return conditionalQuestion.isBooleanAnswerTrue();
                 } else {
-                    return conditionalQuestion.answer != null; // should have answer if question it depends on has answer
+                    return false; //return conditionalQuestion.answer != null; // should have answer if question it depends on has answer
                 }
             }
         }
@@ -232,13 +232,14 @@ public class NewLanguagePageFragment extends BaseFragment {
      * @return
      */
     private boolean hasAnswer(NewLanguageQuestion question) {
-        if(null == question.answer) {
-            return false;
-        }
-        if(question.answer.isEmpty()) {
-            return false;
-        }
         return true;
+//        if(null == question.answer) {
+//            return false;
+//        }
+//        if(question.answer.isEmpty()) {
+//            return false;
+//        }
+//        return true;
     }
 
     /***

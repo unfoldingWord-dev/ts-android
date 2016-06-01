@@ -54,10 +54,10 @@ public class NewLanguagePackageTest extends InstrumentationTestCase {
         List<NewLanguageQuestion> questions = new ArrayList<>();
         for (int i = 0; i < numQuestions; i++) {
             boolean required = i % 3 == 0;
-            NewLanguageQuestion.QuestionType type = (i % 4 == 0) ? NewLanguageQuestion.QuestionType.INPUT_TYPE_BOOLEAN : NewLanguageQuestion.QuestionType.INPUT_TYPE_STRING;
-            long conditionalID = i > 0 ? i - 1 : NewLanguageQuestion.NO_DEPENDENCY;
-            NewLanguageQuestion question = new NewLanguageQuestion(i, "Q-" + i, "H-" + i, "A-" + i,
-                    type, required, "", conditionalID);
+            NewLanguageQuestion.InputType type = (i % 4 == 0) ? NewLanguageQuestion.InputType.Boolean : NewLanguageQuestion.InputType.String;
+            long conditionalID = i > 0 ? i - 1 : -1;
+            NewLanguageQuestion question = new NewLanguageQuestion(i, "Q-" + i, "H-" + i,
+                    type, required, conditionalID, 0);
             questions.add(question);
         }
         return questions;

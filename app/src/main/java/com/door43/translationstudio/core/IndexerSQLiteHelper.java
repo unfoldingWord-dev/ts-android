@@ -2234,7 +2234,9 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         Cursor cursor = db.rawQuery("SELECT `id`, `questionnaire_td_id`, `language_slug`, `language_name`, `language_direction` FROM `new_target_language_questionnaire`", null);
         cursor.moveToFirst();
         while(!cursor.isAfterLast()) {
-            questionnaires.add(new NewLanguageQuestionnaire(cursor.getLong(0), cursor.getInt(1), cursor.getString(2), cursor.getString(3), cursor.getString(4)));
+            NewLanguageQuestionnaire questionnaire = new NewLanguageQuestionnaire(cursor.getLong(1), cursor.getString(2), cursor.getString(3), LanguageDirection.get(cursor.getString(4)));
+            questionnaire.setDBId(cursor.getLong(0));
+            questionnaires.add(questionnaire);
         }
         cursor.close();
 
@@ -2254,19 +2256,70 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
     private NewLanguageQuestion[] getNewLanguageQuestions(SQLiteDatabase db, long questionnaireId) {
         List<NewLanguageQuestion> questions = new ArrayList<>();
         Cursor cursor = db.rawQuery("SELECT `question_td_id`, `text`, `help`, `input_type`,"
-                + " `is_required`, `depends_on`"
+                + " `is_required`, `depends_on`, `sort`"
                 + " FROM `new_target_language_question`"
                 + " WHERE `new_target_language_questionnaire_id`=" + questionnaireId
                 + " ORDER BY `sort` ASC", null);
         cursor.moveToFirst();
         while(!cursor.isAfterLast()) {
             questions.add(new NewLanguageQuestion(cursor.getInt(0), cursor.getString(1),
-                    cursor.getString(2), "",
-                    NewLanguageQuestion.QuestionType.get(cursor.getString(3)),
-                    cursor.getInt(4) == 1, "", cursor.getInt(5)));
+                    cursor.getString(2), NewLanguageQuestion.InputType.get(cursor.getString(3)),
+                    cursor.getInt(4) == 1, cursor.getInt(5), cursor.getInt(6)));
         }
         cursor.close();
 
         return questions.toArray(new NewLanguageQuestion[questions.size()]);
+    }
+
+    /**
+     * Adds a new language questionnaire to the database
+     * @param db
+     * @param door43Id
+     * @param languageSlug
+     * @param languageName
+     * @param languageDirection
+     * @return
+     */
+    public long addNewLanguageQuestionnaire(SQLiteDatabase db, long door43Id, String languageSlug, String languageName, LanguageDirection languageDirection) {
+        ContentValues values = new ContentValues();
+        values.put("questionnaire_td_id", door43Id);
+        values.put("language_slug", languageSlug);
+        values.put("language_name", languageName);
+        values.put("language_direction", languageDirection.getLabel());
+        return db.insert("new_target_language_questionnaire", null, values);
+    }
+
+    /**
+     * Adds a question to the new language questionnnaire
+     * @param db
+     * @param questionnaireDBId
+     * @param door43Id
+     * @param question
+     * @param helpText
+     * @param type
+     * @param required
+     * @param sort
+     * @param reliantQuestionId
+     * @return
+     */
+    public long addNewLanguageQuestion(SQLiteDatabase db, long questionnaireDBId, long door43Id, String question, String helpText, NewLanguageQuestion.InputType type, boolean required, int sort, long reliantQuestionId) {
+        ContentValues values = new ContentValues();
+        values.put("new_target_language_questionnaire_id", questionnaireDBId);
+        values.put("question_td_id", door43Id);
+        values.put("text", question);
+        values.put("help", helpText);
+        values.put("is_required", required);
+        values.put("input_type", type.getLabel());
+        values.put("sort", sort);
+        values.put("depends_on", reliantQuestionId);
+        return db.insert("new_target_language_question", null, values);
+    }
+
+    /**
+     * deletes all the questionnaires
+     * @param db
+     */
+    public void deleteNewLanguageQuestionnaires(SQLiteDatabase db) {
+        db.delete("new_target_language_questionnaire", null, null);
     }
 }

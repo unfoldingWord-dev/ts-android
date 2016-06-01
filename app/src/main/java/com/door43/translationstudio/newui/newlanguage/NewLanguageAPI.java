@@ -387,13 +387,13 @@ public class NewLanguageAPI {
      */
     private void addQuestion(long id, String question, String helpText, String inputType, boolean required, long dependsOn, String query) throws JSONException {
         JSONObject questionData = new JSONObject();
-        questionData.put(NewLanguageQuestion.ID_KEY,id);
-        questionData.put(NewLanguageQuestion.QUESTION_KEY,question);
-        questionData.put(NewLanguageQuestion.HELP_TEXT_KEY,helpText);
-        questionData.put(NewLanguageQuestion.INPUT_TYPE_KEY,inputType);
-        questionData.put(NewLanguageQuestion.REQUIRED_KEY,required);
-        questionData.put(NewLanguageQuestion.QUERY_KEY,query);
-        questionData.put(NewLanguageQuestion.CONDITIONAL_ID_KEY,dependsOn);
+        questionData.put("id",id);
+        questionData.put("text",question);
+        questionData.put("help",helpText);
+        questionData.put("input_type",inputType);
+        questionData.put("required",required);
+        questionData.put("query",query);
+        questionData.put("depends_on",dependsOn);
         mPageData.put(questionData);
         mPageMeta.put(id);
     }

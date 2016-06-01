@@ -1,27 +1,41 @@
 package com.door43.translationstudio.core;
 
+import com.door43.tools.reporting.Logger;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by joel on 5/31/16.
+ * New Language Questionnaires are used to generate a new target language code.
+ * The questionnaire must be completed before a custom language code will be assigned.
+ * Later the results of the questionnaire will be submitted for processing and, if approved,
+ * assignment to a real language code.
  */
 public class NewLanguageQuestionnaire {
-    public final long dbId;
-    public final int door43Id;
+    public long dbId;
+    public final long door43Id;
     public final String languageSlug;
     public final String languageName;
-    public final String languageDirection;
+    public final LanguageDirection languageDirection;
     private final static int QUESTIONS_PER_PAGE = 3;
     private List<NewLanguagePage> pages = new ArrayList<>();
 
-    public NewLanguageQuestionnaire(long dbId, int door43Id, String languageSlug, String languageName, String languageDirection) {
-
-        this.dbId = dbId;
+    public NewLanguageQuestionnaire(long door43Id, String languageSlug, String languageName, LanguageDirection direction) {
         this.door43Id = door43Id;
         this.languageSlug = languageSlug;
         this.languageName = languageName;
-        this.languageDirection = languageDirection;
+        this.languageDirection = direction;
+    }
+
+    /**
+     * Sets the id used in the local database
+     * @param dbId
+     */
+    public void setDBId(long dbId) {
+        this.dbId = dbId;
     }
 
     /**
@@ -65,5 +79,28 @@ public class NewLanguageQuestionnaire {
      */
     public int getNumPages() {
         return 0;
+    }
+
+    /**
+     * Generates a new questionnaire from json
+     * @param json
+     * @return
+     */
+    public static NewLanguageQuestionnaire generate(JSONObject json) {
+        if(json != null) {
+            try {
+                String languageName = json.getString("name");
+                LanguageDirection direction = LanguageDirection.get(json.getString("dir"));
+                if(direction == null) {
+                    direction = LanguageDirection.LeftToRight;
+                }
+                String languageSlug = json.getString("slug");
+                long questionnaireId = json.getLong("questionnaire_id");
+                return new NewLanguageQuestionnaire(questionnaireId, languageSlug, languageName, direction);
+            } catch (JSONException e) {
+                Logger.w(NewLanguageQuestionnaire.class.getName(), "Failed to parse new language questionnaire: " + json.toString(), e);
+            }
+        }
+        return null;
     }
 }

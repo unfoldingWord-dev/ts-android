@@ -265,7 +265,7 @@ public class NewLanguagePackage {
         for (NewLanguageQuestion question : questions) {
             JSONObject answer = new JSONObject();
             answer.put(API_QUESTION_ID, question.id);
-            answer.put(QUESTION_ANSWER, question.answer);
+//            answer.put(QUESTION_ANSWER, question.answer);
 //            answer.put("question", question.question); // useful for debugging
             questionsJson.put(answer);
         }
@@ -286,7 +286,7 @@ public class NewLanguagePackage {
         if (dependency != null) {
             if (!dependency.isAnswerEmpty()) {
 
-                if (dependency.type == NewLanguageQuestion.QuestionType.INPUT_TYPE_BOOLEAN) {
+                if (dependency.type == NewLanguageQuestion.InputType.Boolean) {
                     enable = dependency.isBooleanAnswerTrue();
                 } else {
                     enable = true;
@@ -348,16 +348,12 @@ public class NewLanguagePackage {
      * @return
      */
     public static String getNewLanguageCode() {
-        String languageCode;
-        languageCode = TEMP_LANGUAGE_PREFIX;
-
-        String androidId = AppContext.udid();
-
-        long ms = (new Date()).getTime();
-        String uniqueString = androidId + ms;
-        String sha1Value = Security.sha1(uniqueString);
-        languageCode += sha1Value.substring(0, 6);
-        return languageCode.toLowerCase();
+        String udid = AppContext.udid();
+        long time = System.currentTimeMillis();
+        String uniqueString = udid + time;
+        String hash = Security.sha1(uniqueString);
+        String code  = hash.substring(0, 6);
+        return (TEMP_LANGUAGE_PREFIX + code).toLowerCase();
     }
 
     /**

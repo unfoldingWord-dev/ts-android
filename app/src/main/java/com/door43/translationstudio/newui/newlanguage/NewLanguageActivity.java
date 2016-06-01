@@ -6,9 +6,11 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NewLanguagePackage;
 import com.door43.translationstudio.core.NewLanguageQuestion;
+import com.door43.translationstudio.core.NewLanguageQuestionnaire;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
 
@@ -28,15 +30,15 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
 
     public static final String TAG = NewLanguageActivity.class.getSimpleName();
 
-    private static final String STATE_LANGUAGE_STEP = "state_language_step";
-    private static final String STATE_NEW_LANGUAGE_FINISHED = "state_new_language_finished";
-    private static final String STATE_NEW_LANGUAGE_QUESTIONS = "state_new_language_questions";
+    private static final String STATE_PAGE = "current_page";
+    private static final String STATE_FINISHED = "finished";
+    private static final String STATE_QUESTIONS = "questions";
 
     public static final String EXTRA_CALLING_ACTIVITY = "extra_calling_activity";
     public static final String EXTRA_NEW_LANGUAGE_QUESTIONS = "extra_new_language_questions";
-    public static final String STATE_NEW_LANGUAGE_QUESTION_ID = "state_new_language_question_id";
+    public static final String STATE_QUESTIONNAIRE_ID = "questionnaire_id";
     public static final String EXTRA_NEW_LANGUAGE_QUESTIONS_JSON = "extra_new_language_questions_json";
-    public static final String STATE_NEW_LANGUAGE_TITLE = "state_new_language_title";
+    public static final String STATE_LANGUAGE_TITLE = "language_title";
 
     private int mCurrentPage = 0;
     public static final int ACTIVITY_HOME = 1001;
@@ -54,13 +56,20 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        NewLanguageQuestionnaire questionnaire = AppContext.getLibrary().getNewLanguageQuestionnaire();
+        if(questionnaire == null) {
+            Logger.e(this.getClass().getName(), "Cannot begin the new language questionnaire because no questionnaire was found.");
+            finish();
+            return;
+        }
+
         if(savedInstanceState != null) {
-            mCurrentPage = savedInstanceState.getInt(STATE_LANGUAGE_STEP, -1);
-            mLanguageFinished = savedInstanceState.getBoolean(STATE_NEW_LANGUAGE_FINISHED, false);
-            String questions = savedInstanceState.getString(STATE_NEW_LANGUAGE_QUESTIONS);
+            mCurrentPage = savedInstanceState.getInt(STATE_PAGE, -1);
+            mLanguageFinished = savedInstanceState.getBoolean(STATE_FINISHED, false);
+            String questions = savedInstanceState.getString(STATE_QUESTIONS);
             mQuestionPages = parseJsonStrIntoPages(questions);
-            mQuestionnaireID = savedInstanceState.getLong(STATE_NEW_LANGUAGE_QUESTION_ID, -1);
-            setTitle(savedInstanceState.getString(STATE_NEW_LANGUAGE_TITLE));
+            mQuestionnaireID = savedInstanceState.getLong(STATE_QUESTIONNAIRE_ID, -1);
+            setTitle(savedInstanceState.getString(STATE_LANGUAGE_TITLE));
         } else {
             Intent intent = getIntent();
             Bundle args = intent.getExtras();
@@ -83,12 +92,12 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putInt(STATE_LANGUAGE_STEP, mCurrentPage);
-        outState.putBoolean(STATE_NEW_LANGUAGE_FINISHED, mLanguageFinished);
+        outState.putInt(STATE_PAGE, mCurrentPage);
+        outState.putBoolean(STATE_FINISHED, mLanguageFinished);
         String questions = getQuestionPagesAsJson().toString();
-        outState.putString(STATE_NEW_LANGUAGE_QUESTIONS, questions);
-        outState.putLong(STATE_NEW_LANGUAGE_QUESTION_ID,mQuestionnaireID);
-        outState.putString(STATE_NEW_LANGUAGE_TITLE, getTitle().toString());
+        outState.putString(STATE_QUESTIONS, questions);
+        outState.putLong(STATE_QUESTIONNAIRE_ID,mQuestionnaireID);
+        outState.putString(STATE_LANGUAGE_TITLE, getTitle().toString());
         super.onSaveInstanceState(outState);
     }
 
@@ -152,7 +161,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
 
             // get question
             JSONObject questionJson = questionsJson.getJSONObject(i);
-            NewLanguageQuestion questionObj = NewLanguageQuestion.parse(questionJson);
+            NewLanguageQuestion questionObj = NewLanguageQuestion.generate(questionJson);
             questions.add(questionObj);
             idIndex.put(questionObj.id, i);
         }
@@ -175,30 +184,30 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
      * @return
      */
     private boolean parseAnswers(String answersJson, int page) {
-        try {
-            List<NewLanguageQuestion> mPage = mQuestionPages.get(page);
-            JSONArray answersPage = new JSONArray(answersJson);
-
-            int length = answersPage.length();
-            for(int i = 0; i < length; i++ ) {
-                JSONObject question = (JSONObject) answersPage.get(i);
-                NewLanguageQuestion originalQuestion = mPage.get(i);
-                int questionID = question.getInt(NewLanguageQuestion.ID_KEY);
-                if((null == question) || (originalQuestion.id != questionID)) {
-                    return false; // response does not match original
-                } else {
-                    if(question.has(NewLanguageQuestion.ANSWER_KEY)) {
-                        originalQuestion.answer = question.getString(NewLanguageQuestion.ANSWER_KEY);
-                    } else {
-                        originalQuestion.answer = null;
-                    }
-                }
-            }
-
-        } catch (Exception e) {
-            Logger.w(TAG, "could not parse answers", e);
-            return false;
-        }
+//        try {
+//            List<NewLanguageQuestion> mPage = mQuestionPages.get(page);
+//            JSONArray answersPage = new JSONArray(answersJson);
+//
+//            int length = answersPage.length();
+//            for(int i = 0; i < length; i++ ) {
+//                JSONObject question = (JSONObject) answersPage.get(i);
+//                NewLanguageQuestion originalQuestion = mPage.get(i);
+//                int questionID = question.getInt("id");
+//                if((null == question) || (originalQuestion.id != questionID)) {
+//                    return false; // response does not match original
+//                } else {
+//                    if(question.has("answer")) {
+//                        originalQuestion.answer = question.getString("answer");
+//                    } else {
+//                        originalQuestion.answer = null;
+//                    }
+//                }
+//            }
+//
+//        } catch (Exception e) {
+//            Logger.w(TAG, "could not parse answers", e);
+//            return false;
+//        }
         return true;
     }
 
@@ -232,7 +241,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
             int length = answers.length();
             for(int i = 0; i < length; i++ ) {
                 JSONObject questionStr = (JSONObject) answers.get(i);
-                NewLanguageQuestion question = NewLanguageQuestion.parse(questionStr);
+                NewLanguageQuestion question = NewLanguageQuestion.generate(questionStr);
                 if(null != question) {
                     page.add(question);
                 }

@@ -89,14 +89,14 @@ public class NewLanguagePageAdapter extends BaseAdapter {
             ViewHolder holder = mViewHolders.get(i);
             NewLanguageQuestion question = getItem(i);
             if(holder.answer != null) {
-                question.answer = holder.answer.getText().toString();
+//                question.answer = holder.answer.getText().toString();
                 if(i == mFocusedPosition) {
                     mSelection = holder.answer.getSelectionStart();
                 }
             }
 
             if(holder.radioButtonYes != null) {
-                question.answer = null; //default if none selected
+//                question.answer = null; //default if none selected
                 boolean checked = holder.radioButtonYes.isChecked();
                 if(checked) {
                     question.setAnswer(true);
@@ -209,7 +209,7 @@ public class NewLanguagePageAdapter extends BaseAdapter {
         final NewLanguageQuestion item = getItem(position);
         if(null != item) {
             int layoutResId;
-            if (item.type == NewLanguageQuestion.QuestionType.INPUT_TYPE_BOOLEAN) {
+            if (item.type == NewLanguageQuestion.InputType.Boolean) {
                 layoutResId = R.layout.fragment_new_language_boolean_card;
             } else {
                 layoutResId = R.layout.fragment_new_language_text_input_card;
@@ -226,7 +226,7 @@ public class NewLanguagePageAdapter extends BaseAdapter {
 
             enableQuestion(v, holder, shouldEnable(item));
 
-            if (item.type == NewLanguageQuestion.QuestionType.INPUT_TYPE_BOOLEAN) {
+            if (item.type == NewLanguageQuestion.InputType.Boolean) {
                 holder.radioButtonYes.setChecked(item.isBooleanAnswerTrue());
                 holder.radioButtonYes.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
@@ -269,7 +269,7 @@ public class NewLanguagePageAdapter extends BaseAdapter {
                     @Override
                     public void onTextChanged(CharSequence s, int start, int before, int count) {
                         boolean intiallyEmpty = item.isAnswerEmpty();
-                        item.answer = s.toString();
+//                        item.answer = s.toString();
                         boolean currentlyEmpty = item.isAnswerEmpty();
                         boolean emptyStateChanged = (intiallyEmpty != currentlyEmpty);
 

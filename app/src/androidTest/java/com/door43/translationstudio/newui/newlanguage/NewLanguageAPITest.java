@@ -227,7 +227,7 @@ public class NewLanguageAPITest {
         List<NewLanguageQuestion> mergedQuestions = NewLanguageActivity.mergePagesOfNewLanguageQuestions(questionPages);
         for (NewLanguageQuestion newLanguageQuestion : mergedQuestions) {
             long qid = newLanguageQuestion.id;
-            newLanguageQuestion.answer = "Answer-" + qid;
+//            newLanguageQuestion.answer = "Answer-" + qid;
         }
         return NewLanguagePackage.newInstance(id, mergedQuestions);
     }

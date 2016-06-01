@@ -113,10 +113,10 @@ public class NewLanguageActivityUiUtils {
             NewLanguageQuestion newLanguageQuestion = findQuestion(id);
 
             String expected;
-            if(newLanguageQuestion.type == NewLanguageQuestion.QuestionType.INPUT_TYPE_STRING) {
+            if(newLanguageQuestion.type == NewLanguageQuestion.InputType.String) {
                 expected = generateAnswerForQuestion(id);
             } else {
-                expected = expectedAnswer ? NewLanguageQuestion.TRUE_STR : NewLanguageQuestion.FALSE_STR;
+                expected = expectedAnswer ? "true" : "false";
             }
             assertEquals("Question " + id + " mismatch", expected, answerText);
         }
@@ -267,7 +267,7 @@ public class NewLanguageActivityUiUtils {
 
             NewLanguageQuestion question = questions.get(i);
             if(!requiredOnly || question.required) {
-                if(question.type == NewLanguageQuestion.QuestionType.INPUT_TYPE_BOOLEAN) {
+                if(question.type == NewLanguageQuestion.InputType.Boolean) {
                     boolean value = valueForBooleans;
                     setBoolean(pageNum, i, value);
                 } else {
@@ -275,7 +275,7 @@ public class NewLanguageActivityUiUtils {
                     addEditText(pageNum, i, text, hideKeyboard);
                 }
             } else { // not setting
-                if(question.type == NewLanguageQuestion.QuestionType.INPUT_TYPE_BOOLEAN) {
+                if(question.type == NewLanguageQuestion.InputType.Boolean) {
                     verifyButtons(pageNum, i, false, false);
                 } else {
                     verifyText(pageNum,i,"");

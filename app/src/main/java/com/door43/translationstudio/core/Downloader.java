@@ -46,7 +46,7 @@ public class Downloader {
             urlConnection.disconnect();
             return response;
         } catch (IOException e) {
-            Logger.e(this.getClass().getName(), "Failed to download file", e);
+            Logger.e(this.getClass().getName(), "Failed to download file " + apiUrl, e);
             return null;
         } finally {
             if(urlConnection != null) {

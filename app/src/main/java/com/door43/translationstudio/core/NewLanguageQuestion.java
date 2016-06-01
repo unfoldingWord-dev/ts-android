@@ -1,177 +1,102 @@
 package com.door43.translationstudio.core;
 
-import android.content.Context;
+import android.support.annotation.Nullable;
 
 import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.newui.newlanguage.NewLanguageAPI;
 
 import org.json.JSONObject;
 
 /**
- * Wrapper for new language questions
+ * Represents a single question in a new language questionnaire
  */
 public class NewLanguageQuestion {
-    public static final String ID_KEY = "id";
-    public static final String QUESTION_KEY = "question";
-    public static final String HELP_TEXT_KEY = "helpText";
-    public static final String ANSWER_KEY = "answer";
-    public static final String REQUIRED_KEY = "required";
-    public static final String QUERY_KEY = "query";
-    public static final String INPUT_TYPE_KEY = "input";
-    public static final String CONDITIONAL_ID_KEY = "conditional_id";
-
-    public static final String TRUE_STR = "YES";
-    public static final String FALSE_STR = "NO";
-    public static final String TAG = NewLanguageQuestion.class.getSimpleName();
-    public static final int NO_DEPENDENCY = -1;
-
     public long id;
     public String question;
     public String helpText;
-    public String answer; // can be null
     public boolean required;
-    public QuestionType type;
-    public String query;
-    public long reliantQuestionId = NO_DEPENDENCY;
+    public InputType type;
+    public long reliantQuestionId = -1;
+    public final int sort;
 
     /**
-     * constructor
-     * @param id
-     * @param question
-     * @param helpText
-     * @param answer
-     * @param type
-     * @param required
-     * @param query
-     * @param reliantQuestionId
+     * Instanciates a new question
+     * @param id the translationDatabase id of the question
+     * @param question the question text
+     * @param helpText the help text
+     * @param type the input type of the question
+     * @param required if the question is required
+     * @param reliantQuestionId the question that must be answered before this question
+     * @param sort the order of display of this question
      */
-    public NewLanguageQuestion(long id, String question, String helpText, String answer,
-                               QuestionType type, boolean required, String query,
-                               long reliantQuestionId) {
+    public NewLanguageQuestion(long id, String question, String helpText,
+                               InputType type, boolean required,
+                               long reliantQuestionId, int sort) {
         this.id = id;
         this.question = question;
         this.helpText = helpText;
-        this.answer = answer;
         this.required = required;
         this.type = type;
         this.reliantQuestionId = reliantQuestionId;
-        this.query = query;
+        this.sort = sort;
     }
 
     /**
-     * create a NewLanguageQuestion object from resources
-     * @param context
-     * @param id
-     * @param questionResID
-     * @param hintResID
-     * @param type
-     * @param required
-     * @param conditionalID
-     * @return
-     */
-    public static NewLanguageQuestion newInstance(Context context, long id, int questionResID, int hintResID,
-                                                  QuestionType type, boolean required, String query, long conditionalID) {
-        String question = context.getResources().getString(questionResID);
-        String hint = context.getResources().getString(hintResID);
-
-        return new NewLanguageQuestion(id,question,hint,null,type,required, query, conditionalID);
-    }
-
-    /**
-     * create a NewLanguageQuestion object from resources without conditional
-     * @param context
-     * @param id
-     * @param questionResID
-     * @param hintResID
-     * @param type
-     * @param required
-     * @return
-     */
-    public static NewLanguageQuestion newInstance(Context context, long id, int questionResID, int hintResID,
-                                                  QuestionType type, boolean required, String query) {
-
-        return newInstance(context, id, questionResID, hintResID, type, required, query, NO_DEPENDENCY);
-
-    }
-
-    /**
-     * create a NewLanguageQuestion object from JSON data
+     * creates a Nquestion object from JSON
      * @param json
      * @return
      */
-    public static NewLanguageQuestion parse(JSONObject json) {
-        try {
-            long id = json.getLong(ID_KEY);
-            String question = json.getString(QUESTION_KEY);
-            String answer = json.optString(NewLanguageQuestion.ANSWER_KEY, null);
-            String hint = json.getString(HELP_TEXT_KEY);
-            boolean required = json.getBoolean(REQUIRED_KEY);
-            String typeStr = json.getString(INPUT_TYPE_KEY);
-            QuestionType type = QuestionType.get(typeStr);
-            if(null == type) { // default to string input
-                type = QuestionType.INPUT_TYPE_STRING;
+    public static NewLanguageQuestion generate(JSONObject json) {
+        if(json != null) {
+            try {
+                long id = json.getLong("id");
+                String text = json.getString("text");
+                String help = json.getString("help");
+                boolean required = json.getBoolean("required");
+                String inputType = json.getString("input_type");
+                int sort = json.getInt("sort");
+
+                InputType type = InputType.get(inputType);
+                if (null == type) {
+                    type = InputType.String;
+                }
+                long reliantQuestionId = json.optLong("depends_on", -1);
+                return new NewLanguageQuestion(id, text, help, type, required, reliantQuestionId, sort);
+            } catch (Exception e) {
+                Logger.w(NewLanguageQuestion.class.getSimpleName(), "Error parsing new language question: " + json.toString(), e);
             }
-            long conditional = json.optLong(CONDITIONAL_ID_KEY, NO_DEPENDENCY);
-            String query = json.getString(QUERY_KEY);
-            return new NewLanguageQuestion(id,question,hint,answer,type,required, query, conditional);
-
-        } catch (Exception e) {
-            Logger.e(NewLanguageQuestion.class.getSimpleName(),"Error parsing json: " + json.toString(),e);
         }
-
         return null;
     }
 
     /**
-     * return the JSON data representation for object
+     * Returns a json representation of the question
      * @return
      */
+    @Nullable
     public JSONObject toJson() {
-        JSONObject results = new JSONObject();
+        JSONObject json = new JSONObject();
         try {
-            results.put(ID_KEY, id);
-            results.put(QUESTION_KEY, question);
-            results.put(HELP_TEXT_KEY, helpText);
-            if(null != answer) {
-                results.put(ANSWER_KEY, answer);
-            }
-            results.put(REQUIRED_KEY, required);
-            results.put(INPUT_TYPE_KEY, type.toString());
-            results.put(CONDITIONAL_ID_KEY, reliantQuestionId);
-            results.put(QUERY_KEY, query);
-            return results;
+            json.put("id", id);
+            json.put("text", question);
+            json.put("help", helpText);
+            json.put("required", required);
+            json.put("input_type", type.getLabel());
+            json.put("sort", sort);
+            json.put("depends_on", reliantQuestionId);
+            return json;
         } catch (Exception e) {
-            Logger.e(TAG,"json creation error", e);
+            Logger.w(NewLanguageQuestion.class.getSimpleName(), "Failed to build question json", e);
         }
         return null;
-    }
-
-    /**
-     * returns JSON data in API format
-     * @return
-     */
-    public JSONObject getResults() {
-        JSONObject results = new JSONObject();
-        try {
-            results.put(ID_KEY, id);
-            results.put(QUESTION_KEY, question);
-            results.put(HELP_TEXT_KEY, helpText);
-            results.put(ANSWER_KEY, (null != answer) ? answer : "(NULL)");
-            results.put(REQUIRED_KEY, required);
-            results.put(QUERY_KEY, query);
-        } catch (Exception e) {
-            Logger.e(TAG,"json parse error", e);
-        }
-        return results;
     }
 
     /**
      * set answer string for boolean state
-     * @param truth
+     * @param anwer
      * @return
      */
-    public void setAnswer(boolean truth) {
-        this.answer = truth ? TRUE_STR : FALSE_STR;
+    public void setAnswer(boolean anwer) {
+//        this.answer = anwer ? "true" : "false";
     }
 
     /**
@@ -179,7 +104,8 @@ public class NewLanguageQuestion {
      * @return
      */
     public boolean isBooleanAnswerTrue() {
-        return TRUE_STR.equals(answer);
+//        return "true".equals(answer);
+        return false;
     }
 
     /**
@@ -187,7 +113,8 @@ public class NewLanguageQuestion {
      * @return
      */
     public boolean isBooleanAnswerFalse() {
-        return FALSE_STR.equals(answer);
+//        return "false".equals(answer);
+        return true;
     }
 
     /**
@@ -195,10 +122,10 @@ public class NewLanguageQuestion {
      * @return
      */
     public String getAnswerNotNull() {
-        if(null == answer) {
+//        if(null == answer) {
             return "";
-        }
-        return answer;
+//        }
+//        return answer;
     }
 
     /**
@@ -206,46 +133,44 @@ public class NewLanguageQuestion {
      * @return
      */
     public boolean isAnswerEmpty() {
-        return (null == answer ) || answer.isEmpty();
+//        return (null == answer ) || answer.isEmpty();
+        return true;
     }
 
      /**
-     * enum to identify question types and do string conversions
+     * Specifies the input type of a question
      */
-    public enum QuestionType {
-        INPUT_TYPE_STRING(NewLanguageAPI.INPUT_TYPE_STRING),
-        INPUT_TYPE_BOOLEAN(NewLanguageAPI.INPUT_TYPE_BOOLEAN);
+    public enum InputType {
+         String("string"),
+         Boolean("boolean"),
+         Date("date");
 
-        QuestionType(String s) {
-            mName = s;
-        }
+         InputType(String label) {
+             this.label = label;
+         }
 
-        private final String mName;
+         private final String label;
 
-        public String getName() {
-            return mName;
-        }
+         public String getLabel() {
+             return label;
+         }
 
         @Override
         public String toString() {
-            return mName;
+            return getLabel();
         }
 
         /**
-         * Returns a format by it's name
-         * @param name
+         * Returns an input type by it's label
+         * @param label
          * @return
          */
-        public static QuestionType get(String name) {
-            if(name != null) {
-                for (QuestionType f : QuestionType.values()) {
-                    if (f.getName().equals(name.toLowerCase())) {
-                        return f;
+        public static InputType get(String label) {
+            if(label != null) {
+                for (InputType t : InputType.values()) {
+                    if (t.getLabel().equals(label.toLowerCase())) {
+                        return t;
                     }
-                }
-
-                if("string".equalsIgnoreCase(name)) { // alternate for string type
-                    return QuestionType.INPUT_TYPE_STRING;
                 }
             }
             return null;
