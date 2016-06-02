@@ -332,7 +332,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
 
         ListItem item;
-        for(int i = position; i >= 0; i--) { // check current frame and previous to get frame with valid chapter ID
+        for(int i = position ; i < mListItems.length; i++) { // check later frames to get frame with valid chapter ID
             item = mListItems[i];
             if(item.isFrame()) {
                 String chapterSlug = item.chapterSlug;
@@ -341,7 +341,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
             }
         }
-        for(int i = position + 1; i < mListItems.length; i++) { // check later frames to get frame with valid chapter ID
+        for(int i = position - 1; i >= 0; i--) { // check current frame and previous to get frame with valid chapter ID
             item = mListItems[i];
             if(item.isFrame()) {
                 String chapterSlug = item.chapterSlug;
