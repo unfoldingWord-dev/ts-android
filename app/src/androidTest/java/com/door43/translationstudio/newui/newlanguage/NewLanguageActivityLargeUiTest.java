@@ -1,21 +1,13 @@
 package com.door43.translationstudio.newui.newlanguage;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
-import android.content.res.Configuration;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.NoActivityResumedException;
 import android.support.test.runner.AndroidJUnit4;
 import android.test.suitebuilder.annotation.LargeTest;
-import android.view.KeyEvent;
-import android.view.View;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
 
-import org.hamcrest.Matcher;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -161,7 +153,7 @@ public class NewLanguageActivityLargeUiTest extends NewLanguageActivityUiUtils {
 
         //then
         int resultCode = getResultCode(currentActivity);
-        String key = NewTargetTranslationActivity.EXTRA_NEW_LANGUAGE_DATA;
+        String key = NewLanguageActivity.EXTRA_QUESTIONNAIRE_RESPONSE;
         JSONObject jsonData = getJsonData(currentActivity, key);
         clearResultData();
         currentActivity.finish();

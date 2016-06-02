@@ -75,7 +75,7 @@ public class NewLanguageQuestionnaireResponse {
      * Represents the questionnaire response as json
      * @return
      */
-    public JSONObject toJson() {
+    public String toJson() {
         JSONObject json = new JSONObject();
         try {
             json.put("request_id", this.requestUUID);
@@ -93,7 +93,7 @@ public class NewLanguageQuestionnaireResponse {
             }
 
             json.put("answers", answersJson);
-            return json;
+            return json.toString();
         } catch (JSONException e) {
             Logger.w(this.getClass().getName(), "Failed to create json object", e);
         }
@@ -102,12 +102,13 @@ public class NewLanguageQuestionnaireResponse {
 
     /**
      * Creates a questionnaire response from json
-     * @param json
+     * @param jsonString
      * @return
      */
-    public static NewLanguageQuestionnaireResponse generate(JSONObject json) {
-        if(json != null) {
+    public static NewLanguageQuestionnaireResponse generate(String jsonString) {
+        if(jsonString != null) {
             try {
+                JSONObject json = new JSONObject(jsonString);
                 String requestUUID = json.getString("request_id");
                 String tempCode = json.getString("temp_code");
                 long questionnaireId = json.getLong("questionnaire_id");
@@ -122,7 +123,7 @@ public class NewLanguageQuestionnaireResponse {
                 }
                 return response;
             } catch (JSONException e) {
-                Logger.w(NewLanguageQuestionnaireResponse.class.getName(), "Failed to parse questionnaire response json: " + json.toString(), e);
+                Logger.w(NewLanguageQuestionnaireResponse.class.getName(), "Failed to parse questionnaire response json: " + jsonString, e);
             }
         }
         return null;

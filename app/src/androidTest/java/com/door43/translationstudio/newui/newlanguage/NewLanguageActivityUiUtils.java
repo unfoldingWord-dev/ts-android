@@ -14,7 +14,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.ViewInteraction;
 import android.support.test.espresso.matcher.BoundedMatcher;
@@ -399,8 +398,8 @@ public class NewLanguageActivityUiUtils {
         mQuestionPages = new ArrayList<>();
 
         JSONObject questionnaire = (new NewLanguageAPI()).readQuestionnaireIntoPages(mTestContext, mQuestions, "en"); // TODO: 4/25/16 get actual language
-        mQuestionnaireID = NewLanguageActivity.getQuestionnaireID(questionnaire);
-        NewLanguageActivity.getQuestionPages(mQuestionPages, questionnaire);
+//        mQuestionnaireID = NewLanguageActivity.getQuestionnaireID(questionnaire);
+//        NewLanguageActivity.getQuestionPages(mQuestionPages, questionnaire);
     }
 
     /**
@@ -437,7 +436,7 @@ public class NewLanguageActivityUiUtils {
      */
     private void thenTitlePageCountShouldMatch(int pageCount, int pageNum) {
         mAppContext = InstrumentationRegistry.getTargetContext();
-        String titleFormat = mAppContext.getResources().getString(R.string.new_lang_question_n);
+        String titleFormat = mAppContext.getResources().getString(R.string.new_language_questionnaire_title);
 
         String title = String.format(titleFormat, pageNum + 1, pageCount);
         matchToolbarTitle(title);
@@ -450,7 +449,7 @@ public class NewLanguageActivityUiUtils {
      */
     protected void thenTitlePageCountShouldNotMatch(int pageCount, int pageNum) {
         mAppContext = InstrumentationRegistry.getTargetContext();
-        String titleFormat = mAppContext.getResources().getString(R.string.new_lang_question_n);
+        String titleFormat = mAppContext.getResources().getString(R.string.new_language_questionnaire_title);
 
         String title = String.format(titleFormat, pageNum + 1, pageCount);
         notMatchToolbarTitle(title);
@@ -485,13 +484,10 @@ public class NewLanguageActivityUiUtils {
      */
     protected Intent getIntentForTestFile(String fileName) throws Exception {
         Intent intent = new Intent();
-        intent.putExtra(NewLanguageActivity.EXTRA_CALLING_ACTIVITY, NewLanguageActivity.ACTIVITY_HOME);
-
-        Resources testRes = mTestContext.getResources();
 
         InputStream usfmStream = mTestContext.getAssets().open(fileName);
         mQuestions = IOUtils.toString(usfmStream, "UTF-8");
-        intent.putExtra(NewLanguageActivity.EXTRA_NEW_LANGUAGE_QUESTIONS_JSON, mQuestions);
+//        intent.putExtra(NewLanguageActivity.EXTRA_NEW_LANGUAGE_QUESTIONS_JSON, mQuestions);
 
         getQuestionPages();
         return intent;

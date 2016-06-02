@@ -48,7 +48,7 @@ public class NewLanguageQuestionnaire {
         NewLanguagePage currentPage = new NewLanguagePage();
 
         for(NewLanguageQuestion q:questions) {
-            if(!currentPage.containsQuestion(q.reliantQuestionId) && currentPage.size() >= QUESTIONS_PER_PAGE) {
+            if(!currentPage.containsQuestion(q.reliantQuestionId) && currentPage.getNumQuestions() >= QUESTIONS_PER_PAGE) {
                 // close page
                 pages.add(currentPage);
                 currentPage = new NewLanguagePage();
@@ -83,12 +83,13 @@ public class NewLanguageQuestionnaire {
 
     /**
      * Generates a new questionnaire from json
-     * @param json
+     * @param jsonString
      * @return
      */
-    public static NewLanguageQuestionnaire generate(JSONObject json) {
-        if(json != null) {
+    public static NewLanguageQuestionnaire generate(String jsonString) {
+        if(jsonString != null) {
             try {
+                JSONObject json = new JSONObject(jsonString);
                 String languageName = json.getString("name");
                 LanguageDirection direction = LanguageDirection.get(json.getString("dir"));
                 if(direction == null) {
@@ -98,7 +99,7 @@ public class NewLanguageQuestionnaire {
                 long questionnaireId = json.getLong("questionnaire_id");
                 return new NewLanguageQuestionnaire(questionnaireId, languageSlug, languageName, direction);
             } catch (JSONException e) {
-                Logger.w(NewLanguageQuestionnaire.class.getName(), "Failed to parse new language questionnaire: " + json.toString(), e);
+                Logger.w(NewLanguageQuestionnaire.class.getName(), "Failed to parse new language questionnaire: " + jsonString, e);
             }
         }
         return null;

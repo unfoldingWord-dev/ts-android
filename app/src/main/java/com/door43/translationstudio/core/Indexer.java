@@ -475,7 +475,7 @@ public class Indexer {
         for (int i = 0; i < items.length(); i ++) {
             try {
                 JSONObject item = items.getJSONObject(i);
-                NewLanguageQuestionnaire questionnaire = NewLanguageQuestionnaire.generate(item);
+                NewLanguageQuestionnaire questionnaire = NewLanguageQuestionnaire.generate(item.toString());
                 if(questionnaire != null) {
                     long questionnaireDBId = mDatabaseHelper.addNewLanguageQuestionnaire(mDatabase, questionnaire.door43Id, questionnaire.languageSlug, questionnaire.languageName, questionnaire.languageDirection);
                     JSONArray questionsJson = item.getJSONArray("questions");

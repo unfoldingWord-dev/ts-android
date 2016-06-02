@@ -16,6 +16,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.LanguageDirection;
 import com.door43.translationstudio.core.NewLanguagePackage;
+import com.door43.translationstudio.core.NewLanguageQuestionnaireResponse;
 import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
@@ -31,6 +32,7 @@ import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.newui.newlanguage.NewLanguageActivity;
 
 import org.apache.commons.io.FileUtils;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -39,7 +41,6 @@ import java.util.Locale;
 public class NewTargetTranslationActivity extends BaseActivity implements TargetLanguageListFragment.OnItemClickListener, ProjectListFragment.OnItemClickListener {
 
     public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
-    public static final String EXTRA_NEW_LANGUAGE_DATA = "extra_new_language_data";
     public static final int RESULT_DUPLICATE = 2;
     private static final String STATE_TARGET_TRANSLATION_ID = "state_target_translation_id";
     private static final String STATE_TARGET_LANGUAGE_ID = "state_target_language_id";
@@ -62,9 +63,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             mNewLanguageButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent requestNewLangaugeIntent = new Intent(NewTargetTranslationActivity.this,
-                            NewLanguageActivity.class);
-                    requestNewLangaugeIntent.putExtra(NewLanguageActivity.EXTRA_CALLING_ACTIVITY, NewLanguageActivity.ACTIVITY_HOME);
+                    Intent requestNewLangaugeIntent = new Intent(NewTargetTranslationActivity.this, NewLanguageActivity.class);
                     startActivityForResult(requestNewLangaugeIntent, NEW_LANGUAGE_REQUEST);
                 }
             });
@@ -318,9 +317,20 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (NEW_LANGUAGE_REQUEST == requestCode) {
             if(RESULT_OK == resultCode) {
-                String newLanguageData = data.getStringExtra(NewTargetTranslationActivity.EXTRA_NEW_LANGUAGE_DATA);
-                useNewLanguage(newLanguageData);
-                mNewLanguageButton.setVisibility(View.INVISIBLE);
+                String rawResponse = data.getStringExtra(NewLanguageActivity.EXTRA_QUESTIONNAIRE_RESPONSE);
+                NewLanguageQuestionnaireResponse response = null;
+                try {
+                    response = NewLanguageQuestionnaireResponse.generate(new JSONObject(rawResponse));
+                } catch (JSONException e) {
+                    Logger.e(this.getClass().getName(), "Failed to parse questionnaire response: " + response, e);
+                }
+                if(response != null) {
+                    // TODO: 6/1/16 use the response
+                    useNewLanguage(rawResponse);
+                    mNewLanguageButton.setVisibility(View.INVISIBLE);
+                } else {
+                    // TODO: 6/1/16 display error to user and return to language selection
+                }
             }
         }
     }

@@ -20,7 +20,7 @@ import java.util.List;
  * Created by blm on 2/23/16.
  */
 public class NewLanguagePageFragment extends BaseFragment {
-    public static final String ARG_SOURCE_TRANSLATION_ID = "arg_source_translation_id";
+//    public static final String ARG_SOURCE_TRANSLATION_ID = "arg_source_translation_id";
     public static final String ARG_NEW_LANG_FINISHED = "arg_publish_finished";
     public static final String ARG_FIRST_PAGE = "first_page";
     public static final String ARG_LAST_PAGE = "last_page";
@@ -48,17 +48,17 @@ public class NewLanguagePageFragment extends BaseFragment {
             mQuestions = getAnswersFromArgs(args);
         }
 
-        mQuestionIndex = NewLanguagePageFragment.generateIdMap(mQuestions);
+//        mQuestionIndex = NewLanguagePageFragment.generateIdMap(mQuestions);
 
-        LinearLayout layout = (LinearLayout) mRootView.findViewById(R.id.content_layout);
+//        LinearLayout layout = (LinearLayout) mRootView.findViewById(R.id.content_layout);
         mAdapter = new NewLanguagePageAdapter();
-        mAdapter.setContentsView(layout);
-        mAdapter.loadQuestions(mQuestions);
+//        mAdapter.setContentsView(layout);
+//        mAdapter.loadQuestions(mQuestions);
 
         if(savedInstanceState != null) { // need to restore focus
             int focusedPosition = savedInstanceState.getInt(EXTRA_NEW_LANGUAGE_FOCUS_POSITION);
             int selection = savedInstanceState.getInt(EXTRA_NEW_LANGUAGE_SELECTION);
-            mAdapter.restoreFocus(focusedPosition, selection);
+//            mAdapter.restoreFocus(focusedPosition, selection);
         }
 
         Button nextButton = (Button) mRootView.findViewById(R.id.next_button);
@@ -110,7 +110,7 @@ public class NewLanguagePageFragment extends BaseFragment {
 
     public void cleanup() {
         if(mAdapter != null) {
-            mAdapter.cleanup();
+//            mAdapter.cleanup();
         }
     }
 
@@ -248,7 +248,7 @@ public class NewLanguagePageFragment extends BaseFragment {
     private void doNext() {
         String answers = NewLanguageActivity.getQuestionsAsJson(mQuestions).toString();
         if (mLastPage) {
-            getListener().finishLanguageRequest(answers);
+            getListener().onQuestionnaireFinished(answers);
         } else {
             getListener().nextPage(answers);
         }
@@ -263,7 +263,7 @@ public class NewLanguagePageFragment extends BaseFragment {
 
         void previousPage(String answersJson);
 
-        void finishLanguageRequest(String answersJson);
+        void onQuestionnaireFinished(String answersJson);
     }
 
     /**
