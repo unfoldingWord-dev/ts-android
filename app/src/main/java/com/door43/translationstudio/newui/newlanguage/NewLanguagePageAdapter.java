@@ -35,6 +35,7 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
     private final Context context;
     private NewLanguagePage page;
     private List<ViewHolder> viewHolders = new ArrayList<>();
+    private OnEventListener onEventListener = null;
 
     public NewLanguagePageAdapter(Context context) {
         this.context = context;
@@ -244,6 +245,14 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
         return "";
     }
 
+    /**
+     * Sets the listener that will be called when certain ui events happen
+     * @param onEventListener
+     */
+    public void setOnEventListener(OnEventListener onEventListener) {
+        this.onEventListener = onEventListener;
+    }
+
     public static abstract class ViewHolder extends RecyclerView.ViewHolder {
 
         public int currentPosition = -1;
@@ -362,5 +371,9 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
             answer.setFocusable(false);
             answer.setFocusableInTouchMode(false);
         }
+    }
+
+    public interface OnEventListener {
+
     }
 }
