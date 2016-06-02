@@ -1,16 +1,15 @@
 package com.door43.translationstudio.newui.newlanguage;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -21,17 +20,21 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NewLanguagePage;
 import com.door43.translationstudio.core.NewLanguageQuestion;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * Handles the rendering of the questions in NewLanguageActivity
  */
-public class NewLanguagePageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePageAdapter.ViewHolder> {
 
     public static final String TAG = NewLanguagePageAdapter.class.getSimpleName();
     private static final int TYPE_BOOLEAN = 1;
     private static final int TYPE_STRING = 2;
     private final Context context;
     private NewLanguagePage page;
+    private List<ViewHolder> viewHolders = new ArrayList<>();
 
     public NewLanguagePageAdapter(Context context) {
         this.context = context;
@@ -47,9 +50,9 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     }
 
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v;
-        RecyclerView.ViewHolder vh;
+        ViewHolder vh;
         switch (viewType) {
             case TYPE_BOOLEAN:
                 v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_new_language_boolean_question, parent, false);
@@ -64,11 +67,13 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
                 vh = new StringViewHolder(context, v);
                 break;
         }
+        viewHolders.add(vh);
         return vh;
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(ViewHolder holder, int position) {
+        holder.currentPosition = position;
         switch (holder.getItemViewType()) {
             case TYPE_BOOLEAN:
                 onBindBooleanQuestion((BooleanViewHolder)holder, position);
@@ -179,14 +184,22 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         holder.answer.addTextChangedListener(holder.textWatcher);
     }
 
+    /**
+     * Re-evaluates the state of each question
+     */
     private void reload() {
-        // TODO: 6/1/16 notify callback that answers have changed
-
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
             public void run() {
-//                notifyDataSetChanged();
+                for(ViewHolder vh:viewHolders) {
+                    NewLanguageQuestion question = page.getQuestion(vh.currentPosition);
+                    if(isQuestionEnabled(question)) {
+                        vh.enable();
+                    } else {
+                        vh.disable();
+                    }
+                }
             }
         });
     }
@@ -231,21 +244,48 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         return "";
     }
 
-    public static class BooleanViewHolder extends RecyclerView.ViewHolder {
+    public static abstract class ViewHolder extends RecyclerView.ViewHolder {
+
+        public int currentPosition = -1;
+
+        public ViewHolder(View v) {
+            super(v);
+        }
+
+        abstract void enable();
+        abstract void disable();
+    }
+
+    public static class BooleanViewHolder extends ViewHolder {
         private final TextView question;
         private final RadioButton radioButtonYes;
         private final RadioButton radioButtonNo;
         private final Context context;
+        private final CardView card;
 
-        public BooleanViewHolder(Context context, View v) {
+        public BooleanViewHolder(final Context context, View v) {
             super(v);
 
             this.context = context;
             this.question = (TextView)v.findViewById(R.id.label);
             this.radioButtonYes = (RadioButton)v.findViewById(R.id.radio_button_yes);
             this.radioButtonNo = (RadioButton)v.findViewById(R.id.radio_button_no);
+            this.card = (CardView)v.findViewById(R.id.card);
+
+            this.card.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    View focusedView = ((View)v.getParent()).findFocus();
+                    if(focusedView != null) {
+                        focusedView.clearFocus();
+                        InputMethodManager imm = (InputMethodManager)context.getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(focusedView.getWindowToken(), 0);
+                    }
+                }
+            });
         }
 
+        @Override
         public void enable() {
             question.setTextColor(context.getResources().getColor(R.color.dark_primary_text));
             radioButtonNo.setEnabled(true);
@@ -256,6 +296,7 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 //            radioButtonYes.setFocusableInTouchMode(true);
         }
 
+        @Override
         public void disable() {
             question.setTextColor(context.getResources().getColor(R.color.dark_disabled_text));
             radioButtonNo.setEnabled(false);
@@ -267,10 +308,11 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         }
     }
 
-    public static class StringViewHolder extends RecyclerView.ViewHolder {
+    public static class StringViewHolder extends ViewHolder {
         private final EditText answer;
         private final TextView question;
         private final Context context;
+        private final CardView card;
         public TextWatcher textWatcher = null;
 
         public StringViewHolder(final Context context, View v) {
@@ -279,11 +321,16 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             this.context = context;
             this.question = (TextView)v.findViewById(R.id.label);
             this.answer = (EditText)v.findViewById(R.id.edit_text);
+            this.card = (CardView)v.findViewById(R.id.card);
 
-            this.question.setOnClickListener(new View.OnClickListener() {
+            this.card.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(v.isFocusable()) {
+                    if(answer.isFocusable()) {
+                        View focusedView = ((View)v.getParent()).findFocus();
+                        if(focusedView != null) {
+                            focusedView.clearFocus();
+                        }
                         answer.requestFocus();
                         InputMethodManager imm = (InputMethodManager)context.getSystemService(Context.INPUT_METHOD_SERVICE);
                         imm.showSoftInput(answer, InputMethodManager.SHOW_FORCED);
@@ -292,6 +339,7 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             });
         }
 
+        @Override
         public void enable() {
             question.setTextColor(context.getResources().getColor(R.color.dark_primary_text));
             question.setFocusable(true);
@@ -303,6 +351,7 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             answer.setFocusableInTouchMode(true);
         }
 
+        @Override
         public void disable() {
             question.setTextColor(context.getResources().getColor(R.color.dark_disabled_text));
             question.setFocusable(false);

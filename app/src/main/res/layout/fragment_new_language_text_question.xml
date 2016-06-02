@@ -1,29 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<android.support.v7.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    style="@style/Widget.CardContent"
-    android:orientation="vertical"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
+    card_view:cardElevation="2dp"
+    android:layout_margin="@dimen/card_margin"
+    android:padding="0dp"
+    android:clickable="true"
     android:id="@+id/card">
-
-    <TextView
+    <LinearLayout
+        style="@style/Widget.CardContent"
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="This is a question"
-        android:layout_weight="1"
-        android:paddingBottom="@dimen/card_margin"
-        android:textSize="@dimen/headline"
-        android:id="@+id/label" />
+        android:layout_height="wrap_content">
 
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:id="@+id/edit_text"
-        android:background="@drawable/edit_text"
-        android:hint="This is a hint"
-        android:textSize="@dimen/title"
-        android:inputType="text" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="This is a question"
+            android:layout_weight="1"
+            android:clickable="false"
+            android:paddingBottom="@dimen/card_margin"
+            android:textSize="@dimen/headline"
+            android:id="@+id/label" />
 
-</LinearLayout>
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:id="@+id/edit_text"
+            android:background="@drawable/edit_text"
+            android:hint="This is a hint"
+            android:textSize="@dimen/title"
+            android:inputType="text" />
+
+    </LinearLayout>
+</android.support.v7.widget.CardView>
