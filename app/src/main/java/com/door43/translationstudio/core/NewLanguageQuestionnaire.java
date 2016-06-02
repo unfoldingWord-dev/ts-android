@@ -78,7 +78,7 @@ public class NewLanguageQuestionnaire {
      * Returns the number of pages in the questionnaire
      */
     public int getNumPages() {
-        return 0;
+        return pages.size();
     }
 
     /**
@@ -103,5 +103,14 @@ public class NewLanguageQuestionnaire {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns a page by its position
+     * @param position
+     * @return
+     */
+    public NewLanguagePage getPage(int position) {
+        return pages.get(position);
     }
 }

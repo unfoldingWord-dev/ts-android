@@ -75,22 +75,23 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(linearLayoutManager);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mAdapter = new NewLanguagePageAdapter();
+        mAdapter = new NewLanguagePageAdapter(this);
         mRecyclerView.setAdapter(mAdapter);
-
-        // inject fragments
-        if(findViewById(R.id.fragment_container) != null) {
-            if(savedInstanceState != null) {
-                // attach to existing fragment
-                mFragment = (NewLanguagePageFragment)getFragmentManager().findFragmentById(R.id.fragment_container);
-                if(mFragment != null)  {
-                    mFragment.setOnEventListener(this);
-                }
-            } else {
-                // inject new fragment
-                goToPage(mCurrentPage, null);
-            }
-        }
+//
+//        // inject fragments
+//        if(findViewById(R.id.fragment_container) != null) {
+//            if(savedInstanceState != null) {
+//                // attach to existing fragment
+//                mFragment = (NewLanguagePageFragment)getFragmentManager().findFragmentById(R.id.fragment_container);
+//                if(mFragment != null)  {
+//                    mFragment.setOnEventListener(this);
+//                }
+//            } else {
+//                // inject new fragment
+//
+//            }
+//        }
+        goToPage(mCurrentPage, null);
      }
 
     @Override
@@ -443,6 +444,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         String titleFormat = getResources().getString(R.string.new_language_questionnaire_title);
         String title = String.format(titleFormat, mCurrentPage + 1, mQuestionnaire.getNumPages());
         setTitle(title);
+        mAdapter.setPage(mQuestionnaire.getPage(mCurrentPage));
 
         // TODO: 6/1/16 update adapter
 

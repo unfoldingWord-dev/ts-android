@@ -319,11 +319,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             if(RESULT_OK == resultCode) {
                 String rawResponse = data.getStringExtra(NewLanguageActivity.EXTRA_QUESTIONNAIRE_RESPONSE);
                 NewLanguageQuestionnaireResponse response = null;
-                try {
-                    response = NewLanguageQuestionnaireResponse.generate(new JSONObject(rawResponse));
-                } catch (JSONException e) {
-                    Logger.e(this.getClass().getName(), "Failed to parse questionnaire response: " + response, e);
-                }
+                response = NewLanguageQuestionnaireResponse.generate(rawResponse);
                 if(response != null) {
                     // TODO: 6/1/16 use the response
                     useNewLanguage(rawResponse);

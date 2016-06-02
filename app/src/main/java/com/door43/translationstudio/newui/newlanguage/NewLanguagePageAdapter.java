@@ -1,6 +1,8 @@
 package com.door43.translationstudio.newui.newlanguage;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -101,11 +103,16 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         NewLanguageQuestion question = page.getQuestion(position);
         holder.question.setText(question.question);
         holder.question.setHint(question.helpText);
+        holder.radioButtonYes.setOnCheckedChangeListener(null);
+        holder.radioButtonNo.setOnCheckedChangeListener(null);
 
+        String answerString = getQuestionAnswer(question);
         boolean answer = Boolean.parseBoolean(getQuestionAnswer(question));
 
-        holder.radioButtonYes.setChecked(answer);
-        holder.radioButtonNo.setChecked(!answer);
+        if(!answerString.isEmpty()) {
+            holder.radioButtonYes.setChecked(answer);
+            holder.radioButtonNo.setChecked(!answer);
+        }
 
         if(question.reliantQuestionId > 0 && isAnswerAffirmative(page.getQuestionById(question.reliantQuestionId))) {
             holder.disable();
@@ -133,6 +140,7 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         NewLanguageQuestion question = page.getQuestion(position);
         holder.question.setText(question.question);
         holder.question.setHint(question.helpText);
+        holder.answer.removeTextChangedListener(holder.textWatcher);
 
         String answer = getQuestionAnswer(question);
         holder.answer.setText(answer);
@@ -143,7 +151,6 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             holder.enable();
         }
 
-        holder.answer.removeTextChangedListener(holder.textWatcher);
         holder.textWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -162,7 +169,14 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
     private void reload() {
         // TODO: 6/1/16 notify callback that answers have changed
-        notifyDataSetChanged();
+
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+//                notifyDataSetChanged();
+            }
+        });
     }
 
     /**

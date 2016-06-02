@@ -51,7 +51,7 @@ public class NewLanguagePageFragment extends BaseFragment {
 //        mQuestionIndex = NewLanguagePageFragment.generateIdMap(mQuestions);
 
 //        LinearLayout layout = (LinearLayout) mRootView.findViewById(R.id.content_layout);
-        mAdapter = new NewLanguagePageAdapter();
+//        mAdapter = new NewLanguagePageAdapter();
 //        mAdapter.setContentsView(layout);
 //        mAdapter.loadQuestions(mQuestions);
 
@@ -87,7 +87,7 @@ public class NewLanguagePageFragment extends BaseFragment {
                 @Override
                 public void onClick(View v) {
                     saveAnswers();
-                    getListener().previousPage(NewLanguageActivity.getQuestionsAsJson(mQuestions).toString());
+//                    getListener().previousPage(NewLanguageActivity.getQuestionsAsJson(mQuestions).toString());
                 }
             });
         } else {
@@ -101,8 +101,8 @@ public class NewLanguagePageFragment extends BaseFragment {
     public void onSaveInstanceState(Bundle outState) {
         saveAnswers();
         cleanup();
-        String questionsJson = NewLanguageActivity.getQuestionsAsJson(mQuestions).toString();
-        outState.putString(NewLanguageActivity.EXTRA_NEW_LANGUAGE_QUESTIONS, questionsJson);
+//        String questionsJson = NewLanguageActivity.getQuestionsAsJson(mQuestions).toString();
+//        outState.putString(NewLanguageActivity.EXTRA_NEW_LANGUAGE_QUESTIONS, questionsJson);
         outState.putInt(EXTRA_NEW_LANGUAGE_FOCUS_POSITION, mAdapter.getFocusedPosition());
         outState.putInt(EXTRA_NEW_LANGUAGE_SELECTION, mAdapter.getSelection());
         super.onSaveInstanceState(outState);
@@ -116,7 +116,7 @@ public class NewLanguagePageFragment extends BaseFragment {
 
     public void saveAnswers() {
         if(mAdapter != null) {
-            mAdapter.updateAnswers();
+//            mAdapter.updateAnswers();
         }
     }
 
@@ -246,12 +246,12 @@ public class NewLanguagePageFragment extends BaseFragment {
      * move to next page, or if last page then finished
      */
     private void doNext() {
-        String answers = NewLanguageActivity.getQuestionsAsJson(mQuestions).toString();
-        if (mLastPage) {
-            getListener().onQuestionnaireFinished(answers);
-        } else {
-            getListener().nextPage(answers);
-        }
+////        String answers = NewLanguageActivity.getQuestionsAsJson(mQuestions).toString();
+//        if (mLastPage) {
+//            getListener().onQuestionnaireFinished(answers);
+//        } else {
+//            getListener().nextPage(answers);
+//        }
     }
 
     protected OnEventListener getListener() {
@@ -276,9 +276,10 @@ public class NewLanguagePageFragment extends BaseFragment {
 
 
     protected List<NewLanguageQuestion> getAnswersFromArgs(Bundle args) {
-        String questionsJson = args.getString(NewLanguageActivity.EXTRA_NEW_LANGUAGE_QUESTIONS);
-        List<NewLanguageQuestion> questions = NewLanguageActivity.parseJsonStrIntoQuestions(questionsJson);
-        return questions;
+//        String questionsJson = args.getString(NewLanguageActivity.EXTRA_NEW_LANGUAGE_QUESTIONS);
+//        List<NewLanguageQuestion> questions = NewLanguageActivity.parseJsonStrIntoQuestions(questionsJson);
+//        return questions;
+        return null;
     }
 
     /**

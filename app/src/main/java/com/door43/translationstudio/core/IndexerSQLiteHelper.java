@@ -2237,6 +2237,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             NewLanguageQuestionnaire questionnaire = new NewLanguageQuestionnaire(cursor.getLong(1), cursor.getString(2), cursor.getString(3), LanguageDirection.get(cursor.getString(4)));
             questionnaire.setDBId(cursor.getLong(0));
             questionnaires.add(questionnaire);
+            cursor.moveToNext();
         }
         cursor.close();
 
@@ -2265,6 +2266,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             questions.add(new NewLanguageQuestion(cursor.getInt(0), cursor.getString(1),
                     cursor.getString(2), NewLanguageQuestion.InputType.get(cursor.getString(3)),
                     cursor.getInt(4) == 1, cursor.getInt(5), cursor.getInt(6)));
+            cursor.moveToNext();
         }
         cursor.close();
 
