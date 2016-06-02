@@ -12,8 +12,8 @@
         android:layout_height="wrap_content"
         android:text="Choose yes or no"
         android:layout_weight="1"
-        android:layout_marginLeft="@dimen/dialog_content_margin"
-        android:textSize="@dimen/title"
+        android:layout_marginBottom="@dimen/card_margin"
+        android:textSize="@dimen/headline"
         android:id="@+id/label" />
 
     <RadioGroup
@@ -24,20 +24,17 @@
         <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@drawable/edit_text"
             android:text="@string/yes"
+            android:theme="@style/RadioButton"
             android:id="@+id/radio_button_yes"
-            android:layout_marginLeft="@dimen/dialog_content_margin"
             android:textSize="@dimen/title" />
 
         <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@drawable/edit_text"
             android:text="@string/no"
             android:id="@+id/radio_button_no"
+            android:theme="@style/RadioButton"
             android:layout_marginLeft="@dimen/dialog_content_margin"
             android:textSize="@dimen/title" />
     </RadioGroup>

@@ -103,8 +103,8 @@ public class NewLanguagePageFragment extends BaseFragment {
         cleanup();
 //        String questionsJson = NewLanguageActivity.getQuestionsAsJson(mQuestions).toString();
 //        outState.putString(NewLanguageActivity.EXTRA_NEW_LANGUAGE_QUESTIONS, questionsJson);
-        outState.putInt(EXTRA_NEW_LANGUAGE_FOCUS_POSITION, mAdapter.getFocusedPosition());
-        outState.putInt(EXTRA_NEW_LANGUAGE_SELECTION, mAdapter.getSelection());
+//        outState.putInt(EXTRA_NEW_LANGUAGE_FOCUS_POSITION, mAdapter.getFocusedPosition());
+//        outState.putInt(EXTRA_NEW_LANGUAGE_SELECTION, mAdapter.getSelection());
         super.onSaveInstanceState(outState);
     }
 

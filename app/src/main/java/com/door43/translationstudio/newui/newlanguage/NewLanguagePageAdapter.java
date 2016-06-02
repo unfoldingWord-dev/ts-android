@@ -1,5 +1,6 @@
 package com.door43.translationstudio.newui.newlanguage;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
@@ -9,6 +10,8 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RadioButton;
@@ -28,8 +31,6 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     private static final int TYPE_BOOLEAN = 1;
     private static final int TYPE_STRING = 2;
     private final Context context;
-    private int mFocusedPosition = -1;
-    private int mSelection = -1;
     private NewLanguagePage page;
 
     public NewLanguagePageAdapter(Context context) {
@@ -112,43 +113,50 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         if(!answerString.isEmpty()) {
             holder.radioButtonYes.setChecked(answer);
             holder.radioButtonNo.setChecked(!answer);
+        } else {
+            holder.radioButtonYes.setChecked(false);
+            holder.radioButtonNo.setChecked(false);
         }
 
-        if(question.reliantQuestionId > 0 && isAnswerAffirmative(page.getQuestionById(question.reliantQuestionId))) {
-            holder.disable();
-        } else {
+        if(isQuestionEnabled(question)) {
             holder.enable();
+        } else {
+            holder.disable();
         }
 
         holder.radioButtonYes.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                // TODO: save
+                if(isChecked) {
+                    // TODO: save true
+                }
                 reload();
             }
         });
         holder.radioButtonNo.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                // TODO: save
+                if(isChecked) {
+                    // TODO: save false
+                }
                 reload();
             }
         });
     }
 
     public void onBindStringQuestion(StringViewHolder holder, int position) {
-        NewLanguageQuestion question = page.getQuestion(position);
+        final NewLanguageQuestion question = page.getQuestion(position);
         holder.question.setText(question.question);
-        holder.question.setHint(question.helpText);
+        holder.answer.setHint(question.helpText);
         holder.answer.removeTextChangedListener(holder.textWatcher);
 
         String answer = getQuestionAnswer(question);
         holder.answer.setText(answer);
 
-        if(question.reliantQuestionId > 0 && isAnswerAffirmative(page.getQuestionById(question.reliantQuestionId))) {
-            holder.disable();
-        } else {
+        if(isQuestionEnabled(question)) {
             holder.enable();
+        } else {
+            holder.disable();
         }
 
         holder.textWatcher = new TextWatcher() {
@@ -156,13 +164,17 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // TODO: 6/1/16 save answer
+                String answer = getQuestionAnswer(question);
+                if((answer.isEmpty() && !s.toString().isEmpty())
+                    || (!answer.isEmpty() && s.toString().isEmpty())) {
+                    reload();
+                }
+            }
 
             @Override
-            public void afterTextChanged(Editable s) {
-                // TODO: 6/1/16 save answer
-                reload();
-            }
+            public void afterTextChanged(Editable s) {}
         };
         holder.answer.addTextChangedListener(holder.textWatcher);
     }
@@ -180,12 +192,26 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     }
 
     /**
+     * Checks if the question dependencies are satisfied for it to be enabled
+     * @param question
+     * @return
+     */
+    private boolean isQuestionEnabled(NewLanguageQuestion question) {
+        if(question != null) {
+            return question.reliantQuestionId < 0
+                    || (isAnswerAffirmative(page.getQuestionById(question.reliantQuestionId))
+                    && isQuestionEnabled(page.getQuestionById(question.reliantQuestionId)));
+        }
+        return false;
+    }
+
+    /**
      * Checks if the question has been answered in the affirmative.
      * This means it was either yes for boolean questions or text was entered for string questions
      * @param question
      * @return
      */
-    public boolean isAnswerAffirmative(NewLanguageQuestion question) {
+    private boolean isAnswerAffirmative(NewLanguageQuestion question) {
         if(question != null) {
             // TODO: 6/1/16 get answer for question and check if it has been answered in the affirmative
 
@@ -198,20 +224,11 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
      * @param question
      * @return
      */
-    public String getQuestionAnswer(NewLanguageQuestion question) {
+    private String getQuestionAnswer(NewLanguageQuestion question) {
         if(question != null) {
             // TODO: 6/1/16 get the answer to the question
         }
         return "";
-    }
-
-
-    public int getFocusedPosition() {
-        return mFocusedPosition;
-    }
-
-    public int getSelection() {
-        return mSelection;
     }
 
     public static class BooleanViewHolder extends RecyclerView.ViewHolder {
@@ -232,21 +249,21 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         public void enable() {
             question.setTextColor(context.getResources().getColor(R.color.dark_primary_text));
             radioButtonNo.setEnabled(true);
-            radioButtonNo.setFocusable(true);
-            radioButtonNo.setFocusableInTouchMode(true);
+//            radioButtonNo.setFocusable(true);
+//            radioButtonNo.setFocusableInTouchMode(true);
             radioButtonYes.setEnabled(true);
-            radioButtonYes.setFocusable(true);
-            radioButtonYes.setFocusableInTouchMode(true);
+//            radioButtonYes.setFocusable(true);
+//            radioButtonYes.setFocusableInTouchMode(true);
         }
 
         public void disable() {
             question.setTextColor(context.getResources().getColor(R.color.dark_disabled_text));
             radioButtonNo.setEnabled(false);
-            radioButtonNo.setFocusable(false);
-            radioButtonNo.setFocusableInTouchMode(false);
+//            radioButtonNo.setFocusable(false);
+//            radioButtonNo.setFocusableInTouchMode(false);
             radioButtonYes.setEnabled(false);
-            radioButtonYes.setFocusable(false);
-            radioButtonYes.setFocusableInTouchMode(false);
+//            radioButtonYes.setFocusable(false);
+//            radioButtonYes.setFocusableInTouchMode(false);
         }
     }
 
@@ -256,12 +273,23 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         private final Context context;
         public TextWatcher textWatcher = null;
 
-        public StringViewHolder(Context context, View v) {
+        public StringViewHolder(final Context context, View v) {
             super(v);
 
             this.context = context;
             this.question = (TextView)v.findViewById(R.id.label);
             this.answer = (EditText)v.findViewById(R.id.edit_text);
+
+            this.question.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(v.isFocusable()) {
+                        answer.requestFocus();
+                        InputMethodManager imm = (InputMethodManager)context.getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.showSoftInput(answer, InputMethodManager.SHOW_FORCED);
+                    }
+                }
+            });
         }
 
         public void enable() {
@@ -271,6 +299,8 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             answer.setEnabled(true);
             answer.setTextColor(context.getResources().getColor(R.color.dark_primary_text));
             answer.setHintTextColor(context.getResources().getColor(R.color.half_transparent));
+            answer.setFocusable(true);
+            answer.setFocusableInTouchMode(true);
         }
 
         public void disable() {
@@ -280,6 +310,8 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             answer.setEnabled(false);
             answer.setTextColor(context.getResources().getColor(R.color.dark_disabled_text));
             answer.setHintTextColor(context.getResources().getColor(R.color.transparent));
+            answer.setFocusable(false);
+            answer.setFocusableInTouchMode(false);
         }
     }
 }

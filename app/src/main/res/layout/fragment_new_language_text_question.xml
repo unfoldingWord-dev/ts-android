@@ -8,24 +8,22 @@
     android:id="@+id/card">
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text=""
+        android:text="This is a question"
         android:layout_weight="1"
-        android:layout_marginLeft="@dimen/dialog_content_margin"
-        android:textSize="@dimen/title"
+        android:paddingBottom="@dimen/card_margin"
+        android:textSize="@dimen/headline"
         android:id="@+id/label" />
 
     <EditText
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:id="@+id/edit_text"
         android:background="@drawable/edit_text"
-        android:hint=""
-        android:layout_marginLeft="@dimen/stacked_card_margin"
+        android:hint="This is a hint"
         android:textSize="@dimen/title"
-        android:inputType="text"
-        android:enabled="true" />
+        android:inputType="text" />
 
 </LinearLayout>

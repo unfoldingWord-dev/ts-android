@@ -10,11 +10,9 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.door43.tools.reporting.GlobalExceptionHandler;
 import com.door43.translationstudio.CrashReporterActivity;
-import com.door43.translationstudio.ImportFileChooserActivity;
 import com.door43.translationstudio.SplashScreenActivity;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.TermsOfUseActivity;
-import com.door43.translationstudio.newui.legal.LegalDocumentActivity;
 
 import java.io.File;
 
