@@ -451,9 +451,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         if (numChapters < 2) {
             numVisibleGraduations = 0;
         }
-        if (viewMode != TranslationViewMode.READ) {
-            numVisibleGraduations = 0;
-        }
 
         // Set up the visible chapters.
         for (int i = 0; i < numVisibleGraduations; ++i) {
@@ -461,13 +458,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             container.setVisibility(View.VISIBLE);
             TextView text = (TextView) container.getChildAt(1);
 
-            // This calculation, full of fudge factors, has the following properties:
-            //   - It starts at 1.
-            //   - It ends with the last chapter.
-            //   - It's evenly spaced in between.
-            int label = 1 + i * (numChapters - 1) / (numVisibleGraduations - 1);
-
-            text.setText(Integer.toString(label));
+            int label = i * (numChapters - 1) / (numVisibleGraduations - 1);
+            String chapter = getChapterID(viewMode, label);
+            text.setText(chapter);
         }
 
         // Undisplay the invisible chapters.
@@ -475,6 +468,22 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             mGraduations.getChildAt(i).setVisibility(View.GONE);
         }
     }
+
+    /**
+     * get the chapter ID for the position
+     * @param viewMode
+     * @param position
+     * @return
+     */
+    private String getChapterID(TranslationViewMode viewMode, int position) {
+        if( (viewMode != null) && (mFragment instanceof ViewModeFragment)) {
+            return ((ViewModeFragment) mFragment).getChapterID(position);
+        }
+
+        String chapterID = Integer.toString(position + 1);
+        return chapterID;
+    }
+
 
     private boolean displaySeekBarAsInverted() {
         return mSeekBar instanceof VerticalSeekBar;

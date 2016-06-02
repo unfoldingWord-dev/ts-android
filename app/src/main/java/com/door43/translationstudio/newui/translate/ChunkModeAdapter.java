@@ -236,6 +236,42 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         return vh;
     }
 
+    /**
+     * get the chapter ID for the position
+     * @param position
+     */
+    @Override
+    public String getChapterID(int position) {
+        if(position < 0) {
+            position = 0;
+        } else if(position >= mListItems.length) {
+            position = mListItems.length - 1;
+        }
+
+        ListItem item;
+        for(int i = position; i >= 0; i--) { // check current frame and previous to get frame with valid chapter ID
+            item = mListItems[i];
+            if(item.isFrame()) {
+                String chapterSlug = item.chapterSlug;
+                if(chapterSlug != null) {
+                    return chapterSlug;
+                }
+            }
+        }
+        for(int i = position + 1; i < mListItems.length; i++) { // check later frames to get frame with valid chapter ID
+            item = mListItems[i];
+            if(item.isFrame()) {
+                String chapterSlug = item.chapterSlug;
+                if(chapterSlug != null) {
+                    return chapterSlug;
+                }
+            }
+        }
+
+        String chapterID = Integer.toString(position + 1);
+        return chapterID;
+    }
+
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         int cardMargin = mContext.getResources().getDimensionPixelSize(R.dimen.card_margin);
