@@ -18,6 +18,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
@@ -140,19 +141,17 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
         final NewLanguageQuestion question = page.getQuestion(position);
         holder.question.setText(question.question);
         holder.question.setHint(question.helpText);
-        holder.radioButtonYes.setOnCheckedChangeListener(null);
-        holder.radioButtonNo.setOnCheckedChangeListener(null);
+        holder.radioGroup.setOnCheckedChangeListener(null);
 
         String answerString = getQuestionAnswer(question);
         boolean answer = Boolean.parseBoolean(answerString);
 
-        // check radio buttons if an answer has been given
+        holder.radioGroup.clearCheck();
+
+        // provide answer if given
         if(answerString != null && !answerString.isEmpty()) {
             holder.radioButtonYes.setChecked(answer);
             holder.radioButtonNo.setChecked(!answer);
-        } else {
-            holder.radioButtonYes.setChecked(false);
-            holder.radioButtonNo.setChecked(false);
         }
 
         if(isQuestionEnabled(question)) {
@@ -161,19 +160,12 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
             holder.disable();
         }
 
-        holder.radioButtonYes.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        holder.radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked) {
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                if(checkedId == R.id.radio_button_yes) {
                     saveAnswer(question, "true");
-                }
-                reload();
-            }
-        });
-        holder.radioButtonNo.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked) {
+                } else {
                     saveAnswer(question, "false");
                 }
                 reload();
@@ -331,6 +323,7 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
         private final RadioButton radioButtonYes;
         private final RadioButton radioButtonNo;
         private final Context context;
+        private final RadioGroup radioGroup;
 
         public BooleanViewHolder(final Context context, View v) {
             super(v);
@@ -339,7 +332,7 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
             this.question = (TextView)v.findViewById(R.id.label);
             this.radioButtonYes = (RadioButton)v.findViewById(R.id.radio_button_yes);
             this.radioButtonNo = (RadioButton)v.findViewById(R.id.radio_button_no);
-
+            this.radioGroup = (RadioGroup)v.findViewById(R.id.radio_group);
 
             this.card.setOnClickListener(new View.OnClickListener() {
                 @Override

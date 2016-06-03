@@ -60,7 +60,7 @@
                 <TextView
                     style="@style/Widget.Button.Blue"
                     android:clickable="false"
-                    android:text="@string/previous_step"/>
+                    android:text="@string/previous"/>
             </android.support.v7.widget.CardView>
 
             <LinearLayout
@@ -80,7 +80,7 @@
                     <TextView
                         style="@style/Widget.Button.Blue"
                         android:clickable="false"
-                        android:text="@string/next_step"/>
+                        android:text="@string/next"/>
                 </android.support.v7.widget.CardView>
 
                 <android.support.v7.widget.CardView

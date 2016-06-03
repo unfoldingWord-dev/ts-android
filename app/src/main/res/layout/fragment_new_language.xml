@@ -53,7 +53,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal|right"
                 style="@style/Widget.Button.Blue"
-                android:text="@string/previous_step"
+                android:text="@string/previous"
                 android:layout_marginRight="@dimen/dialog_controls_margin"
                 android:layout_marginLeft="@dimen/dialog_controls_margin" />
 
@@ -63,7 +63,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal|right"
                 style="@style/Widget.Button.Blue"
-                android:text="@string/next_step"
+                android:text="@string/next"
                 android:layout_marginRight="@dimen/dialog_controls_margin"
                 android:layout_marginLeft="@dimen/dialog_controls_margin" />
 
