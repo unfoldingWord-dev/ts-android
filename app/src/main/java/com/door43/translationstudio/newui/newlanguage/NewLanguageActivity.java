@@ -2,13 +2,13 @@ package com.door43.translationstudio.newui.newlanguage;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.widget.Button;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
@@ -17,6 +17,7 @@ import com.door43.translationstudio.core.NewLanguageQuestion;
 import com.door43.translationstudio.core.NewLanguageQuestionnaire;
 import com.door43.translationstudio.core.NewLanguageQuestionnaireResponse;
 import com.door43.translationstudio.newui.BaseActivity;
+import com.door43.widget.ViewUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
 
     public static final String TAG = NewLanguageActivity.class.getSimpleName();
     public static final String EXTRA_QUESTIONNAIRE_RESPONSE = "questionnaire_response";
+    public static final String EXTRA_MESSAGE = "message";
 
     private static final String STATE_PAGE = "current_page";
     private static final String STATE_FINISHED = "finished";
@@ -55,7 +57,9 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         mQuestionnaire = AppContext.getLibrary().getNewLanguageQuestionnaire();
         if(mQuestionnaire == null) {
             Logger.e(this.getClass().getName(), "Cannot begin the new language questionnaire because no questionnaire was found.");
-            // TODO: 6/1/16 display notice to user
+            Intent data = new Intent();
+            data.putExtra(EXTRA_MESSAGE, getResources().getString(R.string.missing_questionnaire));
+            setResult(RESULT_FIRST_USER, data);
             finish();
             return;
         }
@@ -67,8 +71,13 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
             mQuestionnaireFinished = savedInstanceState.getBoolean(STATE_FINISHED, false);
             mResponse = NewLanguageQuestionnaireResponse.generate(savedInstanceState.getString(EXTRA_QUESTIONNAIRE_RESPONSE));
             if(mResponse == null) {
-                // TODO: 6/1/16 display an error to the user and restart
-                finish();
+                Snackbar snack = Snackbar.make(findViewById(android.R.id.content), getResources().getString(R.string.error), Snackbar.LENGTH_LONG);
+                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                snack.show();
+
+                // restart
+                mResponse = NewLanguageQuestionnaireResponse.newInstance(this, mQuestionnaire.door43Id, "android", AppContext.getProfile().getFullName());
+                mCurrentPage = -1;
                 return;
             }
         } else {
@@ -103,7 +112,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
             @Override
             public void onClick(View v) {
                 Intent data = new Intent();
-                data.putExtra(EXTRA_QUESTIONNAIRE_RESPONSE, ""); // TODO: add data
+                data.putExtra(EXTRA_QUESTIONNAIRE_RESPONSE, mResponse.toJson());
                 setResult(RESULT_OK, data);
                 finish();
             }
@@ -135,6 +144,9 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
      * @param page
      */
     private void goToPage(int page) {
+        mRecyclerView.scrollToPosition(0);
+
+        boolean animateRight = page > mCurrentPage;
         if(page >= mQuestionnaire.getNumPages()) {
             mCurrentPage = mQuestionnaire.getNumPages() - 1;
         } else if(page < 0) {
@@ -146,7 +158,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         String titleFormat = getResources().getString(R.string.new_language_questionnaire_title);
         String title = String.format(titleFormat, mCurrentPage + 1, mQuestionnaire.getNumPages());
         setTitle(title);
-        mAdapter.setPage(mQuestionnaire.getPage(mCurrentPage));
+        mAdapter.setPage(mQuestionnaire.getPage(mCurrentPage), animateRight);
 
         // update controls
         mPreviousButton.setVisibility(View.GONE);
@@ -161,12 +173,26 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
             mNextButton.setVisibility(View.VISIBLE);
             mPreviousButton.setVisibility(View.VISIBLE);
         }
+
+        AppContext.closeKeyboard(this);
     }
 
     @Override
     public void onDestroy() {
-        mAdapter.setOnEventListener(null);
+        if(mAdapter != null) {
+            mAdapter.setOnEventListener(null);
+        }
         super.onDestroy();
+    }
+
+    @Override
+    public String onGetAnswer(NewLanguageQuestion question) {
+        return mResponse.getAnswer(question.id);
+    }
+
+    @Override
+    public void onAnswerChanged(NewLanguageQuestion question, String answer) {
+        mResponse.setAnswer(question.id, answer);
     }
 }
 

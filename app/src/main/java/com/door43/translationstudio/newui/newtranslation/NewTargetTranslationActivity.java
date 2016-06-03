@@ -3,6 +3,7 @@ package com.door43.translationstudio.newui.newtranslation;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.MenuItemCompat;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
@@ -30,6 +31,7 @@ import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.newui.newlanguage.NewLanguageActivity;
+import com.door43.widget.ViewUtil;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONException;
@@ -327,6 +329,11 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                 } else {
                     // TODO: 6/1/16 display error to user and return to language selection
                 }
+            } else if(RESULT_FIRST_USER == resultCode) {
+                String message = data.getStringExtra(NewLanguageActivity.EXTRA_MESSAGE);
+                Snackbar snack = Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_LONG);
+                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                snack.show();
             }
         }
     }

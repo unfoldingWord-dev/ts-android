@@ -1,7 +1,9 @@
 package com.door43.translationstudio.core;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -9,7 +11,7 @@ import java.util.Map;
  * Represents a page of questions in the new language questionnaire
  */
 public class NewLanguagePage {
-    private Map<Long, NewLanguageQuestion> questions = new HashMap<>();
+    private Map<Long, NewLanguageQuestion> questions = new LinkedHashMap<>();
 
     /**
      * Adds a question to this page
@@ -60,5 +62,22 @@ public class NewLanguagePage {
      */
     public NewLanguageQuestion getQuestionById(long id) {
         return this.questions.get(id);
+    }
+
+    /**
+     * Returns the index of the question
+     * @param questionId
+     * @return
+     */
+    public int indexOf(long questionId) {
+        return new ArrayList<>(questions.keySet()).indexOf(questionId);
+    }
+
+    /**
+     * Removes a question from the page
+     * @param questionId
+     */
+    public void removeQuestion(long questionId) {
+        questions.remove(questionId);
     }
 }

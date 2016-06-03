@@ -1,8 +1,10 @@
 package com.door43.translationstudio.newui.newlanguage;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -10,6 +12,8 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -19,6 +23,7 @@ import android.widget.TextView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NewLanguagePage;
 import com.door43.translationstudio.core.NewLanguageQuestion;
+import com.door43.widget.ViewUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,21 +37,26 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
     public static final String TAG = NewLanguagePageAdapter.class.getSimpleName();
     private static final int TYPE_BOOLEAN = 1;
     private static final int TYPE_STRING = 2;
-    private final Context context;
+    private final Activity context;
     private NewLanguagePage page;
     private List<ViewHolder> viewHolders = new ArrayList<>();
     private OnEventListener onEventListener = null;
+    private int lastPosition = -1;
+    private boolean animateRight = true;
 
-    public NewLanguagePageAdapter(Context context) {
+    public NewLanguagePageAdapter(Activity context) {
         this.context = context;
     }
 
     /**
      * Sets the questionnaire page that should be displayed
      * @param page
+     * @param animateRight indicates the direction of the question animations
      */
-    public void setPage(NewLanguagePage page) {
+    public void setPage(NewLanguagePage page, boolean animateRight) {
         this.page = page;
+        lastPosition = -1;
+        this.animateRight = animateRight;
         notifyDataSetChanged();
     }
 
@@ -75,6 +85,7 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         holder.currentPosition = position;
+        setAnimation(holder.card, position);
         switch (holder.getItemViewType()) {
             case TYPE_BOOLEAN:
                 onBindBooleanQuestion((BooleanViewHolder)holder, position);
@@ -85,6 +96,25 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
             default:
                 onBindStringQuestion((StringViewHolder)holder, position);
                 break;
+        }
+    }
+
+    @Override
+    public void onViewDetachedFromWindow(final ViewHolder holder) {
+        holder.clearAnimation();
+    }
+
+    private void setAnimation(View viewToAnimate, int position) {
+        // If the bound view wasn't previously displayed on screen, it's animated
+        if (position > lastPosition) {
+            Animation animation;
+            if(animateRight) {
+                animation = AnimationUtils.loadAnimation(context, R.anim.slide_in_right);
+            } else {
+                animation = AnimationUtils.loadAnimation(context, android.R.anim.slide_in_left);
+            }
+            viewToAnimate.startAnimation(animation);
+            lastPosition = position;
         }
     }
 
@@ -107,16 +137,17 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
     }
 
     public void onBindBooleanQuestion(BooleanViewHolder holder, int position) {
-        NewLanguageQuestion question = page.getQuestion(position);
+        final NewLanguageQuestion question = page.getQuestion(position);
         holder.question.setText(question.question);
         holder.question.setHint(question.helpText);
         holder.radioButtonYes.setOnCheckedChangeListener(null);
         holder.radioButtonNo.setOnCheckedChangeListener(null);
 
         String answerString = getQuestionAnswer(question);
-        boolean answer = Boolean.parseBoolean(getQuestionAnswer(question));
+        boolean answer = Boolean.parseBoolean(answerString);
 
-        if(!answerString.isEmpty()) {
+        // check radio buttons if an answer has been given
+        if(answerString != null && !answerString.isEmpty()) {
             holder.radioButtonYes.setChecked(answer);
             holder.radioButtonNo.setChecked(!answer);
         } else {
@@ -134,7 +165,7 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked) {
-                    // TODO: save true
+                    saveAnswer(question, "true");
                 }
                 reload();
             }
@@ -143,7 +174,7 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked) {
-                    // TODO: save false
+                    saveAnswer(question, "false");
                 }
                 reload();
             }
@@ -171,10 +202,11 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // TODO: 6/1/16 save answer
                 String answer = getQuestionAnswer(question);
-                if((answer.isEmpty() && !s.toString().isEmpty())
-                    || (!answer.isEmpty() && s.toString().isEmpty())) {
+                boolean wasAnswered = answer != null && !answer.isEmpty();
+                boolean isAnswered = !s.toString().isEmpty();
+                saveAnswer(question, s.toString());
+                if(wasAnswered != isAnswered) {
                     reload();
                 }
             }
@@ -183,6 +215,23 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
             public void afterTextChanged(Editable s) {}
         };
         holder.answer.addTextChangedListener(holder.textWatcher);
+    }
+
+    /**
+     * Saves the answer
+     * @param question
+     * @param answer
+     */
+    private boolean saveAnswer(NewLanguageQuestion question, String answer) {
+        if(onEventListener != null) {
+            onEventListener.onAnswerChanged(question, answer);
+            return true;
+        } else {
+            Snackbar snack = Snackbar.make(context.findViewById(android.R.id.content), context.getResources().getString(R.string.answer_not_saved), Snackbar.LENGTH_LONG);
+            ViewUtil.setSnackBarTextColor(snack, context.getResources().getColor(R.color.light_primary_text));
+            snack.show();
+            return false;
+        }
     }
 
     /**
@@ -227,10 +276,16 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
      */
     private boolean isAnswerAffirmative(NewLanguageQuestion question) {
         if(question != null) {
-            // TODO: 6/1/16 get answer for question and check if it has been answered in the affirmative
-
+            String answer = getQuestionAnswer(question);
+            if(answer != null && !answer.isEmpty()) {
+                if (question.type == NewLanguageQuestion.InputType.Boolean) {
+                    return Boolean.parseBoolean(answer);
+                } else {
+                    return true;
+                }
+            }
         }
-        return true;
+        return false;
     }
 
     /**
@@ -239,8 +294,8 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
      * @return
      */
     private String getQuestionAnswer(NewLanguageQuestion question) {
-        if(question != null) {
-            // TODO: 6/1/16 get the answer to the question
+        if(question != null && onEventListener != null) {
+            return onEventListener.onGetAnswer(question);
         }
         return "";
     }
@@ -255,14 +310,20 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
 
     public static abstract class ViewHolder extends RecyclerView.ViewHolder {
 
+        protected final CardView card;
         public int currentPosition = -1;
 
         public ViewHolder(View v) {
             super(v);
+            this.card = (CardView)v.findViewById(R.id.card);
         }
 
         abstract void enable();
         abstract void disable();
+
+        public void clearAnimation() {
+            this.card.clearAnimation();
+        }
     }
 
     public static class BooleanViewHolder extends ViewHolder {
@@ -270,7 +331,6 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
         private final RadioButton radioButtonYes;
         private final RadioButton radioButtonNo;
         private final Context context;
-        private final CardView card;
 
         public BooleanViewHolder(final Context context, View v) {
             super(v);
@@ -279,7 +339,7 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
             this.question = (TextView)v.findViewById(R.id.label);
             this.radioButtonYes = (RadioButton)v.findViewById(R.id.radio_button_yes);
             this.radioButtonNo = (RadioButton)v.findViewById(R.id.radio_button_no);
-            this.card = (CardView)v.findViewById(R.id.card);
+
 
             this.card.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -321,7 +381,6 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
         private final EditText answer;
         private final TextView question;
         private final Context context;
-        private final CardView card;
         public TextWatcher textWatcher = null;
 
         public StringViewHolder(final Context context, View v) {
@@ -330,7 +389,6 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
             this.context = context;
             this.question = (TextView)v.findViewById(R.id.label);
             this.answer = (EditText)v.findViewById(R.id.edit_text);
-            this.card = (CardView)v.findViewById(R.id.card);
 
             this.card.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -374,6 +432,7 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
     }
 
     public interface OnEventListener {
-
+        String onGetAnswer(NewLanguageQuestion question);
+        void onAnswerChanged(NewLanguageQuestion question, String answer);
     }
 }

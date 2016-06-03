@@ -5,7 +5,6 @@ import android.provider.Settings;
 import android.support.annotation.Nullable;
 
 import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
 import com.door43.util.Security;
 
 import org.json.JSONArray;
@@ -14,6 +13,7 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
 
 /**
@@ -22,7 +22,7 @@ import java.util.UUID;
 public class NewLanguageQuestionnaireResponse {
     private static final String LANGUAGE_PREFIX = "qaa-x-";
 
-    private Map<Long, String> answers = new HashMap<>();
+    private Map<Long, String> answers = new TreeMap<>();
 
     public final String requestUUID;
     public final String tempLanguageCode;
@@ -32,11 +32,11 @@ public class NewLanguageQuestionnaireResponse {
 
     /**
      * Instanciates a new questionnaire response
-     * @param requestUUID
-     * @param tempLanguageCode
-     * @param questionnaireId
-     * @param app
-     * @param requester
+     * @param requestUUID an id that identifies this response
+     * @param tempLanguageCode the temporary language code that will be assigned
+     * @param questionnaireId the translationDatabase id of the questionnaire
+     * @param app the name of the app generating this response
+     * @param requester the name of the translator requesting the custom language code
      */
     private NewLanguageQuestionnaireResponse(String requestUUID, String tempLanguageCode, long questionnaireId, String app, String requester) {
         this.requestUUID = requestUUID;
@@ -67,7 +67,7 @@ public class NewLanguageQuestionnaireResponse {
      * @param answer
      */
     @Nullable
-    public void addAnswer(long questionId, String answer) {
+    public void setAnswer(long questionId, String answer) {
         this.answers.put(questionId, answer);
     }
 
@@ -119,7 +119,7 @@ public class NewLanguageQuestionnaireResponse {
                 JSONArray answers = json.getJSONArray("answers");
                 for(int i = 0; i < answers.length(); i ++) {
                     JSONObject answer = answers.getJSONObject(i);
-                    response.addAnswer(answer.getLong("question_id"), answer.getString("text"));
+                    response.setAnswer(answer.getLong("question_id"), answer.getString("text"));
                 }
                 return response;
             } catch (JSONException e) {
@@ -127,5 +127,14 @@ public class NewLanguageQuestionnaireResponse {
             }
         }
         return null;
+    }
+
+    /**
+     * returns the answer by the question id
+     * @param id
+     * @return
+     */
+    public String getAnswer(long id) {
+        return answers.get(id);
     }
 }

@@ -49,10 +49,10 @@ public class NewLanguageQuestionnaire {
 
         for(NewLanguageQuestion q:questions) {
             if(!currentPage.containsQuestion(q.reliantQuestionId) && currentPage.getNumQuestions() >= QUESTIONS_PER_PAGE) {
-                // close page
+                // close full page
                 pages.add(currentPage);
                 currentPage = new NewLanguagePage();
-            } else if(questionsAdded.contains(q.reliantQuestionId)) {
+            } else if(!currentPage.containsQuestion(q.reliantQuestionId) && questionsAdded.contains(q.reliantQuestionId)) {
                 // add out of order question to correct page
                 boolean placedQuestion = false;
                 for(NewLanguagePage processedPage:pages) {
@@ -66,11 +66,30 @@ public class NewLanguageQuestionnaire {
                     questionsAdded.add(q.id);
                 }
                 continue;
+            } else if(currentPage.containsQuestion(q.reliantQuestionId)
+                    && currentPage.getQuestionById(q.reliantQuestionId).reliantQuestionId < 0
+                    && currentPage.indexOf(q.reliantQuestionId) > 0) {
+                // place non-dependent reliant question in it's own page
+                NewLanguageQuestion reliantQuestion = currentPage.getQuestionById(q.reliantQuestionId);
+                currentPage.removeQuestion(q.reliantQuestionId);
+
+                // close page
+                pages.add(currentPage);
+                currentPage = new NewLanguagePage();
+
+                // add questions to page
+                currentPage.addQuestion(reliantQuestion);
+                currentPage.addQuestion(q);
+                questionsAdded.add(q.id);
+                continue;
             }
 
             // add question to page
             currentPage.addQuestion(q);
             questionsAdded.add(q.id);
+        }
+        if(currentPage.getNumQuestions() > 0) {
+            pages.add(currentPage);
         }
     }
 
