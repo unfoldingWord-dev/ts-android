@@ -51,8 +51,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     private static final long COMMIT_INTERVAL = 2 * 60 * 1000; // commit changes every 2 minutes
     private Fragment mFragment;
-    private SeekBar mSeekBar;
-    private ViewGroup mGraduations;
     private Translator mTranslator;
     private TargetTranslation mTargetTranslation;
     private Timer mCommitTimer = new Timer();
@@ -142,44 +140,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         }
 
         // set up menu items
-        mGraduations = (ViewGroup) findViewById(R.id.action_seek_graduations);
-        mSeekBar = (SeekBar) findViewById(R.id.action_seek);
-        mSeekBar.setMax(100);
-        mSeekBar.setProgress(computePositionFromProgress(0));
-//        mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-//            @Override
-//            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-//                int position;
-//                if (progress < 0) {
-//                    position = computePositionFromProgress(0);
-//                } else if (progress <= seekBar.getMax()) {
-//                    position = computePositionFromProgress(progress);
-//                } else {
-//                    position = 0;
-//                }
-//
-//                // If this change was initiated by a click on a UI element (rather than as a result
-//                // of updates within the program), then update the view accordingly.
-//                if (mFragment instanceof ViewModeFragment && fromUser) {
-//                    ((ViewModeFragment) mFragment).onScrollProgressUpdate(position);
-//                }
-//
-//                TargetTranslationActivity activity = (TargetTranslationActivity) seekBar.getContext();
-//                if (activity != null) {
-//                    activity.closeKeyboard();
-//                }
-//            }
-//
-//            @Override
-//            public void onStartTrackingTouch(SeekBar seekBar) {
-//                mGraduations.animate().alpha(1.f);
-//            }
-//
-//            @Override
-//            public void onStopTrackingTouch(SeekBar seekBar) {
-//                mGraduations.animate().alpha(0.f);
-//            }
-//        });
         mMoreButton = (ImageButton) findViewById(R.id.action_more);
         buildMenu();
 
@@ -425,7 +385,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     @Override
     public void onScrollProgress(int position) {
-        mSeekBar.setProgress(computeProgressFromPosition(position));
         checkIfCursorStillOnScreen();
 
         Logger.i(TAG, "onScrollProgress: position: " + position);
@@ -437,42 +396,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     @Override
     public void onItemCountChanged(int itemCount, int progress) {
-        mSeekBar.setMax(itemCount);
-        mSeekBar.setProgress(itemCount - progress);
         closeKeyboard();
-        setupGraduations();
-    }
-
-    private void setupGraduations() {
-        final int numChapters = mSeekBar.getMax();
-        TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
-
-        // Set up visibility of the graduation bar.
-        // Display graduations evenly spaced by number of chapters (but not more than the number
-        // of chapters that exist). As a special case, display nothing if there's only one chapter.
-        // Also, show nothing unless we're in read mode, since the other modes are indexed by
-        // frame, not by chapter, so displaying either frame numbers or chapter numbers would be
-        // nonsensical.
-        int numVisibleGraduations = Math.min(numChapters, mGraduations.getChildCount());
-        if (numChapters < 2) {
-            numVisibleGraduations = 0;
-        }
-
-        // Set up the visible chapters.
-        for (int i = 0; i < numVisibleGraduations; ++i) {
-            ViewGroup container = (ViewGroup) mGraduations.getChildAt(i);
-            container.setVisibility(View.VISIBLE);
-            TextView text = (TextView) container.getChildAt(1);
-
-            int label = i * (numChapters - 1) / (numVisibleGraduations - 1);
-            String chapter = getChapterID(label);
-            text.setText(chapter);
-        }
-
-        // Undisplay the invisible chapters.
-        for (int i = numVisibleGraduations; i < mGraduations.getChildCount(); ++i) {
-            mGraduations.getChildAt(i).setVisibility(View.GONE);
-        }
     }
 
     /**
@@ -489,18 +413,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         return chapterID;
     }
 
-
-    private boolean displaySeekBarAsInverted() {
-        return mSeekBar instanceof VerticalSeekBar;
-    }
-
-    private int computeProgressFromPosition(int position) {
-        return displaySeekBarAsInverted() ? mSeekBar.getMax() - position : position;
-    }
-
-    private int computePositionFromProgress(int progress) {
-        return displaySeekBarAsInverted() ? Math.abs(mSeekBar.getMax() - progress) : progress;
-    }
 
     @Override
     public void onNoSourceTranslations(String targetTranslationId) {

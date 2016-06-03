@@ -25,21 +25,35 @@ public class VerticalLinearLayoutManagerScrollProgressCalculator extends Vertica
         LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
         int lastFullyVisiblePosition = layoutManager.findLastCompletelyVisibleItemPosition();
 
-        View visibleChild = recyclerView.getChildAt(0);
-        if (visibleChild == null) {
-            return 0;
+        if(lastFullyVisiblePosition >= 0) {
+            View visibleChild = recyclerView.getChildAt(0); // looks like there is an assumption that view items are same height
+            if (visibleChild == null) {
+                return 0;
+            }
+            ViewHolder holder = recyclerView.getChildViewHolder(visibleChild);
+            int itemHeight = holder.itemView.getHeight();
+            int recyclerHeight = recyclerView.getHeight();
+            int itemsInWindow = recyclerHeight / itemHeight;
+
+            int numItemsInList = recyclerView.getAdapter().getItemCount();
+            int numScrollableSectionsInList = numItemsInList - itemsInWindow;
+            int indexOfLastFullyVisibleItemInFirstSection = numItemsInList - numScrollableSectionsInList - 1;
+
+            int currentSection = lastFullyVisiblePosition - indexOfLastFullyVisibleItemInFirstSection;
+
+            return (float) currentSection / numScrollableSectionsInList;
+
+        } else { // child views are too big to fit in window
+
+            int visibleItemPosition = layoutManager.findFirstVisibleItemPosition();
+            int numItemsInList = recyclerView.getAdapter().getItemCount();
+            float progress;
+            if(numItemsInList <= 1) { // sanity check
+                progress = 1.0f;
+            } else {
+                progress = (float) visibleItemPosition / (numItemsInList - 1);
+            }
+            return progress;
         }
-        ViewHolder holder = recyclerView.getChildViewHolder(visibleChild);
-        int itemHeight = holder.itemView.getHeight();
-        int recyclerHeight = recyclerView.getHeight();
-        int itemsInWindow = recyclerHeight / itemHeight;
-
-        int numItemsInList = recyclerView.getAdapter().getItemCount();
-        int numScrollableSectionsInList = numItemsInList - itemsInWindow;
-        int indexOfLastFullyVisibleItemInFirstSection = numItemsInList - numScrollableSectionsInList - 1;
-
-        int currentSection = lastFullyVisiblePosition - indexOfLastFullyVisibleItemInFirstSection;
-
-        return (float) currentSection / numScrollableSectionsInList;
     }
 }
