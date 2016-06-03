@@ -70,7 +70,7 @@ public class NewLanguageRequest {
      */
     public String getLanguageName() {
         String name = getAnswer(0);
-        if(name != null && name.trim().isEmpty()) {
+        if(name != null && !name.trim().isEmpty()) {
             return name.trim();
         }
         return tempLanguageCode;
