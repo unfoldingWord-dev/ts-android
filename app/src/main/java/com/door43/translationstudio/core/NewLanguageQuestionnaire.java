@@ -1,5 +1,7 @@
 package com.door43.translationstudio.core;
 
+import android.support.annotation.Nullable;
+
 import com.door43.tools.reporting.Logger;
 
 import org.json.JSONException;
@@ -105,6 +107,7 @@ public class NewLanguageQuestionnaire {
      * @param jsonString
      * @return
      */
+    @Nullable
     public static NewLanguageQuestionnaire generate(String jsonString) {
         if(jsonString != null) {
             try {
@@ -129,7 +132,11 @@ public class NewLanguageQuestionnaire {
      * @param position
      * @return
      */
+    @Nullable
     public NewLanguagePage getPage(int position) {
-        return pages.get(position);
+        if(position >= 0 && position < getNumPages()) {
+            return pages.get(position);
+        }
+        return null;
     }
 }

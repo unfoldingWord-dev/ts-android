@@ -8,6 +8,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.view.View;
 
 import com.door43.tools.reporting.Logger;
@@ -193,6 +194,14 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
     @Override
     public void onAnswerChanged(NewLanguageQuestion question, String answer) {
         mResponse.setAnswer(question.id, answer);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == android.R.id.home) {
+            finish();
+        }
+        return true;
     }
 }
 

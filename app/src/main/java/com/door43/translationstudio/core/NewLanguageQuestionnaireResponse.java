@@ -105,6 +105,7 @@ public class NewLanguageQuestionnaireResponse {
      * @param jsonString
      * @return
      */
+    @Nullable
     public static NewLanguageQuestionnaireResponse generate(String jsonString) {
         if(jsonString != null) {
             try {

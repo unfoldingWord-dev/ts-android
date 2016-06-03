@@ -1,5 +1,7 @@
 package com.door43.translationstudio.core;
 
+import android.support.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -51,8 +53,12 @@ public class NewLanguagePage {
      * @param position
      * @return
      */
+    @Nullable
     public NewLanguageQuestion getQuestion(int position) {
-        return getQuestions().get(position);
+        if(position >= 0 && position < getNumQuestions()) {
+            return getQuestions().get(position);
+        }
+        return null;
     }
 
     /**
@@ -60,6 +66,7 @@ public class NewLanguagePage {
      * @param id
      * @return
      */
+    @Nullable
     public NewLanguageQuestion getQuestionById(long id) {
         return this.questions.get(id);
     }
