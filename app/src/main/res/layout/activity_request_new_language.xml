@@ -45,7 +45,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:layout_margin="@dimen/dialog_controls_margin"
             android:layout_alignParentBottom="true"
             android:id="@+id/linearLayout5">
 
