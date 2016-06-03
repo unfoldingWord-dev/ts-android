@@ -7,6 +7,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NewLanguageRequest;
 import com.door43.util.tasks.ManagedTask;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
@@ -17,8 +18,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Submits new language requests to the server for processing.
@@ -65,17 +68,41 @@ public class SubmitNewLanguageRequestsTask extends ManagedTask {
                     // TRICKY: django needs to have the trailing slash for the post to work.
                     URL url = new URL("http://td-demo.unfoldingword.org/api/questionnaire/");
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestProperty("Content-Type", "application/json");
+                    conn.setRequestProperty("Content-Disposition", "form-data");
                     conn.setReadTimeout(10000); // 10 seconds
                     conn.setConnectTimeout(10000); // 10 seconds
                     conn.setRequestMethod("POST");
 
-                    // send payload
+                    // send payload as form-data
+                    String formData = generateFormDataParameter("request_id", request.requestUUID);
+                    formData += generateFormDataParameter("temp_code", request.tempLanguageCode);
+                    formData += generateFormDataParameter("questionnaire_id", request.questionnaireId + "");
+                    formData += generateFormDataParameter("app", request.app);
+                    formData += generateFormDataParameter("requester", request.requester);
+                    JSONArray answersJson = new JSONArray();
+                    Map<Long, String> answers = request.getAnswers();
+                    for(long key : answers.keySet()) {
+                        JSONObject answer = new JSONObject();
+                        answer.put("question_id", key);
+                        answer.put("text", answers.get(key));
+                        answersJson.put(answer);
+                    }
+                    formData += generateFormDataParameter("answers", answersJson.toString());
+                    formData += formBoundary();
+                    conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + AppContext.udid());
                     conn.setDoOutput(true);
                     DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
-                    dos.writeBytes(data);
+                    dos.writeBytes(formData);
                     dos.flush();
                     dos.close();
+
+
+                    // send payload as raw json
+//                    conn.setDoOutput(true);
+//                    DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
+//                    dos.writeBytes(data);
+//                    dos.flush();
+//                    dos.close();
 
                     // read response
                     int responsCode = conn.getResponseCode();
@@ -106,6 +133,26 @@ public class SubmitNewLanguageRequestsTask extends ManagedTask {
                 publishProgress((float)(i + 1)/(float)mMaxProgress, message);
             }
         }
+    }
+
+    /**
+     * Generates a form data parameter.
+     * This is temporary until the server supports raw json.
+     * @param key
+     * @param value
+     * @return
+     */
+    private String generateFormDataParameter(String key, String value) {
+        String parameter = formBoundary();
+        parameter += "Content-Disposition: form-data; name=\"" + key + "\"\r\n";
+        parameter += "\r\n";
+        parameter += value;
+        parameter += "\r\n";
+        return parameter;
+    }
+
+    private String formBoundary() {
+        return "----" + AppContext.udid() + "\r\n";
     }
 
     @Override

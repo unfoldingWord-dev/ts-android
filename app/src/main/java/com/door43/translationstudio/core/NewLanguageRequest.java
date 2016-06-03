@@ -164,6 +164,14 @@ public class NewLanguageRequest {
     }
 
     /**
+     * Returns the answers in this request
+     * @return
+     */
+    public Map<Long, String> getAnswers() {
+        return answers;
+    }
+
+    /**
      * Returns the time when this request was submitted
      * @return
      */
