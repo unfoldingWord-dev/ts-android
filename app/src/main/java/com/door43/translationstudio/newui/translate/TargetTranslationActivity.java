@@ -427,6 +427,12 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     public void onScrollProgress(int position) {
         mSeekBar.setProgress(computeProgressFromPosition(position));
         checkIfCursorStillOnScreen();
+
+        Logger.i(TAG, "onScrollProgress: position: " + position);
+
+        if( (mFragment != null) && (mFragment instanceof ViewModeFragment)) {
+            ((ViewModeFragment) mFragment).setScrollProgress(position);
+        }
     }
 
     @Override
@@ -459,7 +465,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             TextView text = (TextView) container.getChildAt(1);
 
             int label = i * (numChapters - 1) / (numVisibleGraduations - 1);
-            String chapter = getChapterID(viewMode, label);
+            String chapter = getChapterID(label);
             text.setText(chapter);
         }
 
@@ -471,12 +477,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     /**
      * get the chapter ID for the position
-     * @param viewMode
      * @param position
      * @return
      */
-    private String getChapterID(TranslationViewMode viewMode, int position) {
-        if( (viewMode != null) && (mFragment instanceof ViewModeFragment)) {
+    private String getChapterID(int position) {
+        if( (mFragment != null) && (mFragment instanceof ViewModeFragment)) {
             return ((ViewModeFragment) mFragment).getChapterID(position);
         }
 

@@ -37,6 +37,7 @@ import xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScrol
  */
 public abstract class ViewModeFragment extends BaseFragment implements ViewModeAdapter.OnEventListener, ChooseSourceTranslationDialog.OnClickListener {
 
+    public static final String TAG = ViewModeFragment.class.getSimpleName();
     private RecyclerView mRecyclerView;
     private LinearLayoutManager mLayoutManager;
     private ViewModeAdapter mAdapter;
@@ -48,6 +49,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     private String mSourceTranslationId;
     private GestureDetector mGesture;
     private boolean mRememberLastPosition = true;
+    private VerticalRecyclerViewFastScroller mFastScroller;
 
     /**
      * Returns an instance of the adapter
@@ -97,17 +99,18 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
             mAdapter = generateAdapter(this.getActivity(), targetTranslationId, mSourceTranslationId, chapterId, frameId, args);
             mRecyclerView.setAdapter(mAdapter);
 
-            VerticalRecyclerViewFastScroller fastScroller = (VerticalRecyclerViewFastScroller) rootView.findViewById(R.id.fast_scroller);
-            fastScroller.setRecyclerView(mRecyclerView);
+            mFastScroller = (VerticalRecyclerViewFastScroller) rootView.findViewById(R.id.fast_scroller);
+            mFastScroller.setRecyclerView(mRecyclerView);
 
-//            mRecyclerView.addOnScrollListener(fastScroller.getOnScrollListener());
-            final RecyclerView.OnScrollListener fastScrollerListener = fastScroller.getOnScrollListener();
+//            mRecyclerView.addOnScrollListener(mFastScroller.getOnScrollListener());
+            final RecyclerView.OnScrollListener fastScrollerListener = mFastScroller.getOnScrollListener();
 
             mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override
                 public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                     mFingerScroll = true;
                     super.onScrollStateChanged(recyclerView, newState);
+                    Logger.i(TAG, "mRecyclerView.onScrollStateChanged: Scroll State change: " + newState);
 //                    fastScrollerListener.onScrollStateChanged(recyclerView, newState);
                 }
 
@@ -115,6 +118,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
                 public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                     super.onScrolled(recyclerView, dx, dy);
                     fastScrollerListener.onScrolled(recyclerView, dx, dy);
+                    Logger.i(TAG, "mRecyclerView.onScrolled: dy: " + dy + ", finger " + mFingerScroll);
                     if (mFingerScroll) {
                         int position = mLayoutManager.findFirstVisibleItemPosition();
                         mListener.onScrollProgress(position);
@@ -332,7 +336,19 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     public void onScrollProgressUpdate(int scrollProgress) {
         mFingerScroll = false;
         mRecyclerView.scrollToPosition(scrollProgress);
+        Logger.i(TAG, "onScrollProgress: Scroll State change: " + scrollProgress);
     }
+
+    public void setScrollProgress(int position) {
+        if((mAdapter != null) && (mFastScroller != null)) {
+            int count = mAdapter.getItemCount();
+            float ratio = (float) position /(count - 1);
+
+            Logger.i(TAG, "setScrollProgress: position: " + position + ", ratio: " + ratio);
+            mFastScroller.moveHandleToPosition(ratio);
+        }
+    }
+
 
     @Override
     public void onSourceTranslationTabClick(String sourceTranslationId) {
