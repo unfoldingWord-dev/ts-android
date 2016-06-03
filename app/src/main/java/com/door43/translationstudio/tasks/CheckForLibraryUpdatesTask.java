@@ -1,5 +1,8 @@
 package com.door43.translationstudio.tasks;
 
+import android.support.annotation.Nullable;
+
+import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.LibraryUpdates;
 import com.door43.translationstudio.AppContext;
@@ -15,32 +18,40 @@ public class CheckForLibraryUpdatesTask extends ManagedTask {
 
     @Override
     public void start() {
-        publishProgress(-1, "");
+        if(AppContext.context().isNetworkAvailable()) {
+            publishProgress(-1, "");
 
-        Library library = AppContext.getLibrary();
-        if(library != null) {
-            mUpdates = library.checkServerForUpdates(new Library.OnProgressListener() {
-                @Override
-                public boolean onProgress(int progress, int max) {
-                    mMaxProgress = max;
-                    publishProgress(progress, "");
-                    return !isCanceled();
-                }
+            Library library = AppContext.getLibrary();
+            if (library != null) {
+                mUpdates = library.checkServerForUpdates(new Library.OnProgressListener() {
+                    @Override
+                    public boolean onProgress(int progress, int max) {
+                        mMaxProgress = max;
+                        publishProgress(progress, "");
+                        return !isCanceled();
+                    }
 
-                @Override
-                public boolean onIndeterminate() {
-                    publishProgress(-1, "");
-                    return !isCanceled();
+                    @Override
+                    public boolean onIndeterminate() {
+                        publishProgress(-1, "");
+                        return !isCanceled();
+                    }
+                });
+                if (!isCanceled()) {
+                    AppContext.setLastCheckedForUpdates(System.currentTimeMillis());
                 }
-            });
-            if(!isCanceled()) {
-                AppContext.setLastCheckedForUpdates(System.currentTimeMillis());
             }
+            // make sure we have the most recent target languages
+            publishProgress(-1, AppContext.context().getResources().getString(R.string.downloading_languages));
+            library.downloadTargetLanguages();
+
+            // make sure we have the most recent new target language questionnaire
+            publishProgress(-1, AppContext.context().getResources().getString(R.string.loading));
+            library.downloadNewLanguageQuestionnaire();
+
+            // submit new language requests
+            delegate(new SubmitNewLanguageRequestsTask());
         }
-        // make sure we have the most recent target languages
-        library.downloadTargetLanguages();
-        // make sure we have the most recent new target language questionnaire
-        library.downloadNewLanguageQuestionnaire();
     }
 
     @Override
@@ -52,6 +63,7 @@ public class CheckForLibraryUpdatesTask extends ManagedTask {
      * Returns the library updates
      * @return
      */
+    @Nullable
     public LibraryUpdates getUpdates() {
         return mUpdates;
     }

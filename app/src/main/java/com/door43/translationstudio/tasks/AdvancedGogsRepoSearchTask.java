@@ -49,6 +49,9 @@ public class AdvancedGogsRepoSearchTask extends ManagedTask {
     @Override
     public void start() {
         if(AppContext.context().isNetworkAvailable()) {
+            // submit new language requests
+            delegate(new SubmitNewLanguageRequestsTask());
+
             if(!userQuery.isEmpty()) {
 
                 // start by searching users

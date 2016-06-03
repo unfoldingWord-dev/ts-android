@@ -28,6 +28,7 @@ public class NewLanguageRequest {
     public final long questionnaireId;
     public final String app;
     public final String requester;
+    private long submittedAt = 0;
 
     /**
      * Instanciates a new questionnaire response
@@ -98,6 +99,7 @@ public class NewLanguageRequest {
             json.put("questionnaire_id", this.questionnaireId);
             json.put("app", this.app);
             json.put("requester", this.requester);
+            json.put("submitted_at", this.submittedAt);
 
             JSONArray answersJson = new JSONArray();
             for(Long key:this.answers.keySet()) {
@@ -117,12 +119,13 @@ public class NewLanguageRequest {
 
     /**
      * Creates a questionnaire response from json
+     *
      * @param jsonString
      * @return
      */
     @Nullable
     public static NewLanguageRequest generate(String jsonString) {
-        if(jsonString != null) {
+        if (jsonString != null) {
             try {
                 JSONObject json = new JSONObject(jsonString);
                 String requestUUID = json.getString("request_id");
@@ -130,10 +133,12 @@ public class NewLanguageRequest {
                 long questionnaireId = json.getLong("questionnaire_id");
                 String app = json.getString("app");
                 String requester = json.getString("requester");
+                long submittedAt = json.getLong("submitted_at");
                 NewLanguageRequest response = new NewLanguageRequest(requestUUID, tempCode, questionnaireId, app, requester);
+                response.setSubmittedAt(submittedAt);
 
                 JSONArray answers = json.getJSONArray("answers");
-                for(int i = 0; i < answers.length(); i ++) {
+                for (int i = 0; i < answers.length(); i++) {
                     JSONObject answer = answers.getJSONObject(i);
                     response.setAnswer(answer.getLong("question_id"), answer.getString("text"));
                 }
@@ -155,4 +160,19 @@ public class NewLanguageRequest {
         return answers.get(id);
     }
 
+    /**
+     * Returns the time when this request was submitted
+     * @return
+     */
+    public long getSubmittedAt() {
+        return submittedAt;
+    }
+
+    /**
+     * Sets the time when this request was submitted
+     * @param submittedAt
+     */
+    public void setSubmittedAt(long submittedAt) {
+        this.submittedAt = submittedAt;
+    }
 }

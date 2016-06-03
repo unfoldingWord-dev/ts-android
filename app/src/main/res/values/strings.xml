@@ -804,4 +804,6 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="missing_questionnaire" translatable="false">The questionnaire is missing. Update the library and try again.</string>
     <string name="try_again">Please try again</string>
     <string name="copy">Copy</string>
+    <string name="submitting_new_language_requests">Submitting new language requests</string>
+    <string name="downloading_languages">Downloading languages</string>
 </resources>
