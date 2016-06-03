@@ -11,7 +11,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -19,7 +18,7 @@ import java.util.UUID;
 /**
  * Created by joel on 6/1/16.
  */
-public class NewLanguageQuestionnaireResponse {
+public class NewLanguageRequest {
     private static final String LANGUAGE_PREFIX = "qaa-x-";
 
     private Map<Long, String> answers = new TreeMap<>();
@@ -38,7 +37,7 @@ public class NewLanguageQuestionnaireResponse {
      * @param app the name of the app generating this response
      * @param requester the name of the translator requesting the custom language code
      */
-    private NewLanguageQuestionnaireResponse(String requestUUID, String tempLanguageCode, long questionnaireId, String app, String requester) {
+    private NewLanguageRequest(String requestUUID, String tempLanguageCode, long questionnaireId, String app, String requester) {
         this.requestUUID = requestUUID;
         this.tempLanguageCode = tempLanguageCode;
         this.questionnaireId = questionnaireId;
@@ -50,7 +49,7 @@ public class NewLanguageQuestionnaireResponse {
      * Creates a new questionnaire response
      * @return
      */
-    public static NewLanguageQuestionnaireResponse newInstance(Context context, long questionnaireId, String app, String requester) {
+    public static NewLanguageRequest newInstance(Context context, long questionnaireId, String app, String requester) {
         // generate language code
         String udid = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
         long time = System.currentTimeMillis();
@@ -58,7 +57,23 @@ public class NewLanguageQuestionnaireResponse {
         String hash = Security.sha1(uniqueString);
         String languageCode  = LANGUAGE_PREFIX + hash.substring(0, 6);
 
-        return new NewLanguageQuestionnaireResponse(UUID.randomUUID().toString(), languageCode, questionnaireId, app, requester);
+        return new NewLanguageRequest(UUID.randomUUID().toString(), languageCode, questionnaireId, app, requester);
+    }
+
+    /**
+     * Returns the name of the temporary language.
+     * If the name has not been provided the language code will be returned
+     *
+     * TRICKY: the language name is assumed to be the answer to the first question.
+     * TODO: 6/2/16 in the future the language name may be identified with a flag for more reliable retrieval
+     * @return
+     */
+    public String getLanguageName() {
+        String name = getAnswer(0);
+        if(name != null && name.trim().isEmpty()) {
+            return name.trim();
+        }
+        return tempLanguageCode;
     }
 
     /**
@@ -106,7 +121,7 @@ public class NewLanguageQuestionnaireResponse {
      * @return
      */
     @Nullable
-    public static NewLanguageQuestionnaireResponse generate(String jsonString) {
+    public static NewLanguageRequest generate(String jsonString) {
         if(jsonString != null) {
             try {
                 JSONObject json = new JSONObject(jsonString);
@@ -115,7 +130,7 @@ public class NewLanguageQuestionnaireResponse {
                 long questionnaireId = json.getLong("questionnaire_id");
                 String app = json.getString("app");
                 String requester = json.getString("requester");
-                NewLanguageQuestionnaireResponse response = new NewLanguageQuestionnaireResponse(requestUUID, tempCode, questionnaireId, app, requester);
+                NewLanguageRequest response = new NewLanguageRequest(requestUUID, tempCode, questionnaireId, app, requester);
 
                 JSONArray answers = json.getJSONArray("answers");
                 for(int i = 0; i < answers.length(); i ++) {
@@ -124,7 +139,7 @@ public class NewLanguageQuestionnaireResponse {
                 }
                 return response;
             } catch (JSONException e) {
-                Logger.w(NewLanguageQuestionnaireResponse.class.getName(), "Failed to parse questionnaire response json: " + jsonString, e);
+                Logger.w(NewLanguageRequest.class.getName(), "Failed to parse questionnaire response json: " + jsonString, e);
             }
         }
         return null;
@@ -135,7 +150,9 @@ public class NewLanguageQuestionnaireResponse {
      * @param id
      * @return
      */
+    @Nullable
     public String getAnswer(long id) {
         return answers.get(id);
     }
+
 }

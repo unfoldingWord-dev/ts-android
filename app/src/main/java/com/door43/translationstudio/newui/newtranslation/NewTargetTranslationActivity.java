@@ -17,7 +17,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.LanguageDirection;
 import com.door43.translationstudio.core.NewLanguagePackage;
-import com.door43.translationstudio.core.NewLanguageQuestionnaireResponse;
+import com.door43.translationstudio.core.NewLanguageRequest;
 import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
@@ -31,13 +31,14 @@ import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.newui.newlanguage.NewLanguageActivity;
+import com.door43.util.StringUtilities;
 import com.door43.widget.ViewUtil;
 
 import org.apache.commons.io.FileUtils;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Locale;
 
 public class NewTargetTranslationActivity extends BaseActivity implements TargetLanguageListFragment.OnItemClickListener, ProjectListFragment.OnItemClickListener {
@@ -45,15 +46,17 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
     public static final int RESULT_DUPLICATE = 2;
     private static final String STATE_TARGET_TRANSLATION_ID = "state_target_translation_id";
-    private static final String STATE_TARGET_LANGUAGE_ID = "state_target_language_id";
+    private static final String STATE_TARGET_LANGUAGE = "state_target_language_id";
     public static final int RESULT_ERROR = 3;
     public static final String TAG = NewTargetTranslationActivity.class.getSimpleName();
     public static final int NEW_LANGUAGE_REQUEST = 1001;
+    public static final String NEW_LANGUAGE_CONFIRMATION = "new-language-confirmation";
+    private static final String STATE_NEW_LANGUAGE = "new_language";
     private TargetLanguage mSelectedTargetLanguage = null;
     private Searchable mFragment;
     private String mNewTargetTranslationId = null;
-    private String mNewLanguageData = null;
     private ImageButton mNewLanguageButton;
+    private boolean createdNewLanguage = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,12 +75,13 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
         }
 
         if(savedInstanceState != null) {
+            createdNewLanguage = savedInstanceState.getBoolean(STATE_NEW_LANGUAGE, false);
             if (savedInstanceState.containsKey(STATE_TARGET_TRANSLATION_ID)) {
                 mNewTargetTranslationId = (String) savedInstanceState.getSerializable(STATE_TARGET_TRANSLATION_ID);
             }
 
-            if (savedInstanceState.containsKey(STATE_TARGET_LANGUAGE_ID)) {
-                String targetLanguageJsonStr = savedInstanceState.getString(STATE_TARGET_LANGUAGE_ID);
+            if (savedInstanceState.containsKey(STATE_TARGET_LANGUAGE)) {
+                String targetLanguageJsonStr = savedInstanceState.getString(STATE_TARGET_LANGUAGE);
                 try {
                     mSelectedTargetLanguage = TargetLanguage.generate(new JSONObject(targetLanguageJsonStr));
                 } catch (Exception e) { }
@@ -94,43 +98,73 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                 // TODO: animate
             }
         }
+
+        if(createdNewLanguage) {
+            confirmNewLanguage(mSelectedTargetLanguage);
+        }
     }
 
     /**
      * use new language information passed in JSON format string to create a new target language
-     * @param newLangDataJsonStr
+     * @param request
      */
-    private void useNewLanguage(String newLangDataJsonStr) {
-        try {
-            mNewLanguageData = newLangDataJsonStr;
-            NewLanguagePackage newLang = NewLanguagePackage.parse(newLangDataJsonStr);
+    private void registerCustomLanguageCode(NewLanguageRequest request) {
+        if(request != null) {
+            File requestFile = new File(AppContext.getPublicDirectory(), "new_languages/" + request.tempLanguageCode + ".json");
+            requestFile.getParentFile().mkdirs();
+            try {
+                com.door43.tools.reporting.FileUtils.writeStringToFile(requestFile, request.toJson());
 
-            String languageCode = newLang.tempLanguageCode;
-            String languageName = newLang.languageName;
+                // TODO: 6/2/16 retrieve the language region from the request
+                mSelectedTargetLanguage = new TargetLanguage(request.tempLanguageCode, request.getLanguageName(), "uncertain", LanguageDirection.LeftToRight);
 
-            // TODO: 3/15/16 need to add region
-            mSelectedTargetLanguage = new TargetLanguage(languageCode, languageName, "uncertain", LanguageDirection.LeftToRight);
+                // TODO: 6/2/16 add the language code to the actual target language list.
+                // The temp codes will be stored in a seperate table and joined when retrieving target languages.
+                // We will likely have yet another table to indicate the migration of temp language codes to correct language codes.
 
-            // display project list
-            mFragment = new ProjectListFragment();
-            ((ProjectListFragment) mFragment).setArguments(getIntent().getExtras());
-            getFragmentManager().beginTransaction().replace(R.id.fragment_container, (ProjectListFragment) mFragment).commit();
-            // TODO: animate
-            invalidateOptionsMenu();
+                this.createdNewLanguage = true;
 
-        } catch (Exception e) {
-            Logger.e(TAG, "Error Adding new language", e);
+                confirmNewLanguage(mSelectedTargetLanguage);
+                return;
+            } catch (IOException e) {
+                Logger.e(this.getClass().getName(), "Failed to save the new langauge request", e);
+            }
         }
+        CustomAlertDialog.Create(this)
+                .setTitle(R.string.error)
+                .setMessage(R.string.try_again)
+                .show("error-questionnaire");
     }
 
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        if(savedInstanceState != null) {
-            mNewTargetTranslationId = savedInstanceState.getString(STATE_TARGET_TRANSLATION_ID, null);
-            String targetLanguageId = savedInstanceState.getString(STATE_TARGET_LANGUAGE_ID, null);
-            if(targetLanguageId != null) {
-                mSelectedTargetLanguage = AppContext.getLibrary().getTargetLanguage(targetLanguageId);
-            }
+    /**
+     * Displays a confirmation for the new language
+     * @param language
+     */
+    private void confirmNewLanguage(final TargetLanguage language) {
+        if(language != null) {
+            String msg = String.format(getResources().getString(R.string.new_language_confirmation), language.getId(), language.name);
+            final CustomAlertDialog dialog = CustomAlertDialog.Create(this)
+                    .setCancelableChainable(false)
+                    .setAutoDismiss(false)
+                    .setTitle(R.string.language)
+                    .setMessage(msg);
+            dialog.setPositiveButton(R.string.label_continue, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dialog.dismiss();
+                    onItemClick(language);
+                }
+            })
+            .setNeutralButton(R.string.copy, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    StringUtilities.copyToClipboard(NewTargetTranslationActivity.this, language.code);
+                    Snackbar snack = Snackbar.make(v, R.string.copied_to_clipboard, Snackbar.LENGTH_SHORT);
+                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                    snack.show();
+                }
+            });
+            dialog.show(NEW_LANGUAGE_CONFIRMATION);
         }
     }
 
@@ -167,24 +201,24 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             final TargetTranslation targetTranslation = AppContext.getTranslator().createTargetTranslation(AppContext.getProfile().getNativeSpeaker(), mSelectedTargetLanguage, projectId, TranslationType.TEXT, resourceSlug, sourceTranslation.getFormat());
             if(targetTranslation != null) {
 
-                if(mNewLanguageData != null) {
-                    saveNewLanguageData(targetTranslation, mNewLanguageData);
-
-                    String msg = String.format(AppContext.context().getResources().getString(R.string.new_language_confirmation), targetTranslation.getTargetLanguageId(), targetTranslation.getTargetLanguageName());
-                    CustomAlertDialog.Create(this)
-                            .setTitle(R.string.language)
-                            .setMessage(msg)
-                            .setPositiveButton(R.string.confirm, new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    newProjectCreated(targetTranslation);
-                                }
-                            })
-                            .setNegativeButton(R.string.title_cancel, null)
-                            .show("NewLang");
-                } else {
+//                if(mNewLanguageData != null) {
+//                    saveNewLanguageData(targetTranslation, mNewLanguageData);
+//
+//                    String msg = String.format(AppContext.context().getResources().getString(R.string.new_language_confirmation), targetTranslation.getTargetLanguageId(), targetTranslation.getTargetLanguageName());
+//                    CustomAlertDialog.Create(this)
+//                            .setTitle(R.string.language)
+//                            .setMessage(msg)
+//                            .setPositiveButton(R.string.confirm, new View.OnClickListener() {
+//                                @Override
+//                                public void onClick(View v) {
+//                                    newProjectCreated(targetTranslation);
+//                                }
+//                            })
+//                            .setNegativeButton(R.string.title_cancel, null)
+//                            .show("NewLang");
+//                } else {
                     newProjectCreated(targetTranslation);
-                }
+//                }
             } else {
                 AppContext.getTranslator().deleteTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId, TranslationType.TEXT, resourceSlug));
                 Intent data = new Intent();
@@ -302,14 +336,14 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
 
     public void onSaveInstanceState(Bundle outState) {
         outState.putSerializable(STATE_TARGET_TRANSLATION_ID, mNewTargetTranslationId);
-
+        outState.putBoolean(STATE_NEW_LANGUAGE, createdNewLanguage);
         if(mSelectedTargetLanguage != null) {
             JSONObject targetLanguageJson = mSelectedTargetLanguage.toApiFormatJson();
             if(targetLanguageJson != null) {
-                outState.putString(STATE_TARGET_LANGUAGE_ID, targetLanguageJson.toString());
+                outState.putString(STATE_TARGET_LANGUAGE, targetLanguageJson.toString());
             }
         } else {
-            outState.remove(STATE_TARGET_LANGUAGE_ID);
+            outState.remove(STATE_TARGET_LANGUAGE);
         }
 
         super.onSaveInstanceState(outState);
@@ -320,15 +354,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
         if (NEW_LANGUAGE_REQUEST == requestCode) {
             if(RESULT_OK == resultCode) {
                 String rawResponse = data.getStringExtra(NewLanguageActivity.EXTRA_QUESTIONNAIRE_RESPONSE);
-                NewLanguageQuestionnaireResponse response = null;
-                response = NewLanguageQuestionnaireResponse.generate(rawResponse);
-                if(response != null) {
-                    // TODO: 6/1/16 use the response
-                    useNewLanguage(rawResponse);
-                    mNewLanguageButton.setVisibility(View.INVISIBLE);
-                } else {
-                    // TODO: 6/1/16 display error to user and return to language selection
-                }
+                registerCustomLanguageCode(NewLanguageRequest.generate(rawResponse));
             } else if(RESULT_FIRST_USER == resultCode) {
                 String message = data.getStringExtra(NewLanguageActivity.EXTRA_MESSAGE);
                 Snackbar snack = Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_LONG);

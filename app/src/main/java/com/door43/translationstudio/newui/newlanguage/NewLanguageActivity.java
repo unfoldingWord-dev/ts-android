@@ -16,7 +16,7 @@ import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NewLanguageQuestion;
 import com.door43.translationstudio.core.NewLanguageQuestionnaire;
-import com.door43.translationstudio.core.NewLanguageQuestionnaireResponse;
+import com.door43.translationstudio.core.NewLanguageRequest;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.widget.ViewUtil;
 
@@ -39,7 +39,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
     private int mCurrentPage = 0;
     private boolean mQuestionnaireFinished = false;
     private NewLanguageQuestionnaire mQuestionnaire;
-    private NewLanguageQuestionnaireResponse mResponse = null;
+    private NewLanguageRequest mResponse = null;
     private RecyclerView mRecyclerView;
     private NewLanguagePageAdapter mAdapter;
     private CardView mPreviousButton;
@@ -70,19 +70,19 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         if(savedInstanceState != null) {
             mCurrentPage = savedInstanceState.getInt(STATE_PAGE, 0);
             mQuestionnaireFinished = savedInstanceState.getBoolean(STATE_FINISHED, false);
-            mResponse = NewLanguageQuestionnaireResponse.generate(savedInstanceState.getString(EXTRA_QUESTIONNAIRE_RESPONSE));
+            mResponse = NewLanguageRequest.generate(savedInstanceState.getString(EXTRA_QUESTIONNAIRE_RESPONSE));
             if(mResponse == null) {
                 Snackbar snack = Snackbar.make(findViewById(android.R.id.content), getResources().getString(R.string.error), Snackbar.LENGTH_LONG);
                 ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                 snack.show();
 
                 // restart
-                mResponse = NewLanguageQuestionnaireResponse.newInstance(this, mQuestionnaire.door43Id, "android", AppContext.getProfile().getFullName());
+                mResponse = NewLanguageRequest.newInstance(this, mQuestionnaire.door43Id, "android", AppContext.getProfile().getFullName());
                 mCurrentPage = -1;
                 return;
             }
         } else {
-            mResponse = NewLanguageQuestionnaireResponse.newInstance(this, mQuestionnaire.door43Id, "android", AppContext.getProfile().getFullName());
+            mResponse = NewLanguageRequest.newInstance(this, mQuestionnaire.door43Id, "android", AppContext.getProfile().getFullName());
         }
 
         mRecyclerView = (RecyclerView)findViewById(R.id.recycler_view);

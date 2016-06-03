@@ -690,7 +690,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="answers_missing_continue">Answers are missing for questions.\nContinue anyway?</string>
     <string name="previous">Previous</string>
     <string name="title_activity_new_language">New Language Request</string>
-    <string name="new_language_confirmation">We will create a temporary language code of \"<xliff:g example="zz-zzz" id="temp_language_code">%1$s</xliff:g>\" for \"<xliff:g example="Greek" id="language_name">%2$s</xliff:g>\".</string>
+    <string name="new_language_confirmation">Your new language code is \"<xliff:g example="zz-zzz" id="temp_language_code">%1$s</xliff:g>\" for \"<xliff:g example="Greek" id="language_name">%2$s</xliff:g>\".</string>
     <string name="error_importing_unsupported_target_translation">The  translation of <xliff:g example="Open Bible Stories" id="project_name">%1$s</xliff:g> into <xliff:g example="Afaraf" id="language_name">%2$s</xliff:g> was created by a different version of <xliff:g example="translationStudio" id="app_name">%3$s</xliff:g> and cannot be opened. Please update your app and try again.</string>
     <string name="version">Version</string>
     <string name="username">login name</string>
@@ -802,4 +802,6 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="new_lang_api_upload_failure">We could not save the answers to the New Language Questionnaire.  We will try again the next time you</string>
     <string name="answer_not_saved">Your answer could not be saved. Please try again.</string>
     <string name="missing_questionnaire" translatable="false">The questionnaire is missing. Update the library and try again.</string>
+    <string name="try_again">Please try again</string>
+    <string name="copy">Copy</string>
 </resources>

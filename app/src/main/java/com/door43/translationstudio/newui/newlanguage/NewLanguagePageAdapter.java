@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -105,8 +104,12 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
         holder.clearAnimation();
     }
 
+    /**
+     * Animates a view the first time it appears on the screen
+     * @param viewToAnimate
+     * @param position
+     */
     private void setAnimation(View viewToAnimate, int position) {
-        // If the bound view wasn't previously displayed on screen, it's animated
         if (position > lastPosition) {
             Animation animation;
             if(animateRight) {
@@ -137,6 +140,11 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
         return -1;
     }
 
+    /**
+     * Handles binding to boolean questions
+     * @param holder
+     * @param position
+     */
     public void onBindBooleanQuestion(BooleanViewHolder holder, int position) {
         final NewLanguageQuestion question = page.getQuestion(position);
         holder.question.setText(question.question);
@@ -173,6 +181,11 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
         });
     }
 
+    /**
+     * Handles binding to string questions
+     * @param holder
+     * @param position
+     */
     public void onBindStringQuestion(StringViewHolder holder, int position) {
         final NewLanguageQuestion question = page.getQuestion(position);
         holder.question.setText(question.question);
@@ -227,7 +240,7 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
     }
 
     /**
-     * Re-evaluates the state of each question
+     * Re-evaluates the enabled state of each question
      */
     private void reload() {
         Handler hand = new Handler(Looper.getMainLooper());
@@ -300,6 +313,9 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
         this.onEventListener = onEventListener;
     }
 
+    /**
+     * An abstract view holder for questions
+     */
     public static abstract class ViewHolder extends RecyclerView.ViewHolder {
 
         protected final CardView card;
@@ -318,6 +334,9 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
         }
     }
 
+    /**
+     * A view holder for boolean questions
+     */
     public static class BooleanViewHolder extends ViewHolder {
         private final TextView question;
         private final RadioButton radioButtonYes;
@@ -351,25 +370,20 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
         public void enable() {
             question.setTextColor(context.getResources().getColor(R.color.dark_primary_text));
             radioButtonNo.setEnabled(true);
-//            radioButtonNo.setFocusable(true);
-//            radioButtonNo.setFocusableInTouchMode(true);
             radioButtonYes.setEnabled(true);
-//            radioButtonYes.setFocusable(true);
-//            radioButtonYes.setFocusableInTouchMode(true);
         }
 
         @Override
         public void disable() {
             question.setTextColor(context.getResources().getColor(R.color.dark_disabled_text));
             radioButtonNo.setEnabled(false);
-//            radioButtonNo.setFocusable(false);
-//            radioButtonNo.setFocusableInTouchMode(false);
             radioButtonYes.setEnabled(false);
-//            radioButtonYes.setFocusable(false);
-//            radioButtonYes.setFocusableInTouchMode(false);
         }
     }
 
+    /**
+     * A view holder for string questions
+     */
     public static class StringViewHolder extends ViewHolder {
         private final EditText answer;
         private final TextView question;
@@ -424,6 +438,9 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
         }
     }
 
+    /**
+     * The interface by which answers are sent/received
+     */
     public interface OnEventListener {
         String onGetAnswer(NewLanguageQuestion question);
         void onAnswerChanged(NewLanguageQuestion question, String answer);
