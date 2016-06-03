@@ -146,40 +146,40 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mSeekBar = (SeekBar) findViewById(R.id.action_seek);
         mSeekBar.setMax(100);
         mSeekBar.setProgress(computePositionFromProgress(0));
-        mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                int position;
-                if (progress < 0) {
-                    position = computePositionFromProgress(0);
-                } else if (progress <= seekBar.getMax()) {
-                    position = computePositionFromProgress(progress);
-                } else {
-                    position = 0;
-                }
-
-                // If this change was initiated by a click on a UI element (rather than as a result
-                // of updates within the program), then update the view accordingly.
-                if (mFragment instanceof ViewModeFragment && fromUser) {
-                    ((ViewModeFragment) mFragment).onScrollProgressUpdate(position);
-                }
-
-                TargetTranslationActivity activity = (TargetTranslationActivity) seekBar.getContext();
-                if (activity != null) {
-                    activity.closeKeyboard();
-                }
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                mGraduations.animate().alpha(1.f);
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                mGraduations.animate().alpha(0.f);
-            }
-        });
+//        mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+//            @Override
+//            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+//                int position;
+//                if (progress < 0) {
+//                    position = computePositionFromProgress(0);
+//                } else if (progress <= seekBar.getMax()) {
+//                    position = computePositionFromProgress(progress);
+//                } else {
+//                    position = 0;
+//                }
+//
+//                // If this change was initiated by a click on a UI element (rather than as a result
+//                // of updates within the program), then update the view accordingly.
+//                if (mFragment instanceof ViewModeFragment && fromUser) {
+//                    ((ViewModeFragment) mFragment).onScrollProgressUpdate(position);
+//                }
+//
+//                TargetTranslationActivity activity = (TargetTranslationActivity) seekBar.getContext();
+//                if (activity != null) {
+//                    activity.closeKeyboard();
+//                }
+//            }
+//
+//            @Override
+//            public void onStartTrackingTouch(SeekBar seekBar) {
+//                mGraduations.animate().alpha(1.f);
+//            }
+//
+//            @Override
+//            public void onStopTrackingTouch(SeekBar seekBar) {
+//                mGraduations.animate().alpha(0.f);
+//            }
+//        });
         mMoreButton = (ImageButton) findViewById(R.id.action_more);
         buildMenu();
 

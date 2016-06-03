@@ -90,8 +90,6 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
             mListener.onNoSourceTranslations(targetTranslationId);
         } else {
             mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view);
-            VerticalRecyclerViewFastScroller fastScroller = (VerticalRecyclerViewFastScroller) rootView.findViewById(R.id.fast_scroller);
-            fastScroller.setRecyclerView(mRecyclerView);
 
             mLayoutManager = new LinearLayoutManager(getActivity());
             mRecyclerView.setLayoutManager(mLayoutManager);
@@ -99,24 +97,30 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
             mAdapter = generateAdapter(this.getActivity(), targetTranslationId, mSourceTranslationId, chapterId, frameId, args);
             mRecyclerView.setAdapter(mAdapter);
 
-//            mRecyclerView.addOnScrollListener(fastScroller.getOnScrollListener());
+            VerticalRecyclerViewFastScroller fastScroller = (VerticalRecyclerViewFastScroller) rootView.findViewById(R.id.fast_scroller);
+            fastScroller.setRecyclerView(mRecyclerView);
 
-//            mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-//                @Override
-//                public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-//                    mFingerScroll = true;
-//                    super.onScrollStateChanged(recyclerView, newState);
-//                }
-//
-//                @Override
-//                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-//                    super.onScrolled(recyclerView, dx, dy);
-//                    if (mFingerScroll) {
-//                        int position = mLayoutManager.findFirstVisibleItemPosition();
-//                        mListener.onScrollProgress(position);
-//                    }
-//                }
-//            });
+//            mRecyclerView.addOnScrollListener(fastScroller.getOnScrollListener());
+            final RecyclerView.OnScrollListener fastScrollerListener = fastScroller.getOnScrollListener();
+
+            mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                    mFingerScroll = true;
+                    super.onScrollStateChanged(recyclerView, newState);
+//                    fastScrollerListener.onScrollStateChanged(recyclerView, newState);
+                }
+
+                @Override
+                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                    super.onScrolled(recyclerView, dx, dy);
+                    fastScrollerListener.onScrolled(recyclerView, dx, dy);
+                    if (mFingerScroll) {
+                        int position = mLayoutManager.findFirstVisibleItemPosition();
+                        mListener.onScrollProgress(position);
+                    }
+                }
+            });
 
             mListener.onItemCountChanged(mAdapter.getItemCount(), 0);
 
