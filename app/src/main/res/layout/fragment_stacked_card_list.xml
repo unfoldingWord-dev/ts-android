@@ -10,6 +10,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller
+        android:id="@+id/fast_scroller"
+        android:layout_width="?attr/actionBarSize"
+        android:layout_height="match_parent"
+        android:layout_gravity="left" />
+
     <android.support.v7.widget.CardView
         android:id="@+id/resources_drawer_card"
         android:layout_width="0dp"
