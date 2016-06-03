@@ -224,11 +224,11 @@ public class NewLanguageAPITest {
 //        long id = NewLanguageActivity.getQuestionnaireID(questions);
         List<List<NewLanguageQuestion>> questionPages = new ArrayList<>();
 //        NewLanguageActivity.getQuestionPages(questionPages, questions);
-        List<NewLanguageQuestion> mergedQuestions = NewLanguageActivity.mergePagesOfNewLanguageQuestions(questionPages);
-        for (NewLanguageQuestion newLanguageQuestion : mergedQuestions) {
-            long qid = newLanguageQuestion.id;
+//        List<NewLanguageQuestion> mergedQuestions = NewLanguageActivity.mergePagesOfNewLanguageQuestions(questionPages);
+//        for (NewLanguageQuestion newLanguageQuestion : mergedQuestions) {
+//            long qid = newLanguageQuestion.id;
 //            newLanguageQuestion.answer = "Answer-" + qid;
-        }
+//        }
 //        return NewLanguagePackage.newInstance(id, mergedQuestions);
         return null;
     }

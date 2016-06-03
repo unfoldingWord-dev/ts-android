@@ -32,9 +32,9 @@ import java.util.List;
 /**
  * Handles the rendering of the questions in NewLanguageActivity
  */
-public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePageAdapter.ViewHolder> {
+public class NewLanguageAdapter extends RecyclerView.Adapter<NewLanguageAdapter.ViewHolder> {
 
-    public static final String TAG = NewLanguagePageAdapter.class.getSimpleName();
+    public static final String TAG = NewLanguageAdapter.class.getSimpleName();
     private static final int TYPE_BOOLEAN = 1;
     private static final int TYPE_STRING = 2;
     private final Activity context;
@@ -44,7 +44,7 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
     private int lastPosition = -1;
     private boolean animateRight = true;
 
-    public NewLanguagePageAdapter(Activity context) {
+    public NewLanguageAdapter(Activity context) {
         this.context = context;
     }
 
@@ -151,6 +151,8 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
         holder.question.setHint(question.helpText);
         holder.radioGroup.setOnCheckedChangeListener(null);
 
+        holder.setRequired(question.required);
+
         String answerString = getQuestionAnswer(question);
         boolean answer = Boolean.parseBoolean(answerString);
 
@@ -191,6 +193,8 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
         holder.question.setText(question.question);
         holder.answer.setHint(question.helpText);
         holder.answer.removeTextChangedListener(holder.textWatcher);
+
+        holder.setRequired(question.required);
 
         String answer = getQuestionAnswer(question);
         holder.answer.setText(answer);
@@ -319,11 +323,13 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
     public static abstract class ViewHolder extends RecyclerView.ViewHolder {
 
         protected final CardView card;
+        protected final TextView requiredView;
         public int currentPosition = -1;
 
         public ViewHolder(View v) {
             super(v);
             this.card = (CardView)v.findViewById(R.id.card);
+            this.requiredView = (TextView)v.findViewById(R.id.required);
         }
 
         abstract void enable();
@@ -331,6 +337,13 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
 
         public void clearAnimation() {
             this.card.clearAnimation();
+        }
+        public void setRequired(boolean required) {
+            if(required) {
+                this.requiredView.setVisibility(View.VISIBLE);
+            } else {
+                this.requiredView.setVisibility(View.GONE);
+            }
         }
     }
 
@@ -371,6 +384,7 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
             question.setTextColor(context.getResources().getColor(R.color.dark_primary_text));
             radioButtonNo.setEnabled(true);
             radioButtonYes.setEnabled(true);
+            requiredView.setTextColor(context.getResources().getColor(R.color.red));
         }
 
         @Override
@@ -378,6 +392,7 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
             question.setTextColor(context.getResources().getColor(R.color.dark_disabled_text));
             radioButtonNo.setEnabled(false);
             radioButtonYes.setEnabled(false);
+            requiredView.setTextColor(context.getResources().getColor(R.color.light_red));
         }
     }
 
@@ -423,6 +438,7 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
             answer.setHintTextColor(context.getResources().getColor(R.color.half_transparent));
             answer.setFocusable(true);
             answer.setFocusableInTouchMode(true);
+            requiredView.setTextColor(context.getResources().getColor(R.color.red));
         }
 
         @Override
@@ -435,6 +451,7 @@ public class NewLanguagePageAdapter extends RecyclerView.Adapter<NewLanguagePage
             answer.setHintTextColor(context.getResources().getColor(R.color.transparent));
             answer.setFocusable(false);
             answer.setFocusableInTouchMode(false);
+            requiredView.setTextColor(context.getResources().getColor(R.color.light_red));
         }
     }
 

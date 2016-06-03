@@ -155,12 +155,12 @@ public class NewLanguageRequest {
 
     /**
      * returns the answer by the question id
-     * @param id
+     * @param questionId
      * @return
      */
     @Nullable
-    public String getAnswer(long id) {
-        return answers.get(id);
+    public String getAnswer(long questionId) {
+        return answers.get(questionId);
     }
 
     /**

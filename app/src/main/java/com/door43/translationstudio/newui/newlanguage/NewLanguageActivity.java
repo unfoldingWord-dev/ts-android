@@ -14,20 +14,19 @@ import android.view.View;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.NewLanguagePage;
 import com.door43.translationstudio.core.NewLanguageQuestion;
 import com.door43.translationstudio.core.NewLanguageQuestionnaire;
 import com.door43.translationstudio.core.NewLanguageRequest;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.widget.ViewUtil;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
  * Activity for getting answers to new language questions
  */
-public class NewLanguageActivity extends BaseActivity implements NewLanguagePageAdapter.OnEventListener {
+public class NewLanguageActivity extends BaseActivity implements NewLanguageAdapter.OnEventListener {
 
     public static final String TAG = NewLanguageActivity.class.getSimpleName();
     public static final String EXTRA_QUESTIONNAIRE_RESPONSE = "questionnaire_response";
@@ -41,7 +40,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
     private NewLanguageQuestionnaire mQuestionnaire;
     private NewLanguageRequest mResponse = null;
     private RecyclerView mRecyclerView;
-    private NewLanguagePageAdapter mAdapter;
+    private NewLanguageAdapter mAdapter;
     private CardView mPreviousButton;
     private CardView mNextButton;
     private CardView mDoneButton;
@@ -89,7 +88,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(linearLayoutManager);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mAdapter = new NewLanguagePageAdapter(this);
+        mAdapter = new NewLanguageAdapter(this);
         mAdapter.setOnEventListener(this);
         mRecyclerView.setAdapter(mAdapter);
 
@@ -106,6 +105,21 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         mNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // validate page completion
+                NewLanguagePage page = mQuestionnaire.getPage(mCurrentPage);
+                if(page != null) {
+                    for (NewLanguageQuestion q :page.getQuestions()) {
+                        String answer = mResponse.getAnswer(q.id);
+                        if(q.required && (answer == null || answer.isEmpty())) {
+                            CustomAlertDialog.Create(NewLanguageActivity.this)
+                                    .setTitle(R.string.missing_question_answer)
+                                    .setMessage(q.question)
+                                    .setPositiveButton(R.string.dismiss, null)
+                                    .show("missing-required-answer");
+                            return;
+                        }
+                    }
+                }
                 goToPage(mCurrentPage + 1);
             }
         });
@@ -128,16 +142,6 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         outState.putBoolean(STATE_FINISHED, mQuestionnaireFinished);
         outState.putSerializable(EXTRA_QUESTIONNAIRE_RESPONSE, mResponse.toJson());
         super.onSaveInstanceState(outState);
-    }
-
-
-    public static List<NewLanguageQuestion> mergePagesOfNewLanguageQuestions(List<List<NewLanguageQuestion>> questionPages) {
-        List<NewLanguageQuestion> mergedQuestions = new ArrayList<>();
-        for (int i = 0; i < questionPages.size(); i++) {
-            List<NewLanguageQuestion> questions = questionPages.get(i);
-            mergedQuestions.addAll(questions);
-        }
-        return mergedQuestions;
     }
 
     /**

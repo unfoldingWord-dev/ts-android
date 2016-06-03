@@ -185,7 +185,7 @@ public class NewLanguageActivityUiUtils {
      */
     protected void thenShouldHaveRequiredAnswerDialog() {
         onView(withId(R.id.dialog_title)).check(matches(withText(R.string.invalid_entry_title)));
-        String warning = mAppContext.getResources().getString(R.string.answer_required_for);
+        String warning = mAppContext.getResources().getString(R.string.missing_question_answer);
         String[] lines = warning.split("\n");
         warning = lines[0];
         onView(withId(R.id.dialog_content)).check(matches(withText(startsWith(warning))));

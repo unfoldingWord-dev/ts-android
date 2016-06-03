@@ -685,7 +685,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="person_agrees_with_licenses">This person has agreed to the License Agreement, Statement of Faith, and Translation Guidelines</string>
     <string name="invalid_entry_title">Invalid Entry</string>
     <string name="answers_missing_title">Answers Missing</string>
-    <string name="answer_required_for">Need answer for question:\n%s</string>
+    <string name="missing_question_answer">Missing answer for question</string>
     <string name="answer_missing_for">Missing answer for question:\n%s</string>
     <string name="answers_missing_continue">Answers are missing for questions.\nContinue anyway?</string>
     <string name="previous">Previous</string>

@@ -7,6 +7,8 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NewLanguageRequest;
 import com.door43.util.tasks.ManagedTask;
 
+import org.json.JSONObject;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -36,7 +38,7 @@ public class SubmitNewLanguageRequestsTask extends ManagedTask {
                 try {
                     String data = FileUtils.readFileToString(f);
                     NewLanguageRequest request = NewLanguageRequest.generate(data);
-                    if(request != null) {// && request.getSubmittedAt() == 0) {
+                    if(request != null && request.getSubmittedAt() == 0) {
                         this.requests.add(request);
                     }
                 } catch (IOException e) {
@@ -60,7 +62,8 @@ public class SubmitNewLanguageRequestsTask extends ManagedTask {
                 // TODO: eventually we'll be able to get the server url from the db
 
                 try {
-                    URL url = new URL("http://td.unfoldingword.org/api/questionnaire");
+                    // TRICKY: django needs to have the trailing slash for the post to work.
+                    URL url = new URL("http://td-demo.unfoldingword.org/api/questionnaire/");
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setRequestProperty("Content-Type", "application/json");
                     conn.setReadTimeout(10000); // 10 seconds
@@ -85,14 +88,18 @@ public class SubmitNewLanguageRequestsTask extends ManagedTask {
                     }
                     String response = baos.toString("UTF-8");
 
-                    // TODO: 6/3/16 process the response
+                    // process response
+                    JSONObject responseJson = new JSONObject(response);
+                    if(responseJson.has("status") && responseJson.getString("status").equals("success")) {
+                        request.setSubmittedAt(System.currentTimeMillis());
+                        File requestFile = new File(AppContext.getPublicDirectory(), "new_languages/" + request.tempLanguageCode + ".json");
+                        FileUtils.writeStringToFile(requestFile, request.toJson());
+                        // TODO: 6/3/16 we need to update target translations using this language code
 
-                    request.setSubmittedAt(System.currentTimeMillis());
-                    File requestFile = new File(AppContext.getPublicDirectory(), "new_languages/" + request.tempLanguageCode + ".json");
-                    FileUtils.writeStringToFile(requestFile, request.toJson());
-                    // TODO: 6/3/16 we need to update target translations using this language code
-
-                    Logger.i(this.getClass().getName(), "new language request '" + request.tempLanguageCode + "' successfully submitted");
+                        Logger.i(this.getClass().getName(), "new language request '" + request.tempLanguageCode + "' successfully submitted");
+                    } else if(responseJson.has("message")) {
+                        Logger.w(this.getClass().getName(), responseJson.getString("message"));
+                    }
                 } catch (Exception e) {
                     Logger.e(this.getClass().getName(), "Failed to submit the new language request", e);
                 }
