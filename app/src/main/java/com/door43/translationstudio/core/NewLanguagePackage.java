@@ -89,14 +89,14 @@ public class NewLanguagePackage {
         }
         String app = TS_ANDROID;
 
-        JSONObject nameAnswer = getQuestionForID(answers, NewLanguagePackage.NEW_LANGUAGE_NAME_ID);
-        if(nameAnswer != null) {
-            String nLangName = nameAnswer.getString(NewLanguagePackage.QUESTION_ANSWER);
-            if(!nLangName.isEmpty()) {
-                NewLanguagePackage newLang = new NewLanguagePackage(questionaireID, tempLanguageCode, nLangName, requestID, requester, app, answers);
-                return newLang;
-            }
-        }
+//        JSONObject nameAnswer = getQuestionForID(answers, NewLanguagePackage.NEW_LANGUAGE_NAME_ID);
+//        if(nameAnswer != null) {
+//            String nLangName = nameAnswer.getString(NewLanguagePackage.QUESTION_ANSWER);
+//            if(!nLangName.isEmpty()) {
+//                NewLanguagePackage newLang = new NewLanguagePackage(questionaireID, tempLanguageCode, nLangName, requestID, requester, app, answers);
+//                return newLang;
+//            }
+//        }
 
         return null;
     }

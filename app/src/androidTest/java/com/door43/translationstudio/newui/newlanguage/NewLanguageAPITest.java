@@ -37,16 +37,16 @@ import static org.junit.Assert.*;
 @LargeTest
 public class NewLanguageAPITest {
 
-    private NewLanguageAPI mApi;
+//    private NewLanguageAPI mApi;
     private String mUrl;
     private String mSourceLangID;
     private File mTempDir;
 
     @Before
     public void setup() {
-        mApi = new NewLanguageAPI();
+//        mApi = new NewLanguageAPI();
         mUrl = "http://td-demo.unfoldingword.org/api/questionnaire/";
-        mApi.setNewLangUrl(mUrl);
+//        mApi.setNewLangUrl(mUrl);
         mSourceLangID = "en-x-demo2";
     }
 
@@ -65,33 +65,33 @@ public class NewLanguageAPITest {
         NewLanguagePackage newLang = getQuestionaireAndFillAnswers(mSourceLangID);
         final JSONObject uploadSuccess = new JSONObject();
         TargetTranslation targetTranslation = createDummyTargetTranslationPackage(newLang);
-        mApi.uploadAnswersToAPI(null, targetTranslation, null); // send once
+//        mApi.uploadAnswersToAPI(null, targetTranslation, null); // send once
         newLang.setUploaded(false); // reset to force upload next backup
         newLang.commit(mTempDir);
 
         //when
-        mApi.uploadAnswersToAPI(null, targetTranslation, new NewLanguageAPI.OnRequestFinished() { // now send duplicate
-            @Override
-            public void onRequestFinished(boolean success, Response response) {
-                try {
-                    uploadSuccess.put("success", success);
-                    if(response != null) {
-                        uploadSuccess.putOpt("responseData", response.data);
-                        uploadSuccess.putOpt("responseException", response.exception);
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                signal.countDown();
-            }
-        });
+//        mApi.uploadAnswersToAPI(null, targetTranslation, new NewLanguageAPI.OnRequestFinished() { // now send duplicate
+//            @Override
+//            public void onRequestFinished(boolean success, Response response) {
+//                try {
+//                    uploadSuccess.put("success", success);
+//                    if(response != null) {
+//                        uploadSuccess.putOpt("responseData", response.data);
+//                        uploadSuccess.putOpt("responseException", response.exception);
+//                    }
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//                signal.countDown();
+//            }
+//        });
 
         //then
         signal.await(30, TimeUnit.SECONDS);
         assertTrue(uploadSuccess.getBoolean("success"));
         assertNull(uploadSuccess.opt("responseException"));
         assertNotNull(uploadSuccess.optString("responseData"));
-        assertTrue(uploadSuccess.optString("responseData").indexOf(NewLanguageAPI.DUPLICATE_KEY_ERROR) >= 0);
+//        assertTrue(uploadSuccess.optString("responseData").indexOf(NewLanguageAPI.DUPLICATE_KEY_ERROR) >= 0);
     }
 
     @Test
@@ -103,21 +103,21 @@ public class NewLanguageAPITest {
         TargetTranslation targetTranslation = createDummyTargetTranslationPackage(newLang);
 
         //when
-        mApi.uploadAnswersToAPI(null, targetTranslation, new NewLanguageAPI.OnRequestFinished() {
-            @Override
-            public void onRequestFinished(boolean success, Response response) {
-                try {
-                    uploadSuccess.put("success", success);
-                    if(response != null) {
-                        uploadSuccess.putOpt("responseData", response.data);
-                        uploadSuccess.putOpt("responseException", response.exception);
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                signal.countDown();
-            }
-        });
+//        mApi.uploadAnswersToAPI(null, targetTranslation, new NewLanguageAPI.OnRequestFinished() {
+//            @Override
+//            public void onRequestFinished(boolean success, Response response) {
+//                try {
+//                    uploadSuccess.put("success", success);
+//                    if(response != null) {
+//                        uploadSuccess.putOpt("responseData", response.data);
+//                        uploadSuccess.putOpt("responseException", response.exception);
+//                    }
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//                signal.countDown();
+//            }
+//        });
 
         //then
         signal.await(30, TimeUnit.SECONDS);
@@ -150,21 +150,21 @@ public class NewLanguageAPITest {
         final JSONObject uploadSuccess = new JSONObject();
 
         //when
-        mApi.uploadAnswersToAPI(newLang, new NewLanguageAPI.OnRequestFinished() {
-            @Override
-            public void onRequestFinished(boolean success, Response response) {
-                try {
-                    uploadSuccess.put("success", success);
-                    if(response != null) {
-                        uploadSuccess.putOpt("responseData", response.data);
-                        uploadSuccess.putOpt("responseException", response.exception);
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                signal.countDown();
-            }
-        });
+//        mApi.uploadAnswersToAPI(newLang, new NewLanguageAPI.OnRequestFinished() {
+//            @Override
+//            public void onRequestFinished(boolean success, Response response) {
+//                try {
+//                    uploadSuccess.put("success", success);
+//                    if(response != null) {
+//                        uploadSuccess.putOpt("responseData", response.data);
+//                        uploadSuccess.putOpt("responseException", response.exception);
+//                    }
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//                signal.countDown();
+//            }
+//        });
 
         //then
         signal.await(30, TimeUnit.SECONDS);
@@ -178,62 +178,64 @@ public class NewLanguageAPITest {
         //given
 
         //when
-        Response response = mApi.readQuestionnaireFromServer();
+//        Response response = mApi.readQuestionnaireFromServer();
 
         //then
-        assertNotNull(response);
-        verifyQuestionnaireID(response);
+//        assertNotNull(response);
+//        verifyQuestionnaireID(response);
     }
 
     private void verifyQuestionnaireID(Response response) throws JSONException {
-        JSONObject questionnaire = mApi.parseServerFetchResponse(response);
-        assertTrue(questionnaire.getJSONArray("languages").getJSONObject(0).getInt("questionnaire_id") > 0);
+//        JSONObject questionnaire = mApi.parseServerFetchResponse(response);
+//        assertTrue(questionnaire.getJSONArray("languages").getJSONObject(0).getInt("questionnaire_id") > 0);
     }
 
     @Test
     public void getQuestionnaireInvalidURL() throws JSONException {
         //given
-        mApi.setNewLangUrl(NewLanguageAPI.NEW_LANGUAGE_URL_DEBUG + "dummy/");
+//        mApi.setNewLangUrl(NewLanguageAPI.NEW_LANGUAGE_URL_DEBUG + "dummy/");
 
         //when
-        Response response = mApi.readQuestionnaireFromServer();
-
-        //then
-        assertNotNull(response);
-        assertNull(mApi.parseServerFetchResponse(response));
+//        Response response = mApi.readQuestionnaireFromServer();
+//
+//        //then
+//        assertNotNull(response);
+//        assertNull(mApi.parseServerFetchResponse(response));
     }
 
     @Test
     public void getQuestionnaireRegularUrl() throws JSONException {
         //given
-        mApi.setNewLangUrl(NewLanguageAPI.NEW_LANGUAGE_URL);
+//        mApi.setNewLangUrl(NewLanguageAPI.NEW_LANGUAGE_URL);
 
         //when
-        Response response = mApi.readQuestionnaireFromServer();
+//        Response response = mApi.readQuestionnaireFromServer();
 
         //then
-        assertNotNull(response);
-        verifyQuestionnaireID(response);
+//        assertNotNull(response);
+//        verifyQuestionnaireID(response);
     }
 
     private NewLanguagePackage getQuestionaireAndFillAnswers(String sourceLangID) throws JSONException {
 
         String questionnaire = getQuestions();
-        JSONObject questions = mApi.readQuestionnaireIntoPages(null,questionnaire, sourceLangID);
-        assertNotNull("could not find questions for " + sourceLangID, questions);
-        long id = NewLanguageActivity.getQuestionnaireID(questions);
+//        JSONObject questions = mApi.readQuestionnaireIntoPages(null,questionnaire, sourceLangID);
+//        assertNotNull("could not find questions for " + sourceLangID, questions);
+//        long id = NewLanguageActivity.getQuestionnaireID(questions);
         List<List<NewLanguageQuestion>> questionPages = new ArrayList<>();
-        NewLanguageActivity.getQuestionPages(questionPages, questions);
+//        NewLanguageActivity.getQuestionPages(questionPages, questions);
         List<NewLanguageQuestion> mergedQuestions = NewLanguageActivity.mergePagesOfNewLanguageQuestions(questionPages);
         for (NewLanguageQuestion newLanguageQuestion : mergedQuestions) {
             long qid = newLanguageQuestion.id;
 //            newLanguageQuestion.answer = "Answer-" + qid;
         }
-        return NewLanguagePackage.newInstance(id, mergedQuestions);
+//        return NewLanguagePackage.newInstance(id, mergedQuestions);
+        return null;
     }
 
     private String getQuestions() throws JSONException {
-        Response response = mApi.readQuestionnaireFromServer();
-        return response.toString();
+//        Response response = mApi.readQuestionnaireFromServer();
+//        return response.toString();
+        return null;
     }
 }

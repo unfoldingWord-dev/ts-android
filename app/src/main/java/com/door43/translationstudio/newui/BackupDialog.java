@@ -24,7 +24,6 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
-import com.door43.translationstudio.newui.newlanguage.NewLanguageAPI;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.tasks.CreateRepositoryTask;
 import com.door43.translationstudio.tasks.PullTargetTranslationTask;
@@ -147,8 +146,6 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
                         dialog.show(ft, Door43LoginDialog.TAG);
                         return;
                     }
-
-                    (new NewLanguageAPI()).uploadAnswersToAPI(getActivity(), targetTranslation, null);
 
                     PullTargetTranslationTask task = new PullTargetTranslationTask(targetTranslation);
                     taskWatcher.watch(task);
