@@ -64,8 +64,8 @@ public class NewLanguageQuestionnaire {
                 }
                 if(placedQuestion) {
                     questionsAdded.add(q.id);
+                    continue;
                 }
-                continue;
             } else if(currentPage.containsQuestion(q.reliantQuestionId)
                     && currentPage.getQuestionById(q.reliantQuestionId).reliantQuestionId < 0
                     && currentPage.indexOf(q.reliantQuestionId) > 0) {
