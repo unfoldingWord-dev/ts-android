@@ -34,7 +34,6 @@ import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.TargetLanguageUtility;
 import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.CheckingQuestion;
@@ -118,7 +117,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         boolean usfm = mTargetTranslation.getFormat() == TranslationFormat.USFM;
         mAllowFootnote = usfm;
         mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectSlug, mSourceTranslation.sourceLanguageSlug);
-        mTargetLanguage = TargetLanguageUtility.getTargetLanguageWithFallback(mTargetTranslation.getTargetLanguageId(), mTargetTranslation.getId());
+        mTargetLanguage = mLibrary.getTargetLanguage(mTargetTranslation);
         mResourcesOpened = resourcesOpened;
 
         Chapter[] chapters = mLibrary.getChapters(mSourceTranslation);

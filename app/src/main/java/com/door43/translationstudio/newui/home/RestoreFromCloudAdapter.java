@@ -65,15 +65,6 @@ public class RestoreFromCloudAdapter extends BaseAdapter {
         return v;
     }
 
-    private String lookupNewLanguageName(String targetLanguageID) {
-        NewLanguagePackage newLang = NewLanguagePackage.getNewLanguageFromFileSystem(targetLanguageID);
-        if(newLang != null) {
-            return newLang.languageName;
-        }
-
-        return null;
-    }
-
     /**
      * Sets the data to display
      * @param repositories
@@ -124,12 +115,8 @@ public class RestoreFromCloudAdapter extends BaseAdapter {
                     TargetLanguage tl = library.getTargetLanguage(targetLanguageSlug);
                     if (tl != null) {
                         targetLanguageName.setText(tl.name);
-                    } else if(NewLanguagePackage.isNewLanguageCode(targetLanguageSlug)) { // see if temp language
-                        targetLanguageName.setText(targetLanguageSlug); // default to just show temp language code
-                        String name = lookupNewLanguageName(targetLanguageSlug); // see if language is already loaded and get name
-                        if(name != null) {
-                            targetLanguageName.setText(name + "-" + targetLanguageSlug);
-                        }
+                    } else {
+                        targetLanguageName.setText(targetLanguageSlug);
                     }
                 } catch (StringIndexOutOfBoundsException e) {
                     e.printStackTrace();

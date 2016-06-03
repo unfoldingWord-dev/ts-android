@@ -25,7 +25,6 @@ import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.TargetLanguageUtility;
 import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.FrameTranslation;
@@ -61,7 +60,7 @@ import java.util.Map;
  */
 public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolder> {
     private SourceLanguage mSourceLanguage;
-    private final TargetLanguage mTargetLanguage;
+    private TargetLanguage mTargetLanguage;
     private final Activity mContext;
     private static final int BOTTOM_ELEVATION = 2;
     private static final int TOP_ELEVATION = 3;
@@ -82,7 +81,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
         mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectSlug, mSourceTranslation.sourceLanguageSlug);
-        mTargetLanguage = TargetLanguageUtility.getTargetLanguageWithFallback(mTargetTranslation.getTargetLanguageId(), mTargetTranslation.getId());
+        mTargetLanguage = mLibrary.getTargetLanguage(mTargetTranslation);
 
         Chapter[] chapters = mLibrary.getChapters(mSourceTranslation);
         List<ListItem> listItems = new ArrayList<>();

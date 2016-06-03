@@ -20,7 +20,6 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.TargetLanguageUtility;
 import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.FrameTranslation;
@@ -77,7 +76,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
         mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectSlug, mSourceTranslation.sourceLanguageSlug);
-        mTargetLanguage = TargetLanguageUtility.getTargetLanguageWithFallback(mTargetTranslation.getTargetLanguageId(), mTargetTranslation.getId());
+        mTargetLanguage = mLibrary.getTargetLanguage(mTargetTranslation);
 
         mChapters = mLibrary.getChapters(mSourceTranslation);
         if(chapterId != null) {

@@ -618,6 +618,27 @@ public class Library {
     }
 
     /**
+     * Returns the target language used in the target translation.
+     * This target language may not exist in the db, in which case the information in the target
+     * translation will be used to create the target language.
+     * @param targetTranslation
+     * @return
+     */
+    @Nullable
+    public TargetLanguage getTargetLanguage(TargetTranslation targetTranslation) {
+        TargetLanguage language = null;
+        if(targetTranslation != null) {
+            language = getTargetLanguage(targetTranslation.getTargetLanguageId());
+            if (language == null && !targetTranslation.getTargetLanguageId().isEmpty()) {
+                String name = targetTranslation.getTargetLanguageName().isEmpty() ? targetTranslation.getTargetLanguageId() : targetTranslation.getTargetLanguageName();
+                LanguageDirection direction = targetTranslation.getTargetLanguageDirection() == null ? LanguageDirection.LeftToRight : targetTranslation.getTargetLanguageDirection();
+                language = new TargetLanguage(targetTranslation.getTargetLanguageId(), name, "", direction);
+            }
+        }
+        return language;
+    }
+
+    /**
      * Returns the source translation by it's id
      * @param sourceTranslationId
      * @return null if the source translation does not exist
