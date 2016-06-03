@@ -133,7 +133,10 @@ public class NewLanguageRequest {
                 long questionnaireId = json.getLong("questionnaire_id");
                 String app = json.getString("app");
                 String requester = json.getString("requester");
-                long submittedAt = json.getLong("submitted_at");
+                long submittedAt = 0;
+                if(json.has("submitted_at")) {
+                    submittedAt = json.getLong("submitted_at");
+                }
                 NewLanguageRequest response = new NewLanguageRequest(requestUUID, tempCode, questionnaireId, app, requester);
                 response.setSubmittedAt(submittedAt);
 

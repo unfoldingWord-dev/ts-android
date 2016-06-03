@@ -27,7 +27,7 @@ public class CheckForLibraryUpdatesTask extends ManagedTask {
                     @Override
                     public boolean onProgress(int progress, int max) {
                         mMaxProgress = max;
-                        publishProgress(progress, "");
+                        publishProgress((float)progress/(float)max, "");
                         return !isCanceled();
                     }
 
@@ -50,7 +50,9 @@ public class CheckForLibraryUpdatesTask extends ManagedTask {
             library.downloadNewLanguageQuestionnaire();
 
             // submit new language requests
-            delegate(new SubmitNewLanguageRequestsTask());
+            SubmitNewLanguageRequestsTask task = new SubmitNewLanguageRequestsTask();
+            mMaxProgress = task.maxProgress();
+            delegate(task);
         }
     }
 

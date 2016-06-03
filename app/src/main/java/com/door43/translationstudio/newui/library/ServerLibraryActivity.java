@@ -377,7 +377,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                         } else if(task instanceof DownloadUpdatesTask) {
                             mProgressDialog.setTitle(getResources().getString(R.string.downloading));
                         }
-                        mProgressDialog.setMessage("");
+                        mProgressDialog.setMessage(message);
                     }
                     mProgressDialog.setMax(task.maxProgress());
                     if (!mProgressDialog.isShowing()) {
@@ -393,7 +393,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                         if(secondary) {
                             mProgressDialog.setSecondaryProgress((int)progress);
                         } else {
-                            mProgressDialog.setProgress((int) progress);
+                            mProgressDialog.setProgress((int) (progress * mProgressDialog.getMax()));
                         }
                         mProgressDialog.setProgressNumberFormat("%1d/%2d");
                         mProgressDialog.setProgressPercentFormat(NumberFormat.getPercentInstance());
@@ -401,7 +401,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                     if ((task instanceof DownloadAllProjectsTask || task instanceof DownloadUpdatesTask) && !message.isEmpty()) {
                         mProgressDialog.setMessage(String.format(getResources().getString(R.string.downloading_project), message));
                     } else {
-                        mProgressDialog.setMessage("");
+                        mProgressDialog.setMessage(message);
                     }
                 }
             });

@@ -25,6 +25,7 @@ import java.util.List;
 public class SubmitNewLanguageRequestsTask extends ManagedTask {
 
     private List<NewLanguageRequest> requests = new ArrayList<>();
+    private int mMaxProgress = 1;
 
     public SubmitNewLanguageRequestsTask() {
         // load requests that have not been submitted
@@ -35,7 +36,7 @@ public class SubmitNewLanguageRequestsTask extends ManagedTask {
                 try {
                     String data = FileUtils.readFileToString(f);
                     NewLanguageRequest request = NewLanguageRequest.generate(data);
-                    if(request != null && request.getSubmittedAt() == 0) {
+                    if(request != null) {// && request.getSubmittedAt() == 0) {
                         this.requests.add(request);
                     }
                 } catch (IOException e) {
@@ -49,8 +50,11 @@ public class SubmitNewLanguageRequestsTask extends ManagedTask {
     public void start() {
         if(AppContext.context().isNetworkAvailable()) {
             // TODO: 6/3/16 can we reuse the connection multiple times?
-            publishProgress(-1, AppContext.context().getResources().getString(R.string.submitting_new_language_requests));
-            for (NewLanguageRequest request : requests) {
+            String message = AppContext.context().getResources().getString(R.string.submitting_new_language_requests);
+            mMaxProgress = requests.size();
+            publishProgress(-1, message);
+            for (int i = 0; i < requests.size(); i ++) {
+                NewLanguageRequest request = requests.get(i);
                 String data = request.toJson();
 
                 // TODO: eventually we'll be able to get the server url from the db
@@ -92,7 +96,13 @@ public class SubmitNewLanguageRequestsTask extends ManagedTask {
                 } catch (Exception e) {
                     Logger.e(this.getClass().getName(), "Failed to submit the new language request", e);
                 }
+                publishProgress((float)(i + 1)/(float)mMaxProgress, message);
             }
         }
+    }
+
+    @Override
+    public int maxProgress() {
+        return mMaxProgress;
     }
 }
