@@ -31,6 +31,7 @@ import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.newui.newlanguage.NewLanguageActivity;
+import com.door43.util.FileUtilities;
 import com.door43.util.StringUtilities;
 import com.door43.widget.ViewUtil;
 
@@ -200,25 +201,19 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(projectId, sourceLanguage.getId());
             final TargetTranslation targetTranslation = AppContext.getTranslator().createTargetTranslation(AppContext.getProfile().getNativeSpeaker(), mSelectedTargetLanguage, projectId, TranslationType.TEXT, resourceSlug, sourceTranslation.getFormat());
             if(targetTranslation != null) {
+                // TODO: 6/3/16 check if the target language is a custom language code and deploy it to the target translation
+                if(createdNewLanguage) { // just a temporary hack
+                    File requestSrc = new File(AppContext.getPublicDirectory(), "new_languages/" + mSelectedTargetLanguage.getId() + ".json");
+                    File requestDest = new File(targetTranslation.getPath(), "new_language.json");
+                    try {
+                        String request = com.door43.tools.reporting.FileUtils.readFileToString(requestSrc);
+                        com.door43.tools.reporting.FileUtils.writeStringToFile(requestDest, request);
+                    } catch (IOException e) {
+                        Logger.e(this.getClass().getName(), "Failed to deploy the new language code request", e);
+                    }
+                }
 
-//                if(mNewLanguageData != null) {
-//                    saveNewLanguageData(targetTranslation, mNewLanguageData);
-//
-//                    String msg = String.format(AppContext.context().getResources().getString(R.string.new_language_confirmation), targetTranslation.getTargetLanguageId(), targetTranslation.getTargetLanguageName());
-//                    CustomAlertDialog.Create(this)
-//                            .setTitle(R.string.language)
-//                            .setMessage(msg)
-//                            .setPositiveButton(R.string.confirm, new View.OnClickListener() {
-//                                @Override
-//                                public void onClick(View v) {
-//                                    newProjectCreated(targetTranslation);
-//                                }
-//                            })
-//                            .setNegativeButton(R.string.title_cancel, null)
-//                            .show("NewLang");
-//                } else {
-                    newProjectCreated(targetTranslation);
-//                }
+                newProjectCreated(targetTranslation);
             } else {
                 AppContext.getTranslator().deleteTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId, TranslationType.TEXT, resourceSlug));
                 Intent data = new Intent();
@@ -241,38 +236,6 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
         data.putExtra(EXTRA_TARGET_TRANSLATION_ID, mNewTargetTranslationId);
         setResult(RESULT_OK, data);
         finish();
-    }
-
-    /**
-     * save new language data into target translation as well as "new_languages" folder
-     * @param targetTranslation
-     * @param newLanguageData
-     * @return
-     */
-    private boolean saveNewLanguageData(TargetTranslation targetTranslation, String newLanguageData) {
-        String path = "";
-        try {
-            NewLanguagePackage newLang = NewLanguagePackage.parse(newLanguageData);
-            if(null == newLang) {
-                return false;
-            }
-
-            File folder = targetTranslation.getPath();
-            path = folder.toString();
-            newLang.commit(folder);
-
-            File dataPath = NewLanguagePackage.getNewLanguageFolder();
-            path = dataPath.toString();
-            FileUtils.forceMkdir(dataPath);
-            File newLanguagePath = new File(dataPath,targetTranslation.getId() + NewLanguagePackage.NEW_LANGUAGE_FILE_EXTENSION);
-            path = newLanguagePath.toString();
-            newLang.commitToFile(newLanguagePath);
-
-        } catch (Exception e) {
-            Logger.e(TAG, "Could not write new language data to: " + path, e);
-            return false;
-        }
-        return true;
     }
 
     @Override
