@@ -5,6 +5,7 @@ import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -117,6 +118,7 @@ public abstract class SectionTitleIndicator<T> extends AbsSectionIndicator<T> {
      */
     public void setTitleText(String text) {
         mTitleText.setText(text);
+        Log.d(SectionTitleIndicator.class.getSimpleName(), "New Title: " + mTitleText.getText());
     }
 
 }

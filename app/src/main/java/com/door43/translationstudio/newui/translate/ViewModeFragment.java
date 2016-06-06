@@ -30,6 +30,7 @@ import org.json.JSONException;
 
 import java.security.InvalidParameterException;
 
+import xyz.danoz.recyclerviewfastscroller.sectionindicator.title.SectionTitleIndicator;
 import xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller;
 
 /**
@@ -101,6 +102,12 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
 
             mFastScroller = (VerticalRecyclerViewFastScroller) rootView.findViewById(R.id.fast_scroller);
             mFastScroller.setRecyclerView(mRecyclerView);
+
+            SectionTitleIndicator sectionTitleIndicator =
+                    (SectionTitleIndicator) rootView.findViewById(R.id.fast_scroller_section_title_indicator);
+
+            // Connect the section indicator to the scroller
+            mFastScroller.setSectionIndicator(sectionTitleIndicator);
 
 //            mRecyclerView.addOnScrollListener(mFastScroller.getOnScrollListener());
             final RecyclerView.OnScrollListener fastScrollerListener = mFastScroller.getOnScrollListener();

@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.SectionIndexer;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
@@ -51,7 +52,7 @@ import java.util.List;
 /**
  * Created by joel on 9/9/2015.
  */
-public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder> {
+public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder> implements SectionIndexer {
 
     private final CharSequence[] mRenderedTargetBody;
     private SourceLanguage mSourceLanguage;
@@ -68,6 +69,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     private Chapter[] mChapters;
     private int mLayoutBuildNumber = 0;
     private ContentValues[] mTabs;
+    private String[] mChapterMarkers;
 
     public ReadModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId) {
         mLibrary = AppContext.getLibrary();
@@ -193,6 +195,30 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         Chapter c = mChapters[position];
         return c.getId();
     }
+
+    @Override
+    public Object[] getSections() {
+        if(null == mChapterMarkers) {
+            List<String> chapterLists = new ArrayList();
+            for (int i = 0; i < mChapters.length; i++) {
+                Chapter c = mChapters[i];
+                chapterLists.add(c.getId());
+            }
+            mChapterMarkers = chapterLists.toArray(new String[chapterLists.size()]);
+        }
+        return mChapterMarkers;
+    }
+
+    @Override
+    public int getPositionForSection(int sectionIndex) {
+        return sectionIndex;
+    }
+
+    @Override
+    public int getSectionForPosition(int position) {
+         return position;
+    }
+
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {

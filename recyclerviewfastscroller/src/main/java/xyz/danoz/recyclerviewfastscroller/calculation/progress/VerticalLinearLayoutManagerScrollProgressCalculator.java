@@ -29,23 +29,6 @@ public class VerticalLinearLayoutManagerScrollProgressCalculator extends Vertica
         int lastFullyVisiblePosition = layoutManager.findLastCompletelyVisibleItemPosition();
         Log.d(TAG, "calculateScrollProgress: lastFullyVisiblePosition=" + lastFullyVisiblePosition);
 
-//        int count = recyclerView.getChildCount();
-//        for (int i = 0; i < count; i++) {
-//            Log.d(TAG, "calculateScrollProgress: child i=" + i);
-//            View visibleChild = recyclerView.getChildAt(i);
-//            if (visibleChild == null) {
-//                Log.d(TAG, "calculateScrollProgress: child null");
-//            }
-//            ViewHolder holder = recyclerView.getChildViewHolder(visibleChild);
-//            if(holder == null) {
-//                return 0;
-//            }
-//            int itemHeight = holder.itemView.getHeight();  // looks like there is an assumption that view items are same height
-//            Log.d(TAG, "calculateScrollProgress: itemHeight=" + itemHeight);
-//            float y = -holder.itemView.getY();
-//            Log.d(TAG, "calculateScrollProgress: y=" + y);
-//        }
-
         View visibleChild = recyclerView.getChildAt(0);
         if (visibleChild == null) {
             return 0;
@@ -76,8 +59,8 @@ public class VerticalLinearLayoutManagerScrollProgressCalculator extends Vertica
 
             int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
             Log.d(TAG, "calculateScrollProgress: firstVisibleItemPosition=" + firstVisibleItemPosition);
-            int lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition();
-            Log.d(TAG, "calculateScrollProgress: lastVisibleItemPosition=" + lastVisibleItemPosition);
+//            int lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition();
+//            Log.d(TAG, "calculateScrollProgress: lastVisibleItemPosition=" + lastVisibleItemPosition);
             int numItemsInList = recyclerView.getAdapter().getItemCount();
             float progress;
             if(numItemsInList <= 1) { // sanity check

@@ -3,6 +3,7 @@ package xyz.danoz.recyclerviewfastscroller;
 import xyz.danoz.recyclerviewfastscroller.sectionindicator.SectionIndicator;
 
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -39,9 +40,11 @@ class FastScrollerTouchListener implements OnTouchListener {
 
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
+                Log.d(FastScrollerTouchListener.class.getSimpleName(), "showOrHideIndicator: action down");
                 sectionIndicator.animateAlpha(1f);
                 return;
             case MotionEvent.ACTION_UP:
+                Log.d(FastScrollerTouchListener.class.getSimpleName(), "showOrHideIndicator: action up");
                 sectionIndicator.animateAlpha(0f);
         }
     }
