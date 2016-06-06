@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.util.NumericStringComparator;
+import com.door43.util.FileUtilities;
 import com.door43.util.Manifest;
 
 import org.apache.commons.io.FileUtils;
@@ -1230,6 +1231,20 @@ public class TargetTranslation {
             original.put(FIELD_PARENT_DRAFT, imported.getJSONObject(FIELD_PARENT_DRAFT));
         }
         return original;
+    }
+
+    /**
+     * Sets the new language request that represents the temporary language code being used by this target translation
+     * @param request
+     * @throws IOException
+     */
+    public void setNewLanguageRequest(NewLanguageRequest request) throws IOException {
+        File requestFile = new File(getPath(), "new_language.json");
+        if(request != null) {
+            com.door43.tools.reporting.FileUtils.writeStringToFile(requestFile, request.toJson());
+        } else if(requestFile.exists()) {
+            FileUtilities.safeDelete(requestFile);
+        }
     }
 
     public enum PublishStatus {

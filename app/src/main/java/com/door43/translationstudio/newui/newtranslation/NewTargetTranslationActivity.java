@@ -110,31 +110,24 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
      * @param request
      */
     private void registerCustomLanguageCode(NewLanguageRequest request) {
-        if(request != null) {
-            File requestFile = new File(AppContext.getPublicDirectory(), "new_languages/" + request.tempLanguageCode + ".json");
-            requestFile.getParentFile().mkdirs();
-            try {
-                com.door43.tools.reporting.FileUtils.writeStringToFile(requestFile, request.toJson());
+        if(AppContext.addNewLanguageRequest(request)) {
+            // TODO: 6/2/16 retrieve the language region from the request
+            mSelectedTargetLanguage = new TargetLanguage(request.tempLanguageCode, request.getLanguageName(), "uncertain", LanguageDirection.LeftToRight);
 
-                // TODO: 6/2/16 retrieve the language region from the request
-                mSelectedTargetLanguage = new TargetLanguage(request.tempLanguageCode, request.getLanguageName(), "uncertain", LanguageDirection.LeftToRight);
+            // TODO: 6/2/16 add the language code to the actual target language list.
+            // The temp codes will be stored in a seperate table and joined when retrieving target languages.
+            // We will likely have yet another table to indicate the migration of temp language codes to correct language codes.
 
-                // TODO: 6/2/16 add the language code to the actual target language list.
-                // The temp codes will be stored in a seperate table and joined when retrieving target languages.
-                // We will likely have yet another table to indicate the migration of temp language codes to correct language codes.
+            this.createdNewLanguage = true;
 
-                this.createdNewLanguage = true;
-
-                confirmNewLanguage(mSelectedTargetLanguage);
-                return;
-            } catch (IOException e) {
-                Logger.e(this.getClass().getName(), "Failed to save the new langauge request", e);
-            }
+            confirmNewLanguage(mSelectedTargetLanguage);
+            return;
+        } else {
+            CustomAlertDialog.Create(this)
+                    .setTitle(R.string.error)
+                    .setMessage(R.string.try_again)
+                    .show("error-questionnaire");
         }
-        CustomAlertDialog.Create(this)
-                .setTitle(R.string.error)
-                .setMessage(R.string.try_again)
-                .show("error-questionnaire");
     }
 
     /**
@@ -201,13 +194,11 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(projectId, sourceLanguage.getId());
             final TargetTranslation targetTranslation = AppContext.getTranslator().createTargetTranslation(AppContext.getProfile().getNativeSpeaker(), mSelectedTargetLanguage, projectId, TranslationType.TEXT, resourceSlug, sourceTranslation.getFormat());
             if(targetTranslation != null) {
-                // TODO: 6/3/16 check if the target language is a custom language code and deploy it to the target translation
-                if(createdNewLanguage) { // just a temporary hack
-                    File requestSrc = new File(AppContext.getPublicDirectory(), "new_languages/" + mSelectedTargetLanguage.getId() + ".json");
-                    File requestDest = new File(targetTranslation.getPath(), "new_language.json");
+                // deploy custom language code request to the translation
+                NewLanguageRequest request = AppContext.getNewLanguageRequest(mSelectedTargetLanguage.getId());
+                if(request != null) {
                     try {
-                        String request = com.door43.tools.reporting.FileUtils.readFileToString(requestSrc);
-                        com.door43.tools.reporting.FileUtils.writeStringToFile(requestDest, request);
+                        targetTranslation.setNewLanguageRequest(request);
                     } catch (IOException e) {
                         Logger.e(this.getClass().getName(), "Failed to deploy the new language code request", e);
                     }

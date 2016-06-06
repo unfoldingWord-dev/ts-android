@@ -15,6 +15,7 @@ import android.view.inputmethod.InputMethodManager;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.core.ArchiveDetails;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.NewLanguageRequest;
 import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
@@ -624,5 +625,43 @@ public class AppContext {
             editor.putString(preferenceKey, value);
         }
         editor.apply();
+    }
+
+    /**
+     * Returns the new language request if it exists
+     * @param language_code
+     * @return
+     */
+    @Nullable
+    public static NewLanguageRequest getNewLanguageRequest(String language_code) {
+        File requestFile = new File(getPublicDirectory(), "new_languages/" + language_code + ".json");
+        if(requestFile.exists() && requestFile.isFile()) {
+            String data = null;
+            try {
+                data = com.door43.tools.reporting.FileUtils.readFileToString(requestFile);
+            } catch (IOException e) {
+                Logger.e(AppContext.class.getName(), "Failed to read the new language request", e);
+            }
+            return NewLanguageRequest.generate(data);
+        }
+        return null;
+    }
+
+    /**
+     * Adds a new language request
+     * @param request
+     */
+    public static boolean addNewLanguageRequest(NewLanguageRequest request) {
+        if(request != null) {
+            File requestFile = new File(getPublicDirectory(), "new_languages/" + request.tempLanguageCode + ".json");
+            requestFile.getParentFile().mkdirs();
+            try {
+                com.door43.tools.reporting.FileUtils.writeStringToFile(requestFile, request.toJson());
+                return true;
+            } catch (IOException e) {
+                Logger.e(AppContext.class.getName(), "Failed to save the new langauge request", e);
+            }
+        }
+        return false;
     }
 }

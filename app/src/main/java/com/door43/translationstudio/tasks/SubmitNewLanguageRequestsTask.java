@@ -1,10 +1,13 @@
 package com.door43.translationstudio.tasks;
 
+import android.util.Pair;
+
 import com.door43.tools.reporting.FileUtils;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NewLanguageRequest;
+import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.util.tasks.ManagedTask;
 
 import org.json.JSONArray;
@@ -16,6 +19,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -55,12 +59,11 @@ public class SubmitNewLanguageRequestsTask extends ManagedTask {
     public void start() {
         if(AppContext.context().isNetworkAvailable()) {
             // TODO: 6/3/16 can we reuse the connection multiple times?
-            String message = AppContext.context().getResources().getString(R.string.submitting_new_language_requests);
+            String progressMessage = AppContext.context().getResources().getString(R.string.submitting_new_language_requests);
             mMaxProgress = requests.size();
-            publishProgress(-1, message);
+            publishProgress(-1, progressMessage);
             for (int i = 0; i < requests.size(); i ++) {
                 NewLanguageRequest request = requests.get(i);
-                String data = request.toJson();
 
                 // TODO: eventually we'll be able to get the server url from the db
 
@@ -73,12 +76,14 @@ public class SubmitNewLanguageRequestsTask extends ManagedTask {
                     conn.setConnectTimeout(10000); // 10 seconds
                     conn.setRequestMethod("POST");
 
-                    // send payload as form-data
-                    String formData = generateFormDataParameter("request_id", request.requestUUID);
-                    formData += generateFormDataParameter("temp_code", request.tempLanguageCode);
-                    formData += generateFormDataParameter("questionnaire_id", request.questionnaireId + "");
-                    formData += generateFormDataParameter("app", request.app);
-                    formData += generateFormDataParameter("requester", request.requester);
+                    // send payload as form-data. Later this chunk of code can be replaced by the commented out stuff below.
+                    List<Pair<String, String>> params = new ArrayList<>();
+                    params.add(new Pair<>("request_id", request.requestUUID));
+                    params.add(new Pair<>("temp_code", request.tempLanguageCode));
+                    params.add(new Pair<>("questionnaire_id", request.questionnaireId + ""));
+                    params.add(new Pair<>("app", request.app));
+                    params.add(new Pair<>("requester", request.requester));
+
                     JSONArray answersJson = new JSONArray();
                     Map<Long, String> answers = request.getAnswers();
                     for(long key : answers.keySet()) {
@@ -87,19 +92,18 @@ public class SubmitNewLanguageRequestsTask extends ManagedTask {
                         answer.put("text", answers.get(key));
                         answersJson.put(answer);
                     }
-                    formData += generateFormDataParameter("answers", answersJson.toString());
-                    formData += formBoundary();
-                    conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + AppContext.udid());
+                    params.add(new Pair<>("answers", answersJson.toString()));
+
                     conn.setDoOutput(true);
                     DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
-                    dos.writeBytes(formData);
+                    dos.writeBytes(getQuery(params));
                     dos.flush();
                     dos.close();
 
-
-                    // send payload as raw json
+                    // send payload as raw json once the server supports it.
 //                    conn.setDoOutput(true);
 //                    DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
+//                    String data = request.toJson();
 //                    dos.writeBytes(data);
 //                    dos.flush();
 //                    dos.close();
@@ -117,38 +121,73 @@ public class SubmitNewLanguageRequestsTask extends ManagedTask {
 
                     // process response
                     JSONObject responseJson = new JSONObject(response);
-                    if(responseJson.has("status") && responseJson.getString("status").equals("success")) {
-                        request.setSubmittedAt(System.currentTimeMillis());
-                        File requestFile = new File(AppContext.getPublicDirectory(), "new_languages/" + request.tempLanguageCode + ".json");
-                        FileUtils.writeStringToFile(requestFile, request.toJson());
-                        // TODO: 6/3/16 we need to update target translations using this language code
-
+                    String status = "unknown";
+                    String message = "";
+                    if(responseJson.has("status")) {
+                        status = responseJson.getString("status");
+                    }
+                    if(responseJson.has("message")) {
+                        message = responseJson.getString("message");
+                    }
+                    if(status.equals("success")) {
                         Logger.i(this.getClass().getName(), "new language request '" + request.tempLanguageCode + "' successfully submitted");
-                    } else if(responseJson.has("message")) {
+                        sealRequest(request);
+                    }  else if(status.endsWith("duplicate") || message.toLowerCase().contains("duplicate key value")) {
+                        Logger.i(this.getClass().getName(), "new language request '" + request.tempLanguageCode + "' has already been submitted");
+                        sealRequest(request);
+                    } else if(!message.isEmpty()) {
                         Logger.w(this.getClass().getName(), responseJson.getString("message"));
                     }
                 } catch (Exception e) {
                     Logger.e(this.getClass().getName(), "Failed to submit the new language request", e);
                 }
-                publishProgress((float)(i + 1)/(float)mMaxProgress, message);
+                publishProgress((float)(i + 1)/(float)mMaxProgress, progressMessage);
             }
         }
     }
 
     /**
-     * Generates a form data parameter.
-     * This is temporary until the server supports raw json.
-     * @param key
-     * @param value
+     * Marks the request has submitted and updates any affected target translations
+     * @param request
+     */
+    private void sealRequest(NewLanguageRequest request) throws IOException {
+        Logger.i(this.getClass().getName(), "Sealing new language request '" + request.tempLanguageCode + "'");
+        request.setSubmittedAt(System.currentTimeMillis());
+        File requestFile = new File(AppContext.getPublicDirectory(), "new_languages/" + request.tempLanguageCode + ".json");
+        FileUtils.writeStringToFile(requestFile, request.toJson());
+
+        // updated affected target translations
+        TargetTranslation[] translations = AppContext.getTranslator().getTargetTranslations();
+        for(TargetTranslation t:translations) {
+            if(t.getTargetLanguageId().equals(request.tempLanguageCode)) {
+                Logger.i(this.getClass().getName(), "Updating language request in target translation '" + t.getId() + "'");
+                t.setNewLanguageRequest(request);
+            }
+        }
+    }
+
+    /**
+     * Generates the form-data query
+     * @param params
      * @return
      */
-    private String generateFormDataParameter(String key, String value) {
-        String parameter = formBoundary();
-        parameter += "Content-Disposition: form-data; name=\"" + key + "\"\r\n";
-        parameter += "\r\n";
-        parameter += value;
-        parameter += "\r\n";
-        return parameter;
+    private String getQuery(List<Pair<String, String>> params) throws UnsupportedEncodingException {
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
+
+        for (Pair<String, String> pair : params)
+        {
+            if (first)
+                first = false;
+            else
+                result.append("&");
+
+            result.append(URLEncoder.encode(pair.first, "UTF-8"));
+            result.append("=");
+            result.append(URLEncoder.encode(pair.second, "UTF-8"));
+        }
+
+        return result.toString();
     }
 
     private String formBoundary() {
