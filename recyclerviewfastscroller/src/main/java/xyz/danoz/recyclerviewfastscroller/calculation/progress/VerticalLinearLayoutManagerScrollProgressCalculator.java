@@ -5,12 +5,15 @@ import xyz.danoz.recyclerviewfastscroller.calculation.VerticalScrollBoundsProvid
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
+import android.util.Log;
 import android.view.View;
 
 /**
  * Calculates scroll progress for a {@link RecyclerView} with a {@link LinearLayoutManager}
  */
 public class VerticalLinearLayoutManagerScrollProgressCalculator extends VerticalScrollProgressCalculator {
+
+    public static final String TAG = VerticalLinearLayoutManagerScrollProgressCalculator.class.getSimpleName();
 
     public VerticalLinearLayoutManagerScrollProgressCalculator(VerticalScrollBoundsProvider scrollBoundsProvider) {
         super(scrollBoundsProvider);
@@ -24,14 +27,40 @@ public class VerticalLinearLayoutManagerScrollProgressCalculator extends Vertica
     public float calculateScrollProgress(RecyclerView recyclerView) {
         LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
         int lastFullyVisiblePosition = layoutManager.findLastCompletelyVisibleItemPosition();
+        Log.d(TAG, "calculateScrollProgress: lastFullyVisiblePosition=" + lastFullyVisiblePosition);
+
+//        int count = recyclerView.getChildCount();
+//        for (int i = 0; i < count; i++) {
+//            Log.d(TAG, "calculateScrollProgress: child i=" + i);
+//            View visibleChild = recyclerView.getChildAt(i);
+//            if (visibleChild == null) {
+//                Log.d(TAG, "calculateScrollProgress: child null");
+//            }
+//            ViewHolder holder = recyclerView.getChildViewHolder(visibleChild);
+//            if(holder == null) {
+//                return 0;
+//            }
+//            int itemHeight = holder.itemView.getHeight();  // looks like there is an assumption that view items are same height
+//            Log.d(TAG, "calculateScrollProgress: itemHeight=" + itemHeight);
+//            float y = -holder.itemView.getY();
+//            Log.d(TAG, "calculateScrollProgress: y=" + y);
+//        }
+
+        View visibleChild = recyclerView.getChildAt(0);
+        if (visibleChild == null) {
+            return 0;
+        }
+
+        Log.d(TAG, "calculateScrollProgress: lastFullyVisiblePosition=" + lastFullyVisiblePosition);
+
+        ViewHolder holder = recyclerView.getChildViewHolder(visibleChild);
+        if(holder == null) {
+            return 0;
+        }
+        int itemHeight = holder.itemView.getHeight();  // looks like there is an assumption that view items are same height
 
         if(lastFullyVisiblePosition >= 0) {
-            View visibleChild = recyclerView.getChildAt(0); // looks like there is an assumption that view items are same height
-            if (visibleChild == null) {
-                return 0;
-            }
-            ViewHolder holder = recyclerView.getChildViewHolder(visibleChild);
-            int itemHeight = holder.itemView.getHeight();
+
             int recyclerHeight = recyclerView.getHeight();
             int itemsInWindow = recyclerHeight / itemHeight;
 
@@ -43,15 +72,26 @@ public class VerticalLinearLayoutManagerScrollProgressCalculator extends Vertica
 
             return (float) currentSection / numScrollableSectionsInList;
 
-        } else { // child views are too big to fit in window
+        } else { // in case the child views are too big to fit in window
 
-            int visibleItemPosition = layoutManager.findFirstVisibleItemPosition();
+            int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
+            Log.d(TAG, "calculateScrollProgress: firstVisibleItemPosition=" + firstVisibleItemPosition);
+            int lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition();
+            Log.d(TAG, "calculateScrollProgress: lastVisibleItemPosition=" + lastVisibleItemPosition);
             int numItemsInList = recyclerView.getAdapter().getItemCount();
             float progress;
             if(numItemsInList <= 1) { // sanity check
                 progress = 1.0f;
             } else {
-                progress = (float) visibleItemPosition / (numItemsInList - 1);
+                float stepSize = 1.0f / (numItemsInList - 1);
+                progress = firstVisibleItemPosition * stepSize ;
+
+                float y = -holder.itemView.getY();
+                float offset = y/itemHeight;
+                float progressOffset = offset * stepSize;
+                Log.d(TAG, "calculateScrollProgress: progress=" + progress);
+                progress += progressOffset;
+                Log.d(TAG, "calculateScrollProgress: progressOffset=" + progressOffset);
             }
             return progress;
         }

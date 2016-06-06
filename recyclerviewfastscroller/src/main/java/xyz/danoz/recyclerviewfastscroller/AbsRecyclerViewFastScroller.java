@@ -12,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.OnScrollListener;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -152,6 +153,7 @@ public abstract class AbsRecyclerViewFastScroller extends FrameLayout implements
     @Override
     public void scrollTo(float scrollProgress, boolean fromTouch) {
         int position = getPositionFromScrollProgress(scrollProgress);
+        Log.d(AbsRecyclerViewFastScroller.class.getSimpleName(), "scrollTo scrollProgress=" + scrollProgress + " position: " + position);
         mRecyclerView.scrollToPosition(position);
 
         updateSectionIndicator(position, scrollProgress);

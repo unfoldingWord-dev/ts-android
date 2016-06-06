@@ -345,7 +345,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
             float ratio = (float) position /(count - 1);
 
             Logger.i(TAG, "setScrollProgress: position: " + position + ", ratio: " + ratio);
-            mFastScroller.moveHandleToPosition(ratio);
+           // mFastScroller.moveHandleToPosition(ratio);
         }
     }
 
