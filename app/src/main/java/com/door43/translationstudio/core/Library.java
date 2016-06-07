@@ -27,12 +27,12 @@ public class Library {
     private static final String IMAGES_DIR = "images";
     public static final String TAG = Library.class.toString();
 //    private static final String IMAGES_DOWNLOADED_TAG = "images_downloaded_and_extracted";
-    private final Indexer mAppIndex;
+    private final LibraryData mAppIndex;
     public static String DATABASE_NAME = "app";
     private final Context mContext;
     private final File mAssetsDir;
     private Downloader mDownloader;
-    private static IndexerSQLiteHelper appIndexHelper;
+    private static LibrarySQLiteHelper appIndexHelper;
 
     /**
      *
@@ -44,7 +44,7 @@ public class Library {
     public Library(Context context, String rootApiUrl, File assetsDir) throws IOException {
         initalizeHelpers(context);
         mContext = context;
-        mAppIndex = new Indexer(context, DATABASE_NAME, appIndexHelper);
+        mAppIndex = new LibraryData(context, DATABASE_NAME, appIndexHelper);
         mDownloader = new Downloader(rootApiUrl);
         mAssetsDir = assetsDir;
     }
@@ -55,7 +55,7 @@ public class Library {
      */
     private synchronized static void initalizeHelpers(Context context) throws IOException {
         if(appIndexHelper == null) {
-            appIndexHelper = new IndexerSQLiteHelper(context, DATABASE_NAME);
+            appIndexHelper = new LibrarySQLiteHelper(context, DATABASE_NAME);
         }
     }
 
@@ -104,7 +104,7 @@ public class Library {
      *
      * @return
      */
-    private Indexer getActiveIndex() {
+    private LibraryData getActiveIndex() {
         return mAppIndex;
     }
 
