@@ -16,7 +16,7 @@ import java.util.List;
  * TODO: these methods need to throw exeptions so we can log the error
  */
 public class IndexerSQLiteHelper extends SQLiteOpenHelper{
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 8;
     private final String databaseName;
     private final String schema;
 
@@ -167,6 +167,21 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
                     "  `direction` TEXT NOT NULL,\n" +
                     "  `region` TEXT NOT NULL,\n" +
                     "  UNIQUE (`slug`)\n" +
+                    ");");
+
+            db.setTransactionSuccessful();
+            db.endTransaction();
+        }
+        if(oldVersion < 8) {
+            db.beginTransaction();
+
+            db.execSQL("CREATE TABLE `approved_temp_target_language` (\n" +
+                    "  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n" +
+                    "  `target_language_id` INTEGER NOT NULL,\n" +
+                    "  `temp_target_language_id` INTEGER NOT NULL,\n" +
+                    "  UNIQUE (`target_language_id`, `temp_target_language_id`),\n" +
+                    "  FOREIGN KEY (target_language_id) REFERENCES `target_language` (`id`) ON DELETE CASCADE,\n" +
+                    "  FOREIGN KEY (temp_target_language_id) REFERENCES `temp_target_language` (`id`) ON DELETE CASCADE\n" +
                     ");");
 
             db.setTransactionSuccessful();

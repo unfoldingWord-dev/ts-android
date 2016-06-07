@@ -132,6 +132,22 @@ CREATE TABLE `temp_target_language` (
   UNIQUE (`slug`)
 );
 
+
+-- ---
+-- Table 'approved_temp_target_language'
+-- ---
+
+DROP TABLE IF EXISTS `approved_temp_target_language`;
+
+CREATE TABLE `approved_temp_target_language` (
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  `target_language_id` INTEGER NOT NULL,
+  `temp_target_language_id` INTEGER NOT NULL,
+  UNIQUE (`target_language_id`, `temp_target_language_id`),
+  FOREIGN KEY (target_language_id) REFERENCES `target_language` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (temp_target_language_id) REFERENCES `temp_target_language` (`id`) ON DELETE CASCADE
+);
+
 -- ---
 -- Table 'translation_word'
 -- ---
@@ -473,6 +489,7 @@ CREATE INDEX `translation_note_frame_id` ON `translation_note`(`frame_id`);
 CREATE INDEX `source_language__category_category_id` ON `source_language__category`(`category_id`);
 CREATE INDEX `resource_checking_level` ON `resource`(`checking_level`);
 CREATE INDEX `target_language_slug` ON `target_language`(`slug`);
+CREATE INDEX `temp_target_language_slug` ON `temp_target_language`(`slug`);
 
 CREATE INDEX `checking_question_slug` ON `checking_question`(`slug`);
 CREATE INDEX `checking_question_chapter_id` ON `checking_question`(`chapter_id`);
