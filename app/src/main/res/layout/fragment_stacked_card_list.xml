@@ -27,6 +27,8 @@
         android:layout_height="@dimen/list_item_height"
         android:layout_toLeftOf="@id/fast_scroller"
         android:layout_toStartOf="@id/fast_scroller"
+        android:paddingRight="@dimen/margin_large"
+        android:paddingEnd="@dimen/margin_large"
 
         recyclerviewfastscroller:rfs_backgroundColor="@android:color/darker_gray"
         recyclerviewfastscroller:rfs_textColor="@android:color/white"

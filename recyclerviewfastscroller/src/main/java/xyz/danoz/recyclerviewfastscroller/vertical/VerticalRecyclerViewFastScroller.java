@@ -60,7 +60,7 @@ public class VerticalRecyclerViewFastScroller extends AbsRecyclerViewFastScrolle
         Log.d(TAG, "moveHandleToPosition: yPositionFromScrollProgress=" + yPositionFromScrollProgress);
         int handleHeight = mHandle.getHeight();
         Log.d(TAG, "moveHandleToPosition: handleHeight=" + handleHeight);
-        yPositionFromScrollProgress += handleHeight / 2;
+        yPositionFromScrollProgress += handleHeight * 3 / 4;
         Log.d(TAG, "moveHandleToPosition: new yPositionFromScrollProgress=" + yPositionFromScrollProgress);
         mHandle.setY(yPositionFromScrollProgress);
     }

@@ -29,6 +29,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.SectionIndexer;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -79,7 +80,7 @@ import java.util.regex.Pattern;
 /**
  * Created by joel on 9/18/2015.
  */
-public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHolder> {
+public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHolder> implements SectionIndexer {
     private static final String TAG = ReviewModeAdapter.class.getSimpleName();
 
     private static final int TAB_NOTES = 0;
@@ -104,6 +105,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private ContentValues[] mTabs;
     private int[] mOpenResourceTab;
     private boolean mAllowFootnote = true;
+    private String[] mChapterMarkers;
+    private Integer[] mChapterStartPos;
 
 //    private boolean onBind = false;
 
@@ -323,8 +326,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * get the chapter ID for the position
      * @param position
      */
-    @Override
-    public String getChapterID(int position) {
+    public String getNearestChapterID(int position) {
         if(position < 0) {
             position = 0;
         } else if(position >= mListItems.length) {
@@ -353,6 +355,70 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         String chapterID = Integer.toString(position + 1);
         return chapterID;
+    }
+
+    /**
+     * get the chapter ID for the position
+     * @param position
+     */
+    @Override
+    public String getChapterID(int position) {
+        int section = getSectionForPosition( position);
+        if(section > 0) {
+            return mChapterMarkers[section];
+        }
+        return "";
+    }
+
+    @Override
+    public Object[] getSections() {
+        makeSureChapterMarkersInitialized();
+        return mChapterMarkers;
+    }
+
+    @Override
+    public int getPositionForSection(int sectionIndex) {
+        makeSureChapterMarkersInitialized();
+        if( (sectionIndex < 0) || (sectionIndex >= mChapterStartPos.length)) {
+            return -1;
+        }
+        return mChapterStartPos[sectionIndex];
+    }
+
+    private void makeSureChapterMarkersInitialized() {
+        if(null == mChapterMarkers) {
+            List<String> chapterLists = new ArrayList<>();
+            List<Integer> chapterStart = new ArrayList<>();
+            int length = getItemCount();
+            String lastChapter = "<null>";
+            for (int i = 0; i < length; i++) {
+                String chapter = getNearestChapterID(i);
+                if(!lastChapter.equals(chapter)) {
+                    chapterLists.add(chapter);
+                    chapterStart.add(i);
+                    lastChapter = chapter;
+                }
+            }
+            mChapterMarkers = chapterLists.toArray(new String[chapterLists.size()]);
+            mChapterStartPos = chapterStart.toArray(new Integer[chapterLists.size()]);
+        }
+    }
+
+    @Override
+    public int getSectionForPosition(int position) {
+        makeSureChapterMarkersInitialized();
+        int length = getItemCount();
+        if( (position < 0) || (position >= length)) {
+            return -1;
+        }
+
+        for (int i = 1; i < mChapterStartPos.length; i++) {
+            int sectionStart = mChapterStartPos[i];
+            if(position < sectionStart) {
+                return i - 1;
+            }
+        }
+        return mChapterStartPos.length - 1;
     }
 
     @Override
