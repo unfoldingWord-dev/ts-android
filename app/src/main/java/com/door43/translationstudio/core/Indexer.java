@@ -475,13 +475,13 @@ public class Indexer {
         for (int i = 0; i < items.length(); i ++) {
             try {
                 JSONObject item = items.getJSONObject(i);
-                NewLanguageQuestionnaire questionnaire = NewLanguageQuestionnaire.generate(item.toString());
+                Questionnaire questionnaire = Questionnaire.generate(item.toString());
                 if(questionnaire != null) {
                     long questionnaireDBId = mDatabaseHelper.addNewLanguageQuestionnaire(mDatabase, questionnaire.door43Id, questionnaire.languageSlug, questionnaire.languageName, questionnaire.languageDirection);
                     JSONArray questionsJson = item.getJSONArray("questions");
                     for(int j = 0; j < questionsJson.length(); j ++) {
                         JSONObject questionJson = questionsJson.getJSONObject(j);
-                        NewLanguageQuestion question = NewLanguageQuestion.generate(questionJson);
+                        QuestionnaireQuestion question = QuestionnaireQuestion.generate(questionJson);
                         if(question != null) {
                             mDatabaseHelper.addNewLanguageQuestion(mDatabase, questionnaireDBId, question.id, question.question, question.helpText, question.type, question.required, question.sort, question.reliantQuestionId);
                         }
@@ -1362,7 +1362,7 @@ public class Indexer {
      * Returns an array of new language questionnaires
      * @return
      */
-    public NewLanguageQuestionnaire[] getNewLanguageQuestionnaire() {
+    public Questionnaire[] getNewLanguageQuestionnaire() {
         return mDatabaseHelper.getNewLanguageQuestionnaires(mDatabase);
     }
 

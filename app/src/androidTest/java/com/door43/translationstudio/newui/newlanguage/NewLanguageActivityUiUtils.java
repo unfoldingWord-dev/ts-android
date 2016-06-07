@@ -22,7 +22,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.NewLanguageQuestion;
+import com.door43.translationstudio.core.QuestionnaireQuestion;
 import com.door43.translationstudio.tasks.UploadCrashReportTask;
 
 import java.io.InputStream;
@@ -61,7 +61,7 @@ public class NewLanguageActivityUiUtils {
     private String mStringToBetyped;
     private String mQuestions;
     Context mTestContext;
-    List<List<NewLanguageQuestion>> mQuestionPages;
+    List<List<QuestionnaireQuestion>> mQuestionPages;
     long mQuestionnaireID;
     Context mAppContext;
     Field mf_resultCode;
@@ -109,10 +109,10 @@ public class NewLanguageActivityUiUtils {
             int id = answer.getInt("question_id");
             String answerText =  answer.getString("answer");
 
-            NewLanguageQuestion newLanguageQuestion = findQuestion(id);
+            QuestionnaireQuestion questionnaireQuestion = findQuestion(id);
 
             String expected;
-            if(newLanguageQuestion.type == NewLanguageQuestion.InputType.String) {
+            if(questionnaireQuestion.type == QuestionnaireQuestion.InputType.String) {
                 expected = generateAnswerForQuestion(id);
             } else {
                 expected = expectedAnswer ? "true" : "false";
@@ -260,13 +260,13 @@ public class NewLanguageActivityUiUtils {
      * @param hideKeyboard
      */
     protected void fillPage(int pageNum, boolean doNext, boolean requiredOnly, boolean valueForBooleans, boolean hideKeyboard) {
-        List<NewLanguageQuestion> questions = mQuestionPages.get(pageNum);
+        List<QuestionnaireQuestion> questions = mQuestionPages.get(pageNum);
 
         for (int i = 0; i < questions.size(); i++) {
 
-            NewLanguageQuestion question = questions.get(i);
+            QuestionnaireQuestion question = questions.get(i);
             if(!requiredOnly || question.required) {
-                if(question.type == NewLanguageQuestion.InputType.Boolean) {
+                if(question.type == QuestionnaireQuestion.InputType.Boolean) {
                     boolean value = valueForBooleans;
                     setBoolean(pageNum, i, value);
                 } else {
@@ -274,7 +274,7 @@ public class NewLanguageActivityUiUtils {
                     addEditText(pageNum, i, text, hideKeyboard);
                 }
             } else { // not setting
-                if(question.type == NewLanguageQuestion.InputType.Boolean) {
+                if(question.type == QuestionnaireQuestion.InputType.Boolean) {
                     verifyButtons(pageNum, i, false, false);
                 } else {
                     verifyText(pageNum,i,"");
@@ -312,7 +312,7 @@ public class NewLanguageActivityUiUtils {
      * @param text
      */
     protected void verifyText(int pageNum, int questionNum, String text) {
-        NewLanguageQuestion question = mQuestionPages.get(pageNum).get(questionNum);
+        QuestionnaireQuestion question = mQuestionPages.get(pageNum).get(questionNum);
         String questionText = question.question;
         ViewInteraction interaction = onView(allOf(withId(R.id.edit_text), hasSibling(withText(questionText))));
         interaction.perform(scrollTo());
@@ -328,7 +328,7 @@ public class NewLanguageActivityUiUtils {
      */
     protected void addEditText(int pageNum, int questionNum, String newText, boolean hideKeyboard) {
         verifyText(pageNum,questionNum,"");
-        NewLanguageQuestion question = mQuestionPages.get(pageNum).get(questionNum);
+        QuestionnaireQuestion question = mQuestionPages.get(pageNum).get(questionNum);
         String questionText = question.question;
         ViewInteraction interaction = onView(allOf(withId(R.id.edit_text), hasSibling(withText(questionText))));
         interaction.perform(scrollTo());
@@ -408,11 +408,11 @@ public class NewLanguageActivityUiUtils {
      * @return
      * @throws Exception
      */
-    private NewLanguageQuestion findQuestion(long id) throws Exception {
-        for (List<NewLanguageQuestion> questionPage : mQuestionPages) {
-            for (NewLanguageQuestion newLanguageQuestion : questionPage) {
-                if(newLanguageQuestion.id == id) {
-                    return newLanguageQuestion;
+    private QuestionnaireQuestion findQuestion(long id) throws Exception {
+        for (List<QuestionnaireQuestion> questionPage : mQuestionPages) {
+            for (QuestionnaireQuestion questionnaireQuestion : questionPage) {
+                if(questionnaireQuestion.id == id) {
+                    return questionnaireQuestion;
                 }
             }
         }

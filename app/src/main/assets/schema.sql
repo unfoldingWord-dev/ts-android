@@ -118,6 +118,21 @@ CREATE TABLE `target_language` (
 );
 
 -- ---
+-- Table 'temp_target_language'
+-- ---
+
+DROP TABLE IF EXISTS `temp_target_language`;
+
+CREATE TABLE `temp_target_language` (
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  `slug` TEXT NOT NULL,
+  `name` TEXT NOT NULL,
+  `direction` TEXT NOT NULL,
+  `region` TEXT NOT NULL,
+  UNIQUE (`slug`)
+);
+
+-- ---
 -- Table 'translation_word'
 -- ---
 

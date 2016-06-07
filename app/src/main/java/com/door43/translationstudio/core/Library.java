@@ -4,7 +4,6 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 
 import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
@@ -206,8 +205,8 @@ public class Library {
      * Returns the new target language questionnaire
      * @return
      */
-    public NewLanguageQuestionnaire getNewLanguageQuestionnaire() {
-        NewLanguageQuestionnaire[] questionnaires = mAppIndex.getNewLanguageQuestionnaire();
+    public Questionnaire getNewLanguageQuestionnaire() {
+        Questionnaire[] questionnaires = mAppIndex.getNewLanguageQuestionnaire();
         // TRICKY: we will only ever have one questionnaire for now.
         if(questionnaires.length > 0) {
             return questionnaires[0];

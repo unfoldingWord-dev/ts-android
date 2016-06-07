@@ -11,21 +11,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * New Language Questionnaires are used to generate a new target language code.
- * The questionnaire must be completed before a custom language code will be assigned.
- * Later the results of the questionnaire will be submitted for processing and, if approved,
- * assignment to a real language code.
+ * Questionnaires contain a series of questions grouped by page that must be answered by the user
  */
-public class NewLanguageQuestionnaire {
+public class Questionnaire {
     public long dbId;
     public final long door43Id;
     public final String languageSlug;
     public final String languageName;
     public final LanguageDirection languageDirection;
     private final static int QUESTIONS_PER_PAGE = 3;
-    private List<NewLanguagePage> pages = new ArrayList<>();
+    private List<QuestionnairePage> pages = new ArrayList<>();
 
-    public NewLanguageQuestionnaire(long door43Id, String languageSlug, String languageName, LanguageDirection direction) {
+    public Questionnaire(long door43Id, String languageSlug, String languageName, LanguageDirection direction) {
         this.door43Id = door43Id;
         this.languageSlug = languageSlug;
         this.languageName = languageName;
@@ -44,20 +41,20 @@ public class NewLanguageQuestionnaire {
      * Loads questions into the questionnaire
      * @param questions the questions should already be sorted
      */
-    public void loadQuestions(NewLanguageQuestion[] questions) {
+    public void loadQuestions(QuestionnaireQuestion[] questions) {
         pages = new ArrayList<>();
         List<Long> questionsAdded = new ArrayList<>();
-        NewLanguagePage currentPage = new NewLanguagePage();
+        QuestionnairePage currentPage = new QuestionnairePage();
 
-        for(NewLanguageQuestion q:questions) {
+        for(QuestionnaireQuestion q:questions) {
             if(!currentPage.containsQuestion(q.reliantQuestionId) && currentPage.getNumQuestions() >= QUESTIONS_PER_PAGE) {
                 // close full page
                 pages.add(currentPage);
-                currentPage = new NewLanguagePage();
+                currentPage = new QuestionnairePage();
             } else if(!currentPage.containsQuestion(q.reliantQuestionId) && questionsAdded.contains(q.reliantQuestionId)) {
                 // add out of order question to correct page
                 boolean placedQuestion = false;
-                for(NewLanguagePage processedPage:pages) {
+                for(QuestionnairePage processedPage:pages) {
                     if(processedPage.containsQuestion(q.reliantQuestionId)) {
                         processedPage.addQuestion(q);
                         placedQuestion = true;
@@ -72,12 +69,12 @@ public class NewLanguageQuestionnaire {
                     && currentPage.getQuestionById(q.reliantQuestionId).reliantQuestionId < 0
                     && currentPage.indexOf(q.reliantQuestionId) > 0) {
                 // place non-dependent reliant question in it's own page
-                NewLanguageQuestion reliantQuestion = currentPage.getQuestionById(q.reliantQuestionId);
+                QuestionnaireQuestion reliantQuestion = currentPage.getQuestionById(q.reliantQuestionId);
                 currentPage.removeQuestion(q.reliantQuestionId);
 
                 // close page
                 pages.add(currentPage);
-                currentPage = new NewLanguagePage();
+                currentPage = new QuestionnairePage();
 
                 // add questions to page
                 currentPage.addQuestion(reliantQuestion);
@@ -108,7 +105,7 @@ public class NewLanguageQuestionnaire {
      * @return
      */
     @Nullable
-    public static NewLanguageQuestionnaire generate(String jsonString) {
+    public static Questionnaire generate(String jsonString) {
         if(jsonString != null) {
             try {
                 JSONObject json = new JSONObject(jsonString);
@@ -119,9 +116,9 @@ public class NewLanguageQuestionnaire {
                 }
                 String languageSlug = json.getString("slug");
                 long questionnaireId = json.getLong("questionnaire_id");
-                return new NewLanguageQuestionnaire(questionnaireId, languageSlug, languageName, direction);
+                return new Questionnaire(questionnaireId, languageSlug, languageName, direction);
             } catch (JSONException e) {
-                Logger.w(NewLanguageQuestionnaire.class.getName(), "Failed to parse new language questionnaire: " + jsonString, e);
+                Logger.w(Questionnaire.class.getName(), "Failed to parse new language questionnaire: " + jsonString, e);
             }
         }
         return null;
@@ -133,7 +130,7 @@ public class NewLanguageQuestionnaire {
      * @return
      */
     @Nullable
-    public NewLanguagePage getPage(int position) {
+    public QuestionnairePage getPage(int position) {
         if(position >= 0 && position < getNumPages()) {
             return pages.get(position);
         }

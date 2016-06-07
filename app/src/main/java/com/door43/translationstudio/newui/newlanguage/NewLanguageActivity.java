@@ -14,10 +14,10 @@ import android.view.View;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.NewLanguagePage;
-import com.door43.translationstudio.core.NewLanguageQuestion;
-import com.door43.translationstudio.core.NewLanguageQuestionnaire;
-import com.door43.translationstudio.core.NewLanguageRequest;
+import com.door43.translationstudio.core.QuestionnairePage;
+import com.door43.translationstudio.core.QuestionnaireQuestion;
+import com.door43.translationstudio.core.Questionnaire;
+import com.door43.translationstudio.core.TempLanguageRequest;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.widget.ViewUtil;
@@ -37,8 +37,8 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguageAdap
 
     private int mCurrentPage = 0;
     private boolean mQuestionnaireFinished = false;
-    private NewLanguageQuestionnaire mQuestionnaire;
-    private NewLanguageRequest mResponse = null;
+    private Questionnaire mQuestionnaire;
+    private TempLanguageRequest mResponse = null;
     private RecyclerView mRecyclerView;
     private NewLanguageAdapter mAdapter;
     private CardView mPreviousButton;
@@ -69,19 +69,19 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguageAdap
         if(savedInstanceState != null) {
             mCurrentPage = savedInstanceState.getInt(STATE_PAGE, 0);
             mQuestionnaireFinished = savedInstanceState.getBoolean(STATE_FINISHED, false);
-            mResponse = NewLanguageRequest.generate(savedInstanceState.getString(EXTRA_QUESTIONNAIRE_RESPONSE));
+            mResponse = TempLanguageRequest.generate(savedInstanceState.getString(EXTRA_QUESTIONNAIRE_RESPONSE));
             if(mResponse == null) {
                 Snackbar snack = Snackbar.make(findViewById(android.R.id.content), getResources().getString(R.string.error), Snackbar.LENGTH_LONG);
                 ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                 snack.show();
 
                 // restart
-                mResponse = NewLanguageRequest.newInstance(this, mQuestionnaire.door43Id, "android", AppContext.getProfile().getFullName());
+                mResponse = TempLanguageRequest.newInstance(this, mQuestionnaire.door43Id, "android", AppContext.getProfile().getFullName());
                 mCurrentPage = -1;
                 return;
             }
         } else {
-            mResponse = NewLanguageRequest.newInstance(this, mQuestionnaire.door43Id, "android", AppContext.getProfile().getFullName());
+            mResponse = TempLanguageRequest.newInstance(this, mQuestionnaire.door43Id, "android", AppContext.getProfile().getFullName());
         }
 
         mRecyclerView = (RecyclerView)findViewById(R.id.recycler_view);
@@ -106,9 +106,9 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguageAdap
             @Override
             public void onClick(View v) {
                 // validate page completion
-                NewLanguagePage page = mQuestionnaire.getPage(mCurrentPage);
+                QuestionnairePage page = mQuestionnaire.getPage(mCurrentPage);
                 if(page != null) {
-                    for (NewLanguageQuestion q :page.getQuestions()) {
+                    for (QuestionnaireQuestion q :page.getQuestions()) {
                         String answer = mResponse.getAnswer(q.id);
                         if(q.required && (answer == null || answer.isEmpty())) {
                             CustomAlertDialog.Create(NewLanguageActivity.this)
@@ -191,12 +191,12 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguageAdap
     }
 
     @Override
-    public String onGetAnswer(NewLanguageQuestion question) {
+    public String onGetAnswer(QuestionnaireQuestion question) {
         return mResponse.getAnswer(question.id);
     }
 
     @Override
-    public void onAnswerChanged(NewLanguageQuestion question, String answer) {
+    public void onAnswerChanged(QuestionnaireQuestion question, String answer) {
         mResponse.setAnswer(question.id, answer);
     }
 

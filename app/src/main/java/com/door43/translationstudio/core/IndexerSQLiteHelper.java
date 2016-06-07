@@ -16,10 +16,7 @@ import java.util.List;
  * TODO: these methods need to throw exeptions so we can log the error
  */
 public class IndexerSQLiteHelper extends SQLiteOpenHelper{
-
-    // TRICKY: when you bump the db version you should run the library tests to generate a new index.
-    // Note that the extract test will fail.
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 7;
     private final String databaseName;
     private final String schema;
 
@@ -155,6 +152,21 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
                     "  `depends_on` INTEGER DEFAULT NULL,\n" +
                     "  UNIQUE (`question_td_id`, `new_target_language_questionnaire_id`),\n" +
                     "  FOREIGN KEY (new_target_language_questionnaire_id) REFERENCES `new_target_language_questionnaire` (`id`) ON DELETE CASCADE\n" +
+                    ");");
+
+            db.setTransactionSuccessful();
+            db.endTransaction();
+        }
+        if(oldVersion < 7) {
+            db.beginTransaction();
+
+            db.execSQL("CREATE TABLE `temp_target_language` (\n" +
+                    "  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n" +
+                    "  `slug` TEXT NOT NULL,\n" +
+                    "  `name` TEXT NOT NULL,\n" +
+                    "  `direction` TEXT NOT NULL,\n" +
+                    "  `region` TEXT NOT NULL,\n" +
+                    "  UNIQUE (`slug`)\n" +
                     ");");
 
             db.setTransactionSuccessful();
@@ -2229,23 +2241,23 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param db
      * @return
      */
-    public NewLanguageQuestionnaire[] getNewLanguageQuestionnaires(SQLiteDatabase db) {
-        List<NewLanguageQuestionnaire> questionnaires = new ArrayList<>();
+    public Questionnaire[] getNewLanguageQuestionnaires(SQLiteDatabase db) {
+        List<Questionnaire> questionnaires = new ArrayList<>();
         Cursor cursor = db.rawQuery("SELECT `id`, `questionnaire_td_id`, `language_slug`, `language_name`, `language_direction` FROM `new_target_language_questionnaire`", null);
         cursor.moveToFirst();
         while(!cursor.isAfterLast()) {
-            NewLanguageQuestionnaire questionnaire = new NewLanguageQuestionnaire(cursor.getLong(1), cursor.getString(2), cursor.getString(3), LanguageDirection.get(cursor.getString(4)));
+            Questionnaire questionnaire = new Questionnaire(cursor.getLong(1), cursor.getString(2), cursor.getString(3), LanguageDirection.get(cursor.getString(4)));
             questionnaire.setDBId(cursor.getLong(0));
             questionnaires.add(questionnaire);
             cursor.moveToNext();
         }
         cursor.close();
 
-        for(NewLanguageQuestionnaire q:questionnaires) {
+        for(Questionnaire q:questionnaires) {
             q.loadQuestions(getNewLanguageQuestions(db, q.dbId));
         }
 
-        return questionnaires.toArray(new NewLanguageQuestionnaire[questionnaires.size()]);
+        return questionnaires.toArray(new Questionnaire[questionnaires.size()]);
     }
 
     /**
@@ -2254,8 +2266,8 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param questionnaireId
      * @return
      */
-    private NewLanguageQuestion[] getNewLanguageQuestions(SQLiteDatabase db, long questionnaireId) {
-        List<NewLanguageQuestion> questions = new ArrayList<>();
+    private QuestionnaireQuestion[] getNewLanguageQuestions(SQLiteDatabase db, long questionnaireId) {
+        List<QuestionnaireQuestion> questions = new ArrayList<>();
         Cursor cursor = db.rawQuery("SELECT `question_td_id`, `text`, `help`, `input_type`,"
                 + " `is_required`, `depends_on`, `sort`"
                 + " FROM `new_target_language_question`"
@@ -2263,14 +2275,14 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
                 + " ORDER BY `sort` ASC", null);
         cursor.moveToFirst();
         while(!cursor.isAfterLast()) {
-            questions.add(new NewLanguageQuestion(cursor.getInt(0), cursor.getString(1),
-                    cursor.getString(2), NewLanguageQuestion.InputType.get(cursor.getString(3)),
+            questions.add(new QuestionnaireQuestion(cursor.getInt(0), cursor.getString(1),
+                    cursor.getString(2), QuestionnaireQuestion.InputType.get(cursor.getString(3)),
                     cursor.getInt(4) == 1, cursor.getInt(5), cursor.getInt(6)));
             cursor.moveToNext();
         }
         cursor.close();
 
-        return questions.toArray(new NewLanguageQuestion[questions.size()]);
+        return questions.toArray(new QuestionnaireQuestion[questions.size()]);
     }
 
     /**
@@ -2304,7 +2316,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param reliantQuestionId
      * @return
      */
-    public long addNewLanguageQuestion(SQLiteDatabase db, long questionnaireDBId, long door43Id, String question, String helpText, NewLanguageQuestion.InputType type, boolean required, int sort, long reliantQuestionId) {
+    public long addNewLanguageQuestion(SQLiteDatabase db, long questionnaireDBId, long door43Id, String question, String helpText, QuestionnaireQuestion.InputType type, boolean required, int sort, long reliantQuestionId) {
         ContentValues values = new ContentValues();
         values.put("new_target_language_questionnaire_id", questionnaireDBId);
         values.put("question_td_id", door43Id);

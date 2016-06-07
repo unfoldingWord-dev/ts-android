@@ -18,7 +18,7 @@ import java.util.UUID;
 /**
  * Created by joel on 6/1/16.
  */
-public class NewLanguageRequest {
+public class TempLanguageRequest {
     private static final String LANGUAGE_PREFIX = "qaa-x-";
 
     private Map<Long, String> answers = new TreeMap<>();
@@ -38,7 +38,7 @@ public class NewLanguageRequest {
      * @param app the name of the app generating this response
      * @param requester the name of the translator requesting the custom language code
      */
-    private NewLanguageRequest(String requestUUID, String tempLanguageCode, long questionnaireId, String app, String requester) {
+    private TempLanguageRequest(String requestUUID, String tempLanguageCode, long questionnaireId, String app, String requester) {
         this.requestUUID = requestUUID;
         this.tempLanguageCode = tempLanguageCode;
         this.questionnaireId = questionnaireId;
@@ -50,7 +50,7 @@ public class NewLanguageRequest {
      * Creates a new questionnaire response
      * @return
      */
-    public static NewLanguageRequest newInstance(Context context, long questionnaireId, String app, String requester) {
+    public static TempLanguageRequest newInstance(Context context, long questionnaireId, String app, String requester) {
         // generate language code
         String udid = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
         long time = System.currentTimeMillis();
@@ -58,7 +58,7 @@ public class NewLanguageRequest {
         String hash = Security.sha1(uniqueString);
         String languageCode  = LANGUAGE_PREFIX + hash.substring(0, 6);
 
-        return new NewLanguageRequest(UUID.randomUUID().toString(), languageCode, questionnaireId, app, requester);
+        return new TempLanguageRequest(UUID.randomUUID().toString(), languageCode, questionnaireId, app, requester);
     }
 
     /**
@@ -124,7 +124,7 @@ public class NewLanguageRequest {
      * @return
      */
     @Nullable
-    public static NewLanguageRequest generate(String jsonString) {
+    public static TempLanguageRequest generate(String jsonString) {
         if (jsonString != null) {
             try {
                 JSONObject json = new JSONObject(jsonString);
@@ -137,17 +137,17 @@ public class NewLanguageRequest {
                 if(json.has("submitted_at")) {
                     submittedAt = json.getLong("submitted_at");
                 }
-                NewLanguageRequest response = new NewLanguageRequest(requestUUID, tempCode, questionnaireId, app, requester);
-                response.setSubmittedAt(submittedAt);
+                TempLanguageRequest request = new TempLanguageRequest(requestUUID, tempCode, questionnaireId, app, requester);
+                request.setSubmittedAt(submittedAt);
 
                 JSONArray answers = json.getJSONArray("answers");
                 for (int i = 0; i < answers.length(); i++) {
                     JSONObject answer = answers.getJSONObject(i);
-                    response.setAnswer(answer.getLong("question_id"), answer.getString("text"));
+                    request.setAnswer(answer.getLong("question_id"), answer.getString("text"));
                 }
-                return response;
+                return request;
             } catch (JSONException e) {
-                Logger.w(NewLanguageRequest.class.getName(), "Failed to parse questionnaire response json: " + jsonString, e);
+                Logger.w(TempLanguageRequest.class.getName(), "Failed to parse questionnaire response json: " + jsonString, e);
             }
         }
         return null;

@@ -7,9 +7,9 @@ import com.door43.tools.reporting.Logger;
 import org.json.JSONObject;
 
 /**
- * Represents a single question in a new language questionnaire
+ * Represents a single question in a questionnaire
  */
-public class NewLanguageQuestion {
+public class QuestionnaireQuestion {
     public long id;
     public String question;
     public String helpText;
@@ -28,9 +28,9 @@ public class NewLanguageQuestion {
      * @param reliantQuestionId the question that must be answered before this question
      * @param sort the order of display of this question
      */
-    public NewLanguageQuestion(long id, String question, String helpText,
-                               InputType type, boolean required,
-                               long reliantQuestionId, int sort) {
+    public QuestionnaireQuestion(long id, String question, String helpText,
+                                 InputType type, boolean required,
+                                 long reliantQuestionId, int sort) {
         this.id = id;
         this.question = question;
         this.helpText = helpText;
@@ -45,7 +45,7 @@ public class NewLanguageQuestion {
      * @param json
      * @return
      */
-    public static NewLanguageQuestion generate(JSONObject json) {
+    public static QuestionnaireQuestion generate(JSONObject json) {
         if(json != null) {
             try {
                 long id = json.getLong("id");
@@ -60,9 +60,9 @@ public class NewLanguageQuestion {
                     type = InputType.String;
                 }
                 long reliantQuestionId = json.optLong("depends_on", -1);
-                return new NewLanguageQuestion(id, text, help, type, required, reliantQuestionId, sort);
+                return new QuestionnaireQuestion(id, text, help, type, required, reliantQuestionId, sort);
             } catch (Exception e) {
-                Logger.w(NewLanguageQuestion.class.getSimpleName(), "Error parsing new language question: " + json.toString(), e);
+                Logger.w(QuestionnaireQuestion.class.getSimpleName(), "Error parsing question: " + json.toString(), e);
             }
         }
         return null;
@@ -85,56 +85,9 @@ public class NewLanguageQuestion {
             json.put("depends_on", reliantQuestionId);
             return json;
         } catch (Exception e) {
-            Logger.w(NewLanguageQuestion.class.getSimpleName(), "Failed to build question json", e);
+            Logger.w(QuestionnaireQuestion.class.getSimpleName(), "Failed to build question json", e);
         }
         return null;
-    }
-
-    /**
-     * set answer string for boolean state
-     * @param anwer
-     * @return
-     */
-    public void setAnswer(boolean anwer) {
-//        this.answer = anwer ? "true" : "false";
-    }
-
-    /**
-     * test to see if boolean is true, null answer is treated as false
-     * @return
-     */
-    public boolean isBooleanAnswerTrue() {
-//        return "true".equals(answer);
-        return false;
-    }
-
-    /**
-     * test to see if boolean is false, null answer is treated as false
-     * @return
-     */
-    public boolean isBooleanAnswerFalse() {
-//        return "false".equals(answer);
-        return true;
-    }
-
-    /**
-     * get answer string and replace null with ""
-     * @return
-     */
-    public String getAnswerNotNull() {
-//        if(null == answer) {
-            return "";
-//        }
-//        return answer;
-    }
-
-    /**
-     * test if answer to question is empty (either null or empty string)
-     * @return
-     */
-    public boolean isAnswerEmpty() {
-//        return (null == answer ) || answer.isEmpty();
-        return true;
     }
 
      /**

@@ -3,23 +3,21 @@ package com.door43.translationstudio.core;
 import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Represents a page of questions in the new language questionnaire
+ * Represents a page of questions in a questionnaire
  */
-public class NewLanguagePage {
-    private Map<Long, NewLanguageQuestion> questions = new LinkedHashMap<>();
+public class QuestionnairePage {
+    private Map<Long, QuestionnaireQuestion> questions = new LinkedHashMap<>();
 
     /**
      * Adds a question to this page
      * @param question
      */
-    public void addQuestion(NewLanguageQuestion question) {
+    public void addQuestion(QuestionnaireQuestion question) {
         this.questions.put(question.id, question);
     }
 
@@ -36,7 +34,7 @@ public class NewLanguagePage {
      * Returns the questions on this page
      * @return
      */
-    public List<NewLanguageQuestion> getQuestions() {
+    public List<QuestionnaireQuestion> getQuestions() {
         return new ArrayList<>(this.questions.values());
     }
 
@@ -54,7 +52,7 @@ public class NewLanguagePage {
      * @return
      */
     @Nullable
-    public NewLanguageQuestion getQuestion(int position) {
+    public QuestionnaireQuestion getQuestion(int position) {
         if(position >= 0 && position < getNumQuestions()) {
             return getQuestions().get(position);
         }
@@ -67,7 +65,7 @@ public class NewLanguagePage {
      * @return
      */
     @Nullable
-    public NewLanguageQuestion getQuestionById(long id) {
+    public QuestionnaireQuestion getQuestionById(long id) {
         return this.questions.get(id);
     }
 

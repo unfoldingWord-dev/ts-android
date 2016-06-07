@@ -6,7 +6,7 @@ import com.door43.tools.reporting.FileUtils;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.NewLanguageRequest;
+import com.door43.translationstudio.core.TempLanguageRequest;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.util.tasks.ManagedTask;
 
@@ -33,7 +33,7 @@ import java.util.Map;
  */
 public class SubmitNewLanguageRequestsTask extends ManagedTask {
 
-    private List<NewLanguageRequest> requests = new ArrayList<>();
+    private List<TempLanguageRequest> requests = new ArrayList<>();
     private int mMaxProgress = 1;
 
     public SubmitNewLanguageRequestsTask() {
@@ -44,7 +44,7 @@ public class SubmitNewLanguageRequestsTask extends ManagedTask {
             for(File f:requestFiles) {
                 try {
                     String data = FileUtils.readFileToString(f);
-                    NewLanguageRequest request = NewLanguageRequest.generate(data);
+                    TempLanguageRequest request = TempLanguageRequest.generate(data);
                     if(request != null && request.getSubmittedAt() == 0) {
                         this.requests.add(request);
                     }
@@ -63,12 +63,13 @@ public class SubmitNewLanguageRequestsTask extends ManagedTask {
             mMaxProgress = requests.size();
             publishProgress(-1, progressMessage);
             for (int i = 0; i < requests.size(); i ++) {
-                NewLanguageRequest request = requests.get(i);
+                TempLanguageRequest request = requests.get(i);
 
                 // TODO: eventually we'll be able to get the server url from the db
 
                 try {
                     // TRICKY: django needs to have the trailing slash for the post to work.
+                    // TODO: 6/6/16 change this to production (td.) before releasing.
                     URL url = new URL("http://td-demo.unfoldingword.org/api/questionnaire/");
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setRequestProperty("Content-Disposition", "form-data");
@@ -150,7 +151,7 @@ public class SubmitNewLanguageRequestsTask extends ManagedTask {
      * Marks the request has submitted and updates any affected target translations
      * @param request
      */
-    private void sealRequest(NewLanguageRequest request) throws IOException {
+    private void sealRequest(TempLanguageRequest request) throws IOException {
         Logger.i(this.getClass().getName(), "Sealing new language request '" + request.tempLanguageCode + "'");
         request.setSubmittedAt(System.currentTimeMillis());
         File requestFile = new File(AppContext.getPublicDirectory(), "new_languages/" + request.tempLanguageCode + ".json");

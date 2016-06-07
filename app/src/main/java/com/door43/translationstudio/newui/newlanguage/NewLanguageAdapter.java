@@ -21,8 +21,8 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.NewLanguagePage;
-import com.door43.translationstudio.core.NewLanguageQuestion;
+import com.door43.translationstudio.core.QuestionnairePage;
+import com.door43.translationstudio.core.QuestionnaireQuestion;
 import com.door43.widget.ViewUtil;
 
 import java.util.ArrayList;
@@ -38,7 +38,7 @@ public class NewLanguageAdapter extends RecyclerView.Adapter<NewLanguageAdapter.
     private static final int TYPE_BOOLEAN = 1;
     private static final int TYPE_STRING = 2;
     private final Activity context;
-    private NewLanguagePage page;
+    private QuestionnairePage page;
     private List<ViewHolder> viewHolders = new ArrayList<>();
     private OnEventListener onEventListener = null;
     private int lastPosition = -1;
@@ -53,7 +53,7 @@ public class NewLanguageAdapter extends RecyclerView.Adapter<NewLanguageAdapter.
      * @param page
      * @param animateRight indicates the direction of the question animations
      */
-    public void setPage(NewLanguagePage page, boolean animateRight) {
+    public void setPage(QuestionnairePage page, boolean animateRight) {
         this.page = page;
         lastPosition = -1;
         this.animateRight = animateRight;
@@ -132,9 +132,9 @@ public class NewLanguageAdapter extends RecyclerView.Adapter<NewLanguageAdapter.
 
     @Override
     public int getItemViewType(int position) {
-        if(page.getQuestion(position).type == NewLanguageQuestion.InputType.Boolean) {
+        if(page.getQuestion(position).type == QuestionnaireQuestion.InputType.Boolean) {
             return TYPE_BOOLEAN;
-        } else if(page.getQuestion(position).type == NewLanguageQuestion.InputType.String) {
+        } else if(page.getQuestion(position).type == QuestionnaireQuestion.InputType.String) {
             return TYPE_STRING;
         }
         return -1;
@@ -146,7 +146,7 @@ public class NewLanguageAdapter extends RecyclerView.Adapter<NewLanguageAdapter.
      * @param position
      */
     public void onBindBooleanQuestion(BooleanViewHolder holder, int position) {
-        final NewLanguageQuestion question = page.getQuestion(position);
+        final QuestionnaireQuestion question = page.getQuestion(position);
         holder.question.setText(question.question);
         holder.question.setHint(question.helpText);
         holder.radioGroup.setOnCheckedChangeListener(null);
@@ -189,7 +189,7 @@ public class NewLanguageAdapter extends RecyclerView.Adapter<NewLanguageAdapter.
      * @param position
      */
     public void onBindStringQuestion(StringViewHolder holder, int position) {
-        final NewLanguageQuestion question = page.getQuestion(position);
+        final QuestionnaireQuestion question = page.getQuestion(position);
         holder.question.setText(question.question);
         holder.answer.setHint(question.helpText);
         holder.answer.removeTextChangedListener(holder.textWatcher);
@@ -231,7 +231,7 @@ public class NewLanguageAdapter extends RecyclerView.Adapter<NewLanguageAdapter.
      * @param question
      * @param answer
      */
-    private boolean saveAnswer(NewLanguageQuestion question, String answer) {
+    private boolean saveAnswer(QuestionnaireQuestion question, String answer) {
         if(onEventListener != null) {
             onEventListener.onAnswerChanged(question, answer);
             return true;
@@ -252,7 +252,7 @@ public class NewLanguageAdapter extends RecyclerView.Adapter<NewLanguageAdapter.
             @Override
             public void run() {
                 for(ViewHolder vh:viewHolders) {
-                    NewLanguageQuestion question = page.getQuestion(vh.currentPosition);
+                    QuestionnaireQuestion question = page.getQuestion(vh.currentPosition);
                     if(isQuestionEnabled(question)) {
                         vh.enable();
                     } else {
@@ -268,7 +268,7 @@ public class NewLanguageAdapter extends RecyclerView.Adapter<NewLanguageAdapter.
      * @param question
      * @return
      */
-    private boolean isQuestionEnabled(NewLanguageQuestion question) {
+    private boolean isQuestionEnabled(QuestionnaireQuestion question) {
         if(question != null) {
             return question.reliantQuestionId < 0
                     || (isAnswerAffirmative(page.getQuestionById(question.reliantQuestionId))
@@ -283,11 +283,11 @@ public class NewLanguageAdapter extends RecyclerView.Adapter<NewLanguageAdapter.
      * @param question
      * @return
      */
-    private boolean isAnswerAffirmative(NewLanguageQuestion question) {
+    private boolean isAnswerAffirmative(QuestionnaireQuestion question) {
         if(question != null) {
             String answer = getQuestionAnswer(question);
             if(answer != null && !answer.isEmpty()) {
-                if (question.type == NewLanguageQuestion.InputType.Boolean) {
+                if (question.type == QuestionnaireQuestion.InputType.Boolean) {
                     return Boolean.parseBoolean(answer);
                 } else {
                     return true;
@@ -302,7 +302,7 @@ public class NewLanguageAdapter extends RecyclerView.Adapter<NewLanguageAdapter.
      * @param question
      * @return
      */
-    private String getQuestionAnswer(NewLanguageQuestion question) {
+    private String getQuestionAnswer(QuestionnaireQuestion question) {
         if(question != null && onEventListener != null) {
             return onEventListener.onGetAnswer(question);
         }
@@ -459,7 +459,7 @@ public class NewLanguageAdapter extends RecyclerView.Adapter<NewLanguageAdapter.
      * The interface by which answers are sent/received
      */
     public interface OnEventListener {
-        String onGetAnswer(NewLanguageQuestion question);
-        void onAnswerChanged(NewLanguageQuestion question, String answer);
+        String onGetAnswer(QuestionnaireQuestion question);
+        void onAnswerChanged(QuestionnaireQuestion question, String answer);
     }
 }

@@ -15,7 +15,7 @@ import android.view.inputmethod.InputMethodManager;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.core.ArchiveDetails;
 import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.NewLanguageRequest;
+import com.door43.translationstudio.core.TempLanguageRequest;
 import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
@@ -633,7 +633,7 @@ public class AppContext {
      * @return
      */
     @Nullable
-    public static NewLanguageRequest getNewLanguageRequest(String language_code) {
+    public static TempLanguageRequest getNewLanguageRequest(String language_code) {
         File requestFile = new File(getPublicDirectory(), "new_languages/" + language_code + ".json");
         if(requestFile.exists() && requestFile.isFile()) {
             String data = null;
@@ -642,7 +642,7 @@ public class AppContext {
             } catch (IOException e) {
                 Logger.e(AppContext.class.getName(), "Failed to read the new language request", e);
             }
-            return NewLanguageRequest.generate(data);
+            return TempLanguageRequest.generate(data);
         }
         return null;
     }
@@ -651,7 +651,7 @@ public class AppContext {
      * Adds a new language request
      * @param request
      */
-    public static boolean addNewLanguageRequest(NewLanguageRequest request) {
+    public static boolean addNewLanguageRequest(TempLanguageRequest request) {
         if(request != null) {
             File requestFile = new File(getPublicDirectory(), "new_languages/" + request.tempLanguageCode + ".json");
             requestFile.getParentFile().mkdirs();
