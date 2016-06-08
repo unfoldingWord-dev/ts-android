@@ -72,42 +72,43 @@ public class SubmitNewLanguageRequestsTask extends ManagedTask {
                     // TODO: 6/6/16 change this to production (td.) before releasing.
                     URL url = new URL("http://td-demo.unfoldingword.org/api/questionnaire/");
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestProperty("Content-Disposition", "form-data");
+//                    conn.setRequestProperty("Content-Disposition", "form-data");
+                    conn.setRequestProperty("Content-Type", "application/json");
                     conn.setReadTimeout(10000); // 10 seconds
                     conn.setConnectTimeout(10000); // 10 seconds
                     conn.setRequestMethod("POST");
 
                     // send payload as form-data. Later this chunk of code can be replaced by the commented out stuff below.
-                    List<Pair<String, String>> params = new ArrayList<>();
-                    params.add(new Pair<>("request_id", request.requestUUID));
-                    params.add(new Pair<>("temp_code", request.tempLanguageCode));
-                    params.add(new Pair<>("questionnaire_id", request.questionnaireId + ""));
-                    params.add(new Pair<>("app", request.app));
-                    params.add(new Pair<>("requester", request.requester));
-
-                    JSONArray answersJson = new JSONArray();
-                    Map<Long, String> answers = request.getAnswers();
-                    for(long key : answers.keySet()) {
-                        JSONObject answer = new JSONObject();
-                        answer.put("question_id", key);
-                        answer.put("text", answers.get(key));
-                        answersJson.put(answer);
-                    }
-                    params.add(new Pair<>("answers", answersJson.toString()));
-
-                    conn.setDoOutput(true);
-                    DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
-                    dos.writeBytes(getQuery(params));
-                    dos.flush();
-                    dos.close();
-
-                    // send payload as raw json once the server supports it.
+//                    List<Pair<String, String>> params = new ArrayList<>();
+//                    params.add(new Pair<>("request_id", request.requestUUID));
+//                    params.add(new Pair<>("temp_code", request.tempLanguageCode));
+//                    params.add(new Pair<>("questionnaire_id", request.questionnaireId + ""));
+//                    params.add(new Pair<>("app", request.app));
+//                    params.add(new Pair<>("requester", request.requester));
+//
+//                    JSONArray answersJson = new JSONArray();
+//                    Map<Long, String> answers = request.getAnswers();
+//                    for(long key : answers.keySet()) {
+//                        JSONObject answer = new JSONObject();
+//                        answer.put("question_id", key);
+//                        answer.put("text", answers.get(key));
+//                        answersJson.put(answer);
+//                    }
+//                    params.add(new Pair<>("answers", answersJson.toString()));
+//
 //                    conn.setDoOutput(true);
 //                    DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
-//                    String data = request.toJson();
-//                    dos.writeBytes(data);
+//                    dos.writeBytes(getQuery(params));
 //                    dos.flush();
 //                    dos.close();
+
+                    // send payload as raw json once the server supports it.
+                    conn.setDoOutput(true);
+                    DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
+                    String data = request.toJson();
+                    dos.writeBytes(data);
+                    dos.flush();
+                    dos.close();
 
                     // read response
                     int responsCode = conn.getResponseCode();
