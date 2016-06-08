@@ -198,6 +198,14 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
 
     @Override
     public Object[] getSections() {
+        makeSureChapterMarkersInitialized();
+        return mChapterMarkers;
+    }
+
+    /**
+     * if not yet cached, determine and cache the chapter boundaries
+     */
+    private void makeSureChapterMarkersInitialized() {
         if(null == mChapterMarkers) {
             List<String> chapterLists = new ArrayList();
             for (int i = 0; i < mChapters.length; i++) {
@@ -206,19 +214,33 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
             }
             mChapterMarkers = chapterLists.toArray(new String[chapterLists.size()]);
         }
-        return mChapterMarkers;
     }
 
     @Override
     public int getPositionForSection(int sectionIndex) {
+        makeSureChapterMarkersInitialized();
+
+        if( sectionIndex < 0 ) { // limit input range
+            sectionIndex = 0;
+        } else if( sectionIndex >= mChapterMarkers.length ) {
+            sectionIndex = mChapterMarkers.length - 1;
+        }
+
         return sectionIndex;
     }
 
     @Override
     public int getSectionForPosition(int position) {
-         return position;
-    }
+        makeSureChapterMarkersInitialized();
 
+        if( position < 0 ) { // limit input range
+            position = 0;
+        } else if( position >= mChapterMarkers.length ) {
+            position = mChapterMarkers.length - 1;
+        }
+
+        return position;
+    }
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {

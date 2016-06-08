@@ -2,6 +2,7 @@ package com.door43.translationstudio.newui.translate;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 
 import com.door43.translationstudio.R;
 
@@ -13,6 +14,7 @@ import xyz.danoz.recyclerviewfastscroller.sectionindicator.title.SectionTitleInd
 public class ChunkSectionTitleIndicator extends SectionTitleIndicator<String> {
 
     private static final int DEFAULT_TITLE_INDICATOR_LAYOUT = R.layout.chapter_indicator_with_title;
+    public static final String TAG = ChunkSectionTitleIndicator.class.getSimpleName();
 
     public ChunkSectionTitleIndicator(Context context) {
         super(context);
@@ -34,6 +36,22 @@ public class ChunkSectionTitleIndicator extends SectionTitleIndicator<String> {
     protected int getDefaultLayoutId() {
         return DEFAULT_TITLE_INDICATOR_LAYOUT;
     }
+
+    @Override
+    public void setProgress(float progress) {
+        Log.d(TAG, "setProgress: progress=" + progress);
+        super.setProgress(progress); // do default positioning
+
+        float initialY = getY(); // get default positioning
+
+        Log.d(TAG, "setProgress: initialY=" + initialY);
+        int handleHeight = getHeight();
+        Log.d(TAG, "setProgress: handleHeight=" + handleHeight);
+        float yPositionFromScrollProgress = initialY - handleHeight / 4;
+        Log.d(TAG, "setProgress: new yPositionFromScrollProgress=" + yPositionFromScrollProgress);
+        setY(yPositionFromScrollProgress);
+    }
+
 
     @Override
     public void setSection(String section) {

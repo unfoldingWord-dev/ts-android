@@ -166,6 +166,7 @@ public abstract class AbsRecyclerViewFastScroller extends FrameLayout implements
                 SectionIndexer indexer = ((SectionIndexer) mRecyclerView.getAdapter());
                 int section = indexer.getSectionForPosition(position);
                 Object[] sections = indexer.getSections();
+                Log.d(AbsRecyclerViewFastScroller.class.getSimpleName(), "updateSectionIndicator sections=" + sections + " position: " + position);
                 mSectionIndicator.setSection(sections[section]);
             }
         }
@@ -177,7 +178,12 @@ public abstract class AbsRecyclerViewFastScroller extends FrameLayout implements
      * @return
      */
     private int getPositionFromScrollProgress(float scrollProgress) {
-        return (int) ((mRecyclerView.getAdapter().getItemCount() - 1) * scrollProgress);
+        int itemCount = mRecyclerView.getAdapter().getItemCount();
+        int positon = (int) (itemCount * scrollProgress);
+        if(positon >= itemCount) { // limit in case scrollProgress is exactly 1
+            positon = itemCount - 1;
+        }
+        return positon;
     }
 
     /**
