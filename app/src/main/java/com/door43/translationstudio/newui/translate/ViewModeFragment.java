@@ -349,7 +349,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     public void setScrollProgress(int position) {
         if((mAdapter != null) && (mFastScroller != null)) {
             int count = mAdapter.getItemCount();
-            float ratio = (float) position /(count - 1);
+            float ratio = (float) position /count;
 
             Logger.i(TAG, "setScrollProgress: position: " + position + ", ratio: " + ratio);
            // mFastScroller.moveHandleToPosition(ratio);

@@ -399,7 +399,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             List<Integer> sectionForPosition = new ArrayList<>();
             List<Integer> startPositionForSection = new ArrayList<>();
             int length = getItemCount();
-            String lastChapter = "<null>";
+            String lastChapter = "00";
             int currentSection = -1;
             for (int i = 0; i < length; i++) {
                 String chapter = getNearestChapterID(i);

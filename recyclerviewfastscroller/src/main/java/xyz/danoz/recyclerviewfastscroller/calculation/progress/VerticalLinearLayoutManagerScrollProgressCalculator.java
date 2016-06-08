@@ -63,19 +63,31 @@ public class VerticalLinearLayoutManagerScrollProgressCalculator extends Vertica
 //            Log.d(TAG, "calculateScrollProgress: lastVisibleItemPosition=" + lastVisibleItemPosition);
             int numItemsInList = recyclerView.getAdapter().getItemCount();
             float progress;
-            if(numItemsInList <= 1) { // sanity check
-                progress = 1.0f;
-            } else {
-                float stepSize = 1.0f / (numItemsInList - 1);
-                progress = firstVisibleItemPosition * stepSize ;
-
-                float y = -holder.itemView.getY();
-                float offset = y/itemHeight;
-                float progressOffset = offset * stepSize;
-                Log.d(TAG, "calculateScrollProgress: progress=" + progress);
-                progress += progressOffset;
-                Log.d(TAG, "calculateScrollProgress: progressOffset=" + progressOffset);
+            if(numItemsInList < 1) { // sanity check
+                numItemsInList = 1;
             }
+
+            float stepSize = 1.0f / numItemsInList;
+            progress = firstVisibleItemPosition * stepSize ;
+
+            float y = -holder.itemView.getY();
+            float percentScrollOfView = y / itemHeight;
+            Log.d(TAG, "calculateScrollProgress: percentScrollOfView=" + percentScrollOfView);
+
+            int viewHeight = recyclerView.getHeight();
+            if( (firstVisibleItemPosition == numItemsInList - 1)  // if last chapter, need to tighten range otherwise scroll handle will not read bottom of screen
+                && (viewHeight < itemHeight) ) {
+
+                int scrollRange = itemHeight - viewHeight;
+                percentScrollOfView = y / scrollRange;
+                Log.d(TAG, "calculateScrollProgress: last section percentScrollOfView=" + percentScrollOfView);
+            }
+
+            float progressOffset = percentScrollOfView * stepSize;
+            Log.d(TAG, "calculateScrollProgress: progress=" + progress);
+            progress += progressOffset;
+            Log.d(TAG, "calculateScrollProgress: progressOffset=" + progressOffset);
+
             return progress;
         }
     }
