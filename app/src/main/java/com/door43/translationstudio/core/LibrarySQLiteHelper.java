@@ -24,7 +24,7 @@ public class LibrarySQLiteHelper extends SQLiteOpenHelper{
 
     /**
      * Creates a new sql helper for the indexer.
-     * This currently expects an asset named schema.sql
+     * This currently expects an asset named schema.sqlite
      * @param context
      * @param name
      * @throws IOException

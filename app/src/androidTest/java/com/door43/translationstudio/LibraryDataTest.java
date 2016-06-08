@@ -22,8 +22,7 @@ public class LibraryDataTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         mApp = AppContext.context();
-        LibrarySQLiteHelper indexHelper = new LibrarySQLiteHelper(mApp, "indexer_test_app");
-        mIndex = new LibraryData(mApp, "indexer_test_app", indexHelper);
+        mIndex = new LibraryData(mApp);
         mContext = getInstrumentation().getContext();
     }
 

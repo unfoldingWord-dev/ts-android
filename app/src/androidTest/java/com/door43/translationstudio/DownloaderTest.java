@@ -20,8 +20,7 @@ public class DownloaderTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         MainApplication app = AppContext.context();
-        LibrarySQLiteHelper downloadIndexHelper = new LibrarySQLiteHelper(app, "downloader_test_downloads");
-        mIndex = new LibraryData(app, "downloader_test_downloads", downloadIndexHelper);
+        mIndex = new LibraryData(app);
         String server = app.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, app.getResources().getString(R.string.pref_default_media_server));
         mDownloader = new Downloader(server + app.getResources().getString(R.string.root_catalog_api));
     }

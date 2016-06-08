@@ -27,12 +27,12 @@ public class Library {
     private static final String IMAGES_DIR = "images";
     public static final String TAG = Library.class.toString();
 //    private static final String IMAGES_DOWNLOADED_TAG = "images_downloaded_and_extracted";
-    private final LibraryData mAppIndex;
-    public static String DATABASE_NAME = "app";
+    private final LibraryData libraryData;
+//    public static String DATABASE_NAME = "app";
     private final Context mContext;
     private final File mAssetsDir;
     private Downloader mDownloader;
-    private static LibrarySQLiteHelper appIndexHelper;
+//    private static LibrarySQLiteHelper appIndexHelper;
 
     /**
      *
@@ -42,30 +42,30 @@ public class Library {
      * @throws IOException
      */
     public Library(Context context, String rootApiUrl, File assetsDir) throws IOException {
-        initalizeHelpers(context);
+//        initalizeHelpers(context);
         mContext = context;
-        mAppIndex = new LibraryData(context, DATABASE_NAME, appIndexHelper);
+        libraryData = new LibraryData(context);
         mDownloader = new Downloader(rootApiUrl);
         mAssetsDir = assetsDir;
     }
-
-    /**
-     * Initializes the static index sqlite helpers
-     * @param context
-     */
-    private synchronized static void initalizeHelpers(Context context) throws IOException {
-        if(appIndexHelper == null) {
-            appIndexHelper = new LibrarySQLiteHelper(context, DATABASE_NAME);
-        }
-    }
+//
+//    /**
+//     * Initializes the static index sqlite helpers
+//     * @param context
+//     */
+//    private synchronized static void initalizeHelpers(Context context) throws IOException {
+//        if(appIndexHelper == null) {
+//            appIndexHelper = new LibrarySQLiteHelper(context, "schema.sqlite", DATABASE_NAME);
+//        }
+//    }
 
     /**
      * Deletes the index and rebuilds it from scratch
      * This will result in a completely empty index.
      */
     public void delete() {
-        mAppIndex.delete();
-        mAppIndex.rebuild();
+        libraryData.delete();
+        libraryData.rebuild();
     }
 
     /**
@@ -90,12 +90,7 @@ public class Library {
      *
      */
     public void deploy(File index) throws Exception {
-        appIndexHelper.close();
-        mContext.getDatabasePath(appIndexHelper.getDatabaseName()).delete();
-        File indexDest = mContext.getDatabasePath(appIndexHelper.getDatabaseName());
-        indexDest.getParentFile().mkdirs();
-        FileUtils.moveFile(index, indexDest);
-        appIndexHelper = null;
+        libraryData.deploy(index);
     }
 
     /**
@@ -105,7 +100,7 @@ public class Library {
      * @return
      */
     private LibraryData getActiveIndex() {
-        return mAppIndex;
+        return libraryData;
     }
 
     /**
@@ -113,7 +108,7 @@ public class Library {
      * @return
      */
     public boolean exists() {
-        return mAppIndex.getProjectSlugs().length > 0;
+        return libraryData.getProjectSlugs().length > 0;
     }
 
     /**
@@ -121,7 +116,7 @@ public class Library {
      * @param projectSlug
      */
     private void downloadChunkMarkerList(String projectSlug) {
-        mDownloader.downloadChunkMarkerList(projectSlug, mAppIndex);
+        mDownloader.downloadChunkMarkerList(projectSlug, libraryData);
     }
 
     /**
@@ -129,9 +124,9 @@ public class Library {
      * @param projectId
      */
     private void downloadSourceLanguageList(String projectId) {
-        if(mDownloader.downloadSourceLanguageList(projectId, mAppIndex)) {
-            for(String sourceLanguageId:mAppIndex.getSourceLanguageSlugs(projectId)) {
-                mDownloader.downloadResourceList(projectId, sourceLanguageId, mAppIndex);
+        if(mDownloader.downloadSourceLanguageList(projectId, libraryData)) {
+            for(String sourceLanguageId: libraryData.getSourceLanguageSlugs(projectId)) {
+                mDownloader.downloadResourceList(projectId, sourceLanguageId, libraryData);
             }
         }
     }
@@ -142,9 +137,9 @@ public class Library {
      * @return
      */
     public LibraryUpdates checkServerForUpdates(OnProgressListener listener) {
-        mAppIndex.beginTransaction();
-        if(mDownloader.downloadProjectList(mAppIndex)) {
-            String[] projectIds = mAppIndex.getProjectSlugs();
+        libraryData.beginTransaction();
+        if(mDownloader.downloadProjectList(libraryData)) {
+            String[] projectIds = libraryData.getProjectSlugs();
             for (int i = 0; i < projectIds.length; i ++) {
                 String projectId = projectIds[i];
                 downloadChunkMarkerList(projectId);
@@ -159,7 +154,7 @@ public class Library {
         if(listener != null) {
             listener.onIndeterminate();
         }
-        mAppIndex.endTransaction(true);
+        libraryData.endTransaction(true);
         return getAvailableUpdates();
     }
 
@@ -171,7 +166,7 @@ public class Library {
      */
     public LibraryUpdates getAvailableUpdates() {
         LibraryUpdates updates = new LibraryUpdates();
-        SourceTranslation[] sourceTranslations = mAppIndex.getSourceTranslationsWithUpdates();
+        SourceTranslation[] sourceTranslations = libraryData.getSourceTranslationsWithUpdates();
         for(SourceTranslation sourceTranslation:sourceTranslations) {
             updates.addUpdate(sourceTranslation);
         }
@@ -183,9 +178,9 @@ public class Library {
      * @return
      */
     public boolean downloadTargetLanguages() {
-        mAppIndex.beginTransaction();
-        boolean success = mDownloader.downloadTargetLanguages(mAppIndex);
-        mAppIndex.endTransaction(success);
+        libraryData.beginTransaction();
+        boolean success = mDownloader.downloadTargetLanguages(libraryData);
+        libraryData.endTransaction(success);
         return success;
     }
 
@@ -194,10 +189,10 @@ public class Library {
      * @return
      */
     public boolean downloadNewLanguageQuestionnaire() {
-        mAppIndex.beginTransaction();
-        mAppIndex.deleteNewLanguageQuestionnaires();
-        boolean success = mDownloader.downloadNewLanguageQuestionnaire(mAppIndex);
-        mAppIndex.endTransaction(success);
+        libraryData.beginTransaction();
+        libraryData.deleteNewLanguageQuestionnaires();
+        boolean success = mDownloader.downloadNewLanguageQuestionnaire(libraryData);
+        libraryData.endTransaction(success);
         return success;
     }
 
@@ -206,7 +201,7 @@ public class Library {
      * @return
      */
     public Questionnaire getNewLanguageQuestionnaire() {
-        Questionnaire[] questionnaires = mAppIndex.getNewLanguageQuestionnaire();
+        Questionnaire[] questionnaires = libraryData.getNewLanguageQuestionnaire();
         // TRICKY: we will only ever have one questionnaire for now.
         if(questionnaires.length > 0) {
             return questionnaires[0];
@@ -220,7 +215,7 @@ public class Library {
      * @return
      */
     public ChunkMarker[] getChunkMarkers(String projectSlug) {
-        return mAppIndex.getChunkMarkers(projectSlug);
+        return libraryData.getChunkMarkers(projectSlug);
     }
 
     /**
@@ -233,13 +228,13 @@ public class Library {
     public Boolean downloadAllProjects(OnProgressListener projectProgressListener, OnProgressListener sourceTranslationListener) {
         boolean success = true;
         int currentProject = 1;
-        int numProjects = mAppIndex.getProjectSlugs().length;
+        int numProjects = libraryData.getProjectSlugs().length;
 
         // download
-        mAppIndex.beginTransaction();
-        for (String projectId : mAppIndex.getProjectSlugs()) {
-            for (String sourceLanguageId : mAppIndex.getSourceLanguageSlugs(projectId)) {
-                for(String resourceId : mAppIndex.getResourceSlugs(projectId, sourceLanguageId)) {
+        libraryData.beginTransaction();
+        for (String projectId : libraryData.getProjectSlugs()) {
+            for (String sourceLanguageId : libraryData.getSourceLanguageSlugs(projectId)) {
+                for(String resourceId : libraryData.getResourceSlugs(projectId, sourceLanguageId)) {
                     SourceTranslation sourceTranslation = SourceTranslation.simple(projectId, sourceLanguageId, resourceId);
 
                     // only download resources that meet the minimum checking level or have been downloaded before
@@ -262,7 +257,7 @@ public class Library {
                 currentProject ++;
             }
         }
-        mAppIndex.endTransaction(success);
+        libraryData.endTransaction(success);
         return success;
     }
 
@@ -273,9 +268,9 @@ public class Library {
      * @return
      */
     public Boolean downloadSourceTranslation(SourceTranslation translation, OnProgressListener listener) {
-        mAppIndex.beginTransaction();
+        libraryData.beginTransaction();
         boolean success = startSourceTranslationDownload(translation, listener);
-        mAppIndex.endTransaction(success);
+        libraryData.endTransaction(success);
         return success;
     }
 
@@ -289,8 +284,8 @@ public class Library {
     private Boolean startSourceTranslationDownload(SourceTranslation sourceTranslation, OnProgressListener listener) {
         boolean success = true;
         // source
-        if(mDownloader.downloadSource(sourceTranslation, mAppIndex)) {
-            mAppIndex.markSourceCatalogUpToDate(sourceTranslation);
+        if(mDownloader.downloadSource(sourceTranslation, libraryData)) {
+            libraryData.markSourceCatalogUpToDate(sourceTranslation);
         } else {
             success = false;
         }
@@ -299,32 +294,32 @@ public class Library {
         }
 
         // words
-        if(mDownloader.downloadWords(sourceTranslation, mAppIndex)) {
-            mAppIndex.markWordsCatalogUpToDate(sourceTranslation);
+        if(mDownloader.downloadWords(sourceTranslation, libraryData)) {
+            libraryData.markWordsCatalogUpToDate(sourceTranslation);
         }
         if(listener != null) {
             listener.onProgress(2, 6);
         }
 
         // word assignments
-        if(mDownloader.downloadWordAssignments(sourceTranslation, mAppIndex)) {
-            mAppIndex.markWordAssignmentsCatalogUpToDate(sourceTranslation);
+        if(mDownloader.downloadWordAssignments(sourceTranslation, libraryData)) {
+            libraryData.markWordAssignmentsCatalogUpToDate(sourceTranslation);
         }
         if(listener != null) {
             listener.onProgress(3, 6);
         }
 
         // notes
-        if(mDownloader.downloadNotes(sourceTranslation, mAppIndex)) {
-            mAppIndex.markNotesCatalogUpToDate(sourceTranslation);
+        if(mDownloader.downloadNotes(sourceTranslation, libraryData)) {
+            libraryData.markNotesCatalogUpToDate(sourceTranslation);
         }
         if(listener != null) {
             listener.onProgress(4, 6);
         }
 
         // questions
-        if(mDownloader.downloadCheckingQuestions(sourceTranslation, mAppIndex)) {
-            mAppIndex.markQuestionsCatalogUpToDate(sourceTranslation);
+        if(mDownloader.downloadCheckingQuestions(sourceTranslation, libraryData)) {
+            libraryData.markQuestionsCatalogUpToDate(sourceTranslation);
         }
         if(listener != null) {
             listener.onProgress(5, 6);
@@ -409,7 +404,7 @@ public class Library {
      * @return
      */
     public Project[] getProjects(String sourceLanguageSlug) {
-        return mAppIndex.getProjects(sourceLanguageSlug);
+        return libraryData.getProjects(sourceLanguageSlug);
     }
 
     /**
@@ -431,7 +426,7 @@ public class Library {
      * @return
      */
     public ProjectCategory[] getProjectCategories(ProjectCategory parentCategory) {
-        return mAppIndex.getCategoryBranch(parentCategory.sourcelanguageId, parentCategory.parentCategoryId);
+        return libraryData.getCategoryBranch(parentCategory.sourcelanguageId, parentCategory.parentCategoryId);
     }
 
     /**
@@ -516,7 +511,7 @@ public class Library {
         SourceLanguage sourceLanguage = getPreferredSourceLanguage(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
         if(sourceLanguage != null) {
             SourceTranslation sourceTranslation = getDefaultSourceTranslation(targetTranslation.getProjectId(), sourceLanguage.getId());
-            int numAvailableTranslations = mAppIndex.numTranslatable(sourceTranslation);
+            int numAvailableTranslations = libraryData.numTranslatable(sourceTranslation);
             if (numAvailableTranslations > 0) {
                 return (float) numFinishedItems / (float) numAvailableTranslations;
             } else {
@@ -675,11 +670,11 @@ public class Library {
      */
     @Nullable
     public SourceTranslation getDefaultSourceTranslation(String projectSlug, String sourceLanguageSlug) {
-        SourceTranslation sourceTranslation = mAppIndex.getSourceTranslation(projectSlug, sourceLanguageSlug, DEFAULT_RESOURCE_SLUG);
+        SourceTranslation sourceTranslation = libraryData.getSourceTranslation(projectSlug, sourceLanguageSlug, DEFAULT_RESOURCE_SLUG);
         if(sourceTranslation == null) {
-            String[] resourceSlugs = mAppIndex.getResourceSlugs(projectSlug, sourceLanguageSlug);
+            String[] resourceSlugs = libraryData.getResourceSlugs(projectSlug, sourceLanguageSlug);
             if(resourceSlugs.length > 0) {
-                return mAppIndex.getSourceTranslation(projectSlug, sourceLanguageSlug, resourceSlugs[0]);
+                return libraryData.getSourceTranslation(projectSlug, sourceLanguageSlug, resourceSlugs[0]);
             }
         } else {
             return sourceTranslation;
@@ -779,7 +774,7 @@ public class Library {
      * @return
      */
     public TranslationNote[] getTranslationNotes(SourceTranslation sourceTranslation, String chapterSlug, String frameSlug) {
-        return mAppIndex.getTranslationNotes(sourceTranslation, chapterSlug, frameSlug);
+        return libraryData.getTranslationNotes(sourceTranslation, chapterSlug, frameSlug);
     }
 
     /**
@@ -903,19 +898,19 @@ public class Library {
      * @param projectId
      */
     public void deleteProject(String projectId) {
-        String[] sourceLanguageIds = mAppIndex.getSourceLanguageSlugs(projectId);
-        mAppIndex.beginTransaction();
+        String[] sourceLanguageIds = libraryData.getSourceLanguageSlugs(projectId);
+        libraryData.beginTransaction();
         for(String sourceLanguageId:sourceLanguageIds) {
-            Resource[] resources = mAppIndex.getResources(projectId, sourceLanguageId);
+            Resource[] resources = libraryData.getResources(projectId, sourceLanguageId);
             for(Resource r:resources) {
-                mAppIndex.deleteResource(r.getDBId());
+                libraryData.deleteResource(r.getDBId());
                 // restore resource after cascade delete
-                mAppIndex.saveResource(r, r.getSourceLanguageDBId());
+                libraryData.saveResource(r, r.getSourceLanguageDBId());
             }
-//            mAppIndex.deleteSourceLanguage(projectId, sourceLanguageId);
+//            libraryData.deleteSourceLanguage(projectId, sourceLanguageId);
         }
-        mAppIndex.endTransaction(true);
-//        mAppIndex.deleteProject(projectId);
+        libraryData.endTransaction(true);
+//        libraryData.deleteProject(projectId);
     }
 
     /**
@@ -933,7 +928,7 @@ public class Library {
      * @return
      */
     public boolean downloadUpdates(LibraryUpdates updates, OnProgressListener listener) {
-        mAppIndex.beginTransaction();
+        libraryData.beginTransaction();
         int progress = 0;
         int numUpdates = updates.numSourceTranslationUpdates();
         String[] projectSlugs = updates.getUpdatedProjects();
@@ -955,7 +950,7 @@ public class Library {
                 }
             }
         }
-        mAppIndex.endTransaction(true);
+        libraryData.endTransaction(true);
         return true;
     }
 
@@ -966,7 +961,7 @@ public class Library {
      * @return
      */
     public TranslationFormat getChapterBodyFormat(SourceTranslation mSourceTranslation, String chapterSlug) {
-        return mAppIndex.getChapterBodyFormat(mSourceTranslation, chapterSlug);
+        return libraryData.getChapterBodyFormat(mSourceTranslation, chapterSlug);
     }
 
     /**
@@ -977,7 +972,7 @@ public class Library {
      * @return
      */
     public String getChapterBody(SourceTranslation mSourceTranslation, String chapterSlug) {
-        return mAppIndex.getChapterBody(mSourceTranslation, chapterSlug);
+        return libraryData.getChapterBody(mSourceTranslation, chapterSlug);
     }
 
     /**
@@ -1026,7 +1021,7 @@ public class Library {
      * Resets all the date_modified values
      */
     public void setExpired() {
-        mAppIndex.setExpired();
+        libraryData.setExpired();
     }
 
     public interface OnProgressListener {

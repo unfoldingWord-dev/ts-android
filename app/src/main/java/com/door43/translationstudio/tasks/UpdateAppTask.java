@@ -13,6 +13,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.LibraryData;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.util.tasks.ManagedTask;
@@ -98,8 +99,13 @@ public class UpdateAppTask extends ManagedTask {
             Looper.prepare();
             PreferenceManager.setDefaultValues(AppContext.context(), R.xml.general_preferences, true);
         }
-        if(lastVersion < 134) {
-            AppContext.context().deleteDatabase(Library.DATABASE_NAME);
+        if(lastVersion < 139) {
+            AppContext.context().deleteDatabase("app");
+        }
+
+        // this should always be the latest version in which the library was updated
+        if(lastVersion < 139) {
+            AppContext.context().deleteDatabase(LibraryData.DATABASE_NAME);
         }
     }
 
@@ -187,7 +193,7 @@ public class UpdateAppTask extends ManagedTask {
      * We need to migrate chunks in targetTranslations because some no longer match up to the source.
      */
     private void upgradePre110() {
-        AppContext.context().deleteDatabase(Library.DATABASE_NAME);
+        AppContext.context().deleteDatabase(LibraryData.DATABASE_NAME);
 
         // TRICKY: we deploy the new library in a different task but since we are using it in the migration we need to do so now
         try {

@@ -9,10 +9,12 @@ import android.support.annotation.Nullable;
 import com.door43.tools.reporting.Logger;
 import com.door43.util.Security;
 
+import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -32,11 +34,12 @@ public class LibraryData {
 
     /**
      * Creates a new instance of the index
-     * @param name the name of the index
      */
-    public LibraryData(Context context, String name, LibrarySQLiteHelper helper) throws IOException {
-        if(this.librarySQLiteHelper == null) {
-            this.librarySQLiteHelper = new LibrarySQLiteHelper(context, "schema.sqlite", DATABASE_NAME);
+    public LibraryData(Context context) throws IOException {
+        synchronized (this) {
+            if (this.librarySQLiteHelper == null) {
+                this.librarySQLiteHelper = new LibrarySQLiteHelper(context, "schema.sqlite", DATABASE_NAME);
+            }
         }
         this.database = this.librarySQLiteHelper.getWritableDatabase();
         this.context = context;
@@ -72,6 +75,21 @@ public class LibraryData {
     public synchronized void delete() {
         close();
         librarySQLiteHelper.deleteDatabase(context);
+    }
+
+    /**
+     * Deploys a new library database.
+     * This will close the existing db and replace it.
+     * You will need to create a new LibraryData instance in order to connect to the new database.
+     * @param newDatabasePath
+     */
+    public synchronized void deploy(File newDatabasePath) throws IOException {
+        librarySQLiteHelper.close();
+        librarySQLiteHelper.deleteDatabase(context);
+        File databasePath = context.getDatabasePath(librarySQLiteHelper.getDatabaseName());
+        databasePath.getParentFile().mkdirs();
+        FileUtils.moveFile(newDatabasePath, databasePath);
+        librarySQLiteHelper = null;
     }
 
     /**
