@@ -185,6 +185,16 @@ public class Library {
     }
 
     /**
+     * Adds a temporary target language to the library
+     * @param tempTargetLanguage
+     * @return
+     */
+    public boolean addTempTargetLanguage(TargetLanguage tempTargetLanguage) {
+        libraryData.addTempTargetLanguage(tempTargetLanguage);
+        return true;
+    }
+
+    /**
      * Downloads the new language questionnaire from the server
      * @return
      */

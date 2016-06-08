@@ -15,7 +15,6 @@ import java.util.List;
 
 /**
  * Created by joel on 10/1/2015.
- * TODO: these methods need to throw exeptions so we can log the error
  */
 public class LibrarySQLiteHelper extends SQLiteOpenHelper{
     private static final int DATABASE_VERSION = 8;

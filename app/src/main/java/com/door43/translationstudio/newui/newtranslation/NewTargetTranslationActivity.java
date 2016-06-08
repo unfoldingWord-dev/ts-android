@@ -105,7 +105,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
      * use new language information passed in JSON format string to create a new target language
      * @param request
      */
-    private void registerCustomLanguageCode(TempLanguageRequest request) {
+    private void registerTempLanguageCode(TempLanguageRequest request) {
         if(AppContext.addNewLanguageRequest(request)) {
             // TODO: 6/2/16 retrieve the language region from the request
             mSelectedTargetLanguage = new TargetLanguage(request.tempLanguageCode, request.getLanguageName(), "uncertain", LanguageDirection.LeftToRight);
@@ -113,6 +113,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             // TODO: 6/2/16 add the language code to the actual target language list.
             // The temp codes will be stored in a seperate table and joined when retrieving target languages.
             // We will likely have yet another table to indicate the migration of temp language codes to correct language codes.
+            AppContext.getLibrary().addTempTargetLanguage(mSelectedTargetLanguage);
 
             this.createdNewLanguage = true;
 
@@ -304,7 +305,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
         if (NEW_LANGUAGE_REQUEST == requestCode) {
             if(RESULT_OK == resultCode) {
                 String rawResponse = data.getStringExtra(NewLanguageActivity.EXTRA_QUESTIONNAIRE_RESPONSE);
-                registerCustomLanguageCode(TempLanguageRequest.generate(rawResponse));
+                registerTempLanguageCode(TempLanguageRequest.generate(rawResponse));
             } else if(RESULT_FIRST_USER == resultCode) {
                 String message = data.getStringExtra(NewLanguageActivity.EXTRA_MESSAGE);
                 Snackbar snack = Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_LONG);

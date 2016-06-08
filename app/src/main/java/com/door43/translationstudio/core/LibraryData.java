@@ -3106,4 +3106,20 @@ public class LibraryData {
     public void deleteFrame(String slug, long chapterId) {
         this.database.delete("frame", "`slug`=? AND `chapter_id`=" + chapterId, new String[]{slug});
     }
+
+    /**
+     * Adds a temporary target language to the library
+     * If there is a conflict it is ignored in order to maintain the approved_temp_target_language
+     * link if one exists
+     * @param tempTargetLanguage
+     * @return the db id of the new temporary target language
+     */
+    public long addTempTargetLanguage(TargetLanguage tempTargetLanguage) {
+        ContentValues values = new ContentValues();
+        values.put("slug", tempTargetLanguage.code);
+        values.put("name", tempTargetLanguage.name);
+        values.put("direction", tempTargetLanguage.direction.getLabel());
+        values.put("region", tempTargetLanguage.region);
+        return this.database.insertWithOnConflict("temp_target_language", null, values, SQLiteDatabase.CONFLICT_IGNORE);
+    }
 }
