@@ -1079,7 +1079,7 @@ public class LibraryData {
         values.put("questionnaire_id", questionnaireId);
         values.put("field", field);
         values.put("question_td_id", questionDoor43Id);
-        return this.database.insert("questionnaire", null, values);
+        return this.database.insert("questionnaire_data_field", null, values);
     }
 
     /**
