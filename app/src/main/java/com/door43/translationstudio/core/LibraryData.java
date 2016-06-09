@@ -1920,12 +1920,18 @@ public class LibraryData {
     }
 
     /**
-     * Returns an array of target languages
+     * Returns an array of target languages.
+     * This will include temp languages codes that have not yet been approved
      * @return
      */
     public TargetLanguage[] getTargetLanguages() {
         List<TargetLanguage> targetLanguages = new ArrayList<>();
-        Cursor cursor = this.database.rawQuery("SELECT `slug`, `name`, `direction`, `region` FROM `target_language`", null);
+        Cursor cursor = this.database.rawQuery("SELECT `slug`, `name`, `direction`, `region` FROM `target_language`\n" +
+                "UNION\n" +
+                "SELECT `slug`, `name`, `direction`, `region` FROM `temp_target_language` AS `ttl`\n" +
+                "LEFT JOIN `approved_temp_target_language` AS `attl` ON `attl`.`temp_target_language_id`=`ttl`.`id`\n" +
+                "WHERE `attl`.`target_language_id` IS NULL\n" +
+                "ORDER BY `slug` ASC, `name` DESC", null);
         cursor.moveToFirst();
         while(!cursor.isAfterLast()) {
             String slug = cursor.getString(0);
@@ -1943,20 +1949,27 @@ public class LibraryData {
     }
 
     /**
-     * Returns a target language
+     * Returns a target language.
+     * This will include temp languages codes that have not yet been approved
      * @param targetLanguageSlug
      * @return
      */
     public TargetLanguage getTargetLanguage(String targetLanguageSlug) {
-        Cursor cursor = this.database.rawQuery("SELECT `name`, `direction`, `region` FROM `target_language` WHERE `slug`=?", new String[]{targetLanguageSlug});
+        Cursor cursor = this.database.rawQuery("SELECT * FROM (" +
+                "SELECT `slug`, `name`, `direction`, `region` FROM `target_language`\n" +
+                "UNION\n" +
+                "SELECT `slug`, `name`, `direction`, `region` FROM `temp_target_language` AS `ttl`\n" +
+                "LEFT JOIN `approved_temp_target_language` AS `attl` ON `attl`.`temp_target_language_id`=`ttl`.`id`\n" +
+                "WHERE `attl`.`target_language_id` IS NULL)\n" +
+                "WHERE `slug`=?", new String[]{targetLanguageSlug});
         TargetLanguage targetLanguage = null;
         if(cursor.moveToFirst()) {
-            String name = cursor.getString(0);
-            LanguageDirection direction = LanguageDirection.get(cursor.getString(1));
+            String name = cursor.getString(1);
+            LanguageDirection direction = LanguageDirection.get(cursor.getString(2));
             if(direction == null) {
                 direction = LanguageDirection.LeftToRight;
             }
-            String region = cursor.getString(2);
+            String region = cursor.getString(3);
             targetLanguage = new TargetLanguage(targetLanguageSlug, name, region, direction);
         }
         cursor.close();
@@ -1964,33 +1977,17 @@ public class LibraryData {
     }
 
     /**
-     * Returns a target language
-     * @param targetLanguageName
-     * @return
-     */
-    public TargetLanguage getTargetLanguageByName(String targetLanguageName) {
-        Cursor cursor = this.database.rawQuery("SELECT `name`, `direction`, `region`, `slug` FROM `target_language` WHERE LOWER(`name`)=? LIMIT 1", new String[]{targetLanguageName.toLowerCase()});
-        TargetLanguage targetLanguage = null;
-        if(cursor.moveToFirst()) {
-            String name = cursor.getString(0);
-            LanguageDirection direction = LanguageDirection.get(cursor.getString(1));
-            if(direction == null) {
-                direction = LanguageDirection.LeftToRight;
-            }
-            String region = cursor.getString(2);
-            String slug = cursor.getString(3);
-            targetLanguage = new TargetLanguage(slug, name, region, direction);
-        }
-        cursor.close();
-        return targetLanguage;
-    }
-
-    /**
-     * Returns the number of target languages
+     * Returns the number of target languages.
+     * This will include temp languages codes that have not yet been approved
      * @return
      */
     public int getNumTargetLanguages() {
-        Cursor cursor = this.database.rawQuery("SELECT COUNT(*) FROM `target_language`", null);
+        Cursor cursor = this.database.rawQuery("SELECT COUNT(*) FROM (" +
+                "SELECT `slug`, `name`, `direction`, `region` FROM `target_language`\n" +
+                "UNION\n" +
+                "SELECT `slug`, `name`, `direction`, `region` FROM `temp_target_language` AS `ttl`\n" +
+                "LEFT JOIN `approved_temp_target_language` AS `attl` ON `attl`.`temp_target_language_id`=`ttl`.`id`\n" +
+                "WHERE `attl`.`target_language_id` IS NULL)", null);
         int count = 0;
         if(cursor.moveToFirst()) {
             count = cursor.getInt(0);

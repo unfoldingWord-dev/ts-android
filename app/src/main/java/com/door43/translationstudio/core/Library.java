@@ -990,15 +990,6 @@ public class Library {
     }
 
     /**
-     * Returns a target language by searching for it's human readable name
-     * @param name
-     * @return
-     */
-    public TargetLanguage findTargetLanguageByName(String name) {
-        return getActiveIndex().getTargetLanguageByName(name);
-    }
-
-    /**
      * This is a temporary method so we can index tA.
      * tA is not currently available in the api so we bundle it and index it manually
      * @param sourceTranslation
