@@ -1930,9 +1930,8 @@ public class LibraryData {
         List<TargetLanguage> targetLanguages = new ArrayList<>();
         Cursor cursor = this.database.rawQuery("SELECT `slug`, `name`, `direction`, `region` FROM `target_language`\n" +
                 "UNION\n" +
-                "SELECT `slug`, `name`, `direction`, `region` FROM `temp_target_language` AS `ttl`\n" +
-                "LEFT JOIN `approved_temp_target_language` AS `attl` ON `attl`.`temp_target_language_id`=`ttl`.`id`\n" +
-                "WHERE `attl`.`target_language_id` IS NULL\n" +
+                "SELECT `slug`, `name`, `direction`, `region` FROM `temp_target_language`\n" +
+                "WHERE `approved_target_language_slug` IS NULL\n" +
                 "ORDER BY `slug` ASC, `name` DESC", null);
         cursor.moveToFirst();
         while(!cursor.isAfterLast()) {
@@ -1961,8 +1960,7 @@ public class LibraryData {
                 "SELECT `slug`, `name`, `direction`, `region` FROM `target_language`\n" +
                 "UNION\n" +
                 "SELECT `slug`, `name`, `direction`, `region` FROM `temp_target_language` AS `ttl`\n" +
-                "LEFT JOIN `approved_temp_target_language` AS `attl` ON `attl`.`temp_target_language_id`=`ttl`.`id`\n" +
-                "WHERE `attl`.`target_language_id` IS NULL)\n" +
+                "WHERE `approved_target_language_slug` IS NULL)\n" +
                 "WHERE `slug`=?", new String[]{targetLanguageSlug});
         TargetLanguage targetLanguage = null;
         if(cursor.moveToFirst()) {
@@ -1989,8 +1987,7 @@ public class LibraryData {
                 "SELECT `slug`, `name`, `direction`, `region` FROM `target_language`\n" +
                 "UNION\n" +
                 "SELECT `slug`, `name`, `direction`, `region` FROM `temp_target_language` AS `ttl`\n" +
-                "LEFT JOIN `approved_temp_target_language` AS `attl` ON `attl`.`temp_target_language_id`=`ttl`.`id`\n" +
-                "WHERE `attl`.`target_language_id` IS NULL)\n" +
+                "WHERE `approved_target_language_slug` IS NULL)\n" +
                 "WHERE LOWER(`name`) LIKE ?\n" +
                 "ORDER BY `slug` ASC, `name` DESC", new String[]{"%" + nameQuery.toLowerCase() + "%"});
         cursor.moveToFirst();
@@ -2040,8 +2037,7 @@ public class LibraryData {
                 "SELECT `slug`, `name`, `direction`, `region` FROM `target_language`\n" +
                 "UNION\n" +
                 "SELECT `slug`, `name`, `direction`, `region` FROM `temp_target_language` AS `ttl`\n" +
-                "LEFT JOIN `approved_temp_target_language` AS `attl` ON `attl`.`temp_target_language_id`=`ttl`.`id`\n" +
-                "WHERE `attl`.`target_language_id` IS NULL)", null);
+                "WHERE `approved_target_language_slug` IS NULL)", null);
         int count = 0;
         if(cursor.moveToFirst()) {
             count = cursor.getInt(0);
@@ -3242,8 +3238,6 @@ public class LibraryData {
 
     /**
      * Adds a temporary target language to the library
-     * If there is a conflict it is ignored in order to maintain the approved_temp_target_language
-     * link if one exists
      * @param tempTargetLanguage
      * @return the db id of the new temporary target language
      */

@@ -17,7 +17,7 @@ import java.util.List;
  * Created by joel on 10/1/2015.
  */
 public class LibrarySQLiteHelper extends SQLiteOpenHelper{
-    private static final int DATABASE_VERSION = 9;
+    private static final int DATABASE_VERSION = 6;
     private final String databaseName;
     private final String schema;
 
@@ -132,68 +132,15 @@ public class LibrarySQLiteHelper extends SQLiteOpenHelper{
         if(oldVersion < 6) {
             db.beginTransaction();
 
-            // add tables for the new target language questionnaire
-            db.execSQL("CREATE TABLE `new_target_language_questionnaire` (\n" +
-                    "  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n" +
-                    "  `questionnaire_td_id` INTEGER NOT NULL,\n" +
-                    "  `language_slug` TEXT NOT NULL,\n" +
-                    "  `language_name` TEXT NOT NULL,\n" +
-                    "  `language_direction` TEXT NOT NULL,\n" +
-                    "  UNIQUE (`questionnaire_td_id`)\n" +
-                    ");");
-            db.execSQL("CREATE TABLE `new_target_language_question` (\n" +
-                    "  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n" +
-                    "  `new_target_language_questionnaire_id` INTEGER NOT NULL,\n" +
-                    "  `question_td_id` INTEGER NOT NULL,\n" +
-                    "  `text` TEXT NOT NULL,\n" +
-                    "  `help` TEXT NOT NULL,\n" +
-                    "  `is_required` INTEGER NOT NULL DEFAULT 0,\n" +
-                    "  `input_type` TEXT NOT NULL,\n" +
-                    "  `sort` INTEGER NOT NULL DEFAULT 0,\n" +
-                    "  `depends_on` INTEGER DEFAULT NULL,\n" +
-                    "  UNIQUE (`question_td_id`, `new_target_language_questionnaire_id`),\n" +
-                    "  FOREIGN KEY (new_target_language_questionnaire_id) REFERENCES `new_target_language_questionnaire` (`id`) ON DELETE CASCADE\n" +
-                    ");");
-
-            db.setTransactionSuccessful();
-            db.endTransaction();
-        }
-        if(oldVersion < 7) {
-            db.beginTransaction();
-
             db.execSQL("CREATE TABLE `temp_target_language` (\n" +
                     "  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n" +
                     "  `slug` TEXT NOT NULL,\n" +
                     "  `name` TEXT NOT NULL,\n" +
                     "  `direction` TEXT NOT NULL,\n" +
                     "  `region` TEXT NOT NULL,\n" +
+                    "  `approved_target_language_slug` TEXT NULL DEFAULT NULL,\n" +
                     "  UNIQUE (`slug`)\n" +
                     ");");
-
-            db.setTransactionSuccessful();
-            db.endTransaction();
-        }
-        if(oldVersion < 8) {
-            db.beginTransaction();
-
-            db.execSQL("CREATE TABLE `approved_temp_target_language` (\n" +
-                    "  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n" +
-                    "  `target_language_id` INTEGER NOT NULL,\n" +
-                    "  `temp_target_language_id` INTEGER NOT NULL,\n" +
-                    "  UNIQUE (`target_language_id`, `temp_target_language_id`),\n" +
-                    "  FOREIGN KEY (target_language_id) REFERENCES `target_language` (`id`) ON DELETE CASCADE,\n" +
-                    "  FOREIGN KEY (temp_target_language_id) REFERENCES `temp_target_language` (`id`) ON DELETE CASCADE\n" +
-                    ");");
-
-            db.setTransactionSuccessful();
-            db.endTransaction();
-        }
-        if(oldVersion < 9) {
-            db.beginTransaction();
-
-            db.execSQL("DROP TABLE IF EXISTS `new_target_language_questionnaire`;");
-            db.execSQL("DROP TABLE IF EXISTS `new_target_language_question`;");
-
             db.execSQL("CREATE TABLE `questionnaire_question` (\n" +
                     "  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n" +
                     "  `questionnaire_id` INTEGER NOT NULL,\n" +
