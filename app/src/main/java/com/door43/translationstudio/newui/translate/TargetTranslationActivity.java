@@ -386,9 +386,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     @Override
     public void onScrollProgress(int position) {
         checkIfCursorStillOnScreen();
-
-        Logger.i(TAG, "onScrollProgress: position: " + position);
-
         if( (mFragment != null) && (mFragment instanceof ViewModeFragment)) {
             ((ViewModeFragment) mFragment).setScrollProgress(position);
         }

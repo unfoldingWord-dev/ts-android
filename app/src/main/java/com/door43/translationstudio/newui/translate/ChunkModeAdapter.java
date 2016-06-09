@@ -241,7 +241,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     }
 
     /**
-     * get the chapter ID for the position
+     * get the closest chapter for the position
      * @param position
      */
     public String getNearestChapterID(int position) {

@@ -13,8 +13,6 @@ import android.view.View;
  */
 public class VerticalLinearLayoutManagerScrollProgressCalculator extends VerticalScrollProgressCalculator {
 
-    public static final String TAG = VerticalLinearLayoutManagerScrollProgressCalculator.class.getSimpleName();
-
     public VerticalLinearLayoutManagerScrollProgressCalculator(VerticalScrollBoundsProvider scrollBoundsProvider) {
         super(scrollBoundsProvider);
     }
@@ -27,14 +25,11 @@ public class VerticalLinearLayoutManagerScrollProgressCalculator extends Vertica
     public float calculateScrollProgress(RecyclerView recyclerView) {
         LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
         int lastFullyVisiblePosition = layoutManager.findLastCompletelyVisibleItemPosition();
-        Log.d(TAG, "calculateScrollProgress: lastFullyVisiblePosition=" + lastFullyVisiblePosition);
 
         View visibleChild = recyclerView.getChildAt(0);
         if (visibleChild == null) {
             return 0;
         }
-
-        Log.d(TAG, "calculateScrollProgress: lastFullyVisiblePosition=" + lastFullyVisiblePosition);
 
         ViewHolder holder = recyclerView.getChildViewHolder(visibleChild);
         if(holder == null) {
@@ -58,9 +53,6 @@ public class VerticalLinearLayoutManagerScrollProgressCalculator extends Vertica
         } else { // in case the child views are too big to fit in window
 
             int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
-            Log.d(TAG, "calculateScrollProgress: firstVisibleItemPosition=" + firstVisibleItemPosition);
-//            int lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition();
-//            Log.d(TAG, "calculateScrollProgress: lastVisibleItemPosition=" + lastVisibleItemPosition);
             int numItemsInList = recyclerView.getAdapter().getItemCount();
             float progress;
             if(numItemsInList < 1) { // sanity check
@@ -72,22 +64,17 @@ public class VerticalLinearLayoutManagerScrollProgressCalculator extends Vertica
 
             float y = -holder.itemView.getY();
             float percentScrollOfView = y / itemHeight;
-            Log.d(TAG, "calculateScrollProgress: percentScrollOfView=" + percentScrollOfView);
 
             int viewHeight = recyclerView.getHeight();
-            if( (firstVisibleItemPosition == numItemsInList - 1)  // if last chapter, need to tighten range otherwise scroll handle will not read bottom of screen
+            if( (firstVisibleItemPosition == numItemsInList - 1)  // if last chapter, need to tighten range otherwise scroll handle will not reach bottom of screen
                 && (viewHeight < itemHeight) ) {
 
                 int scrollRange = itemHeight - viewHeight;
                 percentScrollOfView = y / scrollRange;
-                Log.d(TAG, "calculateScrollProgress: last section percentScrollOfView=" + percentScrollOfView);
             }
 
             float progressOffset = percentScrollOfView * stepSize;
-            Log.d(TAG, "calculateScrollProgress: progress=" + progress);
             progress += progressOffset;
-            Log.d(TAG, "calculateScrollProgress: progressOffset=" + progressOffset);
-
             return progress;
         }
     }

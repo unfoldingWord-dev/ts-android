@@ -324,7 +324,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     * get the chapter ID for the position
+     * get closest chapter for the position
      * @param position
      */
     public String getNearestChapterID(int position) {

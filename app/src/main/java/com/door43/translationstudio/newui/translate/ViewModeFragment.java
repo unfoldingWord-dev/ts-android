@@ -104,7 +104,6 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
             // Connect the section indicator to the scroller
             mFastScroller.setSectionIndicator(sectionTitleIndicator);
 
-//            mRecyclerView.addOnScrollListener(mFastScroller.getOnScrollListener());
             final RecyclerView.OnScrollListener fastScrollerListener = mFastScroller.getOnScrollListener();
 
             mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -112,15 +111,12 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
                 public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                     mFingerScroll = true;
                     super.onScrollStateChanged(recyclerView, newState);
-                    Logger.i(TAG, "mRecyclerView.onScrollStateChanged: Scroll State change: " + newState);
-//                    fastScrollerListener.onScrollStateChanged(recyclerView, newState);
                 }
 
                 @Override
                 public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                     super.onScrolled(recyclerView, dx, dy);
                     fastScrollerListener.onScrolled(recyclerView, dx, dy);
-                    Logger.i(TAG, "mRecyclerView.onScrolled: dy: " + dy + ", finger " + mFingerScroll);
                     if (mFingerScroll) {
                         int position = mLayoutManager.findFirstVisibleItemPosition();
                         mListener.onScrollProgress(position);
@@ -338,19 +334,11 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     public void onScrollProgressUpdate(int scrollProgress) {
         mFingerScroll = false;
         mRecyclerView.scrollToPosition(scrollProgress);
-        Logger.i(TAG, "onScrollProgress: Scroll State change: " + scrollProgress);
     }
 
     public void setScrollProgress(int position) {
-        if((mAdapter != null) && (mFastScroller != null)) {
-            int count = mAdapter.getItemCount();
-            float ratio = (float) position /count;
-
-            Logger.i(TAG, "setScrollProgress: position: " + position + ", ratio: " + ratio);
-           // mFastScroller.moveHandleToPosition(ratio);
-        }
+        // do nothings
     }
-
 
     @Override
     public void onSourceTranslationTabClick(String sourceTranslationId) {
