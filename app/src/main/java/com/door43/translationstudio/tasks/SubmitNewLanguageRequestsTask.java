@@ -50,12 +50,9 @@ public class SubmitNewLanguageRequestsTask extends ManagedTask {
             for (int i = 0; i < requests.size(); i ++) {
                 NewLanguageRequest request = requests.get(i);
 
-                // TODO: eventually we'll be able to get the server url from the db
-
                 try {
-                    // TRICKY: django needs to have the trailing slash for the post to work.
-                    // TODO: 6/6/16 change this to production (td.) before releasing.
-                    URL url = new URL("http://td-demo.unfoldingword.org/api/questionnaire/");
+                    // TODO: eventually we'll be able to get the server url from the db
+                    URL url = new URL(AppContext.context().getResources().getString(R.string.questionnaire_api));
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setRequestProperty("Content-Type", "application/json");
                     conn.setReadTimeout(10000); // 10 seconds

@@ -2,6 +2,7 @@ package com.door43.translationstudio.core;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.R;
 import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
@@ -335,8 +336,8 @@ public class Downloader {
      * @return
      */
     public boolean downloadNewLanguageQuestionnaire(LibraryData targetIndex) {
-        // TODO: 10/19/2015 don't hardcode the url
-        String catalog = request("http://td-demo.unfoldingword.org/api/questionnaire");
+        // TODO: eventually this will be pulled from the library data
+        String catalog = request(AppContext.context().getResources().getString(R.string.questionnaire_api));
         if(catalog != null) {
             return targetIndex.indexQuestionnaire(catalog);
         }
