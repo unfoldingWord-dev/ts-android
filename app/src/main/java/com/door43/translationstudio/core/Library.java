@@ -617,6 +617,15 @@ public class Library {
     }
 
     /**
+     * Searches for target languages by name
+     * @param name
+     * @return
+     */
+    public TargetLanguage[] findTargetLanguage(String name) {
+        return getActiveIndex().findTargetLanguage(name);
+    }
+
+    /**
      * Returns a single target language
      * @param targetLanguageId
      * @return

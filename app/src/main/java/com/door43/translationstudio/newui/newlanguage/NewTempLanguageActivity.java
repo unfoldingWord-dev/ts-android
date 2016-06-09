@@ -8,7 +8,9 @@ import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NewLanguageRequest;
 import com.door43.translationstudio.core.Questionnaire;
+import com.door43.translationstudio.core.QuestionnairePage;
 import com.door43.translationstudio.core.QuestionnaireQuestion;
+import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.newui.QuestionnaireActivity;
 import com.door43.widget.ViewUtil;
 
@@ -18,11 +20,12 @@ import com.door43.widget.ViewUtil;
 public class NewTempLanguageActivity extends QuestionnaireActivity {
     public static final String EXTRA_LANGUAGE_REQUEST = "new_language_request";
     private NewLanguageRequest request = null;
+    private Questionnaire questionnaire;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Questionnaire questionnaire = getQuestionnaire();
+        this.questionnaire = getQuestionnaire();
 
         if(questionnaire != null) {
             if (savedInstanceState != null) {
@@ -57,6 +60,24 @@ public class NewTempLanguageActivity extends QuestionnaireActivity {
             return questionnaires[0];
         }
         return null;
+    }
+
+    @Override
+    protected void onLeavePage(QuestionnairePage page) {
+        // check for a matching language that already exists
+        if(questionnaire.dataFields.containsKey("ln")) {
+            QuestionnaireQuestion q = page.getQuestionById(questionnaire.dataFields.get("ln"));
+            if(q != null) {
+                String answer = request.getAnswer(q.id);
+                if (answer != null) {
+                    TargetLanguage[] languages = AppContext.getLibrary().findTargetLanguage(answer.trim());
+                    if (languages.length > 0) {
+                        // TODO: 6/9/16 ask user if any of these languages match what they are looking for.
+
+                    }
+                }
+            }
+        }
     }
 
     @Override

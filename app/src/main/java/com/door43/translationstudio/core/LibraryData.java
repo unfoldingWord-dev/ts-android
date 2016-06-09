@@ -18,6 +18,8 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -1974,6 +1976,58 @@ public class LibraryData {
         }
         cursor.close();
         return targetLanguage;
+    }
+
+    /**
+     * Searches for target languages by name
+     * @param nameQuery
+     * @return
+     */
+    public TargetLanguage[] findTargetLanguage(final String nameQuery) {
+        List<TargetLanguage> targetLanguages = new ArrayList<>();
+        Cursor cursor = this.database.rawQuery("SELECT * FROM (\n" +
+                "SELECT `slug`, `name`, `direction`, `region` FROM `target_language`\n" +
+                "UNION\n" +
+                "SELECT `slug`, `name`, `direction`, `region` FROM `temp_target_language` AS `ttl`\n" +
+                "LEFT JOIN `approved_temp_target_language` AS `attl` ON `attl`.`temp_target_language_id`=`ttl`.`id`\n" +
+                "WHERE `attl`.`target_language_id` IS NULL)\n" +
+                "WHERE LOWER(`name`) LIKE ?\n" +
+                "ORDER BY `slug` ASC, `name` DESC", new String[]{"%" + nameQuery.toLowerCase() + "%"});
+        cursor.moveToFirst();
+        while(!cursor.isAfterLast()) {
+            String slug = cursor.getString(0);
+            String name = cursor.getString(1);
+            LanguageDirection direction = LanguageDirection.get(cursor.getString(2));
+            if(direction == null) {
+                direction = LanguageDirection.LeftToRight;
+            }
+            String region = cursor.getString(3);
+            targetLanguages.add(new TargetLanguage(slug, name, region, direction));
+            cursor.moveToNext();
+        }
+        cursor.close();
+        Collections.sort(targetLanguages, new Comparator<TargetLanguage>() {
+            @Override
+            public int compare(TargetLanguage lhs, TargetLanguage rhs) {
+                String lhId = lhs.getId();
+                String rhId = rhs.getId();
+                // give priority to matches with the id
+                if(lhId.toLowerCase().startsWith(nameQuery.toLowerCase())) {
+                    lhId = "!!" + lhId;
+                }
+                if(rhId.toLowerCase().startsWith(nameQuery.toLowerCase())) {
+                    rhId = "!!" + rhId;
+                }
+                if(lhs.name.toLowerCase().startsWith(nameQuery.toLowerCase())) {
+                    lhId = "!" + lhId;
+                }
+                if(rhs.name.toLowerCase().startsWith(nameQuery.toLowerCase())) {
+                    rhId = "!" + rhId;
+                }
+                return lhId.compareToIgnoreCase(rhId);
+            }
+        });
+        return targetLanguages.toArray(new TargetLanguage[targetLanguages.size()]);
     }
 
     /**

@@ -92,6 +92,7 @@ public abstract class QuestionnaireActivity extends BaseActivity implements Ques
                         }
                     }
                 }
+                onLeavePage(page);
                 goToPage(mCurrentPage + 1);
             }
         });
@@ -114,6 +115,11 @@ public abstract class QuestionnaireActivity extends BaseActivity implements Ques
      * @return
      */
     protected abstract Questionnaire getQuestionnaire();
+
+    /**
+     * Called when the user navigates to the next page of questions
+     */
+    protected abstract void onLeavePage(QuestionnairePage page);
 
     /**
      * Called when the questionnaire has been completed
