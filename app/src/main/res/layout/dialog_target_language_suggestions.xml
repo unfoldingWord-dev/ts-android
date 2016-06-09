@@ -45,7 +45,7 @@
                 xmlns:card_view="http://schemas.android.com/apk/res-auto"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                card_view:cardElevation="3dp"
+                card_view:cardElevation="2dp"
                 android:layout_margin="@dimen/dialog_controls_margin"
                 android:clickable="true"
                 android:id="@+id/cancel_button">

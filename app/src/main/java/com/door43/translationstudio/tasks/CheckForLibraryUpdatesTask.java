@@ -41,9 +41,6 @@ public class CheckForLibraryUpdatesTask extends ManagedTask {
                     AppContext.setLastCheckedForUpdates(System.currentTimeMillis());
                 }
             }
-            // make sure we have the most recent target languages
-            publishProgress(-1, AppContext.context().getResources().getString(R.string.downloading_languages));
-            library.downloadTargetLanguages();
 
             // make sure we have the most recent new target language questionnaire
             publishProgress(-1, AppContext.context().getResources().getString(R.string.loading));
@@ -53,6 +50,17 @@ public class CheckForLibraryUpdatesTask extends ManagedTask {
             SubmitNewLanguageRequestsTask task = new SubmitNewLanguageRequestsTask();
             mMaxProgress = task.maxProgress();
             delegate(task);
+
+            // make sure we have the most recent target languages
+            publishProgress(-1, AppContext.context().getResources().getString(R.string.downloading_languages));
+            library.downloadTargetLanguages();
+
+            // download the temp target languages
+            library.downloadTempTargetLanguages();
+
+            // download the temp target languages
+            library.downloadTempTargetLanguageAssignments();
+
         }
     }
 

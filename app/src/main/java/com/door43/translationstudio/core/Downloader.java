@@ -331,6 +331,34 @@ public class Downloader {
     }
 
     /**
+     * Downloads the target languages from the server
+     * @param targetIndex
+     * @return
+     */
+    public boolean downloadTempTargetLanguages(LibraryData targetIndex) {
+        // TODO: 10/19/2015 don't hardcode the url
+        String catalog = request("http://td.unfoldingword.org/api/templanguages/");
+        if(catalog != null) {
+            return targetIndex.indexTempTargetLanguages(catalog);
+        }
+        return false;
+    }
+
+    /**
+     * Downloads the target languages from the server
+     * @param targetIndex
+     * @return
+     */
+    public boolean downloadTempTargetLanguageAssignments(LibraryData targetIndex) {
+        // TODO: 10/19/2015 don't hardcode the url
+        String catalog = request("http://td.unfoldingword.org/api/templanguages/assignment/changed/");
+        if(catalog != null) {
+            return targetIndex.indexTempTargetLanguageAssignments(catalog);
+        }
+        return false;
+    }
+
+    /**
      * Downloads the new language questionnaire from the server
      * @param targetIndex
      * @return

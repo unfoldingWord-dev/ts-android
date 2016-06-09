@@ -1014,6 +1014,63 @@ public class LibraryData {
     }
 
     /**
+     * Builds a index of all the temp target languages
+     * @param catalog
+     * @return
+     */
+    public boolean indexTempTargetLanguages(String catalog) {
+        JSONArray items;
+        try {
+            items = new JSONArray(catalog);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        for (int i = 0; i < items.length(); i ++) {
+            try {
+                JSONObject item = items.getJSONObject(i);
+                TargetLanguage targetLanguage = TargetLanguage.generate(item);
+                if(targetLanguage != null) {
+                    addTempTargetLanguage(targetLanguage);
+                }
+                this.database.yieldIfContendedSafely();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Builds a index of all the temp target languages
+     * @param catalog
+     * @return
+     */
+    public boolean indexTempTargetLanguageAssignments(String catalog) {
+        JSONArray items;
+        try {
+            items = new JSONArray(catalog);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        for (int i = 0; i < items.length(); i ++) {
+            try {
+                JSONObject item = items.getJSONObject(i);
+                String tempLanguageCode = item.keys().next();
+                String assignedLanguageCode = item.getString(tempLanguageCode);
+                addTempTargetLanguageAssignment(tempLanguageCode, assignedLanguageCode);
+                this.database.yieldIfContendedSafely();
+            } catch (JSONException e) {
+                Logger.w(this.getClass().getName(), "failed to parse the temp target langauge assignment", e);
+            }
+        }
+        return true;
+    }
+
+    /**
      * Builds an index of all the new language questionnaires
      * @param catalog
      * @return
@@ -3248,5 +3305,16 @@ public class LibraryData {
         values.put("direction", tempTargetLanguage.direction.getLabel());
         values.put("region", tempTargetLanguage.region);
         return this.database.insertWithOnConflict("temp_target_language", null, values, SQLiteDatabase.CONFLICT_IGNORE);
+    }
+
+    /**
+     * Adds the target langauge assignment to the temp target language
+     * @param tempTargetLangaugeSlug
+     * @param assignedTargetLanguageSlug
+     */
+    public void addTempTargetLanguageAssignment(String tempTargetLangaugeSlug, String assignedTargetLanguageSlug) {
+        this.database.execSQL("UPDATE `temp_target_language` SET\n" +
+                "`approved_target_language_slug`=?\n" +
+                "WHERE `slug`=?", new String[]{assignedTargetLanguageSlug, tempTargetLangaugeSlug});
     }
 }

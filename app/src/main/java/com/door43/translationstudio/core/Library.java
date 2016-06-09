@@ -185,6 +185,28 @@ public class Library {
     }
 
     /**
+     * Downloads the temp target languages from the server
+     * @return
+     */
+    public boolean downloadTempTargetLanguages() {
+        libraryData.beginTransaction();
+        boolean success = mDownloader.downloadTempTargetLanguages(libraryData);
+        libraryData.endTransaction(success);
+        return success;
+    }
+
+    /**
+     * Downloads the temp target languages from the server
+     * @return
+     */
+    public boolean downloadTempTargetLanguageAssignments() {
+        libraryData.beginTransaction();
+        boolean success = mDownloader.downloadTempTargetLanguageAssignments(libraryData);
+        libraryData.endTransaction(success);
+        return success;
+    }
+
+    /**
      * Adds a temporary target language to the library
      * @param tempTargetLanguage
      * @return
