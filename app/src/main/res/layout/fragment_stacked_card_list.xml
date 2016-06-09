@@ -11,7 +11,7 @@
         android:layout_height="match_parent"
         android:scrollIndicators="none" />
 
-    <xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller
+    <com.door43.translationstudio.newui.translate.ChapterFastScroller
         android:id="@+id/fast_scroller"
         android:layout_width="24dp"
         android:layout_height="match_parent"
@@ -21,7 +21,7 @@
         android:paddingEnd="@dimen/margin_small"
         />
 
-    <com.door43.translationstudio.newui.translate.ChunkSectionTitleIndicator
+    <com.door43.translationstudio.newui.translate.ChapterSectionTitleIndicator
         android:id="@+id/fast_scroller_section_title_indicator"
         android:layout_width="wrap_content"
         android:layout_height="@dimen/list_item_height"

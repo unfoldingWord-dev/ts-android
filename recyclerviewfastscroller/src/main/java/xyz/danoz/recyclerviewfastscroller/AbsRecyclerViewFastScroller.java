@@ -41,7 +41,7 @@ public abstract class AbsRecyclerViewFastScroller extends FrameLayout implements
      *      Consider making RecyclerView final and should be passed in using a custom attribute
      *      This could allow for some type checking on the section indicator wrt the adapter of the RecyclerView
     */
-    private RecyclerView mRecyclerView;
+    protected RecyclerView mRecyclerView;
     private SectionIndicator mSectionIndicator;
 
     /** If I had my druthers, AbsRecyclerViewFastScroller would implement this as an interface, but Android has made
@@ -159,7 +159,7 @@ public abstract class AbsRecyclerViewFastScroller extends FrameLayout implements
         updateSectionIndicator(position, scrollProgress);
     }
 
-    private void updateSectionIndicator(int position, float scrollProgress) {
+    protected void updateSectionIndicator(int position, float scrollProgress) {
         if (mSectionIndicator != null) {
             mSectionIndicator.setProgress(scrollProgress);
             if (mRecyclerView.getAdapter() instanceof SectionIndexer) {

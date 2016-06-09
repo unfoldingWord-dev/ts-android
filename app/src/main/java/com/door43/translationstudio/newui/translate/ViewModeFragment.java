@@ -3,7 +3,6 @@ package com.door43.translationstudio.newui.translate;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -13,8 +12,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
+
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
@@ -28,10 +26,7 @@ import com.door43.translationstudio.AppContext;
 
 import org.json.JSONException;
 
-import java.security.InvalidParameterException;
-
 import xyz.danoz.recyclerviewfastscroller.sectionindicator.title.SectionTitleIndicator;
-import xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller;
 
 /**
  * Created by joel on 9/18/2015.
@@ -50,7 +45,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     private String mSourceTranslationId;
     private GestureDetector mGesture;
     private boolean mRememberLastPosition = true;
-    private VerticalRecyclerViewFastScroller mFastScroller;
+    private ChapterFastScroller mFastScroller;
 
     /**
      * Returns an instance of the adapter
@@ -100,7 +95,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
             mAdapter = generateAdapter(this.getActivity(), targetTranslationId, mSourceTranslationId, chapterId, frameId, args);
             mRecyclerView.setAdapter(mAdapter);
 
-            mFastScroller = (VerticalRecyclerViewFastScroller) rootView.findViewById(R.id.fast_scroller);
+            mFastScroller = (ChapterFastScroller) rootView.findViewById(R.id.fast_scroller);
             mFastScroller.setRecyclerView(mRecyclerView);
 
             SectionTitleIndicator sectionTitleIndicator =

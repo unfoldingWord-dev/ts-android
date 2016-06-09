@@ -22,7 +22,6 @@ import xyz.danoz.recyclerviewfastscroller.calculation.progress.VerticalScrollPro
  */
 public class VerticalRecyclerViewFastScroller extends AbsRecyclerViewFastScroller implements RecyclerViewScroller {
 
-    public static final String TAG = VerticalRecyclerViewFastScroller.class.getSimpleName();
     @Nullable private VerticalScrollProgressCalculator mScrollProgressCalculator;
     @Nullable private VerticalScreenPositionCalculator mScreenPositionCalculator;
 
@@ -52,13 +51,9 @@ public class VerticalRecyclerViewFastScroller extends AbsRecyclerViewFastScrolle
     @Override
     public void moveHandleToPosition(float scrollProgress) {
         if (mScreenPositionCalculator == null) {
-            Log.d(TAG, "moveHandleToPosition: NULL calculator.  scrollProgress=" + scrollProgress);
             return;
         }
-        Log.d(TAG, "moveHandleToPosition: scrollProgress=" + scrollProgress);
-        float yPositionFromScrollProgress = mScreenPositionCalculator.getYPositionFromScrollProgress(scrollProgress);
-        Log.d(TAG, "moveHandleToPosition: yPositionFromScrollProgress=" + yPositionFromScrollProgress);
-        mHandle.setY(yPositionFromScrollProgress);
+        mHandle.setY(mScreenPositionCalculator.getYPositionFromScrollProgress(scrollProgress));
     }
 
     protected void onCreateScrollProgressCalculator() {

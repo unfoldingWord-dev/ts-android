@@ -9,22 +9,22 @@ import com.door43.translationstudio.R;
 import xyz.danoz.recyclerviewfastscroller.sectionindicator.title.SectionTitleIndicator;
 
 /**
- * Created by blm on 6/6/16.
+ * Extends SectionTitleIndicator and tweaks to look better in ts-android.
  */
-public class ChunkSectionTitleIndicator extends SectionTitleIndicator<String> {
+public class ChapterSectionTitleIndicator extends SectionTitleIndicator<String> {
 
     private static final int DEFAULT_TITLE_INDICATOR_LAYOUT = R.layout.chapter_indicator_with_title;
-    public static final String TAG = ChunkSectionTitleIndicator.class.getSimpleName();
+    public static final String TAG = ChapterSectionTitleIndicator.class.getSimpleName();
 
-    public ChunkSectionTitleIndicator(Context context) {
+    public ChapterSectionTitleIndicator(Context context) {
         super(context);
     }
 
-    public ChunkSectionTitleIndicator(Context context, AttributeSet attrs) {
+    public ChapterSectionTitleIndicator(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public ChunkSectionTitleIndicator(Context context, AttributeSet attrs, int defStyleAttr) {
+    public ChapterSectionTitleIndicator(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
