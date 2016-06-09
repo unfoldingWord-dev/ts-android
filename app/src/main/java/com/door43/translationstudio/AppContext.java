@@ -15,7 +15,7 @@ import android.view.inputmethod.InputMethodManager;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.core.ArchiveDetails;
 import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.TempLanguageRequest;
+import com.door43.translationstudio.core.NewLanguageRequest;
 import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
@@ -34,7 +34,9 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -633,7 +635,7 @@ public class AppContext {
      * @return
      */
     @Nullable
-    public static TempLanguageRequest getNewLanguageRequest(String language_code) {
+    public static NewLanguageRequest getNewLanguageRequest(String language_code) {
         File requestFile = new File(getPublicDirectory(), "new_languages/" + language_code + ".json");
         if(requestFile.exists() && requestFile.isFile()) {
             String data = null;
@@ -642,16 +644,40 @@ public class AppContext {
             } catch (IOException e) {
                 Logger.e(AppContext.class.getName(), "Failed to read the new language request", e);
             }
-            return TempLanguageRequest.generate(data);
+            return NewLanguageRequest.generate(data);
         }
         return null;
+    }
+
+    /**
+     * Returns an array of new language requests
+     * @return
+     */
+    public static NewLanguageRequest[] getNewLanguageRequests() {
+        File newLanguagesDir = new File(getPublicDirectory(), "new_languages/");
+        File[] requestFiles = newLanguagesDir.listFiles();
+        List<NewLanguageRequest> requests = new ArrayList<>();
+        if(requestFiles != null && requestFiles.length > 0) {
+            for(File f:requestFiles) {
+                try {
+                    String data = com.door43.tools.reporting.FileUtils.readFileToString(f);
+                    NewLanguageRequest request = NewLanguageRequest.generate(data);
+                    if(request != null) {
+                        requests.add(request);
+                    }
+                } catch (IOException e) {
+                    Logger.e(AppContext.class.getName(), "Failed to read the language request file", e);
+                }
+            }
+        }
+        return requests.toArray(new NewLanguageRequest[requestFiles.length]);
     }
 
     /**
      * Adds a new language request
      * @param request
      */
-    public static boolean addNewLanguageRequest(TempLanguageRequest request) {
+    public static boolean addNewLanguageRequest(NewLanguageRequest request) {
         if(request != null) {
             File requestFile = new File(getPublicDirectory(), "new_languages/" + request.tempLanguageCode + ".json");
             requestFile.getParentFile().mkdirs();

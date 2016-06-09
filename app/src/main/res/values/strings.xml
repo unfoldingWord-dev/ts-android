@@ -797,7 +797,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
 <br/><b>Use of trademarks:</b> unfoldingWord is a trademark of Distant Shores Media and may not be included on any derivative works created from this content. Unaltered content from <a href="http://unfoldingword.org" title="http://unfoldingword.org" >http://unfoldingword.org</a> must include the unfoldingWord logo when distributed to others. But if you alter the content in any way, you must remove the unfoldingWord logo before distributing your work.
 </p>]]>
     </string>
-    <string name="new_language_questionnaire_title">Page <xliff:g example="1" id="page_num">%1$d</xliff:g> of <xliff:g example="10" id="page_count">%2$d</xliff:g></string>
+    <string name="questionnaire_title">Page <xliff:g example="1" id="page_num">%1$d</xliff:g> of <xliff:g example="10" id="page_count">%2$d</xliff:g></string>
     <string name="new_lang_api_upload_failure_title">New Language Error</string>
     <string name="new_lang_api_upload_failure">We could not save the answers to the New Language Questionnaire.  We will try again the next time you</string>
     <string name="answer_not_saved">Your answer could not be saved. Please try again.</string>
@@ -806,4 +806,5 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="copy">Copy</string>
     <string name="submitting_new_language_requests">Submitting new language requests</string>
     <string name="downloading_languages">Downloading languages</string>
+    <string name="confirm_leave_questionnaire">Are you sure you want to leave the questionnaire?</string>
 </resources>

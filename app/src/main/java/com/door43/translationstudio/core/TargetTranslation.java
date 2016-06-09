@@ -1236,7 +1236,7 @@ public class TargetTranslation {
      * @param request
      * @throws IOException
      */
-    public void setNewLanguageRequest(TempLanguageRequest request) throws IOException {
+    public void setNewLanguageRequest(NewLanguageRequest request) throws IOException {
         File requestFile = new File(getPath(), "new_language.json");
         if(request != null) {
             com.door43.tools.reporting.FileUtils.writeStringToFile(requestFile, request.toJson());

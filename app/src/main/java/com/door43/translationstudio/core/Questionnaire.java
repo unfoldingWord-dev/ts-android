@@ -1,6 +1,7 @@
 package com.door43.translationstudio.core;
 
 import android.support.annotation.Nullable;
+import android.support.v4.util.Pair;
 
 import com.door43.tools.reporting.Logger;
 
@@ -8,7 +9,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Questionnaires contain a series of questions grouped by page that must be answered by the user
@@ -21,6 +24,7 @@ public class Questionnaire {
     public final LanguageDirection languageDirection;
     private final static int QUESTIONS_PER_PAGE = 3;
     private List<QuestionnairePage> pages = new ArrayList<>();
+    public Map<String, Long> dataFields = new HashMap<>();
 
     public Questionnaire(long door43Id, String languageSlug, String languageName, LanguageDirection direction) {
         this.door43Id = door43Id;
@@ -35,6 +39,15 @@ public class Questionnaire {
      */
     public void setDBId(long dbId) {
         this.dbId = dbId;
+    }
+
+    /**
+     * Loads the data fields into the questionnaire
+     * Data fields indicate which questions contain specific data.
+     * @param fields
+     */
+    public void loadDataFields(Map<String, Long> fields) {
+        this.dataFields = fields;
     }
 
     /**

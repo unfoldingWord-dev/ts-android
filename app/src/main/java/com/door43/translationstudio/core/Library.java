@@ -200,7 +200,7 @@ public class Library {
      */
     public boolean downloadNewLanguageQuestionnaire() {
         libraryData.beginTransaction();
-        libraryData.deleteNewLanguageQuestionnaires();
+        libraryData.deleteQuestionnaires();
         boolean success = mDownloader.downloadNewLanguageQuestionnaire(libraryData);
         libraryData.endTransaction(success);
         return success;
@@ -210,13 +210,17 @@ public class Library {
      * Returns the new target language questionnaire
      * @return
      */
-    public Questionnaire getNewLanguageQuestionnaire() {
-        Questionnaire[] questionnaires = libraryData.getNewLanguageQuestionnaire();
-        // TRICKY: we will only ever have one questionnaire for now.
-        if(questionnaires.length > 0) {
-            return questionnaires[0];
-        }
-        return null;
+    public Questionnaire[] getQuestionnaires() {
+        return libraryData.getQuestionnaires();
+    }
+
+    /**
+     * Returns the questionnaire
+     * @param id
+     * @return
+     */
+    public Questionnaire getQuestionnaire(long id) {
+        return libraryData.getQuestionnaireByTdId(id);
     }
 
     /**

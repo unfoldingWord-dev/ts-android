@@ -1,8 +1,6 @@
-package com.door43.translationstudio.newui.newlanguage;
+package com.door43.translationstudio.newui;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -17,19 +15,13 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.QuestionnairePage;
 import com.door43.translationstudio.core.QuestionnaireQuestion;
 import com.door43.translationstudio.core.Questionnaire;
-import com.door43.translationstudio.core.TempLanguageRequest;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
-import com.door43.translationstudio.newui.BaseActivity;
-import com.door43.widget.ViewUtil;
 
 
 /**
- * Activity for getting answers to new language questions
+ * Activity for presenting a questionnaire to the user
  */
-public class NewLanguageActivity extends BaseActivity implements NewLanguageAdapter.OnEventListener {
-
-    public static final String TAG = NewLanguageActivity.class.getSimpleName();
-    public static final String EXTRA_QUESTIONNAIRE_RESPONSE = "questionnaire_response";
+public abstract class QuestionnaireActivity extends BaseActivity implements QuestionnaireAdapter.OnEventListener {
     public static final String EXTRA_MESSAGE = "message";
 
     private static final String STATE_PAGE = "current_page";
@@ -38,9 +30,8 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguageAdap
     private int mCurrentPage = 0;
     private boolean mQuestionnaireFinished = false;
     private Questionnaire mQuestionnaire;
-    private TempLanguageRequest mResponse = null;
     private RecyclerView mRecyclerView;
-    private NewLanguageAdapter mAdapter;
+    private QuestionnaireAdapter mAdapter;
     private CardView mPreviousButton;
     private CardView mNextButton;
     private CardView mDoneButton;
@@ -48,47 +39,28 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguageAdap
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_request_new_language);
+        setContentView(R.layout.activity_questionnaire);
 
         final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        mQuestionnaire = AppContext.getLibrary().getNewLanguageQuestionnaire();
+        mQuestionnaire = getQuestionnaire();
         if(mQuestionnaire == null) {
-            Logger.e(this.getClass().getName(), "Cannot begin the new language questionnaire because no questionnaire was found.");
-            Intent data = new Intent();
-            data.putExtra(EXTRA_MESSAGE, getResources().getString(R.string.missing_questionnaire));
-            setResult(RESULT_FIRST_USER, data);
-            finish();
+            Logger.e(this.getClass().getName(), "Cannot begin the questionnaire because no questionnaire was found.");
             return;
         }
-
-        setTitle(mQuestionnaire.languageName);
 
         if(savedInstanceState != null) {
             mCurrentPage = savedInstanceState.getInt(STATE_PAGE, 0);
             mQuestionnaireFinished = savedInstanceState.getBoolean(STATE_FINISHED, false);
-            mResponse = TempLanguageRequest.generate(savedInstanceState.getString(EXTRA_QUESTIONNAIRE_RESPONSE));
-            if(mResponse == null) {
-                Snackbar snack = Snackbar.make(findViewById(android.R.id.content), getResources().getString(R.string.error), Snackbar.LENGTH_LONG);
-                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                snack.show();
-
-                // restart
-                mResponse = TempLanguageRequest.newInstance(this, mQuestionnaire.door43Id, "android", AppContext.getProfile().getFullName());
-                mCurrentPage = -1;
-                return;
-            }
-        } else {
-            mResponse = TempLanguageRequest.newInstance(this, mQuestionnaire.door43Id, "android", AppContext.getProfile().getFullName());
         }
 
         mRecyclerView = (RecyclerView)findViewById(R.id.recycler_view);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(linearLayoutManager);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mAdapter = new NewLanguageAdapter(this);
+        mAdapter = new QuestionnaireAdapter(this);
         mAdapter.setOnEventListener(this);
         mRecyclerView.setAdapter(mAdapter);
 
@@ -109,9 +81,9 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguageAdap
                 QuestionnairePage page = mQuestionnaire.getPage(mCurrentPage);
                 if(page != null) {
                     for (QuestionnaireQuestion q :page.getQuestions()) {
-                        String answer = mResponse.getAnswer(q.id);
+                        String answer = onGetAnswer(q);
                         if(q.required && (answer == null || answer.isEmpty())) {
-                            CustomAlertDialog.Create(NewLanguageActivity.this)
+                            CustomAlertDialog.Create(QuestionnaireActivity.this)
                                     .setTitle(R.string.missing_question_answer)
                                     .setMessage(q.question)
                                     .setPositiveButton(R.string.dismiss, null)
@@ -126,21 +98,40 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguageAdap
         mDoneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent data = new Intent();
-                data.putExtra(EXTRA_QUESTIONNAIRE_RESPONSE, mResponse.toJson());
-                setResult(RESULT_OK, data);
-                finish();
+                onFinished();
             }
         });
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
         goToPage(mCurrentPage);
-     }
+    }
+
+    /**
+     * Returns the questionnaire to be used
+     * @return
+     */
+    protected abstract Questionnaire getQuestionnaire();
+
+    /**
+     * Called when the questionnaire has been completed
+     */
+    protected abstract void onFinished();
+
+    /**
+     * Moves the questionnaire back to the beginning
+     */
+    protected void restartQuestionnaire() {
+        mCurrentPage = -1;
+        goToPage(mCurrentPage);
+    }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putInt(STATE_PAGE, mCurrentPage);
         outState.putBoolean(STATE_FINISHED, mQuestionnaireFinished);
-        outState.putSerializable(EXTRA_QUESTIONNAIRE_RESPONSE, mResponse.toJson());
         super.onSaveInstanceState(outState);
     }
 
@@ -160,7 +151,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguageAdap
             mCurrentPage = page;
         }
 
-        String titleFormat = getResources().getString(R.string.new_language_questionnaire_title);
+        String titleFormat = getResources().getString(R.string.questionnaire_title);
         String title = String.format(titleFormat, mCurrentPage + 1, mQuestionnaire.getNumPages());
         setTitle(title);
         mAdapter.setPage(mQuestionnaire.getPage(mCurrentPage), animateRight);
@@ -191,21 +182,31 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguageAdap
     }
 
     @Override
-    public String onGetAnswer(QuestionnaireQuestion question) {
-        return mResponse.getAnswer(question.id);
-    }
-
-    @Override
-    public void onAnswerChanged(QuestionnaireQuestion question, String answer) {
-        mResponse.setAnswer(question.id, answer);
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId() == android.R.id.home) {
-            finish();
+            confirmExit();
         }
         return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        confirmExit();
+    }
+
+    private void confirmExit() {
+        // display confirmation before closing the app
+        CustomAlertDialog.Create(this)
+                .setTitle(R.string.confirm)
+                .setMessage(R.string.confirm_leave_questionnaire)
+                .setPositiveButton(R.string.yes, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        finish();
+                    }
+                })
+                .setNegativeButton(R.string.no, null)
+                .show("confirm-exit");
     }
 }
 

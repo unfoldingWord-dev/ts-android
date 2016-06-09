@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.Nullable;
+import android.util.Pair;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.util.Security;
@@ -17,9 +18,11 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 
 /**
@@ -1013,7 +1016,7 @@ public class LibraryData {
      * @param catalog
      * @return
      */
-    public boolean indexNewLanguageQuestionnaire(String catalog) {
+    public boolean indexQuestionnaire(String catalog) {
         JSONArray items;
         try {
             JSONObject json = new JSONObject(catalog);
@@ -1023,20 +1026,37 @@ public class LibraryData {
             return false;
         }
 
+        // TRICKY: for now we only have one questionnaire so we always delete the existing one
+        deleteQuestionnaires();
+
         for (int i = 0; i < items.length(); i ++) {
             try {
                 JSONObject item = items.getJSONObject(i);
                 Questionnaire questionnaire = Questionnaire.generate(item.toString());
                 if(questionnaire != null) {
-                    long questionnaireDBId = addNewLanguageQuestionnaire(questionnaire.door43Id, questionnaire.languageSlug, questionnaire.languageName, questionnaire.languageDirection);
-                    JSONArray questionsJson = item.getJSONArray("questions");
-                    for(int j = 0; j < questionsJson.length(); j ++) {
-                        JSONObject questionJson = questionsJson.getJSONObject(j);
-                        QuestionnaireQuestion question = QuestionnaireQuestion.generate(questionJson);
-                        if(question != null) {
-                            addNewLanguageQuestion(questionnaireDBId, question.id, question.question, question.helpText, question.type, question.required, question.sort, question.reliantQuestionId);
+                    long questionnaireDBId = addQuestionnaire(questionnaire.door43Id, questionnaire.languageSlug, questionnaire.languageName, questionnaire.languageDirection);
+                    if(item.has("questions")) {
+                        JSONArray questionsJson = item.getJSONArray("questions");
+                        // add questions
+                        for (int j = 0; j < questionsJson.length(); j++) {
+                            JSONObject questionJson = questionsJson.getJSONObject(j);
+                            QuestionnaireQuestion question = QuestionnaireQuestion.generate(questionJson);
+                            if (question != null) {
+                                addQuestionnaireQuestion(questionnaireDBId, question.id, question.question, question.helpText, question.type, question.required, question.sort, question.reliantQuestionId);
+                            }
+                            database.yieldIfContendedSafely();
                         }
-                        database.yieldIfContendedSafely();
+                    }
+                    // add data fields
+                    // TODO: 6/8/16 eventually this field will be renamed to "data_fields"
+                    if(item.has("language_data")) {
+                        JSONObject dataFieldJson = item.getJSONObject("language_data");
+                        Iterator<String> keyIter = dataFieldJson.keys();
+                        while (keyIter.hasNext()) {
+                            String key = keyIter.next();
+                            addQuestionnaireDataField(questionnaireDBId, key, dataFieldJson.getLong(key));
+                            database.yieldIfContendedSafely();
+                        }
                     }
                 }
                 database.yieldIfContendedSafely();
@@ -1048,6 +1068,21 @@ public class LibraryData {
     }
 
     /**
+     * Adds a data field to the questionnaire
+     * @param questionnaireId
+     * @param field
+     * @param questionDoor43Id
+     * @return
+     */
+    private long addQuestionnaireDataField(long questionnaireId, String field, long questionDoor43Id) {
+        ContentValues values = new ContentValues();
+        values.put("questionnaire_id", questionnaireId);
+        values.put("field", field);
+        values.put("question_td_id", questionDoor43Id);
+        return this.database.insert("questionnaire", null, values);
+    }
+
+    /**
      * Adds a new language questionnaire to the database
      * @param door43Id
      * @param languageSlug
@@ -1055,13 +1090,13 @@ public class LibraryData {
      * @param languageDirection
      * @return
      */
-    private long addNewLanguageQuestionnaire(long door43Id, String languageSlug, String languageName, LanguageDirection languageDirection) {
+    private long addQuestionnaire(long door43Id, String languageSlug, String languageName, LanguageDirection languageDirection) {
         ContentValues values = new ContentValues();
         values.put("questionnaire_td_id", door43Id);
         values.put("language_slug", languageSlug);
         values.put("language_name", languageName);
         values.put("language_direction", languageDirection.getLabel());
-        return this.database.insert("new_target_language_questionnaire", null, values);
+        return this.database.insert("questionnaire", null, values);
     }
 
     /**
@@ -1076,9 +1111,9 @@ public class LibraryData {
      * @param reliantQuestionId
      * @return
      */
-    private long addNewLanguageQuestion(long questionnaireDBId, long door43Id, String question, String helpText, QuestionnaireQuestion.InputType type, boolean required, int sort, long reliantQuestionId) {
+    private long addQuestionnaireQuestion(long questionnaireDBId, long door43Id, String question, String helpText, QuestionnaireQuestion.InputType type, boolean required, int sort, long reliantQuestionId) {
         ContentValues values = new ContentValues();
-        values.put("new_target_language_questionnaire_id", questionnaireDBId);
+        values.put("questionnaire_id", questionnaireDBId);
         values.put("question_td_id", door43Id);
         values.put("text", question);
         values.put("help", helpText);
@@ -1086,7 +1121,7 @@ public class LibraryData {
         values.put("input_type", type.getLabel());
         values.put("sort", sort);
         values.put("depends_on", reliantQuestionId);
-        return this.database.insert("new_target_language_question", null, values);
+        return this.database.insert("questionnaire_question", null, values);
     }
 
     /**
@@ -3036,9 +3071,11 @@ public class LibraryData {
      * Returns an array of new language questionnaires
      * @return
      */
-    public Questionnaire[] getNewLanguageQuestionnaire() {
+    public Questionnaire[] getQuestionnaires() {
         List<Questionnaire> questionnaires = new ArrayList<>();
-        Cursor cursor = this.database.rawQuery("SELECT `id`, `questionnaire_td_id`, `language_slug`, `language_name`, `language_direction` FROM `new_target_language_questionnaire`", null);
+        Cursor cursor = this.database.rawQuery("SELECT `id`, `questionnaire_td_id`," +
+                " `language_slug`, `language_name`, `language_direction`" +
+                " FROM `questionnaire`", null);
         cursor.moveToFirst();
         while(!cursor.isAfterLast()) {
             Questionnaire questionnaire = new Questionnaire(cursor.getLong(1), cursor.getString(2), cursor.getString(3), LanguageDirection.get(cursor.getString(4)));
@@ -3049,23 +3086,68 @@ public class LibraryData {
         cursor.close();
 
         for(Questionnaire q:questionnaires) {
-            q.loadQuestions(getNewLanguageQuestions(q.dbId));
+            q.loadQuestions(getQuestionnaireQuestions(q.dbId));
+            q.loadDataFields(getQuestionnaireDataFields(q.dbId));
         }
 
         return questionnaires.toArray(new Questionnaire[questionnaires.size()]);
     }
 
     /**
+     * Returns a questionnaire
+     * @return
+     */
+    public Questionnaire getQuestionnaireByTdId(long tDId) {
+        Questionnaire questionnaire = null;
+        Cursor cursor = this.database.rawQuery("SELECT `id`, `questionnaire_td_id`," +
+                " `language_slug`, `language_name`, `language_direction`" +
+                " FROM `questionnaire`" +
+                " WHERE `questionnaire_td_id`=" + tDId, null);
+        cursor.moveToFirst();
+        if(!cursor.isAfterLast()) {
+            questionnaire = new Questionnaire(cursor.getLong(1), cursor.getString(2), cursor.getString(3), LanguageDirection.get(cursor.getString(4)));
+            questionnaire.setDBId(cursor.getLong(0));
+        }
+        cursor.close();
+
+        if(questionnaire != null) {
+            questionnaire.loadQuestions(getQuestionnaireQuestions(questionnaire.dbId));
+            questionnaire.loadDataFields(getQuestionnaireDataFields(questionnaire.dbId));
+        }
+
+        return questionnaire;
+    }
+
+    /**
+     * Returns an array of data fields in the questionnaire
+     * @param questionnaireId
+     * @return
+     */
+    private Map<String, Long> getQuestionnaireDataFields(long questionnaireId) {
+        Map<String, Long> dataFields = new HashMap<>();
+        Cursor cursor = this.database.rawQuery("SELECT `field`, `question_td_id`"
+                + " FROM `questionnaire_data_field`"
+                + " WHERE `questionnaire_id`=" + questionnaireId, null);
+        cursor.moveToFirst();
+        while(!cursor.isAfterLast()) {
+            dataFields.put(cursor.getString(0), cursor.getLong(1));
+            cursor.moveToNext();
+        }
+        cursor.close();
+
+        return dataFields;
+    }
+    /**
      * Returns an array of new target language questions for the questionnaire
      * @param questionnaireId
      * @return
      */
-    private QuestionnaireQuestion[] getNewLanguageQuestions(long questionnaireId) {
+    private QuestionnaireQuestion[] getQuestionnaireQuestions(long questionnaireId) {
         List<QuestionnaireQuestion> questions = new ArrayList<>();
         Cursor cursor = this.database.rawQuery("SELECT `question_td_id`, `text`, `help`, `input_type`,"
                 + " `is_required`, `depends_on`, `sort`"
-                + " FROM `new_target_language_question`"
-                + " WHERE `new_target_language_questionnaire_id`=" + questionnaireId
+                + " FROM `questionnaire_question`"
+                + " WHERE `questionnaire_id`=" + questionnaireId
                 + " ORDER BY `sort` ASC", null);
         cursor.moveToFirst();
         while(!cursor.isAfterLast()) {
@@ -3082,8 +3164,8 @@ public class LibraryData {
     /**
      * Deletes all the questionnaires
      */
-    public void deleteNewLanguageQuestionnaires() {
-        this.database.delete("new_target_language_questionnaire", null, null);
+    public void deleteQuestionnaires() {
+        this.database.delete("questionnaire", null, null);
     }
 
 

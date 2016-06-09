@@ -16,7 +16,8 @@ import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.LanguageDirection;
-import com.door43.translationstudio.core.TempLanguageRequest;
+import com.door43.translationstudio.core.NewLanguageRequest;
+import com.door43.translationstudio.core.Questionnaire;
 import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
@@ -29,7 +30,7 @@ import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.AppContext;
-import com.door43.translationstudio.newui.newlanguage.NewLanguageActivity;
+import com.door43.translationstudio.newui.newlanguage.NewTempLanguageActivity;
 import com.door43.util.StringUtilities;
 import com.door43.widget.ViewUtil;
 
@@ -37,6 +38,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Locale;
+import java.util.Map;
 
 public class NewTargetTranslationActivity extends BaseActivity implements TargetLanguageListFragment.OnItemClickListener, ProjectListFragment.OnItemClickListener {
 
@@ -65,7 +67,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             mNewLanguageButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent requestNewLangaugeIntent = new Intent(NewTargetTranslationActivity.this, NewLanguageActivity.class);
+                    Intent requestNewLangaugeIntent = new Intent(NewTargetTranslationActivity.this, NewTempLanguageActivity.class);
                     startActivityForResult(requestNewLangaugeIntent, NEW_LANGUAGE_REQUEST);
                 }
             });
@@ -97,7 +99,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
         }
 
         if(createdNewLanguage) {
-            confirmNewLanguage(mSelectedTargetLanguage);
+            confirmTempLanguage(mSelectedTargetLanguage);
         }
     }
 
@@ -105,33 +107,50 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
      * use new language information passed in JSON format string to create a new target language
      * @param request
      */
-    private void registerTempLanguageCode(TempLanguageRequest request) {
-        if(AppContext.addNewLanguageRequest(request)) {
-            // TODO: 6/2/16 retrieve the language region from the request
-            mSelectedTargetLanguage = new TargetLanguage(request.tempLanguageCode, request.getLanguageName(), "uncertain", LanguageDirection.LeftToRight);
+    private void registerTempLanguage(NewLanguageRequest request) {
+        if(request != null) {
+            Questionnaire questionnaire = AppContext.getLibrary().getQuestionnaire(request.questionnaireId);
+            if (questionnaire != null && AppContext.addNewLanguageRequest(request)) {
+                String languageName = request.tempLanguageCode;
+                String languageRegion = "unknown";
+                LanguageDirection languageDirection = LanguageDirection.LeftToRight;
 
-            // TODO: 6/2/16 add the language code to the actual target language list.
-            // The temp codes will be stored in a seperate table and joined when retrieving target languages.
-            // We will likely have yet another table to indicate the migration of temp language codes to correct language codes.
-            AppContext.getLibrary().addTempTargetLanguage(mSelectedTargetLanguage);
+                Map<String, Long> dataFields =  questionnaire.dataFields;
+                // language name
+                if(dataFields.containsKey("ln")) {
+                    languageName = request.getAnswer(dataFields.get("ln"));
+                }
+                // language region (country code)
+                if(dataFields.containsKey("cc")) {
+                    languageRegion = request.getAnswer(dataFields.get("cc"));
+                }
+                // language direction
+                if(dataFields.containsKey("ld")) {
+                    Boolean isLeftToRight = Boolean.parseBoolean(request.getAnswer(dataFields.get("ld")));
+                    languageDirection = isLeftToRight ? LanguageDirection.LeftToRight : LanguageDirection.RightToLeft;
+                }
 
-            this.createdNewLanguage = true;
+                mSelectedTargetLanguage = new TargetLanguage(request.tempLanguageCode, languageName, languageRegion, languageDirection);
 
-            confirmNewLanguage(mSelectedTargetLanguage);
-            return;
-        } else {
-            CustomAlertDialog.Create(this)
-                    .setTitle(R.string.error)
-                    .setMessage(R.string.try_again)
-                    .show("error-questionnaire");
+                AppContext.getLibrary().addTempTargetLanguage(mSelectedTargetLanguage);
+
+                this.createdNewLanguage = true;
+
+                confirmTempLanguage(mSelectedTargetLanguage);
+                return;
+            }
         }
+        CustomAlertDialog.Create(this)
+                .setTitle(R.string.error)
+                .setMessage(R.string.try_again)
+                .show("error-questionnaire");
     }
 
     /**
      * Displays a confirmation for the new language
      * @param language
      */
-    private void confirmNewLanguage(final TargetLanguage language) {
+    private void confirmTempLanguage(final TargetLanguage language) {
         if(language != null) {
             String msg = String.format(getResources().getString(R.string.new_language_confirmation), language.getId(), language.name);
             final CustomAlertDialog dialog = CustomAlertDialog.Create(this)
@@ -192,7 +211,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             final TargetTranslation targetTranslation = AppContext.getTranslator().createTargetTranslation(AppContext.getProfile().getNativeSpeaker(), mSelectedTargetLanguage, projectId, TranslationType.TEXT, resourceSlug, sourceTranslation.getFormat());
             if(targetTranslation != null) {
                 // deploy custom language code request to the translation
-                TempLanguageRequest request = AppContext.getNewLanguageRequest(mSelectedTargetLanguage.getId());
+                NewLanguageRequest request = AppContext.getNewLanguageRequest(mSelectedTargetLanguage.getId());
                 if(request != null) {
                     try {
                         targetTranslation.setNewLanguageRequest(request);
@@ -304,10 +323,10 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (NEW_LANGUAGE_REQUEST == requestCode) {
             if(RESULT_OK == resultCode) {
-                String rawResponse = data.getStringExtra(NewLanguageActivity.EXTRA_QUESTIONNAIRE_RESPONSE);
-                registerTempLanguageCode(TempLanguageRequest.generate(rawResponse));
+                String rawResponse = data.getStringExtra(NewTempLanguageActivity.EXTRA_LANGUAGE_REQUEST);
+                registerTempLanguage(NewLanguageRequest.generate(rawResponse));
             } else if(RESULT_FIRST_USER == resultCode) {
-                String message = data.getStringExtra(NewLanguageActivity.EXTRA_MESSAGE);
+                String message = data.getStringExtra(NewTempLanguageActivity.EXTRA_MESSAGE);
                 Snackbar snack = Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_LONG);
                 ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                 snack.show();

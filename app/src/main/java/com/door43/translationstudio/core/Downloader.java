@@ -336,9 +336,9 @@ public class Downloader {
      */
     public boolean downloadNewLanguageQuestionnaire(LibraryData targetIndex) {
         // TODO: 10/19/2015 don't hardcode the url
-        String catalog = request("http://td.unfoldingword.org/api/questionnaire");
+        String catalog = request("http://td-demo.unfoldingword.org/api/questionnaire");
         if(catalog != null) {
-            return targetIndex.indexNewLanguageQuestionnaire(catalog);
+            return targetIndex.indexQuestionnaire(catalog);
         }
         return false;
     }

@@ -16,7 +16,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
-public class NewLanguageActivityUiTest extends NewLanguageActivityUiUtils {
+public class QuestionnaireActivityUiTest extends NewLanguageActivityUiUtils {
 
     @Test
     public void fillPageBoolean() throws Exception {

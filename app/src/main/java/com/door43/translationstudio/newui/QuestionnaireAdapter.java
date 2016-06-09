@@ -1,4 +1,4 @@
-package com.door43.translationstudio.newui.newlanguage;
+package com.door43.translationstudio.newui;
 
 import android.app.Activity;
 import android.content.Context;
@@ -30,11 +30,11 @@ import java.util.List;
 
 
 /**
- * Handles the rendering of the questions in NewLanguageActivity
+ * Handles the rendering of the questions in a questionnaire
  */
-public class NewLanguageAdapter extends RecyclerView.Adapter<NewLanguageAdapter.ViewHolder> {
+public class QuestionnaireAdapter extends RecyclerView.Adapter<QuestionnaireAdapter.ViewHolder> {
 
-    public static final String TAG = NewLanguageAdapter.class.getSimpleName();
+    public static final String TAG = QuestionnaireAdapter.class.getSimpleName();
     private static final int TYPE_BOOLEAN = 1;
     private static final int TYPE_STRING = 2;
     private final Activity context;
@@ -44,7 +44,7 @@ public class NewLanguageAdapter extends RecyclerView.Adapter<NewLanguageAdapter.
     private int lastPosition = -1;
     private boolean animateRight = true;
 
-    public NewLanguageAdapter(Activity context) {
+    public QuestionnaireAdapter(Activity context) {
         this.context = context;
     }
 
@@ -66,15 +66,15 @@ public class NewLanguageAdapter extends RecyclerView.Adapter<NewLanguageAdapter.
         ViewHolder vh;
         switch (viewType) {
             case TYPE_BOOLEAN:
-                v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_new_language_boolean_question, parent, false);
+                v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_questionnaire_boolean_question, parent, false);
                 vh = new BooleanViewHolder(context, v);
                 break;
             case TYPE_STRING:
-                v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_new_language_text_question, parent, false);
+                v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_questionnaire_text_question, parent, false);
                 vh = new StringViewHolder(context, v);
                 break;
             default:
-                v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_new_language_text_question, parent, false);
+                v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_questionnaire_text_question, parent, false);
                 vh = new StringViewHolder(context, v);
                 break;
         }

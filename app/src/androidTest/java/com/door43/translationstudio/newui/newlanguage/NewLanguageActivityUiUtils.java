@@ -23,6 +23,7 @@ import android.view.View;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.QuestionnaireQuestion;
+import com.door43.translationstudio.newui.QuestionnaireActivity;
 import com.door43.translationstudio.tasks.UploadCrashReportTask;
 
 import java.io.InputStream;
@@ -54,7 +55,7 @@ import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.*;
 
 /**
- * shared methods for NewLanguageActivity UI testing
+ * shared methods for QuestionnaireActivity UI testing
  */
 public class NewLanguageActivityUiUtils {
 
@@ -69,8 +70,8 @@ public class NewLanguageActivityUiUtils {
 
 
     @Rule
-    public ActivityTestRule<NewLanguageActivity> mActivityRule = new ActivityTestRule<>(
-            NewLanguageActivity.class,
+    public ActivityTestRule<QuestionnaireActivity> mActivityRule = new ActivityTestRule<>(
+            QuestionnaireActivity.class,
             true,    // initialTouchMode
             false);  // don't launchActivity yet
 
@@ -130,7 +131,7 @@ public class NewLanguageActivityUiUtils {
      * @throws IllegalAccessException
      * @throws JSONException
      */
-    protected JSONObject getJsonData(NewLanguageActivity currentActivity, String key) throws NoSuchFieldException, IllegalAccessException, JSONException {
+    protected JSONObject getJsonData(QuestionnaireActivity currentActivity, String key) throws NoSuchFieldException, IllegalAccessException, JSONException {
         Intent resultData = getResultData(currentActivity);
         String jsonDataStr = resultData.getStringExtra(key);
         return new JSONObject(jsonDataStr);
@@ -165,7 +166,7 @@ public class NewLanguageActivityUiUtils {
      * @throws NoSuchFieldException
      * @throws IllegalAccessException
      */
-    protected Intent getResultData(NewLanguageActivity currentActivity) throws NoSuchFieldException, IllegalAccessException {
+    protected Intent getResultData(QuestionnaireActivity currentActivity) throws NoSuchFieldException, IllegalAccessException {
         return (Intent) mf_resultData.get(currentActivity);
     }
 
@@ -176,7 +177,7 @@ public class NewLanguageActivityUiUtils {
      * @throws NoSuchFieldException
      * @throws IllegalAccessException
      */
-    protected int getResultCode(NewLanguageActivity currentActivity) throws NoSuchFieldException, IllegalAccessException {
+    protected int getResultCode(QuestionnaireActivity currentActivity) throws NoSuchFieldException, IllegalAccessException {
         return mf_resultCode.getInt(currentActivity);
     }
 
@@ -398,8 +399,8 @@ public class NewLanguageActivityUiUtils {
         mQuestionPages = new ArrayList<>();
 
 //        JSONObject questionnaire = (new NewLanguageAPI()).readQuestionnaireIntoPages(mTestContext, mQuestions, "en"); // TODO: 4/25/16 get actual language
-//        mQuestionnaireID = NewLanguageActivity.getQuestionnaireID(questionnaire);
-//        NewLanguageActivity.getQuestionPages(mQuestionPages, questionnaire);
+//        mQuestionnaireID = QuestionnaireActivity.getQuestionnaireID(questionnaire);
+//        QuestionnaireActivity.getQuestionPages(mQuestionPages, questionnaire);
     }
 
     /**
@@ -436,7 +437,7 @@ public class NewLanguageActivityUiUtils {
      */
     private void thenTitlePageCountShouldMatch(int pageCount, int pageNum) {
         mAppContext = InstrumentationRegistry.getTargetContext();
-        String titleFormat = mAppContext.getResources().getString(R.string.new_language_questionnaire_title);
+        String titleFormat = mAppContext.getResources().getString(R.string.questionnaire_title);
 
         String title = String.format(titleFormat, pageNum + 1, pageCount);
         matchToolbarTitle(title);
@@ -449,7 +450,7 @@ public class NewLanguageActivityUiUtils {
      */
     protected void thenTitlePageCountShouldNotMatch(int pageCount, int pageNum) {
         mAppContext = InstrumentationRegistry.getTargetContext();
-        String titleFormat = mAppContext.getResources().getString(R.string.new_language_questionnaire_title);
+        String titleFormat = mAppContext.getResources().getString(R.string.questionnaire_title);
 
         String title = String.format(titleFormat, pageNum + 1, pageCount);
         notMatchToolbarTitle(title);
@@ -477,7 +478,7 @@ public class NewLanguageActivityUiUtils {
     }
 
     /**
-     * generate intent for NewLanguageActivity and load questions
+     * generate intent for QuestionnaireActivity and load questions
      * @param fileName
      * @return
      * @throws Exception
@@ -487,7 +488,7 @@ public class NewLanguageActivityUiUtils {
 
         InputStream usfmStream = mTestContext.getAssets().open(fileName);
         mQuestions = IOUtils.toString(usfmStream, "UTF-8");
-//        intent.putExtra(NewLanguageActivity.EXTRA_NEW_LANGUAGE_QUESTIONS_JSON, mQuestions);
+//        intent.putExtra(QuestionnaireActivity.EXTRA_NEW_LANGUAGE_QUESTIONS_JSON, mQuestions);
 
         getQuestionPages();
         return intent;

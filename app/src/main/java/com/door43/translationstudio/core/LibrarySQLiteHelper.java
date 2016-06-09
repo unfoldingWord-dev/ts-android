@@ -17,7 +17,7 @@ import java.util.List;
  * Created by joel on 10/1/2015.
  */
 public class LibrarySQLiteHelper extends SQLiteOpenHelper{
-    private static final int DATABASE_VERSION = 8;
+    private static final int DATABASE_VERSION = 9;
     private final String databaseName;
     private final String schema;
 
@@ -183,6 +183,45 @@ public class LibrarySQLiteHelper extends SQLiteOpenHelper{
                     "  UNIQUE (`target_language_id`, `temp_target_language_id`),\n" +
                     "  FOREIGN KEY (target_language_id) REFERENCES `target_language` (`id`) ON DELETE CASCADE,\n" +
                     "  FOREIGN KEY (temp_target_language_id) REFERENCES `temp_target_language` (`id`) ON DELETE CASCADE\n" +
+                    ");");
+
+            db.setTransactionSuccessful();
+            db.endTransaction();
+        }
+        if(oldVersion < 9) {
+            db.beginTransaction();
+
+            db.execSQL("DROP TABLE IF EXISTS `new_target_language_questionnaire`;");
+            db.execSQL("DROP TABLE IF EXISTS `new_target_language_question`;");
+
+            db.execSQL("CREATE TABLE `questionnaire_question` (\n" +
+                    "  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n" +
+                    "  `questionnaire_id` INTEGER NOT NULL,\n" +
+                    "  `question_td_id` INTEGER NOT NULL,\n" +
+                    "  `text` TEXT NOT NULL,\n" +
+                    "  `help` TEXT NOT NULL,\n" +
+                    "  `is_required` INTEGER NOT NULL DEFAULT 0,\n" +
+                    "  `input_type` TEXT NOT NULL,\n" +
+                    "  `sort` INTEGER NOT NULL DEFAULT 0,\n" +
+                    "  `depends_on` INTEGER DEFAULT NULL,\n" +
+                    "  UNIQUE (`question_td_id`, `questionnaire_id`),\n" +
+                    "  FOREIGN KEY (questionnaire_id) REFERENCES `questionnaire` (`id`) ON DELETE CASCADE\n" +
+                    ");");
+            db.execSQL("CREATE TABLE `questionnaire` (\n" +
+                    "  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n" +
+                    "  `questionnaire_td_id` INTEGER NOT NULL,\n" +
+                    "  `language_slug` TEXT NOT NULL,\n" +
+                    "  `language_name` TEXT NOT NULL,\n" +
+                    "  `language_direction` TEXT NOT NULL,\n" +
+                    "  UNIQUE (`questionnaire_td_id`)\n" +
+                    ");");
+            db.execSQL("CREATE TABLE `questionnaire_data_field` (\n" +
+                    "  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n" +
+                    "  `questionnaire_id` INTEGER NOT NULL,\n" +
+                    "  `field` TEXT NOT NULL,\n" +
+                    "  `question_td_id` INTEGER NOT NULL,\n" +
+                    "  UNIQUE (`questionnaire_id`, `field`),\n" +
+                    "  FOREIGN KEY (questionnaire_id) REFERENCES `questionnaire` (`id`) ON DELETE CASCADE\n" +
                     ");");
 
             db.setTransactionSuccessful();

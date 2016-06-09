@@ -18,7 +18,7 @@ import java.util.UUID;
 /**
  * Created by joel on 6/1/16.
  */
-public class TempLanguageRequest {
+public class NewLanguageRequest {
     private static final String LANGUAGE_PREFIX = "qaa-x-";
 
     private Map<Long, String> answers = new TreeMap<>();
@@ -38,7 +38,7 @@ public class TempLanguageRequest {
      * @param app the name of the app generating this response
      * @param requester the name of the translator requesting the custom language code
      */
-    private TempLanguageRequest(String requestUUID, String tempLanguageCode, long questionnaireId, String app, String requester) {
+    private NewLanguageRequest(String requestUUID, String tempLanguageCode, long questionnaireId, String app, String requester) {
         this.requestUUID = requestUUID;
         this.tempLanguageCode = tempLanguageCode;
         this.questionnaireId = questionnaireId;
@@ -50,7 +50,7 @@ public class TempLanguageRequest {
      * Creates a new questionnaire response
      * @return
      */
-    public static TempLanguageRequest newInstance(Context context, long questionnaireId, String app, String requester) {
+    public static NewLanguageRequest newInstance(Context context, long questionnaireId, String app, String requester) {
         // generate language code
         String udid = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
         long time = System.currentTimeMillis();
@@ -58,33 +58,17 @@ public class TempLanguageRequest {
         String hash = Security.sha1(uniqueString);
         String languageCode  = LANGUAGE_PREFIX + hash.substring(0, 6);
 
-        return new TempLanguageRequest(UUID.randomUUID().toString(), languageCode, questionnaireId, app, requester);
-    }
-
-    /**
-     * Returns the name of the temporary language.
-     * If the name has not been provided the language code will be returned
-     *
-     * TRICKY: the language name is assumed to be the answer to the first question.
-     * TODO: 6/2/16 in the future the language name may be identified with a flag for more reliable retrieval
-     * @return
-     */
-    public String getLanguageName() {
-        String name = getAnswer(0);
-        if(name != null && !name.trim().isEmpty()) {
-            return name.trim();
-        }
-        return tempLanguageCode;
+        return new NewLanguageRequest(UUID.randomUUID().toString(), languageCode, questionnaireId, app, requester);
     }
 
     /**
      * Adds or updates an answer
-     * @param questionId
+     * @param questionTdId
      * @param answer
      */
     @Nullable
-    public void setAnswer(long questionId, String answer) {
-        this.answers.put(questionId, answer);
+    public void setAnswer(long questionTdId, String answer) {
+        this.answers.put(questionTdId, answer);
     }
 
     /**
@@ -124,7 +108,7 @@ public class TempLanguageRequest {
      * @return
      */
     @Nullable
-    public static TempLanguageRequest generate(String jsonString) {
+    public static NewLanguageRequest generate(String jsonString) {
         if (jsonString != null) {
             try {
                 JSONObject json = new JSONObject(jsonString);
@@ -137,7 +121,7 @@ public class TempLanguageRequest {
                 if(json.has("submitted_at")) {
                     submittedAt = json.getLong("submitted_at");
                 }
-                TempLanguageRequest request = new TempLanguageRequest(requestUUID, tempCode, questionnaireId, app, requester);
+                NewLanguageRequest request = new NewLanguageRequest(requestUUID, tempCode, questionnaireId, app, requester);
                 request.setSubmittedAt(submittedAt);
 
                 JSONArray answers = json.getJSONArray("answers");
@@ -147,7 +131,7 @@ public class TempLanguageRequest {
                 }
                 return request;
             } catch (JSONException e) {
-                Logger.w(TempLanguageRequest.class.getName(), "Failed to parse questionnaire response json: " + jsonString, e);
+                Logger.w(NewLanguageRequest.class.getName(), "Failed to parse questionnaire response json: " + jsonString, e);
             }
         }
         return null;
@@ -155,12 +139,12 @@ public class TempLanguageRequest {
 
     /**
      * returns the answer by the question id
-     * @param questionId
+     * @param questionTdId
      * @return
      */
     @Nullable
-    public String getAnswer(long questionId) {
-        return answers.get(questionId);
+    public String getAnswer(long questionTdId) {
+        return answers.get(questionTdId);
     }
 
     /**

@@ -443,13 +443,13 @@ CREATE TABLE `resource__translation_academy_volume` (
 
 
 -- ---
--- Table 'new_target_language_questionnaire'
+-- Table 'questionnaire'
 --
 -- ---
 
-DROP TABLE IF EXISTS `new_target_language_questionnaire`;
+DROP TABLE IF EXISTS `questionnaire`;
 
-CREATE TABLE `new_target_language_questionnaire` (
+CREATE TABLE `questionnaire` (
   `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   `questionnaire_td_id` INTEGER NOT NULL,
   `language_slug` TEXT NOT NULL,
@@ -460,15 +460,15 @@ CREATE TABLE `new_target_language_questionnaire` (
 
 
 -- ---
--- Table 'new_target_language_question'
+-- Table 'questionnaire_question'
 --
 -- ---
 
-DROP TABLE IF EXISTS `new_target_language_question`;
+DROP TABLE IF EXISTS `questionnaire_question`;
 
-CREATE TABLE `new_target_language_question` (
+CREATE TABLE `questionnaire_question` (
   `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-  `new_target_language_questionnaire_id` INTEGER NOT NULL,
+  `questionnaire_id` INTEGER NOT NULL,
   `question_td_id` INTEGER NOT NULL,
   `text` TEXT NOT NULL,
   `help` TEXT NOT NULL,
@@ -476,10 +476,25 @@ CREATE TABLE `new_target_language_question` (
   `input_type` TEXT NOT NULL,
   `sort` INTEGER NOT NULL DEFAULT 0,
   `depends_on` INTEGER DEFAULT NULL,
-  UNIQUE (`question_td_id`, `new_target_language_questionnaire_id`),
-  FOREIGN KEY (new_target_language_questionnaire_id) REFERENCES `new_target_language_questionnaire` (`id`) ON DELETE CASCADE
+  UNIQUE (`question_td_id`, `questionnaire_id`),
+  FOREIGN KEY (questionnaire_id) REFERENCES `questionnaire` (`id`) ON DELETE CASCADE
 );
 
+-- ---
+-- Table 'questionnaire_data_field'
+--
+-- ---
+
+DROP TABLE IF EXISTS `questionnaire_data_field`;
+
+CREATE TABLE `questionnaire_data_field` (
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  `questionnaire_id` INTEGER NOT NULL,
+  `field` TEXT NOT NULL,
+  `question_td_id` INTEGER NOT NULL,
+  UNIQUE (`questionnaire_id`, `field`),
+  FOREIGN KEY (questionnaire_id) REFERENCES `questionnaire` (`id`) ON DELETE CASCADE
+);
 
 -- ---
 -- Indexes
