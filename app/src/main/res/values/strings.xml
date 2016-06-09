@@ -808,4 +808,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="downloading_languages">Downloading languages</string>
     <string name="confirm_leave_questionnaire">Are you sure you want to leave the questionnaire?</string>
     <string name="continue_requesting_new_language">Continue requesting new language</string>
+    <string name="request_new_language">Request new language</string>
+    <string name="title_new_language_code">New Language Code</string>
+    <string name="confirm_start_new_language_code">You are about to request a new language code.</string>
 </resources>

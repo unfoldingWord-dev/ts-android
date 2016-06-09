@@ -10,7 +10,6 @@ import android.support.v7.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageButton;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
@@ -54,24 +53,12 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     private TargetLanguage mSelectedTargetLanguage = null;
     private Searchable mFragment;
     private String mNewTargetTranslationId = null;
-    private ImageButton mNewLanguageButton;
     private boolean createdNewLanguage = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_target_translation);
-
-        mNewLanguageButton = (ImageButton) findViewById(R.id.newLanguageRequest);
-        if (null != mNewLanguageButton) {
-            mNewLanguageButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent requestNewLangaugeIntent = new Intent(NewTargetTranslationActivity.this, NewTempLanguageActivity.class);
-                    startActivityForResult(requestNewLangaugeIntent, NEW_LANGUAGE_REQUEST);
-                }
-            });
-        }
 
         if(savedInstanceState != null) {
             createdNewLanguage = savedInstanceState.getBoolean(STATE_NEW_LANGUAGE, false);
@@ -253,6 +240,11 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
         } else {
             menu.findItem(R.id.action_update).setVisible(false);
         }
+        if(mFragment instanceof TargetLanguageListFragment) {
+            menu.findItem(R.id.action_add_language).setVisible(true);
+        } else {
+            menu.findItem(R.id.action_add_language).setVisible(false);
+        }
         SearchManager searchManager = (SearchManager)getSystemService(Context.SEARCH_SERVICE);
         final MenuItem searchMenuItem = menu.findItem(R.id.action_search);
         final SearchView searchViewAction = (SearchView) MenuItemCompat.getActionView(searchMenuItem);
@@ -282,6 +274,20 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                 startActivity(intent);
                 return true;
             case R.id.action_search:
+                return true;
+            case R.id.action_add_language:
+                CustomAlertDialog.Create(this)
+                        .setTitle(R.string.title_new_language_code)
+                        .setMessage(R.string.confirm_start_new_language_code)
+                        .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Intent requestNewLangaugeIntent = new Intent(NewTargetTranslationActivity.this, NewTempLanguageActivity.class);
+                                startActivityForResult(requestNewLangaugeIntent, NEW_LANGUAGE_REQUEST);
+                            }
+                        })
+                        .setNegativeButton(R.string.title_cancel, null)
+                        .show("confirm-start-new-language");
                 return true;
             case R.id.action_update:
                 CustomAlertDialog.Create(this)

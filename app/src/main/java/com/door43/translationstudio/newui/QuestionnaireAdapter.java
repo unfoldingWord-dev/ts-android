@@ -435,7 +435,7 @@ public class QuestionnaireAdapter extends RecyclerView.Adapter<QuestionnaireAdap
             question.setFocusableInTouchMode(true);
             answer.setEnabled(true);
             answer.setTextColor(context.getResources().getColor(R.color.dark_primary_text));
-            answer.setHintTextColor(context.getResources().getColor(R.color.half_transparent));
+            answer.setHintTextColor(context.getResources().getColor(R.color.transparent));
             answer.setFocusable(true);
             answer.setFocusableInTouchMode(true);
             requiredView.setTextColor(context.getResources().getColor(R.color.red));
@@ -448,7 +448,7 @@ public class QuestionnaireAdapter extends RecyclerView.Adapter<QuestionnaireAdap
             question.setFocusableInTouchMode(false);
             answer.setEnabled(false);
             answer.setTextColor(context.getResources().getColor(R.color.dark_disabled_text));
-            answer.setHintTextColor(context.getResources().getColor(R.color.transparent));
+            answer.setHintTextColor(context.getResources().getColor(R.color.half_transparent));
             answer.setFocusable(false);
             answer.setFocusableInTouchMode(false);
             requiredView.setTextColor(context.getResources().getColor(R.color.light_red));
