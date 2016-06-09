@@ -1,5 +1,8 @@
 package com.door43.translationstudio.newui.newlanguage;
 
+import android.app.Dialog;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -17,10 +20,15 @@ import com.door43.widget.ViewUtil;
 /**
  * Created by joel on 6/8/16.
  */
-public class NewTempLanguageActivity extends QuestionnaireActivity {
+public class NewTempLanguageActivity extends QuestionnaireActivity implements LanguageSuggestionsDialog.OnClickListener {
     public static final String EXTRA_LANGUAGE_REQUEST = "new_language_request";
+    public static final String EXTRA_RESULT_CODE = "result_code";
+    public static final String EXTRA_LANGUAGE_ID = "language_id";
+    public static final int RESULT_MISSING_QUESTIONNAIRE = 0;
+    public static final int RESULT_USE_EXISTING_LANGUAGE = 1;
     private NewLanguageRequest request = null;
     private Questionnaire questionnaire;
+    private LanguageSuggestionsDialog languageSuggestionsDialog = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,10 +53,17 @@ public class NewTempLanguageActivity extends QuestionnaireActivity {
                 request = NewLanguageRequest.newInstance(this, questionnaire.door43Id, "android", AppContext.getProfile().getFullName());
             }
         } else {
+            // missing questionnaire
             Intent data = new Intent();
-            data.putExtra(EXTRA_MESSAGE, getResources().getString(R.string.missing_questionnaire));
+            data.putExtra(EXTRA_RESULT_CODE, RESULT_MISSING_QUESTIONNAIRE);
             setResult(RESULT_FIRST_USER, data);
             finish();
+            return;
+        }
+
+        LanguageSuggestionsDialog prev = (LanguageSuggestionsDialog) getFragmentManager().findFragmentByTag(LanguageSuggestionsDialog.TAG);
+        if(prev != null) {
+            prev.setOnClickListener(this);
         }
     }
 
@@ -63,7 +78,7 @@ public class NewTempLanguageActivity extends QuestionnaireActivity {
     }
 
     @Override
-    protected void onLeavePage(QuestionnairePage page) {
+    protected boolean onLeavePage(QuestionnairePage page) {
         // check for a matching language that already exists
         if(questionnaire.dataFields.containsKey("ln")) {
             QuestionnaireQuestion q = page.getQuestionById(questionnaire.dataFields.get("ln"));
@@ -72,12 +87,26 @@ public class NewTempLanguageActivity extends QuestionnaireActivity {
                 if (answer != null) {
                     TargetLanguage[] languages = AppContext.getLibrary().findTargetLanguage(answer.trim());
                     if (languages.length > 0) {
-                        // TODO: 6/9/16 ask user if any of these languages match what they are looking for.
+                        AppContext.closeKeyboard(this);
+                        FragmentTransaction ft = getFragmentManager().beginTransaction();
+                        Fragment prev = getFragmentManager().findFragmentByTag(LanguageSuggestionsDialog.TAG);
+                        if(prev != null) {
+                            ft.remove(prev);
+                        }
+                        ft.addToBackStack(null);
 
+                        languageSuggestionsDialog = new LanguageSuggestionsDialog();
+                        Bundle args  = new Bundle();
+                        args.putString(LanguageSuggestionsDialog.ARG_LANGUAGE_QUERY, answer.trim());
+                        languageSuggestionsDialog.setArguments(args);
+                        languageSuggestionsDialog.setOnClickListener(this);
+                        languageSuggestionsDialog.show(ft, LanguageSuggestionsDialog.TAG);
+                        return false;
                     }
                 }
             }
         }
+        return true;
     }
 
     @Override
@@ -107,5 +136,27 @@ public class NewTempLanguageActivity extends QuestionnaireActivity {
     protected void onSaveInstanceState(Bundle outState) {
         outState.putSerializable(EXTRA_LANGUAGE_REQUEST, request.toJson());
         super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onDestroy() {
+        if(languageSuggestionsDialog != null) {
+            languageSuggestionsDialog.setOnClickListener(null);
+        }
+        super.onDestroy();
+    }
+
+    @Override
+    public void onAcceptLanguageSuggestion(TargetLanguage language) {
+        Intent data = new Intent();
+        data.putExtra(EXTRA_RESULT_CODE, RESULT_USE_EXISTING_LANGUAGE);
+        data.putExtra(EXTRA_LANGUAGE_ID, language.getId());
+        setResult(RESULT_FIRST_USER, data);
+        finish();
+    }
+
+    @Override
+    public void onDismissLanguageSuggestion() {
+        nextPage();
     }
 }

@@ -622,7 +622,11 @@ public class Library {
      * @return
      */
     public TargetLanguage[] findTargetLanguage(String name) {
-        return getActiveIndex().findTargetLanguage(name);
+        if(name != null) {
+            return getActiveIndex().findTargetLanguage(name);
+        } else {
+            return new TargetLanguage[0];
+        }
     }
 
     /**

@@ -326,10 +326,22 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                 String rawResponse = data.getStringExtra(NewTempLanguageActivity.EXTRA_LANGUAGE_REQUEST);
                 registerTempLanguage(NewLanguageRequest.generate(rawResponse));
             } else if(RESULT_FIRST_USER == resultCode) {
-                String message = data.getStringExtra(NewTempLanguageActivity.EXTRA_MESSAGE);
-                Snackbar snack = Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_LONG);
-                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                snack.show();
+                int secondResultCode = data.getIntExtra(NewTempLanguageActivity.EXTRA_RESULT_CODE, -1);
+                if(secondResultCode == NewTempLanguageActivity.RESULT_MISSING_QUESTIONNAIRE) {
+                    Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.missing_questionnaire, Snackbar.LENGTH_LONG);
+                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                    snack.show();
+                } else if(secondResultCode == NewTempLanguageActivity.RESULT_USE_EXISTING_LANGUAGE) {
+                    String targetLanguageId = data.getStringExtra(NewTempLanguageActivity.EXTRA_LANGUAGE_ID);
+                    TargetLanguage targetLanguage = AppContext.getLibrary().getTargetLanguage(targetLanguageId);
+                    if(targetLanguage != null) {
+                        onItemClick(targetLanguage);
+                    }
+                } else {
+                    Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.error, Snackbar.LENGTH_LONG);
+                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                    snack.show();
+                }
             }
         }
     }

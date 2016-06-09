@@ -25,10 +25,30 @@ public class TargetLanguageAdapter extends BaseAdapter {
     private TargetLanguageFilter mTargetLanguageFilter;
 
     public TargetLanguageAdapter(TargetLanguage[] targetLanguages) {
-        List<TargetLanguage> targetLanguagesList = Arrays.asList(targetLanguages);
-        Collections.sort(targetLanguagesList);
-        mTargetLanguages = targetLanguagesList.toArray(new TargetLanguage[targetLanguagesList.size()]);
-        mFilteredTargetLanguages = mTargetLanguages;
+        if(targetLanguages != null) {
+            List<TargetLanguage> targetLanguagesList = Arrays.asList(targetLanguages);
+            Collections.sort(targetLanguagesList);
+            mTargetLanguages = targetLanguagesList.toArray(new TargetLanguage[targetLanguagesList.size()]);
+            mFilteredTargetLanguages = mTargetLanguages;
+        }
+    }
+
+    /**
+     * Adds the target languages to the adapter with the option to be sorted or not
+     * @param targetLanguages
+     * @param sorted
+     */
+    public TargetLanguageAdapter(TargetLanguage[] targetLanguages, boolean sorted) {
+        if(targetLanguages != null) {
+            if(sorted) {
+                List<TargetLanguage> targetLanguagesList = Arrays.asList(targetLanguages);
+                Collections.sort(targetLanguagesList);
+                mTargetLanguages = targetLanguagesList.toArray(new TargetLanguage[targetLanguagesList.size()]);
+            } else {
+                mTargetLanguages = targetLanguages;
+            }
+            mFilteredTargetLanguages = mTargetLanguages;
+        }
     }
 
     @Override

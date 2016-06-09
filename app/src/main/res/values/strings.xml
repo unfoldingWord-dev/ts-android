@@ -807,4 +807,5 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="submitting_new_language_requests">Submitting new language requests</string>
     <string name="downloading_languages">Downloading languages</string>
     <string name="confirm_leave_questionnaire">Are you sure you want to leave the questionnaire?</string>
+    <string name="continue_requesting_new_language">Continue requesting new language</string>
 </resources>

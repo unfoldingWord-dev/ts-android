@@ -57,6 +57,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
     private EditText repoEditText;
     private EditText userEditText;
 
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         View v = inflater.inflate(R.layout.dialog_import_from_door43, container, false);

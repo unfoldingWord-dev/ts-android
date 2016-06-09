@@ -92,8 +92,9 @@ public abstract class QuestionnaireActivity extends BaseActivity implements Ques
                         }
                     }
                 }
-                onLeavePage(page);
-                goToPage(mCurrentPage + 1);
+                if(onLeavePage(page)) {
+                    nextPage();
+                }
             }
         });
         mDoneButton.setOnClickListener(new View.OnClickListener() {
@@ -111,6 +112,13 @@ public abstract class QuestionnaireActivity extends BaseActivity implements Ques
     }
 
     /**
+     * Move to the next page
+     */
+    protected void nextPage() {
+        goToPage(mCurrentPage + 1);
+    }
+
+    /**
      * Returns the questionnaire to be used
      * @return
      */
@@ -119,7 +127,7 @@ public abstract class QuestionnaireActivity extends BaseActivity implements Ques
     /**
      * Called when the user navigates to the next page of questions
      */
-    protected abstract void onLeavePage(QuestionnairePage page);
+    protected abstract boolean onLeavePage(QuestionnairePage page);
 
     /**
      * Called when the questionnaire has been completed
