@@ -117,7 +117,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         boolean usfm = mTargetTranslation.getFormat() == TranslationFormat.USFM;
         mAllowFootnote = usfm;
         mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectSlug, mSourceTranslation.sourceLanguageSlug);
-        mTargetLanguage = mLibrary.getTargetLanguage(mTargetTranslation.getTargetLanguageId());
+        mTargetLanguage = mLibrary.getTargetLanguage(mTargetTranslation);
         mResourcesOpened = resourcesOpened;
 
         Chapter[] chapters = mLibrary.getChapters(mSourceTranslation);

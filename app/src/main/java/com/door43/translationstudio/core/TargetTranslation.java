@@ -7,11 +7,11 @@ import android.support.annotation.Nullable;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.util.NumericStringComparator;
+import com.door43.util.FileUtilities;
 import com.door43.util.Manifest;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.AddCommand;
-import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.DeleteBranchCommand;
@@ -22,7 +22,6 @@ import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.TagCommand;
-import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
@@ -1230,6 +1229,20 @@ public class TargetTranslation {
             original.put(FIELD_PARENT_DRAFT, imported.getJSONObject(FIELD_PARENT_DRAFT));
         }
         return original;
+    }
+
+    /**
+     * Sets the new language request that represents the temporary language code being used by this target translation
+     * @param request
+     * @throws IOException
+     */
+    public void setNewLanguageRequest(NewLanguageRequest request) throws IOException {
+        File requestFile = new File(getPath(), "new_language.json");
+        if(request != null) {
+            com.door43.tools.reporting.FileUtils.writeStringToFile(requestFile, request.toJson());
+        } else if(requestFile.exists()) {
+            FileUtilities.safeDelete(requestFile);
+        }
     }
 
     public enum PublishStatus {

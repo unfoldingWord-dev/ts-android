@@ -60,7 +60,7 @@ import java.util.Map;
  */
 public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolder> {
     private SourceLanguage mSourceLanguage;
-    private final TargetLanguage mTargetLanguage;
+    private TargetLanguage mTargetLanguage;
     private final Activity mContext;
     private static final int BOTTOM_ELEVATION = 2;
     private static final int TOP_ELEVATION = 3;
@@ -81,7 +81,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
         mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectSlug, mSourceTranslation.sourceLanguageSlug);
-        mTargetLanguage = mLibrary.getTargetLanguage(mTargetTranslation.getTargetLanguageId());
+        mTargetLanguage = mLibrary.getTargetLanguage(mTargetTranslation);
 
         Chapter[] chapters = mLibrary.getChapters(mSourceTranslation);
         List<ListItem> listItems = new ArrayList<>();

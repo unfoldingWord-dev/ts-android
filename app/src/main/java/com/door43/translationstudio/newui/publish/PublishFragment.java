@@ -131,6 +131,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                         dialog.show(ft, Door43LoginDialog.TAG);
                         return;
                     }
+
                     // TODO: 5/26/16 this would be a lot easier if we tried to clone instead of pulling.  Then we could merge manually
                     PullTargetTranslationTask task = new PullTargetTranslationTask(targetTranslation);
                     taskWatcher.watch(task);

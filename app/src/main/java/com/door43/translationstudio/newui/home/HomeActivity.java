@@ -22,6 +22,7 @@ import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.ProfileActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
+
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetLanguage;
@@ -455,12 +456,25 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
 
     @Override
     public void onItemClick(TargetTranslation targetTranslation) {
-        // validate project (make sure it was downloaded)
-        Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
-        TargetLanguage targetLanguage = AppContext.getLibrary().getTargetLanguage(targetTranslation.getTargetLanguageId());
+        // validate project and target language
 
-        if(project == null || targetLanguage == null || !AppContext.getLibrary().projectHasSource(project.getId())) {
+        Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
+        TargetLanguage language = AppContext.getLibrary().getTargetLanguage(targetTranslation);
+        if(project == null || !AppContext.getLibrary().projectHasSource(project.getId())) {
+            // validate project source exists
             Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.missing_project, Snackbar.LENGTH_LONG);
+            snack.setAction(R.string.download, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    openLibrary();
+                }
+            });
+            snack.setActionTextColor(getResources().getColor(R.color.light_primary_text));
+            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+            snack.show();
+        } else if(language == null) {
+            // validate target language exists
+            Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.missing_language, Snackbar.LENGTH_LONG);
             snack.setAction(R.string.download, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

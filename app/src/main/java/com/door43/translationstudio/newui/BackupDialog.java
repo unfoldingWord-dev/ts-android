@@ -146,6 +146,7 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
                         dialog.show(ft, Door43LoginDialog.TAG);
                         return;
                     }
+
                     PullTargetTranslationTask task = new PullTargetTranslationTask(targetTranslation);
                     taskWatcher.watch(task);
                     TaskManager.addTask(task, PullTargetTranslationTask.TASK_ID);

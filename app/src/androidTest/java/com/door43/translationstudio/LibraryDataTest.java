@@ -4,8 +4,8 @@ import android.content.Context;
 import android.test.InstrumentationTestCase;
 
 import com.door43.translationstudio.core.CheckingQuestion;
-import com.door43.translationstudio.core.Indexer;
-import com.door43.translationstudio.core.IndexerSQLiteHelper;
+import com.door43.translationstudio.core.LibraryData;
+import com.door43.translationstudio.core.LibrarySQLiteHelper;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.core.Util;
@@ -13,17 +13,16 @@ import com.door43.translationstudio.core.Util;
 /**
  * Created by joel on 8/27/2015.
  */
-public class IndexerTest extends InstrumentationTestCase {
+public class LibraryDataTest extends InstrumentationTestCase {
 
-    private Indexer mIndex;
+    private LibraryData mIndex;
     private Context mContext;
     private MainApplication mApp;
 
     @Override
     protected void setUp() throws Exception {
         mApp = AppContext.context();
-        IndexerSQLiteHelper indexHelper = new IndexerSQLiteHelper(mApp, "indexer_test_app");
-        mIndex = new Indexer(mApp, "indexer_test_app", indexHelper);
+        mIndex = new LibraryData(mApp);
         mContext = getInstrumentation().getContext();
     }
 

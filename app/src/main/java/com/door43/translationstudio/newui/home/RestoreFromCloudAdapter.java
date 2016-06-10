@@ -114,6 +114,8 @@ public class RestoreFromCloudAdapter extends BaseAdapter {
                     TargetLanguage tl = library.getTargetLanguage(targetLanguageSlug);
                     if (tl != null) {
                         targetLanguageName.setText(tl.name);
+                    } else {
+                        targetLanguageName.setText(targetLanguageSlug);
                     }
                 } catch (StringIndexOutOfBoundsException e) {
                     e.printStackTrace();

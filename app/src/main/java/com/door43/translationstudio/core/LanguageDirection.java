@@ -28,9 +28,11 @@ public enum LanguageDirection {
      * @return
      */
     public static LanguageDirection get(String label) {
-        for (LanguageDirection l : LanguageDirection.values()) {
-            if (l.getLabel().equals(label.toLowerCase())) {
-                return l;
+        if(label != null) {
+            for (LanguageDirection l : LanguageDirection.values()) {
+                if (l.getLabel().equals(label.toLowerCase())) {
+                    return l;
+                }
             }
         }
         return null;
