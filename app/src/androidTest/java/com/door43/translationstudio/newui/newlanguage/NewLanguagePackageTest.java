@@ -23,7 +23,7 @@ public class NewLanguagePackageTest extends InstrumentationTestCase {
         int questionaireID = 1001;
         int numQuestions = 15;
         mQuestions = generateQuestions(numQuestions);
-        NewLanguagePackage newLanguagePackage = NewLanguagePackage.newInstance(questionaireID, mQuestions);
+        NewLanguagePackage newLanguagePackage = NewLanguagePackage.newInstance(questionaireID, mQuestions, 0);
 
         //when
         String jsonStr = newLanguagePackage.toJson().toString();

@@ -3,6 +3,7 @@ package com.door43.translationstudio.newui.newlanguage;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 
 import com.door43.tools.reporting.Logger;
@@ -37,6 +38,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
     public static final String STATE_NEW_LANGUAGE_QUESTION_ID = "state_new_language_question_id";
     public static final String EXTRA_NEW_LANGUAGE_QUESTIONS_JSON = "extra_new_language_questions_json";
     public static final String STATE_NEW_LANGUAGE_TITLE = "state_new_language_title";
+    public static final String STATE_NEW_LANGUAGE_QUESTIONNAIRE = "state_new_language_questionnaire";
 
     private int mCurrentPage = 0;
     public static final int ACTIVITY_HOME = 1001;
@@ -44,6 +46,8 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
     private NewLanguagePageFragment mFragment;
     private List<List<NewLanguageQuestion>> mQuestionPages;
     private long mQuestionnaireID = -1;
+    private JSONObject mNewLanguageQuestionnaire;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,11 +65,19 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
             mQuestionPages = parseJsonStrIntoPages(questions);
             mQuestionnaireID = savedInstanceState.getLong(STATE_NEW_LANGUAGE_QUESTION_ID, -1);
             setTitle(savedInstanceState.getString(STATE_NEW_LANGUAGE_TITLE));
+            try {
+                String questionnaire = savedInstanceState.getString(STATE_NEW_LANGUAGE_QUESTIONNAIRE);
+                mNewLanguageQuestionnaire = new JSONObject(questionnaire);
+            } catch (JSONException e) {
+                Log.e(TAG, "onCreate: cannot read back questionnaire", e);
+                mNewLanguageQuestionnaire = null;
+            }
         } else {
             Intent intent = getIntent();
             Bundle args = intent.getExtras();
             String questions = args.getString(EXTRA_NEW_LANGUAGE_QUESTIONS_JSON,null);
             mQuestionPages = getQuestionPages(questions);
+            mNewLanguageQuestionnaire = null;
         }
 
         // inject fragments
@@ -89,7 +101,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         outState.putString(STATE_NEW_LANGUAGE_QUESTIONS, questions);
         outState.putLong(STATE_NEW_LANGUAGE_QUESTION_ID,mQuestionnaireID);
         outState.putString(STATE_NEW_LANGUAGE_TITLE, getTitle().toString());
-        super.onSaveInstanceState(outState);
+        outState.putString(STATE_NEW_LANGUAGE_QUESTIONNAIRE, mNewLanguageQuestionnaire.toString());
     }
 
     /**
@@ -111,9 +123,9 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
         List<List<NewLanguageQuestion>> questionPages = new ArrayList<>();
 
         try {
-            JSONObject questionnaire = (new NewLanguageAPI()).readQuestionnaireIntoPages(this, questionsJsonStr, "en"); // TODO: 4/25/16 get actual language
-            mQuestionnaireID = getQuestionnaireID(questionnaire);
-            getQuestionPages(questionPages, questionnaire);
+            mNewLanguageQuestionnaire = (new NewLanguageAPI()).readQuestionnaireIntoPages(this, questionsJsonStr, "en"); // TODO: 4/25/16 get actual language
+            mQuestionnaireID = getQuestionnaireID(mNewLanguageQuestionnaire);
+            getQuestionPages(questionPages, mNewLanguageQuestionnaire);
 
         } catch (Exception e) {
             Logger.e(TAG,"Error parsing questionnaire",e);
@@ -124,7 +136,7 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
    }
 
     /**
-     * get questionaire ID number from json
+     * get questionnaire ID number from json
      * @param questionnaire
      * @return
      * @throws JSONException
@@ -387,21 +399,49 @@ public class NewLanguageActivity extends BaseActivity implements NewLanguagePage
             }
 
             mLanguageFinished = true;
-
             List<NewLanguageQuestion> mergedQuestions = mergePagesOfNewLanguageQuestions(mQuestionPages);
-            NewLanguagePackage newLang = NewLanguagePackage.newInstance(mQuestionnaireID, mergedQuestions);
+
+            boolean languageDirectionLtor = (Boolean) getAnswerForKey(mergedQuestions, NewLanguageAPI.API_READ_LANGUAGE_DATA_DIRECTION_LOCATION);
+            int languageNameLocation = getLocationForKey( NewLanguageAPI.API_READ_LANGUAGE_DATA_NAME_LOCATION );
+
+            NewLanguagePackage newLang = NewLanguagePackage.newInstance(mQuestionnaireID, mergedQuestions, languageNameLocation);
             String newLanguageDataStr = newLang.toJson().toString(2);
 
-            HashMap<String, String> api = NewLanguageAPI.getPostData(newLang); // TODO: 4/28/16 remove
+            HashMap<String, String> api = NewLanguageAPI.getPostData(newLang); // TODO: 4/28/16 for debugging, remove later
 
             Intent data = new Intent();
             data.putExtra(NewTargetTranslationActivity.EXTRA_NEW_LANGUAGE_DATA, newLanguageDataStr);
+            data.putExtra(NewTargetTranslationActivity.EXTRA_NEW_LANGUAGE_DIRECTION, languageDirectionLtor);
             setResult(RESULT_OK, data);
             finish();
 
         } catch(Exception e) {
             Logger.e(TAG,"Error getting question data",e);
         }
+    }
+
+    /**
+     * get answer from location referenced by key
+     * @param mergedQuestions
+     * @param key
+     * @return
+     * @throws JSONException
+     */
+    private Object getAnswerForKey(List<NewLanguageQuestion> mergedQuestions, String key) throws JSONException {
+        int location = getLocationForKey(key);
+        Object answer = NewLanguagePackage.getAnswerForQuestion(NewLanguagePackage.questionsToJsonAnswers(mergedQuestions), location);
+        return answer;
+    }
+
+    /**
+     * lookup in language data to get the location in the key
+     * @param key
+     * @return
+     * @throws JSONException
+     */
+    private int getLocationForKey(String key) throws JSONException {
+        JSONObject languageData = mNewLanguageQuestionnaire.getJSONObject(NewLanguageAPI.API_READ_LANGUAGE_DATA);
+        return languageData.getInt(key);
     }
 
     public static List<NewLanguageQuestion> mergePagesOfNewLanguageQuestions(List<List<NewLanguageQuestion>> questionPages) {

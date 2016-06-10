@@ -77,7 +77,7 @@ public class NewLanguagePackage {
      * @return
      * @throws JSONException
      */
-    public static NewLanguagePackage newInstance(long questionaireID, List<NewLanguageQuestion> questions) throws JSONException {
+    public static NewLanguagePackage newInstance(long questionaireID, List<NewLanguageQuestion> questions, int languageNameLocation) throws JSONException {
 
         JSONArray answers = questionsToJsonAnswers(questions);
         String requestID = UUID.randomUUID().toString();
@@ -89,16 +89,38 @@ public class NewLanguagePackage {
         }
         String app = TS_ANDROID;
 
-        JSONObject nameAnswer = getQuestionForID(answers, NewLanguagePackage.NEW_LANGUAGE_NAME_ID);
-        if(nameAnswer != null) {
-            String nLangName = nameAnswer.getString(NewLanguagePackage.QUESTION_ANSWER);
-            if(!nLangName.isEmpty()) {
-                NewLanguagePackage newLang = new NewLanguagePackage(questionaireID, tempLanguageCode, nLangName, requestID, requester, app, answers);
+        int questionID = (languageNameLocation >= 0) ? languageNameLocation : NewLanguagePackage.NEW_LANGUAGE_NAME_ID; // TODO: 6/10/16 remove default name
+        Object langName = getAnswerForQuestion(answers, questionID);
+        if( langName != null) {
+            String newLangName = (String) langName;
+            if(!newLangName.isEmpty()) {
+                NewLanguagePackage newLang = new NewLanguagePackage(questionaireID, tempLanguageCode, newLangName, requestID, requester, app, answers);
                 return newLang;
             }
         }
 
         return null;
+    }
+
+    /**
+     * get answer to questions
+     * @param answers
+     * @param questionID
+     * @return
+     */
+    public static Object getAnswerForQuestion(JSONArray answers, int questionID)  {
+        Object answer = null;
+        JSONObject nameAnswer = null;
+        try {
+            nameAnswer = getQuestionForID(answers, questionID);
+            if(nameAnswer != null) {
+                answer = nameAnswer.get(NewLanguagePackage.QUESTION_ANSWER);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return answer;
     }
 
     public void setUploaded(boolean uploaded) {
@@ -259,7 +281,7 @@ public class NewLanguagePackage {
      * @return
      * @throws JSONException
      */
-    private static JSONArray questionsToJsonAnswers(List<NewLanguageQuestion> questions) throws JSONException {
+    public static JSONArray questionsToJsonAnswers(List<NewLanguageQuestion> questions) throws JSONException {
         JSONArray questionsJson = new JSONArray();
 
         for (NewLanguageQuestion question : questions) {

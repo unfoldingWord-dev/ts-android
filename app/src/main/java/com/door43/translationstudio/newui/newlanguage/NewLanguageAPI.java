@@ -3,7 +3,6 @@ package com.door43.translationstudio.newui.newlanguage;
 import android.app.Activity;
 import android.content.Context;
 import android.util.Base64;
-import android.view.View;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
@@ -54,7 +53,12 @@ public class NewLanguageAPI {
     public static final int QUESTIONS_PER_PAGE = 3;
 
     public static final String API_READ_LANGUAGES = "languages";
-    public static final String API_READ_QUESTIONS_LANGUAGE_SLUG = "slug";
+    public static final String API_READ_LANGUAGE_SLUG = "slug";
+    public static final String API_READ_LANGUAGE_DATA = "language_data";
+    public static final String API_READ_LANGUAGE_DATA_NAME_LOCATION = "ln";
+    public static final String API_READ_LANGUAGE_DATA_DIRECTION_LOCATION = "ld";
+    public static final String API_READ_LANGUAGE_COUNTRY_CODE_LOCATION = "cc";
+    public static final String API_READ_QUESTIONS_LANGUAGE_NAME = "name";
     public static final String API_READ_QUESTION_ID = "id";
     public static final String API_READ_QUESTION_TEXT = "text";
     public static final String API_READ_HELP = "help";
@@ -66,6 +70,7 @@ public class NewLanguageAPI {
     public static final String NEW_LANGUAGE_URL  = "http://td.unfoldingword.org/api/questionnaire/";
     public static final String NEW_LANGUAGE_URL_DEBUG = "http://td-demo.unfoldingword.org/api/questionnaire/";
     public static final String DUPLICATE_KEY_ERROR = "duplicate key value violates unique constraint \\\"td_templanguage_code_key\\\"";
+    public static final String QUESTIONS_LANGUAGE_NAME = "questions_language_name";
 
     private int readTimeout = 5000;
     private int connectionTimeout = 5000;
@@ -191,11 +196,9 @@ public class NewLanguageAPI {
             if(languages != null) {
                 for (int i = 0; i < languages.length(); i++) {
                     JSONObject language = languages.getJSONObject(i);
-                    String langSlug = language.getString(API_READ_QUESTIONS_LANGUAGE_SLUG);
-                    String questionaireID = language.getString(NewLanguagePackage.API_QUESTIONNAIRE_ID);
+                    String langSlug = language.getString(API_READ_LANGUAGE_SLUG);
                     if(sourceLangID.equals(langSlug)) {
-                        JSONArray questionsStr = language.getJSONArray(API_READ_QUESTIONS);
-                        return splitQuestionsIntoPages(Integer.valueOf(questionaireID), questionsStr);
+                        return splitQuestionsInLanguageIntoPages( language );
                     }
                 }
             }
@@ -206,13 +209,18 @@ public class NewLanguageAPI {
     }
 
     /**
-     * take the long list of questions and split into small pages
+     * parses language data, and then extracts the long list of questions and split into small pages
      *
-     * @param questionaireID
-     * @param questions
+     * @param language
      * @return
      */
-    private JSONObject splitQuestionsIntoPages(int questionaireID, JSONArray questions) {
+    private JSONObject splitQuestionsInLanguageIntoPages(JSONObject language) throws JSONException {
+
+        String questionaireIdSDtr = language.getString(NewLanguagePackage.API_QUESTIONNAIRE_ID);
+        int questionaireID = Integer.valueOf(questionaireIdSDtr);
+        JSONArray questions = language.getJSONArray(API_READ_QUESTIONS);
+        JSONObject languageData = language.getJSONObject(API_READ_LANGUAGE_DATA);
+        String questionsLanguage = language.getString(API_READ_QUESTIONS_LANGUAGE_NAME);
         JSONObject questionnaire = new JSONObject();
         mData = new JSONArray();
         mMeta = new JSONArray();
@@ -285,6 +293,8 @@ public class NewLanguageAPI {
             meta.put(QUESTIONNAIRE_ORDER_KEY, mMeta);
             questionnaire.put(QUESTIONNAIRE_META_KEY, meta);
             questionnaire.put(QUESTIONAIRE_DATA_KEY, mData);
+            questionnaire.put(API_READ_LANGUAGE_DATA, languageData);
+            questionnaire.put(QUESTIONS_LANGUAGE_NAME, questionsLanguage);
             return questionnaire;
 
         } catch (Exception e) {
@@ -426,7 +436,6 @@ public class NewLanguageAPI {
             public void onRequestFinished(boolean success, Response response) {
                 if(success) {
                     pkg.commit(folder); // save changes
-                    updateListener(listener, success, response);
                 } else { // failed
                     if((listener == null) && (activity != null)) {
                         Handler mHand = new Handler(Looper.getMainLooper());
@@ -442,6 +451,7 @@ public class NewLanguageAPI {
                         });
                     }
                 }
+                updateListener(listener, success, response);
             }
         });
     }

@@ -4,6 +4,7 @@ import android.content.pm.PackageInfo;
 import android.support.test.runner.AndroidJUnit4;
 import android.test.suitebuilder.annotation.LargeTest;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.core.LanguageDirection;
 import com.door43.translationstudio.core.NativeSpeaker;
@@ -47,7 +48,7 @@ public class NewLanguageAPITest {
         mApi = new NewLanguageAPI();
         mUrl = "http://td-demo.unfoldingword.org/api/questionnaire/";
         mApi.setNewLangUrl(mUrl);
-        mSourceLangID = "en-x-demo2";
+        mSourceLangID = "en";
     }
 
     @After
@@ -88,6 +89,7 @@ public class NewLanguageAPITest {
 
         //then
         signal.await(30, TimeUnit.SECONDS);
+        Logger.i(NewLanguageAPITest.class.getSimpleName(), "postQuestionnaireFromTargetDuplicateCode: response=" + uploadSuccess.toString());
         assertTrue(uploadSuccess.getBoolean("success"));
         assertNull(uploadSuccess.opt("responseException"));
         assertNotNull(uploadSuccess.optString("responseData"));
@@ -221,6 +223,10 @@ public class NewLanguageAPITest {
         String questionnaire = getQuestions();
         JSONObject questions = mApi.readQuestionnaireIntoPages(null,questionnaire, sourceLangID);
         assertNotNull("could not find questions for " + sourceLangID, questions);
+
+        JSONObject languageData = questions.getJSONObject(NewLanguageAPI.API_READ_LANGUAGE_DATA);
+        int countryCodeLocation = languageData.optInt(NewLanguageAPI.API_READ_LANGUAGE_COUNTRY_CODE_LOCATION, 4); // TODO: 6/10/16 remove this fallback
+
         long id = NewLanguageActivity.getQuestionnaireID(questions);
         List<List<NewLanguageQuestion>> questionPages = new ArrayList<>();
         NewLanguageActivity.getQuestionPages(questionPages, questions);
@@ -228,8 +234,12 @@ public class NewLanguageAPITest {
         for (NewLanguageQuestion newLanguageQuestion : mergedQuestions) {
             long qid = newLanguageQuestion.id;
             newLanguageQuestion.answer = "Answer-" + qid;
+
+            if(countryCodeLocation == qid) {
+                newLanguageQuestion.answer = "United States"; // // TODO: 6/10/16 what are valid language codes?
+            }
         }
-        return NewLanguagePackage.newInstance(id, mergedQuestions);
+        return NewLanguagePackage.newInstance(id, mergedQuestions, 2);
     }
 
     private String getQuestions() throws JSONException {

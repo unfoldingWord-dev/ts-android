@@ -40,6 +40,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
 
     public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
     public static final String EXTRA_NEW_LANGUAGE_DATA = "extra_new_language_data";
+    public static final String EXTRA_NEW_LANGUAGE_DIRECTION = "extra_new_language_direction";
     public static final int RESULT_DUPLICATE = 2;
     private static final String STATE_TARGET_TRANSLATION_ID = "state_target_translation_id";
     private static final String STATE_TARGET_LANGUAGE_ID = "state_target_language_id";
@@ -99,7 +100,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
      * use new language information passed in JSON format string to create a new target language
      * @param newLangDataJsonStr
      */
-    private void useNewLanguage(String newLangDataJsonStr) {
+    private void useNewLanguage(String newLangDataJsonStr, boolean newLanguageDirectionLtor) {
         try {
             mNewLanguageData = newLangDataJsonStr;
             NewLanguagePackage newLang = NewLanguagePackage.parse(newLangDataJsonStr);
@@ -108,7 +109,8 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             String languageName = newLang.languageName;
 
             // TODO: 3/15/16 need to add region
-            mSelectedTargetLanguage = new TargetLanguage(languageCode, languageName, "uncertain", LanguageDirection.LeftToRight);
+            LanguageDirection languageDirection = newLanguageDirectionLtor ? LanguageDirection.LeftToRight : LanguageDirection.RightToLeft;
+            mSelectedTargetLanguage = new TargetLanguage(languageCode, languageName, "uncertain", languageDirection);
 
             // display project list
             mFragment = new ProjectListFragment();
@@ -141,6 +143,9 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     }
 
     @Override
+    /**
+     * user has selected a language
+     */
     public void onItemClick(TargetLanguage targetLanguage) {
         mSelectedTargetLanguage = targetLanguage;
 
@@ -153,6 +158,9 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     }
 
     @Override
+    /**
+     * user has selected a project
+     */
     public void onItemClick(String projectId) {
         Translator translator = AppContext.getTranslator();
         // TRICKY: android only supports translating regular text projects
@@ -319,7 +327,8 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
         if (NEW_LANGUAGE_REQUEST == requestCode) {
             if(RESULT_OK == resultCode) {
                 String newLanguageData = data.getStringExtra(NewTargetTranslationActivity.EXTRA_NEW_LANGUAGE_DATA);
-                useNewLanguage(newLanguageData);
+                boolean newLanguageDirectionLtor = data.getBooleanExtra(NewTargetTranslationActivity.EXTRA_NEW_LANGUAGE_DIRECTION, true);
+                useNewLanguage(newLanguageData, newLanguageDirectionLtor);
                 mNewLanguageButton.setVisibility(View.INVISIBLE);
             }
         }
