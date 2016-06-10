@@ -3,7 +3,6 @@ package com.door43.translationstudio.core;
 import android.content.Context;
 import android.support.v4.provider.DocumentFile;
 
-import com.door43.translationstudio.AppContext;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
@@ -23,6 +22,8 @@ import java.util.List;
  * TODO: this duplicates a lot of code from ArchiveImporter. Eventually it might be nice to refactor both so that there is less duplication.
  */
 public class ArchiveDetails {
+    public static final String MANIFEST_JSON = "manifest.json";
+    public static final String PACKAGE_VERSION = "package_version";
     public final long createdAt;
     public final TargetTranslationDetails[] targetTranslationDetails;
 
@@ -48,11 +49,11 @@ public class ArchiveDetails {
             File tempFile = File.createTempFile("targettranslation", "." + Translator.ARCHIVE_EXTENSION);
             FileUtils.copyInputStreamToFile(archiveStream, tempFile);
 
-            String rawManifest = Zip.read(tempFile, "manifest.json");
+            String rawManifest = Zip.read(tempFile, MANIFEST_JSON);
             if (rawManifest != null) {
                 JSONObject json = new JSONObject(rawManifest);
-                if (json.has("package_version")) {
-                    int manifestVersion = json.getInt("package_version");
+                if (json.has(PACKAGE_VERSION)) {
+                    int manifestVersion = json.getInt(PACKAGE_VERSION);
                     switch (manifestVersion) {
                         case 1:
                             return parseV1Manifest(json);
@@ -73,11 +74,11 @@ public class ArchiveDetails {
      */
     public static ArchiveDetails newInstance(File archive, String preferredLocale, Library library) throws Exception {
         if(archive != null && archive.exists()) {
-            String rawManifest = Zip.read(archive, "manifest.json");
+            String rawManifest = Zip.read(archive, MANIFEST_JSON);
             if(rawManifest != null) {
                 JSONObject json = new JSONObject(rawManifest);
-                if(json.has("package_version")) {
-                    int manifestVersion = json.getInt("package_version");
+                if(json.has(PACKAGE_VERSION)) {
+                    int manifestVersion = json.getInt(PACKAGE_VERSION);
                     switch (manifestVersion) {
                         case 1:
                             return parseV1Manifest(json);
@@ -101,11 +102,11 @@ public class ArchiveDetails {
     public static ArchiveDetails newInstance(Context context, DocumentFile archive, String preferredLocale, Library library) throws Exception {
         if(archive != null && archive.exists()) {
             InputStream ais = context.getContentResolver().openInputStream(archive.getUri());
-            String rawManifest = Zip.readInputStream(ais, "manifest.json");
+            String rawManifest = Zip.readInputStream(ais, MANIFEST_JSON);
             if (rawManifest != null) {
                 JSONObject json = new JSONObject(rawManifest);
-                if (json.has("package_version")) {
-                    int manifestVersion = json.getInt("package_version");
+                if (json.has(PACKAGE_VERSION)) {
+                    int manifestVersion = json.getInt(PACKAGE_VERSION);
                     switch (manifestVersion) {
                         case 1:
                             return parseV1Manifest(json);

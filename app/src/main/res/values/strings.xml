@@ -685,6 +685,14 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="invalidate_keys" translatable="false">Invalidate SSH Keys</string>
     <string name="invalidate_keys_description" translatable="false">Sets keys invalid for auth testing</string>
     <string name="person_agrees_with_licenses">This person has agreed to the License Agreement, Statement of Faith, and Translation Guidelines</string>
+    <string name="invalid_entry_title">Invalid Entry</string>
+    <string name="answers_missing_title">Answers Missing</string>
+    <string name="answer_required_for">Need answer for question:\n%s</string>
+    <string name="answer_missing_for">Missing answer for question:\n%s</string>
+    <string name="answers_missing_continue">Answers are missing for questions.\nContinue anyway?</string>
+    <string name="previous_step">Previous step</string>
+    <string name="title_activity_new_language">New Language Request</string>
+    <string name="new_language_confirmation">We will create a temporary language code of \"<xliff:g example="zz-zzz" id="temp_language_code">%1$s</xliff:g>\" for \"<xliff:g example="Greek" id="language_name">%2$s</xliff:g>\".</string>
     <string name="error_importing_unsupported_target_translation">The  translation of <xliff:g example="Open Bible Stories" id="project_name">%1$s</xliff:g> into <xliff:g example="Afaraf" id="language_name">%2$s</xliff:g> was created by a different version of <xliff:g example="translationStudio" id="app_name">%3$s</xliff:g> and cannot be opened. Please update your app and try again.</string>
     <string name="version">Version</string>
     <string name="username">login name</string>
@@ -791,4 +799,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
 <br/><b>Use of trademarks:</b> unfoldingWord is a trademark of Distant Shores Media and may not be included on any derivative works created from this content. Unaltered content from <a href="http://unfoldingword.org" title="http://unfoldingword.org" >http://unfoldingword.org</a> must include the unfoldingWord logo when distributed to others. But if you alter the content in any way, you must remove the unfoldingWord logo before distributing your work.
 </p>]]>
     </string>
+    <string name="new_lang_question_n">New Language Questions - Page <xliff:g example="1" id="page_num">%1$d</xliff:g> of <xliff:g example="10" id="page_count">%2$d</xliff:g></string>
+    <string name="new_lang_api_upload_failure_title">New Language Error</string>
+    <string name="new_lang_api_upload_failure">We could not save the answers to the New Language Questionnaire.  We will try again the next time you</string>
 </resources>

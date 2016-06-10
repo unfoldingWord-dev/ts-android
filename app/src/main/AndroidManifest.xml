@@ -165,6 +165,10 @@
             android:label="@string/title_activity_publish"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
+            android:name=".newui.newlanguage.NewLanguageActivity"
+            android:label="@string/title_activity_new_language"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
             android:name=".newui.legal.LegalDocumentActivity"
             android:label=""
             android:theme="@style/AppTheme.Transparent">

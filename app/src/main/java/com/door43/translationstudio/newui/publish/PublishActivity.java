@@ -211,6 +211,7 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
     /**
      * checks if the user can go to this step yet
      * @param step
+     * @param force forces the step to be opened even if it has never been opened before
      * @return
      */
     private boolean validateStep(int step, boolean force) {

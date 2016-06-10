@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1">
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:id="@+id/scroll_view"
+
+                android:scrollIndicators="right"
+                android:fastScrollAlwaysVisible="true"
+                android:scrollbars="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:id="@+id/content_layout"
+                    android:focusable="true"
+                    android:descendantFocusability="afterDescendants"
+                    >
+                </LinearLayout>
+
+            </ScrollView>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical|right"
+            android:layout_weight="0"
+            android:layout_marginBottom="@dimen/card_margin">
+
+            <Button
+                android:id="@+id/previous_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal|right"
+                style="@style/Widget.Button.Blue"
+                android:text="@string/previous_step"
+                android:layout_marginRight="@dimen/dialog_controls_margin"
+                android:layout_marginLeft="@dimen/dialog_controls_margin" />
+
+            <Button
+                android:id="@+id/next_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal|right"
+                style="@style/Widget.Button.Blue"
+                android:text="@string/next_step"
+                android:layout_marginRight="@dimen/dialog_controls_margin"
+                android:layout_marginLeft="@dimen/dialog_controls_margin" />
+
+            <Button
+                android:id="@+id/done_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal|right"
+                style="@style/Widget.Button.Blue"
+                android:text="@string/done"
+                android:layout_marginRight="@dimen/card_margin"
+                android:layout_marginLeft="@dimen/dialog_controls_margin" />
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+
+</LinearLayout>
