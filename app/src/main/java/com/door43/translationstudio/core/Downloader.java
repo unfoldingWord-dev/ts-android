@@ -336,8 +336,8 @@ public class Downloader {
      * @return
      */
     public boolean downloadTempTargetLanguages(LibraryData targetIndex) {
-        // TODO: 10/19/2015 don't hardcode the url
-        String catalog = request("http://td.unfoldingword.org/api/templanguages/");
+        // TODO: 10/19/2015 this will eventually be pulled from the library data
+        String catalog = request("http://td-demo.unfoldingword.org/api/templanguages/");
         if(catalog != null) {
             return targetIndex.indexTempTargetLanguages(catalog);
         }
@@ -350,8 +350,8 @@ public class Downloader {
      * @return
      */
     public boolean downloadTempTargetLanguageAssignments(LibraryData targetIndex) {
-        // TODO: 10/19/2015 don't hardcode the url
-        String catalog = request("http://td.unfoldingword.org/api/templanguages/assignment/changed/");
+        // TODO: 10/19/2015 this will eventually be pulled from the library data
+        String catalog = request("http://td-demo.unfoldingword.org/api/templanguages/assignment/changed/");
         if(catalog != null) {
             return targetIndex.indexTempTargetLanguageAssignments(catalog);
         }
