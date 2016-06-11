@@ -131,11 +131,13 @@ public class NewLanguageRequest {
                 }
 
                 Map<String, Long> dataFields = new HashMap<>();
-                JSONObject dataFieldsJson = json.getJSONObject("data_fields");
-                Iterator<String> fieldItr = dataFieldsJson.keys();
-                while(fieldItr.hasNext()) {
-                    String field = fieldItr.next();
-                    dataFields.put(field, dataFieldsJson.getLong(field));
+                if(json.has("data_fields")) {
+                    JSONObject dataFieldsJson = json.getJSONObject("data_fields");
+                    Iterator<String> fieldItr = dataFieldsJson.keys();
+                    while (fieldItr.hasNext()) {
+                        String field = fieldItr.next();
+                        dataFields.put(field, dataFieldsJson.getLong(field));
+                    }
                 }
                 NewLanguageRequest request = new NewLanguageRequest(requestUUID, tempCode, questionnaireId, app, requester, dataFields);
                 request.setSubmittedAt(submittedAt);

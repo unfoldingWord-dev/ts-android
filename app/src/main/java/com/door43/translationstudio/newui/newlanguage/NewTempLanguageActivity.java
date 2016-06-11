@@ -44,13 +44,13 @@ public class NewTempLanguageActivity extends QuestionnaireActivity implements La
                     snack.show();
 
                     // restart
-                    request = NewLanguageRequest.newInstance(this, questionnaire.door43Id, "android", AppContext.getProfile().getFullName());
+                    request = NewLanguageRequest.newInstance(this, questionnaire, "android", AppContext.getProfile().getFullName());
                     restartQuestionnaire();
                     return;
                 }
             } else {
                 // begin
-                request = NewLanguageRequest.newInstance(this, questionnaire.door43Id, "android", AppContext.getProfile().getFullName());
+                request = NewLanguageRequest.newInstance(this, questionnaire, "android", AppContext.getProfile().getFullName());
             }
         } else {
             // missing questionnaire
