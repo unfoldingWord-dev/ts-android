@@ -92,6 +92,37 @@ public class TargetTranslationMigrator {
             e.printStackTrace();
             migratedDir = null;
         }
+        if(migratedDir != null) {
+            // import new langauge requests
+            TargetTranslation tt = TargetTranslation.open(targetTranslationDir);
+            if(tt != null) {
+                NewLanguageRequest newRequest = tt.getNewLanguageRequest();
+                if(newRequest != null) {
+                    NewLanguageRequest existingRequest = AppContext.getNewLanguageRequest(newRequest.tempLanguageCode);
+                    if(existingRequest == null) {
+                        // TODO: 6/10/16 check if the new langauge request has been approved if so migrate to the new language
+                        // AppContext.getLibrary().getMappedTargetLanguage(newRequest.tempLanguageCode);
+                        // if mapped : tt.setNewLanguageRequest(null) and change language
+                        // import the new language request
+                        AppContext.addNewLanguageRequest(newRequest);
+                    } else {
+                        if(existingRequest.getSubmittedAt() > 0 && newRequest.getSubmittedAt() == 0) {
+                            // indicated imported language request has been submitted
+                            newRequest.setSubmittedAt(existingRequest.getSubmittedAt());
+                            try {
+                                tt.setNewLanguageRequest(newRequest);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        } else if(existingRequest.getSubmittedAt() == 0 && newRequest.getSubmittedAt() > 0) {
+                            // indicate existing language request has been submitted
+                            existingRequest.setSubmittedAt(newRequest.getSubmittedAt());
+                            AppContext.addNewLanguageRequest(existingRequest);
+                        }
+                    }
+                }
+            }
+        }
         return migratedDir;
     }
 

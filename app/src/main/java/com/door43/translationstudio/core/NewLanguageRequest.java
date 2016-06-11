@@ -11,6 +11,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -22,7 +24,7 @@ public class NewLanguageRequest {
     private static final String LANGUAGE_PREFIX = "qaa-x-";
 
     private Map<Long, String> answers = new TreeMap<>();
-
+    public final Map<String, Long> dataFields;
     public final String requestUUID;
     public final String tempLanguageCode;
     public final long questionnaireId;
@@ -38,19 +40,20 @@ public class NewLanguageRequest {
      * @param app the name of the app generating this response
      * @param requester the name of the translator requesting the custom language code
      */
-    private NewLanguageRequest(String requestUUID, String tempLanguageCode, long questionnaireId, String app, String requester) {
+    private NewLanguageRequest(String requestUUID, String tempLanguageCode, long questionnaireId, String app, String requester, Map<String, Long> dataFields) {
         this.requestUUID = requestUUID;
         this.tempLanguageCode = tempLanguageCode;
         this.questionnaireId = questionnaireId;
         this.app = app;
         this.requester = requester;
+        this.dataFields = dataFields;
     }
 
     /**
      * Creates a new questionnaire response
      * @return
      */
-    public static NewLanguageRequest newInstance(Context context, long questionnaireId, String app, String requester) {
+    public static NewLanguageRequest newInstance(Context context, Questionnaire questionnaire, String app, String requester) {
         // generate language code
         String udid = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
         long time = System.currentTimeMillis();
@@ -58,7 +61,7 @@ public class NewLanguageRequest {
         String hash = Security.sha1(uniqueString);
         String languageCode  = LANGUAGE_PREFIX + hash.substring(0, 6);
 
-        return new NewLanguageRequest(UUID.randomUUID().toString(), languageCode, questionnaireId, app, requester);
+        return new NewLanguageRequest(UUID.randomUUID().toString(), languageCode, questionnaire.door43Id, app, requester, questionnaire.dataFields);
     }
 
     /**
@@ -85,6 +88,12 @@ public class NewLanguageRequest {
             json.put("requester", this.requester);
             json.put("submitted_at", this.submittedAt);
 
+            JSONObject dataFieldsJson = new JSONObject();
+            for(String field:this.dataFields.keySet()) {
+                dataFieldsJson.put(field, this.dataFields.get(field));
+            }
+            json.put("data_fields", dataFieldsJson);
+
             JSONArray answersJson = new JSONArray();
             for(Long key:this.answers.keySet()) {
                 JSONObject answer = new JSONObject();
@@ -92,7 +101,6 @@ public class NewLanguageRequest {
                 answer.put("text", this.answers.get(key));
                 answersJson.put(answer);
             }
-
             json.put("answers", answersJson);
             return json.toString();
         } catch (JSONException e) {
@@ -121,7 +129,17 @@ public class NewLanguageRequest {
                 if(json.has("submitted_at")) {
                     submittedAt = json.getLong("submitted_at");
                 }
-                NewLanguageRequest request = new NewLanguageRequest(requestUUID, tempCode, questionnaireId, app, requester);
+
+                Map<String, Long> dataFields = new HashMap<>();
+                if(json.has("data_fields")) {
+                    JSONObject dataFieldsJson = json.getJSONObject("data_fields");
+                    Iterator<String> fieldItr = dataFieldsJson.keys();
+                    while (fieldItr.hasNext()) {
+                        String field = fieldItr.next();
+                        dataFields.put(field, dataFieldsJson.getLong(field));
+                    }
+                }
+                NewLanguageRequest request = new NewLanguageRequest(requestUUID, tempCode, questionnaireId, app, requester, dataFields);
                 request.setSubmittedAt(submittedAt);
 
                 JSONArray answers = json.getJSONArray("answers");
@@ -169,5 +187,29 @@ public class NewLanguageRequest {
      */
     public void setSubmittedAt(long submittedAt) {
         this.submittedAt = submittedAt;
+    }
+
+    /**
+     * Returns the temporary target language.
+     * Properties of the language are derrived from the questionnaire answers
+     * @return
+     */
+    public TargetLanguage getTempTargetLanguage() {
+        String name = this.tempLanguageCode;
+        String region = "unknown";
+        LanguageDirection direction = LanguageDirection.LeftToRight;
+
+        if(this.dataFields.containsKey("ln")) {
+            name = this.getAnswer(this.dataFields.get("ln"));
+        }
+        if(this.dataFields.containsKey("cc")) {
+            region = this.getAnswer(this.dataFields.get("cc"));
+        }
+        if(this.dataFields.containsKey("ld")) {
+            Boolean isLeftToRight = Boolean.parseBoolean(this.getAnswer(this.dataFields.get("ld")));
+            direction = isLeftToRight ? LanguageDirection.LeftToRight : LanguageDirection.RightToLeft;
+        }
+
+        return new TargetLanguage(this.tempLanguageCode, name, region, direction);
     }
 }

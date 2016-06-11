@@ -674,7 +674,9 @@ public class AppContext {
     }
 
     /**
-     * Adds a new language request
+     * Adds a new language request.
+     * This stores the request to the data path for later submission
+     * and adds the temp language to the library for global use in the app
      * @param request
      */
     public static boolean addNewLanguageRequest(NewLanguageRequest request) {
@@ -683,7 +685,7 @@ public class AppContext {
             requestFile.getParentFile().mkdirs();
             try {
                 com.door43.tools.reporting.FileUtils.writeStringToFile(requestFile, request.toJson());
-                return true;
+                return getLibrary().addTempTargetLanguage(request.getTempTargetLanguage());
             } catch (IOException e) {
                 Logger.e(AppContext.class.getName(), "Failed to save the new langauge request", e);
             }
