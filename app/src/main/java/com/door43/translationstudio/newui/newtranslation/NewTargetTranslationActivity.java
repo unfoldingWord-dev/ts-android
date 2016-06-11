@@ -98,31 +98,8 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
         if(request != null) {
             Questionnaire questionnaire = AppContext.getLibrary().getQuestionnaire(request.questionnaireId);
             if (questionnaire != null && AppContext.addNewLanguageRequest(request)) {
-                String languageName = request.tempLanguageCode;
-                String languageRegion = "unknown";
-                LanguageDirection languageDirection = LanguageDirection.LeftToRight;
-
-                Map<String, Long> dataFields =  questionnaire.dataFields;
-                // language name
-                if(dataFields.containsKey("ln")) {
-                    languageName = request.getAnswer(dataFields.get("ln"));
-                }
-                // language region (country code)
-                if(dataFields.containsKey("cc")) {
-                    languageRegion = request.getAnswer(dataFields.get("cc"));
-                }
-                // language direction
-                if(dataFields.containsKey("ld")) {
-                    Boolean isLeftToRight = Boolean.parseBoolean(request.getAnswer(dataFields.get("ld")));
-                    languageDirection = isLeftToRight ? LanguageDirection.LeftToRight : LanguageDirection.RightToLeft;
-                }
-
-                mSelectedTargetLanguage = new TargetLanguage(request.tempLanguageCode, languageName, languageRegion, languageDirection);
-
-                AppContext.getLibrary().addTempTargetLanguage(mSelectedTargetLanguage);
-
+                mSelectedTargetLanguage = request.getTempTargetLanguage();
                 this.createdNewLanguage = true;
-
                 confirmTempLanguage(mSelectedTargetLanguage);
                 return;
             }

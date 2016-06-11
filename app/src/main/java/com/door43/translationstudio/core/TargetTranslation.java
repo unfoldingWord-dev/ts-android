@@ -260,6 +260,7 @@ public class TargetTranslation {
      * @param targetTranslationDir
      * @return null if the directory does not exist or the manifest is invalid
      */
+    @Nullable
     public static TargetTranslation open(File targetTranslationDir) {
         if(targetTranslationDir != null) {
             File manifestFile = new File(targetTranslationDir, "manifest.json");
@@ -1243,6 +1244,25 @@ public class TargetTranslation {
         } else if(requestFile.exists()) {
             FileUtilities.safeDelete(requestFile);
         }
+    }
+
+    /**
+     * Returns the new language request if one exists
+     * @return
+     * @throws IOException
+     */
+    @Nullable
+    public NewLanguageRequest getNewLanguageRequest() {
+        File requestFile = new File(getPath(), "new_language.json");
+        if(requestFile.exists()) {
+            try {
+                String data = com.door43.tools.reporting.FileUtils.readFileToString(requestFile);
+                return NewLanguageRequest.generate(data);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 
     public enum PublishStatus {
