@@ -100,11 +100,19 @@ public class TargetTranslationMigrator {
                 if(newRequest != null) {
                     NewLanguageRequest existingRequest = AppContext.getNewLanguageRequest(newRequest.tempLanguageCode);
                     if(existingRequest == null) {
-                        // TODO: 6/10/16 check if the new langauge request has been approved if so migrate to the new language
-                        // AppContext.getLibrary().getMappedTargetLanguage(newRequest.tempLanguageCode);
-                        // if mapped : tt.setNewLanguageRequest(null) and change language
-                        // import the new language request
-                        AppContext.addNewLanguageRequest(newRequest);
+                        TargetLanguage approvedTargetLanguage = AppContext.getLibrary().getApprovedTargetLanguage(newRequest.tempLanguageCode);
+                        if(approvedTargetLanguage == null) {
+                            AppContext.addNewLanguageRequest(newRequest);
+                        } else {
+                            // this language has alread been approved
+                            try {
+                                tt.setNewLanguageRequest(null);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            // TODO: 6/15/16 change the language of the target translation
+                        }
+
                     } else {
                         if(existingRequest.getSubmittedAt() > 0 && newRequest.getSubmittedAt() == 0) {
                             // indicated imported language request has been submitted

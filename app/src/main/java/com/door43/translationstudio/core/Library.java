@@ -1064,6 +1064,15 @@ public class Library {
         libraryData.setExpired();
     }
 
+    /**
+     * Returns a target language that has been approved from a temporary language code request
+     * @param tempLanguageCode the temp language code to look up
+     * @return
+     */
+    public TargetLanguage getApprovedTargetLanguage(String tempLanguageCode) {
+        return getActiveIndex().getApprovedTargetLanguage(tempLanguageCode);
+    }
+
     public interface OnProgressListener {
         /**
          * Progress the progress on an operation between 0 and max

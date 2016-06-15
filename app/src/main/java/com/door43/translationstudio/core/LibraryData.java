@@ -2034,6 +2034,31 @@ public class LibraryData {
     }
 
     /**
+     * Returns a target language that has been approved from a temporary language code request
+     * @param tempLanguageCode the temp language code to look up
+     * @return
+     */
+    public TargetLanguage getApprovedTargetLanguage(String tempLanguageCode) {
+        Cursor cursor = this.database.rawQuery("SELECT `tl`.`slug`, `tl`.`name`, `tl`.`direction`\n" +
+                "`tl`.`region` FROM `target_language` AS `tl`\n" +
+                "LEFT JOIN `temp_target_language` AS `ttl` ON `ttl`.`approved_target_language_slug`=`tl`.`slug`\n" +
+                "WHERE `ttl`.`slug`=?", new String[]{tempLanguageCode});
+        TargetLanguage targetLanguage = null;
+        if(cursor.moveToFirst()) {
+            String slug = cursor.getString(0);
+            String name = cursor.getString(1);
+            LanguageDirection direction = LanguageDirection.get(cursor.getString(2));
+            if(direction == null) {
+                direction = LanguageDirection.LeftToRight;
+            }
+            String region = cursor.getString(3);
+            targetLanguage = new TargetLanguage(slug, name, region, direction);
+        }
+        cursor.close();
+        return targetLanguage;
+    }
+
+    /**
      * Searches for target languages by name
      * @param nameQuery
      * @return
