@@ -75,9 +75,9 @@ public class TargetTranslation {
 
     private final File targetTranslationDir;
     private final Manifest manifest;
-    private final String targetLanguageId;
-    private final String targetLanguageName;
-    private final LanguageDirection targetLanguageDirection;
+    private String targetLanguageId;
+    private String targetLanguageName;
+    private LanguageDirection targetLanguageDirection;
     private final String projectId;
     private final String projectName;
     private final TranslationType translationType;
@@ -1263,6 +1263,26 @@ public class TargetTranslation {
             }
         }
         return null;
+    }
+
+    /**
+     * Changes the target langauge for this target translation
+     * This does not change the name of the directory where the target translation is stored.
+     * @param targetLanguage
+     */
+    public void changeTargetLanguage(TargetLanguage targetLanguage) {
+        JSONObject languageJson = this.manifest.getJSONObject("target_language");
+        try {
+            languageJson.put("name", targetLanguage.name);
+            languageJson.put("direction", targetLanguage.direction.getLabel());
+            languageJson.put("id", targetLanguage.getId());
+            this.manifest.put("target_language", languageJson);
+            this.targetLanguageDirection = targetLanguage.direction;
+            this.targetLanguageId = targetLanguage.getId();
+            this.targetLanguageName = targetLanguage.name;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     public enum PublishStatus {

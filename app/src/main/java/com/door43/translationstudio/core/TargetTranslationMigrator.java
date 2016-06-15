@@ -104,13 +104,14 @@ public class TargetTranslationMigrator {
                         if(approvedTargetLanguage == null) {
                             AppContext.addNewLanguageRequest(newRequest);
                         } else {
-                            // this language has alread been approved
+                            // this language has already been approved
                             try {
                                 tt.setNewLanguageRequest(null);
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
-                            // TODO: 6/15/16 change the language of the target translation
+                            tt.changeTargetLanguage(approvedTargetLanguage);
+                            AppContext.getTranslator().normalizePath(tt);
                         }
 
                     } else {
@@ -126,6 +127,7 @@ public class TargetTranslationMigrator {
                             // indicate existing language request has been submitted
                             existingRequest.setSubmittedAt(newRequest.getSubmittedAt());
                             AppContext.addNewLanguageRequest(existingRequest);
+                            // TODO: 6/15/16 technically we need to look through all the existing target translations and update ones using this language. or we can just wait until the next app update task
                         }
                     }
                 }
