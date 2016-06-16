@@ -104,14 +104,28 @@ public class PushTargetTranslationTask extends ManagedTask {
         try {
             Iterable<PushResult> result = pushCommand.call();
             StringBuffer response = new StringBuffer();
+            this.status = Status.OK; // will be OK if no errors are found
             for (PushResult r : result) {
                 Collection<RemoteRefUpdate> updates = r.getRemoteUpdates();
                 for (RemoteRefUpdate update : updates) {
                     response.append(parseRemoteRefUpdate(update, remote));
+
+                    RemoteRefUpdate.Status status = update.getStatus();
+                    if( (RemoteRefUpdate.Status.OK == status) || (RemoteRefUpdate.Status.UP_TO_DATE == status)) {
+                        //no error here
+
+                    } else if( ( RemoteRefUpdate.Status.REJECTED_NONFASTFORWARD == status)
+                            || ( RemoteRefUpdate.Status.REJECTED_NODELETE == status)
+                            || ( RemoteRefUpdate.Status.REJECTED_REMOTE_CHANGED == status)
+                            || ( RemoteRefUpdate.Status.REJECTED_OTHER_REASON == status) ) {
+
+                        this.status = Status.REJECTED;
+                    } else {
+                        this.status = Status.UNKNOWN;
+                    }
                 }
             }
             // give back the response message
-            this.status = Status.OK;
             return response.toString();
         } catch (TransportException e) {
             Logger.e(this.getClass().getName(), e.getMessage(), e);
@@ -155,7 +169,9 @@ public class PushTargetTranslationTask extends ManagedTask {
         OK,
         OUT_OF_MEMORY,
         AUTH_FAILURE,
-        NO_REMOTE_REPO, UNKNOWN
+        NO_REMOTE_REPO,
+        REJECTED,
+        UNKNOWN
     }
 
     /**

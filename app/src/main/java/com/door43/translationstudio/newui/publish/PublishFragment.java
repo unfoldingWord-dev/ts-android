@@ -132,10 +132,9 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                         return;
                     }
 
-                    // TODO: 5/26/16 this would be a lot easier if we tried to clone instead of pulling.  Then we could merge manually
-                    PullTargetTranslationTask task = new PullTargetTranslationTask(targetTranslation);
+                    PushTargetTranslationTask task = new PushTargetTranslationTask(targetTranslation, true);
                     taskWatcher.watch(task);
-                    TaskManager.addTask(task, PullTargetTranslationTask.TASK_ID);
+                    TaskManager.addTask(task, PushTargetTranslationTask.TASK_ID);
                 } else {
                     Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.internet_not_available, Snackbar.LENGTH_LONG);
                     ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
@@ -206,14 +205,11 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
         });
 
         // Connect to existing tasks
-        PullTargetTranslationTask pullTask = (PullTargetTranslationTask)TaskManager.getTask(PullTargetTranslationTask.TASK_ID);
         RegisterSSHKeysTask keysTask = (RegisterSSHKeysTask)TaskManager.getTask(RegisterSSHKeysTask.TASK_ID);
         CreateRepositoryTask repoTask = (CreateRepositoryTask)TaskManager.getTask(CreateRepositoryTask.TASK_ID);
         PushTargetTranslationTask pushTask = (PushTargetTranslationTask)TaskManager.getTask(PushTargetTranslationTask.TASK_ID);
 
-        if(pullTask != null) {
-            taskWatcher.watch(pullTask);
-        } else if (keysTask != null) {
+        if (keysTask != null) {
             taskWatcher.watch(keysTask);
         } else if(repoTask != null) {
             taskWatcher.watch(repoTask);
@@ -242,78 +238,80 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
     @Override
     public void onFinished(final ManagedTask task) {
         taskWatcher.stop();
-        if(task instanceof PullTargetTranslationTask) {
-            PullTargetTranslationTask.Status status = ((PullTargetTranslationTask)task).getStatus();
-            //  TRICKY: we continue to push for unknown status in case the repo was just created (the missing branch is an error)
-            // the pull task will catch any errors
-            if(status == PullTargetTranslationTask.Status.UP_TO_DATE
-                    || status == PullTargetTranslationTask.Status.UNKNOWN) {
-                Logger.i(this.getClass().getName(), "Changes on the server were synced with " + targetTranslation.getId());
-                try {
-                    final Handler hand = new Handler(Looper.getMainLooper());
-                    targetTranslation.setPublished(new TargetTranslation.OnPublishedListener() {
-                        @Override
-                        public void onSuccess() {
-                            // begin upload
-                            PushTargetTranslationTask task = new PushTargetTranslationTask(targetTranslation, true);
-                            taskWatcher.watch(task);
-                            TaskManager.addTask(task, PushTargetTranslationTask.TASK_ID);
-                        }
-
-                        @Override
-                        public void onFailed(Exception e) {
-                            hand.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    notifyPublishFailed(targetTranslation);
-                                }
-                            });
-                        }
-                    });
-                } catch (Exception e) {
-                    Logger.e(PublishFragment.class.getName(), "Failed to mark target translation " + targetTranslation.getId() + " as publishable", e);
-                    notifyPublishFailed(targetTranslation);
-                    return;
-                }
-            } else if(status == PullTargetTranslationTask.Status.AUTH_FAILURE) {
-                Logger.i(this.getClass().getName(), "Authentication failed");
-                // if we have already tried ask the user if they would like to try again
-                if(AppContext.context().hasSSHKeys()) {
-                    showAuthFailure();
-                    return;
-                }
-
-                RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(false);
-                taskWatcher.watch(keyTask);
-                TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
-            } else if(status == PullTargetTranslationTask.Status.NO_REMOTE_REPO) {
-                Logger.i(this.getClass().getName(), "The repository " + targetTranslation.getId() + " could not be found");
-                // create missing repo
-                CreateRepositoryTask repoTask = new CreateRepositoryTask(targetTranslation);
-                taskWatcher.watch(repoTask);
-                TaskManager.addTask(repoTask, CreateRepositoryTask.TASK_ID);
-            } else if(status == PullTargetTranslationTask.Status.MERGE_CONFLICTS) {
-                Logger.i(this.getClass().getName(), "The server contains conflicting changes for " + targetTranslation.getId());
-                notifyMergeConflicts(((PullTargetTranslationTask)task).getConflicts());
-            } else {
-                notifyPublishFailed(targetTranslation);
-            }
-        } else if(task instanceof RegisterSSHKeysTask) {
+//        if(task instanceof PullTargetTranslationTask) {
+//            PullTargetTranslationTask.Status status = ((PullTargetTranslationTask)task).getStatus();
+//            //  TRICKY: we continue to push for unknown status in case the repo was just created (the missing branch is an error)
+//            // the pull task will catch any errors
+//            if(status == PullTargetTranslationTask.Status.UP_TO_DATE
+//                    || status == PullTargetTranslationTask.Status.UNKNOWN) {
+//                Logger.i(this.getClass().getName(), "Changes on the server were synced with " + targetTranslation.getId());
+//                try {
+//                    final Handler hand = new Handler(Looper.getMainLooper());
+//                    targetTranslation.setPublished(new TargetTranslation.OnPublishedListener() {
+//                        @Override
+//                        public void onSuccess() {
+//                            // begin upload
+//                            PushTargetTranslationTask task = new PushTargetTranslationTask(targetTranslation, true);
+//                            taskWatcher.watch(task);
+//                            TaskManager.addTask(task, PushTargetTranslationTask.TASK_ID);
+//                        }
+//
+//                        @Override
+//                        public void onFailed(Exception e) {
+//                            hand.post(new Runnable() {
+//                                @Override
+//                                public void run() {
+//                                    notifyPublishFailed(targetTranslation);
+//                                }
+//                            });
+//                        }
+//                    });
+//                } catch (Exception e) {
+//                    Logger.e(PublishFragment.class.getName(), "Failed to mark target translation " + targetTranslation.getId() + " as publishable", e);
+//                    notifyPublishFailed(targetTranslation);
+//                    return;
+//                }
+//            } else if(status == PullTargetTranslationTask.Status.AUTH_FAILURE) {
+//                Logger.i(this.getClass().getName(), "Authentication failed");
+//                // if we have already tried ask the user if they would like to try again
+//                if(AppContext.context().hasSSHKeys()) {
+//                    showAuthFailure();
+//                    return;
+//                }
+//
+//                RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(false);
+//                taskWatcher.watch(keyTask);
+//                TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
+//            } else if(status == PullTargetTranslationTask.Status.NO_REMOTE_REPO) {
+//                Logger.i(this.getClass().getName(), "The repository " + targetTranslation.getId() + " could not be found");
+//                // create missing repo
+//                CreateRepositoryTask repoTask = new CreateRepositoryTask(targetTranslation);
+//                taskWatcher.watch(repoTask);
+//                TaskManager.addTask(repoTask, CreateRepositoryTask.TASK_ID);
+//            } else if(status == PullTargetTranslationTask.Status.MERGE_CONFLICTS) {
+//                Logger.i(this.getClass().getName(), "The server contains conflicting changes for " + targetTranslation.getId());
+//                notifyMergeConflicts(((PullTargetTranslationTask)task).getConflicts());
+//            } else {
+//                notifyPublishFailed(targetTranslation);
+//            }
+//        } else
+        if(task instanceof RegisterSSHKeysTask) {
             if(((RegisterSSHKeysTask)task).isSuccess()) {
                 Logger.i(this.getClass().getName(), "SSH keys were registered with the server");
-                // try to pull again
-                PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation);
-                taskWatcher.watch(pullTask);
-                TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
+                // try to push again
+
+                PushTargetTranslationTask pushTask = new PushTargetTranslationTask(targetTranslation, true);
+                taskWatcher.watch(pushTask);
+                TaskManager.addTask(pushTask, PushTargetTranslationTask.TASK_ID);
             } else {
                 notifyPublishFailed(targetTranslation);
             }
         } else if(task instanceof CreateRepositoryTask) {
             if(((CreateRepositoryTask)task).isSuccess()) {
                 Logger.i(this.getClass().getName(), "A new repository " + targetTranslation.getId() + " was created on the server");
-                PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation);
-                taskWatcher.watch(pullTask);
-                TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
+                PushTargetTranslationTask pushTask = new PushTargetTranslationTask(targetTranslation, true);
+                taskWatcher.watch(pushTask);
+                TaskManager.addTask(pushTask, PushTargetTranslationTask.TASK_ID);
             } else {
                 notifyPublishFailed(targetTranslation);
             }
@@ -368,11 +366,31 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 });
             } else if(status == PushTargetTranslationTask.Status.AUTH_FAILURE) {
                 Logger.i(this.getClass().getName(), "Authentication failed");
-                showAuthFailure();
+                // if we have already tried ask the user if they would like to try again
+                if(AppContext.context().hasSSHKeys()) {
+                    showAuthFailure();
+                    return;
+                }
+
+                RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(false);
+                taskWatcher.watch(keyTask);
+                TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
+
+//                Logger.i(this.getClass().getName(), "Authentication failed");
+//                showAuthFailure();
+//            } else {
+//                notifyPublishFailed(targetTranslation);
+//            }
+
+            } else if(status == PushTargetTranslationTask.Status.NO_REMOTE_REPO) {
+                Logger.i(this.getClass().getName(), "The repository " + targetTranslation.getId() + " could not be found");
+                // create missing repo
+                CreateRepositoryTask repoTask = new CreateRepositoryTask(targetTranslation);
+                taskWatcher.watch(repoTask);
+                TaskManager.addTask(repoTask, CreateRepositoryTask.TASK_ID);
             } else {
                 notifyPublishFailed(targetTranslation);
             }
-
         }
     }
 
