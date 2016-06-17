@@ -72,6 +72,7 @@ public class TargetTranslation {
     public static final String FIELD_MANIFEST_NAME = "name";
     public static final String FIELD_MANIFEST_BUILD = "build";
     public static final String APPLICATION_NAME = "ts-android";
+    public static final String OBS_PROJECT_TYPE = "obs";
 
     private final File targetTranslationDir;
     private final Manifest manifest;
@@ -204,6 +205,14 @@ public class TargetTranslation {
     }
 
     /**
+     * determine if project type is OBS
+     * @return
+     */
+    public boolean isObsProject() {
+        return isObsProject(getProjectId());
+    }
+
+    /**
      * read the format of the translation
      * @return
      */
@@ -215,13 +224,17 @@ public class TargetTranslation {
                 return TranslationFormat.MARKDOWN;
             } else {
                 String projectIdStr = fetchProjectID(manifest);
-                if("obs".equalsIgnoreCase(projectIdStr)) {
+                if(isObsProject(projectIdStr)) {
                     return TranslationFormat.MARKDOWN;
                 }
                 return TranslationFormat.USFM;
             }
         }
         return format;
+    }
+
+    private static boolean isObsProject(String projectId) {
+        return OBS_PROJECT_TYPE.equalsIgnoreCase(projectId);
     }
 
     private static TranslationFormat fetchTranslationFormat(Manifest manifest) {
