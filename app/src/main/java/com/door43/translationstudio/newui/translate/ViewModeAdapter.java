@@ -82,6 +82,14 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
     abstract void onCoordinate(VH holder);
 
     /**
+     * get the chapter ID for the position, this is the default implementation
+     * @param position
+     */
+    public String getChapterID(int position) {
+        return Integer.toString(position + 1);
+    }
+
+    /**
      * Requests the layout manager to coordinate all visible children in the list
      */
     protected void coordinateViewHolders() {

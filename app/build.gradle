@@ -73,6 +73,8 @@ dependencies {
     compile project(':html-textview')
     compile project(':com.door43.tools.reporting')
     compile project(':com.door43.tools.security')
+    compile project(':recyclerviewfastscroller')
+//    compile 'xyz.danoz:recyclerviewfastscroller:0.1.3'
     compile 'com.google.android.gms:play-services-appindexing:8.1.0'
 
     androidTestCompile 'com.android.support:support-annotations:23.1.1'

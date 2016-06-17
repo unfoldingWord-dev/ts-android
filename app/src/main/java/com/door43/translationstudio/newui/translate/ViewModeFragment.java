@@ -3,7 +3,6 @@ package com.door43.translationstudio.newui.translate;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -13,8 +12,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
+
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
@@ -28,13 +26,14 @@ import com.door43.translationstudio.AppContext;
 
 import org.json.JSONException;
 
-import java.security.InvalidParameterException;
+import xyz.danoz.recyclerviewfastscroller.sectionindicator.title.SectionTitleIndicator;
 
 /**
  * Created by joel on 9/18/2015.
  */
 public abstract class ViewModeFragment extends BaseFragment implements ViewModeAdapter.OnEventListener, ChooseSourceTranslationDialog.OnClickListener {
 
+    public static final String TAG = ViewModeFragment.class.getSimpleName();
     private RecyclerView mRecyclerView;
     private LinearLayoutManager mLayoutManager;
     private ViewModeAdapter mAdapter;
@@ -46,6 +45,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     private String mSourceTranslationId;
     private GestureDetector mGesture;
     private boolean mRememberLastPosition = true;
+    private ChapterFastScroller mFastScroller;
 
     /**
      * Returns an instance of the adapter
@@ -88,11 +88,24 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
             mListener.onNoSourceTranslations(targetTranslationId);
         } else {
             mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view);
+
             mLayoutManager = new LinearLayoutManager(getActivity());
             mRecyclerView.setLayoutManager(mLayoutManager);
             mRecyclerView.setItemAnimator(new DefaultItemAnimator());
             mAdapter = generateAdapter(this.getActivity(), targetTranslationId, mSourceTranslationId, chapterId, frameId, args);
             mRecyclerView.setAdapter(mAdapter);
+
+            mFastScroller = (ChapterFastScroller) rootView.findViewById(R.id.fast_scroller);
+            mFastScroller.setRecyclerView(mRecyclerView);
+
+            SectionTitleIndicator sectionTitleIndicator =
+                    (SectionTitleIndicator) rootView.findViewById(R.id.fast_scroller_section_title_indicator);
+
+            // Connect the section indicator to the scroller
+            mFastScroller.setSectionIndicator(sectionTitleIndicator);
+
+            final RecyclerView.OnScrollListener fastScrollerListener = mFastScroller.getOnScrollListener();
+
             mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override
                 public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
@@ -103,6 +116,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
                 @Override
                 public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                     super.onScrolled(recyclerView, dx, dy);
+                    fastScrollerListener.onScrolled(recyclerView, dx, dy);
                     if (mFingerScroll) {
                         int position = mLayoutManager.findFirstVisibleItemPosition();
                         mListener.onScrollProgress(position);
@@ -161,6 +175,19 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         onPrepareView(rootView);
 
         return rootView;
+    }
+
+    /**
+     * get the chapter ID for the position
+     * @param position
+     */
+    public String getChapterID(int position) {
+        if(mAdapter != null) {
+            return mAdapter.getChapterID(position);
+        }
+
+        String chapterID = Integer.toString(position + 1);
+        return chapterID;
     }
 
     /**
@@ -307,6 +334,10 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     public void onScrollProgressUpdate(int scrollProgress) {
         mFingerScroll = false;
         mRecyclerView.scrollToPosition(scrollProgress);
+    }
+
+    public void setScrollProgress(int position) {
+        // do nothings
     }
 
     @Override

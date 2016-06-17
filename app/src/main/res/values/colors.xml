@@ -1,4 +1,9 @@
 <resources>
+
+    <!-- fast scrollbar colors -->
+    <color name="fastScrollHandleColor">#000</color>
+    <color name="fastScrollBarColor">#ffcecece</color>
+
     <!-- primary colors -->
     <color name="primary_light">#B2DFD8</color>
     <color name="primary">#009688</color>

@@ -2,9 +2,10 @@
 <LinearLayout
     android:id="@+id/leftToolbar"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="?attr/actionBarSize"
+    android:orientation="vertical"
     android:background="?attr/colorPrimary"
     android:fitsSystemWindows="true"
+    android:layout_width="?attr/actionBarSize"
     android:layout_height="match_parent">
 
      <!--top -->
@@ -53,102 +54,6 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-
-            <com.door43.widget.VerticalSeekBar
-                android:id="@+id/action_seek"
-                android:layout_height="match_parent"
-                android:layout_width="wrap_content"
-                android:layout_gravity="center"
-                android:padding="8dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="16dp"
-                android:thumbTint="@color/white"
-                android:progressTint="@color/white"/>
-
-            <LinearLayout
-                android:id="@+id/action_seek_graduations"
-                android:layout_alignLeft="@+id/action_seek"
-                android:layout_alignTop="@+id/action_seek"
-                android:layout_alignRight="@+id/action_seek"
-                android:layout_alignBottom="@+id/action_seek"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:alpha="0">
-
-                <RelativeLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.125"
-                    android:gravity="center_vertical">
-                    <ImageView
-                        style="@style/WidgetSeekBarGraduation"
-                        android:layout_alignLeft="@+id/graduation1"
-                        android:layout_alignRight="@+id/graduation1"
-                        android:layout_alignBottom="@+id/graduation1"
-                        android:layout_alignTop="@+id/graduation1"
-                        android:src="@android:drawable/toast_frame" />
-                    <TextView
-                        android:id="@+id/graduation1"
-                        android:textSize="@dimen/abc_text_size_small_material"
-                        style="@style/WidgetSeekBarGraduation" />
-                </RelativeLayout>
-
-                <RelativeLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.125"
-                    android:gravity="center_vertical">
-                    <ImageView
-                        style="@style/WidgetSeekBarGraduation"
-                        android:layout_alignLeft="@+id/graduation2"
-                        android:layout_alignRight="@+id/graduation2"
-                        android:layout_alignBottom="@+id/graduation2"
-                        android:layout_alignTop="@+id/graduation2"
-                        android:src="@android:drawable/toast_frame" />
-                    <TextView
-                        android:id="@+id/graduation2"
-                        android:textSize="@dimen/abc_text_size_small_material"
-                        style="@style/WidgetSeekBarGraduation" />
-                </RelativeLayout>
-
-                <RelativeLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.125"
-                    android:gravity="center_vertical">
-                    <ImageView
-                        style="@style/WidgetSeekBarGraduation"
-                        android:layout_alignLeft="@+id/graduation3"
-                        android:layout_alignRight="@+id/graduation3"
-                        android:layout_alignBottom="@+id/graduation3"
-                        android:layout_alignTop="@+id/graduation3"
-                        android:src="@android:drawable/toast_frame" />
-                    <TextView
-                        android:id="@+id/graduation3"
-                        android:textSize="@dimen/abc_text_size_small_material"
-                        style="@style/WidgetSeekBarGraduation" />
-                </RelativeLayout>
-
-                <RelativeLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.125"
-                    android:gravity="center_vertical">
-                    <ImageView
-                        style="@style/WidgetSeekBarGraduation"
-                        android:layout_alignLeft="@+id/graduation4"
-                        android:layout_alignRight="@+id/graduation4"
-                        android:layout_alignBottom="@+id/graduation4"
-                        android:layout_alignTop="@+id/graduation4"
-                        android:src="@android:drawable/toast_frame" />
-                    <TextView
-                        android:id="@+id/graduation4"
-                        android:textSize="@dimen/abc_text_size_small_material"
-                        style="@style/WidgetSeekBarGraduation" />
-                </RelativeLayout>
-
-            </LinearLayout>
         </RelativeLayout>
     </FrameLayout>
 
