@@ -52,7 +52,7 @@ import java.util.List;
  *
  * NOTE: if you add new preference categories be sure to update MainApplication to load their default values.
  */
-public class SettingsActivity extends PreferenceActivity {
+public class SettingsActivity extends PreferenceActivity implements ManagedTask.OnFinishedListener {
     /**
      * Determines whether to always show the simplified settings UI, where
      * settings are presented in a single list. When false, settings are shown
@@ -238,6 +238,21 @@ public class SettingsActivity extends PreferenceActivity {
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
+
+        findPreference("app_updates").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+
+                ProgressDialog checkingDialog = getProgressDialog();
+                checkingDialog.setMessage(getResources().getString(R.string.checking_for_updates));
+                checkingDialog.show();
+
+                CheckForLatestReleaseTask task = new CheckForLatestReleaseTask();
+                task.addOnFinishedListener(SettingsActivity.this);
+                TaskManager.addTask(task, CheckForLatestReleaseTask.TASK_ID);
+                return true;
+            }
+        });
     }
 
     /** {@inheritDoc} */
@@ -340,11 +355,58 @@ public class SettingsActivity extends PreferenceActivity {
                         .getString(preference.getKey(), ""));
     }
 
+    @Override
+    public void onFinished(final ManagedTask task) {
+        TaskManager.clearTask(task);
+
+        if(task instanceof CheckForLatestReleaseTask) {
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    CheckForLatestReleaseTask checkForLatestReleaseTask = (CheckForLatestReleaseTask) task;
+                    final ProgressDialog checkingDialog = getProgressDialog();
+                    if (checkingDialog.isShowing()) {
+                        checkingDialog.dismiss();
+                    }
+
+                    CheckForLatestReleaseTask.Release release = checkForLatestReleaseTask.getLatestRelease();
+                    if(release == null) {
+                        CustomAlertDialog.Create(SettingsActivity.this)
+                                .setTitle(R.string.check_for_updates)
+                                .setMessage(R.string.have_latest_app_update)
+                                .setPositiveButton(R.string.label_ok, null)
+                                .show("HaveLatest");
+                    } else { // have newer
+                        promptUserToDownloadLatestVersion(checkForLatestReleaseTask.getLatestRelease());
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * ask the user if they want to download the latest version
+     */
+    private void promptUserToDownloadLatestVersion(final CheckForLatestReleaseTask.Release release) {
+        CustomAlertDialog.Create(this)
+                .setTitle(R.string.apk_update_available)
+                .setMessage(R.string.download_latest_apk)
+                .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        CrashReporterActivity.getLatestAppVersion(SettingsActivity.this, release);
+                    }
+                })
+                .setNegativeButton(R.string.title_cancel, null)
+                .show("DownloadLatest");
+    }
+
     /**
      * This fragment shows general preferences only. It is used when the
      * activity is showing a two-pane settings UI.
      */
-    public static class GeneralPreferenceFragment extends PreferenceFragment implements ManagedTask.OnFinishedListener  {
+    public static class GeneralPreferenceFragment extends PreferenceFragment {
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -398,8 +460,7 @@ public class SettingsActivity extends PreferenceActivity {
                 e.printStackTrace();
             }
 
-            Preference button = (Preference)findPreference("app_updates");
-            button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            findPreference("app_updates").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
 
@@ -408,58 +469,11 @@ public class SettingsActivity extends PreferenceActivity {
                     checkingDialog.show();
 
                     CheckForLatestReleaseTask task = new CheckForLatestReleaseTask();
-                    task.addOnFinishedListener(GeneralPreferenceFragment.this);
+                    task.addOnFinishedListener((SettingsActivity)getActivity());
                     TaskManager.addTask(task, CheckForLatestReleaseTask.TASK_ID);
                     return true;
                 }
             });
-        }
-
-        @Override
-        public void onFinished(final ManagedTask task) {
-            TaskManager.clearTask(task);
-
-            if(task instanceof CheckForLatestReleaseTask) {
-                Handler hand = new Handler(Looper.getMainLooper());
-                hand.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        CheckForLatestReleaseTask checkForLatestReleaseTask = (CheckForLatestReleaseTask) task;
-                        final ProgressDialog checkingDialog = ((SettingsActivity) getActivity()).getProgressDialog();
-                        if (checkingDialog.isShowing()) {
-                            checkingDialog.dismiss();
-                        }
-
-                        CheckForLatestReleaseTask.Release release = checkForLatestReleaseTask.getLatestRelease();
-                        if(release == null) {
-                            CustomAlertDialog.Create(getActivity())
-                                    .setTitle(R.string.check_for_updates)
-                                    .setMessage(R.string.have_latest_app_update)
-                                    .setPositiveButton(R.string.label_ok, null)
-                                    .show("HaveLatest");
-                        } else { // have newer
-                            promptUserToDownloadLatestVersion(checkForLatestReleaseTask.getLatestRelease());
-                        }
-                    }
-                });
-            }
-        }
-
-        /**
-         * ask the user if they want to download the latest version
-         */
-        private void promptUserToDownloadLatestVersion(final CheckForLatestReleaseTask.Release release) {
-            CustomAlertDialog.Create(getActivity())
-                    .setTitle(R.string.apk_update_available)
-                    .setMessage(R.string.download_latest_apk)
-                    .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            CrashReporterActivity.getLatestAppVersion(getActivity(), release);
-                        }
-                    })
-                    .setNegativeButton(R.string.title_cancel, null)
-                    .show("DownloadLatest");
         }
     }
 
