@@ -96,11 +96,20 @@ public class PrintDialog extends DialogFragment implements GenericTaskWatcher.On
             projectTitle.setText(mTargetTranslation.getProjectId() + " - " + mTargetTranslation.getTargetLanguageName());
         }
 
+        boolean isObsProject = mTargetTranslation.isObsProject();
+
         this.includeImagesCheckBox = (CheckBox)v.findViewById(R.id.print_images);
         this.includeIncompleteCheckBox = (CheckBox)v.findViewById(R.id.print_incomplete_frames);
-        includeImagesCheckBox.setEnabled(true);
+
+        if(isObsProject) {
+            includeImagesCheckBox.setEnabled(true);
+            includeImagesCheckBox.setChecked(includeImages);
+        } else { // no images in bible stories
+            includeImagesCheckBox.setVisibility(View.GONE);
+            includeImagesCheckBox.setChecked(false);
+        }
+
         includeIncompleteCheckBox.setEnabled(true);
-        includeImagesCheckBox.setChecked(includeImages);
         includeIncompleteCheckBox.setChecked(includeIncompleteFrames);
 
         mExportFile = new File(AppContext.getSharingDir(), mTargetTranslation.getId() + ".pdf");
