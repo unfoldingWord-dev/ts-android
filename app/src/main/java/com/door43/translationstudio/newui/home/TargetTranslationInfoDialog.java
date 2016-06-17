@@ -271,20 +271,12 @@ public class TargetTranslationInfoDialog extends DialogFragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(ACTIVITY_PUBLISH == requestCode) {
-            Logger.i(TargetTranslationInfoDialog.class.getSimpleName(), "requestCode=" + requestCode);
-            Logger.i(TargetTranslationInfoDialog.class.getSimpleName(), "resultCode=" + resultCode);
-            if(Activity.RESULT_CANCELED == resultCode) {
-                Bundle args = data.getExtras();
-                String targetTranslationId = args.getString(PublishActivity.EXTRA_TARGET_TRANSLATION_ID, null);
-                Boolean pushRejected = args.getBoolean(PublishActivity.EXTRA_PUSH_REJECTED);
-                Logger.i(TargetTranslationInfoDialog.class.getSimpleName(), "targetTranslationId=" + targetTranslationId);
-                Logger.i(TargetTranslationInfoDialog.class.getSimpleName(), "pushRejected=" + pushRejected);
-                if(pushRejected) {
-                    mListener.onPublishPushFailed(targetTranslationId);
-                    dismiss();
-                }
+        if(TargetTranslationInfoDialog.ACTIVITY_PUBLISH == requestCode ) {
+            Activity activity = getActivity();
+            if (activity instanceof HomeActivity) {
+                ((HomeActivity) activity).onActivityResult(requestCode, resultCode, data);
             }
+            dismiss();
         }
     }
 }

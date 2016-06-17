@@ -1,5 +1,6 @@
 package com.door43.translationstudio.newui.home;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.ContentResolver;
@@ -33,6 +34,7 @@ import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
 import com.door43.translationstudio.newui.FeedbackDialog;
+import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.tasks.ExamineImportsForCollisionsTask;
@@ -435,7 +437,50 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
             }
         } else if(TargetTranslationInfoDialog.ACTIVITY_PUBLISH == requestCode ) {
             Logger.i(TAG,"requestCode=" + requestCode);
+            Logger.i(TargetTranslationInfoDialog.class.getSimpleName(), "requestCode=" + requestCode);
+            Logger.i(TargetTranslationInfoDialog.class.getSimpleName(), "resultCode=" + resultCode);
+            if(Activity.RESULT_CANCELED == resultCode) {
+                Bundle args = data.getExtras();
+                String targetTranslationId = args.getString(PublishActivity.EXTRA_TARGET_TRANSLATION_ID, null);
+                Boolean pushRejected = args.getBoolean(PublishActivity.EXTRA_PUSH_REJECTED);
+                Logger.i(TargetTranslationInfoDialog.class.getSimpleName(), "targetTranslationId=" + targetTranslationId);
+                Logger.i(TargetTranslationInfoDialog.class.getSimpleName(), "pushRejected=" + pushRejected);
+                if(pushRejected) {
+                    showMergePrompt(targetTranslationId);
+                }
+            }
         }
+    }
+
+    public void showMergePrompt(String targetTranslationId) {
+        TargetTranslation targetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
+        if(targetTranslation == null) {
+            Logger.e(TAG, "invalid target translation id:" + targetTranslationId);
+            return;
+        }
+
+        String targetLanguageName = targetTranslation.getTargetLanguageName();
+        String projectID = targetTranslation.getProjectId();
+        Project project = AppContext.getLibrary().getProject(projectID, targetTranslation.getTargetLanguageName());
+        if(project == null) {
+            Logger.e(TAG, "invalid project id:" + projectID);
+            return;
+        }
+
+        String bookName = project.name;
+        String message = String.format(getResources().getString(R.string.merge_request),bookName, targetLanguageName);
+
+        CustomAlertDialog.Create(this)
+                .setTitle(R.string.change_detected)
+                .setMessage(message)
+                .setPositiveButton(R.string.yes, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // TODO: 6/17/16 launch merge
+                    }
+                })
+                .setNegativeButton(R.string.no, null)
+                .show("push_failure");
     }
 
     @Override
