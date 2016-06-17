@@ -31,9 +31,10 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
     public static final int STEP_REVIEW = 2;
     public static final int STEP_PUBLISH = 3;
     public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
+    public static final String EXTRA_CALLING_ACTIVITY = "extra_calling_activity";
+    public static final String EXTRA_PUSH_REJECTED = "extra_push_failed";
     private static final String STATE_STEP = "state_step";
     private static final String STATE_PUBLISH_FINISHED = "state_publish_finished";
-    public static final String EXTRA_CALLING_ACTIVITY = "extra_calling_activity";
     private PublishStepFragment mFragment;
     private Translator mTranslator;
     private TargetTranslation mTargetTranslation;
@@ -206,6 +207,16 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
         mPublishIndicator.setDone(true);
         mPublishIndicator.setActive(true);
         mPublishFinished = true;
+    }
+
+    @Override
+    public void postFailure() {
+        // TODO: 6/16/16  need to report failure and prompt to initiate merge
+        Intent data = new Intent();
+        data.putExtra(EXTRA_PUSH_REJECTED, true);
+        data.putExtra(EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+        setResult(RESULT_CANCELED, data);
+        finish();
     }
 
     /**

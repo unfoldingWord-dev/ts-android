@@ -217,109 +217,26 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             taskWatcher.watch(pushTask);
         }
 
-        // attach to dialogs
-        MergeConflictsDialog mergeConflictsDialog = (MergeConflictsDialog)getFragmentManager().findFragmentByTag(MergeConflictsDialog.TAG);
-        if(mergeConflictsDialog != null) {
-            attachMergeConflictListener(mergeConflictsDialog);
-        }
-
         return v;
     }
 
     /**
      * The publishing tasks are quite complicated so here's an overview in order:
-     * 1. Pull - retreives any outstanding changes from the server. Also checks authentication (goto 2) , and existence of repo (goto 3)
-     * 2. Register Keys - generates ssh keys and registers them with the gogs account. Then tries to pull again.
-     * 3. Create Repo - creates a new repository in gogs. Then tries to pull again.
-     * 4. Push - pushes the target translation to the gogs repo. If authentication fails goto 2
-     * User intervention is required if there are merge conflicts.
+     * 1. Push - pushes the target translation to the gogs repo. Also checks authentication (goto 2) , and existence of repo (goto 3)
+     * 2. Register Keys - generates ssh keys and registers them with the gogs account. Then tries to push again.
+     * 3. Create Repo - creates a new repository in gogs. Then tries to push again.
+     * User is warned that they will need to merge if push fails.
      * @param task
      */
     @Override
     public void onFinished(final ManagedTask task) {
         taskWatcher.stop();
-//        if(task instanceof PullTargetTranslationTask) {
-//            PullTargetTranslationTask.Status status = ((PullTargetTranslationTask)task).getStatus();
-//            //  TRICKY: we continue to push for unknown status in case the repo was just created (the missing branch is an error)
-//            // the pull task will catch any errors
-//            if(status == PullTargetTranslationTask.Status.UP_TO_DATE
-//                    || status == PullTargetTranslationTask.Status.UNKNOWN) {
-//                Logger.i(this.getClass().getName(), "Changes on the server were synced with " + targetTranslation.getId());
-//                try {
-//                    final Handler hand = new Handler(Looper.getMainLooper());
-//                    targetTranslation.setPublished(new TargetTranslation.OnPublishedListener() {
-//                        @Override
-//                        public void onSuccess() {
-//                            // begin upload
-//                            PushTargetTranslationTask task = new PushTargetTranslationTask(targetTranslation, true);
-//                            taskWatcher.watch(task);
-//                            TaskManager.addTask(task, PushTargetTranslationTask.TASK_ID);
-//                        }
-//
-//                        @Override
-//                        public void onFailed(Exception e) {
-//                            hand.post(new Runnable() {
-//                                @Override
-//                                public void run() {
-//                                    notifyPublishFailed(targetTranslation);
-//                                }
-//                            });
-//                        }
-//                    });
-//                } catch (Exception e) {
-//                    Logger.e(PublishFragment.class.getName(), "Failed to mark target translation " + targetTranslation.getId() + " as publishable", e);
-//                    notifyPublishFailed(targetTranslation);
-//                    return;
-//                }
-//            } else if(status == PullTargetTranslationTask.Status.AUTH_FAILURE) {
-//                Logger.i(this.getClass().getName(), "Authentication failed");
-//                // if we have already tried ask the user if they would like to try again
-//                if(AppContext.context().hasSSHKeys()) {
-//                    showAuthFailure();
-//                    return;
-//                }
-//
-//                RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(false);
-//                taskWatcher.watch(keyTask);
-//                TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
-//            } else if(status == PullTargetTranslationTask.Status.NO_REMOTE_REPO) {
-//                Logger.i(this.getClass().getName(), "The repository " + targetTranslation.getId() + " could not be found");
-//                // create missing repo
-//                CreateRepositoryTask repoTask = new CreateRepositoryTask(targetTranslation);
-//                taskWatcher.watch(repoTask);
-//                TaskManager.addTask(repoTask, CreateRepositoryTask.TASK_ID);
-//            } else if(status == PullTargetTranslationTask.Status.MERGE_CONFLICTS) {
-//                Logger.i(this.getClass().getName(), "The server contains conflicting changes for " + targetTranslation.getId());
-//                notifyMergeConflicts(((PullTargetTranslationTask)task).getConflicts());
-//            } else {
-//                notifyPublishFailed(targetTranslation);
-//            }
-//        } else
-        if(task instanceof RegisterSSHKeysTask) {
-            if(((RegisterSSHKeysTask)task).isSuccess()) {
-                Logger.i(this.getClass().getName(), "SSH keys were registered with the server");
-                // try to push again
 
-                PushTargetTranslationTask pushTask = new PushTargetTranslationTask(targetTranslation, true);
-                taskWatcher.watch(pushTask);
-                TaskManager.addTask(pushTask, PushTargetTranslationTask.TASK_ID);
-            } else {
-                notifyPublishFailed(targetTranslation);
-            }
-        } else if(task instanceof CreateRepositoryTask) {
-            if(((CreateRepositoryTask)task).isSuccess()) {
-                Logger.i(this.getClass().getName(), "A new repository " + targetTranslation.getId() + " was created on the server");
-                PushTargetTranslationTask pushTask = new PushTargetTranslationTask(targetTranslation, true);
-                taskWatcher.watch(pushTask);
-                TaskManager.addTask(pushTask, PushTargetTranslationTask.TASK_ID);
-            } else {
-                notifyPublishFailed(targetTranslation);
-            }
-        } else if(task instanceof PushTargetTranslationTask) {
-            PushTargetTranslationTask.Status status =((PushTargetTranslationTask)task).getStatus();
-            final String uploadDetails = ((PushTargetTranslationTask)task).getMessage();
+        if(task instanceof PushTargetTranslationTask) {
+            PushTargetTranslationTask.Status status = ((PushTargetTranslationTask) task).getStatus();
+            final String uploadDetails = ((PushTargetTranslationTask) task).getMessage();
 
-            if(status == PushTargetTranslationTask.Status.OK) {
+            if (status == PushTargetTranslationTask.Status.OK) {
                 Logger.i(this.getClass().getName(), "The target translation " + targetTranslation.getId() + " was pushed to the server");
                 getListener().finishPublishing();
                 Handler hand = new Handler(Looper.getMainLooper());
@@ -364,10 +281,10 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                         applyClickableMessageToDialog(clickableDestinationMessage, dlg);
                     }
                 });
-            } else if(status == PushTargetTranslationTask.Status.AUTH_FAILURE) {
+            } else if (status == PushTargetTranslationTask.Status.AUTH_FAILURE) {
                 Logger.i(this.getClass().getName(), "Authentication failed");
                 // if we have already tried ask the user if they would like to try again
-                if(AppContext.context().hasSSHKeys()) {
+                if (AppContext.context().hasSSHKeys()) {
                     showAuthFailure();
                     return;
                 }
@@ -376,18 +293,34 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 taskWatcher.watch(keyTask);
                 TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
 
-//                Logger.i(this.getClass().getName(), "Authentication failed");
-//                showAuthFailure();
-//            } else {
-//                notifyPublishFailed(targetTranslation);
-//            }
-
-            } else if(status == PushTargetTranslationTask.Status.NO_REMOTE_REPO) {
+            } else if (status == PushTargetTranslationTask.Status.NO_REMOTE_REPO) {
                 Logger.i(this.getClass().getName(), "The repository " + targetTranslation.getId() + " could not be found");
                 // create missing repo
                 CreateRepositoryTask repoTask = new CreateRepositoryTask(targetTranslation);
                 taskWatcher.watch(repoTask);
                 TaskManager.addTask(repoTask, CreateRepositoryTask.TASK_ID);
+            } else if (status == PushTargetTranslationTask.Status.REJECTED) {
+                showPushFailure();
+            } else {
+                notifyPublishFailed(targetTranslation);
+            }
+        } else if(task instanceof RegisterSSHKeysTask) {
+            if(((RegisterSSHKeysTask)task).isSuccess()) {
+                Logger.i(this.getClass().getName(), "SSH keys were registered with the server");
+                // try to push again
+
+                PushTargetTranslationTask pushTask = new PushTargetTranslationTask(targetTranslation, true);
+                taskWatcher.watch(pushTask);
+                TaskManager.addTask(pushTask, PushTargetTranslationTask.TASK_ID);
+            } else {
+                notifyPublishFailed(targetTranslation);
+            }
+        } else if(task instanceof CreateRepositoryTask) {
+            if(((CreateRepositoryTask)task).isSuccess()) {
+                Logger.i(this.getClass().getName(), "A new repository " + targetTranslation.getId() + " was created on the server");
+                PushTargetTranslationTask pushTask = new PushTargetTranslationTask(targetTranslation, true);
+                taskWatcher.watch(pushTask);
+                TaskManager.addTask(pushTask, PushTargetTranslationTask.TASK_ID);
             } else {
                 notifyPublishFailed(targetTranslation);
             }
@@ -484,86 +417,98 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
         return "https://" + server + "/" + userName + "/" + targetTranslation.getId();
     }
 
-    private void notifyMergeConflicts(Map<String, int[][]> conflicts) {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        MergeConflictsDialog dialog = new MergeConflictsDialog();
-        attachMergeConflictListener(dialog);
-        dialog.show(ft, MergeConflictsDialog.TAG);
-    }
+//    private void notifyMergeConflicts(Map<String, int[][]> conflicts) {
+//        FragmentTransaction ft = getFragmentManager().beginTransaction();
+//        MergeConflictsDialog dialog = new MergeConflictsDialog();
+//        attachMergeConflictListener(dialog);
+//        dialog.show(ft, MergeConflictsDialog.TAG);
+//    }
+//
+//    private void attachMergeConflictListener(MergeConflictsDialog dialog) {
+//        dialog.setOnClickListener(new MergeConflictsDialog.OnClickListener() {
+//            @Override
+//            public void onReview() {
+//                // ask parent activity to navigate to a new activity
+//                Intent intent = new Intent(getActivity(), TargetTranslationActivity.class);
+//                Bundle args = new Bundle();
+//                args.putString(AppContext.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
+//                // TODO: 4/20/16 it woulid be nice to navigate directly to the first conflict
+////                args.putString(AppContext.EXTRA_CHAPTER_ID, chapterId);
+////                args.putString(AppContext.EXTRA_FRAME_ID, frameId);
+//                args.putString(AppContext.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
+//                intent.putExtras(args);
+//                startActivity(intent);
+//                getActivity().finish();
+//            }
+//
+//            @Override
+//            public void onKeepServer() {
+//                try {
+//                    Git git = targetTranslation.getRepo().getGit();
+//                    ResetCommand resetCommand = git.reset();
+//                    resetCommand.setMode(ResetCommand.ResetType.HARD)
+//                            .setRef("backup-master")
+//                            .call();
+//
+//                    targetTranslation.commitSync();
+//
+//                    // try to pull again
+//                    PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, MergeStrategy.THEIRS);
+//                    taskWatcher.watch(pullTask);
+//                    TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
+//                } catch (Exception e) {
+//                    Logger.e(this.getClass().getName(), "Failed to keep server changes durring publish", e);
+//                    notifyPublishFailed(targetTranslation);
+//                }
+//            }
+//
+//            @Override
+//            public void onKeepLocal() {
+//                try {
+//                    Git git = targetTranslation.getRepo().getGit();
+//                    ResetCommand resetCommand = git.reset();
+//                    resetCommand.setMode(ResetCommand.ResetType.HARD)
+//                            .setRef("backup-master")
+//                            .call();
+//
+//                    targetTranslation.commitSync();
+//
+//                    // try to pull again
+//                    PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, MergeStrategy.OURS);
+//                    taskWatcher.watch(pullTask);
+//                    TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
+//                } catch (Exception e) {
+//                    Logger.e(this.getClass().getName(), "Failed to keep local changes durring publish", e);
+//                    notifyPublishFailed(targetTranslation);
+//                }
+//            }
+//
+//            @Override
+//            public void onCancel() {
+//                try {
+//                    Git git = targetTranslation.getRepo().getGit();
+//                    ResetCommand resetCommand = git.reset();
+//                    resetCommand.setMode(ResetCommand.ResetType.HARD)
+//                            .setRef("backup-master")
+//                            .call();
+//                } catch (Exception e) {
+//                    Logger.e(this.getClass().getName(), "Failed to restore local changes", e);
+//                }
+//                // TODO: 4/20/16 notify canceled
+//            }
+//        });
+//    }
 
-    private void attachMergeConflictListener(MergeConflictsDialog dialog) {
-        dialog.setOnClickListener(new MergeConflictsDialog.OnClickListener() {
-            @Override
-            public void onReview() {
-                // ask parent activity to navigate to a new activity
-                Intent intent = new Intent(getActivity(), TargetTranslationActivity.class);
-                Bundle args = new Bundle();
-                args.putString(AppContext.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
-                // TODO: 4/20/16 it woulid be nice to navigate directly to the first conflict
-//                args.putString(AppContext.EXTRA_CHAPTER_ID, chapterId);
-//                args.putString(AppContext.EXTRA_FRAME_ID, frameId);
-                args.putString(AppContext.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
-                intent.putExtras(args);
-                startActivity(intent);
-                getActivity().finish();
-            }
-
-            @Override
-            public void onKeepServer() {
-                try {
-                    Git git = targetTranslation.getRepo().getGit();
-                    ResetCommand resetCommand = git.reset();
-                    resetCommand.setMode(ResetCommand.ResetType.HARD)
-                            .setRef("backup-master")
-                            .call();
-
-                    targetTranslation.commitSync();
-
-                    // try to pull again
-                    PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, MergeStrategy.THEIRS);
-                    taskWatcher.watch(pullTask);
-                    TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
-                } catch (Exception e) {
-                    Logger.e(this.getClass().getName(), "Failed to keep server changes durring publish", e);
-                    notifyPublishFailed(targetTranslation);
-                }
-            }
-
-            @Override
-            public void onKeepLocal() {
-                try {
-                    Git git = targetTranslation.getRepo().getGit();
-                    ResetCommand resetCommand = git.reset();
-                    resetCommand.setMode(ResetCommand.ResetType.HARD)
-                            .setRef("backup-master")
-                            .call();
-
-                    targetTranslation.commitSync();
-
-                    // try to pull again
-                    PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, MergeStrategy.OURS);
-                    taskWatcher.watch(pullTask);
-                    TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
-                } catch (Exception e) {
-                    Logger.e(this.getClass().getName(), "Failed to keep local changes durring publish", e);
-                    notifyPublishFailed(targetTranslation);
-                }
-            }
-
-            @Override
-            public void onCancel() {
-                try {
-                    Git git = targetTranslation.getRepo().getGit();
-                    ResetCommand resetCommand = git.reset();
-                    resetCommand.setMode(ResetCommand.ResetType.HARD)
-                            .setRef("backup-master")
-                            .call();
-                } catch (Exception e) {
-                    Logger.e(this.getClass().getName(), "Failed to restore local changes", e);
-                }
-                // TODO: 4/20/16 notify canceled
-            }
-        });
+    public void showPushFailure() {
+        CustomAlertDialog.Create(getActivity())
+                .setTitle(R.string.error).setMessage(R.string.upload_push_failure)
+                .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        getListener().postFailure();
+                    }
+                })
+                .show("push_failure");
     }
 
     public void showAuthFailure() {

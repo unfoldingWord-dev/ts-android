@@ -1,5 +1,6 @@
 package com.door43.translationstudio.newui.home;
 
+import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -12,6 +13,7 @@ import android.view.Window;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.NativeSpeaker;
@@ -34,9 +36,10 @@ import java.util.Locale;
 public class TargetTranslationInfoDialog extends DialogFragment {
 
     public static final String ARG_TARGET_TRANSLATION_ID = "arg_target_translation_id";
+    public static final int ACTIVITY_PUBLISH = 1042;
     private TargetTranslation mTargetTranslation;
     private Translator mTranslator;
-    private OnDeleteListener mListener;
+    private OnResultsListener mListener;
     private int mTranslationProgress = 0;
     private boolean mTranslationProgressWasCalculated = false;
 
@@ -183,7 +186,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
                 Intent publishIntent = new Intent(getActivity(), PublishActivity.class);
                 publishIntent.putExtra(PublishActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
                 publishIntent.putExtra(PublishActivity.EXTRA_CALLING_ACTIVITY, PublishActivity.ACTIVITY_HOME);
-                startActivity(publishIntent);
+                startActivityForResult(publishIntent, ACTIVITY_PUBLISH);
             }
         });
 
@@ -234,12 +237,14 @@ public class TargetTranslationInfoDialog extends DialogFragment {
      * Assigns a listener for this dialog
      * @param listener
      */
-    public void setOnDeleteListener(OnDeleteListener listener) {
+    public void setOnResultsListener(OnResultsListener listener) {
         mListener = listener;
     }
 
-    public interface OnDeleteListener {
+    public interface OnResultsListener {
         void onDeleteTargetTranslation(String targetTranslationId);
+
+        void onPublishPushFailed(String targetTranslationId);
     }
 
     /**
@@ -264,5 +269,22 @@ public class TargetTranslationInfoDialog extends DialogFragment {
         return null;
     }
 
-
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(ACTIVITY_PUBLISH == requestCode) {
+            Logger.i(TargetTranslationInfoDialog.class.getSimpleName(), "requestCode=" + requestCode);
+            Logger.i(TargetTranslationInfoDialog.class.getSimpleName(), "resultCode=" + resultCode);
+            if(Activity.RESULT_CANCELED == resultCode) {
+                Bundle args = data.getExtras();
+                String targetTranslationId = args.getString(PublishActivity.EXTRA_TARGET_TRANSLATION_ID, null);
+                Boolean pushRejected = args.getBoolean(PublishActivity.EXTRA_PUSH_REJECTED);
+                Logger.i(TargetTranslationInfoDialog.class.getSimpleName(), "targetTranslationId=" + targetTranslationId);
+                Logger.i(TargetTranslationInfoDialog.class.getSimpleName(), "pushRejected=" + pushRejected);
+                if(pushRejected) {
+                    mListener.onPublishPushFailed(targetTranslationId);
+                    dismiss();
+                }
+            }
+        }
+    }
 }

@@ -433,6 +433,8 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
                 ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                 snack.show();
             }
+        } else if(TargetTranslationInfoDialog.ACTIVITY_PUBLISH == requestCode ) {
+            Logger.i(TAG,"requestCode=" + requestCode);
         }
     }
 

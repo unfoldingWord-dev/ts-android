@@ -14,16 +14,11 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.AppContext;
-import com.door43.translationstudio.newui.library.ServerLibraryFragment;
-
-import org.eclipse.jgit.api.errors.GitAPIException;
-
-import java.io.IOException;
 
 /**
  * Displays a list of target translations
  */
-public class TargetTranslationListFragment extends BaseFragment implements TargetTranslationInfoDialog.OnDeleteListener {
+public class TargetTranslationListFragment extends BaseFragment implements TargetTranslationInfoDialog.OnResultsListener {
 
     private TargetTranslationAdapter mAdapter;
     private OnItemClickListener mListener;
@@ -49,7 +44,7 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
                     TargetTranslationInfoDialog dialog = new TargetTranslationInfoDialog();
                     Bundle args = new Bundle();
                     args.putString(TargetTranslationInfoDialog.ARG_TARGET_TRANSLATION_ID, targetTranslationId);
-                    dialog.setOnDeleteListener(TargetTranslationListFragment.this);
+                    dialog.setOnResultsListener(TargetTranslationListFragment.this);
                     dialog.setArguments(args);
                     dialog.show(ft, "infoDialog");
                 } else {
@@ -71,7 +66,7 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
         if(savedInstanceState != null) {
             TargetTranslationInfoDialog dialog = (TargetTranslationInfoDialog) getFragmentManager().findFragmentByTag("infoDialog");
             if(dialog != null) {
-                dialog.setOnDeleteListener(this);
+                dialog.setOnResultsListener(this);
             }
         }
 
@@ -98,6 +93,11 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
     @Override
     public void onDeleteTargetTranslation(String targetTranslationId) {
         mListener.onItemDeleted(targetTranslationId);
+    }
+
+    @Override
+    public void onPublishPushFailed(String targetTranslationId) {
+        // TODO: 6/16/16 need to handle
     }
 
     public interface OnItemClickListener {
