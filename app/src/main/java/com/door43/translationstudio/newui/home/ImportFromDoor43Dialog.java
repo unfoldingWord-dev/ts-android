@@ -163,7 +163,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
     }
 
     /**
-     * this will skip the search when dialog is openned and go direct to merge of project
+     * this will skip the search when dialog opens and go direct to merge of target
      * @param targetTranslationID
      */
     public void doQuickLoad(String targetTranslationID) {

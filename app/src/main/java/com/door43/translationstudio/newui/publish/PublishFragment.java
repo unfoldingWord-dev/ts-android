@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -35,14 +34,10 @@ import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
-import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.Door43LoginDialog;
 import com.door43.translationstudio.newui.FeedbackDialog;
-import com.door43.translationstudio.newui.MergeConflictsDialog;
-import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.tasks.CreateRepositoryTask;
-import com.door43.translationstudio.tasks.PullTargetTranslationTask;
 import com.door43.translationstudio.tasks.PushTargetTranslationTask;
 import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
 import com.door43.translationstudio.AppContext;
@@ -51,14 +46,10 @@ import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 import com.door43.widget.ViewUtil;
 
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ResetCommand;
-import org.eclipse.jgit.merge.MergeStrategy;
 import org.sufficientlysecure.htmltextview.HtmlTextView;
 
 import java.io.File;
 import java.security.InvalidParameterException;
-import java.util.Map;
 
 
 /**
@@ -423,7 +414,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        getListener().postFailure();
+                        getListener().pushFailure();
                     }
                 })
                 .show("push_failure");

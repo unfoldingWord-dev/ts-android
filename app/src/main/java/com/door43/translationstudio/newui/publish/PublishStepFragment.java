@@ -53,6 +53,6 @@ public abstract class PublishStepFragment extends BaseFragment {
 
         void finishPublishing();
 
-        void postFailure();
+        void pushFailure();
     }
 }

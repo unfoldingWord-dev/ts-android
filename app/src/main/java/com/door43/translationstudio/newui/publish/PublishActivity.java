@@ -32,7 +32,6 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
     public static final int STEP_PUBLISH = 3;
     public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
     public static final String EXTRA_CALLING_ACTIVITY = "extra_calling_activity";
-    public static final String EXTRA_PUSH_REJECTED = "extra_push_failed";
     private static final String STATE_STEP = "state_step";
     private static final String STATE_PUBLISH_FINISHED = "state_publish_finished";
     private PublishStepFragment mFragment;
@@ -210,7 +209,7 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
     }
 
     @Override
-    public void postFailure() {
+    public void pushFailure() {
         String targetTranslationId = null;
         if(mTargetTranslation != null) {
             targetTranslationId = mTargetTranslation.getId();
