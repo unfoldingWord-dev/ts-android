@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -17,6 +18,7 @@ import android.widget.ListView;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
@@ -26,7 +28,6 @@ import com.door43.translationstudio.tasks.AdvancedGogsRepoSearchTask;
 import com.door43.translationstudio.tasks.CloneRepositoryTask;
 import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
 import com.door43.translationstudio.tasks.SearchGogsRepositoriesTask;
-import com.door43.translationstudio.tasks.SearchGogsUsersTask;
 import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
@@ -36,7 +37,6 @@ import org.apache.commons.io.FileUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.unfoldingword.gogsclient.Repository;
-import org.unfoldingword.gogsclient.User;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,6 +56,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
     private File cloneDestDir;
     private EditText repoEditText;
     private EditText userEditText;
+    private String quickLoadPath;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
@@ -112,11 +113,9 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Repository repo = adapter.getItem(position);
                 String repoName = repo.getFullName().replace("/", "-");
-                cloneDestDir = new File(AppContext.context().getCacheDir(), repoName + System.currentTimeMillis() + "/");
+                cloneDestDir = getTempCloneDirectory(repoName);
                 cloneHtmlUrl = repo.getHtmlUrl();
-                CloneRepositoryTask task = new CloneRepositoryTask(cloneHtmlUrl, cloneDestDir);
-                taskWatcher.watch(task);
-                TaskManager.addTask(task, CloneRepositoryTask.TASK_ID);
+                doCloneRepository();
             }
         });
 
@@ -136,6 +135,19 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
                 }
                 adapter.setRepositories(repositories);
             }
+        } else {
+            if(quickLoadPath != null) { // check if we already have a project to merge
+                cloneHtmlUrl = quickLoadPath;
+                getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN); // stop annoying keyboard from popping up
+
+                Handler hand = new Handler(Looper.getMainLooper());
+                hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        doCloneRepository();
+                    }
+                });
+            }
         }
 
         // connect to existing task
@@ -148,6 +160,32 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
         }
 
         return v;
+    }
+
+    /**
+     * this will skip the search when dialog is openned and go direct to merge of project
+     * @param targetTranslationID
+     */
+    public void doQuickLoad(String targetTranslationID) {
+
+        Profile profile = AppContext.getProfile();
+        if(profile != null && profile.gogsUser != null) {
+            String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
+            quickLoadPath = server + ":" + profile.gogsUser.getUsername() + "/" + targetTranslationID;
+            cloneDestDir = getTempCloneDirectory(targetTranslationID);
+        } else {
+            Logger.e(ImportFromDoor43Dialog.class.getSimpleName(), "doQuickLoad failed, no gogsUser");
+        }
+    }
+
+    private File getTempCloneDirectory(String repoName) {
+        return new File(AppContext.context().getCacheDir(), repoName + System.currentTimeMillis() + "/");
+    }
+
+    private void doCloneRepository() {
+        CloneRepositoryTask task = new CloneRepositoryTask(cloneHtmlUrl, cloneDestDir);
+        taskWatcher.watch(task);
+        TaskManager.addTask(task, CloneRepositoryTask.TASK_ID);
     }
 
     @Override
@@ -208,6 +246,10 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
                                 Snackbar snack = Snackbar.make(ImportFromDoor43Dialog.this.getView(), R.string.success, Snackbar.LENGTH_SHORT);
                                 ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                                 snack.show();
+
+                                if(quickLoadPath != null) {
+                                    dismiss();
+                                }
                             }
                         });
                     }
@@ -230,10 +272,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
         } else if(task instanceof RegisterSSHKeysTask) {
             if(((RegisterSSHKeysTask)task).isSuccess()) {
                 Logger.i(this.getClass().getName(), "SSH keys were registered with the server");
-                // try to clone again
-                CloneRepositoryTask pullTask = new CloneRepositoryTask(cloneHtmlUrl, cloneDestDir);
-                taskWatcher.watch(pullTask);
-                TaskManager.addTask(pullTask, CloneRepositoryTask.TASK_ID);
+                doCloneRepository(); // try to clone again
             } else {
                 notifyImportFailed();
             }

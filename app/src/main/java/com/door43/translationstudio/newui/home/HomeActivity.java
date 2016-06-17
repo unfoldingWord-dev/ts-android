@@ -439,7 +439,7 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
             Logger.i(TAG,"requestCode=" + requestCode);
             Logger.i(TargetTranslationInfoDialog.class.getSimpleName(), "requestCode=" + requestCode);
             Logger.i(TargetTranslationInfoDialog.class.getSimpleName(), "resultCode=" + resultCode);
-            if(Activity.RESULT_CANCELED == resultCode) {
+            if((Activity.RESULT_CANCELED == resultCode) && (data != null)) {
                 Bundle args = data.getExtras();
                 String targetTranslationId = args.getString(PublishActivity.EXTRA_TARGET_TRANSLATION_ID, null);
                 Boolean pushRejected = args.getBoolean(PublishActivity.EXTRA_PUSH_REJECTED);
@@ -452,7 +452,7 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
         }
     }
 
-    public void showMergePrompt(String targetTranslationId) {
+    public void showMergePrompt(final String targetTranslationId) {
         TargetTranslation targetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         if(targetTranslation == null) {
             Logger.e(TAG, "invalid target translation id:" + targetTranslationId);
@@ -476,7 +476,16 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
                 .setPositiveButton(R.string.yes, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        // TODO: 6/17/16 launch merge
+                        FragmentTransaction ft = getFragmentManager().beginTransaction();
+                        Fragment prev = getFragmentManager().findFragmentByTag(ImportDialog.TAG);
+                        if (prev != null) {
+                            ft.remove(prev);
+                        }
+                        ft.addToBackStack(null);
+
+                        ImportFromDoor43Dialog dialog = new ImportFromDoor43Dialog();
+                        dialog.doQuickLoad(targetTranslationId);
+                        dialog.show(ft, ImportDialog.TAG);
                     }
                 })
                 .setNegativeButton(R.string.no, null)
