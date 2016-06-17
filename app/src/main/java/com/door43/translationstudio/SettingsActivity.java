@@ -1,9 +1,7 @@
 package com.door43.translationstudio;
 
 import android.annotation.TargetApi;
-import android.app.Dialog;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -12,7 +10,8 @@ import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.DialogPreference;
+import android.os.Handler;
+import android.os.Looper;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -25,10 +24,13 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.newui.DeviceNetworkAliasDialog;
+import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.legal.LegalDocumentActivity;
 import com.door43.translationstudio.service.BackupService;
+import com.door43.translationstudio.tasks.CheckForLatestReleaseTask;
 import com.door43.util.TTFAnalyzer;
+import com.door43.util.tasks.ManagedTask;
+import com.door43.util.tasks.TaskManager;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -50,7 +52,7 @@ import java.util.List;
  *
  * NOTE: if you add new preference categories be sure to update MainApplication to load their default values.
  */
-public class SettingsActivity extends PreferenceActivity {
+public class SettingsActivity extends PreferenceActivity implements ManagedTask.OnFinishedListener {
     /**
      * Determines whether to always show the simplified settings UI, where
      * settings are presented in a single list. When false, settings are shown
@@ -76,6 +78,8 @@ public class SettingsActivity extends PreferenceActivity {
     public static final String KEY_SDCARD_ACCESS_URI = "internal_uri_extsdcard";
     public static final String KEY_SDCARD_ACCESS_FLAGS = "internal_flags_extsdcard";
     public static final String KEY_PREF_GOGS_API = "gogs_api";
+
+    ProgressDialog mLoadingDialog = null;
 
     /**
      * TRICKY: this was added after API 19 to fix a vulnerability.
@@ -116,6 +120,19 @@ public class SettingsActivity extends PreferenceActivity {
         });
 
         setupSimplePreferencesScreen();
+    }
+
+    /**
+     * get progress dialog
+     * @return
+     */
+    private ProgressDialog getProgressDialog() {
+        if(mLoadingDialog == null) {
+            mLoadingDialog = new ProgressDialog(this);
+        }
+        mLoadingDialog.setCancelable(false);
+        mLoadingDialog.setCanceledOnTouchOutside(false);
+        return mLoadingDialog;
     }
 
     /**
@@ -221,6 +238,21 @@ public class SettingsActivity extends PreferenceActivity {
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
+
+        findPreference("app_updates").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+
+                ProgressDialog checkingDialog = getProgressDialog();
+                checkingDialog.setMessage(getResources().getString(R.string.checking_for_updates));
+                checkingDialog.show();
+
+                CheckForLatestReleaseTask task = new CheckForLatestReleaseTask();
+                task.addOnFinishedListener(SettingsActivity.this);
+                TaskManager.addTask(task, CheckForLatestReleaseTask.TASK_ID);
+                return true;
+            }
+        });
     }
 
     /** {@inheritDoc} */
@@ -323,6 +355,53 @@ public class SettingsActivity extends PreferenceActivity {
                         .getString(preference.getKey(), ""));
     }
 
+    @Override
+    public void onFinished(final ManagedTask task) {
+        TaskManager.clearTask(task);
+
+        if(task instanceof CheckForLatestReleaseTask) {
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    CheckForLatestReleaseTask checkForLatestReleaseTask = (CheckForLatestReleaseTask) task;
+                    final ProgressDialog checkingDialog = getProgressDialog();
+                    if (checkingDialog.isShowing()) {
+                        checkingDialog.dismiss();
+                    }
+
+                    CheckForLatestReleaseTask.Release release = checkForLatestReleaseTask.getLatestRelease();
+                    if(release == null) {
+                        CustomAlertDialog.Create(SettingsActivity.this)
+                                .setTitle(R.string.check_for_updates)
+                                .setMessage(R.string.have_latest_app_update)
+                                .setPositiveButton(R.string.label_ok, null)
+                                .show("HaveLatest");
+                    } else { // have newer
+                        promptUserToDownloadLatestVersion(checkForLatestReleaseTask.getLatestRelease());
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * ask the user if they want to download the latest version
+     */
+    private void promptUserToDownloadLatestVersion(final CheckForLatestReleaseTask.Release release) {
+        CustomAlertDialog.Create(this)
+                .setTitle(R.string.apk_update_available)
+                .setMessage(R.string.download_latest_apk)
+                .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        CrashReporterActivity.getLatestAppVersion(SettingsActivity.this, release);
+                    }
+                })
+                .setNegativeButton(R.string.title_cancel, null)
+                .show("DownloadLatest");
+    }
+
     /**
      * This fragment shows general preferences only. It is used when the
      * activity is showing a two-pane settings UI.
@@ -380,6 +459,21 @@ public class SettingsActivity extends PreferenceActivity {
             } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
             }
+
+            findPreference("app_updates").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+
+                    ProgressDialog checkingDialog = ((SettingsActivity) getActivity()).getProgressDialog();
+                    checkingDialog.setMessage(getResources().getString(R.string.checking_for_updates));
+                    checkingDialog.show();
+
+                    CheckForLatestReleaseTask task = new CheckForLatestReleaseTask();
+                    task.addOnFinishedListener((SettingsActivity)getActivity());
+                    TaskManager.addTask(task, CheckForLatestReleaseTask.TASK_ID);
+                    return true;
+                }
+            });
         }
     }
 
