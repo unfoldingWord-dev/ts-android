@@ -67,6 +67,7 @@ public class AppContext {
     private static final String ASSETS_DIR = "assets";
     private static MainApplication mContext;
     public static final Bundle args = new Bundle();
+    private static String targetTranslationWithUpdates = null;
 
     /**
      * Initializes the basic functions context.
@@ -271,6 +272,22 @@ public class AppContext {
         File dir = new File(Environment.getExternalStorageDirectory(), TRANSLATION_STUDIO);
         dir.mkdirs();
         return dir;
+    }
+
+    /**
+     * check for cached value that project has changed
+     * @return
+     */
+    public static String getNotifyTargetTranslationWithUpdates() {
+        return targetTranslationWithUpdates;
+    }
+
+    /**
+     * for keeping track of project that has changed
+     * @param targetTranslationId
+     */
+    public static void setNotifyTargetTranslationWithUpdates(String targetTranslationId) {
+        targetTranslationWithUpdates = targetTranslationId;
     }
 
     /**

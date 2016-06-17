@@ -1,6 +1,5 @@
 package com.door43.translationstudio.newui.home;
 
-import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -13,7 +12,6 @@ import android.view.Window;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.NativeSpeaker;
@@ -36,10 +34,9 @@ import java.util.Locale;
 public class TargetTranslationInfoDialog extends DialogFragment {
 
     public static final String ARG_TARGET_TRANSLATION_ID = "arg_target_translation_id";
-    public static final int ACTIVITY_PUBLISH = 1042;
     private TargetTranslation mTargetTranslation;
     private Translator mTranslator;
-    private OnResultsListener mListener;
+    private OnDeleteListener mListener;
     private int mTranslationProgress = 0;
     private boolean mTranslationProgressWasCalculated = false;
 
@@ -186,7 +183,8 @@ public class TargetTranslationInfoDialog extends DialogFragment {
                 Intent publishIntent = new Intent(getActivity(), PublishActivity.class);
                 publishIntent.putExtra(PublishActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
                 publishIntent.putExtra(PublishActivity.EXTRA_CALLING_ACTIVITY, PublishActivity.ACTIVITY_HOME);
-                startActivityForResult(publishIntent, ACTIVITY_PUBLISH);
+                startActivity(publishIntent);
+                dismiss(); // close dialog so notifications will pass back to HomeActivity
             }
         });
 
@@ -237,14 +235,12 @@ public class TargetTranslationInfoDialog extends DialogFragment {
      * Assigns a listener for this dialog
      * @param listener
      */
-    public void setOnResultsListener(OnResultsListener listener) {
+    public void setOnDeleteListener(OnDeleteListener listener) {
         mListener = listener;
     }
 
-    public interface OnResultsListener {
+    public interface OnDeleteListener {
         void onDeleteTargetTranslation(String targetTranslationId);
-
-        void onPublishPushFailed(String targetTranslationId);
     }
 
     /**
@@ -269,14 +265,5 @@ public class TargetTranslationInfoDialog extends DialogFragment {
         return null;
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(TargetTranslationInfoDialog.ACTIVITY_PUBLISH == requestCode ) {
-            Activity activity = getActivity();
-            if (activity instanceof HomeActivity) {
-                ((HomeActivity) activity).onActivityResult(requestCode, resultCode, data);
-            }
-            dismiss();
-        }
-    }
+
 }

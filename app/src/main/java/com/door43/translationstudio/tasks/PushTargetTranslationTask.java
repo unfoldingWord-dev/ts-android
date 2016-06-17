@@ -113,7 +113,6 @@ public class PushTargetTranslationTask extends ManagedTask {
                     RemoteRefUpdate.Status status = update.getStatus();
                     if( (RemoteRefUpdate.Status.OK == status) || (RemoteRefUpdate.Status.UP_TO_DATE == status)) {
                         //no error here
-
                     } else if( ( RemoteRefUpdate.Status.REJECTED_NONFASTFORWARD == status)
                             || ( RemoteRefUpdate.Status.REJECTED_NODELETE == status)
                             || ( RemoteRefUpdate.Status.REJECTED_REMOTE_CHANGED == status)

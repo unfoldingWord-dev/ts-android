@@ -211,11 +211,11 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
 
     @Override
     public void postFailure() {
-        // TODO: 6/16/16  need to report failure and prompt to initiate merge
-        Intent data = new Intent();
-        data.putExtra(EXTRA_PUSH_REJECTED, true);
-        data.putExtra(EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
-        setResult(RESULT_CANCELED, data);
+        String targetTranslationId = null;
+        if(mTargetTranslation != null) {
+            targetTranslationId = mTargetTranslation.getId();
+        }
+        AppContext.setNotifyTargetTranslationWithUpdates(targetTranslationId);
         finish();
     }
 

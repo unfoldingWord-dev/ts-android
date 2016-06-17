@@ -178,10 +178,18 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
         }
     }
 
+    /**
+     * generate a temp folder to load project into for later merge
+     * @param repoName
+     * @return
+     */
     private File getTempCloneDirectory(String repoName) {
         return new File(AppContext.context().getCacheDir(), repoName + System.currentTimeMillis() + "/");
     }
 
+    /**
+     * starts task to clone repository
+     */
     private void doCloneRepository() {
         CloneRepositoryTask task = new CloneRepositoryTask(cloneHtmlUrl, cloneDestDir);
         taskWatcher.watch(task);

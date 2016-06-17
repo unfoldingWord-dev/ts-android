@@ -18,7 +18,7 @@ import com.door43.translationstudio.AppContext;
 /**
  * Displays a list of target translations
  */
-public class TargetTranslationListFragment extends BaseFragment implements TargetTranslationInfoDialog.OnResultsListener {
+public class TargetTranslationListFragment extends BaseFragment implements TargetTranslationInfoDialog.OnDeleteListener {
 
     private TargetTranslationAdapter mAdapter;
     private OnItemClickListener mListener;
@@ -44,7 +44,7 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
                     TargetTranslationInfoDialog dialog = new TargetTranslationInfoDialog();
                     Bundle args = new Bundle();
                     args.putString(TargetTranslationInfoDialog.ARG_TARGET_TRANSLATION_ID, targetTranslationId);
-                    dialog.setOnResultsListener(TargetTranslationListFragment.this);
+                    dialog.setOnDeleteListener(TargetTranslationListFragment.this);
                     dialog.setArguments(args);
                     dialog.show(ft, "infoDialog");
                 } else {
@@ -66,7 +66,7 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
         if(savedInstanceState != null) {
             TargetTranslationInfoDialog dialog = (TargetTranslationInfoDialog) getFragmentManager().findFragmentByTag("infoDialog");
             if(dialog != null) {
-                dialog.setOnResultsListener(this);
+                dialog.setOnDeleteListener(this);
             }
         }
 
@@ -93,11 +93,6 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
     @Override
     public void onDeleteTargetTranslation(String targetTranslationId) {
         mListener.onItemDeleted(targetTranslationId);
-    }
-
-    @Override
-    public void onPublishPushFailed(String targetTranslationId) {
-        // TODO: 6/16/16 need to handle
     }
 
     public interface OnItemClickListener {

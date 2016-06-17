@@ -1,6 +1,5 @@
 package com.door43.translationstudio.newui.home;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.ContentResolver;
@@ -34,7 +33,6 @@ import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
 import com.door43.translationstudio.newui.FeedbackDialog;
-import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.tasks.ExamineImportsForCollisionsTask;
@@ -371,6 +369,12 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
             // reload list
             ((TargetTranslationListFragment)mFragment).reloadList();
         }
+
+        String updatedTarget = AppContext.getNotifyTargetTranslationWithUpdates();
+        if(updatedTarget != null) {
+            AppContext.setNotifyTargetTranslationWithUpdates(null); // clear notification
+            showMergePrompt(updatedTarget);
+        }
     }
 
     /**
@@ -434,20 +438,6 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
                 Snackbar snack = Snackbar.make(findViewById(android.R.id.content), getResources().getString(R.string.error), Snackbar.LENGTH_LONG);
                 ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                 snack.show();
-            }
-        } else if(TargetTranslationInfoDialog.ACTIVITY_PUBLISH == requestCode ) {
-            Logger.i(TAG,"requestCode=" + requestCode);
-            Logger.i(TargetTranslationInfoDialog.class.getSimpleName(), "requestCode=" + requestCode);
-            Logger.i(TargetTranslationInfoDialog.class.getSimpleName(), "resultCode=" + resultCode);
-            if((Activity.RESULT_CANCELED == resultCode) && (data != null)) {
-                Bundle args = data.getExtras();
-                String targetTranslationId = args.getString(PublishActivity.EXTRA_TARGET_TRANSLATION_ID, null);
-                Boolean pushRejected = args.getBoolean(PublishActivity.EXTRA_PUSH_REJECTED);
-                Logger.i(TargetTranslationInfoDialog.class.getSimpleName(), "targetTranslationId=" + targetTranslationId);
-                Logger.i(TargetTranslationInfoDialog.class.getSimpleName(), "pushRejected=" + pushRejected);
-                if(pushRejected) {
-                    showMergePrompt(targetTranslationId);
-                }
             }
         }
     }
