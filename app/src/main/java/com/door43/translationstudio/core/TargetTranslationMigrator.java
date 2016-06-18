@@ -127,7 +127,8 @@ public class TargetTranslationMigrator {
                                 // indicate global language request has been submitted
                                 existingRequest.setSubmittedAt(newRequest.getSubmittedAt());
                                 AppContext.addNewLanguageRequest(existingRequest);
-                                // TODO: 6/15/16 technically we need to look through all the existing target translations and update ones using this language. or we can just wait until the next app update task
+                                // TODO: 6/15/16 technically we need to look through all the existing target translations and update ones using this language.
+                                // if we don't then they should get updated the next time the restart the app.
                             }
                         }
                     }
