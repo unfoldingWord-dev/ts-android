@@ -236,7 +236,7 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
      * display the final import Results.
      */
     private void showImportResults(String projectPath, String projectNames, boolean success) {
-        final CustomAlertDialog dlg = CustomAlertDialog.Create(this);
+        final CustomAlertDialog dlg = CustomAlertDialog.Builder(this);
         String message;
         if(success) {
             String format = AppContext.context().getResources().getString(R.string.import_project_success);
@@ -280,7 +280,7 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
      * show dialog to verify that we want to import, restore or cancel.
      */
     private void displayImportVerification() {
-        final CustomAlertDialog dlg = CustomAlertDialog.Create(this);
+        final CustomAlertDialog dlg = CustomAlertDialog.Builder(this);
         dlg.setTitle(R.string.label_import)
                 .setMessage(String.format(getResources().getString(R.string.confirm_import_target_translation), mExamineTask.mProjectsFound))
                 .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
@@ -324,7 +324,7 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
      * Triggers the process of opening the server library
      */
     private void openLibrary() {
-        CustomAlertDialog.Create(HomeActivity.this)
+        CustomAlertDialog.Builder(HomeActivity.this)
             .setTitle(R.string.update_projects)
             .setIcon(R.drawable.ic_local_library_black_24dp)
             .setMessage(R.string.use_internet_confirmation)
@@ -390,7 +390,7 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
     @Override
     public void onBackPressed() {
         // display confirmation before closing the app
-        CustomAlertDialog.Create(this)
+        CustomAlertDialog.Builder(this)
                 .setMessage(R.string.exit_confirmation)
                 .setPositiveButton(R.string.yes, new View.OnClickListener() {
                     @Override

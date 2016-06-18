@@ -202,7 +202,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_download_all:
-                mConfirmDialog =  CustomAlertDialog.Create(this);
+                mConfirmDialog =  CustomAlertDialog.Builder(this);
                 mConfirmDialog.setTitle(R.string.action_download_all)
                         .setMessage(R.string.download_confirmation)
                         .setIcon(R.drawable.ic_cloud_download_black_24dp)
@@ -225,7 +225,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                     .show("DlAllConfirm");
                 return true;
             case R.id.action_download_updates:
-                mConfirmDialog = CustomAlertDialog.Create(this);
+                mConfirmDialog = CustomAlertDialog.Builder(this);
                 mConfirmDialog.setTitle(R.string.action_download_updates)
                         .setMessage(R.string.download_confirmation)
                         .setIcon(R.drawable.ic_cloud_download_black_24dp)
@@ -335,7 +335,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
 
                 if(task instanceof DownloadAllProjectsTask || task instanceof DownloadUpdatesTask) {
                     if (!task.isCanceled()) {
-                        CustomAlertDialog.Create(ServerLibraryActivity.this)
+                        CustomAlertDialog.Builder(ServerLibraryActivity.this)
                                 .setTitle(R.string.success)
                                 .setIcon(R.drawable.ic_done_black_24dp)
                                 .setMessage(R.string.download_complete)

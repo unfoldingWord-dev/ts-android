@@ -213,7 +213,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
     }
 
     public void showAuthFailure() {
-        CustomAlertDialog.Create(getActivity())
+        CustomAlertDialog.Builder(getActivity())
                 .setTitle(R.string.error).setMessage(R.string.auth_failure_retry)
                 .setPositiveButton(R.string.yes, new View.OnClickListener() {
                     @Override
@@ -233,7 +233,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
     }
 
     public void notifyRestoreFailed() {
-        CustomAlertDialog.Create(getActivity())
+        CustomAlertDialog.Builder(getActivity())
                 .setTitle(R.string.error)
                 .setMessage(R.string.restore_failed)
                 .setPositiveButton(R.string.dismiss, null)

@@ -26,7 +26,6 @@ import com.door43.translationstudio.tasks.AdvancedGogsRepoSearchTask;
 import com.door43.translationstudio.tasks.CloneRepositoryTask;
 import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
 import com.door43.translationstudio.tasks.SearchGogsRepositoriesTask;
-import com.door43.translationstudio.tasks.SearchGogsUsersTask;
 import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
@@ -36,7 +35,6 @@ import org.apache.commons.io.FileUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.unfoldingword.gogsclient.Repository;
-import org.unfoldingword.gogsclient.User;
 
 import java.io.File;
 import java.io.IOException;
@@ -241,7 +239,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
     }
 
     public void showAuthFailure() {
-        CustomAlertDialog.Create(getActivity())
+        CustomAlertDialog.Builder(getActivity())
                 .setTitle(R.string.error).setMessage(R.string.auth_failure_retry)
                 .setPositiveButton(R.string.yes, new View.OnClickListener() {
                     @Override
@@ -261,7 +259,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
     }
 
     public void notifyImportFailed() {
-        CustomAlertDialog.Create(getActivity())
+        CustomAlertDialog.Builder(getActivity())
                 .setTitle(R.string.error)
                 .setMessage(R.string.restore_failed)
                 .setPositiveButton(R.string.dismiss, null)

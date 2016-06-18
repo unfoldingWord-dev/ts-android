@@ -20,7 +20,6 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.ContributorsAdapter;
 import com.door43.translationstudio.newui.ContributorDialog;
-import com.door43.translationstudio.newui.ContributorsFragment;
 
 /**
  * Created by joel on 2/22/2016.
@@ -140,7 +139,7 @@ public class ManageContributorsDialog extends DialogFragment implements Contribu
      * @param listener if set the dialog will become a confirmation dialog
      */
     public void showPrivacyNotice(View.OnClickListener listener) {
-        CustomAlertDialog privacy = CustomAlertDialog.Create(getActivity())
+        CustomAlertDialog privacy = CustomAlertDialog.Builder(getActivity())
                 .setTitle(R.string.privacy_notice)
                 .setIcon(R.drawable.ic_info_black_24dp)
                 .setMessage(R.string.publishing_privacy_notice);

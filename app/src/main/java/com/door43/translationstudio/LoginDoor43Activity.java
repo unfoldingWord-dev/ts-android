@@ -79,7 +79,7 @@ public class LoginDoor43Activity extends AppCompatActivity implements ManagedTas
             finish();
         } else {
             // login failed
-            CustomAlertDialog.Create(this)
+            CustomAlertDialog.Builder(this)
                     .setTitle(R.string.error)
                     .setMessage(R.string.double_check_credentials)
                     .setPositiveButton(R.string.label_ok, null)

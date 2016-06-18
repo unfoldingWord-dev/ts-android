@@ -1,11 +1,7 @@
 package com.door43.translationstudio.newui;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -21,7 +17,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
@@ -177,7 +172,7 @@ public class FeedbackDialog extends DialogFragment implements ManagedTask.OnFini
     private void notifyLatestRelease(final CheckForLatestReleaseTask.Release release) {
         final Boolean isStoreVersion = ((MainApplication)getActivity().getApplication()).isStoreVersion();
 
-        CustomAlertDialog.Create(getActivity())
+        CustomAlertDialog.Builder(getActivity())
                 .setTitle(R.string.apk_update_available)
                 .setMessage(R.string.upload_report_or_download_latest_apk)
                 .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {

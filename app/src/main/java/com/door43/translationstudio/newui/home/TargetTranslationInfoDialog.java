@@ -134,7 +134,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CustomAlertDialog.Create(getActivity())
+                CustomAlertDialog.Builder(getActivity())
                         .setTitle(R.string.label_delete)
                         .setIcon(R.drawable.ic_delete_black_24dp)
                         .setMessage(R.string.confirm_delete_target_translation)

@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,7 +27,6 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.device2device.PeerAdapter;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
-import com.door43.translationstudio.dialogs.NoteMarkerDialog;
 import com.door43.translationstudio.network.Peer;
 import com.door43.translationstudio.newui.home.HomeActivity;
 import com.door43.translationstudio.service.BroadcastListenerService;
@@ -37,8 +35,6 @@ import com.door43.translationstudio.service.ClientService;
 import com.door43.translationstudio.service.Request;
 import com.door43.translationstudio.service.ServerService;
 import com.door43.util.RSAEncryption;
-import com.door43.util.StringUtilities;
-import com.door43.widget.ViewUtil;
 
 import org.json.JSONException;
 
@@ -227,7 +223,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
                                 String targetLanguageName = request.context.getString("target_language_name");
                                 int packageVersion = request.context.getInt("package_version");
                                 if(packageVersion <= TargetTranslation.PACKAGE_VERSION) {
-                                    final CustomAlertDialog dialog = CustomAlertDialog.Create(getActivity());
+                                    final CustomAlertDialog dialog = CustomAlertDialog.Builder(getActivity());
                                     dialog.setTitle(peer.getName())
                                             .setMessage(String.format(getResources().getString(R.string.confirm_import_target_translation), projectName + " - " + targetLanguageName))
                                             .setPositiveButton(R.string.label_import, new View.OnClickListener() {
@@ -259,7 +255,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
                                     if (adapter != null) {
                                         adapter.notifyDataSetChanged();
                                     }
-                                    final CustomAlertDialog dialog = CustomAlertDialog.Create(getActivity());
+                                    final CustomAlertDialog dialog = CustomAlertDialog.Builder(getActivity());
                                     dialog.setTitle(peer.getName())
                                             .setMessage(String.format(getResources().getString(R.string.error_importing_unsupported_target_translation), projectName, targetLanguageName, getResources().getString(R.string.app_name)))
                                             .setNeutralButton(R.string.dismiss, null)
@@ -270,7 +266,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
                                 if (adapter != null) {
                                     adapter.notifyDataSetChanged();
                                 }
-                                final CustomAlertDialog dialog = CustomAlertDialog.Create(getActivity());
+                                final CustomAlertDialog dialog = CustomAlertDialog.Builder(getActivity());
                                 dialog.setTitle(peer.getName())
                                         .setMessage(R.string.error)
                                         .setNeutralButton(R.string.dismiss, null)
@@ -543,7 +539,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
         hand.post(new Runnable() {
             @Override
             public void run() {
-                final CustomAlertDialog dialog = CustomAlertDialog.Create(getActivity());
+                final CustomAlertDialog dialog = CustomAlertDialog.Builder(getActivity());
                 dialog.setTitle(R.string.success)
                         .setMessage(String.format(getResources().getString(R.string.success_import_target_translation), names))
                         .setPositiveButton(R.string.dismiss, null)

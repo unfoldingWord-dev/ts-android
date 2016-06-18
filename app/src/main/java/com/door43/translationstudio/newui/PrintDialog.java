@@ -129,7 +129,7 @@ public class PrintDialog extends DialogFragment implements GenericTaskWatcher.On
                 includeIncompleteFrames = includeIncompleteCheckBox.isChecked();
                 if(includeImages && !AppContext.getLibrary().hasImages()) {
                     CustomAlertDialog
-                            .Create(getActivity())
+                            .Builder(getActivity())
                             .setTitle(R.string.use_internet_confirmation)
                             .setMessage(R.string.image_large_download)
                             .setNegativeButton(R.string.title_cancel, null)
@@ -214,7 +214,7 @@ public class PrintDialog extends DialogFragment implements GenericTaskWatcher.On
                     @Override
                     public void run() {
                         CustomAlertDialog
-                                .Create(getActivity())
+                                .Builder(getActivity())
                                 .setTitle(R.string.download_failed)
                                 .setMessage(R.string.downloading_images_for_print_failed)
                                 .setPositiveButton(R.string.label_ok, null)
@@ -232,7 +232,7 @@ public class PrintDialog extends DialogFragment implements GenericTaskWatcher.On
                 startActivity(Intent.createChooser(i, "Print:"));
             } else {
                 CustomAlertDialog
-                        .Create(getActivity())
+                        .Builder(getActivity())
                         .setTitle(R.string.error)
                         .setMessage(R.string.print_failed)
                         .setPositiveButton(R.string.dismiss, null)

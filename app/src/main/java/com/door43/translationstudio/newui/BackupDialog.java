@@ -162,7 +162,7 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
             @Override
             public void onClick(View v) {
                 if (SdUtils.doWeNeedToRequestSdCardAccess()) {
-                    final CustomAlertDialog dialog = CustomAlertDialog.Create(getActivity());
+                    final CustomAlertDialog dialog = CustomAlertDialog.Builder(getActivity());
                     dialog.setTitle(R.string.enable_sd_card_access_title)
                             .setMessageHtml(R.string.enable_sd_card_access)
                             .setPositiveButton(R.string.confirm, new View.OnClickListener() {
@@ -294,7 +294,7 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
         if(filePath != null) {
             message += "\n" + filePath;
         }
-        CustomAlertDialog.Create(getActivity())
+        CustomAlertDialog.Builder(getActivity())
                 .setTitle(R.string.backup_to_sd)
                 .setMessage(message)
                 .setNeutralButton(R.string.dismiss, null)
@@ -392,12 +392,12 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
 
             if(status == PushTargetTranslationTask.Status.OK) {
                 Logger.i(this.getClass().getName(), "The target translation " + targetTranslation.getId() + " was pushed to the server");
-                CustomAlertDialog.Create(getActivity())
+                CustomAlertDialog.Builder(getActivity())
                         .setTitle(R.string.success).setMessage(R.string.project_uploaded).setPositiveButton(R.string.dismiss, null)
                         .setNeutralButton(R.string.label_details, new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                CustomAlertDialog.Create(getActivity())
+                                CustomAlertDialog.Builder(getActivity())
                                         .setTitle(R.string.project_uploaded).setMessage(message).setPositiveButton(R.string.dismiss, null).show("PubDetails");
                             }
                         }).show("backup-finished");
@@ -502,7 +502,7 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
      */
     private void notifyBackupFailed(final TargetTranslation targetTranslation) {
         final Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
-        CustomAlertDialog.Create(getActivity())
+        CustomAlertDialog.Builder(getActivity())
                 .setTitle(R.string.publish)
                 .setMessage(R.string.upload_failed)
                 .setPositiveButton(R.string.dismiss, null)
@@ -534,7 +534,7 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
 
 
     public void showAuthFailure() {
-        CustomAlertDialog.Create(getActivity())
+        CustomAlertDialog.Builder(getActivity())
                 .setTitle(R.string.upload_failed).setMessage(R.string.auth_failure_retry)
                 .setPositiveButton(R.string.yes, new View.OnClickListener() {
                     @Override

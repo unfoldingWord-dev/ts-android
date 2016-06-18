@@ -133,7 +133,7 @@ public class RegisterDoor43Activity extends AppCompatActivity implements Managed
             String error =((RegisterDoor43Task)task).getError();
             error = error == null ? getResources().getString(R.string.registration_failed) : error;
             // registration failed
-            CustomAlertDialog.Create(this)
+            CustomAlertDialog.Builder(this)
                     .setTitle(R.string.error)
                     .setMessage(error)
                     .setPositiveButton(R.string.label_ok, null)

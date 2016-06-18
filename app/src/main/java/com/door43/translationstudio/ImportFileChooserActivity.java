@@ -21,7 +21,6 @@ import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.filebrowser.DocumentFileBrowserAdapter;
 import com.door43.translationstudio.filebrowser.DocumentFileItem;
 import com.door43.translationstudio.newui.BaseActivity;
-import com.door43.translationstudio.newui.home.ImportDialog;
 import com.door43.translationstudio.util.SdUtils;
 
 import java.io.File;
@@ -97,7 +96,7 @@ public class ImportFileChooserActivity extends BaseActivity {
                 if (itemSelected) {
                     returnSelectedFile(selectedItem);
                 } else {
-                    final CustomAlertDialog dialog = CustomAlertDialog.Create(ImportFileChooserActivity.this);
+                    final CustomAlertDialog dialog = CustomAlertDialog.Builder(ImportFileChooserActivity.this);
                     dialog.setTitle(R.string.title_activity_file_explorer)
                             .setMessageHtml(R.string.no_item_selected)
                             .setPositiveButton(R.string.confirm, null)
@@ -124,7 +123,7 @@ public class ImportFileChooserActivity extends BaseActivity {
             @Override
             public void onClick(View view) {
                 if (SdUtils.doWeNeedToRequestSdCardAccess()) {
-                    final CustomAlertDialog dialog = CustomAlertDialog.Create(ImportFileChooserActivity.this);
+                    final CustomAlertDialog dialog = CustomAlertDialog.Builder(ImportFileChooserActivity.this);
                     dialog.setTitle(R.string.enable_sd_card_access_title)
                             .setMessageHtml(R.string.enable_sd_card_access)
                             .setPositiveButton(R.string.confirm, new View.OnClickListener() {
@@ -382,7 +381,7 @@ public class ImportFileChooserActivity extends BaseActivity {
             } else {
                 msg = getResources().getString(R.string.access_skipped);
             }
-            CustomAlertDialog.Create(this)
+            CustomAlertDialog.Builder(this)
                     .setTitle(R.string.access_title)
                     .setMessage(msg)
                     .setPositiveButton(R.string.label_ok, null)

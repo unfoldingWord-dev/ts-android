@@ -14,7 +14,6 @@ import android.view.View;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
-import com.door43.translationstudio.core.LanguageDirection;
 import com.door43.translationstudio.core.NewLanguageRequest;
 import com.door43.translationstudio.core.Questionnaire;
 import com.door43.translationstudio.core.Resource;
@@ -37,7 +36,6 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Locale;
-import java.util.Map;
 
 public class NewTargetTranslationActivity extends BaseActivity implements TargetLanguageListFragment.OnItemClickListener, ProjectListFragment.OnItemClickListener {
 
@@ -104,7 +102,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                 return;
             }
         }
-        CustomAlertDialog.Create(this)
+        CustomAlertDialog.Builder(this)
                 .setTitle(R.string.error)
                 .setMessage(R.string.try_again)
                 .show("error-questionnaire");
@@ -117,7 +115,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     private void confirmTempLanguage(final TargetLanguage language) {
         if(language != null) {
             String msg = String.format(getResources().getString(R.string.new_language_confirmation), language.getId(), language.name);
-            final CustomAlertDialog dialog = CustomAlertDialog.Create(this)
+            final CustomAlertDialog dialog = CustomAlertDialog.Builder(this)
                     .setCancelableChainable(false)
                     .setAutoDismiss(false)
                     .setTitle(R.string.language)
@@ -253,7 +251,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             case R.id.action_search:
                 return true;
             case R.id.action_add_language:
-                CustomAlertDialog.Create(this)
+                CustomAlertDialog.Builder(this)
                         .setTitle(R.string.title_new_language_code)
                         .setMessage(R.string.confirm_start_new_language_code)
                         .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
@@ -267,7 +265,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                         .show("confirm-start-new-language");
                 return true;
             case R.id.action_update:
-                CustomAlertDialog.Create(this)
+                CustomAlertDialog.Builder(this)
                         .setTitle(R.string.update_projects)
                         .setIcon(R.drawable.ic_local_library_black_24dp)
                         .setMessage(R.string.use_internet_confirmation)

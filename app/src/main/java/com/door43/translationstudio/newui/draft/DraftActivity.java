@@ -1,6 +1,5 @@
 package com.door43.translationstudio.newui.draft;
 
-import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -85,7 +84,7 @@ public class DraftActivity extends BaseActivity implements GenericTaskWatcher.On
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CustomAlertDialog.Create(DraftActivity.this)
+                CustomAlertDialog.Builder(DraftActivity.this)
                         .setTitle(R.string.import_draft)
                         .setMessage(R.string.import_draft_confirmation)
                         .setNegativeButton(R.string.menu_cancel, null)
@@ -127,7 +126,7 @@ public class DraftActivity extends BaseActivity implements GenericTaskWatcher.On
         if(targetTranslation != null) {
             finish();
         } else {
-            CustomAlertDialog.Create(this)
+            CustomAlertDialog.Builder(this)
                     .setTitle(R.string.error)
                     .setMessage(R.string.translation_import_failed)
                     .setNeutralButton(R.string.dismiss, null)

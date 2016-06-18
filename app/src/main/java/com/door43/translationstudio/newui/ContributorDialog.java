@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -115,7 +114,7 @@ public class ContributorDialog extends DialogFragment {
         mDeleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CustomAlertDialog.Create(getActivity())
+                CustomAlertDialog.Builder(getActivity())
                     .setTitle(R.string.delete_translator_title)
                     .setMessageHtml(R.string.confirm_delete_translator)
                     .setPositiveButton(R.string.confirm, new View.OnClickListener() {

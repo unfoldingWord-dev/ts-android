@@ -1,16 +1,13 @@
 package com.door43.translationstudio;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Application;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.multidex.MultiDex;
 import android.text.TextUtils;
@@ -22,7 +19,6 @@ import com.door43.tools.reporting.GlobalExceptionHandler;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.service.BackupService;
-import com.door43.util.DummyDialogListener;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.KeyPair;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -304,7 +300,7 @@ public class MainApplication extends Application {
     }
 
     public void showMessageDialog(String title, String msg) {
-        CustomAlertDialog.Create(this.getCurrentActivity())
+        CustomAlertDialog.Builder(this.getCurrentActivity())
             .setTitle(title).setMessage(msg).setPositiveButton(R.string.label_ok, null).show("ShowMsg");
     }
 
@@ -320,7 +316,7 @@ public class MainApplication extends Application {
      */
     @Deprecated
     public void showMessageDialogDetails(final int title, int msg, final String details) {
-        CustomAlertDialog.Create(this.getCurrentActivity())
+        CustomAlertDialog.Builder(this.getCurrentActivity())
             .setTitle(title).setMessage(msg).setPositiveButton(R.string.label_ok, null)
                 .setNeutralButton(R.string.label_details, new View.OnClickListener() {
                     @Override

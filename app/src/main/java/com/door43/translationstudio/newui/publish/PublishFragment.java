@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -345,7 +344,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
 
                         final SpannableString clickableDestinationMessage = getClickableText(publishedUrl, destinationMessage, clickableSpan);
 
-                        final CustomAlertDialog dlg = CustomAlertDialog.Create(getActivity());
+                        final CustomAlertDialog dlg = CustomAlertDialog.Builder(getActivity());
                         dlg.setTitle(R.string.success)
                                 .setMessage(clickableDestinationMessage)
                                 .setAutoDismiss(false)
@@ -549,7 +548,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
     }
 
     public void showAuthFailure() {
-        CustomAlertDialog.Create(getActivity())
+        CustomAlertDialog.Builder(getActivity())
                 .setTitle(R.string.error).setMessage(R.string.auth_failure_retry)
                 .setPositiveButton(R.string.yes, new View.OnClickListener() {
                     @Override
@@ -575,7 +574,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
      */
     private void notifyPublishFailed(final TargetTranslation targetTranslation) {
         final Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
-        CustomAlertDialog.Create(getActivity())
+        CustomAlertDialog.Builder(getActivity())
                 .setTitle(R.string.error)
                 .setMessage(R.string.upload_failed)
                 .setPositiveButton(R.string.dismiss, null)

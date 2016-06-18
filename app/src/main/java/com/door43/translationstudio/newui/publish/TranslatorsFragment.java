@@ -140,7 +140,7 @@ public class TranslatorsFragment extends PublishStepFragment implements Contribu
      * @param listener if set the dialog will become a confirmation dialog
      */
     public void showPrivacyNotice(View.OnClickListener listener) {
-        CustomAlertDialog privacy = CustomAlertDialog.Create(getActivity())
+        CustomAlertDialog privacy = CustomAlertDialog.Builder(getActivity())
             .setTitle(R.string.privacy_notice)
             .setIcon(R.drawable.ic_info_black_24dp)
             .setMessage(R.string.publishing_privacy_notice);

@@ -23,8 +23,6 @@
     <!-- The terms that users must agree with in order to use the app -->
     <string name="terms_title">Terms of Use</string>
     <string name="terms">By using this app you agree with the statement of faith and translation guidelines and to release your work under the terms of the Creative Commons Attribution-ShareAlike 4.0 International License.</string>
-    <!-- Re-create the ssh keys for the git repositories -->
-    <string name="regenerate_keys" translatable="false">Regenerate SSH Keys</string>
     <!-- stub needed for the drawer open and close listener -->
     <string name="title_close_drawer" translatable="false">close</string>
     <string name="chapter_title_field">Chapter Title</string>
@@ -258,9 +256,6 @@
     <string name="copied_to_clipboard" translatable="false">Copied to clipboard</string>
     <string name="force_update_projects" translatable="false">Force update projects</string>
     <string name="force_update_projects_description" translatable="false">Re-downloads all the source for projects on the device without regard to the cache</string>
-    <string name="regenerate_keys_description" translatable="false">Discards and regenerates the ssh keys used for git</string>
-    <string name="read_debugging_log" translatable="false">Read debugging log</string>
-    <string name="read_debugging_log_description" translatable="false">View the error logs that have been generated on this device.</string>
     <string name="downloading_project">Downloading project <xliff:g example="obs" id="project_id">%1$s</xliff:g></string>
     <!-- This is the direction up. The opposite of down. -->
     <string name="up">Up</string>

@@ -1,6 +1,5 @@
 package com.door43.translationstudio;
 
-import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
@@ -34,7 +33,6 @@ import com.door43.translationstudio.util.ToolItem;
 import com.door43.util.StringUtilities;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
-import com.door43.util.tasks.ThreadableUI;
 import com.door43.widget.ViewUtil;
 
 import java.io.File;
@@ -44,15 +42,17 @@ import java.util.ArrayList;
 
 public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.OnProgressListener, ManagedTask.OnFinishedListener, DialogInterface.OnCancelListener {
 
-    public static final String INDEX_CHUNK_MARKERS_TASK_ID = "index_chunk_markers";
-    private static final String TASK_PREP_FORCE_DOWNLOAD_ALL_PROJECTS = "prep_force_download_all_projects";
+    public static final String TASK_INDEX_CHUNK_MARKERS = "index_chunk_markers";
     public static final String TAG = DeveloperToolsActivity.class.getSimpleName();
+    private static final String TASK_INDEX_TA = "index-ta-task";
+    private static final String TASK_REGENERATE_KEYS = "regenerate-keys-task";
     private ArrayList<ToolItem> mDeveloperTools = new ArrayList<>();
     private ToolAdapter mAdapter;
     private String mVersionName;
     private String mVersionCode;
     private String TASK_FORCE_DOWNLOAD_ALL_PROJECTS = "force_download_all_projects";
-    private ProgressDialog mDownloadProgressDialog;
+    private String TASK_EXPORT_LIBRARY = "export-library-task";
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,42 +122,22 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
         });
 
         // load tools
-        mDeveloperTools.add(new ToolItem(getResources().getString(R.string.regenerate_keys), getResources().getString(R.string.regenerate_keys_description), 0, new ToolItem.ToolAction() {
+        mDeveloperTools.add(new ToolItem("Regenerate SSH keys", "Discards and regenerates the ssh keys used for git", 0, new ToolItem.ToolAction() {
             @Override
             public void run() {
-                final ProgressDialog dialog = new ProgressDialog(DeveloperToolsActivity.this);
-                dialog.setMessage(getResources().getString(R.string.loading));
-                dialog.setCancelable(false);
-                dialog.setCanceledOnTouchOutside(false);
-                dialog.show();
-                final Handler handle = new Handler(Looper.getMainLooper());
-                new ThreadableUI(DeveloperToolsActivity.this) {
-
+                ManagedTask task = new ManagedTask() {
                     @Override
-                    public void onStop() {
-                        handle.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                dialog.dismiss();
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void run() {
+                    public void start() {
                         AppContext.context().generateSSHKeys();
                     }
-
-                    @Override
-                    public void onPostExecute() {
-                        dialog.dismiss();
-                        AppContext.context().showToastMessage(R.string.success);
-                    }
-                }.start();
+                };
+                task.addOnProgressListener(DeveloperToolsActivity.this);
+                task.addOnFinishedListener(DeveloperToolsActivity.this);
+                TaskManager.addTask(task, TASK_REGENERATE_KEYS);
             }
         }));
 
-        mDeveloperTools.add(new ToolItem(getResources().getString(R.string.read_debugging_log), getResources().getString(R.string.read_debugging_log_description), 0, new ToolItem.ToolAction() {
+        mDeveloperTools.add(new ToolItem("Read debugging log", "View the error logs that have been generated on this device.", 0, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 ErrorLogDialog dialog = new ErrorLogDialog();
@@ -182,7 +162,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
         mDeveloperTools.add(new ToolItem(getResources().getString(R.string.force_update_projects), getResources().getString(R.string.force_update_projects_description), 0, new ToolItem.ToolAction() {
             @Override
             public void run() {
-                CustomAlertDialog.Create(DeveloperToolsActivity.this)
+                CustomAlertDialog.Builder(DeveloperToolsActivity.this)
                         .setTitle(R.string.action_download_all)
                         .setMessage(R.string.download_confirmation)
                         .setIcon(R.drawable.icon_update_cloud_dark)
@@ -203,15 +183,10 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
         mDeveloperTools.add(new ToolItem("Index tA", "Indexes the bundled tA json", 0, new ToolItem.ToolAction() {
             @Override
             public void run() {
-                ThreadableUI thread = new ThreadableUI(DeveloperToolsActivity.this) {
+                ManagedTask task = new ManagedTask() {
                     @Override
-                    public void onStop() {
-
-                    }
-
-                    @Override
-                    public void run() {
-                        // TRICKY: for now tA is only in english
+                    public void start() {
+                        publishProgress(-1, "Indexing tA...");
                         Project[] projects = AppContext.getLibrary().getProjects("en");
                         String catalog = null;
                         try {
@@ -229,20 +204,10 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                             }
                         }
                     }
-
-                    @Override
-                    public void onPostExecute() {
-                        CustomAlertDialog.Create(DeveloperToolsActivity.this)
-                                .setTitle(R.string.success)
-                                .setMessage("tA has been indexed")
-                                .setNeutralButton(R.string.dismiss, null)
-                                .show("ta-index-success");
-                    }
                 };
-                thread.start();
-                Snackbar snack = Snackbar.make(findViewById(android.R.id.content), "indexing tA...", Snackbar.LENGTH_LONG);
-                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                snack.show();
+                task.addOnProgressListener(DeveloperToolsActivity.this);
+                task.addOnFinishedListener(DeveloperToolsActivity.this);
+                TaskManager.addTask(task, TASK_INDEX_TA);
             }
         }));
         mDeveloperTools.add(new ToolItem("Index Chunk Markers", "Injects the chunk marker catalog url into the database and runs the update check", 0, new ToolItem.ToolAction() {
@@ -255,91 +220,23 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                 CheckForLibraryUpdatesTask task = new CheckForLibraryUpdatesTask();
                 task.addOnProgressListener(DeveloperToolsActivity.this);
                 task.addOnFinishedListener(DeveloperToolsActivity.this);
-                TaskManager.addTask(task, INDEX_CHUNK_MARKERS_TASK_ID);
-//                ThreadableUI thread = new ThreadableUI(DeveloperToolsActivity.this) {
-//                    @Override
-//                    public void onStop() {
-//
-//                    }
-//
-//                    @Override
-//                    public void run() {
-//                        // manually inject chunk marker details into db
-//
-//                        // run update check to index the chunk markers
-//                        CheckForLibraryUpdatesTask task = new CheckForLibraryUpdatesTask();
-//                        task.addOnProgressListener(DeveloperToolsActivity.this);
-//                        task.addOnFinishedListener(DeveloperToolsActivity.this);
-//                        TaskManager.addTask(task, "just_check_for_updates");
-//                    }
-//
-//                    @Override
-//                    public void onPostExecute() {
-//                        CustomAlertDialog.Create(DeveloperToolsActivity.this)
-//                                .setTitle(R.string.success)
-//                                .setMessage("chunk markers has been indexed")
-//                                .setNeutralButton(R.string.dismiss, null)
-//                                .show("chunk-index-success");
-//                    }
-//                };
-//                thread.start();
-//                Snackbar snack = Snackbar.make(findViewById(android.R.id.content), "indexing chunk markers...", Snackbar.LENGTH_LONG);
-//                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-//                snack.show();
+                TaskManager.addTask(task, TASK_INDEX_CHUNK_MARKERS);
             }
         }));
         mDeveloperTools.add(new ToolItem(getResources().getString(R.string.export_source), getResources().getString(R.string.export_source_description), 0, new ToolItem.ToolAction() {
             @Override
             public void run() {
-                final Handler handle = new Handler(Looper.getMainLooper());
-//                final Project[] projects = AppContext.projectManager().getProjectSlugs();
-                final ProgressDialog dialog = new ProgressDialog(DeveloperToolsActivity.this);
-                dialog.setCancelable(false);
-                dialog.setCanceledOnTouchOutside(false);
-                dialog.setIndeterminate(true);
-                dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-//                dialog.setMax(projects.length);
-                dialog.setMessage(getResources().getString(R.string.exporting));
-
-                // TODO: this should be placed inside of a task instead.
-                final ThreadableUI thread = new ThreadableUI(DeveloperToolsActivity.this) {
-                    private File archive;
+                ManagedTask task = new ManagedTask() {
                     @Override
-                    public void onStop() {
-
-                    }
-
-                    @Override
-                    public void run() {
-                        // TODO: add progress listener
-                        archive = AppContext.getLibrary().export(new File(getCacheDir(), "sharing/"));
-                    }
-
-                    @Override
-                    public void onPostExecute() {
-                        if(archive != null && archive.exists()) {
-                            new AlertDialog.Builder(DeveloperToolsActivity.this)
-                                    .setTitle(R.string.success)
-                                    .setIcon(R.drawable.ic_done_black_24dp)
-                                    .setMessage(R.string.source_export_complete)
-                                    .setPositiveButton(R.string.menu_share, new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialogInterface, int i) {
-                                            Uri u = FileProvider.getUriForFile(DeveloperToolsActivity.this, "com.door43.translationstudio.fileprovider", archive);
-                                            Intent intent = new Intent(Intent.ACTION_SEND);
-                                            intent.setType("application/zip");
-                                            intent.putExtra(Intent.EXTRA_STREAM, u);
-                                            startActivity(Intent.createChooser(intent, "Email:"));
-                                        }
-                                    })
-                                    .show();
-                        }
-                        dialog.dismiss();
+                    public void start() {
+                        publishProgress(-1, "Exporting library...");
+                        File archive = AppContext.getLibrary().export(new File(getCacheDir(), "sharing/"));
+                        this.setResult(archive);
                     }
                 };
-                dialog.show();
-
-                thread.start();
+                task.addOnProgressListener(DeveloperToolsActivity.this);
+                task.addOnProgressListener(DeveloperToolsActivity.this);
+                TaskManager.addTask(task, TASK_EXPORT_LIBRARY);
             }
         }));
         mDeveloperTools.add(new ToolItem(getResources().getString(R.string.simulate_crash), getResources().getString(R.string.simulate_crash_description), 0, new ToolItem.ToolAction() {
@@ -358,147 +255,208 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
             }
         }));
 
-        if(savedInstanceState != null) {
-            connectDownloadAllTask();
+        // connect to existing tasks
+        ManagedTask task = TaskManager.getTask(CheckForLibraryUpdatesTask.TASK_ID);
+        if(task != null) {
+            task.addOnFinishedListener(this);
+            task.addOnProgressListener(this);
+        }
+        task = TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
+        if(task != null) {
+            task.addOnFinishedListener(this);
+            task.addOnProgressListener(this);
+        }
+        task = TaskManager.getTask(TASK_INDEX_CHUNK_MARKERS);
+        if(task != null) {
+            task.addOnFinishedListener(this);
+            task.addOnProgressListener(this);
+        }
+        task = TaskManager.getTask(TASK_EXPORT_LIBRARY);
+        if(task != null) {
+            task.addOnFinishedListener(this);
+            task.addOnProgressListener(this);
+        }
+        task = TaskManager.getTask(TASK_INDEX_TA);
+        if(task != null) {
+            task.addOnFinishedListener(this);
+            task.addOnProgressListener(this);
+        }
+        task = TaskManager.getTask(TASK_REGENERATE_KEYS);
+        if(task != null) {
+            task.addOnFinishedListener(this);
+            task.addOnProgressListener(this);
         }
     }
 
-    /**
-     * Connects to an existing task
-     */
-    public void connectDownloadAllTask() {
-        DownloadAllProjectsTask downloadAllTask = (DownloadAllProjectsTask)TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
-        CheckForLibraryUpdatesTask getUpdatesTask = (CheckForLibraryUpdatesTask)TaskManager.getTask(CheckForLibraryUpdatesTask.TASK_ID);
-        if(getUpdatesTask == null) {
-            getUpdatesTask = (CheckForLibraryUpdatesTask)TaskManager.getTask(INDEX_CHUNK_MARKERS_TASK_ID);
+    @Override
+    public void onDestroy() {
+        ManagedTask task = TaskManager.getTask(CheckForLibraryUpdatesTask.TASK_ID);
+        if(task != null) {
+            task.removeOnFinishedListener(this);
+            task.removeOnProgressListener(this);
         }
-
-        if(downloadAllTask != null) {
-            downloadAllTask.addOnProgressListener(this);
-            downloadAllTask.addOnFinishedListener(this);
+        task = TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
+        if(task != null) {
+            task.removeOnFinishedListener(this);
+            task.removeOnProgressListener(this);
         }
-        if(getUpdatesTask != null) {
-            getUpdatesTask.addOnProgressListener(this);
-            getUpdatesTask.addOnFinishedListener(this);
+        task = TaskManager.getTask(TASK_INDEX_CHUNK_MARKERS);
+        if(task != null) {
+            task.removeOnFinishedListener(this);
+            task.removeOnProgressListener(this);
         }
+        task = TaskManager.getTask(TASK_EXPORT_LIBRARY);
+        if(task != null) {
+            task.removeOnFinishedListener(this);
+            task.removeOnProgressListener(this);
+        }
+        task = TaskManager.getTask(TASK_INDEX_TA);
+        if(task != null) {
+            task.removeOnFinishedListener(this);
+            task.removeOnProgressListener(this);
+        }
+        task = TaskManager.getTask(TASK_REGENERATE_KEYS);
+        if(task != null) {
+            task.removeOnFinishedListener(this);
+            task.removeOnProgressListener(this);
+        }
+        super.onDestroy();
     }
 
     @Override
     public void onFinished(final ManagedTask task) {
         TaskManager.clearTask(task);
 
-        if(task instanceof CheckForLibraryUpdatesTask) {
-            if(task.getTaskId().equals(INDEX_CHUNK_MARKERS_TASK_ID)) {
-                if(mDownloadProgressDialog != null && mDownloadProgressDialog.isShowing()) {
-                    mDownloadProgressDialog.dismiss();
-                }
-                mDownloadProgressDialog = null;
-                if(!task.isCanceled()) {
-                    CustomAlertDialog.Create(DeveloperToolsActivity.this)
-                            .setTitle(R.string.success)
-                            .setIcon(R.drawable.ic_done_black_24dp)
-                            .setMessage("Chunk Markers have been indexed")
-                            .setCancelableChainable(false)
-                            .setPositiveButton(R.string.label_ok, null)
-                            .show("Success");
-                }
+        if(task.getTaskId().equals(TASK_REGENERATE_KEYS)) {
+            CustomAlertDialog.Builder(DeveloperToolsActivity.this)
+                    .setTitle(R.string.success)
+                    .setMessage("The SSH keys have been regenerated")
+                    .setNeutralButton(R.string.dismiss, null)
+                    .show("key-gen-success");
+        }
+        if(task.getTaskId().equals(TASK_INDEX_TA)) {
+            CustomAlertDialog.Builder(DeveloperToolsActivity.this)
+                    .setTitle(R.string.success)
+                    .setMessage("tA has been indexed")
+                    .setNeutralButton(R.string.dismiss, null)
+                    .show("ta-index-success");
+        }
+        if(task.getTaskId().equals(TASK_EXPORT_LIBRARY)) {
+            final File archive = (File)task.getResult();
+            if(archive != null && archive.exists()) {
+                CustomAlertDialog.Builder(DeveloperToolsActivity.this)
+                        .setTitle(R.string.success)
+                        .setIcon(R.drawable.ic_done_black_24dp)
+                        .setMessage(R.string.source_export_complete)
+                        .setPositiveButton(R.string.menu_share, new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Uri u = FileProvider.getUriForFile(DeveloperToolsActivity.this, "com.door43.translationstudio.fileprovider", archive);
+                                Intent intent = new Intent(Intent.ACTION_SEND);
+                                intent.setType("application/zip");
+                                intent.putExtra(Intent.EXTRA_STREAM, u);
+                                startActivity(Intent.createChooser(intent, "Email:"));
+                            }
+                        })
+                        .show("export-success");
             } else {
-                DownloadAllProjectsTask newTask = new DownloadAllProjectsTask();
-                newTask.addOnProgressListener(this);
-                newTask.addOnFinishedListener(this);
-                TaskManager.addTask(newTask, DownloadAllProjectsTask.TASK_ID);
+                CustomAlertDialog.Builder(DeveloperToolsActivity.this)
+                        .setTitle(R.string.error)
+                        .setIcon(R.drawable.ic_done_black_24dp)
+                        .setMessage("The library could not be exported")
+                        .setPositiveButton(R.string.dismiss, null)
+                        .show("export-failed");
             }
         }
 
-        if(task instanceof DownloadAllProjectsTask) {
-            Handler hand = new Handler(Looper.getMainLooper());
-            // display success
-            hand.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (mDownloadProgressDialog != null && mDownloadProgressDialog.isShowing()) {
-                        mDownloadProgressDialog.dismiss();
+        if(task.getTaskId().equals(TASK_INDEX_CHUNK_MARKERS)) {
+            if(!task.isCanceled()) {
+                CustomAlertDialog.Builder(DeveloperToolsActivity.this)
+                        .setTitle(R.string.success)
+                        .setIcon(R.drawable.ic_done_black_24dp)
+                        .setMessage("Chunk Markers have been indexed")
+                        .setCancelableChainable(false)
+                        .setPositiveButton(R.string.label_ok, null)
+                        .show("Success");
+            }
+        }
 
-                    }
-                    mDownloadProgressDialog = null;
+        if(task.getTaskId().equals(CheckForLibraryUpdatesTask.TASK_ID)) {
+            DownloadAllProjectsTask newTask = new DownloadAllProjectsTask();
+            newTask.addOnProgressListener(this);
+            newTask.addOnFinishedListener(this);
+            TaskManager.addTask(newTask, DownloadAllProjectsTask.TASK_ID);
+        }
 
-                    if (!task.isCanceled()) {
-                        // the download is complete
-                        CustomAlertDialog.Create(DeveloperToolsActivity.this)
-                                .setTitle(R.string.success)
-                                .setIcon(R.drawable.ic_done_black_24dp)
-                                .setMessage(R.string.download_complete)
-                                .setCancelableChainable(false)
-                                .setPositiveButton(R.string.label_ok, null)
-                                .show("Success");
-                    }
-                }
-            });
+        if(task.getTaskId().equals(DownloadAllProjectsTask.TASK_ID)) {
+            CustomAlertDialog.Builder(DeveloperToolsActivity.this)
+                    .setTitle(R.string.success)
+                    .setIcon(R.drawable.ic_done_black_24dp)
+                    .setMessage(R.string.download_complete)
+                    .setCancelableChainable(false)
+                    .setPositiveButton(R.string.label_ok, null)
+                    .show("download-success");
         }
     }
 
     @Override
     public void onProgress(final ManagedTask task, final double progress, final String message, final boolean secondary) {
-        if(!task.isFinished()) {
-            Handler hand = new Handler(Looper.getMainLooper());
-            hand.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (task.isFinished()) {
-                        // because we start on a new thread we need to make sure the task didn't finish while this thread was starting.
-                        if (mDownloadProgressDialog != null) {
-                            mDownloadProgressDialog.dismiss();
-                        }
-                        return;
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                if (task.isFinished()) {
+                    if (progressDialog != null) {
+                        progressDialog.dismiss();
                     }
-
-                    if (mDownloadProgressDialog == null) {
-                        mDownloadProgressDialog = new ProgressDialog(DeveloperToolsActivity.this);
-                        mDownloadProgressDialog.setCancelable(false); // TODO: need to update the download method to support cancelling
-                        mDownloadProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                        mDownloadProgressDialog.setCanceledOnTouchOutside(false);
-//                        mProgressDialog.setOnCancelListener(ServerLibraryActivity.this);
-                        mDownloadProgressDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
-                        if(task instanceof CheckForLibraryUpdatesTask) {
-                            mDownloadProgressDialog.setTitle(getResources().getString(R.string.checking_for_updates));
-                        } else if(task instanceof DownloadAllProjectsTask) {
-                            mDownloadProgressDialog.setTitle(getResources().getString(R.string.downloading));
-                        }
-                        mDownloadProgressDialog.setMessage("");
-                    }
-                    mDownloadProgressDialog.setMax(task.maxProgress());
-                    if (!mDownloadProgressDialog.isShowing()) {
-                        mDownloadProgressDialog.show();
-                    }
-                    if (progress == -1) {
-                        mDownloadProgressDialog.setIndeterminate(true);
-                        mDownloadProgressDialog.setProgress(mDownloadProgressDialog.getMax());
-                        mDownloadProgressDialog.setProgressNumberFormat(null);
-                        mDownloadProgressDialog.setProgressPercentFormat(null);
-                    } else {
-                        mDownloadProgressDialog.setIndeterminate(false);
-                        if(secondary) {
-                            mDownloadProgressDialog.setSecondaryProgress((int) progress);
-                        } else {
-                            mDownloadProgressDialog.setProgress((int) progress);
-                        }
-                        mDownloadProgressDialog.setProgressNumberFormat("%1d/%2d");
-                        mDownloadProgressDialog.setProgressPercentFormat(NumberFormat.getPercentInstance());
-                    }
-                    if (task instanceof DownloadAllProjectsTask && !message.isEmpty()) {
-                        mDownloadProgressDialog.setMessage(String.format(getResources().getString(R.string.downloading_project), message));
-                    } else {
-                        mDownloadProgressDialog.setMessage("");
-                    }
+                    return;
                 }
-            });
-        }
+
+                if (progressDialog == null) {
+                    progressDialog = new ProgressDialog(DeveloperToolsActivity.this);
+                    progressDialog.setCancelable(false);
+                    progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                    progressDialog.setCanceledOnTouchOutside(false);
+                    progressDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
+                    if(task instanceof CheckForLibraryUpdatesTask) {
+                        progressDialog.setTitle(getResources().getString(R.string.checking_for_updates));
+                    } else if(task instanceof DownloadAllProjectsTask) {
+                        progressDialog.setTitle(getResources().getString(R.string.downloading));
+                    }
+                    progressDialog.setMessage("");
+                }
+                progressDialog.setMax(task.maxProgress());
+                if (!progressDialog.isShowing()) {
+                    progressDialog.show();
+                }
+                if (progress == -1) {
+                    progressDialog.setIndeterminate(true);
+                    progressDialog.setProgress(progressDialog.getMax());
+                    progressDialog.setProgressNumberFormat(null);
+                    progressDialog.setProgressPercentFormat(null);
+                } else {
+                    progressDialog.setIndeterminate(false);
+                    if(secondary) {
+                        progressDialog.setSecondaryProgress((int) progress);
+                    } else {
+                        progressDialog.setProgress((int) progress);
+                    }
+                    progressDialog.setProgressNumberFormat("%1d/%2d");
+                    progressDialog.setProgressPercentFormat(NumberFormat.getPercentInstance());
+                }
+                if (task instanceof DownloadAllProjectsTask && !message.isEmpty()) {
+                    progressDialog.setMessage(String.format(getResources().getString(R.string.downloading_project), message));
+                } else {
+                    progressDialog.setMessage(message);
+                }
+            }
+        });
     }
 
     @Override
     public void onCancel(DialogInterface dialogInterface) {
         // the download dialog was canceled
-        mDownloadProgressDialog = null;
+        progressDialog = null;
         DownloadAllProjectsTask task = (DownloadAllProjectsTask) TaskManager.getTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
         if(task != null) {
             TaskManager.cancelTask(task);

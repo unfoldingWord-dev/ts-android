@@ -1,7 +1,6 @@
 package com.door43.translationstudio.newui.library;
 
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -108,14 +107,14 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
                             }
                         }
                         if(projectHasTargetTranslations) {
-                            CustomAlertDialog.Create(getActivity())
+                            CustomAlertDialog.Builder(getActivity())
                                     .setTitle(R.string.label_delete)
                                     .setIcon(R.drawable.ic_info_black_24dp)
                                     .setMessage(R.string.cannot_delete_project_with_translations)
                                     .setPositiveButton(R.string.dismiss, null)
                                     .show("DelWarn");
                         } else {
-                            CustomAlertDialog.Create(getActivity())
+                            CustomAlertDialog.Builder(getActivity())
                                     .setTitle(R.string.label_delete)
                                     .setIcon(R.drawable.ic_delete_black_24dp)
                                     .setMessage(R.string.confirm_delete_project)
@@ -234,7 +233,7 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
                             task.addOnProgressListener(item.onProgressListener);
                         } else {
                             // confirm with the user
-                            CustomAlertDialog.Create(getActivity())
+                            CustomAlertDialog.Builder(getActivity())
                                     .setTitle(R.string.download)
                                     .setIcon(R.drawable.ic_refresh_black_24dp)
                                     .setMessage(R.string.source_language_already_downloaded)
