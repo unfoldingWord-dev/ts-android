@@ -1,5 +1,6 @@
 package com.door43.translationstudio;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -209,25 +210,39 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
             openSplash();
         } else if(task.getClass().getName().equals(ArchiveCrashReportTask.class.getName())) {
             if(mDownloadAfterArchive) {
-                Boolean isStoreVersion = ((MainApplication)getApplication()).isStoreVersion();
-                if (isStoreVersion) {
-                    // open play store
-                    final String appPackageName = getPackageName();
-                    try {
-                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
-                    } catch (android.content.ActivityNotFoundException anfe) {
-                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)));
-                    }
-                } else {
-                    // download from github
-                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(mLatestRelease.downloadUrl));
-                    startActivity(browserIntent);
-                }
+                getLatestAppVersion(this, mLatestRelease);
                 finish();
             } else {
                 openSplash();
             }
         }
+    }
+
+    /**
+     * download latest app version
+     * @param activity
+     * @param release
+     * @return
+     */
+    public static boolean getLatestAppVersion(Activity activity, CheckForLatestReleaseTask.Release release) {
+        if(release == null) {
+            return false;
+        }
+        Boolean isStoreVersion = ((MainApplication)activity.getApplication()).isStoreVersion();
+        if (isStoreVersion) {
+            // open play store
+            final String appPackageName = activity.getPackageName();
+            try {
+                activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
+            } catch (android.content.ActivityNotFoundException anfe) {
+                activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)));
+            }
+        } else {
+            // download from github
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(release.downloadUrl));
+            activity.startActivity(browserIntent);
+        }
+        return true;
     }
 
     @Override

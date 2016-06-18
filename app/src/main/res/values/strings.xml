@@ -811,4 +811,8 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="request_new_language">Request new language</string>
     <string name="title_new_language_code">New Language Code</string>
     <string name="confirm_start_new_language_code">You are about to request a new language code.</string>
+    <string name="check_for_updates">Check for updates</string>
+    <string name="check_for_app_updates">Check the internet for updates to translationStudio App.</string>
+    <string name="have_latest_app_update">You are already using the latest version of translationStudio.</string>
+    <string name="download_latest_apk">Do you want to download this update?</string>
 </resources>
