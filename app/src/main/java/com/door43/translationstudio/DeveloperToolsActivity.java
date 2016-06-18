@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
+import android.support.v7.widget.ViewUtils;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -40,7 +41,7 @@ import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 
-public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.OnProgressListener, ManagedTask.OnFinishedListener, DialogInterface.OnCancelListener {
+public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.OnProgressListener, ManagedTask.OnFinishedListener {
 
     public static final String TASK_INDEX_CHUNK_MARKERS = "index_chunk_markers";
     public static final String TAG = DeveloperToolsActivity.class.getSimpleName();
@@ -50,7 +51,6 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
     private ToolAdapter mAdapter;
     private String mVersionName;
     private String mVersionCode;
-    private String TASK_FORCE_DOWNLOAD_ALL_PROJECTS = "force_download_all_projects";
     private String TASK_EXPORT_LIBRARY = "export-library-task";
     private ProgressDialog progressDialog;
 
@@ -84,24 +84,27 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
             @Override
             public void onClick(View view) {
                 StringUtilities.copyToClipboard(DeveloperToolsActivity.this, mVersionName);
-
-                AppContext.context().showToastMessage(R.string.copied_to_clipboard);
+                Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.copied_to_clipboard, Snackbar.LENGTH_LONG);
+                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                snack.show();
             }
         });
         buildText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 StringUtilities.copyToClipboard(DeveloperToolsActivity.this, mVersionCode);
-
-                AppContext.context().showToastMessage(R.string.copied_to_clipboard);
+                Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.copied_to_clipboard, Snackbar.LENGTH_LONG);
+                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                snack.show();
             }
         });
         udidText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 StringUtilities.copyToClipboard(DeveloperToolsActivity.this, AppContext.udid());
-
-                AppContext.context().showToastMessage(R.string.copied_to_clipboard);
+                Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.copied_to_clipboard, Snackbar.LENGTH_LONG);
+                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                snack.show();
             }
         });
 
@@ -128,6 +131,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                 ManagedTask task = new ManagedTask() {
                     @Override
                     public void start() {
+                        publishProgress(-1, "Regenerating keys");
                         AppContext.context().generateSSHKeys();
                     }
                 };
@@ -159,7 +163,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                 snack.show();
             }
         }));
-        mDeveloperTools.add(new ToolItem("Force update projects", "Re-downloads all the source for projects on the device without regard to the cache", R.drawable.ic_local_library_black_24dp, new ToolItem.ToolAction() {
+        mDeveloperTools.add(new ToolItem("Download library data", "Re-downloads the library data from the api and indexes it", R.drawable.ic_local_library_black_24dp, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 CustomAlertDialog.Builder(DeveloperToolsActivity.this)
@@ -180,7 +184,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                         .show("download-all-dialog");
             }
         }));
-        mDeveloperTools.add(new ToolItem("Index tA", "Indexes the bundled tA json", R.drawable.ic_local_library_black_24dp, new ToolItem.ToolAction() {
+        mDeveloperTools.add(new ToolItem("Index tA", "(Hack) Indexes the bundled tA json", R.drawable.ic_local_library_black_24dp, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 ManagedTask task = new ManagedTask() {
@@ -210,7 +214,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                 TaskManager.addTask(task, TASK_INDEX_TA);
             }
         }));
-        mDeveloperTools.add(new ToolItem("Index Chunk Markers", "Injects the chunk marker catalog url into the database and runs the update check", R.drawable.ic_local_library_black_24dp, new ToolItem.ToolAction() {
+        mDeveloperTools.add(new ToolItem("Index Chunk Markers", "(Hack) Injects the chunk marker catalog url into the database and runs the update check", R.drawable.ic_local_library_black_24dp, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 // manually inject chunk marker details into db
@@ -239,13 +243,13 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                 TaskManager.addTask(task, TASK_EXPORT_LIBRARY);
             }
         }));
-        mDeveloperTools.add(new ToolItem("Simulate crash", "", R.drawable.ic_warning_black_18dp, new ToolItem.ToolAction() {
+        mDeveloperTools.add(new ToolItem("Simulate crash", "", R.drawable.ic_warning_black_24dp, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 int killme = 1/0;
             }
         }));
-        mDeveloperTools.add(new ToolItem("Delete Library", "Completely deletes the library and all of it's indexes", R.drawable.ic_delete_black_24dp, new ToolItem.ToolAction() {
+        mDeveloperTools.add(new ToolItem("Delete Library", "Deletes the entire library database so it can be rebuilt from scratch", R.drawable.ic_delete_black_24dp, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 AppContext.getLibrary().delete();
@@ -326,6 +330,9 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
     @Override
     public void onFinished(final ManagedTask task) {
         TaskManager.clearTask(task);
+        if(progressDialog != null) {
+            progressDialog.dismiss();
+        }
 
         if(task.getTaskId().equals(TASK_REGENERATE_KEYS)) {
             CustomAlertDialog.Builder(DeveloperToolsActivity.this)
@@ -451,15 +458,5 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                 }
             }
         });
-    }
-
-    @Override
-    public void onCancel(DialogInterface dialogInterface) {
-        // the download dialog was canceled
-        progressDialog = null;
-        DownloadAllProjectsTask task = (DownloadAllProjectsTask) TaskManager.getTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
-        if(task != null) {
-            TaskManager.cancelTask(task);
-        }
     }
 }
