@@ -76,9 +76,9 @@ public class TargetTranslation {
 
     private final File targetTranslationDir;
     private final Manifest manifest;
-    private final String targetLanguageId;
-    private final String targetLanguageName;
-    private final LanguageDirection targetLanguageDirection;
+    private String targetLanguageId;
+    private String targetLanguageName;
+    private LanguageDirection targetLanguageDirection;
     private final String projectId;
     private final String projectName;
     private final TranslationType translationType;
@@ -89,6 +89,7 @@ public class TargetTranslation {
 
     private TranslationFormat mTranslationFormat;
     private PersonIdent author = null;
+    private String targetLanguageRegion = "unknown";
 
     /**
      * Creates a new instance of the target translation
@@ -103,6 +104,9 @@ public class TargetTranslation {
         this.targetLanguageId = targetLanguageJson.getString(FIELD_MANIFEST_ID);
         this.targetLanguageName = Manifest.valueExists(targetLanguageJson, FIELD_MANIFEST_NAME) ? targetLanguageJson.getString(FIELD_MANIFEST_NAME) : this.targetLanguageId.toUpperCase();
         this.targetLanguageDirection = LanguageDirection.get(targetLanguageJson.getString("direction"));
+        if(targetLanguageJson.has("region")) {
+            this.targetLanguageRegion = targetLanguageJson.getString("region");
+        }
 
         // project
         JSONObject projectJson = this.manifest.getJSONObject(FIELD_MANIFEST_PROJECT);
@@ -178,6 +182,10 @@ public class TargetTranslation {
      */
     public String getTargetLanguageName() {
         return targetLanguageName;
+    }
+
+    public String getTargetLanguageRegion() {
+        return targetLanguageRegion;
     }
 
     /**
@@ -1276,6 +1284,26 @@ public class TargetTranslation {
             }
         }
         return null;
+    }
+
+    /**
+     * Changes the target langauge for this target translation
+     * This does not change the name of the directory where the target translation is stored.
+     * @param targetLanguage
+     */
+    public void changeTargetLanguage(TargetLanguage targetLanguage) {
+        JSONObject languageJson = this.manifest.getJSONObject("target_language");
+        try {
+            languageJson.put("name", targetLanguage.name);
+            languageJson.put("direction", targetLanguage.direction.getLabel());
+            languageJson.put("id", targetLanguage.getId());
+            this.manifest.put("target_language", languageJson);
+            this.targetLanguageDirection = targetLanguage.direction;
+            this.targetLanguageId = targetLanguage.getId();
+            this.targetLanguageName = targetLanguage.name;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     public enum PublishStatus {

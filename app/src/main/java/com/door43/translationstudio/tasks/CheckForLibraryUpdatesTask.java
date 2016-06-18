@@ -60,7 +60,6 @@ public class CheckForLibraryUpdatesTask extends ManagedTask {
 
             // download the temp target languages
             library.downloadTempTargetLanguageAssignments();
-
         }
     }
 

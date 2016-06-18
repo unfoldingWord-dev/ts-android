@@ -521,4 +521,16 @@ public class Translator {
             FileUtils.moveDirectory(tempTargetTranslation.getPath(), destDir);
         }
     }
+
+    /**
+     * Ensures the name of the target translation directory matches the target translation id and corrects it if not
+     *
+     * @param tt
+     */
+    public void normalizePath(TargetTranslation tt) {
+        if(!tt.getPath().getName().equals(tt.getId())) {
+            File dest = new File(tt.getPath().getParentFile(), tt.getId());
+            FileUtilities.moveOrCopy(tt.getPath(), dest);
+        }
+    }
 }
