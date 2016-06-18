@@ -17,8 +17,8 @@ import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.tasks.DownloadSourceLanguageTask;
 import com.door43.translationstudio.AppContext;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -104,7 +104,7 @@ public class ServerLibraryLanguageAdapter extends BaseAdapter {
         // progress listener
         item.onProgressListener = new ManagedTask.OnProgressListener() {
             @Override
-            public void onProgress(final ManagedTask task, final double progress, String message, boolean secondary) {
+            public void onTaskProgress(final ManagedTask task, final double progress, String message, boolean secondary) {
                 Handler hand = new Handler(Looper.getMainLooper());
                 hand.post(new Runnable() {
                     @Override
@@ -127,7 +127,7 @@ public class ServerLibraryLanguageAdapter extends BaseAdapter {
         // finish listener
         item.onFinishedListener = new ManagedTask.OnFinishedListener() {
             @Override
-            public void onFinished(final ManagedTask task) {
+            public void onTaskFinished(final ManagedTask task) {
                 TaskManager.clearTask(task);
                 Handler hand = new Handler(Looper.getMainLooper());
                 hand.post(new Runnable() {

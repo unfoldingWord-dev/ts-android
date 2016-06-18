@@ -14,8 +14,8 @@ import android.widget.LinearLayout;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.ValidationTask;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.security.InvalidParameterException;
 
@@ -68,7 +68,7 @@ public class ValidationFragment extends PublishStepFragment implements ManagedTa
     }
 
     @Override
-    public void onFinished(final ManagedTask task) {
+    public void onTaskFinished(final ManagedTask task) {
         TaskManager.clearTask(task);
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {

@@ -29,8 +29,8 @@ import com.door43.translationstudio.newui.legal.LegalDocumentActivity;
 import com.door43.translationstudio.service.BackupService;
 import com.door43.translationstudio.tasks.CheckForLatestReleaseTask;
 import com.door43.util.TTFAnalyzer;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -356,7 +356,7 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
     }
 
     @Override
-    public void onFinished(final ManagedTask task) {
+    public void onTaskFinished(final ManagedTask task) {
         TaskManager.clearTask(task);
 
         if(task instanceof CheckForLatestReleaseTask) {

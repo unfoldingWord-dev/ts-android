@@ -24,9 +24,9 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.DownloadImagesTask;
 import com.door43.translationstudio.tasks.PrintPDFTask;
-import com.door43.util.tasks.GenericTaskWatcher;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.io.File;
 import java.security.InvalidParameterException;
@@ -35,7 +35,7 @@ import java.util.Locale;
 /**
  * Created by joel on 11/16/2015.
  */
-public class PrintDialog extends DialogFragment implements GenericTaskWatcher.OnFinishedListener, GenericTaskWatcher.OnCanceledListener {
+public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnFinishedListener, SimpleTaskWatcher.OnCanceledListener {
 
     public static final String ARG_TARGET_TRANSLATION_ID = "arg_target_translation_id";
     public static final String STATE_INCLUDE_IMAGES = "include_images";
@@ -50,7 +50,7 @@ public class PrintDialog extends DialogFragment implements GenericTaskWatcher.On
     private Button printButton;
     private CheckBox includeImagesCheckBox;
     private CheckBox includeIncompleteCheckBox;
-    private GenericTaskWatcher taskWatcher;
+    private SimpleTaskWatcher taskWatcher;
     private File mExportFile;
 
     @Override
@@ -79,7 +79,7 @@ public class PrintDialog extends DialogFragment implements GenericTaskWatcher.On
             }
         }
 
-        taskWatcher = new GenericTaskWatcher(getActivity(), R.string.loading);
+        taskWatcher = new SimpleTaskWatcher(getActivity(), R.string.loading);
         taskWatcher.setOnFinishedListener(this);
         taskWatcher.setOnCanceledListener(this);
 

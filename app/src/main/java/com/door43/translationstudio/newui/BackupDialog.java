@@ -30,9 +30,9 @@ import com.door43.translationstudio.tasks.PullTargetTranslationTask;
 import com.door43.translationstudio.tasks.PushTargetTranslationTask;
 import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
 import com.door43.translationstudio.util.SdUtils;
-import com.door43.util.tasks.GenericTaskWatcher;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.widget.ViewUtil;
 
 import org.apache.commons.io.IOUtils;
@@ -48,13 +48,13 @@ import java.util.Map;
 /**
  * Created by joel on 10/5/2015.
  */
-public class BackupDialog extends DialogFragment implements GenericTaskWatcher.OnFinishedListener {
+public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.OnFinishedListener {
 
     public static final String ARG_TARGET_TRANSLATION_ID = "target_translation_id";
     public static final String TAG = "backup-dialog";
     private static final String STATE_SETTING_DEVICE_ALIAS = "state_setting_device_alias";
     private TargetTranslation targetTranslation;
-    private GenericTaskWatcher taskWatcher;
+    private SimpleTaskWatcher taskWatcher;
     private boolean settingDeviceAlias = false;
     private Button mBackupToCloudButton = null;
 
@@ -90,7 +90,7 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
 
         final String filename = targetTranslation.getId() + "." + Translator.ARCHIVE_EXTENSION;
 
-        taskWatcher = new GenericTaskWatcher(getActivity(), R.string.backup);
+        taskWatcher = new SimpleTaskWatcher(getActivity(), R.string.backup);
         taskWatcher.setOnFinishedListener(this);
 
         if(savedInstanceState != null) {

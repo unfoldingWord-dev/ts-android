@@ -23,9 +23,9 @@ import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.CloneRepositoryTask;
 import com.door43.translationstudio.tasks.GetUserRepositoriesTask;
 import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
-import com.door43.util.tasks.GenericTaskWatcher;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.widget.ViewUtil;
 
 import org.apache.commons.io.FileUtils;
@@ -41,9 +41,9 @@ import java.util.List;
 /**
  * Created by joel on 11/6/2015.
  */
-public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTaskWatcher.OnFinishedListener {
+public class RestoreFromDoor43Dialog extends DialogFragment implements SimpleTaskWatcher.OnFinishedListener {
     private static final String STATE_REPOSITORIES = "state_repositories";
-    private GenericTaskWatcher taskWatcher;
+    private SimpleTaskWatcher taskWatcher;
     private RestoreFromCloudAdapter adapter;
     private Translator translator;
     private List<Repository> repositories = new ArrayList<>();
@@ -54,7 +54,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         View v = inflater.inflate(R.layout.dialog_restore_from_door43, container, false);
 
-        this.taskWatcher = new GenericTaskWatcher(getActivity(), R.string.loading);
+        this.taskWatcher = new SimpleTaskWatcher(getActivity(), R.string.loading);
         this.taskWatcher.setOnFinishedListener(this);
 
         this.translator = AppContext.getTranslator();

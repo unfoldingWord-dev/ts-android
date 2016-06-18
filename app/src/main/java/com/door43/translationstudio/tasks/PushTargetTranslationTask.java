@@ -10,7 +10,7 @@ import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.TransportCallback;
-import com.door43.util.tasks.ManagedTask;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PushCommand;

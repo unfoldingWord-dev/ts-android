@@ -5,7 +5,7 @@ import com.door43.tools.reporting.GlobalExceptionHandler;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.AppContext;
 import com.door43.util.FileUtilities;
-import com.door43.util.tasks.ManagedTask;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.io.File;
 import java.io.IOException;

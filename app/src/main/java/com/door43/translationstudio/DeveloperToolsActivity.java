@@ -32,9 +32,10 @@ import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
 import com.door43.translationstudio.util.ToolAdapter;
 import com.door43.translationstudio.util.ToolItem;
 import com.door43.util.StringUtilities;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
 import com.door43.widget.ViewUtil;
+
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -328,7 +329,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
     }
 
     @Override
-    public void onFinished(final ManagedTask task) {
+    public void onTaskFinished(final ManagedTask task) {
         TaskManager.clearTask(task);
         if(progressDialog != null) {
             progressDialog.dismiss();
@@ -407,7 +408,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
     }
 
     @Override
-    public void onProgress(final ManagedTask task, final double progress, final String message, final boolean secondary) {
+    public void onTaskProgress(final ManagedTask task, final double progress, final String message, final boolean secondary) {
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override

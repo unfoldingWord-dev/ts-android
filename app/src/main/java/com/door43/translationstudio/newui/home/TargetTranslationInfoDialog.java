@@ -23,7 +23,7 @@ import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.PrintDialog;
 import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.newui.BackupDialog;
-import com.door43.util.tasks.ThreadableUI;
+import org.unfoldingword.tools.taskmanager.ThreadableUI;
 
 import java.util.ArrayList;
 import java.util.Locale;

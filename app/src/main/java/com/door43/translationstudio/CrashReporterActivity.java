@@ -16,8 +16,9 @@ import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.tasks.ArchiveCrashReportTask;
 import com.door43.translationstudio.tasks.CheckForLatestReleaseTask;
 import com.door43.translationstudio.tasks.UploadCrashReportTask;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 
 public class CrashReporterActivity extends BaseActivity implements ManagedTask.OnFinishedListener {
     private Button mOkButton;
@@ -166,7 +167,7 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
     }
 
     @Override
-    public void onFinished(ManagedTask task) {
+    public void onTaskFinished(ManagedTask task) {
         TaskManager.clearTask(task);
 
         Handler hand = new Handler(Looper.getMainLooper());

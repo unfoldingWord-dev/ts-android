@@ -37,9 +37,9 @@ import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.tasks.ExamineImportsForCollisionsTask;
 import com.door43.translationstudio.tasks.ImportProjectsTask;
-import com.door43.util.tasks.GenericTaskWatcher;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.widget.ViewUtil;
 
 import org.apache.commons.io.FileUtils;
@@ -47,7 +47,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.util.Locale;
 
-public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnFinishedListener, WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
+public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFinishedListener, WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
     private static final int REQUEST_CODE_STORAGE_ACCESS = 42;
     private static final int NEW_TARGET_TRANSLATION_REQUEST = 1;
     public static final String TAG = HomeActivity.class.getSimpleName();
@@ -55,7 +55,7 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
     private Translator mTranslator;
     private Fragment mFragment;
     private boolean mUsfmImport = false;
-    private GenericTaskWatcher taskWatcher;
+    private SimpleTaskWatcher taskWatcher;
     private ExamineImportsForCollisionsTask mExamineTask;
 
     @Override
@@ -267,7 +267,7 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
      */
     private void importFromUri(ContentResolver resolver, Uri contentUri) {
         if(null == taskWatcher) {
-            taskWatcher = new GenericTaskWatcher(this, R.string.import_project);
+            taskWatcher = new SimpleTaskWatcher(this, R.string.import_project);
             taskWatcher.setOnFinishedListener(this);
         }
 

@@ -22,8 +22,8 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.CheckForLatestReleaseTask;
 import com.door43.translationstudio.tasks.UploadBugReportTask;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.widget.ViewUtil;
 
 /**
@@ -133,7 +133,7 @@ public class FeedbackDialog extends DialogFragment implements ManagedTask.OnFini
     }
 
     @Override
-    public void onFinished(ManagedTask task) {
+    public void onTaskFinished(ManagedTask task) {
         TaskManager.clearTask(task);
 
         if(task.getClass().getName().equals(CheckForLatestReleaseTask.class.getName())) {

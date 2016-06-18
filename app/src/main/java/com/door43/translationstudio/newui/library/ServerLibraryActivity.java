@@ -27,8 +27,8 @@ import com.door43.translationstudio.tasks.CheckForLibraryUpdatesTask;
 import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
 import com.door43.translationstudio.tasks.DownloadUpdatesTask;
 import com.door43.translationstudio.AppContext;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.widget.ViewUtil;
 
 import java.text.NumberFormat;
@@ -166,7 +166,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
             downloadUpdatesTask.addOnProgressListener(this);
             downloadUpdatesTask.addOnProgressListener(this);
         } else {
-            onFinished(null);
+            onTaskFinished(null);
         }
     }
 
@@ -316,7 +316,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
     }
 
     @Override
-    public void onFinished(final ManagedTask task) {
+    public void onTaskFinished(final ManagedTask task) {
         TaskManager.clearTask(task);
 
         Handler hand = new Handler(Looper.getMainLooper());
@@ -349,7 +349,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
     }
 
     @Override
-    public void onProgress(final ManagedTask task, final double progress, final String message, final boolean secondary) {
+    public void onTaskProgress(final ManagedTask task, final double progress, final String message, final boolean secondary) {
         if(!task.isFinished()) {
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {

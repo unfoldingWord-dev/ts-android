@@ -10,10 +10,10 @@ import android.widget.EditText;
 import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.LoginDoor43Task;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
 
 import org.unfoldingword.gogsclient.User;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 
 public class LoginDoor43Activity extends AppCompatActivity implements ManagedTask.OnFinishedListener {
 
@@ -58,7 +58,7 @@ public class LoginDoor43Activity extends AppCompatActivity implements ManagedTas
     }
 
     @Override
-    public void onFinished(ManagedTask task) {
+    public void onTaskFinished(ManagedTask task) {
         TaskManager.clearTask(task);
 
         if(progressDialog != null) {

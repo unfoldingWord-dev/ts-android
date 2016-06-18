@@ -17,16 +17,16 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.tasks.ImportDraftTask;
-import com.door43.util.tasks.GenericTaskWatcher;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class DraftActivity extends BaseActivity implements GenericTaskWatcher.OnFinishedListener {
+public class DraftActivity extends BaseActivity implements SimpleTaskWatcher.OnFinishedListener {
     public static final String TAG = "DraftActivity";
     public static final String EXTRA_TARGET_TRANSLATION_ID = "target_translation_id";
     private TargetTranslation mTargetTranslation;
@@ -35,7 +35,7 @@ public class DraftActivity extends BaseActivity implements GenericTaskWatcher.On
     private RecyclerView mRecylerView;
     private LinearLayoutManager mLayoutManager;
     private DraftAdapter mAdapter;
-    private GenericTaskWatcher taskWatcher;
+    private SimpleTaskWatcher taskWatcher;
     private SourceTranslation mDraftTranslation;
 
     @Override
@@ -77,7 +77,7 @@ public class DraftActivity extends BaseActivity implements GenericTaskWatcher.On
         mAdapter = new DraftAdapter(this, mDraftTranslation);
         mRecylerView.setAdapter(mAdapter);
 
-        taskWatcher = new GenericTaskWatcher(this, R.string.loading);
+        taskWatcher = new SimpleTaskWatcher(this, R.string.loading);
         taskWatcher.setOnFinishedListener(this);
 
         FloatingActionButton fab = (FloatingActionButton)findViewById(R.id.fab);

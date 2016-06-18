@@ -63,7 +63,7 @@ import com.door43.translationstudio.spannables.USFMNoteSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.USFMVerseSpan;
 import com.door43.translationstudio.spannables.VerseSpan;
-import com.door43.util.tasks.ThreadableUI;
+import org.unfoldingword.tools.taskmanager.ThreadableUI;
 import com.door43.widget.ViewUtil;
 
 import org.eclipse.jgit.api.errors.GitAPIException;

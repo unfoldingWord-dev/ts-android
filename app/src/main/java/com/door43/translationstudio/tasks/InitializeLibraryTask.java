@@ -1,9 +1,8 @@
 package com.door43.translationstudio.tasks;
 
 import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.AppContext;
-import com.door43.util.tasks.ManagedTask;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 /**
  * This tasks extracts the packaged library index into the assets directory

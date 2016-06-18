@@ -8,7 +8,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Profile;
 import com.door43.util.FileUtilities;
-import com.door43.util.tasks.ManagedTask;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import org.unfoldingword.gogsclient.GogsAPI;
 import org.unfoldingword.gogsclient.PublicKey;
