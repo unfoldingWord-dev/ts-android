@@ -1,4 +1,4 @@
-package com.door43.util;
+package com.door43.widget;
 
 import android.content.Context;
 import android.text.TextWatcher;
