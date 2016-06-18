@@ -122,7 +122,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
         });
 
         // load tools
-        mDeveloperTools.add(new ToolItem("Regenerate SSH keys", "Discards and regenerates the ssh keys used for git", 0, new ToolItem.ToolAction() {
+        mDeveloperTools.add(new ToolItem("Regenerate SSH keys", "Discards and regenerates the ssh keys used for git", R.drawable.ic_security_black_24dp, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 ManagedTask task = new ManagedTask() {
@@ -137,7 +137,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
             }
         }));
 
-        mDeveloperTools.add(new ToolItem("Read debugging log", "View the error logs that have been generated on this device.", 0, new ToolItem.ToolAction() {
+        mDeveloperTools.add(new ToolItem("Read debugging log", "View the error logs that have been generated on this device.", R.drawable.ic_description_black_24dp, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 ErrorLogDialog dialog = new ErrorLogDialog();
@@ -150,7 +150,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                 dialog.show(ft, "dialog");
             }
         }));
-        mDeveloperTools.add(new ToolItem("Expire local resources", "Resets the local date modified on content to allow manually updating", 0, new ToolItem.ToolAction() {
+        mDeveloperTools.add(new ToolItem("Expire library data", "Resets the modified date of indexed library data", R.drawable.ic_history_black_24dp, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 AppContext.getLibrary().setExpired();
@@ -159,7 +159,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                 snack.show();
             }
         }));
-        mDeveloperTools.add(new ToolItem(getResources().getString(R.string.force_update_projects), getResources().getString(R.string.force_update_projects_description), 0, new ToolItem.ToolAction() {
+        mDeveloperTools.add(new ToolItem("Force update projects", "Re-downloads all the source for projects on the device without regard to the cache", R.drawable.ic_local_library_black_24dp, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 CustomAlertDialog.Builder(DeveloperToolsActivity.this)
@@ -177,10 +177,10 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                             }
                         })
                         .setNegativeButton(R.string.no, null)
-                        .show("DownloadAll");
+                        .show("download-all-dialog");
             }
         }));
-        mDeveloperTools.add(new ToolItem("Index tA", "Indexes the bundled tA json", 0, new ToolItem.ToolAction() {
+        mDeveloperTools.add(new ToolItem("Index tA", "Indexes the bundled tA json", R.drawable.ic_local_library_black_24dp, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 ManagedTask task = new ManagedTask() {
@@ -210,7 +210,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                 TaskManager.addTask(task, TASK_INDEX_TA);
             }
         }));
-        mDeveloperTools.add(new ToolItem("Index Chunk Markers", "Injects the chunk marker catalog url into the database and runs the update check", 0, new ToolItem.ToolAction() {
+        mDeveloperTools.add(new ToolItem("Index Chunk Markers", "Injects the chunk marker catalog url into the database and runs the update check", R.drawable.ic_local_library_black_24dp, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 // manually inject chunk marker details into db
@@ -223,7 +223,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                 TaskManager.addTask(task, TASK_INDEX_CHUNK_MARKERS);
             }
         }));
-        mDeveloperTools.add(new ToolItem(getResources().getString(R.string.export_source), getResources().getString(R.string.export_source_description), 0, new ToolItem.ToolAction() {
+        mDeveloperTools.add(new ToolItem("Export Library", "Zips up the library data so you can share it with another device", R.drawable.ic_share_black_24dp, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 ManagedTask task = new ManagedTask() {
@@ -239,7 +239,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                 TaskManager.addTask(task, TASK_EXPORT_LIBRARY);
             }
         }));
-        mDeveloperTools.add(new ToolItem(getResources().getString(R.string.simulate_crash), getResources().getString(R.string.simulate_crash_description), 0, new ToolItem.ToolAction() {
+        mDeveloperTools.add(new ToolItem("Simulate crash", "", R.drawable.ic_warning_black_18dp, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 int killme = 1/0;
