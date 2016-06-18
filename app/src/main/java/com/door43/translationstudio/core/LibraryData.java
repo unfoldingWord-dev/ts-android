@@ -994,6 +994,9 @@ public class LibraryData {
                 e.printStackTrace();
             }
         }
+
+        // clean up temp target languages that conflict with real target languages
+        cleanTempTargetLanguages();
         return true;
     }
 
@@ -1011,6 +1014,19 @@ public class LibraryData {
         values.put("direction", direction);
         values.put("region", region);
         return this.database.insertWithOnConflict("target_language", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+    }
+
+    /**
+     * Removes temp target languages that are found in the target_language table.
+     * These can occur when importing a target translation that uses a langauge that has
+     * not yet been downloaded
+     */
+    private void cleanTempTargetLanguages() {
+        this.database.execSQL("DELETE FROM `temp_target_language` WHERE `id` IN (\n" +
+                "SELECT `tl`.`id` FROM `temp_target_language` AS `ttl`\n" +
+                "LEFT JOIN `target_language` AS `tl` ON `tl`.`slug`=`ttl`.`slug`\n" +
+                "WHERE `tl`.`id` IS NOT null\n" +
+                ")");
     }
 
     /**
