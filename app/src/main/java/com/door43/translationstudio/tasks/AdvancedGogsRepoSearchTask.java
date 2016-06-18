@@ -1,7 +1,7 @@
 package com.door43.translationstudio.tasks;
 
 import com.door43.translationstudio.AppContext;
-import com.door43.util.tasks.ManagedTask;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import org.unfoldingword.gogsclient.Repository;
 import org.unfoldingword.gogsclient.User;

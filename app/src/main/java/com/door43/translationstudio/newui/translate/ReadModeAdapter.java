@@ -258,7 +258,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
                     @Override
                     public void onClick(View view, Span span, int start, int end) {
                         if(span instanceof NoteSpan) {
-                            CustomAlertDialog.Create(mContext)
+                            CustomAlertDialog.Builder(mContext)
                                     .setTitle(R.string.title_note)
                                     .setMessage(((NoteSpan)span).getNotes())
                                     .setPositiveButton(R.string.dismiss, null)

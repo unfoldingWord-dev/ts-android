@@ -27,8 +27,8 @@ import com.door43.translationstudio.tasks.CheckForLibraryUpdatesTask;
 import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
 import com.door43.translationstudio.tasks.DownloadUpdatesTask;
 import com.door43.translationstudio.AppContext;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.widget.ViewUtil;
 
 import java.text.NumberFormat;
@@ -166,7 +166,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
             downloadUpdatesTask.addOnProgressListener(this);
             downloadUpdatesTask.addOnProgressListener(this);
         } else {
-            onFinished(null);
+            onTaskFinished(null);
         }
     }
 
@@ -202,7 +202,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_download_all:
-                mConfirmDialog =  CustomAlertDialog.Create(this);
+                mConfirmDialog =  CustomAlertDialog.Builder(this);
                 mConfirmDialog.setTitle(R.string.action_download_all)
                         .setMessage(R.string.download_confirmation)
                         .setIcon(R.drawable.ic_cloud_download_black_24dp)
@@ -225,7 +225,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                     .show("DlAllConfirm");
                 return true;
             case R.id.action_download_updates:
-                mConfirmDialog = CustomAlertDialog.Create(this);
+                mConfirmDialog = CustomAlertDialog.Builder(this);
                 mConfirmDialog.setTitle(R.string.action_download_updates)
                         .setMessage(R.string.download_confirmation)
                         .setIcon(R.drawable.ic_cloud_download_black_24dp)
@@ -316,7 +316,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
     }
 
     @Override
-    public void onFinished(final ManagedTask task) {
+    public void onTaskFinished(final ManagedTask task) {
         TaskManager.clearTask(task);
 
         Handler hand = new Handler(Looper.getMainLooper());
@@ -335,7 +335,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
 
                 if(task instanceof DownloadAllProjectsTask || task instanceof DownloadUpdatesTask) {
                     if (!task.isCanceled()) {
-                        CustomAlertDialog.Create(ServerLibraryActivity.this)
+                        CustomAlertDialog.Builder(ServerLibraryActivity.this)
                                 .setTitle(R.string.success)
                                 .setIcon(R.drawable.ic_done_black_24dp)
                                 .setMessage(R.string.download_complete)
@@ -349,7 +349,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
     }
 
     @Override
-    public void onProgress(final ManagedTask task, final double progress, final String message, final boolean secondary) {
+    public void onTaskProgress(final ManagedTask task, final double progress, final String message, final boolean secondary) {
         if(!task.isFinished()) {
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {

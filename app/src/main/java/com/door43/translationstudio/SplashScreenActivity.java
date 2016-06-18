@@ -16,8 +16,8 @@ import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.tasks.InitializeLibraryTask;
 import com.door43.translationstudio.tasks.LoadTargetLanguagesTask;
 import com.door43.translationstudio.tasks.UpdateAppTask;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.io.File;
 
@@ -111,7 +111,7 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
     }
 
     @Override
-    public void onFinished(final ManagedTask task) {
+    public void onTaskFinished(final ManagedTask task) {
         TaskManager.clearTask(task);
         disconnectTask(task);
 
@@ -154,7 +154,7 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
     }
 
     @Override
-    public void onStart(final ManagedTask task) {
+    public void onTaskStart(final ManagedTask task) {
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override

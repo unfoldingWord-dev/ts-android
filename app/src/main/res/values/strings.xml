@@ -23,8 +23,6 @@
     <!-- The terms that users must agree with in order to use the app -->
     <string name="terms_title">Terms of Use</string>
     <string name="terms">By using this app you agree with the statement of faith and translation guidelines and to release your work under the terms of the Creative Commons Attribution-ShareAlike 4.0 International License.</string>
-    <!-- Re-create the ssh keys for the git repositories -->
-    <string name="regenerate_keys" translatable="false">Regenerate SSH Keys</string>
     <!-- stub needed for the drawer open and close listener -->
     <string name="title_close_drawer" translatable="false">close</string>
     <string name="chapter_title_field">Chapter Title</string>
@@ -256,18 +254,11 @@
     <!-- displays the unique device id -->
     <string name="app_udid" translatable="false">UDID <xliff:g example="4c3lk3id9392kkdnw983" id="unique_device_id">%1$s</xliff:g></string>
     <string name="copied_to_clipboard" translatable="false">Copied to clipboard</string>
-    <string name="force_update_projects" translatable="false">Force update projects</string>
-    <string name="force_update_projects_description" translatable="false">Re-downloads all the source for projects on the device without regard to the cache</string>
-    <string name="regenerate_keys_description" translatable="false">Discards and regenerates the ssh keys used for git</string>
-    <string name="read_debugging_log" translatable="false">Read debugging log</string>
-    <string name="read_debugging_log_description" translatable="false">View the error logs that have been generated on this device.</string>
     <string name="downloading_project">Downloading project <xliff:g example="obs" id="project_id">%1$s</xliff:g></string>
     <!-- This is the direction up. The opposite of down. -->
     <string name="up">Up</string>
     <!-- indicates the directory/folder on the device does not contain any files -->
     <string name="empty_directory">Directory empty</string>
-    <string name="export_source" translatable="false">Export Source</string>
-    <string name="export_source_description" translatable="false">Exports all of the project sources into an archive that may be imported to another device or added to an apk</string>
     <string name="exporting">Exporting</string>
     <string name="get_more_projects">Get more projects</string>
     <string name="title_activity_get_more_projects" translatable="false">@string/get_more_projects</string>
@@ -293,8 +284,6 @@
     <string name="import_from_storage_description">Projects will be imported from the external storage on this device</string>
     <string name="download_complete">Download complete</string>
     <string name="source_export_complete">Export complete</string>
-    <string name="simulate_crash" translatable="false">Simulate crash</string>
-    <string name="simulate_crash_description" translatable="false">Simulates the app encountering an unrecoverable error and crashing</string>
     <string name="exit_confirmation">Exit <xliff:g id="app_name">translationStudio</xliff:g>?</string>
     <string name="read_chapter_menu">Read chapter</string>
     <string name="preview_chapter_translation">Preview translation</string>

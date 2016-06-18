@@ -7,7 +7,7 @@ import com.door43.tools.reporting.Github;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.AppContext;
-import com.door43.util.tasks.ManagedTask;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import org.json.JSONArray;
 import org.json.JSONException;

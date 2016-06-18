@@ -434,7 +434,7 @@ public class CustomAlertDialog extends DialogFragment {
      * @param context
      * @return
      */
-    static public CustomAlertDialog Create(final Activity context) {
+    static public CustomAlertDialog Builder(final Activity context) {
         CustomAlertDialog dlg = new CustomAlertDialog();
         dlg.setContext(context);
         return dlg;

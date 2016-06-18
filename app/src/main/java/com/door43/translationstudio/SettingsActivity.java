@@ -29,8 +29,8 @@ import com.door43.translationstudio.newui.legal.LegalDocumentActivity;
 import com.door43.translationstudio.service.BackupService;
 import com.door43.translationstudio.tasks.CheckForLatestReleaseTask;
 import com.door43.util.TTFAnalyzer;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -356,7 +356,7 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
     }
 
     @Override
-    public void onFinished(final ManagedTask task) {
+    public void onTaskFinished(final ManagedTask task) {
         TaskManager.clearTask(task);
 
         if(task instanceof CheckForLatestReleaseTask) {
@@ -372,7 +372,7 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
 
                     CheckForLatestReleaseTask.Release release = checkForLatestReleaseTask.getLatestRelease();
                     if(release == null) {
-                        CustomAlertDialog.Create(SettingsActivity.this)
+                        CustomAlertDialog.Builder(SettingsActivity.this)
                                 .setTitle(R.string.check_for_updates)
                                 .setMessage(R.string.have_latest_app_update)
                                 .setPositiveButton(R.string.label_ok, null)
@@ -389,7 +389,7 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
      * ask the user if they want to download the latest version
      */
     private void promptUserToDownloadLatestVersion(final CheckForLatestReleaseTask.Release release) {
-        CustomAlertDialog.Create(this)
+        CustomAlertDialog.Builder(this)
                 .setTitle(R.string.apk_update_available)
                 .setMessage(R.string.download_latest_apk)
                 .setPositiveButton(R.string.label_ok, new View.OnClickListener() {

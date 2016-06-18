@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -46,9 +45,9 @@ import com.door43.translationstudio.tasks.PullTargetTranslationTask;
 import com.door43.translationstudio.tasks.PushTargetTranslationTask;
 import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
 import com.door43.translationstudio.AppContext;
-import com.door43.util.tasks.GenericTaskWatcher;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.widget.ViewUtil;
 
 import org.eclipse.jgit.api.Git;
@@ -64,12 +63,12 @@ import java.util.Map;
 /**
  * Created by joel on 9/20/2015.
  */
-public class PublishFragment extends PublishStepFragment implements GenericTaskWatcher.OnFinishedListener {
+public class PublishFragment extends PublishStepFragment implements SimpleTaskWatcher.OnFinishedListener {
 
     private static final String STATE_UPLOADED = "state_uploaded";
     private boolean mUploaded = false;
     private Button mUploadButton;
-    private GenericTaskWatcher taskWatcher;
+    private SimpleTaskWatcher taskWatcher;
     private LinearLayout mUploadSuccess;
     private TargetTranslation targetTranslation;
 
@@ -89,7 +88,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             throw new InvalidParameterException("a valid target translation id is required");
         }
 
-        taskWatcher = new GenericTaskWatcher(getActivity(), R.string.uploading);
+        taskWatcher = new SimpleTaskWatcher(getActivity(), R.string.uploading);
         taskWatcher.setOnFinishedListener(this);
 
         // receive uploaded status from activity (overrides save state from fragment)
@@ -345,7 +344,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
 
                         final SpannableString clickableDestinationMessage = getClickableText(publishedUrl, destinationMessage, clickableSpan);
 
-                        final CustomAlertDialog dlg = CustomAlertDialog.Create(getActivity());
+                        final CustomAlertDialog dlg = CustomAlertDialog.Builder(getActivity());
                         dlg.setTitle(R.string.success)
                                 .setMessage(clickableDestinationMessage)
                                 .setAutoDismiss(false)
@@ -549,7 +548,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
     }
 
     public void showAuthFailure() {
-        CustomAlertDialog.Create(getActivity())
+        CustomAlertDialog.Builder(getActivity())
                 .setTitle(R.string.error).setMessage(R.string.auth_failure_retry)
                 .setPositiveButton(R.string.yes, new View.OnClickListener() {
                     @Override
@@ -575,7 +574,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
      */
     private void notifyPublishFailed(final TargetTranslation targetTranslation) {
         final Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
-        CustomAlertDialog.Create(getActivity())
+        CustomAlertDialog.Builder(getActivity())
                 .setTitle(R.string.error)
                 .setMessage(R.string.upload_failed)
                 .setPositiveButton(R.string.dismiss, null)

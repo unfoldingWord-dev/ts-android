@@ -37,9 +37,9 @@ import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.tasks.ExamineImportsForCollisionsTask;
 import com.door43.translationstudio.tasks.ImportProjectsTask;
-import com.door43.util.tasks.GenericTaskWatcher;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.widget.ViewUtil;
 
 import org.apache.commons.io.FileUtils;
@@ -47,7 +47,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.util.Locale;
 
-public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnFinishedListener, WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
+public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFinishedListener, WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
     private static final int REQUEST_CODE_STORAGE_ACCESS = 42;
     private static final int NEW_TARGET_TRANSLATION_REQUEST = 1;
     public static final String TAG = HomeActivity.class.getSimpleName();
@@ -55,7 +55,7 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
     private Translator mTranslator;
     private Fragment mFragment;
     private boolean mUsfmImport = false;
-    private GenericTaskWatcher taskWatcher;
+    private SimpleTaskWatcher taskWatcher;
     private ExamineImportsForCollisionsTask mExamineTask;
 
     @Override
@@ -236,7 +236,7 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
      * display the final import Results.
      */
     private void showImportResults(String projectPath, String projectNames, boolean success) {
-        final CustomAlertDialog dlg = CustomAlertDialog.Create(this);
+        final CustomAlertDialog dlg = CustomAlertDialog.Builder(this);
         String message;
         if(success) {
             String format = AppContext.context().getResources().getString(R.string.import_project_success);
@@ -267,7 +267,7 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
      */
     private void importFromUri(ContentResolver resolver, Uri contentUri) {
         if(null == taskWatcher) {
-            taskWatcher = new GenericTaskWatcher(this, R.string.import_project);
+            taskWatcher = new SimpleTaskWatcher(this, R.string.import_project);
             taskWatcher.setOnFinishedListener(this);
         }
 
@@ -280,7 +280,7 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
      * show dialog to verify that we want to import, restore or cancel.
      */
     private void displayImportVerification() {
-        final CustomAlertDialog dlg = CustomAlertDialog.Create(this);
+        final CustomAlertDialog dlg = CustomAlertDialog.Builder(this);
         dlg.setTitle(R.string.label_import)
                 .setMessage(String.format(getResources().getString(R.string.confirm_import_target_translation), mExamineTask.mProjectsFound))
                 .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
@@ -324,7 +324,7 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
      * Triggers the process of opening the server library
      */
     private void openLibrary() {
-        CustomAlertDialog.Create(HomeActivity.this)
+        CustomAlertDialog.Builder(HomeActivity.this)
             .setTitle(R.string.update_projects)
             .setIcon(R.drawable.ic_local_library_black_24dp)
             .setMessage(R.string.use_internet_confirmation)
@@ -390,7 +390,7 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
     @Override
     public void onBackPressed() {
         // display confirmation before closing the app
-        CustomAlertDialog.Create(this)
+        CustomAlertDialog.Builder(this)
                 .setMessage(R.string.exit_confirmation)
                 .setPositiveButton(R.string.yes, new View.OnClickListener() {
                     @Override

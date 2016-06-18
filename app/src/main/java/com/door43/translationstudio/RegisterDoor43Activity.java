@@ -13,8 +13,8 @@ import android.widget.ToggleButton;
 import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.RegisterDoor43Task;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.widget.ViewUtil;
 
 import org.unfoldingword.gogsclient.User;
@@ -115,7 +115,7 @@ public class RegisterDoor43Activity extends AppCompatActivity implements Managed
     }
 
     @Override
-    public void onFinished(ManagedTask task) {
+    public void onTaskFinished(ManagedTask task) {
         TaskManager.clearTask(task);
 
         if(progressDialog != null) {
@@ -133,7 +133,7 @@ public class RegisterDoor43Activity extends AppCompatActivity implements Managed
             String error =((RegisterDoor43Task)task).getError();
             error = error == null ? getResources().getString(R.string.registration_failed) : error;
             // registration failed
-            CustomAlertDialog.Create(this)
+            CustomAlertDialog.Builder(this)
                     .setTitle(R.string.error)
                     .setMessage(error)
                     .setPositiveButton(R.string.label_ok, null)
