@@ -131,6 +131,16 @@ public class TargetTranslationMigrator {
                             }
                         }
                     }
+                } else {
+                    // make missing language codes usable even if we can't find the new language request
+                    TargetLanguage tl = AppContext.getLibrary().getTargetLanguage(tt.getTargetLanguageId());
+                    if(tl == null) {
+                        TargetLanguage tempLanguage = new TargetLanguage(tt.getTargetLanguageId(),
+                                tt.getTargetLanguageName(),
+                                tt.getTargetLanguageRegion(),
+                                tt.getTargetLanguageDirection());
+                        AppContext.getLibrary().addTempTargetLanguage(tempLanguage);
+                    }
                 }
             }
         }

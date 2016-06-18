@@ -89,6 +89,7 @@ public class TargetTranslation {
 
     private TranslationFormat mTranslationFormat;
     private PersonIdent author = null;
+    private String targetLanguageRegion = "unknown";
 
     /**
      * Creates a new instance of the target translation
@@ -103,6 +104,9 @@ public class TargetTranslation {
         this.targetLanguageId = targetLanguageJson.getString(FIELD_MANIFEST_ID);
         this.targetLanguageName = Manifest.valueExists(targetLanguageJson, FIELD_MANIFEST_NAME) ? targetLanguageJson.getString(FIELD_MANIFEST_NAME) : this.targetLanguageId.toUpperCase();
         this.targetLanguageDirection = LanguageDirection.get(targetLanguageJson.getString("direction"));
+        if(targetLanguageJson.has("region")) {
+            this.targetLanguageRegion = targetLanguageJson.getString("region");
+        }
 
         // project
         JSONObject projectJson = this.manifest.getJSONObject(FIELD_MANIFEST_PROJECT);
@@ -178,6 +182,10 @@ public class TargetTranslation {
      */
     public String getTargetLanguageName() {
         return targetLanguageName;
+    }
+
+    public String getTargetLanguageRegion() {
+        return targetLanguageRegion;
     }
 
     /**
