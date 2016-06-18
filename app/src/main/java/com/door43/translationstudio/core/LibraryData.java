@@ -2055,7 +2055,7 @@ public class LibraryData {
      * @return
      */
     public TargetLanguage getApprovedTargetLanguage(String tempLanguageCode) {
-        Cursor cursor = this.database.rawQuery("SELECT `tl`.`slug`, `tl`.`name`, `tl`.`direction`\n" +
+        Cursor cursor = this.database.rawQuery("SELECT `tl`.`slug`, `tl`.`name`, `tl`.`direction`,\n" +
                 "`tl`.`region` FROM `target_language` AS `tl`\n" +
                 "LEFT JOIN `temp_target_language` AS `ttl` ON `ttl`.`approved_target_language_slug`=`tl`.`slug`\n" +
                 "WHERE `ttl`.`slug`=?", new String[]{tempLanguageCode});
