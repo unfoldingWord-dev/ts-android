@@ -1,4 +1,4 @@
-package com.door43.util.network;
+package com.door43.util.http;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -8,29 +8,29 @@ import java.net.URL;
 /**
  * Created by joel on 6/18/16.
  */
-public class PostRequest extends Request {
+public class PatchRequest extends Request {
     private final String data;
 
     /**
-     * Prepares the post request
+     * Prepares the patch request
      * @param url
      * @param data
      */
-    private PostRequest(URL url, String data) {
-        super(url, "POST");
+    private PatchRequest(URL url, String data) {
+        super(url, "PATCH");
         this.data = data;
     }
 
     /**
-     * Creates a new post request
+     * Creates a new patch request
      * @param uri
      * @param data
      * @return
      * @throws MalformedURLException
      */
-    public static PostRequest newInstance(String uri, String data) throws MalformedURLException {
+    public static PatchRequest newInstance(String uri, String data) throws MalformedURLException {
         URL url = new URL(uri);
-        return new PostRequest(url, data);
+        return new PatchRequest(url, data);
     }
 
     @Override

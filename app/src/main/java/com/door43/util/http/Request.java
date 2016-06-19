@@ -1,4 +1,4 @@
-package com.door43.util.network;
+package com.door43.util.http;
 
 import android.util.Base64;
 

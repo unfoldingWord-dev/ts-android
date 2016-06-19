@@ -5,7 +5,7 @@ import android.content.pm.PackageManager;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.AppContext;
-import com.door43.util.network.GetRequest;
+import com.door43.util.http.GetRequest;
 
 import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
