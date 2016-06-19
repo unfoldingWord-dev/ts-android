@@ -1,6 +1,5 @@
 package com.door43.translationstudio.dialogs;
 
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,7 +7,8 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.LogEntry;
+import org.unfoldingword.tools.logger.LogLevel;
 import com.door43.translationstudio.R;
 import com.door43.widget.ViewUtil;
 
@@ -20,13 +20,13 @@ import java.util.List;
  */
 public class LogAdapter extends BaseAdapter {
 
-    private List<Logger.Entry> mLogs = new ArrayList<>();
+    private List<LogEntry> mLogs = new ArrayList<>();
 
     /**
      * Adds an item to the adapter
      * @param logs
      */
-    public void setItems(List<Logger.Entry> logs) {
+    public void setItems(List<LogEntry> logs) {
         mLogs = logs;
         notifyDataSetChanged();
     }
@@ -37,7 +37,7 @@ public class LogAdapter extends BaseAdapter {
     }
 
     @Override
-    public Logger.Entry getItem(int i) {
+    public LogEntry getItem(int i) {
         return mLogs.get(i);
     }
 
@@ -51,7 +51,7 @@ public class LogAdapter extends BaseAdapter {
         View v = view;
         ViewHolder holder = new ViewHolder();
 
-        Logger.Entry logEntry = getItem(i);
+        LogEntry logEntry = getItem(i);
 
         if(view == null) {
             v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.fragment_log_item, null);
@@ -65,13 +65,13 @@ public class LogAdapter extends BaseAdapter {
 
         holder.title.setText(logEntry.message);
         holder.namespace.setText(logEntry.classPath);
-        if(logEntry.level == Logger.Level.Error) {
+        if(logEntry.level == LogLevel.Error) {
             holder.icon.setBackgroundResource(R.drawable.ic_error_black_18dp);
             ViewUtil.tintViewDrawable(holder.icon, viewGroup.getContext().getResources().getColor(R.color.danger));
-        } else if(logEntry.level == Logger.Level.Warning) {
+        } else if(logEntry.level == LogLevel.Warning) {
             holder.icon.setBackgroundResource(R.drawable.ic_warning_black_18dp);
             ViewUtil.tintViewDrawable(holder.icon, viewGroup.getContext().getResources().getColor(R.color.warning));
-        } else if(logEntry.level == Logger.Level.Info) {
+        } else if(logEntry.level == LogLevel.Info) {
             holder.icon.setBackgroundResource(R.drawable.ic_info_black_18dp);
             ViewUtil.tintViewDrawable(holder.icon, viewGroup.getContext().getResources().getColor(R.color.info));
         }

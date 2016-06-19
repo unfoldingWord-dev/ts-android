@@ -1,6 +1,6 @@
 package com.door43.translationstudio.core;
 
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
 import com.door43.util.FileUtilities;

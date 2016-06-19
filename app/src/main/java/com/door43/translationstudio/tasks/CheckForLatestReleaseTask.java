@@ -3,10 +3,11 @@ package com.door43.translationstudio.tasks;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 
-import com.door43.tools.reporting.Github;
-import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.AppContext;
+import com.door43.util.network.GetRequest;
+
+import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import org.json.JSONArray;
@@ -28,10 +29,11 @@ public class CheckForLatestReleaseTask extends ManagedTask {
     @Override
     public void start() {
         String githubApiUrl = AppContext.context().getResources().getString(R.string.github_repo_api);
-        Github github = new Github(githubApiUrl);
+        String url = githubApiUrl + "/releases/latest";
         String latestRelease;
         try {
-            latestRelease = github.getLatestRelease();
+            GetRequest request = GetRequest.newInstance(url);
+            latestRelease = request.submit();
         } catch (IOException e) {
             Logger.e(CheckForLatestReleaseTask.class.getName(), "Failed to check for the latest release", e);
             latestRelease = null;

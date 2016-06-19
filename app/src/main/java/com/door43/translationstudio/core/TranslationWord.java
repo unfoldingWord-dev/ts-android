@@ -1,6 +1,6 @@
 package com.door43.translationstudio.core;
 
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.Logger;
 
 import org.json.JSONArray;
 import org.json.JSONException;

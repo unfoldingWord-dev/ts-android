@@ -1,11 +1,12 @@
 package com.door43.translationstudio.tasks;
 
-import com.door43.tools.reporting.FileUtils;
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NewLanguageRequest;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.util.FileUtilities;
+
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import org.json.JSONObject;
@@ -113,7 +114,7 @@ public class SubmitNewLanguageRequestsTask extends ManagedTask {
         Logger.i(this.getClass().getName(), "Sealing new language request '" + request.tempLanguageCode + "'");
         request.setSubmittedAt(System.currentTimeMillis());
         File requestFile = new File(AppContext.getPublicDirectory(), "new_languages/" + request.tempLanguageCode + ".json");
-        FileUtils.writeStringToFile(requestFile, request.toJson());
+        FileUtilities.writeStringToFile(requestFile, request.toJson());
 
         // updated affected target translations
         TargetTranslation[] translations = AppContext.getTranslator().getTargetTranslations();

@@ -17,7 +17,7 @@ public class TranslationImportTest extends InstrumentationTestCase {
 //        } else {
 //            Project[] projects = AppContext.projectManager().getProjectSlugs();
 //            for(Project p:projects) {
-//                FileUtils.deleteRecursive(new File(ProjectManager.getRepositoryPath(p, p.getSelectedSourceLanguage())));
+//                FileUtilities.deleteRecursive(new File(ProjectManager.getRepositoryPath(p, p.getSelectedSourceLanguage())));
 //                p.flush();
 //            }
 //        }
