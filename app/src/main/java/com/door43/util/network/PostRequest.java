@@ -33,16 +33,9 @@ public class PostRequest extends Request {
         return new PostRequest(url, data);
     }
 
-    /**
-     * Submits the post request
-     *
-     * @return
-     * @throws IOException
-     */
     @Override
-    public String submit() throws IOException {
-        HttpURLConnection conn = openConnection();
-        sendData(conn, data);
-        return readResponse(conn);
+    protected String onSubmit(HttpURLConnection conn) throws IOException {
+        sendData(data);
+        return readResponse();
     }
 }

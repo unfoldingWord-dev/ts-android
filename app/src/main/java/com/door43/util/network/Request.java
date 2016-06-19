@@ -14,7 +14,7 @@ import java.net.URL;
 import javax.net.ssl.HttpsURLConnection;
 
 /**
- * Created by joel on 6/18/16.
+ * Represents a network request
  */
 abstract class Request {
     private final URL url;
@@ -23,6 +23,8 @@ abstract class Request {
     private String username;
     private String password;
     private String contentType = null;
+    private HttpURLConnection connection;
+    private int responseCode = -1;
 
     /**
      * Prepare a new network request
@@ -86,7 +88,7 @@ abstract class Request {
      * @return
      * @throws IOException
      */
-    protected HttpURLConnection openConnection() throws IOException {
+    protected void openConnection() throws IOException {
         HttpURLConnection conn;
         if(url.getProtocol() == "https") {
             conn = (HttpsURLConnection)url.openConnection();
@@ -101,46 +103,65 @@ abstract class Request {
             conn.setRequestProperty("Content-Type", contentType);
         }
         conn.setRequestMethod(requestMethod);
-        return conn;
+        this.connection = conn;
     }
 
     /**
      * Reads the response from the connection as a string
-     * @param conn the connection to be read
      * @return
      * @throws IOException
      */
-    protected static String readResponse(HttpURLConnection conn) throws IOException {
-        InputStream is = conn.getInputStream();
+    protected String readResponse() throws IOException {
+        InputStream is = connection.getInputStream();
         BufferedInputStream bis = new BufferedInputStream(is);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         int current;
         while ((current = bis.read()) != -1) {
             baos.write((byte) current);
         }
-        conn.disconnect();
+        connection.disconnect();
         return baos.toString("UTF-8");
     }
 
     /**
      * Submits data to the connection.
      * Such as in a POST or PUT request.
-     * @param conn the connection receiving the data
      * @param data the data to be sent
      * @throws IOException
      */
-    protected void sendData(HttpURLConnection conn, String data) throws IOException {
-        conn.setDoOutput(true);
-        DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
+    protected void sendData(String data) throws IOException {
+        connection.setDoOutput(true);
+        DataOutputStream dos = new DataOutputStream(connection.getOutputStream());
         dos.writeBytes(data);
         dos.flush();
         dos.close();
     }
 
     /**
-     * Submits the request
+     * Submits the request.
+     * The connection is opened before delegating additional processing to the request Method.
      * @return
      * @throws IOException
      */
-    abstract String submit() throws IOException;
+    public final String submit() throws IOException {
+        openConnection();
+        String response = onSubmit(connection);
+        responseCode = connection.getResponseCode();
+        return response;
+    }
+
+    /**
+     * Returns the response code for this request
+     * @return
+     */
+    public int getResponseCode() {
+        return responseCode;
+    }
+
+    /**
+     * Perform methods specific actions
+     * @return
+     * @throws IOException
+     */
+    protected abstract String onSubmit(HttpURLConnection conn) throws IOException;
 }
