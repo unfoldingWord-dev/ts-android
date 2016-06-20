@@ -268,7 +268,7 @@
     <string name="languages">Languages</string>
     <string name="drafts">Drafts</string>
     <string name="use_internet_confirmation">This will use your internet connection, continue?</string>
-    <string name="update_projects">Update Library</string>
+    <string name="update_library">Update Library</string>
     <string name="update_projects_description">View and download available updates from the server</string>
     <string name="action_download_all">Download all</string>
     <string name="title_activity_project_updates">Project Updates</string>

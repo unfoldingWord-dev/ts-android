@@ -127,7 +127,7 @@
   <string name="languages">ഭാഷകള്</string>
   <string name="drafts">പരിഭാഷ ഡ്രാഫ്റ്റുകൾ</string>
   <string name="use_internet_confirmation">ഇത്, സെർവറിൽ നിന്നുള്ള വിവരങ്ങൾ ഡൗൺലോഡ് തുടരുന്നതിന് നിങ്ങളുടെ ഇന്റർനെറ്റ് കണക്ഷൻ ഉപയോഗിക്കും?</string>
-  <string name="update_projects">അപ്ഡേറ്റ് പദ്ധതികൾ</string>
+  <string name="update_library">അപ്ഡേറ്റ് പദ്ധതികൾ</string>
   <string name="update_projects_description">സെർവറിൽ നിന്നും ലഭ്യമായ അപ്ഡേറ്റുകൾ കാണുക, ഡൌൺലോഡ്</string>
   <string name="action_download_all">ഡൗൺലോഡുചെയ്യുക</string>
   <string name="title_activity_project_updates">പദ്ധതി പരിഷ്കരണങ്ങൾ</string>

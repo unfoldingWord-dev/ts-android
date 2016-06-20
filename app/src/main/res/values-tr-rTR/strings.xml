@@ -117,7 +117,7 @@
   <string name="languages">Diller</string>
   <string name="drafts">Tercüme Taslaklar</string>
   <string name="use_internet_confirmation">Bu sunucudan bilgi indirmek için internet bağlantınızı kullanır, devam?</string>
-  <string name="update_projects">Güncelleme Projeleri</string>
+  <string name="update_library">Güncelleme Projeleri</string>
   <string name="update_projects_description">Sunucudan görüntüleme ve indirme mevcut güncellemeler</string>
   <string name="action_download_all">Tüm İndir</string>
   <string name="title_activity_project_updates">Proje Güncellemeler</string>

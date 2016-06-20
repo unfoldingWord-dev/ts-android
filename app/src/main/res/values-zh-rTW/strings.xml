@@ -124,7 +124,7 @@
   <string name="languages">語言</string>
   <string name="drafts">翻譯草稿</string>
   <string name="use_internet_confirmation">這將使用您的Internet連接來下載從服務器的信息，是否繼續？</string>
-  <string name="update_projects">更新項目</string>
+  <string name="update_library">更新項目</string>
   <string name="update_projects_description">從服務器查看和下載可用更新</string>
   <string name="action_download_all">所有下載</string>
   <string name="title_activity_project_updates">項目更新</string>

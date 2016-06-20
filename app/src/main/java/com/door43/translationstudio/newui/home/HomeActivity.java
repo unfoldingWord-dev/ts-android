@@ -3,6 +3,7 @@ package com.door43.translationstudio.newui.home;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.ContentResolver;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
@@ -13,6 +14,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.os.Bundle;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.AlertDialog;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
@@ -324,19 +326,19 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
      * Triggers the process of opening the server library
      */
     private void openLibrary() {
-        CustomAlertDialog.Builder(HomeActivity.this)
-            .setTitle(R.string.update_projects)
-            .setIcon(R.drawable.ic_local_library_black_24dp)
-            .setMessage(R.string.use_internet_confirmation)
-            .setPositiveButton(R.string.yes, new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(HomeActivity.this, ServerLibraryActivity.class);
-                    startActivity(intent);
-                }
-            })
-            .setNegativeButton(R.string.no, null)
-            .show("UpdateLib");
+        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                .setTitle(R.string.update_library)
+                .setIcon(R.drawable.ic_local_library_black_24dp)
+                .setMessage(R.string.use_internet_confirmation)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(HomeActivity.this, ServerLibraryActivity.class);
+                        startActivity(intent);
+                    }
+                })
+                .setNegativeButton(R.string.no, null)
+                .show();
     }
 
     @Override

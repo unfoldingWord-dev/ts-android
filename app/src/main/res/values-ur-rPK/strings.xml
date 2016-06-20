@@ -124,7 +124,7 @@
   <string name="languages">زبانیں</string>
   <string name="drafts">ترجمہ ڈرافٹس</string>
   <string name="use_internet_confirmation">اس سرور سے معلومات ڈاؤن لوڈ کرنے کے اپنے انٹرنیٹ کنکشن کا استعمال کریں گے، جاری رہے؟</string>
-  <string name="update_projects">اپ ڈیٹ کریں پروجیکٹس</string>
+  <string name="update_library">اپ ڈیٹ کریں پروجیکٹس</string>
   <string name="update_projects_description">سرور سے دیکھیں اور ڈاؤن دستیاب اپ ڈیٹس</string>
   <string name="action_download_all">تمام ڈاؤن لوڈ، اتارنا</string>
   <string name="title_activity_project_updates">پروجیکٹ کی تازہ ترین معلومات</string>

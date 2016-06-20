@@ -4,12 +4,14 @@ import android.app.Activity;
 import android.app.Application;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import android.support.multidex.MultiDex;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
@@ -301,8 +303,11 @@ public class MainApplication extends Application {
     }
 
     public void showMessageDialog(String title, String msg) {
-        CustomAlertDialog.Builder(this.getCurrentActivity())
-            .setTitle(title).setMessage(msg).setPositiveButton(R.string.label_ok, null).show("ShowMsg");
+        new AlertDialog.Builder(getCurrentActivity(), R.style.AppTheme_Dialog)
+                .setTitle(title)
+                .setMessage(msg)
+                .setPositiveButton(R.string.label_ok, null)
+                .show();
     }
 
 //    public void showMessageDialog(int title, int msg) {
@@ -317,14 +322,16 @@ public class MainApplication extends Application {
      */
     @Deprecated
     public void showMessageDialogDetails(final int title, int msg, final String details) {
-        CustomAlertDialog.Builder(this.getCurrentActivity())
-            .setTitle(title).setMessage(msg).setPositiveButton(R.string.label_ok, null)
-                .setNeutralButton(R.string.label_details, new View.OnClickListener() {
+        new AlertDialog.Builder(getCurrentActivity(), R.style.AppTheme_Dialog)
+                .setTitle(title)
+                .setMessage(msg)
+                .setPositiveButton(R.string.label_ok, null)
+                .setNeutralButton(R.string.label_details, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         showMessageDialog(title, details);
                     }
-                }).show("ShowMsgDetail");
+                }).show();
     }
 
     public void showException(Throwable t) {
