@@ -526,5 +526,4 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
             return null;
         }
     }
-
 }

@@ -50,13 +50,17 @@ import java.util.Locale;
 public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnFinishedListener, WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
     private static final int REQUEST_CODE_STORAGE_ACCESS = 42;
     private static final int NEW_TARGET_TRANSLATION_REQUEST = 1;
+    public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
     public static final String TAG = HomeActivity.class.getSimpleName();
+    public static final String STATE_UPDATED_PROJECT_ID = "state_updated_project_id";
     private Library mLibrary;
     private Translator mTranslator;
     private Fragment mFragment;
     private boolean mUsfmImport = false;
     private GenericTaskWatcher taskWatcher;
     private ExamineImportsForCollisionsTask mExamineTask;
+    private eDialogShown mDialogShown = eDialogShown.NONE;
+    private String mUpdatedProject;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -193,6 +197,24 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
                 onItemClick(targetTranslation);
                 return;
             }
+        } else {
+            mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
+            mUpdatedProject = savedInstanceState.getString(STATE_UPDATED_PROJECT_ID, null);
+            restoreDialogs();
+        }
+    }
+
+    /**
+     * recreate the dialogs that were displayed before rotation
+     */
+    private void restoreDialogs() {
+        switch(mDialogShown) {
+            case PROJECT_CHANGED:
+                showMergePrompt(mUpdatedProject);
+                break;
+
+            default:
+                break;
         }
     }
 
@@ -442,7 +464,13 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
         }
     }
 
+    /**
+     * prompt user that project has changed
+     * @param targetTranslationId
+     */
     public void showMergePrompt(final String targetTranslationId) {
+        mDialogShown = eDialogShown.PROJECT_CHANGED;
+        mUpdatedProject = targetTranslationId;
         TargetTranslation targetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         if(targetTranslation == null) {
             Logger.e(TAG, "invalid target translation id:" + targetTranslationId);
@@ -466,6 +494,7 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
                 .setPositiveButton(R.string.yes, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        mDialogShown = eDialogShown.NONE;
                         FragmentTransaction ft = getFragmentManager().beginTransaction();
                         Fragment prev = getFragmentManager().findFragmentByTag(ImportDialog.TAG);
                         if (prev != null) {
@@ -478,7 +507,12 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
                         dialog.show(ft, ImportDialog.TAG);
                     }
                 })
-                .setNegativeButton(R.string.no, null)
+                .setNegativeButton(R.string.no, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mDialogShown = eDialogShown.NONE;
+                    }
+                })
                 .show("push_failure");
     }
 
@@ -540,4 +574,39 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
     public void notifyDatasetChanged() {
         onResume();
     }
-}
+
+    @Override
+    public void onSaveInstanceState(Bundle out) {
+        out.putInt(STATE_DIALOG_SHOWN, mDialogShown.getValue());
+        if(mUpdatedProject != null) {
+            out.putString(STATE_UPDATED_PROJECT_ID, mUpdatedProject);
+        }
+        super.onSaveInstanceState(out);
+    }
+
+    /**
+     * for keeping track if dialog is being shown for orientation changes
+     */
+    public enum eDialogShown {
+        NONE(0),
+        PROJECT_CHANGED(2);
+
+        private int _value;
+
+        eDialogShown(int Value) {
+            this._value = Value;
+        }
+
+        public int getValue() {
+            return _value;
+        }
+
+        public static eDialogShown fromInt(int i) {
+            for (eDialogShown b : eDialogShown.values()) {
+                if (b.getValue() == i) {
+                    return b;
+                }
+            }
+            return null;
+        }
+    }}
