@@ -1,5 +1,6 @@
 package com.door43.translationstudio;
 
+import android.content.DialogInterface;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -29,9 +30,9 @@ public class RegisterOfflineActivity extends AppCompatActivity {
             public void onClick(View v) {
                 final String fullName = fullNameText.getText().toString().trim();
                 if(!fullName.equals("")) {
-                    ProfileActivity.showPrivacyNotice(RegisterOfflineActivity.this, new View.OnClickListener() {
+                    ProfileActivity.showPrivacyNotice(RegisterOfflineActivity.this, new DialogInterface.OnClickListener() {
                         @Override
-                        public void onClick(View v) {
+                        public void onClick(DialogInterface dialog, int which) {
                             AppContext.setProfile(new Profile(fullName));
                             finish();
                         }
