@@ -3,11 +3,12 @@ package com.door43.translationstudio.newui;
 import android.app.Fragment;
 import android.content.Intent;
 
-import com.door43.tools.reporting.GlobalExceptionHandler;
 import com.door43.translationstudio.CrashReporterActivity;
 import com.door43.translationstudio.SplashScreenActivity;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.TermsOfUseActivity;
+
+import org.unfoldingword.tools.logger.Logger;
 
 import java.io.File;
 
@@ -27,7 +28,7 @@ public class BaseFragment extends Fragment {
                 && getActivity() instanceof CrashReporterActivity == false) {
             // check if we crashed or if we need to reload
             File dir = new File(getActivity().getExternalCacheDir(), AppContext.context().STACKTRACE_DIR);
-            String[] crashFiles = GlobalExceptionHandler.getStacktraces(dir);
+            File[] crashFiles = Logger.listStacktraces();
             if (crashFiles.length > 0) {
                 // restart
                 Intent intent = new Intent(getActivity(), SplashScreenActivity.class);

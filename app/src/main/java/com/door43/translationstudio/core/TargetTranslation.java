@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.support.annotation.Nullable;
 
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.util.NumericStringComparator;
 import com.door43.util.FileUtilities;
@@ -1261,7 +1261,7 @@ public class TargetTranslation {
     public void setNewLanguageRequest(NewLanguageRequest request) throws IOException {
         File requestFile = new File(getPath(), "new_language.json");
         if(request != null) {
-            com.door43.tools.reporting.FileUtils.writeStringToFile(requestFile, request.toJson());
+            FileUtilities.writeStringToFile(requestFile, request.toJson());
         } else if(requestFile.exists()) {
             FileUtilities.safeDelete(requestFile);
         }
@@ -1277,7 +1277,7 @@ public class TargetTranslation {
         File requestFile = new File(getPath(), "new_language.json");
         if(requestFile.exists()) {
             try {
-                String data = com.door43.tools.reporting.FileUtils.readFileToString(requestFile);
+                String data = FileUtilities.readFileToString(requestFile);
                 return NewLanguageRequest.generate(data);
             } catch (IOException e) {
                 e.printStackTrace();

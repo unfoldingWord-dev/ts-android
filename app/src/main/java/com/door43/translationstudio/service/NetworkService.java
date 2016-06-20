@@ -6,7 +6,7 @@ import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
 import android.util.Base64;
 
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.network.Connection;
 import com.door43.translationstudio.network.Peer;
 import com.door43.util.RSAEncryption;

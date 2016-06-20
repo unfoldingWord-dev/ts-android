@@ -3,7 +3,7 @@ package com.door43.translationstudio.core;
 import android.support.annotation.Nullable;
 import android.support.v4.util.Pair;
 
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.Logger;
 
 import org.json.JSONException;
 import org.json.JSONObject;

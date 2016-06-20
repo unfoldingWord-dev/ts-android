@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.Nullable;
 import android.util.Pair;
 
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.Logger;
 import com.door43.util.Security;
 
 import org.apache.commons.io.FileUtils;

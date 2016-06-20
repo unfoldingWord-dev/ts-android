@@ -14,7 +14,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.LogEntry;
+import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.R;
 import org.unfoldingword.tools.taskmanager.ThreadableUI;
 
@@ -95,7 +96,7 @@ public class ErrorLogDialog  extends DialogFragment{
         }
 
         mThread = new ThreadableUI(getActivity()) {
-            private List<Logger.Entry> mLogs = new ArrayList<>();
+            private List<LogEntry> mLogs = new ArrayList<>();
 
             @Override
             public void onStop() {

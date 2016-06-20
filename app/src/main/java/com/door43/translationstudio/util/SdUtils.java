@@ -9,7 +9,7 @@ import android.os.Environment;
 import android.support.v4.os.EnvironmentCompat;
 import android.support.v4.provider.DocumentFile;
 
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.util.StorageUtils;

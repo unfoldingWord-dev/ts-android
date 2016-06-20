@@ -5,7 +5,7 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;

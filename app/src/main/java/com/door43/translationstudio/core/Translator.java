@@ -5,7 +5,7 @@ import android.content.pm.PackageInfo;
 import android.text.Editable;
 import android.text.SpannedString;
 
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.rendering.USXtoUSFMConverter;
 import com.door43.util.FileUtilities;

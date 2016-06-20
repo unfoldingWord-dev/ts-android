@@ -1,7 +1,7 @@
 package com.door43.translationstudio.tasks;
 
-import com.door43.tools.reporting.GithubReporter;
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.GithubReporter;
+import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.AppContext;
 import com.door43.util.FileUtilities;
@@ -31,11 +31,7 @@ public class UploadBugReportTask extends ManagedTask {
 
         if(githubTokenIdentifier != 0) {
             GithubReporter reporter = new GithubReporter(AppContext.context(), githubUrl, AppContext.context().getResources().getString(githubTokenIdentifier));
-            try {
-                reporter.reportBug(mNotes, logFile);
-            } catch (IOException e) {
-                Logger.e(this.getClass().getName(), "Failed to submit the bug report", e);
-            }
+            reporter.reportBug(mNotes, logFile);
 
             // empty the log
             try {
