@@ -23,6 +23,7 @@ import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.TagCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.BranchTrackingStatus;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
@@ -1180,6 +1181,63 @@ public class TargetTranslation {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public enum TrackingStatus {
+        SAME, BEHIND, AHEAD, DIVERGED
+    }
+
+    /**
+     * Checks the status of current project compared to folder
+     * @param newDir
+     * @return boolean false if there were merge conflicts
+     * @throws Exception
+     */
+    public TrackingStatus getStatus(File newDir) throws Exception {
+        // commit everything
+        TargetTranslation importedTargetTranslation = TargetTranslation.open(newDir);
+        if(importedTargetTranslation != null) {
+            importedTargetTranslation.commitSync();
+        }
+        commitSync();
+
+        Manifest importedManifest = Manifest.generate(newDir);
+        Repo repo = getRepo();
+
+        // attach remote
+        repo.deleteRemote("new");
+        repo.setRemote("new", newDir.getAbsolutePath());
+        FetchCommand fetch = repo.getGit().fetch();
+        fetch.setRemote("new");
+        FetchResult fetchResult = fetch.call();
+
+        // create branch for new changes
+        DeleteBranchCommand deleteBranch = repo.getGit().branchDelete();
+        deleteBranch.setBranchNames("new");
+        deleteBranch.setForce(true);
+        deleteBranch.call();
+        CreateBranchCommand branch = repo.getGit().branchCreate();
+        branch.setName("new");
+        branch.setStartPoint("new/master");
+        branch.call();
+
+        Repository repository = repo.getGit().getRepository();
+        BranchTrackingStatus bts = BranchTrackingStatus.of(repository,
+                "new");
+        if(bts == null) {
+            return TrackingStatus.DIVERGED;
+        }
+
+        int aheadCount = bts.getAheadCount();
+        int behindCount = bts.getBehindCount();
+        if (aheadCount == 0 && behindCount == 0) {
+            return TrackingStatus.SAME;
+        } else if (aheadCount > 0 && behindCount == 0) {
+            return TrackingStatus.AHEAD;
+        } else if (aheadCount == 0 && behindCount > 0) {
+            return TrackingStatus.BEHIND;
+        }
+        return TrackingStatus.DIVERGED;
     }
 
     /**

@@ -187,6 +187,13 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
      * recreate the dialogs that were displayed before rotation
      */
     private void restoreDialogs() {
+        // attach to dialogs
+        MergeConflictsDialog mergeConflictsDialog = (MergeConflictsDialog)getFragmentManager().findFragmentByTag(MergeConflictsDialog.TAG);
+        if(mergeConflictsDialog != null) {
+            attachMergeConflictListener(mergeConflictsDialog);
+            return;
+        }
+
         switch(mDialogShown) {
             case IMPORT_FAILED:
                 notifyImportFailed();
@@ -194,10 +201,6 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
 
             case AUTH_FAILURE:
                 showAuthFailure();
-                break;
-
-            case MERGE_CONFLICT:
-                notifyMergeConflicts();
                 break;
 
             case MERGE_FAILED:
@@ -272,7 +275,12 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                         if (existingTargetTranslation != null) {
                             // merge target translation
                             try {
-                                existingTargetTranslation.merge(tempPath);
+                                TargetTranslation.TrackingStatus gitStatus = existingTargetTranslation.getStatus(tempPath);
+                                if(gitStatus != TargetTranslation.TrackingStatus.SAME) {
+
+                                } else {
+                                    //nothing to do
+                                }
                             } catch (Exception e) {
                                 Logger.e(this.getClass().getName(), "Failed to merge the target translation", e);
                                 notifyImportFailed();
@@ -397,7 +405,6 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     }
 
     private void notifyMergeConflicts() {
-        mDialogShown = eDialogShown.MERGE_CONFLICT;
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         MergeConflictsDialog dialog = new MergeConflictsDialog();
         attachMergeConflictListener(dialog);
@@ -410,8 +417,6 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         dialog.setOnClickListener(new MergeConflictsDialog.OnClickListener() {
             @Override
             public void onReview() {
-                mDialogShown = eDialogShown.NONE;
-
                 // ask parent activity to navigate to a new activity
                 Intent intent = new Intent(getActivity(), TargetTranslationActivity.class);
                 Bundle args = new Bundle();
@@ -427,8 +432,6 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
 
             @Override
             public void onKeepServer() {
-                mDialogShown = eDialogShown.NONE;
-
                 try {
                     Git git = targetTranslation.getRepo().getGit();
                     ResetCommand resetCommand = git.reset();
@@ -450,8 +453,6 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
 
             @Override
             public void onKeepLocal() {
-                mDialogShown = eDialogShown.NONE;
-
                 try {
                     Git git = targetTranslation.getRepo().getGit();
                     ResetCommand resetCommand = git.reset();
@@ -473,8 +474,6 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
 
             @Override
             public void onCancel() {
-                mDialogShown = eDialogShown.NONE;
-
                 try {
                     Git git = targetTranslation.getRepo().getGit();
                     ResetCommand resetCommand = git.reset();
@@ -498,7 +497,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         mDialogShown = eDialogShown.MERGE_FAILED;
 
         final Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
-        CustomAlertDialog.Create(getActivity())
+        CustomAlertDialog.Builder(getActivity())
                 .setTitle(R.string.error)
                 .setMessage(R.string.upload_failed)
                 .setPositiveButton(R.string.dismiss, new View.OnClickListener() {
@@ -542,8 +541,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         NONE(0),
         IMPORT_FAILED(1),
         AUTH_FAILURE(2),
-        MERGE_CONFLICT(3),
-        MERGE_FAILED(4);
+        MERGE_FAILED(3);
 
         private int _value;
 

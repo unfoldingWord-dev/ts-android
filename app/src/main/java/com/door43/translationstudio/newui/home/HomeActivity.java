@@ -492,7 +492,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         String bookName = project.name;
         String message = String.format(getResources().getString(R.string.merge_request),bookName, targetLanguageName);
 
-        CustomAlertDialog.Create(this)
+        CustomAlertDialog.Builder(this)
                 .setTitle(R.string.change_detected)
                 .setMessage(message)
                 .setPositiveButton(R.string.yes, new View.OnClickListener() {
