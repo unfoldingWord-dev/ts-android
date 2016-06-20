@@ -2,7 +2,7 @@ package com.door43.translationstudio.tasks;
 
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.TargetTranslation;
-import com.door43.util.tasks.ManagedTask;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 /**
  * Created by joel on 5/20/16.

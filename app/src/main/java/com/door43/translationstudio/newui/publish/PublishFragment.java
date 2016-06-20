@@ -41,9 +41,9 @@ import com.door43.translationstudio.tasks.CreateRepositoryTask;
 import com.door43.translationstudio.tasks.PushTargetTranslationTask;
 import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
 import com.door43.translationstudio.AppContext;
-import com.door43.util.tasks.GenericTaskWatcher;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.widget.ViewUtil;
 
 import org.sufficientlysecure.htmltextview.HtmlTextView;
@@ -55,7 +55,7 @@ import java.security.InvalidParameterException;
 /**
  * Created by joel on 9/20/2015.
  */
-public class PublishFragment extends PublishStepFragment implements GenericTaskWatcher.OnFinishedListener {
+public class PublishFragment extends PublishStepFragment implements SimpleTaskWatcher.OnFinishedListener {
 
     private static final String STATE_UPLOADED = "state_uploaded";
     public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
@@ -63,7 +63,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
     public static final String TAG = PublishFragment.class.getSimpleName();
     private boolean mUploaded = false;
     private Button mUploadButton;
-    private GenericTaskWatcher taskWatcher;
+    private SimpleTaskWatcher taskWatcher;
     private LinearLayout mUploadSuccess;
     private TargetTranslation targetTranslation;
     private eDialogShown mDialogShown = eDialogShown.NONE;
@@ -72,10 +72,10 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_publish_publish, container, false);
 
-        HtmlTextView explanationView = (HtmlTextView) v.findViewById(R.id.explanation);
+        HtmlTextView explanationView = (HtmlTextView)v.findViewById(R.id.explanation);
         explanationView.setHtmlFromString(getResources().getString(R.string.publishing_explanation), true);
 
-        if (savedInstanceState != null) {
+        if(savedInstanceState != null) {
             mUploaded = savedInstanceState.getBoolean(STATE_UPLOADED, false);
             mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
             mUploadDetails = savedInstanceState.getString(STATE_UPLOAD_DETAILS, null);
@@ -87,7 +87,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             throw new InvalidParameterException("a valid target translation id is required");
         }
 
-        taskWatcher = new GenericTaskWatcher(getActivity(), R.string.uploading);
+        taskWatcher = new SimpleTaskWatcher(getActivity(), R.string.uploading);
         taskWatcher.setOnFinishedListener(this);
 
         // receive uploaded status from activity (overrides save state from fragment)
@@ -97,10 +97,10 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
 
         this.targetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
 
-        mUploadSuccess = (LinearLayout) v.findViewById(R.id.upload_success);
-        mUploadButton = (Button) v.findViewById(R.id.upload_button);
+        mUploadSuccess = (LinearLayout)v.findViewById(R.id.upload_success);
+        mUploadButton = (Button)v.findViewById(R.id.upload_button);
 
-        if (mUploaded) {
+        if(mUploaded) {
             mUploadButton.setVisibility(View.GONE);
             mUploadSuccess.setVisibility(View.VISIBLE);
         } else {
@@ -121,9 +121,9 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
         mUploadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (AppContext.context().isNetworkAvailable()) {
+                if(AppContext.context().isNetworkAvailable()) {
                     // make sure we have a gogs user
-                    if (AppContext.getProfile().gogsUser == null) {
+                    if(AppContext.getProfile().gogsUser == null) {
                         FragmentTransaction ft = getFragmentManager().beginTransaction();
                         Door43LoginDialog dialog = new Door43LoginDialog();
                         dialog.show(ft, Door43LoginDialog.TAG);
@@ -141,13 +141,13 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             }
         });
 
-        ImageView wifiIcon = (ImageView) v.findViewById(R.id.wifi_icon);
+        ImageView wifiIcon = (ImageView)v.findViewById(R.id.wifi_icon);
         ViewUtil.tintViewDrawable(wifiIcon, getResources().getColor(R.color.dark_secondary_text));
 
         final String filename = targetTranslation.getId() + ".zip";
 
         // export buttons
-        Button exportToApp = (Button) v.findViewById(R.id.backup_to_app);
+        Button exportToApp = (Button)v.findViewById(R.id.backup_to_app);
         exportToApp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -157,7 +157,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 } catch (Exception e) {
                     Logger.e(PublishFragment.class.getName(), "Failed to export the target translation " + targetTranslation.getId(), e);
                 }
-                if (exportFile.exists()) {
+                if(exportFile.exists()) {
                     Uri u = FileProvider.getUriForFile(getActivity(), "com.door43.translationstudio.fileprovider", exportFile);
                     Intent i = new Intent(Intent.ACTION_SEND);
                     i.setType("application/zip");
@@ -170,7 +170,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 }
             }
         });
-        Button exportToSD = (Button) v.findViewById(R.id.export_to_sdcard);
+        Button exportToSD = (Button)v.findViewById(R.id.export_to_sdcard);
         exportToSD.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -181,7 +181,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 } catch (Exception e) {
                     Logger.e(PublishFragment.class.getName(), "Failed to export the target translation " + targetTranslation.getId(), e);
                 }
-                if (exportFile.exists()) {
+                if(exportFile.exists()) {
                     Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.success, Snackbar.LENGTH_LONG);
                     ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                     snack.show();
@@ -192,7 +192,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 }
             }
         });
-        Button exportToDevice = (Button) v.findViewById(R.id.backup_to_device);
+        Button exportToDevice = (Button)v.findViewById(R.id.backup_to_device);
         exportToDevice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -279,7 +279,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             } else if (status == PushTargetTranslationTask.Status.AUTH_FAILURE) {
                 Logger.i(this.getClass().getName(), "Authentication failed");
                 // if we have already tried ask the user if they would like to try again
-                if (AppContext.context().hasSSHKeys()) {
+                if(AppContext.context().hasSSHKeys()) {
                     showAuthFailure();
                     return;
                 }
@@ -341,7 +341,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
 
         final SpannableString clickableDestinationMessage = getClickableText(publishedUrl, destinationMessage, clickableSpan);
 
-        final CustomAlertDialog dlg = CustomAlertDialog.Create(getActivity());
+        final CustomAlertDialog dlg = CustomAlertDialog.Builder(getActivity());
         dlg.setTitle(R.string.success)
                 .setMessage(clickableDestinationMessage)
                 .setAutoDismiss(false)
@@ -366,7 +366,6 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
 
     /**
      * display the upload details
-     *
      * @param destinationMessage
      */
     private void showDetails(String destinationMessage) {
@@ -384,7 +383,6 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
 
     /**
      * put clickable message in dialog
-     *
      * @param clickableMessage
      * @param dlg
      */
@@ -407,7 +405,6 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
 
     /**
      * make selected text clickable
-     *
      * @param textToClick
      * @param entireText
      * @param clickableSpan
@@ -416,7 +413,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
     private SpannableString getClickableText(String textToClick, String entireText, ClickableSpan clickableSpan) {
         int startIndex = entireText.indexOf(textToClick);
         int lastIndex;
-        if (startIndex < 0) { // if not found
+        if(startIndex < 0) { // if not found
             startIndex = 0;
             lastIndex = textToClick.length();
         } else {
@@ -424,22 +421,21 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
         }
 
         SpannableString clickable = new SpannableString(entireText);
-        clickable.setSpan(clickableSpan, startIndex, lastIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set click
-        clickable.setSpan(new UnderlineSpan(), startIndex, lastIndex, 0); // underline
-        clickable.setSpan(new StyleSpan(Typeface.BOLD), startIndex, lastIndex, 0); // make bold
+        clickable.setSpan(clickableSpan,startIndex,lastIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set click
+        clickable.setSpan(new UnderlineSpan(),startIndex,lastIndex,0); // underline
+        clickable.setSpan(new StyleSpan(Typeface.BOLD),startIndex,lastIndex,0); // make bold
         return clickable;
     }
 
     /**
      * generate the url where the user can see that the published target is stored
-     *
      * @param targetTranslation
      * @return
      */
     public static String getPublishedUrl(TargetTranslation targetTranslation) {
         String userName = "";
         Profile profile = AppContext.getProfile();
-        if (profile != null && profile.gogsUser != null) {
+        if(profile != null && profile.gogsUser != null) {
             userName = profile.gogsUser.getUsername();
         }
 
@@ -451,7 +447,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
         }
 
         String[] parts = server.split("git@");
-        if (parts.length == 2) {
+        if(parts.length == 2) {
             server = parts[1];
         }
 
@@ -474,7 +470,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
 
     public void showAuthFailure() {
         mDialogShown = eDialogShown.AUTH_FAILURE;
-        CustomAlertDialog.Create(getActivity())
+        CustomAlertDialog.Builder(getActivity())
                 .setTitle(R.string.error).setMessage(R.string.auth_failure_retry)
                 .setPositiveButton(R.string.yes, new View.OnClickListener() {
                     @Override
@@ -498,13 +494,12 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
     /**
      * Displays a dialog to the user indicating the publish failed.
      * Includes an option to submit a bug report
-     *
      * @param targetTranslation
      */
     private void notifyPublishFailed(final TargetTranslation targetTranslation) {
         mDialogShown = eDialogShown.PUBLISH_FAILED;
         final Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
-        CustomAlertDialog.Create(getActivity())
+        CustomAlertDialog.Builder(getActivity())
                 .setTitle(R.string.error)
                 .setMessage(R.string.upload_failed)
                 .setPositiveButton(R.string.dismiss, new View.OnClickListener() {
@@ -552,7 +547,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
 
     @Override
     public void onDestroy() {
-        if (taskWatcher != null) {
+        if(taskWatcher != null) {
             taskWatcher.stop();
         }
         super.onDestroy();

@@ -3,7 +3,7 @@ package com.door43.translationstudio.tasks;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
-import com.door43.util.tasks.ManagedTask;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 /**
  * Created by jshuma on 1/11/16.

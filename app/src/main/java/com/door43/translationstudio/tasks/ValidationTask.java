@@ -14,7 +14,7 @@ import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.publish.ValidationItem;
 import com.door43.translationstudio.AppContext;
-import com.door43.util.tasks.ManagedTask;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.util.ArrayList;
 import java.util.List;

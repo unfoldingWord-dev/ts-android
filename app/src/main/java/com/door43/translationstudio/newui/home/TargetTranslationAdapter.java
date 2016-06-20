@@ -20,8 +20,8 @@ import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.tasks.CalculateTargetTranslationProgressTask;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.widget.ViewUtil;
 import com.filippudak.ProgressPieView.ProgressPieView;
 
@@ -144,7 +144,7 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
     }
 
     @Override
-    public void onFinished(ManagedTask task) {
+    public void onTaskFinished(ManagedTask task) {
         TaskManager.clearTask(task);
         // save progress
         final int progress = ((CalculateTargetTranslationProgressTask)task).translationProgress;

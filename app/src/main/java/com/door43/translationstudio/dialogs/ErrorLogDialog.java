@@ -16,7 +16,7 @@ import android.widget.Toast;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
-import com.door43.util.tasks.ThreadableUI;
+import org.unfoldingword.tools.taskmanager.ThreadableUI;
 
 import java.util.ArrayList;
 import java.util.List;

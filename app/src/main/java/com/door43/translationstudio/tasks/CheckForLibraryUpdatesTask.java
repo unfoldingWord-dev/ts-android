@@ -6,7 +6,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.LibraryUpdates;
 import com.door43.translationstudio.AppContext;
-import com.door43.util.tasks.ManagedTask;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 /**
  * Gets a list of projects that are available for download from the server
@@ -60,7 +60,6 @@ public class CheckForLibraryUpdatesTask extends ManagedTask {
 
             // download the temp target languages
             library.downloadTempTargetLanguageAssignments();
-
         }
     }
 

@@ -1,10 +1,5 @@
 package com.door43.translationstudio.tasks;
 
-import android.content.Intent;
-import android.net.Uri;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.FileProvider;
-
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
@@ -13,8 +8,7 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.widget.ViewUtil;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.io.File;
 

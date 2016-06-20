@@ -8,7 +8,7 @@ import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.core.ArchiveDetails;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.util.tasks.ManagedTask;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import org.apache.commons.io.FileUtils;
 

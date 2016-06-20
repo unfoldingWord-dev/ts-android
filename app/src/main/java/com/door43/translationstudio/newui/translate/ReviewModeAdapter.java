@@ -63,7 +63,7 @@ import com.door43.translationstudio.spannables.USFMNoteSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.USFMVerseSpan;
 import com.door43.translationstudio.spannables.VerseSpan;
-import com.door43.util.tasks.ThreadableUI;
+import org.unfoldingword.tools.taskmanager.ThreadableUI;
 import com.door43.widget.ViewUtil;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -600,7 +600,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     String newBody = Translator.compileTranslation(changes);
                     item.bodyTranslation = newBody;
 
-                    CustomAlertDialog.Create(mContext)
+                    CustomAlertDialog.Builder(mContext)
                             .setTitle(R.string.chunk_checklist_title)
                             .setMessageHtml(R.string.chunk_checklist_body)
                             .setPositiveButton(R.string.confirm, new View.OnClickListener() {
@@ -743,7 +743,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 footnoteText.setText(initialNote);
 
                 // pop up note prompt
-                final CustomAlertDialog dialog = CustomAlertDialog.Create(mContext);
+                final CustomAlertDialog dialog = CustomAlertDialog.Builder(mContext);
                 dialog.setTitle(R.string.title_add_footnote)
                         .setAutoDismiss(false)
                         .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
@@ -796,7 +796,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param messageID
      */
     private void warnDialog(int titleID, int messageID) {
-        final CustomAlertDialog dialog = CustomAlertDialog.Create(mContext);
+        final CustomAlertDialog dialog = CustomAlertDialog.Builder(mContext);
         dialog.setTitle(titleID)
                 .setMessage(messageID)
                 .setPositiveButton(R.string.dismiss, null)
@@ -1518,7 +1518,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
         CharSequence message = span.getNotes();
 
-        CustomAlertDialog dlg = CustomAlertDialog.Create(mContext);
+        CustomAlertDialog dlg = CustomAlertDialog.Builder(mContext);
         dlg.setTitle(title)
            .setMessage(message)
            .setPositiveButton(R.string.dismiss, null);
@@ -1553,7 +1553,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         final CharSequence original = editText.getText();
 
         // pop up delete prompt
-        final CustomAlertDialog dialog = CustomAlertDialog.Create(mContext);
+        final CustomAlertDialog dialog = CustomAlertDialog.Builder(mContext);
         dialog.setTitle(R.string.footnote_confirm_delete)
                 .setMessage(note)
                 .setPositiveButton(R.string.label_delete, new View.OnClickListener() {

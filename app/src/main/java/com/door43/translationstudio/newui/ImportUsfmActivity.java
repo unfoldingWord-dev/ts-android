@@ -227,7 +227,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                 message = String.format(format, description);
             }
 
-            mStatusDialog = CustomAlertDialog.Create(ImportUsfmActivity.this);
+            mStatusDialog = CustomAlertDialog.Builder(ImportUsfmActivity.this);
             mStatusDialog.setTitle(R.string.title_activity_import_usfm_language)
                     .setMessage(message)
                     .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
@@ -295,7 +295,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
                     View.OnClickListener continueListener = null;
 
-                    mStatusDialog = CustomAlertDialog.Create(ImportUsfmActivity.this);
+                    mStatusDialog = CustomAlertDialog.Builder(ImportUsfmActivity.this);
 
                     mStatusDialog.setTitle(processSuccess ? R.string.title_processing_usfm_summary : R.string.title_import_usfm_error)
                             .setMessage(message)
@@ -444,7 +444,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
         mCurrentState = eImportState.showingImportResults;
 
-        mStatusDialog = CustomAlertDialog.Create(ImportUsfmActivity.this);
+        mStatusDialog = CustomAlertDialog.Builder(ImportUsfmActivity.this);
         mStatusDialog.setTitle(mFinishedSuccess ? R.string.title_import_usfm_results : R.string.title_import_usfm_error)
                 .setMessage(mFinishedSuccess ? R.string.import_usfm_success : R.string.import_usfm_failed)
                 .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
@@ -599,7 +599,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                 onBackPressed();
                 return true;
             case R.id.action_update:
-                CustomAlertDialog.Create(this)
+                CustomAlertDialog.Builder(this)
                         .setTitle(R.string.update_projects)
                         .setIcon(R.drawable.ic_local_library_black_24dp)
                         .setMessage(R.string.use_internet_confirmation)

@@ -37,9 +37,9 @@ import com.door43.translationstudio.tasks.CloneRepositoryTask;
 import com.door43.translationstudio.tasks.PullTargetTranslationTask;
 import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
 import com.door43.translationstudio.tasks.SearchGogsRepositoriesTask;
-import com.door43.util.tasks.GenericTaskWatcher;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.widget.ViewUtil;
 
 import org.apache.commons.io.FileUtils;
@@ -58,12 +58,12 @@ import java.util.List;
 /**
  * Created by joel on 5/10/16.
  */
-public class ImportFromDoor43Dialog extends DialogFragment implements GenericTaskWatcher.OnFinishedListener {
+public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTaskWatcher.OnFinishedListener {
     private static final String STATE_REPOSITORIES = "state_repositories";
     public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
     public static final String STATE_TARGET_TRANSLATION_ID = "state_target_translation_id";
     public static final String TAG = ImportFromDoor43Dialog.class.getSimpleName();
-    private GenericTaskWatcher taskWatcher;
+    private SimpleTaskWatcher taskWatcher;
     private RestoreFromCloudAdapter adapter;
     private Translator translator;
     private List<Repository> repositories = new ArrayList<>();
@@ -80,7 +80,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         View v = inflater.inflate(R.layout.dialog_import_from_door43, container, false);
 
-        this.taskWatcher = new GenericTaskWatcher(getActivity(), R.string.loading);
+        this.taskWatcher = new SimpleTaskWatcher(getActivity(), R.string.loading);
         this.taskWatcher.setOnFinishedListener(this);
 
         this.translator = AppContext.getTranslator();
@@ -341,7 +341,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
 
     public void showAuthFailure() {
         mDialogShown = eDialogShown.AUTH_FAILURE;
-        CustomAlertDialog.Create(getActivity())
+        CustomAlertDialog.Builder(getActivity())
                 .setTitle(R.string.error).setMessage(R.string.auth_failure_retry)
                 .setPositiveButton(R.string.yes, new View.OnClickListener() {
                     @Override
@@ -364,7 +364,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
 
     public void notifyImportFailed() {
         mDialogShown = eDialogShown.IMPORT_FAILED;
-        CustomAlertDialog.Create(getActivity())
+        CustomAlertDialog.Builder(getActivity())
                 .setTitle(R.string.error)
                 .setMessage(R.string.restore_failed)
                 .setPositiveButton(R.string.dismiss, new View.OnClickListener() {

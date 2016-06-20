@@ -318,7 +318,7 @@ public class ImportDialog extends DialogFragment {
         if(filePath != null) {
             message += "\n" + filePath;
         }
-        CustomAlertDialog.Create(getActivity())
+        CustomAlertDialog.Builder(getActivity())
                 .setTitle(R.string.import_from_sd)
                 .setMessage(message)
                 .setNeutralButton(R.string.dismiss, null)

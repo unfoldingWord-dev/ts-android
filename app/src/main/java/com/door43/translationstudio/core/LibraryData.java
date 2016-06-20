@@ -994,6 +994,9 @@ public class LibraryData {
                 e.printStackTrace();
             }
         }
+
+        // clean up temp target languages that conflict with real target languages
+        cleanTempTargetLanguages();
         return true;
     }
 
@@ -1011,6 +1014,19 @@ public class LibraryData {
         values.put("direction", direction);
         values.put("region", region);
         return this.database.insertWithOnConflict("target_language", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+    }
+
+    /**
+     * Removes temp target languages that are found in the target_language table.
+     * These can occur when importing a target translation that uses a langauge that has
+     * not yet been downloaded
+     */
+    private void cleanTempTargetLanguages() {
+        this.database.execSQL("DELETE FROM `temp_target_language` WHERE `id` IN (\n" +
+                "SELECT `tl`.`id` FROM `temp_target_language` AS `ttl`\n" +
+                "LEFT JOIN `target_language` AS `tl` ON `tl`.`slug`=`ttl`.`slug`\n" +
+                "WHERE `tl`.`id` IS NOT null\n" +
+                ")");
     }
 
     /**
@@ -2028,6 +2044,31 @@ public class LibraryData {
             }
             String region = cursor.getString(3);
             targetLanguage = new TargetLanguage(targetLanguageSlug, name, region, direction);
+        }
+        cursor.close();
+        return targetLanguage;
+    }
+
+    /**
+     * Returns a target language that has been approved from a temporary language code request
+     * @param tempLanguageCode the temp language code to look up
+     * @return
+     */
+    public TargetLanguage getApprovedTargetLanguage(String tempLanguageCode) {
+        Cursor cursor = this.database.rawQuery("SELECT `tl`.`slug`, `tl`.`name`, `tl`.`direction`,\n" +
+                "`tl`.`region` FROM `target_language` AS `tl`\n" +
+                "LEFT JOIN `temp_target_language` AS `ttl` ON `ttl`.`approved_target_language_slug`=`tl`.`slug`\n" +
+                "WHERE `ttl`.`slug`=?", new String[]{tempLanguageCode});
+        TargetLanguage targetLanguage = null;
+        if(cursor.moveToFirst()) {
+            String slug = cursor.getString(0);
+            String name = cursor.getString(1);
+            LanguageDirection direction = LanguageDirection.get(cursor.getString(2));
+            if(direction == null) {
+                direction = LanguageDirection.LeftToRight;
+            }
+            String region = cursor.getString(3);
+            targetLanguage = new TargetLanguage(slug, name, region, direction);
         }
         cursor.close();
         return targetLanguage;

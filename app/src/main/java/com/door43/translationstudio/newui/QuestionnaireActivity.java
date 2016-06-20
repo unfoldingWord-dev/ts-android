@@ -83,7 +83,7 @@ public abstract class QuestionnaireActivity extends BaseActivity implements Ques
                     for (QuestionnaireQuestion q :page.getQuestions()) {
                         String answer = onGetAnswer(q);
                         if(q.required && (answer == null || answer.isEmpty())) {
-                            CustomAlertDialog.Create(QuestionnaireActivity.this)
+                            CustomAlertDialog.Builder(QuestionnaireActivity.this)
                                     .setTitle(R.string.missing_question_answer)
                                     .setMessage(q.question)
                                     .setPositiveButton(R.string.dismiss, null)
@@ -210,7 +210,7 @@ public abstract class QuestionnaireActivity extends BaseActivity implements Ques
 
     private void confirmExit() {
         // display confirmation before closing the app
-        CustomAlertDialog.Create(this)
+        CustomAlertDialog.Builder(this)
                 .setTitle(R.string.confirm)
                 .setMessage(R.string.confirm_leave_questionnaire)
                 .setPositiveButton(R.string.yes, new View.OnClickListener() {

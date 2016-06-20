@@ -522,7 +522,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
      * @param holder
      */
     public void promptToEditDoneChunk(final ViewHolder holder, final ListItem item) {
-        CustomAlertDialog.Create(mContext)
+        CustomAlertDialog.Builder(mContext)
                 .setTitle(R.string.chunk_done_title)
 //                                .setIcon(R.drawable.ic_local_library_black_24dp)
                 .setMessage(R.string.chunk_done_prompt)
@@ -768,7 +768,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
                     if(span instanceof NoteSpan) {
-                        CustomAlertDialog.Create(mContext)
+                        CustomAlertDialog.Builder(mContext)
                                 .setTitle(R.string.title_note)
                                 .setMessage(((NoteSpan)span).getNotes())
                                 .setPositiveButton(R.string.dismiss, null)

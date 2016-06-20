@@ -98,27 +98,49 @@ public class TargetTranslationMigrator {
             if(tt != null) {
                 NewLanguageRequest newRequest = tt.getNewLanguageRequest();
                 if(newRequest != null) {
-                    NewLanguageRequest existingRequest = AppContext.getNewLanguageRequest(newRequest.tempLanguageCode);
-                    if(existingRequest == null) {
-                        // TODO: 6/10/16 check if the new langauge request has been approved if so migrate to the new language
-                        // AppContext.getLibrary().getMappedTargetLanguage(newRequest.tempLanguageCode);
-                        // if mapped : tt.setNewLanguageRequest(null) and change language
-                        // import the new language request
-                        AppContext.addNewLanguageRequest(newRequest);
-                    } else {
-                        if(existingRequest.getSubmittedAt() > 0 && newRequest.getSubmittedAt() == 0) {
-                            // indicated imported language request has been submitted
-                            newRequest.setSubmittedAt(existingRequest.getSubmittedAt());
-                            try {
-                                tt.setNewLanguageRequest(newRequest);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        } else if(existingRequest.getSubmittedAt() == 0 && newRequest.getSubmittedAt() > 0) {
-                            // indicate existing language request has been submitted
-                            existingRequest.setSubmittedAt(newRequest.getSubmittedAt());
-                            AppContext.addNewLanguageRequest(existingRequest);
+                    TargetLanguage approvedTargetLanguage = AppContext.getLibrary().getApprovedTargetLanguage(newRequest.tempLanguageCode);
+                    if(approvedTargetLanguage != null) {
+                        // this language request has already been approved so let's migrate it
+                        try {
+                            tt.setNewLanguageRequest(null);
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
+                        tt.changeTargetLanguage(approvedTargetLanguage);
+                        AppContext.getTranslator().normalizePath(tt);
+                    } else {
+                        NewLanguageRequest existingRequest = AppContext.getNewLanguageRequest(newRequest.tempLanguageCode);
+                        if(existingRequest == null) {
+                            // we don't have this language request
+                            AppContext.addNewLanguageRequest(newRequest);
+                        } else {
+                            // we already have this language request
+                            if (existingRequest.getSubmittedAt() > 0 && newRequest.getSubmittedAt() == 0) {
+                                // indicated this language request has been submitted
+                                newRequest.setSubmittedAt(existingRequest.getSubmittedAt());
+                                try {
+                                    tt.setNewLanguageRequest(newRequest);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            } else if (existingRequest.getSubmittedAt() == 0 && newRequest.getSubmittedAt() > 0) {
+                                // indicate global language request has been submitted
+                                existingRequest.setSubmittedAt(newRequest.getSubmittedAt());
+                                AppContext.addNewLanguageRequest(existingRequest);
+                                // TODO: 6/15/16 technically we need to look through all the existing target translations and update ones using this language.
+                                // if we don't then they should get updated the next time the restart the app.
+                            }
+                        }
+                    }
+                } else {
+                    // make missing language codes usable even if we can't find the new language request
+                    TargetLanguage tl = AppContext.getLibrary().getTargetLanguage(tt.getTargetLanguageId());
+                    if(tl == null) {
+                        TargetLanguage tempLanguage = new TargetLanguage(tt.getTargetLanguageId(),
+                                tt.getTargetLanguageName(),
+                                tt.getTargetLanguageRegion(),
+                                tt.getTargetLanguageDirection());
+                        AppContext.getLibrary().addTempTargetLanguage(tempLanguage);
                     }
                 }
             }

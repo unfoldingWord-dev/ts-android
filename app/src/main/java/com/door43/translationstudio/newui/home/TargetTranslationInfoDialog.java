@@ -23,7 +23,7 @@ import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.PrintDialog;
 import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.newui.BackupDialog;
-import com.door43.util.tasks.ThreadableUI;
+import org.unfoldingword.tools.taskmanager.ThreadableUI;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -134,7 +134,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CustomAlertDialog.Create(getActivity())
+                CustomAlertDialog.Builder(getActivity())
                         .setTitle(R.string.label_delete)
                         .setIcon(R.drawable.ic_delete_black_24dp)
                         .setMessage(R.string.confirm_delete_target_translation)

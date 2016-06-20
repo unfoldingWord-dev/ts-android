@@ -1,6 +1,5 @@
 package com.door43.translationstudio.newui.draft;
 
-import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -18,16 +17,16 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.tasks.ImportDraftTask;
-import com.door43.util.tasks.GenericTaskWatcher;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class DraftActivity extends BaseActivity implements GenericTaskWatcher.OnFinishedListener {
+public class DraftActivity extends BaseActivity implements SimpleTaskWatcher.OnFinishedListener {
     public static final String TAG = "DraftActivity";
     public static final String EXTRA_TARGET_TRANSLATION_ID = "target_translation_id";
     private TargetTranslation mTargetTranslation;
@@ -36,7 +35,7 @@ public class DraftActivity extends BaseActivity implements GenericTaskWatcher.On
     private RecyclerView mRecylerView;
     private LinearLayoutManager mLayoutManager;
     private DraftAdapter mAdapter;
-    private GenericTaskWatcher taskWatcher;
+    private SimpleTaskWatcher taskWatcher;
     private SourceTranslation mDraftTranslation;
 
     @Override
@@ -78,14 +77,14 @@ public class DraftActivity extends BaseActivity implements GenericTaskWatcher.On
         mAdapter = new DraftAdapter(this, mDraftTranslation);
         mRecylerView.setAdapter(mAdapter);
 
-        taskWatcher = new GenericTaskWatcher(this, R.string.loading);
+        taskWatcher = new SimpleTaskWatcher(this, R.string.loading);
         taskWatcher.setOnFinishedListener(this);
 
         FloatingActionButton fab = (FloatingActionButton)findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CustomAlertDialog.Create(DraftActivity.this)
+                CustomAlertDialog.Builder(DraftActivity.this)
                         .setTitle(R.string.import_draft)
                         .setMessage(R.string.import_draft_confirmation)
                         .setNegativeButton(R.string.menu_cancel, null)
@@ -127,7 +126,7 @@ public class DraftActivity extends BaseActivity implements GenericTaskWatcher.On
         if(targetTranslation != null) {
             finish();
         } else {
-            CustomAlertDialog.Create(this)
+            CustomAlertDialog.Builder(this)
                     .setTitle(R.string.error)
                     .setMessage(R.string.translation_import_failed)
                     .setNeutralButton(R.string.dismiss, null)

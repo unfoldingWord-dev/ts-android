@@ -72,12 +72,13 @@ public class TargetTranslation {
     public static final String FIELD_MANIFEST_NAME = "name";
     public static final String FIELD_MANIFEST_BUILD = "build";
     public static final String APPLICATION_NAME = "ts-android";
+    public static final String OBS_PROJECT_TYPE = "obs";
 
     private final File targetTranslationDir;
     private final Manifest manifest;
-    private final String targetLanguageId;
-    private final String targetLanguageName;
-    private final LanguageDirection targetLanguageDirection;
+    private String targetLanguageId;
+    private String targetLanguageName;
+    private LanguageDirection targetLanguageDirection;
     private final String projectId;
     private final String projectName;
     private final TranslationType translationType;
@@ -88,6 +89,7 @@ public class TargetTranslation {
 
     private TranslationFormat mTranslationFormat;
     private PersonIdent author = null;
+    private String targetLanguageRegion = "unknown";
 
     /**
      * Creates a new instance of the target translation
@@ -102,6 +104,9 @@ public class TargetTranslation {
         this.targetLanguageId = targetLanguageJson.getString(FIELD_MANIFEST_ID);
         this.targetLanguageName = Manifest.valueExists(targetLanguageJson, FIELD_MANIFEST_NAME) ? targetLanguageJson.getString(FIELD_MANIFEST_NAME) : this.targetLanguageId.toUpperCase();
         this.targetLanguageDirection = LanguageDirection.get(targetLanguageJson.getString("direction"));
+        if(targetLanguageJson.has("region")) {
+            this.targetLanguageRegion = targetLanguageJson.getString("region");
+        }
 
         // project
         JSONObject projectJson = this.manifest.getJSONObject(FIELD_MANIFEST_PROJECT);
@@ -179,6 +184,10 @@ public class TargetTranslation {
         return targetLanguageName;
     }
 
+    public String getTargetLanguageRegion() {
+        return targetLanguageRegion;
+    }
+
     /**
      * Returns the id of the project being translated
      * @return
@@ -204,6 +213,14 @@ public class TargetTranslation {
     }
 
     /**
+     * determine if project type is OBS
+     * @return
+     */
+    public boolean isObsProject() {
+        return isObsProject(getProjectId());
+    }
+
+    /**
      * read the format of the translation
      * @return
      */
@@ -215,13 +232,17 @@ public class TargetTranslation {
                 return TranslationFormat.MARKDOWN;
             } else {
                 String projectIdStr = fetchProjectID(manifest);
-                if("obs".equalsIgnoreCase(projectIdStr)) {
+                if(isObsProject(projectIdStr)) {
                     return TranslationFormat.MARKDOWN;
                 }
                 return TranslationFormat.USFM;
             }
         }
         return format;
+    }
+
+    private static boolean isObsProject(String projectId) {
+        return OBS_PROJECT_TYPE.equalsIgnoreCase(projectId);
     }
 
     private static TranslationFormat fetchTranslationFormat(Manifest manifest) {
@@ -1263,6 +1284,26 @@ public class TargetTranslation {
             }
         }
         return null;
+    }
+
+    /**
+     * Changes the target langauge for this target translation
+     * This does not change the name of the directory where the target translation is stored.
+     * @param targetLanguage
+     */
+    public void changeTargetLanguage(TargetLanguage targetLanguage) {
+        JSONObject languageJson = this.manifest.getJSONObject("target_language");
+        try {
+            languageJson.put("name", targetLanguage.name);
+            languageJson.put("direction", targetLanguage.direction.getLabel());
+            languageJson.put("id", targetLanguage.getId());
+            this.manifest.put("target_language", languageJson);
+            this.targetLanguageDirection = targetLanguage.direction;
+            this.targetLanguageId = targetLanguage.getId();
+            this.targetLanguageName = targetLanguage.name;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     public enum PublishStatus {
