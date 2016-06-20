@@ -1,6 +1,9 @@
 package com.door43.translationstudio.newui.home;
 
 import android.app.DialogFragment;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -20,12 +23,18 @@ import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Profile;
+import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
+import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
+import com.door43.translationstudio.newui.FeedbackDialog;
+import com.door43.translationstudio.newui.MergeConflictsDialog;
+import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.tasks.AdvancedGogsRepoSearchTask;
 import com.door43.translationstudio.tasks.CloneRepositoryTask;
+import com.door43.translationstudio.tasks.PullTargetTranslationTask;
 import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
 import com.door43.translationstudio.tasks.SearchGogsRepositoriesTask;
 import com.door43.util.tasks.GenericTaskWatcher;
@@ -34,6 +43,9 @@ import com.door43.util.tasks.TaskManager;
 import com.door43.widget.ViewUtil;
 
 import org.apache.commons.io.FileUtils;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ResetCommand;
+import org.eclipse.jgit.merge.MergeStrategy;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.unfoldingword.gogsclient.Repository;
@@ -42,12 +54,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by joel on 5/10/16.
  */
 public class ImportFromDoor43Dialog extends DialogFragment implements GenericTaskWatcher.OnFinishedListener {
     private static final String STATE_REPOSITORIES = "state_repositories";
+    public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
     private GenericTaskWatcher taskWatcher;
     private RestoreFromCloudAdapter adapter;
     private Translator translator;
@@ -57,6 +71,8 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
     private EditText repoEditText;
     private EditText userEditText;
     private String quickLoadPath;
+    private String targetTranslationId;
+    private eDialogShown mDialogShown = eDialogShown.NONE;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
@@ -121,6 +137,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
 
         // restore state
         if(savedInstanceState != null) {
+            mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
             String[] repoJsonArray = savedInstanceState.getStringArray(STATE_REPOSITORIES);
             if(repoJsonArray != null) {
                 for (String json : repoJsonArray) {
@@ -159,7 +176,26 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
             taskWatcher.watch(cloneTask);
         }
 
+        restoreDialogs();
         return v;
+    }
+
+    /**
+     * recreate the dialogs that were displayed before rotation
+     */
+    private void restoreDialogs() {
+        switch(mDialogShown) {
+            case IMPORT_FAILED:
+                notifyImportFailed();
+                break;
+
+            case AUTH_FAILURE:
+                showAuthFailure();
+                break;
+
+            default:
+                break;
+        }
     }
 
     /**
@@ -167,7 +203,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
      * @param targetTranslationID
      */
     public void doQuickLoad(String targetTranslationID) {
-
+        this.targetTranslationId = targetTranslationID;
         Profile profile = AppContext.getProfile();
         if(profile != null && profile.gogsUser != null) {
             String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
@@ -288,11 +324,13 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
     }
 
     public void showAuthFailure() {
+        mDialogShown = eDialogShown.AUTH_FAILURE;
         CustomAlertDialog.Create(getActivity())
                 .setTitle(R.string.error).setMessage(R.string.auth_failure_retry)
                 .setPositiveButton(R.string.yes, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        mDialogShown = eDialogShown.NONE;
                         RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(true);
                         taskWatcher.watch(keyTask);
                         TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
@@ -301,6 +339,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
                 .setNegativeButton(R.string.no, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        mDialogShown = eDialogShown.NONE;
                         notifyImportFailed();
                     }
                 })
@@ -308,10 +347,16 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
     }
 
     public void notifyImportFailed() {
+        mDialogShown = eDialogShown.IMPORT_FAILED;
         CustomAlertDialog.Create(getActivity())
                 .setTitle(R.string.error)
                 .setMessage(R.string.restore_failed)
-                .setPositiveButton(R.string.dismiss, null)
+                .setPositiveButton(R.string.dismiss, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mDialogShown = eDialogShown.NONE;
+                    }
+                })
                 .show("publish-failed");
     }
 
@@ -322,6 +367,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
             repoJsonList.add(r.toJSON().toString());
         }
         out.putStringArray(STATE_REPOSITORIES, repoJsonList.toArray(new String[repoJsonList.size()]));
+        out.putInt(STATE_DIALOG_SHOWN, mDialogShown.getValue());
         super.onSaveInstanceState(out);
     }
 
@@ -330,4 +376,155 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
         taskWatcher.stop();
         super.onDestroy();
     }
+
+    private void notifyMergeConflicts(Map<String, int[][]> conflicts) {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        MergeConflictsDialog dialog = new MergeConflictsDialog();
+        attachMergeConflictListener(dialog);
+        dialog.show(ft, MergeConflictsDialog.TAG);
+    }
+
+    private void attachMergeConflictListener(MergeConflictsDialog dialog) {
+        final TargetTranslation targetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
+
+        dialog.setOnClickListener(new MergeConflictsDialog.OnClickListener() {
+            @Override
+            public void onReview() {
+                // ask parent activity to navigate to a new activity
+                Intent intent = new Intent(getActivity(), TargetTranslationActivity.class);
+                Bundle args = new Bundle();
+                args.putString(AppContext.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
+                // TODO: 4/20/16 it woulid be nice to navigate directly to the first conflict
+//                args.putString(AppContext.EXTRA_CHAPTER_ID, chapterId);
+//                args.putString(AppContext.EXTRA_FRAME_ID, frameId);
+                args.putString(AppContext.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
+                intent.putExtras(args);
+                startActivity(intent);
+                getActivity().finish();
+            }
+
+            @Override
+            public void onKeepServer() {
+                try {
+                    Git git = targetTranslation.getRepo().getGit();
+                    ResetCommand resetCommand = git.reset();
+                    resetCommand.setMode(ResetCommand.ResetType.HARD)
+                            .setRef("backup-master")
+                            .call();
+
+                    targetTranslation.commitSync();
+
+                    // try to pull again
+                    PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, MergeStrategy.THEIRS);
+                    taskWatcher.watch(pullTask);
+                    TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "Failed to keep server changes durring publish", e);
+                    notifyPublishFailed(targetTranslation);
+                }
+            }
+
+            @Override
+            public void onKeepLocal() {
+                try {
+                    Git git = targetTranslation.getRepo().getGit();
+                    ResetCommand resetCommand = git.reset();
+                    resetCommand.setMode(ResetCommand.ResetType.HARD)
+                            .setRef("backup-master")
+                            .call();
+
+                    targetTranslation.commitSync();
+
+                    // try to pull again
+                    PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, MergeStrategy.OURS);
+                    taskWatcher.watch(pullTask);
+                    TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "Failed to keep local changes durring publish", e);
+                    notifyPublishFailed(targetTranslation);
+                }
+            }
+
+            @Override
+            public void onCancel() {
+                try {
+                    Git git = targetTranslation.getRepo().getGit();
+                    ResetCommand resetCommand = git.reset();
+                    resetCommand.setMode(ResetCommand.ResetType.HARD)
+                            .setRef("backup-master")
+                            .call();
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "Failed to restore local changes", e);
+                }
+                // TODO: 4/20/16 notify canceled
+            }
+        });
+    }
+
+    /**
+     * Displays a dialog to the user indicating the publish failed.
+     * Includes an option to submit a bug report
+     * @param targetTranslation
+     */
+    private void notifyPublishFailed(final TargetTranslation targetTranslation) {
+        final Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
+        CustomAlertDialog.Create(getActivity())
+                .setTitle(R.string.error)
+                .setMessage(R.string.upload_failed)
+                .setPositiveButton(R.string.dismiss, null)
+                .setNeutralButton(R.string.menu_bug, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        // open bug report dialog
+                        FragmentTransaction ft = getFragmentManager().beginTransaction();
+                        Fragment prev = getFragmentManager().findFragmentByTag("bugDialog");
+                        if (prev != null) {
+                            ft.remove(prev);
+                        }
+                        ft.addToBackStack(null);
+
+                        FeedbackDialog dialog = new FeedbackDialog();
+                        Bundle args = new Bundle();
+                        String message = "Failed to publish the translation of " +
+                                project.name + " into " +
+                                targetTranslation.getTargetLanguageName()
+                                + ".\ntargetTranslation: " + targetTranslation.getId() +
+                                "\n--------\n\n";
+                        args.putString(FeedbackDialog.ARG_MESSAGE, message);
+                        dialog.setArguments(args);
+                        dialog.show(ft, "bugDialog");
+                    }
+                }).show("publish-failed");
+    }
+
+
+    /**
+     * for keeping track if dialog is being shown for orientation changes
+     */
+    public enum eDialogShown {
+        NONE(0),
+        IMPORT_FAILED(1),
+        AUTH_FAILURE(2);
+
+        private int _value;
+
+        eDialogShown(int Value) {
+            this._value = Value;
+        }
+
+        public int getValue() {
+            return _value;
+        }
+
+        public static eDialogShown fromInt(int i) {
+            for (eDialogShown b : eDialogShown.values()) {
+                if (b.getValue() == i) {
+                    return b;
+                }
+            }
+            return null;
+        }
+    }
+
 }

@@ -58,20 +58,26 @@ import java.security.InvalidParameterException;
 public class PublishFragment extends PublishStepFragment implements GenericTaskWatcher.OnFinishedListener {
 
     private static final String STATE_UPLOADED = "state_uploaded";
+    public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
+    public static final String STATE_UPLOAD_DETAILS = "state_upload_details";
     private boolean mUploaded = false;
     private Button mUploadButton;
     private GenericTaskWatcher taskWatcher;
     private LinearLayout mUploadSuccess;
     private TargetTranslation targetTranslation;
+    private eDialogShown mDialogShown = eDialogShown.NONE;
+    private String mUploadDetails;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_publish_publish, container, false);
 
-        HtmlTextView explanationView = (HtmlTextView)v.findViewById(R.id.explanation);
+        HtmlTextView explanationView = (HtmlTextView) v.findViewById(R.id.explanation);
         explanationView.setHtmlFromString(getResources().getString(R.string.publishing_explanation), true);
 
-        if(savedInstanceState != null) {
+        if (savedInstanceState != null) {
             mUploaded = savedInstanceState.getBoolean(STATE_UPLOADED, false);
+            mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
+            mUploadDetails = savedInstanceState.getString(STATE_UPLOAD_DETAILS, null);
         }
 
         Bundle args = getArguments();
@@ -90,10 +96,10 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
 
         this.targetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
 
-        mUploadSuccess = (LinearLayout)v.findViewById(R.id.upload_success);
-        mUploadButton = (Button)v.findViewById(R.id.upload_button);
+        mUploadSuccess = (LinearLayout) v.findViewById(R.id.upload_success);
+        mUploadButton = (Button) v.findViewById(R.id.upload_button);
 
-        if(mUploaded) {
+        if (mUploaded) {
             mUploadButton.setVisibility(View.GONE);
             mUploadSuccess.setVisibility(View.VISIBLE);
         } else {
@@ -114,9 +120,9 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
         mUploadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(AppContext.context().isNetworkAvailable()) {
+                if (AppContext.context().isNetworkAvailable()) {
                     // make sure we have a gogs user
-                    if(AppContext.getProfile().gogsUser == null) {
+                    if (AppContext.getProfile().gogsUser == null) {
                         FragmentTransaction ft = getFragmentManager().beginTransaction();
                         Door43LoginDialog dialog = new Door43LoginDialog();
                         dialog.show(ft, Door43LoginDialog.TAG);
@@ -134,13 +140,13 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             }
         });
 
-        ImageView wifiIcon = (ImageView)v.findViewById(R.id.wifi_icon);
+        ImageView wifiIcon = (ImageView) v.findViewById(R.id.wifi_icon);
         ViewUtil.tintViewDrawable(wifiIcon, getResources().getColor(R.color.dark_secondary_text));
 
         final String filename = targetTranslation.getId() + ".zip";
 
         // export buttons
-        Button exportToApp = (Button)v.findViewById(R.id.backup_to_app);
+        Button exportToApp = (Button) v.findViewById(R.id.backup_to_app);
         exportToApp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -150,7 +156,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 } catch (Exception e) {
                     Logger.e(PublishFragment.class.getName(), "Failed to export the target translation " + targetTranslation.getId(), e);
                 }
-                if(exportFile.exists()) {
+                if (exportFile.exists()) {
                     Uri u = FileProvider.getUriForFile(getActivity(), "com.door43.translationstudio.fileprovider", exportFile);
                     Intent i = new Intent(Intent.ACTION_SEND);
                     i.setType("application/zip");
@@ -163,7 +169,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 }
             }
         });
-        Button exportToSD = (Button)v.findViewById(R.id.export_to_sdcard);
+        Button exportToSD = (Button) v.findViewById(R.id.export_to_sdcard);
         exportToSD.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -174,7 +180,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 } catch (Exception e) {
                     Logger.e(PublishFragment.class.getName(), "Failed to export the target translation " + targetTranslation.getId(), e);
                 }
-                if(exportFile.exists()) {
+                if (exportFile.exists()) {
                     Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.success, Snackbar.LENGTH_LONG);
                     ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                     snack.show();
@@ -185,7 +191,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 }
             }
         });
-        Button exportToDevice = (Button)v.findViewById(R.id.backup_to_device);
+        Button exportToDevice = (Button) v.findViewById(R.id.backup_to_device);
         exportToDevice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -196,19 +202,46 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
         });
 
         // Connect to existing tasks
-        RegisterSSHKeysTask keysTask = (RegisterSSHKeysTask)TaskManager.getTask(RegisterSSHKeysTask.TASK_ID);
-        CreateRepositoryTask repoTask = (CreateRepositoryTask)TaskManager.getTask(CreateRepositoryTask.TASK_ID);
-        PushTargetTranslationTask pushTask = (PushTargetTranslationTask)TaskManager.getTask(PushTargetTranslationTask.TASK_ID);
+        RegisterSSHKeysTask keysTask = (RegisterSSHKeysTask) TaskManager.getTask(RegisterSSHKeysTask.TASK_ID);
+        CreateRepositoryTask repoTask = (CreateRepositoryTask) TaskManager.getTask(CreateRepositoryTask.TASK_ID);
+        PushTargetTranslationTask pushTask = (PushTargetTranslationTask) TaskManager.getTask(PushTargetTranslationTask.TASK_ID);
 
         if (keysTask != null) {
             taskWatcher.watch(keysTask);
-        } else if(repoTask != null) {
+        } else if (repoTask != null) {
             taskWatcher.watch(repoTask);
-        } else if(pushTask != null) {
+        } else if (pushTask != null) {
             taskWatcher.watch(pushTask);
         }
 
+        restoreDialogs();
         return v;
+    }
+
+    /**
+     * recreate the dialogs that were displayed before rotation
+     */
+    private void restoreDialogs() {
+        switch(mDialogShown) {
+            case PUBLISH_FAILED:
+                notifyPublishFailed(targetTranslation);
+                break;
+
+            case AUTH_FAILURE:
+                showAuthFailure();
+                break;
+
+            case PUSH_FAILURE:
+                showPushFailure();
+                break;
+
+            case PUBLISH_SUCCESS:
+                showPublishSuccessDialog(mUploadDetails);
+                break;
+
+            default:
+                break;
+        }
     }
 
     /**
@@ -217,15 +250,16 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
      * 2. Register Keys - generates ssh keys and registers them with the gogs account. Then tries to push again.
      * 3. Create Repo - creates a new repository in gogs. Then tries to push again.
      * User is warned that they will need to merge if push fails.
+     *
      * @param task
      */
     @Override
     public void onFinished(final ManagedTask task) {
         taskWatcher.stop();
 
-        if(task instanceof PushTargetTranslationTask) {
+        if (task instanceof PushTargetTranslationTask) {
             PushTargetTranslationTask.Status status = ((PushTargetTranslationTask) task).getStatus();
-            final String uploadDetails = ((PushTargetTranslationTask) task).getMessage();
+            mUploadDetails = ((PushTargetTranslationTask) task).getMessage();
 
             if (status == PushTargetTranslationTask.Status.OK) {
                 Logger.i(this.getClass().getName(), "The target translation " + targetTranslation.getId() + " was pushed to the server");
@@ -234,42 +268,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 hand.post(new Runnable() {
                     @Override
                     public void run() {
-                        mUploadButton.setVisibility(View.GONE);
-                        mUploadSuccess.setVisibility(View.VISIBLE);
-
-                        final String publishedUrl = getPublishedUrl(targetTranslation);
-                        String format = getActivity().getResources().getString(R.string.project_uploaded_to);
-                        final String destinationMessage = String.format(format, publishedUrl);
-
-                        ClickableSpan clickableSpan = new ClickableSpan() {
-                            @Override
-                            public void onClick(View textView) {
-                                Uri uri = Uri.parse(publishedUrl);
-                                startActivity(new Intent(Intent.ACTION_VIEW, uri));
-                            }
-                        };
-
-                        final SpannableString clickableDestinationMessage = getClickableText(publishedUrl, destinationMessage, clickableSpan);
-
-                        final CustomAlertDialog dlg = CustomAlertDialog.Create(getActivity());
-                        dlg.setTitle(R.string.success)
-                                .setMessage(clickableDestinationMessage)
-                                .setAutoDismiss(false)
-                                .setPositiveButton(R.string.dismiss, new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        dlg.dismiss();
-                                    }
-                                })
-                                .setNeutralButton(R.string.label_details, new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        showDetails(uploadDetails);
-                                    }
-                                })
-                                .show("publish-finished");
-
-                        applyClickableMessageToDialog(clickableDestinationMessage, dlg);
+                        showPublishSuccessDialog(mUploadDetails);
                     }
                 });
             } else if (status == PushTargetTranslationTask.Status.AUTH_FAILURE) {
@@ -295,8 +294,8 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             } else {
                 notifyPublishFailed(targetTranslation);
             }
-        } else if(task instanceof RegisterSSHKeysTask) {
-            if(((RegisterSSHKeysTask)task).isSuccess()) {
+        } else if (task instanceof RegisterSSHKeysTask) {
+            if (((RegisterSSHKeysTask) task).isSuccess()) {
                 Logger.i(this.getClass().getName(), "SSH keys were registered with the server");
                 // try to push again
 
@@ -306,8 +305,8 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             } else {
                 notifyPublishFailed(targetTranslation);
             }
-        } else if(task instanceof CreateRepositoryTask) {
-            if(((CreateRepositoryTask)task).isSuccess()) {
+        } else if (task instanceof CreateRepositoryTask) {
+            if (((CreateRepositoryTask) task).isSuccess()) {
                 Logger.i(this.getClass().getName(), "A new repository " + targetTranslation.getId() + " was created on the server");
                 PushTargetTranslationTask pushTask = new PushTargetTranslationTask(targetTranslation, true);
                 taskWatcher.watch(pushTask);
@@ -318,8 +317,51 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
         }
     }
 
+    private void showPublishSuccessDialog(final String uploadDetails) {
+        mDialogShown = eDialogShown.PUBLISH_SUCCESS;
+        mUploadButton.setVisibility(View.GONE);
+        mUploadSuccess.setVisibility(View.VISIBLE);
+
+        final String publishedUrl = getPublishedUrl(targetTranslation);
+        String format = getActivity().getResources().getString(R.string.project_uploaded_to);
+        final String destinationMessage = String.format(format, publishedUrl);
+
+        ClickableSpan clickableSpan = new ClickableSpan() {
+            @Override
+            public void onClick(View textView) {
+                Uri uri = Uri.parse(publishedUrl);
+                startActivity(new Intent(Intent.ACTION_VIEW, uri));
+            }
+        };
+
+        final SpannableString clickableDestinationMessage = getClickableText(publishedUrl, destinationMessage, clickableSpan);
+
+        final CustomAlertDialog dlg = CustomAlertDialog.Create(getActivity());
+        dlg.setTitle(R.string.success)
+                .setMessage(clickableDestinationMessage)
+                .setAutoDismiss(false)
+                .setPositiveButton(R.string.dismiss, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mDialogShown = eDialogShown.NONE;
+                        dlg.dismiss();
+                    }
+                })
+                .setNeutralButton(R.string.label_details, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mDialogShown = eDialogShown.NONE;
+                        showDetails(uploadDetails);
+                    }
+                })
+                .show("publish-finished");
+
+        applyClickableMessageToDialog(clickableDestinationMessage, dlg);
+    }
+
     /**
      * display the upload details
+     *
      * @param destinationMessage
      */
     private void showDetails(String destinationMessage) {
@@ -337,6 +379,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
 
     /**
      * put clickable message in dialog
+     *
      * @param clickableMessage
      * @param dlg
      */
@@ -359,6 +402,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
 
     /**
      * make selected text clickable
+     *
      * @param textToClick
      * @param entireText
      * @param clickableSpan
@@ -367,7 +411,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
     private SpannableString getClickableText(String textToClick, String entireText, ClickableSpan clickableSpan) {
         int startIndex = entireText.indexOf(textToClick);
         int lastIndex;
-        if(startIndex < 0) { // if not found
+        if (startIndex < 0) { // if not found
             startIndex = 0;
             lastIndex = textToClick.length();
         } else {
@@ -375,21 +419,22 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
         }
 
         SpannableString clickable = new SpannableString(entireText);
-        clickable.setSpan(clickableSpan,startIndex,lastIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set click
-        clickable.setSpan(new UnderlineSpan(),startIndex,lastIndex,0); // underline
-        clickable.setSpan(new StyleSpan(Typeface.BOLD),startIndex,lastIndex,0); // make bold
+        clickable.setSpan(clickableSpan, startIndex, lastIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set click
+        clickable.setSpan(new UnderlineSpan(), startIndex, lastIndex, 0); // underline
+        clickable.setSpan(new StyleSpan(Typeface.BOLD), startIndex, lastIndex, 0); // make bold
         return clickable;
     }
 
     /**
      * generate the url where the user can see that the published target is stored
+     *
      * @param targetTranslation
      * @return
      */
     public static String getPublishedUrl(TargetTranslation targetTranslation) {
         String userName = "";
         Profile profile = AppContext.getProfile();
-        if(profile != null && profile.gogsUser != null) {
+        if (profile != null && profile.gogsUser != null) {
             userName = profile.gogsUser.getUsername();
         }
 
@@ -401,7 +446,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
         }
 
         String[] parts = server.split("git@");
-        if(parts.length == 2) {
+        if (parts.length == 2) {
             server = parts[1];
         }
 
@@ -409,11 +454,13 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
     }
 
     public void showPushFailure() {
+        mDialogShown = eDialogShown.PUSH_FAILURE;
         CustomAlertDialog.Create(getActivity())
                 .setTitle(R.string.error).setMessage(R.string.upload_push_failure)
                 .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        mDialogShown = eDialogShown.NONE;
                         getListener().pushFailure();
                     }
                 })
@@ -421,11 +468,13 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
     }
 
     public void showAuthFailure() {
+        mDialogShown = eDialogShown.AUTH_FAILURE;
         CustomAlertDialog.Create(getActivity())
                 .setTitle(R.string.error).setMessage(R.string.auth_failure_retry)
                 .setPositiveButton(R.string.yes, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        mDialogShown = eDialogShown.NONE;
                         RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(true);
                         taskWatcher.watch(keyTask);
                         TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
@@ -434,6 +483,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 .setNegativeButton(R.string.no, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        mDialogShown = eDialogShown.NONE;
                         notifyPublishFailed(targetTranslation);
                     }
                 })
@@ -443,17 +493,25 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
     /**
      * Displays a dialog to the user indicating the publish failed.
      * Includes an option to submit a bug report
+     *
      * @param targetTranslation
      */
     private void notifyPublishFailed(final TargetTranslation targetTranslation) {
+        mDialogShown = eDialogShown.PUBLISH_FAILED;
         final Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
         CustomAlertDialog.Create(getActivity())
                 .setTitle(R.string.error)
                 .setMessage(R.string.upload_failed)
-                .setPositiveButton(R.string.dismiss, null)
+                .setPositiveButton(R.string.dismiss, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mDialogShown = eDialogShown.NONE;
+                    }
+                })
                 .setNeutralButton(R.string.menu_bug, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        mDialogShown = eDialogShown.NONE;
 
                         // open bug report dialog
                         FragmentTransaction ft = getFragmentManager().beginTransaction();
@@ -480,14 +538,48 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
     @Override
     public void onSaveInstanceState(Bundle out) {
         out.putBoolean(STATE_UPLOADED, mUploaded);
+        out.putInt(STATE_DIALOG_SHOWN, mDialogShown.getValue());
+        if(mUploadDetails != null) {
+            out.putString(STATE_UPLOAD_DETAILS, mUploadDetails);
+        }
         super.onSaveInstanceState(out);
     }
 
     @Override
     public void onDestroy() {
-        if(taskWatcher != null) {
+        if (taskWatcher != null) {
             taskWatcher.stop();
         }
         super.onDestroy();
+    }
+
+    /**
+     * for keeping track if dialog is being shown for orientation changes
+     */
+    public enum eDialogShown {
+        NONE(0),
+        PUBLISH_FAILED(1),
+        AUTH_FAILURE(2),
+        PUSH_FAILURE(3),
+        PUBLISH_SUCCESS(4);
+
+        private int _value;
+
+        eDialogShown(int Value) {
+            this._value = Value;
+        }
+
+        public int getValue() {
+            return _value;
+        }
+
+        public static eDialogShown fromInt(int i) {
+            for (eDialogShown b : eDialogShown.values()) {
+                if (b.getValue() == i) {
+                    return b;
+                }
+            }
+            return null;
+        }
     }
 }
