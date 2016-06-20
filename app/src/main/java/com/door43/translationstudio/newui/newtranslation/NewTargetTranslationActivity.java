@@ -266,7 +266,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                 return true;
             case R.id.action_update:
                 CustomAlertDialog.Builder(this)
-                        .setTitle(R.string.update_projects)
+                        .setTitle(R.string.update_library)
                         .setIcon(R.drawable.ic_local_library_black_24dp)
                         .setMessage(R.string.use_internet_confirmation)
                         .setPositiveButton(R.string.yes, new View.OnClickListener() {

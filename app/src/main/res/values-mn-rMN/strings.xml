@@ -124,7 +124,7 @@
   <string name="languages">Хэл</string>
   <string name="drafts">Орчуулгын Ноорог</string>
   <string name="use_internet_confirmation">Энэ сервер нь мэдээллийг татаж авахын тулд таны Интернэтийн холболтыг ашиглах, үргэлжлүүлэн?</string>
-  <string name="update_projects">Шинэчлэх төсөл</string>
+  <string name="update_library">Шинэчлэх төсөл</string>
   <string name="update_projects_description">Серверээс харах, татаж авах боломжтой шинэчлэлтүүд</string>
   <string name="action_download_all">Бүх татаж авах</string>
   <string name="title_activity_project_updates">Төслийн Шинэчлэл</string>

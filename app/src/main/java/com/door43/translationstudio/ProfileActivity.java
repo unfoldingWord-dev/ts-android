@@ -1,8 +1,10 @@
 package com.door43.translationstudio;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.view.View;
 
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
@@ -63,8 +65,8 @@ public class ProfileActivity extends BaseActivity {
      * Displays the privacy notice
      * @param listener if set the dialog will become a confirmation dialog
      */
-    public static void showPrivacyNotice(Activity context, View.OnClickListener listener) {
-        CustomAlertDialog privacy = CustomAlertDialog.Builder(context)
+    public static void showPrivacyNotice(Activity context, DialogInterface.OnClickListener listener) {
+        AlertDialog.Builder privacy = new AlertDialog.Builder(context, R.style.AppTheme_Dialog)
                 .setTitle(R.string.privacy_notice)
                 .setIcon(R.drawable.ic_info_black_24dp)
                 .setMessage(R.string.publishing_privacy_notice);
@@ -75,6 +77,6 @@ public class ProfileActivity extends BaseActivity {
         } else {
             privacy.setPositiveButton(R.string.dismiss, null);
         }
-        privacy.show("privacy-notice");
+        privacy.show();
     }
 }

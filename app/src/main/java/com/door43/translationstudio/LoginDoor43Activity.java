@@ -1,6 +1,7 @@
 package com.door43.translationstudio;
 
 import android.app.ProgressDialog;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -79,11 +80,11 @@ public class LoginDoor43Activity extends AppCompatActivity implements ManagedTas
             finish();
         } else {
             // login failed
-            CustomAlertDialog.Builder(this)
+            new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                     .setTitle(R.string.error)
                     .setMessage(R.string.double_check_credentials)
                     .setPositiveButton(R.string.label_ok, null)
-                    .show("login_failed");
+                    .show();
         }
     }
 

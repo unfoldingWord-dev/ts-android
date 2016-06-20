@@ -117,7 +117,7 @@
   <string name="languages">மொழிகள்</string>
   <string name="drafts">மொழிபெயர்ப்பு வரைவுகள்</string>
   <string name="use_internet_confirmation">இந்த சர்வரில் இருந்து தகவல் பதிவிறக்க உங்கள் இணைய இணைப்பைப் பயன்படுத்தி, தொடர வேண்டுமா?</string>
-  <string name="update_projects">புதுப்பிக்கப்பட்டது திட்டங்கள்</string>
+  <string name="update_library">புதுப்பிக்கப்பட்டது திட்டங்கள்</string>
   <string name="update_projects_description">சர்வர் இருந்து காண்க மற்றும் பதிவிறக்க கிடைக்க மேம்படுத்தல்கள்</string>
   <string name="action_download_all">பதிவிறக்கவும்</string>
   <string name="title_activity_project_updates">திட்ட மேம்படுத்தல்கள்</string>

@@ -2,11 +2,14 @@ package com.door43.translationstudio;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.provider.DocumentFile;
+import android.support.v7.app.AlertDialog;
+import android.text.Html;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
@@ -96,11 +99,11 @@ public class ImportFileChooserActivity extends BaseActivity {
                 if (itemSelected) {
                     returnSelectedFile(selectedItem);
                 } else {
-                    final CustomAlertDialog dialog = CustomAlertDialog.Builder(ImportFileChooserActivity.this);
-                    dialog.setTitle(R.string.title_activity_file_explorer)
-                            .setMessageHtml(R.string.no_item_selected)
-                            .setPositiveButton(R.string.confirm, null)
-                            .show("no_selection");
+                    new AlertDialog.Builder(ImportFileChooserActivity.this, R.style.AppTheme_Dialog)
+                        .setTitle(R.string.title_activity_file_explorer)
+                        .setMessage(R.string.no_item_selected)
+                        .setPositiveButton(R.string.confirm, null)
+                        .show();
                 }
             }
         });
@@ -123,17 +126,17 @@ public class ImportFileChooserActivity extends BaseActivity {
             @Override
             public void onClick(View view) {
                 if (SdUtils.doWeNeedToRequestSdCardAccess()) {
-                    final CustomAlertDialog dialog = CustomAlertDialog.Builder(ImportFileChooserActivity.this);
-                    dialog.setTitle(R.string.enable_sd_card_access_title)
-                            .setMessageHtml(R.string.enable_sd_card_access)
-                            .setPositiveButton(R.string.confirm, new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    SdUtils.triggerStorageAccessFramework(ImportFileChooserActivity.this);
-                                }
-                            })
-                            .setNegativeButton(R.string.label_skip, null)
-                            .show("approve-SD-access");
+                    new AlertDialog.Builder(ImportFileChooserActivity.this, R.style.AppTheme_Dialog)
+                        .setTitle(R.string.enable_sd_card_access_title)
+                        .setMessage(Html.fromHtml(getResources().getString(R.string.enable_sd_card_access)))
+                        .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                SdUtils.triggerStorageAccessFramework(ImportFileChooserActivity.this);
+                            }
+                        })
+                        .setNegativeButton(R.string.label_skip, null)
+                        .show();
                 } else {
                     showFolderFromSdCard();
                 }
@@ -381,11 +384,11 @@ public class ImportFileChooserActivity extends BaseActivity {
             } else {
                 msg = getResources().getString(R.string.access_skipped);
             }
-            CustomAlertDialog.Builder(this)
+            new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                     .setTitle(R.string.access_title)
                     .setMessage(msg)
                     .setPositiveButton(R.string.label_ok, null)
-                    .show("AccessResults");
+                    .show();
         }
     }
 }

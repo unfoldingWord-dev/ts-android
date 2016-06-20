@@ -2,11 +2,13 @@ package com.door43.translationstudio;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -115,12 +117,12 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
      * @param release
      */
     private void notifyLatestRelease(final CheckForLatestReleaseTask.Release release) {
-        CustomAlertDialog.Builder(this)
+        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                 .setTitle(R.string.apk_update_available)
                 .setMessage(R.string.upload_report_or_download_latest_apk)
-                .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
+                .setNegativeButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         mLatestRelease = null;
 
                         // archive crash report
@@ -132,9 +134,9 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
                         TaskManager.addTask(task, ArchiveCrashReportTask.TASK_ID);
                     }
                 })
-                .setNeutralButton(R.string.download_update, new View.OnClickListener() {
+                .setNeutralButton(R.string.download_update, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         mDownloadAfterArchive = true;
 
                         // archive crash report
@@ -146,9 +148,9 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
                         TaskManager.addTask(task, ArchiveCrashReportTask.TASK_ID);
                     }
                 })
-                .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
+                .setPositiveButton(R.string.label_continue, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         mLoadingDialog.setMessage(getResources().getString(R.string.uploading));
                         mLoadingDialog.show();
 
@@ -157,7 +159,7 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
                         TaskManager.addTask(newTask, UploadCrashReportTask.TASK_ID);
                     }
                 })
-                .show("NotifyLatest");
+                .show();
     }
 
     private void openSplash() {

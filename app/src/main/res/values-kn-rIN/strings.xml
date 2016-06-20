@@ -117,7 +117,7 @@
   <string name="languages">ಭಾಷೆಗಳು</string>
   <string name="drafts">ಅನುವಾದ ಡ್ರಾಫ್ಟ್</string>
   <string name="use_internet_confirmation">ಈ ಸರ್ವರ್ ಮಾಹಿತಿಯನ್ನು ಡೌನ್ಲೋಡ್ ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವನ್ನು ಬಳಸುತ್ತದೆ, ಮುಂದುವರೆಯಲು?</string>
-  <string name="update_projects">ಅಪ್ಡೇಟ್ ಯೋಜನೆಗಳು</string>
+  <string name="update_library">ಅಪ್ಡೇಟ್ ಯೋಜನೆಗಳು</string>
   <string name="update_projects_description">ಪರಿಚಾರಕದಿಂದ ವೀಕ್ಷಿಸಿ ಮತ್ತು ಡೌನ್ಲೋಡ್ ಲಭ್ಯವಿದೆ ನವೀಕರಣಗಳನ್ನು</string>
   <string name="action_download_all">ಎಲ್ಲಾ ಡೌನ್ಲೋಡ್</string>
   <string name="title_activity_project_updates">ಪ್ರಾಜೆಕ್ಟ್ ಅಪ್ಡೇಟ್ಗಳು</string>
