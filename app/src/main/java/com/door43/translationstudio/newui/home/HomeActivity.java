@@ -18,7 +18,7 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.ProfileActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;

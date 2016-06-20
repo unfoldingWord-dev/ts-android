@@ -8,11 +8,12 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 
-import com.door43.tools.reporting.GlobalExceptionHandler;
 import com.door43.translationstudio.CrashReporterActivity;
 import com.door43.translationstudio.SplashScreenActivity;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.TermsOfUseActivity;
+
+import org.unfoldingword.tools.logger.Logger;
 
 import java.io.File;
 
@@ -63,8 +64,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             if (this instanceof TermsOfUseActivity == false
                     && this instanceof SplashScreenActivity == false
                     && this instanceof CrashReporterActivity == false) {
-                File dir = new File(AppContext.getPublicDirectory(), AppContext.context().STACKTRACE_DIR);
-                String[] crashFiles = GlobalExceptionHandler.getStacktraces(dir);
+                File[] crashFiles = Logger.listStacktraces();;
                 if (crashFiles.length > 0) {
                     // restart
                     Intent intent = new Intent(this, SplashScreenActivity.class);

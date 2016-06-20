@@ -11,11 +11,12 @@ import android.support.v4.content.ContextCompat;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.door43.tools.reporting.GlobalExceptionHandler;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.tasks.InitializeLibraryTask;
 import com.door43.translationstudio.tasks.LoadTargetLanguagesTask;
 import com.door43.translationstudio.tasks.UpdateAppTask;
+
+import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
@@ -50,7 +51,7 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
         if(!waitingForPermissions()) {
             // check if we crashed
             File dir = new File(AppContext.getPublicDirectory(), AppContext.context().STACKTRACE_DIR);
-            String[] files = GlobalExceptionHandler.getStacktraces(dir);
+            File[] files = Logger.listStacktraces();
             if (files.length > 0) {
                 Intent intent = new Intent(this, CrashReporterActivity.class);
                 startActivity(intent);

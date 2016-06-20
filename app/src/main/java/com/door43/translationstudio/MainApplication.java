@@ -15,14 +15,15 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Toast;
 
-import com.door43.tools.reporting.GlobalExceptionHandler;
-import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.service.BackupService;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.KeyPair;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+
+import org.unfoldingword.tools.logger.LogLevel;
+import org.unfoldingword.tools.logger.Logger;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -64,7 +65,7 @@ public class MainApplication extends Application {
         new AppContext(this);
 
         File dir = new File(AppContext.getPublicDirectory(), STACKTRACE_DIR);
-        GlobalExceptionHandler.register(dir);
+        Logger.registerGlobalExceptionHandler(dir);
 
         // configure logger
         int minLogLevel = Integer.parseInt(getUserPreferences().getString(SettingsActivity.KEY_PREF_LOGGING_LEVEL, getResources().getString(R.string.pref_default_logging_level)));
@@ -83,7 +84,7 @@ public class MainApplication extends Application {
     }
 
     public void configureLogger(int minLogLevel) {
-        Logger.configure(new File(AppContext.getPublicDirectory(), "log.txt"), Logger.Level.getLevel(minLogLevel));
+        Logger.configure(new File(AppContext.getPublicDirectory(), "log.txt"), LogLevel.getLevel(minLogLevel));
     }
 
 //    /**

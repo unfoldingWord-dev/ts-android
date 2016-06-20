@@ -12,7 +12,7 @@ import android.support.annotation.Nullable;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.core.ArchiveDetails;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.NewLanguageRequest;
@@ -657,7 +657,7 @@ public class AppContext {
         if(requestFile.exists() && requestFile.isFile()) {
             String data = null;
             try {
-                data = com.door43.tools.reporting.FileUtils.readFileToString(requestFile);
+                data = FileUtilities.readFileToString(requestFile);
             } catch (IOException e) {
                 Logger.e(AppContext.class.getName(), "Failed to read the new language request", e);
             }
@@ -677,7 +677,7 @@ public class AppContext {
         if(requestFiles != null && requestFiles.length > 0) {
             for(File f:requestFiles) {
                 try {
-                    String data = com.door43.tools.reporting.FileUtils.readFileToString(f);
+                    String data = FileUtilities.readFileToString(f);
                     NewLanguageRequest request = NewLanguageRequest.generate(data);
                     if(request != null) {
                         requests.add(request);
@@ -701,7 +701,7 @@ public class AppContext {
             File requestFile = new File(getPublicDirectory(), "new_languages/" + request.tempLanguageCode + ".json");
             requestFile.getParentFile().mkdirs();
             try {
-                com.door43.tools.reporting.FileUtils.writeStringToFile(requestFile, request.toJson());
+                FileUtilities.writeStringToFile(requestFile, request.toJson());
                 return getLibrary().addTempTargetLanguage(request.getTempTargetLanguage());
             } catch (IOException e) {
                 Logger.e(AppContext.class.getName(), "Failed to save the new langauge request", e);

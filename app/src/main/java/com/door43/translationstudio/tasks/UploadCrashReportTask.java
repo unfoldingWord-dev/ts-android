@@ -1,10 +1,11 @@
 package com.door43.translationstudio.tasks;
 
-import com.door43.tools.reporting.GithubReporter;
-import com.door43.tools.reporting.GlobalExceptionHandler;
+import org.unfoldingword.tools.logger.GithubReporter;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.AppContext;
 import com.door43.util.FileUtilities;
+
+import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.io.File;
@@ -32,10 +33,10 @@ public class UploadCrashReportTask extends ManagedTask {
         // TRICKY: make sure the github_oauth2 token has been set
         if(githubTokenIdentifier != 0) {
             GithubReporter reporter = new GithubReporter(AppContext.context(), githubUrl, AppContext.context().getResources().getString(githubTokenIdentifier));
-            String[] stacktraces = GlobalExceptionHandler.getStacktraces(stacktraceDir);
+            File[] stacktraces = Logger.listStacktraces();
             if (stacktraces.length > 0) {
                 // upload most recent stacktrace
-                reporter.reportCrash(mMessage, new File(stacktraces[0]), logFile);
+                reporter.reportCrash(mMessage, stacktraces[0], logFile);
                 // empty the log
                 try {
                     FileUtilities.writeStringToFile(logFile, "");
@@ -53,16 +54,15 @@ public class UploadCrashReportTask extends ManagedTask {
      * @param stacktraceDir
      * @param stacktraces
      */
-    private static void archiveStackTraces(File stacktraceDir, String[] stacktraces) {
+    private static void archiveStackTraces(File stacktraceDir, File[] stacktraces) {
         // archive extra stacktraces
         File archiveDir = new File(stacktraceDir, "archive");
         archiveDir.mkdirs();
-        for (String filePath:stacktraces) {
-            File traceFile = new File(filePath);
-            if (traceFile.exists()) {
-                FileUtilities.moveOrCopy(traceFile, new File(archiveDir, traceFile.getName()));
-                if(traceFile.exists()) {
-                    traceFile.delete();
+        for (File file:stacktraces) {
+            if (file.exists()) {
+                FileUtilities.moveOrCopy(file, new File(archiveDir, file.getName()));
+                if(file.exists()) {
+                    file.delete();
                 }
             }
         }
@@ -73,7 +73,7 @@ public class UploadCrashReportTask extends ManagedTask {
      */
     public static void archiveErrorLogs() {
         File stacktraceDir = new File(AppContext.getPublicDirectory(), AppContext.context().STACKTRACE_DIR);
-        String[] stacktraces = GlobalExceptionHandler.getStacktraces(stacktraceDir);
+        File[] stacktraces = Logger.listStacktraces();
         if(stacktraces.length > 0) {
             archiveStackTraces(stacktraceDir, stacktraces);
         }

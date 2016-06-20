@@ -3,10 +3,10 @@ package com.door43.translationstudio.core;
 import android.content.Context;
 import android.test.InstrumentationTestCase;
 
-import com.door43.tools.reporting.FileUtils;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.spannables.USFMVerseSpan;
 import com.door43.translationstudio.tasks.UploadCrashReportTask;
+import com.door43.util.FileUtilities;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -493,7 +493,7 @@ public class ImportUsfmTest extends InstrumentationTestCase {
                         File chunkPath = new File(chapterPath, chapterFrameSlug + ".txt");
                         assertTrue("Chunk missing " + chunkPath.toString(), chunkPath.exists());
                         try {
-                            chunk = FileUtils.readFileToString(chunkPath);
+                            chunk = FileUtilities.readFileToString(chunkPath);
                             int count = getVerseCount(chunk);
                             if(noEmptyChunks) {
                                 boolean emptyChunk = chunk.isEmpty();
