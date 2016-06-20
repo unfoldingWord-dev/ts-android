@@ -54,7 +54,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by joel on 5/10/16.
@@ -62,6 +61,8 @@ import java.util.Map;
 public class ImportFromDoor43Dialog extends DialogFragment implements GenericTaskWatcher.OnFinishedListener {
     private static final String STATE_REPOSITORIES = "state_repositories";
     public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
+    public static final String STATE_TARGET_TRANSLATION_ID = "state_target_translation_id";
+    public static final String TAG = ImportFromDoor43Dialog.class.getSimpleName();
     private GenericTaskWatcher taskWatcher;
     private RestoreFromCloudAdapter adapter;
     private Translator translator;
@@ -138,6 +139,8 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
         // restore state
         if(savedInstanceState != null) {
             mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
+            targetTranslationId = savedInstanceState.getString(STATE_TARGET_TRANSLATION_ID, null);
+
             String[] repoJsonArray = savedInstanceState.getStringArray(STATE_REPOSITORIES);
             if(repoJsonArray != null) {
                 for (String json : repoJsonArray) {
@@ -161,7 +164,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
                 hand.post(new Runnable() {
                     @Override
                     public void run() {
-                        doCloneRepository();
+                        notifyMergeConflicts();
                     }
                 });
             }
@@ -193,7 +196,20 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
                 showAuthFailure();
                 break;
 
+            case MERGE_CONFLICT:
+                notifyMergeConflicts();
+                break;
+
+            case MERGE_FAILED:
+                TargetTranslation targetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
+                notifyMergeFailed(targetTranslation);
+                break;
+
+            case NONE:
+                break;
+
             default:
+                Logger.e(TAG,"Unsupported restore dialog: " + mDialogShown.toString());
                 break;
         }
     }
@@ -368,6 +384,9 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
         }
         out.putStringArray(STATE_REPOSITORIES, repoJsonList.toArray(new String[repoJsonList.size()]));
         out.putInt(STATE_DIALOG_SHOWN, mDialogShown.getValue());
+        if(targetTranslationId != null) {
+            out.putString(STATE_TARGET_TRANSLATION_ID, targetTranslationId);
+        }
         super.onSaveInstanceState(out);
     }
 
@@ -377,7 +396,8 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
         super.onDestroy();
     }
 
-    private void notifyMergeConflicts(Map<String, int[][]> conflicts) {
+    private void notifyMergeConflicts() {
+        mDialogShown = eDialogShown.MERGE_CONFLICT;
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         MergeConflictsDialog dialog = new MergeConflictsDialog();
         attachMergeConflictListener(dialog);
@@ -390,6 +410,8 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
         dialog.setOnClickListener(new MergeConflictsDialog.OnClickListener() {
             @Override
             public void onReview() {
+                mDialogShown = eDialogShown.NONE;
+
                 // ask parent activity to navigate to a new activity
                 Intent intent = new Intent(getActivity(), TargetTranslationActivity.class);
                 Bundle args = new Bundle();
@@ -405,6 +427,8 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
 
             @Override
             public void onKeepServer() {
+                mDialogShown = eDialogShown.NONE;
+
                 try {
                     Git git = targetTranslation.getRepo().getGit();
                     ResetCommand resetCommand = git.reset();
@@ -420,12 +444,14 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
                     TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
                 } catch (Exception e) {
                     Logger.e(this.getClass().getName(), "Failed to keep server changes durring publish", e);
-                    notifyPublishFailed(targetTranslation);
+                    notifyMergeFailed(targetTranslation);
                 }
             }
 
             @Override
             public void onKeepLocal() {
+                mDialogShown = eDialogShown.NONE;
+
                 try {
                     Git git = targetTranslation.getRepo().getGit();
                     ResetCommand resetCommand = git.reset();
@@ -441,12 +467,14 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
                     TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
                 } catch (Exception e) {
                     Logger.e(this.getClass().getName(), "Failed to keep local changes durring publish", e);
-                    notifyPublishFailed(targetTranslation);
+                    notifyMergeFailed(targetTranslation);
                 }
             }
 
             @Override
             public void onCancel() {
+                mDialogShown = eDialogShown.NONE;
+
                 try {
                     Git git = targetTranslation.getRepo().getGit();
                     ResetCommand resetCommand = git.reset();
@@ -466,15 +494,23 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
      * Includes an option to submit a bug report
      * @param targetTranslation
      */
-    private void notifyPublishFailed(final TargetTranslation targetTranslation) {
+    private void notifyMergeFailed(final TargetTranslation targetTranslation) {
+        mDialogShown = eDialogShown.MERGE_FAILED;
+
         final Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
         CustomAlertDialog.Create(getActivity())
                 .setTitle(R.string.error)
                 .setMessage(R.string.upload_failed)
-                .setPositiveButton(R.string.dismiss, null)
+                .setPositiveButton(R.string.dismiss, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mDialogShown = eDialogShown.NONE;
+                    }
+                })
                 .setNeutralButton(R.string.menu_bug, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        mDialogShown = eDialogShown.NONE;
 
                         // open bug report dialog
                         FragmentTransaction ft = getFragmentManager().beginTransaction();
@@ -505,7 +541,9 @@ public class ImportFromDoor43Dialog extends DialogFragment implements GenericTas
     public enum eDialogShown {
         NONE(0),
         IMPORT_FAILED(1),
-        AUTH_FAILURE(2);
+        AUTH_FAILURE(2),
+        MERGE_CONFLICT(3),
+        MERGE_FAILED(4);
 
         private int _value;
 

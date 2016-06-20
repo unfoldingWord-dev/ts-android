@@ -213,7 +213,11 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
                 showMergePrompt(mUpdatedProject);
                 break;
 
+            case NONE:
+                break;
+
             default:
+                Logger.e(TAG,"Unsupported restore dialog: " + mDialogShown.toString());
                 break;
         }
     }
@@ -589,7 +593,7 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
      */
     public enum eDialogShown {
         NONE(0),
-        PROJECT_CHANGED(2);
+        PROJECT_CHANGED(1);
 
         private int _value;
 

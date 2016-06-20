@@ -60,6 +60,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
     private static final String STATE_UPLOADED = "state_uploaded";
     public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
     public static final String STATE_UPLOAD_DETAILS = "state_upload_details";
+    public static final String TAG = PublishFragment.class.getSimpleName();
     private boolean mUploaded = false;
     private Button mUploadButton;
     private GenericTaskWatcher taskWatcher;
@@ -239,7 +240,11 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 showPublishSuccessDialog(mUploadDetails);
                 break;
 
+            case NONE:
+                break;
+
             default:
+                Logger.e(TAG,"Unsupported restore dialog: " + mDialogShown.toString());
                 break;
         }
     }
