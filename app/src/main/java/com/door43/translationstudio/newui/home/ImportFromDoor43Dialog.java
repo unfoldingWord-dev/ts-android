@@ -63,6 +63,9 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
     public static final String STATE_TARGET_TRANSLATION_ID = "state_target_translation_id";
     public static final String TAG = ImportFromDoor43Dialog.class.getSimpleName();
+    public static final String STATE_IMPORT_COMPARE_STATUS = "state_import_compare_status";
+    public static final String STATE_MERGE_FROM_URL = "state_merge_from_url";
+    public static final String STATE_MANUAL_MERGE = "state_manual_merge";
     private SimpleTaskWatcher taskWatcher;
     private RestoreFromCloudAdapter adapter;
     private Translator translator;
@@ -74,6 +77,9 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     private String quickLoadPath;
     private String targetTranslationId;
     private eDialogShown mDialogShown = eDialogShown.NONE;
+    private TargetTranslation.TrackingStatus mImportCompareStatus = TargetTranslation.TrackingStatus.DIVERGED;
+    private boolean mMergeFromSpecificUrl = false;
+    private boolean mManualMerge = false;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
@@ -140,6 +146,9 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         if(savedInstanceState != null) {
             mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
             targetTranslationId = savedInstanceState.getString(STATE_TARGET_TRANSLATION_ID, null);
+            mImportCompareStatus = TargetTranslation.TrackingStatus.fromInt(savedInstanceState.getInt(STATE_IMPORT_COMPARE_STATUS, TargetTranslation.TrackingStatus.DIVERGED.getValue()));
+            mMergeFromSpecificUrl = savedInstanceState.getBoolean(STATE_MERGE_FROM_URL, false);
+            mManualMerge = savedInstanceState.getBoolean(STATE_MANUAL_MERGE, false);
 
             String[] repoJsonArray = savedInstanceState.getStringArray(STATE_REPOSITORIES);
             if(repoJsonArray != null) {
@@ -275,11 +284,12 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                         if (existingTargetTranslation != null) {
                             // merge target translation
                             try {
-                                TargetTranslation.TrackingStatus gitStatus = existingTargetTranslation.getStatus(tempPath);
-                                if(gitStatus != TargetTranslation.TrackingStatus.SAME) {
-
+                                mImportCompareStatus = existingTargetTranslation.getCommitStatus(tempPath);
+                                if (mImportCompareStatus != TargetTranslation.TrackingStatus.SAME) {
+                                    mMergeFromSpecificUrl = true;
+                                    notifyMergeConflicts();
                                 } else {
-                                    //nothing to do
+                                    //nothing to do since they are same
                                 }
                             } catch (Exception e) {
                                 Logger.e(this.getClass().getName(), "Failed to merge the target translation", e);
@@ -344,6 +354,24 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
             } else {
                 notifyImportFailed();
             }
+        } else if (task instanceof PullTargetTranslationTask) {
+            PullTargetTranslationTask.Status status = ((PullTargetTranslationTask) task).getStatus();
+            TargetTranslation targetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
+            if (mManualMerge) {
+                doManualMerge(targetTranslation);
+            } else {
+                //  TRICKY: we continue to push for unknown status in case the repo was just created (the missing branch is an error)
+                // the pull task will catch any errors
+                if (status == PullTargetTranslationTask.Status.UP_TO_DATE
+                        || status == PullTargetTranslationTask.Status.UNKNOWN) {
+                    Logger.i(this.getClass().getName(), "Changes on the server were synced with " + targetTranslation.getId());
+
+                } else if (status == PullTargetTranslationTask.Status.MERGE_CONFLICTS) {
+                    Logger.i(this.getClass().getName(), "The server contains conflicting changes for " + targetTranslation.getId());
+                    doManualMerge(targetTranslation);
+                }
+            }
+            this.dismiss();
         }
     }
 
@@ -395,6 +423,9 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         if(targetTranslationId != null) {
             out.putString(STATE_TARGET_TRANSLATION_ID, targetTranslationId);
         }
+        out.putInt(STATE_IMPORT_COMPARE_STATUS,  mImportCompareStatus.getValue());
+        out.putBoolean(STATE_MERGE_FROM_URL,  mMergeFromSpecificUrl);
+        out.putBoolean(STATE_MANUAL_MERGE,  mManualMerge);
         super.onSaveInstanceState(out);
     }
 
@@ -414,39 +445,28 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     private void attachMergeConflictListener(MergeConflictsDialog dialog) {
         final TargetTranslation targetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
 
+        final String sourceUrl = mMergeFromSpecificUrl ? cloneHtmlUrl : null; // if not a specific url, then will merge from default for target
+
         dialog.setOnClickListener(new MergeConflictsDialog.OnClickListener() {
             @Override
             public void onReview() {
-                // ask parent activity to navigate to a new activity
-                Intent intent = new Intent(getActivity(), TargetTranslationActivity.class);
-                Bundle args = new Bundle();
-                args.putString(AppContext.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
-                // TODO: 4/20/16 it woulid be nice to navigate directly to the first conflict
-//                args.putString(AppContext.EXTRA_CHAPTER_ID, chapterId);
-//                args.putString(AppContext.EXTRA_FRAME_ID, frameId);
-                args.putString(AppContext.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
-                intent.putExtras(args);
-                startActivity(intent);
-                getActivity().finish();
+                mManualMerge = true;
+                try {
+                    // pull from server
+                    pullFromServer(targetTranslation, MergeStrategy.RECURSIVE, sourceUrl);
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "Failed to keep server changes during import", e);
+                    notifyMergeFailed(targetTranslation);
+                }
             }
 
             @Override
             public void onKeepServer() {
                 try {
-                    Git git = targetTranslation.getRepo().getGit();
-                    ResetCommand resetCommand = git.reset();
-                    resetCommand.setMode(ResetCommand.ResetType.HARD)
-                            .setRef("backup-master")
-                            .call();
-
-                    targetTranslation.commitSync();
-
-                    // try to pull again
-                    PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, MergeStrategy.THEIRS);
-                    taskWatcher.watch(pullTask);
-                    TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
+                    // pull from server
+                    pullFromServer(targetTranslation, MergeStrategy.THEIRS, sourceUrl);
                 } catch (Exception e) {
-                    Logger.e(this.getClass().getName(), "Failed to keep server changes durring publish", e);
+                    Logger.e(this.getClass().getName(), "Failed to keep server changes during import", e);
                     notifyMergeFailed(targetTranslation);
                 }
             }
@@ -454,42 +474,47 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
             @Override
             public void onKeepLocal() {
                 try {
-                    Git git = targetTranslation.getRepo().getGit();
-                    ResetCommand resetCommand = git.reset();
-                    resetCommand.setMode(ResetCommand.ResetType.HARD)
-                            .setRef("backup-master")
-                            .call();
-
-                    targetTranslation.commitSync();
-
                     // try to pull again
-                    PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, MergeStrategy.OURS);
-                    taskWatcher.watch(pullTask);
-                    TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
+                    pullFromServer(targetTranslation, MergeStrategy.OURS, sourceUrl);
                 } catch (Exception e) {
-                    Logger.e(this.getClass().getName(), "Failed to keep local changes durring publish", e);
+                    Logger.e(this.getClass().getName(), "Failed to keep local changes during import", e);
                     notifyMergeFailed(targetTranslation);
                 }
             }
 
             @Override
             public void onCancel() {
-                try {
-                    Git git = targetTranslation.getRepo().getGit();
-                    ResetCommand resetCommand = git.reset();
-                    resetCommand.setMode(ResetCommand.ResetType.HARD)
-                            .setRef("backup-master")
-                            .call();
-                } catch (Exception e) {
-                    Logger.e(this.getClass().getName(), "Failed to restore local changes", e);
-                }
                 // TODO: 4/20/16 notify canceled
             }
         });
     }
 
+    private void pullFromServer(TargetTranslation targetTranslation, MergeStrategy mergeStrategy, String sourceURL) throws Exception {
+        Git git = targetTranslation.getRepo().getGit();
+        targetTranslation.commitSync();
+
+        // pull from server
+        PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, mergeStrategy, sourceURL);
+        taskWatcher.watch(pullTask);
+        TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
+    }
+
+    private void doManualMerge(TargetTranslation targetTranslation) {
+        // ask parent activity to navigate to a new activity
+        Intent intent = new Intent(getActivity(), TargetTranslationActivity.class);
+        Bundle args = new Bundle();
+        args.putString(AppContext.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
+        // TODO: 4/20/16 it woulid be nice to navigate directly to the first conflict
+//                args.putString(AppContext.EXTRA_CHAPTER_ID, chapterId);
+//                args.putString(AppContext.EXTRA_FRAME_ID, frameId);
+        args.putString(AppContext.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
+        intent.putExtras(args);
+        startActivity(intent);
+        getActivity().finish();
+    }
+
     /**
-     * Displays a dialog to the user indicating the publish failed.
+     * Displays a dialog to the user indicating the merge failed.
      * Includes an option to submit a bug report
      * @param targetTranslation
      */
@@ -499,7 +524,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         final Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
         CustomAlertDialog.Builder(getActivity())
                 .setTitle(R.string.error)
-                .setMessage(R.string.upload_failed)
+                .setMessage(R.string.import_failed_short)
                 .setPositiveButton(R.string.dismiss, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {

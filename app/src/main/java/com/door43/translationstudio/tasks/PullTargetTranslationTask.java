@@ -41,6 +41,7 @@ public class PullTargetTranslationTask extends ManagedTask {
     private String message = "";
     private Status status = Status.UNKNOWN;
     private Map<String, int[][]> conflicts = new HashMap<>();
+    private String sourceURL = null;
 
     /**
      * todo: eventually we need to support pulling from a particular user.
@@ -57,11 +58,25 @@ public class PullTargetTranslationTask extends ManagedTask {
      * todo: eventually we need to support pulling from a particular user.
      * We may need to create a different task or just pass in the target translation id
      * @param targetTranslation
+     * @param mergeStrategy
      */
     public PullTargetTranslationTask(TargetTranslation targetTranslation, MergeStrategy mergeStrategy) {
         setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
         this.targetTranslation = targetTranslation;
         this.mergeStrategy = mergeStrategy;
+    }
+
+    /**
+     * do a pull from a specific URL
+     * @param targetTranslation
+     * @param mergeStrategy
+     * @param sourceURL
+     */
+    public PullTargetTranslationTask(TargetTranslation targetTranslation, MergeStrategy mergeStrategy, String sourceURL) {
+        setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
+        this.targetTranslation = targetTranslation;
+        this.mergeStrategy = mergeStrategy;
+        this.sourceURL = sourceURL;
     }
 
     @Override
@@ -74,7 +89,11 @@ public class PullTargetTranslationTask extends ManagedTask {
             if (targetTranslation != null && AppContext.context().isNetworkAvailable() && profile != null && profile.gogsUser != null) {
                 publishProgress(-1, "Downloading updates");
                 String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
-                String remote = server + ":" + profile.gogsUser.getUsername() + "/" + this.targetTranslation.getId() + ".git";
+
+                if(sourceURL == null) {
+                    sourceURL = server + ":" + profile.gogsUser.getUsername() + "/" + this.targetTranslation.getId() + ".git";
+                }
+
                 try {
                     this.targetTranslation.commitSync();
                 } catch (Exception e) {
@@ -82,7 +101,7 @@ public class PullTargetTranslationTask extends ManagedTask {
                 }
                 Repo repo = this.targetTranslation.getRepo();
                 createBackupBranch(repo);
-                this.message = pull(repo, remote);
+                this.message = pull(repo, sourceURL);
             }
         }
     }

@@ -4,6 +4,10 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.support.annotation.Nullable;
 
+import org.eclipse.jgit.api.CheckoutCommand;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.revwalk.RevWalkUtils;
+import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.util.NumericStringComparator;
@@ -1184,16 +1188,38 @@ public class TargetTranslation {
     }
 
     public enum TrackingStatus {
-        SAME, BEHIND, AHEAD, DIVERGED
+        SAME(0),
+        BEHIND(1),
+        AHEAD(2),
+        DIVERGED(3);
+
+        private int _value;
+
+        TrackingStatus(int Value) {
+            this._value = Value;
+        }
+
+        public int getValue() {
+            return _value;
+        }
+
+        public static TrackingStatus fromInt(int i) {
+            for (TrackingStatus b : TrackingStatus.values()) {
+                if (b.getValue() == i) {
+                    return b;
+                }
+            }
+            return null;
+        }
     }
 
     /**
-     * Checks the status of current project compared to folder
+     * Checks the commit status of current project compared to folder
      * @param newDir
      * @return boolean false if there were merge conflicts
      * @throws Exception
      */
-    public TrackingStatus getStatus(File newDir) throws Exception {
+    public TrackingStatus getCommitStatus(File newDir) throws Exception {
         // commit everything
         TargetTranslation importedTargetTranslation = TargetTranslation.open(newDir);
         if(importedTargetTranslation != null) {
@@ -1201,7 +1227,6 @@ public class TargetTranslation {
         }
         commitSync();
 
-        Manifest importedManifest = Manifest.generate(newDir);
         Repo repo = getRepo();
 
         // attach remote
@@ -1211,25 +1236,55 @@ public class TargetTranslation {
         fetch.setRemote("new");
         FetchResult fetchResult = fetch.call();
 
-        // create branch for new changes
+        // delete old "new" branch
         DeleteBranchCommand deleteBranch = repo.getGit().branchDelete();
         deleteBranch.setBranchNames("new");
         deleteBranch.setForce(true);
         deleteBranch.call();
-        CreateBranchCommand branch = repo.getGit().branchCreate();
-        branch.setName("new");
-        branch.setStartPoint("new/master");
-        branch.call();
 
         Repository repository = repo.getGit().getRepository();
-        BranchTrackingStatus bts = BranchTrackingStatus.of(repository,
-                "new");
-        if(bts == null) {
+        Ref master = repository.getRef("master");
+
+        // create "new" branch loaded with contents of newDir
+        CreateBranchCommand branch = repo.getGit().branchCreate();
+        branch.setName("new");
+        branch.setForce(true);
+        branch.setStartPoint("new/master");
+        Ref newBranch = branch.call();
+
+        // compare commits of "master" and "new" branches
+        return compareCommits(repository, master, newBranch);
+    }
+
+    /**
+     * compare both branches by checking ahead and behind counts
+     * @param repository
+     * @param baseBranch
+     * @param otherBranch
+     * @return
+     */
+    private TrackingStatus compareCommits(Repository repository, Ref baseBranch, Ref otherBranch) {
+        int aheadCount;
+        int behindCount;
+        RevWalk walk = new RevWalk( repository );
+        try {
+            RevCommit baseCommit = walk.parseCommit(baseBranch.getObjectId());
+            RevCommit otherCommit = walk.parseCommit(otherBranch.getObjectId());
+            walk.setRevFilter(RevFilter.MERGE_BASE);
+            walk.markStart(baseCommit);
+            walk.markStart(otherCommit);
+            RevCommit mergeBase = walk.next();
+            walk.reset();
+            walk.setRevFilter(RevFilter.ALL);
+            aheadCount = RevWalkUtils.count(walk, baseCommit, mergeBase);
+            behindCount = RevWalkUtils.count(walk, otherCommit, mergeBase);
+        } catch (Exception e) {
+            e.printStackTrace();
             return TrackingStatus.DIVERGED;
+        } finally {
+            walk.dispose();
         }
 
-        int aheadCount = bts.getAheadCount();
-        int behindCount = bts.getBehindCount();
         if (aheadCount == 0 && behindCount == 0) {
             return TrackingStatus.SAME;
         } else if (aheadCount > 0 && behindCount == 0) {
