@@ -4,12 +4,14 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.view.MenuItemCompat;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,7 +27,6 @@ import com.door43.translationstudio.core.MissingNameItem;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.newtranslation.ProjectListFragment;
@@ -64,7 +65,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
     private ImportUsfm mUsfm;
     private Handler mHand;
     private eImportState mCurrentState = eImportState.needLanguage;
-    private CustomAlertDialog mStatusDialog;
+    private AlertDialog mStatusDialog;
     private boolean mFinishedSuccess = false;
     private boolean mShuttingDown = false;
 
@@ -228,12 +229,13 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                 message = String.format(format, description);
             }
 
-            mStatusDialog = CustomAlertDialog.Builder(ImportUsfmActivity.this);
-            mStatusDialog.setTitle(R.string.title_activity_import_usfm_language)
+            new AlertDialog.Builder(this,R.style.AppTheme_Dialog)
+                    .setTitle(R.string.title_activity_import_usfm_language)
                     .setMessage(message)
-                    .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
+                    .setPositiveButton(R.string.label_continue, new DialogInterface.OnClickListener() {
                         @Override
-                        public void onClick(View v) {
+                        public void onClick(DialogInterface dialog, int which) {
+
                             mFragment = new ProjectListFragment();
                             ((ProjectListFragment) mFragment).setArguments(getIntent().getExtras());
                             getFragmentManager().beginTransaction().replace(R.id.fragment_container, (ProjectListFragment) mFragment).commit();
@@ -243,14 +245,14 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                             mProgressDialog.hide();
                         }
                     })
-                    .setNegativeButton(R.string.menu_cancel, new View.OnClickListener() {
+                    .setNegativeButton(R.string.menu_cancel, new DialogInterface.OnClickListener() {
                         @Override
-                        public void onClick(View v) {
+                        public void onClick(DialogInterface dialog, int which) {
                             usfmPromptForNextName();
                         }
                     })
-                    .setCancelableChainable(true)
-                    .show("getName");
+                    .setCancelable(true)
+                    .show();
         }
     }
 
@@ -296,31 +298,30 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
                     View.OnClickListener continueListener = null;
 
-                    mStatusDialog = CustomAlertDialog.Builder(ImportUsfmActivity.this);
+                    AlertDialog.Builder mStatusDialog = new AlertDialog.Builder(ImportUsfmActivity.this, R.style.AppTheme_Dialog);
 
                     mStatusDialog.setTitle(processSuccess ? R.string.title_processing_usfm_summary : R.string.title_import_usfm_error)
                             .setMessage(message)
-                            .setNegativeButton(R.string.menu_cancel, new View.OnClickListener() {
+                            .setNegativeButton(R.string.menu_cancel, new DialogInterface.OnClickListener() {
                                 @Override
-                                public void onClick(View v) {
+                                public void onClick(DialogInterface dialog, int which) {
                                     usfmImportDone(true);
                                 }
                             });
 
                     if(processSuccess) { // only show continue if successful processing
-                        mStatusDialog.setPositiveButton(R.string.label_continue, new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    mProgressDialog.show();
-                                    mProgressDialog.setProgress(0);
-                                    mProgressDialog.setTitle(R.string.reading_usfm);
-                                    mProgressDialog.setMessage("");
-                                    doImportingWithProgress();
-                                }
+                        mStatusDialog.setPositiveButton(R.string.label_continue, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                mProgressDialog.show();
+                                mProgressDialog.setProgress(0);
+                                mProgressDialog.setTitle(R.string.reading_usfm);
+                                mProgressDialog.setMessage("");
+                                doImportingWithProgress();
+                            }
                         });
                     }
-
-                    mStatusDialog.show("USFMresults");
+                    mStatusDialog.show();
                 }
             }
         });
@@ -445,16 +446,16 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
 
         mCurrentState = eImportState.showingImportResults;
 
-        mStatusDialog = CustomAlertDialog.Builder(ImportUsfmActivity.this);
-        mStatusDialog.setTitle(mFinishedSuccess ? R.string.title_import_usfm_results : R.string.title_import_usfm_error)
+        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                .setTitle(mFinishedSuccess ? R.string.title_import_usfm_results : R.string.title_import_usfm_error)
                 .setMessage(mFinishedSuccess ? R.string.import_usfm_success : R.string.import_usfm_failed)
-                .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
+                .setPositiveButton(R.string.label_continue, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         usfmImportDone(false);
                     }
                 })
-                .show("USFMImportResults");
+                .show();
 
         cleanupUsfmImport();
     }
@@ -600,20 +601,20 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                 onBackPressed();
                 return true;
             case R.id.action_update:
-                CustomAlertDialog.Builder(this)
+                new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                         .setTitle(R.string.update_library)
                         .setIcon(R.drawable.ic_local_library_black_24dp)
                         .setMessage(R.string.use_internet_confirmation)
-                        .setPositiveButton(R.string.yes, new View.OnClickListener() {
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(View v) {
+                            public void onClick(DialogInterface dialog, int which) {
                                 Intent intent = new Intent(ImportUsfmActivity.this, ServerLibraryActivity.class);
 //                                intent.putExtra(ServerLibraryActivity.ARG_SHOW_UPDATES, true);
                                 startActivity(intent);
                             }
                         })
                         .setNegativeButton(R.string.no, null)
-                        .show("Update");
+                        .show();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

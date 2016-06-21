@@ -1,6 +1,7 @@
 package com.door43.translationstudio.newui.draft;
 
 import android.app.Activity;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -16,7 +17,6 @@ import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Typography;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.rendering.ClickableRenderingEngine;
 import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.DefaultRenderer;
@@ -114,11 +114,11 @@ public class DraftAdapter extends RecyclerView.Adapter<DraftAdapter.ViewHolder> 
                     @Override
                     public void onClick(View view, Span span, int start, int end) {
                         if(span instanceof NoteSpan) {
-                            CustomAlertDialog.Builder(mContext)
+                            new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
                                     .setTitle(R.string.title_note)
                                     .setMessage(((NoteSpan)span).getNotes())
                                     .setPositiveButton(R.string.dismiss, null)
-                                    .show("note");
+                                    .show();
                         }
                     }
 

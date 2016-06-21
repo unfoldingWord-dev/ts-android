@@ -1,6 +1,8 @@
 package com.door43.translationstudio.newui;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -15,8 +17,6 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.QuestionnairePage;
 import com.door43.translationstudio.core.QuestionnaireQuestion;
 import com.door43.translationstudio.core.Questionnaire;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
-
 
 /**
  * Activity for presenting a questionnaire to the user
@@ -83,11 +83,11 @@ public abstract class QuestionnaireActivity extends BaseActivity implements Ques
                     for (QuestionnaireQuestion q :page.getQuestions()) {
                         String answer = onGetAnswer(q);
                         if(q.required && (answer == null || answer.isEmpty())) {
-                            CustomAlertDialog.Builder(QuestionnaireActivity.this)
+                            new AlertDialog.Builder(QuestionnaireActivity.this, R.style.AppTheme_Dialog)
                                     .setTitle(R.string.missing_question_answer)
                                     .setMessage(q.question)
                                     .setPositiveButton(R.string.dismiss, null)
-                                    .show("missing-required-answer");
+                                    .show();
                             return;
                         }
                     }
@@ -210,17 +210,17 @@ public abstract class QuestionnaireActivity extends BaseActivity implements Ques
 
     private void confirmExit() {
         // display confirmation before closing the app
-        CustomAlertDialog.Builder(this)
+        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                 .setTitle(R.string.confirm)
                 .setMessage(R.string.confirm_leave_questionnaire)
-                .setPositiveButton(R.string.yes, new View.OnClickListener() {
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         finish();
                     }
                 })
                 .setNegativeButton(R.string.no, null)
-                .show("confirm-exit");
+                .show();
     }
 }
 

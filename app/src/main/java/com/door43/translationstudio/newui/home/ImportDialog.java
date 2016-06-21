@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +22,6 @@ import com.door43.translationstudio.App;
 import com.door43.translationstudio.ImportFileChooserActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.DeviceNetworkAliasDialog;
 import com.door43.translationstudio.newui.ImportUsfmActivity;
 import com.door43.translationstudio.newui.Door43LoginDialog;
@@ -319,11 +319,11 @@ public class ImportDialog extends DialogFragment {
         if(filePath != null) {
             message += "\n" + filePath;
         }
-        CustomAlertDialog.Builder(getActivity())
+        new AlertDialog.Builder(getActivity(),R.style.AppTheme_Dialog)
                 .setTitle(R.string.import_from_sd)
                 .setMessage(message)
                 .setNeutralButton(R.string.dismiss, null)
-                .show("Import");
+                .show();
     }
 
     @Override

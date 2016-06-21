@@ -3,10 +3,12 @@ package com.door43.translationstudio.newui.translate;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.TabLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -41,7 +43,6 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.rendering.ClickableRenderingEngine;
 import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.DefaultRenderer;
@@ -523,13 +524,13 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
      * @param holder
      */
     public void promptToEditDoneChunk(final ViewHolder holder, final ListItem item) {
-        CustomAlertDialog.Builder(mContext)
+        new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
                 .setTitle(R.string.chunk_done_title)
 //                                .setIcon(R.drawable.ic_local_library_black_24dp)
                 .setMessage(R.string.chunk_done_prompt)
-                .setPositiveButton(R.string.edit, new View.OnClickListener() {
+                .setPositiveButton(R.string.edit, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         holder.mTargetBody.setEnabled(true);
                         holder.mTargetBody.setFocusable(true);
                         holder.mTargetBody.setFocusableInTouchMode(true);
@@ -538,7 +539,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                     }
                 })
                 .setNegativeButton(R.string.dismiss, null)
-                .show("ChunkDone");
+                .show();
     }
 
     /**
@@ -769,11 +770,11 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
                     if(span instanceof NoteSpan) {
-                        CustomAlertDialog.Builder(mContext)
+                        new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
                                 .setTitle(R.string.title_note)
                                 .setMessage(((NoteSpan)span).getNotes())
                                 .setPositiveButton(R.string.dismiss, null)
-                                .show("note");
+                                .show();
                     }
                 }
 

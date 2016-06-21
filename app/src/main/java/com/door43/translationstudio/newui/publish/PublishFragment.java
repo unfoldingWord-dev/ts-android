@@ -1,9 +1,9 @@
 package com.door43.translationstudio.newui.publish;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.AlertDialog;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
@@ -336,35 +337,25 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
                         String format = getActivity().getResources().getString(R.string.project_uploaded_to);
                         final String destinationMessage = String.format(format, publishedUrl);
 
-                        ClickableSpan clickableSpan = new ClickableSpan() {
-                            @Override
-                            public void onClick(View textView) {
-                                Uri uri = Uri.parse(publishedUrl);
-                                startActivity(new Intent(Intent.ACTION_VIEW, uri));
-                            }
-                        };
-
-                        final SpannableString clickableDestinationMessage = getClickableText(publishedUrl, destinationMessage, clickableSpan);
-
-                        final CustomAlertDialog dlg = CustomAlertDialog.Builder(getActivity());
-                        dlg.setTitle(R.string.success)
-                                .setMessage(clickableDestinationMessage)
-                                .setAutoDismiss(false)
-                                .setPositiveButton(R.string.dismiss, new View.OnClickListener() {
+                        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                                .setTitle(R.string.success)
+                                .setMessage(destinationMessage)
+                                .setPositiveButton(R.string.view_online, new DialogInterface.OnClickListener() {
                                     @Override
-                                    public void onClick(View v) {
-                                        dlg.dismiss();
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        Intent i = new Intent(Intent.ACTION_VIEW);
+                                        i.setData(Uri.parse(publishedUrl));
+                                        startActivity(i);
                                     }
                                 })
-                                .setNeutralButton(R.string.label_details, new View.OnClickListener() {
+                                .setNegativeButton(R.string.dismiss, null)
+                                .setNeutralButton(R.string.label_details, new DialogInterface.OnClickListener() {
                                     @Override
-                                    public void onClick(View v) {
+                                    public void onClick(DialogInterface dialog, int which) {
                                         showDetails(uploadDetails);
                                     }
                                 })
-                                .show("publish-finished");
-
-                        applyClickableMessageToDialog(clickableDestinationMessage, dlg);
+                                .show();
                     }
                 });
             } else if(status == PushTargetTranslationTask.Status.AUTH_FAILURE) {
@@ -373,7 +364,6 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
             } else {
                 notifyPublishFailed(targetTranslation);
             }
-
         }
     }
 
@@ -382,7 +372,7 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
      * @param destinationMessage
      */
     private void showDetails(String destinationMessage) {
-        AlertDialog dialog = new AlertDialog.Builder(getActivity())
+        AlertDialog dialog = new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.project_uploaded)
                 .setMessage(destinationMessage)
                 .setPositiveButton(R.string.dismiss, null)
@@ -392,28 +382,6 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
         textView.setScroller(new Scroller(getActivity()));
         textView.setVerticalScrollBarEnabled(true);
         textView.setMovementMethod(new ScrollingMovementMethod());
-    }
-
-    /**
-     * put clickable message in dialog
-     * @param clickableMessage
-     * @param dlg
-     */
-    private void applyClickableMessageToDialog(final SpannableString clickableMessage, final CustomAlertDialog dlg) {
-        Handler hand = new Handler(Looper.getMainLooper());
-        hand.post(new Runnable() { // wait until dialog has been created
-            @Override
-            public void run() {
-                try {
-                    Dialog dialog = dlg.getDialog();
-                    TextView textView = (TextView) dialog.findViewById(R.id.dialog_content);
-                    textView.setText(clickableMessage);
-                    textView.setMovementMethod(LinkMovementMethod.getInstance());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
     }
 
     /**
@@ -550,23 +518,22 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
     }
 
     public void showAuthFailure() {
-        CustomAlertDialog.Builder(getActivity())
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.error).setMessage(R.string.auth_failure_retry)
-                .setPositiveButton(R.string.yes, new View.OnClickListener() {
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(true);
                         taskWatcher.watch(keyTask);
                         TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
                     }
                 })
-                .setNegativeButton(R.string.no, new View.OnClickListener() {
+                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         notifyPublishFailed(targetTranslation);
                     }
-                })
-                .show("auth-failed");
+                }).show();
     }
 
     /**
@@ -576,13 +543,13 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
      */
     private void notifyPublishFailed(final TargetTranslation targetTranslation) {
         final Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), "en");
-        CustomAlertDialog.Builder(getActivity())
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.error)
                 .setMessage(R.string.upload_failed)
                 .setPositiveButton(R.string.dismiss, null)
-                .setNeutralButton(R.string.menu_bug, new View.OnClickListener() {
+                .setNeutralButton(R.string.menu_bug, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
 
                         // open bug report dialog
                         FragmentTransaction ft = getFragmentManager().beginTransaction();
@@ -592,7 +559,7 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
                         }
                         ft.addToBackStack(null);
 
-                        FeedbackDialog dialog = new FeedbackDialog();
+                        FeedbackDialog feedbackDialog = new FeedbackDialog();
                         Bundle args = new Bundle();
                         String message = "Failed to publish the translation of " +
                                 project.name + " into " +
@@ -600,10 +567,10 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
                                 + ".\ntargetTranslation: " + targetTranslation.getId() +
                                 "\n--------\n\n";
                         args.putString(FeedbackDialog.ARG_MESSAGE, message);
-                        dialog.setArguments(args);
-                        dialog.show(ft, "bugDialog");
+                        feedbackDialog.setArguments(args);
+                        feedbackDialog.show(ft, "bugDialog");
                     }
-                }).show("publish-failed");
+                }).show();
     }
 
     @Override

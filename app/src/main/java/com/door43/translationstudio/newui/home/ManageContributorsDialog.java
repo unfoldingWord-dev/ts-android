@@ -3,7 +3,9 @@ package com.door43.translationstudio.newui.home;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -17,7 +19,6 @@ import com.door43.translationstudio.core.NativeSpeaker;
 import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.ContributorsAdapter;
 import com.door43.translationstudio.newui.ContributorDialog;
 
@@ -138,18 +139,23 @@ public class ManageContributorsDialog extends DialogFragment implements Contribu
      * Displays the privacy notice
      * @param listener if set the dialog will become a confirmation dialog
      */
-    public void showPrivacyNotice(View.OnClickListener listener) {
-        CustomAlertDialog privacy = CustomAlertDialog.Builder(getActivity())
-                .setTitle(R.string.privacy_notice)
-                .setIcon(R.drawable.ic_info_black_24dp)
-                .setMessage(R.string.publishing_privacy_notice);
+    public void showPrivacyNotice(DialogInterface.OnClickListener listener) {
 
         if(listener != null) {
-            privacy.setPositiveButton(R.string.label_continue, listener);
-            privacy.setNegativeButton(R.string.title_cancel, null);
+            new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                    .setTitle(R.string.privacy_notice)
+                    .setIcon(R.drawable.ic_info_black_24dp)
+                    .setMessage(R.string.publishing_privacy_notice)
+                    .setPositiveButton(R.string.label_continue, listener)
+                    .setNegativeButton(R.string.title_cancel, null)
+                    .show();
         } else {
-            privacy.setPositiveButton(R.string.dismiss, null);
+            new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                    .setTitle(R.string.privacy_notice)
+                    .setIcon(R.drawable.ic_info_black_24dp)
+                    .setMessage(R.string.publishing_privacy_notice)
+                    .setPositiveButton(R.string.dismiss, null)
+                    .show();
         }
-        privacy.show("privacy-notice");
     }
 }
