@@ -1,7 +1,8 @@
 package com.door43.translationstudio.tasks;
 
 import org.unfoldingword.tools.logger.Logger;
-import com.door43.translationstudio.AppContext;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
@@ -32,7 +33,7 @@ public class LoginDoor43Task extends ManagedTask {
     public LoginDoor43Task(String username, String password) {
         this.username = username;
         this.password = password;
-        this.tokenName = AppContext.context().getResources().getString(R.string.gogs_token_name);
+        this.tokenName = App.context().getResources().getString(R.string.gogs_token_name);
         this.fullName = null;
     }
 
@@ -45,14 +46,14 @@ public class LoginDoor43Task extends ManagedTask {
     public LoginDoor43Task(String username, String password, String fullName) {
         this.username = username;
         this.password = password;
-        this.tokenName = AppContext.context().getResources().getString(R.string.gogs_token_name);
+        this.tokenName = App.context().getResources().getString(R.string.gogs_token_name);
         this.fullName = fullName;
     }
 
 
     @Override
     public void start() {
-        GogsAPI api = new GogsAPI(AppContext.getUserString(SettingsActivity.KEY_PREF_GOGS_API, R.string.pref_default_gogs_api));
+        GogsAPI api = new GogsAPI(App.getUserString(SettingsActivity.KEY_PREF_GOGS_API, R.string.pref_default_gogs_api));
         User authUser = new User(this.username, this.password);
 
         // get user

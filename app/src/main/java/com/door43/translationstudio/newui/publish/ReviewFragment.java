@@ -10,12 +10,12 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.newui.legal.LegalDocumentActivity;
 import com.door43.widget.ViewUtil;
 
@@ -39,8 +39,8 @@ public class ReviewFragment extends PublishStepFragment {
             throw new InvalidParameterException("a valid source translation id is required");
         }
 
-        Library library = AppContext.getLibrary();
-        Translator translator = AppContext.getTranslator();
+        Library library = App.getLibrary();
+        Translator translator = App.getTranslator();
 
         SourceTranslation sourceTranslation = library.getSourceTranslation(sourceTranslationId);
         TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationId);

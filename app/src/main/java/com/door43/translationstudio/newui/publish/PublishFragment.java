@@ -29,6 +29,8 @@ import android.widget.Scroller;
 import android.widget.TextView;
 
 import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Profile;
@@ -44,7 +46,7 @@ import com.door43.translationstudio.tasks.CreateRepositoryTask;
 import com.door43.translationstudio.tasks.PullTargetTranslationTask;
 import com.door43.translationstudio.tasks.PushTargetTranslationTask;
 import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
-import com.door43.translationstudio.AppContext;
+
 import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
@@ -96,7 +98,7 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
             mUploaded = args.getBoolean(ARG_PUBLISH_FINISHED, mUploaded);
         }
 
-        this.targetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
+        this.targetTranslation = App.getTranslator().getTargetTranslation(targetTranslationId);
 
         mUploadSuccess = (LinearLayout)v.findViewById(R.id.upload_success);
         mUploadButton = (Button)v.findViewById(R.id.upload_button);
@@ -122,9 +124,9 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
         mUploadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(AppContext.context().isNetworkAvailable()) {
+                if(App.isNetworkAvailable()) {
                     // make sure we have a gogs user
-                    if(AppContext.getProfile().gogsUser == null) {
+                    if(App.getProfile().gogsUser == null) {
                         FragmentTransaction ft = getFragmentManager().beginTransaction();
                         Door43LoginDialog dialog = new Door43LoginDialog();
                         dialog.show(ft, Door43LoginDialog.TAG);
@@ -153,9 +155,9 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
         exportToApp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                File exportFile = new File(AppContext.getSharingDir(), filename);
+                File exportFile = new File(App.getSharingDir(), filename);
                 try {
-                    AppContext.getTranslator().exportDokuWiki(targetTranslation, exportFile);
+                    App.getTranslator().exportDokuWiki(targetTranslation, exportFile);
                 } catch (Exception e) {
                     Logger.e(PublishFragment.class.getName(), "Failed to export the target translation " + targetTranslation.getId(), e);
                 }
@@ -177,9 +179,9 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
             @Override
             public void onClick(View v) {
                 // TODO: 10/27/2015 have the user choose where to save the file
-                File exportFile = new File(AppContext.getPublicDownloadsDirectory(), System.currentTimeMillis() / 1000L + "_" + filename);
+                File exportFile = new File(App.getPublicDownloadsDirectory(), System.currentTimeMillis() / 1000L + "_" + filename);
                 try {
-                    AppContext.getTranslator().exportDokuWiki(targetTranslation, exportFile);
+                    App.getTranslator().exportDokuWiki(targetTranslation, exportFile);
                 } catch (Exception e) {
                     Logger.e(PublishFragment.class.getName(), "Failed to export the target translation " + targetTranslation.getId(), e);
                 }
@@ -277,7 +279,7 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
             } else if(status == PullTargetTranslationTask.Status.AUTH_FAILURE) {
                 Logger.i(this.getClass().getName(), "Authentication failed");
                 // if we have already tried ask the user if they would like to try again
-                if(AppContext.context().hasSSHKeys()) {
+                if(App.hasSSHKeys()) {
                     showAuthFailure();
                     return;
                 }
@@ -445,14 +447,14 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
      */
     public static String getPublishedUrl(TargetTranslation targetTranslation) {
         String userName = "";
-        Profile profile = AppContext.getProfile();
+        Profile profile = App.getProfile();
         if(profile != null && profile.gogsUser != null) {
             userName = profile.gogsUser.getUsername();
         }
 
         String server = "";
         try {
-            server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
+            server = App.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, App.context().getResources().getString(R.string.pref_default_git_server));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -479,11 +481,11 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
                 // ask parent activity to navigate to a new activity
                 Intent intent = new Intent(getActivity(), TargetTranslationActivity.class);
                 Bundle args = new Bundle();
-                args.putString(AppContext.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
+                args.putString(App.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
                 // TODO: 4/20/16 it woulid be nice to navigate directly to the first conflict
-//                args.putString(AppContext.EXTRA_CHAPTER_ID, chapterId);
-//                args.putString(AppContext.EXTRA_FRAME_ID, frameId);
-                args.putString(AppContext.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
+//                args.putString(App.EXTRA_CHAPTER_ID, chapterId);
+//                args.putString(App.EXTRA_FRAME_ID, frameId);
+                args.putString(App.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
                 intent.putExtras(args);
                 startActivity(intent);
                 getActivity().finish();
@@ -573,7 +575,7 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
      * @param targetTranslation
      */
     private void notifyPublishFailed(final TargetTranslation targetTranslation) {
-        final Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
+        final Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), "en");
         CustomAlertDialog.Builder(getActivity())
                 .setTitle(R.string.error)
                 .setMessage(R.string.upload_failed)

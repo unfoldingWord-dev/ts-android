@@ -1,9 +1,10 @@
 package com.door43.translationstudio.tasks;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceTranslation;
-import com.door43.translationstudio.AppContext;
+
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 /**
@@ -26,7 +27,7 @@ public class DownloadSourceLanguageTask extends ManagedTask {
      * @param sourceLanguageId
      */
     public DownloadSourceLanguageTask(String projectId, String sourceLanguageId) {
-        mLibrary = AppContext.getLibrary();
+        mLibrary = App.getLibrary();
         mProjectId = projectId;
         mSourceLanguageId = sourceLanguageId;
     }

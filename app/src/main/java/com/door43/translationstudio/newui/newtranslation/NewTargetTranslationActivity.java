@@ -12,6 +12,8 @@ import android.view.MenuItem;
 import android.view.View;
 
 import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.NewLanguageRequest;
@@ -27,7 +29,6 @@ import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.BaseActivity;
-import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.newui.newlanguage.NewTempLanguageActivity;
 import com.door43.util.StringUtilities;
 import com.door43.widget.ViewUtil;
@@ -94,8 +95,8 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
      */
     private void registerTempLanguage(NewLanguageRequest request) {
         if(request != null) {
-            Questionnaire questionnaire = AppContext.getLibrary().getQuestionnaire(request.questionnaireId);
-            if (questionnaire != null && AppContext.addNewLanguageRequest(request)) {
+            Questionnaire questionnaire = App.getLibrary().getQuestionnaire(request.questionnaireId);
+            if (questionnaire != null && App.addNewLanguageRequest(request)) {
                 mSelectedTargetLanguage = request.getTempTargetLanguage();
                 this.createdNewLanguage = true;
                 confirmTempLanguage(mSelectedTargetLanguage);
@@ -161,19 +162,19 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
 
     @Override
     public void onItemClick(String projectId) {
-        Translator translator = AppContext.getTranslator();
+        Translator translator = App.getTranslator();
         // TRICKY: android only supports translating regular text projects
         String resourceSlug = projectId.equals("obs") ? "obs" : Resource.REGULAR_SLUG;
         TargetTranslation existingTranslation = translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId, TranslationType.TEXT, resourceSlug));
         if(existingTranslation == null) {
             // create new target translation
-            SourceLanguage sourceLanguage = AppContext.getLibrary().getPreferredSourceLanguage(projectId, Locale.getDefault().getLanguage()); // get project name
+            SourceLanguage sourceLanguage = App.getLibrary().getPreferredSourceLanguage(projectId, Locale.getDefault().getLanguage()); // get project name
             // TODO: 3/2/2016 eventually the format will be specified in the project
-            SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(projectId, sourceLanguage.getId());
-            final TargetTranslation targetTranslation = AppContext.getTranslator().createTargetTranslation(AppContext.getProfile().getNativeSpeaker(), mSelectedTargetLanguage, projectId, TranslationType.TEXT, resourceSlug, sourceTranslation.getFormat());
+            SourceTranslation sourceTranslation = App.getLibrary().getDefaultSourceTranslation(projectId, sourceLanguage.getId());
+            final TargetTranslation targetTranslation = App.getTranslator().createTargetTranslation(App.getProfile().getNativeSpeaker(), mSelectedTargetLanguage, projectId, TranslationType.TEXT, resourceSlug, sourceTranslation.getFormat());
             if(targetTranslation != null) {
                 // deploy custom language code request to the translation
-                NewLanguageRequest request = AppContext.getNewLanguageRequest(mSelectedTargetLanguage.getId());
+                NewLanguageRequest request = App.getNewLanguageRequest(mSelectedTargetLanguage.getId());
                 if(request != null) {
                     try {
                         targetTranslation.setNewLanguageRequest(request);
@@ -184,7 +185,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
 
                 newProjectCreated(targetTranslation);
             } else {
-                AppContext.getTranslator().deleteTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId, TranslationType.TEXT, resourceSlug));
+                App.getTranslator().deleteTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId, TranslationType.TEXT, resourceSlug));
                 Intent data = new Intent();
                 setResult(RESULT_ERROR, data);
                 finish();
@@ -314,7 +315,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                     snack.show();
                 } else if(secondResultCode == NewTempLanguageActivity.RESULT_USE_EXISTING_LANGUAGE) {
                     String targetLanguageId = data.getStringExtra(NewTempLanguageActivity.EXTRA_LANGUAGE_ID);
-                    TargetLanguage targetLanguage = AppContext.getLibrary().getTargetLanguage(targetLanguageId);
+                    TargetLanguage targetLanguage = App.getLibrary().getTargetLanguage(targetLanguageId);
                     if(targetLanguage != null) {
                         onItemClick(targetLanguage);
                     }

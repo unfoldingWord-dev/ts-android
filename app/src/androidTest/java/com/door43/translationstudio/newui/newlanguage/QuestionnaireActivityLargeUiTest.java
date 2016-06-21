@@ -6,27 +6,28 @@ import android.support.test.espresso.NoActivityResumedException;
 import android.support.test.runner.AndroidJUnit4;
 import android.test.suitebuilder.annotation.LargeTest;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.newui.QuestionnaireActivity;
+import com.door43.translationstudio.core.Questionnaire;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.pressBack;
-import static android.support.test.espresso.action.ViewActions.pressKey;
 import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
 public class QuestionnaireActivityLargeUiTest extends NewLanguageActivityUiUtils {
+
+    private int pageCount() {
+        Questionnaire[] questionnaires = App.getLibrary().getQuestionnaires();
+        return questionnaires[0].getNumPages();
+    }
 
     @Test
     public void fillToPage2AndPrevious() throws Exception {
@@ -34,27 +35,26 @@ public class QuestionnaireActivityLargeUiTest extends NewLanguageActivityUiUtils
         //given
         String fileName = "new_language/fullQuestionaire.json";
         Intent intent = getIntentForTestFile(fileName);
-        int pageCount = 11;
         int pageNum = 0;
         boolean hideKeyboard = true;
         boolean requiredOnly = false;
         boolean valueForBooleans = false;
         boolean doNext = true;
-        QuestionnaireActivity currentActivity = launchNewLanguageActivity(intent);
-        verifyPageLayout(pageCount, pageNum);
+        NewTempLanguageActivity currentActivity = launchNewLanguageActivity(intent);
+        verifyPageLayout(pageCount(), pageNum);
         fillPage(pageNum, doNext, requiredOnly, valueForBooleans, hideKeyboard);
         int pageNumExpected = 1;
         rotateScreen();
-        verifyPageLayout(pageCount, pageNumExpected);
+        verifyPageLayout(pageCount(), pageNumExpected);
 
         //when
-        rotateScreen();
+//        rotateScreen();
         onView(withId(R.id.previous_button)).perform(click());
-        rotateScreen();
+//        rotateScreen();
 
         //then
         pageNumExpected = 0;
-        verifyPageLayout(pageCount, pageNumExpected);
+        verifyPageLayout(pageCount(), pageNumExpected);
         rotateScreen();
     }
 
@@ -64,17 +64,16 @@ public class QuestionnaireActivityLargeUiTest extends NewLanguageActivityUiUtils
         //given
         String fileName = "new_language/fullQuestionaire.json";
         Intent intent = getIntentForTestFile(fileName);
-        int pageCount = 11;
         int pageNum = 0;
         boolean hideKeyboard = true;
         boolean requiredOnly = false;
         boolean valueForBooleans = false;
         boolean doNext = true;
-        QuestionnaireActivity currentActivity = launchNewLanguageActivity(intent);
-        verifyPageLayout(pageCount, pageNum);
+        NewTempLanguageActivity currentActivity = launchNewLanguageActivity(intent);
+        verifyPageLayout(pageCount(), pageNum);
         fillPage(pageNum, doNext, requiredOnly, valueForBooleans, hideKeyboard);
         int pageNumExpected = 1;
-        verifyPageLayout(pageCount, pageNumExpected);
+        verifyPageLayout(pageCount(), pageNumExpected);
         boolean appExit = false;
 
         //when
@@ -92,9 +91,9 @@ public class QuestionnaireActivityLargeUiTest extends NewLanguageActivityUiUtils
         }
     }
 
-    private QuestionnaireActivity launchNewLanguageActivity(Intent intent) throws NoSuchFieldException {
+    private NewTempLanguageActivity launchNewLanguageActivity(Intent intent) throws NoSuchFieldException {
         mActivityRule.launchActivity(intent);
-        QuestionnaireActivity currentActivity = mActivityRule.getActivity();
+        NewTempLanguageActivity currentActivity = mActivityRule.getActivity();
         setupForCaptureOfResultData();
         return currentActivity;
     }
@@ -105,17 +104,16 @@ public class QuestionnaireActivityLargeUiTest extends NewLanguageActivityUiUtils
         //given
         String fileName = "new_language/fullQuestionaire.json";
         Intent intent = getIntentForTestFile(fileName);
-        int pageCount = 11;
         int pageNum = 0;
         boolean hideKeyboard = true;
         boolean requiredOnly = false;
         boolean valueForBooleans = false;
         boolean doNext = true;
-        QuestionnaireActivity currentActivity = launchNewLanguageActivity(intent);
-        verifyPageLayout(pageCount, pageNum);
+        NewTempLanguageActivity currentActivity = launchNewLanguageActivity(intent);
+        verifyPageLayout(pageCount(), pageNum);
         fillPage(pageNum, doNext, requiredOnly, valueForBooleans, hideKeyboard);
         int pageNumExpected = 1;
-        verifyPageLayout(pageCount, pageNumExpected);
+        verifyPageLayout(pageCount(), pageNumExpected);
         boolean appExit = false;
 
         //when
@@ -140,10 +138,10 @@ public class QuestionnaireActivityLargeUiTest extends NewLanguageActivityUiUtils
         //given
         String fileName = "new_language/partialQuestionaire.json";
         Intent intent = getIntentForTestFile(fileName);
-        int pageCount = 4;
+//        int pageCount = 4;
         int pageNum = 0;
-        QuestionnaireActivity currentActivity = launchNewLanguageActivity(intent);
-        verifyPageLayout(pageCount, pageNum);
+        NewTempLanguageActivity currentActivity = launchNewLanguageActivity(intent);
+        verifyPageLayout(pageCount(), pageNum);
         boolean expectedBoolean = true;
         boolean hideKeyboard = true;
         boolean requiredOnly = false;
@@ -164,7 +162,7 @@ public class QuestionnaireActivityLargeUiTest extends NewLanguageActivityUiUtils
 //        verifyAnswers(answers, expectedBoolean);
     }
 
-    private void assertActivityReturnedCancelled(QuestionnaireActivity currentActivity) throws NoSuchFieldException, IllegalAccessException {
+    private void assertActivityReturnedCancelled(NewTempLanguageActivity currentActivity) throws NoSuchFieldException, IllegalAccessException {
         int resultCode = getResultCode(currentActivity);
         clearResultData();
         currentActivity.finish();

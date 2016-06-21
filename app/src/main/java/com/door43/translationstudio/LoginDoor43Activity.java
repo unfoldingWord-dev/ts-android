@@ -9,7 +9,6 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.door43.translationstudio.core.Profile;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.LoginDoor43Task;
 
 import org.unfoldingword.gogsclient.User;
@@ -39,10 +38,10 @@ public class LoginDoor43Activity extends AppCompatActivity implements ManagedTas
         continueButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AppContext.closeKeyboard(LoginDoor43Activity.this);
+                App.closeKeyboard(LoginDoor43Activity.this);
                 String username = usernameText.getText().toString();
                 String password = passwordText.getText().toString();
-                Profile profile = AppContext.getProfile();
+                Profile profile = App.getProfile();
                 String fullName = profile == null ? null : profile.getFullName();
                 LoginDoor43Task task = new LoginDoor43Task(username, password, fullName);
                 showProgressDialog();
@@ -76,7 +75,7 @@ public class LoginDoor43Activity extends AppCompatActivity implements ManagedTas
             }
             Profile profile = new Profile(user.fullName);
             profile.gogsUser = user;
-            AppContext.setProfile(profile);
+            App.setProfile(profile);
             finish();
         } else {
             // login failed

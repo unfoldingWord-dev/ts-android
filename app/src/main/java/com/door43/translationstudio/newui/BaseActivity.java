@@ -10,7 +10,6 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.door43.translationstudio.CrashReporterActivity;
 import com.door43.translationstudio.SplashScreenActivity;
-import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.TermsOfUseActivity;
 
 import org.unfoldingword.tools.logger.Logger;

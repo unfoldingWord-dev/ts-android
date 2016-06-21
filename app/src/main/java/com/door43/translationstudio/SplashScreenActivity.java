@@ -1,13 +1,9 @@
 package com.door43.translationstudio;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -50,7 +46,6 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
 
         if(!waitingForPermissions()) {
             // check if we crashed
-            File dir = new File(AppContext.getPublicDirectory(), AppContext.context().STACKTRACE_DIR);
             File[] files = Logger.listStacktraces();
             if (files.length > 0) {
                 Intent intent = new Intent(this, CrashReporterActivity.class);
@@ -67,7 +62,7 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
 
             // start new task
             if (!isWorking) {
-                UpdateAppTask updateTask = new UpdateAppTask(AppContext.context());
+                UpdateAppTask updateTask = new UpdateAppTask(App.context());
                 updateTask.addOnFinishedListener(this);
                 updateTask.addOnStartListener(this);
                 TaskManager.addTask(updateTask, UpdateAppTask.TASK_ID);
@@ -126,7 +121,7 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
         });
 
         if(task instanceof UpdateAppTask) {
-            if(!AppContext.getLibrary().exists()) {
+            if(!App.getLibrary().exists()) {
                 InitializeLibraryTask libraryTask = new InitializeLibraryTask();
                 libraryTask.addOnFinishedListener(this);
                 libraryTask.addOnStartListener(this);

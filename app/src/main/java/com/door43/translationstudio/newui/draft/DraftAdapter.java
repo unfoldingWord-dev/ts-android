@@ -8,7 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.Library;
@@ -41,7 +41,7 @@ public class DraftAdapter extends RecyclerView.Adapter<DraftAdapter.ViewHolder> 
     private int mLayoutBuildNumber = 0;
 
     public DraftAdapter(Activity context, SourceTranslation draftTranslation) {
-        mLibrary = AppContext.getLibrary();
+        mLibrary = App.getLibrary();
         mContext = context;
         mDraftTranslation = draftTranslation;
         mSourceLanguage = mLibrary.getSourceLanguage(mDraftTranslation.projectSlug, mDraftTranslation.sourceLanguageSlug);

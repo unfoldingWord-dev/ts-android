@@ -20,7 +20,7 @@ import android.widget.TextView;
 
 import org.unfoldingword.tools.logger.Logger;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
@@ -168,7 +168,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
             operationMode = args.getInt(ARG_OPERATION_MODE, MODE_CLIENT);
             targetTranslationSlug = args.getString(ARG_TARGET_TRANSLATION, null);
             deviceAlias = args.getString(ARG_DEVICE_ALIAS, null);
-            targetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationSlug);
+            targetTranslation = App.getTranslator().getTargetTranslation(targetTranslationSlug);
             if (operationMode == MODE_SERVER && targetTranslation == null) {
                 throw new InvalidParameterException("Server mode requires a valid target translation");
             }
@@ -188,7 +188,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
 
         if(operationMode == MODE_SERVER) {
             title.setText(getResources().getString(R.string.backup_to_friend));
-            SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+            SourceTranslation sourceTranslation = App.getLibrary().getDefaultSourceTranslation(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
             if(sourceTranslation != null) {
                 subTitle.setText(sourceTranslation.getProjectTitle() + " - " + targetTranslation.getTargetLanguageName());
             } else {
@@ -350,7 +350,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
 
         intent.putExtra(ServerService.PARAM_PRIVATE_KEY, privateKey);
         intent.putExtra(ServerService.PARAM_PUBLIC_KEY, RSAEncryption.getPublicKeyAsString(publicKey));
-        intent.putExtra(ServerService.PARAM_DEVICE_ALIAS, AppContext.getDeviceNetworkAlias());
+        intent.putExtra(ServerService.PARAM_DEVICE_ALIAS, App.getDeviceNetworkAlias());
         Logger.i(this.getClass().getName(), "Starting service " + intent.getComponent().getClassName());
         getActivity().startService(intent);
     }
@@ -525,8 +525,8 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
     @Override
     public void onReceivedTargetTranslations(Peer server, String[] targetTranslations) {
         // build name list
-        Translator translator = AppContext.getTranslator();
-        Library library = AppContext.getLibrary();
+        Translator translator = App.getTranslator();
+        Library library = App.getLibrary();
         String targetTranslationNames = "";
         for(String targetTranslationSlug:targetTranslations) {
             TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationSlug);

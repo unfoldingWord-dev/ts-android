@@ -2,7 +2,7 @@ package com.door43.translationstudio.core;
 
 import android.content.res.AssetManager;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.rendering.USXtoUSFMConverter;
 import com.door43.util.FileUtilities;
 import com.door43.util.Manifest;
@@ -33,7 +33,7 @@ public class TargetTranslationMigrator {
      * @return
      */
     public static JSONObject migrateManifest(JSONObject manifestJson) {
-        File tempDir = new File(AppContext.context().getCacheDir(), System.currentTimeMillis() + "");
+        File tempDir = new File(App.context().getCacheDir(), System.currentTimeMillis() + "");
         // TRICKY: the migration can change the name of the translation dir so we nest it to avoid conflicts.
         File fakeTranslationDir = new File(tempDir, "translation");
         fakeTranslationDir.mkdirs();
@@ -98,7 +98,7 @@ public class TargetTranslationMigrator {
             if(tt != null) {
                 NewLanguageRequest newRequest = tt.getNewLanguageRequest();
                 if(newRequest != null) {
-                    TargetLanguage approvedTargetLanguage = AppContext.getLibrary().getApprovedTargetLanguage(newRequest.tempLanguageCode);
+                    TargetLanguage approvedTargetLanguage = App.getLibrary().getApprovedTargetLanguage(newRequest.tempLanguageCode);
                     if(approvedTargetLanguage != null) {
                         // this language request has already been approved so let's migrate it
                         try {
@@ -107,12 +107,12 @@ public class TargetTranslationMigrator {
                             e.printStackTrace();
                         }
                         tt.changeTargetLanguage(approvedTargetLanguage);
-                        AppContext.getTranslator().normalizePath(tt);
+                        App.getTranslator().normalizePath(tt);
                     } else {
-                        NewLanguageRequest existingRequest = AppContext.getNewLanguageRequest(newRequest.tempLanguageCode);
+                        NewLanguageRequest existingRequest = App.getNewLanguageRequest(newRequest.tempLanguageCode);
                         if(existingRequest == null) {
                             // we don't have this language request
-                            AppContext.addNewLanguageRequest(newRequest);
+                            App.addNewLanguageRequest(newRequest);
                         } else {
                             // we already have this language request
                             if (existingRequest.getSubmittedAt() > 0 && newRequest.getSubmittedAt() == 0) {
@@ -126,7 +126,7 @@ public class TargetTranslationMigrator {
                             } else if (existingRequest.getSubmittedAt() == 0 && newRequest.getSubmittedAt() > 0) {
                                 // indicate global language request has been submitted
                                 existingRequest.setSubmittedAt(newRequest.getSubmittedAt());
-                                AppContext.addNewLanguageRequest(existingRequest);
+                                App.addNewLanguageRequest(existingRequest);
                                 // TODO: 6/15/16 technically we need to look through all the existing target translations and update ones using this language.
                                 // if we don't then they should get updated the next time the restart the app.
                             }
@@ -134,13 +134,13 @@ public class TargetTranslationMigrator {
                     }
                 } else {
                     // make missing language codes usable even if we can't find the new language request
-                    TargetLanguage tl = AppContext.getLibrary().getTargetLanguage(tt.getTargetLanguageId());
+                    TargetLanguage tl = App.getLibrary().getTargetLanguage(tt.getTargetLanguageId());
                     if(tl == null) {
                         TargetLanguage tempLanguage = new TargetLanguage(tt.getTargetLanguageId(),
                                 tt.getTargetLanguageName(),
                                 tt.getTargetLanguageRegion(),
                                 tt.getTargetLanguageDirection());
-                        AppContext.getLibrary().addTempTargetLanguage(tempLanguage);
+                        App.getLibrary().addTempTargetLanguage(tempLanguage);
                     }
                 }
             }
@@ -185,7 +185,7 @@ public class TargetTranslationMigrator {
         // add license file
         File licenseFile = new File(path, "LICENSE.md");
         if(!licenseFile.exists()) {
-            AssetManager am = AppContext.context().getAssets();
+            AssetManager am = App.context().getAssets();
             InputStream is = am.open("LICENSE.md");
             if(is != null) {
                 FileUtils.copyInputStreamToFile(is, licenseFile);
@@ -549,8 +549,8 @@ public class TargetTranslationMigrator {
      * @return
      */
     private static boolean migrateChunkChanges(File targetTranslationDir)  {
-        // TRICKY: calling the AppContext here is bad practice, but we'll deprecate this soon anyway.
-        final Library library = AppContext.getLibrary();
+        // TRICKY: calling the App here is bad practice, but we'll deprecate this soon anyway.
+        final Library library = App.getLibrary();
         final SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(targetTranslationDir.getName(), "en");
         if(sourceTranslation == null) {
             // if there is no source we are done

@@ -1,6 +1,6 @@
 package com.door43.translationstudio.tasks;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
@@ -17,7 +17,7 @@ public class DownloadImagesTask extends ManagedTask {
     private boolean mSuccess;
 
     public DownloadImagesTask() {
-        mLibrary = AppContext.getLibrary();
+        mLibrary = App.getLibrary();
     }
 
     @Override
@@ -29,9 +29,9 @@ public class DownloadImagesTask extends ManagedTask {
                 mMaxProgress = max;
                 String message = String.format("%2.2f %s %2.2f %s",
                         progress / (1024f * 1024f),
-                        AppContext.context().getResources().getString(R.string.out_of),
+                        App.context().getResources().getString(R.string.out_of),
                         max / (1024f * 1024f),
-                        AppContext.context().getResources().getString(R.string.mb_downloaded));
+                        App.context().getResources().getString(R.string.mb_downloaded));
                 publishProgress((float)progress / (float)max, message);
                 return !isCanceled();
             }

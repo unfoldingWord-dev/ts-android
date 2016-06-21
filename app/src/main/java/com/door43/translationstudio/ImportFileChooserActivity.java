@@ -20,7 +20,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.filebrowser.DocumentFileBrowserAdapter;
 import com.door43.translationstudio.filebrowser.DocumentFileItem;
 import com.door43.translationstudio.newui.BaseActivity;
@@ -314,7 +313,7 @@ public class ImportFileChooserActivity extends BaseActivity {
         mAdapter = new DocumentFileBrowserAdapter();
         mFileList.setAdapter(mAdapter);
 
-        Context context = AppContext.context();
+        Context context = App.context();
         List<DocumentFileItem> fileList = new ArrayList<>();
 
         mFileList.clearFocus();

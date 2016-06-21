@@ -3,7 +3,8 @@ package com.door43.translationstudio.tasks;
 import android.os.Process;
 
 import org.unfoldingword.tools.logger.Logger;
-import com.door43.translationstudio.AppContext;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Profile;
@@ -43,10 +44,10 @@ public class PushTargetTranslationTask extends ManagedTask {
 
     @Override
     public void start() {
-        Profile profile = AppContext.getProfile();
-        if(AppContext.context().isNetworkAvailable() && profile != null && profile.gogsUser != null) {
+        Profile profile = App.getProfile();
+        if(App.isNetworkAvailable() && profile != null && profile.gogsUser != null) {
             publishProgress(-1, "Uploading translation");
-            String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
+            String server = App.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, App.context().getResources().getString(R.string.pref_default_git_server));
             String remote = server + ":" + profile.gogsUser.getUsername() + "/" + this.targetTranslation.getId() + ".git";
             try {
                 this.targetTranslation.commitSync();
@@ -167,39 +168,39 @@ public class PushTargetTranslationTask extends ManagedTask {
         String msg = null;
         switch (update.getStatus()) {
             case AWAITING_REPORT:
-                msg = String.format(AppContext.context().getResources().getString(R.string.git_awaiting_report), update.getRemoteName());
+                msg = String.format(App.context().getResources().getString(R.string.git_awaiting_report), update.getRemoteName());
                 break;
             case NON_EXISTING:
-                msg = String.format(AppContext.context().getResources().getString(R.string.git_non_existing), update.getRemoteName());
+                msg = String.format(App.context().getResources().getString(R.string.git_non_existing), update.getRemoteName());
                 break;
             case NOT_ATTEMPTED:
-                msg = String.format(AppContext.context().getResources().getString(R.string.git_not_attempted), update.getRemoteName());
+                msg = String.format(App.context().getResources().getString(R.string.git_not_attempted), update.getRemoteName());
                 break;
             case OK:
-                msg = String.format(AppContext.context().getResources().getString(R.string.git_ok), update.getRemoteName());
+                msg = String.format(App.context().getResources().getString(R.string.git_ok), update.getRemoteName());
                 break;
             case REJECTED_NODELETE:
-                msg = String.format(AppContext.context().getResources().getString(R.string.git_rejected_nondelete), update.getRemoteName());
+                msg = String.format(App.context().getResources().getString(R.string.git_rejected_nondelete), update.getRemoteName());
                 break;
             case REJECTED_NONFASTFORWARD:
-                msg = String.format(AppContext.context().getResources().getString(R.string.git_rejected_nonfastforward), update.getRemoteName());
+                msg = String.format(App.context().getResources().getString(R.string.git_rejected_nonfastforward), update.getRemoteName());
                 break;
             case REJECTED_OTHER_REASON:
                 String reason = update.getMessage();
                 if (reason == null || reason.isEmpty()) {
-                    msg = String.format(AppContext.context().getResources().getString(R.string.git_rejected_other_reason), update.getRemoteName());
+                    msg = String.format(App.context().getResources().getString(R.string.git_rejected_other_reason), update.getRemoteName());
                 } else {
-                    msg = String.format(AppContext.context().getResources().getString(R.string.git_rejected_other_reason_detailed), update.getRemoteName(), reason);
+                    msg = String.format(App.context().getResources().getString(R.string.git_rejected_other_reason_detailed), update.getRemoteName(), reason);
                 }
                 break;
             case REJECTED_REMOTE_CHANGED:
-                msg = String.format(AppContext.context().getResources().getString(R.string.git_rejected_remote_changed),update.getRemoteName());
+                msg = String.format(App.context().getResources().getString(R.string.git_rejected_remote_changed),update.getRemoteName());
                 break;
             case UP_TO_DATE:
-                msg = String.format(AppContext.context().getResources().getString(R.string.git_uptodate), update.getRemoteName());
+                msg = String.format(App.context().getResources().getString(R.string.git_uptodate), update.getRemoteName());
                 break;
         }
-        msg += "\n" + String.format(AppContext.context().getResources().getString(R.string.git_server_details), remote);
+        msg += "\n" + String.format(App.context().getResources().getString(R.string.git_server_details), remote);
         return msg;
     }
 }

@@ -1,6 +1,7 @@
 package com.door43.translationstudio;
 
 import android.content.DialogInterface;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -8,6 +9,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.door43.translationstudio.core.Profile;
+import com.door43.widget.ViewUtil;
 
 public class RegisterOfflineActivity extends AppCompatActivity {
 
@@ -33,13 +35,15 @@ public class RegisterOfflineActivity extends AppCompatActivity {
                     ProfileActivity.showPrivacyNotice(RegisterOfflineActivity.this, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            AppContext.setProfile(new Profile(fullName));
+                            App.setProfile(new Profile(fullName));
                             finish();
                         }
                     });
                 } else {
                     // missing fields
-                    AppContext.context().showToastMessage(R.string.complete_required_fields);
+                    Snackbar snack = Snackbar.make(findViewById(android.R.id.content), getResources().getString(R.string.complete_required_fields), Snackbar.LENGTH_LONG);
+                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                    snack.show();
                 }
             }
         });

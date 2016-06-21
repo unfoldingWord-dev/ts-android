@@ -7,7 +7,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
@@ -29,7 +29,7 @@ public class RestoreFromCloudAdapter extends BaseAdapter {
     private final Library library;
 
     public RestoreFromCloudAdapter() {
-        this.library = AppContext.getLibrary();
+        this.library = App.getLibrary();
     }
 
     @Override

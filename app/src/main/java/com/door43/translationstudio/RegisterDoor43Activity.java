@@ -13,7 +13,6 @@ import android.widget.EditText;
 import android.widget.ToggleButton;
 
 import com.door43.translationstudio.core.Profile;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.RegisterDoor43Task;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
@@ -58,7 +57,7 @@ public class RegisterDoor43Activity extends AppCompatActivity implements Managed
         continueButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AppContext.closeKeyboard(RegisterDoor43Activity.this);
+                App.closeKeyboard(RegisterDoor43Activity.this);
 
                 final String fullName = fullNameText.getText().toString().trim();
                 final String username = usernameText.getText().toString();
@@ -129,7 +128,7 @@ public class RegisterDoor43Activity extends AppCompatActivity implements Managed
             // save gogs user to profile
             Profile profile = new Profile(user.fullName);
             profile.gogsUser = user;
-            AppContext.setProfile(profile);
+            App.setProfile(profile);
             finish();
         } else {
             String error =((RegisterDoor43Task)task).getError();

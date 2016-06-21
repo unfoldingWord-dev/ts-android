@@ -1,6 +1,6 @@
 package com.door43.translationstudio.tasks;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Profile;
@@ -21,9 +21,9 @@ public class GetUserRepositoriesTask extends ManagedTask {
 
     @Override
     public void start() {
-        if(AppContext.context().isNetworkAvailable()) {
-            GogsAPI api = new GogsAPI(AppContext.getUserString(SettingsActivity.KEY_PREF_GOGS_API, R.string.pref_default_gogs_api));
-            Profile profile = AppContext.getProfile();
+        if(App.isNetworkAvailable()) {
+            GogsAPI api = new GogsAPI(App.getUserString(SettingsActivity.KEY_PREF_GOGS_API, R.string.pref_default_gogs_api));
+            Profile profile = App.getProfile();
 
             if(profile != null && profile.gogsUser != null) {
                 this.repositories = api.listRepos(profile.gogsUser);

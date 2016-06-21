@@ -12,13 +12,13 @@ import android.view.Window;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.NativeSpeaker;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.PrintDialog;
 import com.door43.translationstudio.newui.publish.PublishActivity;
@@ -44,7 +44,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         View v = inflater.inflate(R.layout.dialog_target_translation_info, container, false);
 
-        mTranslator = AppContext.getTranslator();
+        mTranslator = App.getTranslator();
         Bundle args = getArguments();
         if(args == null || !args.containsKey(ARG_TARGET_TRANSLATION_ID)) {
             dismiss();
@@ -53,7 +53,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
             mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         }
 
-        final Library library = AppContext.getLibrary();
+        final Library library = App.getLibrary();
 
         TextView title = (TextView)v.findViewById(R.id.title);
         TextView projectTitle = (TextView)v.findViewById(R.id.project_title);
@@ -144,7 +144,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
                                 task.stop();
                                 if(mTargetTranslation != null) {
                                     mTranslator.deleteTargetTranslation(mTargetTranslation.getId());
-                                    AppContext.clearTargetTranslationSettings(mTargetTranslation.getId());
+                                    App.clearTargetTranslationSettings(mTargetTranslation.getId());
                                 }
                                 if(mListener != null) {
                                     mListener.onDeleteTargetTranslation(mTargetTranslation.getId());
