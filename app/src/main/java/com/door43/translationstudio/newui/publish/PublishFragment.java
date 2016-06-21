@@ -335,26 +335,29 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
                         String format = getActivity().getResources().getString(R.string.project_uploaded_to);
                         final String destinationMessage = String.format(format, publishedUrl);
 
-                        ClickableSpan clickableSpan = new ClickableSpan() {
-                            @Override
-                            public void onClick(View textView) {
-                                Uri uri = Uri.parse(publishedUrl);
-                                startActivity(new Intent(Intent.ACTION_VIEW, uri));
-                            }
-                        };
+//                        ClickableSpan clickableSpan = new ClickableSpan() {
+//                            @Override
+//                            public void onClick(View textView) {
+//                                Uri uri = Uri.parse(publishedUrl);
+//                                startActivity(new Intent(Intent.ACTION_VIEW, uri));
+//                            }
+//                        };
 
-                        final SpannableString clickableDestinationMessage = getClickableText(publishedUrl, destinationMessage, clickableSpan);
+//                        final SpannableString clickableDestinationMessage = getClickableText(publishedUrl, destinationMessage, clickableSpan);
 
                         AlertDialog dlg = new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                                 .setTitle(R.string.success)
-                                .setMessage(clickableDestinationMessage)
+                                .setMessage(destinationMessage)
 //                                .setAutoDismiss(false)
-                                .setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+                                .setPositiveButton(R.string.view_online, new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
-                                         dialog.dismiss();
+                                        Intent i = new Intent(Intent.ACTION_VIEW);
+                                        i.setData(Uri.parse(publishedUrl));
+                                        startActivity(i);
                                     }
                                 })
+                                .setNegativeButton(R.string.dismiss, null)
                                 .setNeutralButton(R.string.label_details, new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
@@ -363,7 +366,7 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
                                 })
                                 .show();
 
-                        applyClickableMessageToDialog(clickableDestinationMessage, dlg);
+//                        applyClickableMessageToDialog(clickableDestinationMessage, dlg);
                     }
                 });
             } else if(status == PushTargetTranslationTask.Status.AUTH_FAILURE) {
@@ -397,23 +400,23 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
      * @param clickableMessage
      * @param dlg
      */
-    private void applyClickableMessageToDialog(final SpannableString clickableMessage, final AlertDialog dlg) {
-        View view=getView();
-        Handler hand = new Handler(Looper.getMainLooper());
-        hand.post(new Runnable() { // wait until dialog has been created
-            @Override
-            public void run() {
-                try {
-//                    Dialog dialog = dlg.getDialog();
-                    TextView textView = (TextView) dlg.findViewById(R.id.dialog_content);
-                    textView.setText(clickableMessage);
-                    textView.setMovementMethod(LinkMovementMethod.getInstance());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-    }
+//    private void applyClickableMessageToDialog(final SpannableString clickableMessage, final AlertDialog dlg) {
+//        View view=getView();
+//        Handler hand = new Handler(Looper.getMainLooper());
+//        hand.post(new Runnable() { // wait until dialog has been created
+//            @Override
+//            public void run() {
+//                try {
+////                    Dialog dialog = dlg.getDialog();
+//                    TextView textView = (TextView) dlg.findViewById(R.id.dialog_content);
+//                    textView.setText(clickableMessage);
+//                    textView.setMovementMethod(LinkMovementMethod.getInstance());
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
+//    }
 
     /**
      * make selected text clickable
