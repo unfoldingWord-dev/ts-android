@@ -25,7 +25,6 @@ import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.Util;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.dialogs.ErrorLogDialog;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.tasks.CheckForLibraryUpdatesTask;

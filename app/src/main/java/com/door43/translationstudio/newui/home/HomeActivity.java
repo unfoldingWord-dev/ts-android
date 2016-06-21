@@ -30,7 +30,6 @@ import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
@@ -238,7 +237,6 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
      * display the final import Results.
      */
     private void showImportResults(String projectPath, String projectNames, boolean success) {
-        final CustomAlertDialog dlg = CustomAlertDialog.Builder(this);
         String message;
         if(success) {
             String format = AppContext.context().getResources().getString(R.string.import_project_success);
@@ -248,16 +246,17 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             message = format + "\n" + projectPath;
         }
 
-        dlg.setTitle(success ? R.string.title_import_Success : R.string.title_import_Failed)
+        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                .setTitle(success ? R.string.title_import_Success : R.string.title_import_Failed)
                 .setMessage(message)
-                .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
+                .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         mExamineTask.cleanup();
                         HomeActivity.this.finish();
                     }
                 })
-                .show("USFMImportResults2");
+                .show();
     }
 
     /**
@@ -282,34 +281,33 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
      * show dialog to verify that we want to import, restore or cancel.
      */
     private void displayImportVerification() {
-        final CustomAlertDialog dlg = CustomAlertDialog.Builder(this);
-        dlg.setTitle(R.string.label_import)
+        AlertDialog.Builder dlg = new AlertDialog.Builder(this,R.style.AppTheme_Dialog);
+            dlg.setTitle(R.string.label_import)
                 .setMessage(String.format(getResources().getString(R.string.confirm_import_target_translation), mExamineTask.mProjectsFound))
-                .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
+                .setNegativeButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         mExamineTask.cleanup();
                         HomeActivity.this.finish();
                     }
                 })
-                .setPositiveButton(R.string.label_restore, new View.OnClickListener() {
+                .setPositiveButton(R.string.label_restore, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         doArchiveImport(true);
                     }
                 });
 
         if(mExamineTask.mAlreadyPresent) { // add merge option
-            dlg.setNeutralButton(R.string.label_import, new View.OnClickListener() {
+            dlg.setNeutralButton(R.string.label_import, new DialogInterface.OnClickListener() {
                 @Override
-                public void onClick(View v) {
+                public void onClick(DialogInterface dialog, int which) {
                     doArchiveImport(false);
-                    dlg.dismiss();
+                    dialog.dismiss();
                 }
             });
         }
-
-        dlg.show("confirm_import");
+        dlg.show();
     }
 
     /**
@@ -392,16 +390,16 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     @Override
     public void onBackPressed() {
         // display confirmation before closing the app
-        CustomAlertDialog.Builder(this)
+        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                 .setMessage(R.string.exit_confirmation)
-                .setPositiveButton(R.string.yes, new View.OnClickListener() {
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         HomeActivity.super.onBackPressed();
                     }
                 })
                 .setNegativeButton(R.string.no, null)
-                .show("ExitConfirm");
+                .show();
     }
 
     @Override

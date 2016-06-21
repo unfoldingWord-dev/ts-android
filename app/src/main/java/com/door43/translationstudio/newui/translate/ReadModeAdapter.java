@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.TabLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.GestureDetector;
@@ -34,7 +35,6 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.rendering.ClickableRenderingEngine;
 import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.DefaultRenderer;
@@ -258,11 +258,11 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
                     @Override
                     public void onClick(View view, Span span, int start, int end) {
                         if(span instanceof NoteSpan) {
-                            CustomAlertDialog.Builder(mContext)
+                            new AlertDialog.Builder(mContext,R.style.AppTheme_Dialog)
                                     .setTitle(R.string.title_note)
                                     .setMessage(((NoteSpan)span).getNotes())
                                     .setPositiveButton(R.string.dismiss, null)
-                                    .show("note");
+                                    .show();
                         }
                     }
 

@@ -13,7 +13,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.tasks.ArchiveCrashReportTask;
 import com.door43.translationstudio.tasks.CheckForLatestReleaseTask;

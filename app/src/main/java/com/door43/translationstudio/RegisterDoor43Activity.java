@@ -13,7 +13,6 @@ import android.widget.EditText;
 import android.widget.ToggleButton;
 
 import com.door43.translationstudio.core.Profile;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.RegisterDoor43Task;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;

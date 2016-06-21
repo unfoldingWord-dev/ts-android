@@ -670,7 +670,7 @@ public class AppContext {
                 }
             }
         }
-        return requests.toArray(new NewLanguageRequest[requestFiles.length]);
+        return requests.toArray(new NewLanguageRequest[requests.size()]);
     }
 
     /**

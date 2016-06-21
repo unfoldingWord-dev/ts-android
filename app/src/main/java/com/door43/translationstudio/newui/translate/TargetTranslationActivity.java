@@ -9,6 +9,7 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.text.Layout;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -29,7 +30,6 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BackupDialog;
 import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.PrintDialog;
@@ -684,11 +684,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             } else {
                 msg = getResources().getString(R.string.access_skipped);
             }
-            CustomAlertDialog.Builder(this)
+            new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                     .setTitle(R.string.access_title)
                     .setMessage(msg)
                     .setPositiveButton(R.string.label_ok, null)
-                    .show("AccessResults");
+                    .show();
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }

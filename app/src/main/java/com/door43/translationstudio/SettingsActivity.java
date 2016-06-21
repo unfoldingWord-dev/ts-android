@@ -26,7 +26,6 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import org.unfoldingword.tools.logger.Logger;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.legal.LegalDocumentActivity;
 import com.door43.translationstudio.service.BackupService;
 import com.door43.translationstudio.tasks.CheckForLatestReleaseTask;

@@ -14,10 +14,8 @@ import android.support.multidex.MultiDex;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.Gravity;
-import android.view.View;
 import android.widget.Toast;
 
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.service.BackupService;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.KeyPair;

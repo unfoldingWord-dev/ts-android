@@ -1,9 +1,12 @@
 package com.door43.translationstudio.newui;
 
 import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,7 +20,6 @@ import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NativeSpeaker;
 import com.door43.translationstudio.core.TargetTranslation;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.legal.LegalDocumentActivity;
 import com.door43.widget.ViewUtil;
 
@@ -113,23 +115,23 @@ public class ContributorDialog extends DialogFragment {
         });
         mDeleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                CustomAlertDialog.Builder(getActivity())
+            public void onClick(final View v) {
+                new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                     .setTitle(R.string.delete_translator_title)
-                    .setMessageHtml(R.string.confirm_delete_translator)
-                    .setPositiveButton(R.string.confirm, new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    mTargetTranslation.removeContributor(mNativeSpeaker);
-                                    if(mListener != null) {
-                                        mListener.onClick(v);
-                                    }
-                                    dismiss();
-                                }
+                    .setMessage(Html.fromHtml(getString(R.string.confirm_delete_translator)))
+                    .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            mTargetTranslation.removeContributor(mNativeSpeaker);
+                            if(mListener != null) {
+                                mListener.onClick(v);
                             }
+                            dismiss();
+                        }
+                    }
                     )
-                        .setNegativeButton(R.string.title_cancel, null)
-                    .show("confirm-delete");
+                    .setNegativeButton(R.string.title_cancel, null)
+                    .show();
             }
         });
         mCancelButton.setOnClickListener(new View.OnClickListener() {

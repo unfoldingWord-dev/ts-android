@@ -1,7 +1,9 @@
 package com.door43.translationstudio.newui.draft;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -14,7 +16,6 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.tasks.ImportDraftTask;
 import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
@@ -84,20 +85,19 @@ public class DraftActivity extends BaseActivity implements SimpleTaskWatcher.OnF
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CustomAlertDialog.Builder(DraftActivity.this)
+                new AlertDialog.Builder(DraftActivity.this,R.style.AppTheme_Dialog)
                         .setTitle(R.string.import_draft)
                         .setMessage(R.string.import_draft_confirmation)
                         .setNegativeButton(R.string.menu_cancel, null)
-                        .setPositiveButton(R.string.label_import, new View.OnClickListener() {
+                        .setPositiveButton(R.string.label_import, new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(View v) {
+                            public void onClick(DialogInterface dialog, int which) {
                                 // // TODO: 1/20/2016 use the draft from the selected tab
                                 ImportDraftTask task = new ImportDraftTask(mDraftTranslation);
                                 taskWatcher.watch(task);
                                 TaskManager.addTask(task, ImportDraftTask.TASK_ID);
                             }
-                        })
-                        .show("confirm_draft_import");
+                        }).show();
             }
         });
 
@@ -126,11 +126,11 @@ public class DraftActivity extends BaseActivity implements SimpleTaskWatcher.OnF
         if(targetTranslation != null) {
             finish();
         } else {
-            CustomAlertDialog.Builder(this)
+            new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                     .setTitle(R.string.error)
                     .setMessage(R.string.translation_import_failed)
                     .setNeutralButton(R.string.dismiss, null)
-                    .show("draft-import-failed");
+                    .show();
         }
     }
     @Override

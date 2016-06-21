@@ -20,7 +20,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.filebrowser.DocumentFileBrowserAdapter;
 import com.door43.translationstudio.filebrowser.DocumentFileItem;
 import com.door43.translationstudio.newui.BaseActivity;
