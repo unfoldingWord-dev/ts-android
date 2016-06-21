@@ -279,7 +279,7 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
             } else if(status == PullTargetTranslationTask.Status.AUTH_FAILURE) {
                 Logger.i(this.getClass().getName(), "Authentication failed");
                 // if we have already tried ask the user if they would like to try again
-                if(App.hasSSHKeys()) {
+                if(App.context().hasSSHKeys()) {
                     showAuthFailure();
                     return;
                 }
