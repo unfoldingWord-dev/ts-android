@@ -692,4 +692,17 @@ public class AppContext {
         }
         return false;
     }
+
+    /**
+     * Deletes the new language request from the data path
+     * @param request
+     */
+    public static void removeNewLanguageRequest(NewLanguageRequest request) {
+        if(request != null) {
+            File requestFile = new File(getPublicDirectory(), "new_languages/" + request.tempLanguageCode + ".json");
+            if(requestFile.exists()) {
+                FileUtilities.safeDelete(requestFile);
+            }
+        }
+    }
 }
