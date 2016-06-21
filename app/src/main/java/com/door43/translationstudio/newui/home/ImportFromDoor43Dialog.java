@@ -287,6 +287,8 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                                 mImportCompareStatus = existingTargetTranslation.getCommitStatus(tempPath);
                                 if (mImportCompareStatus != TargetTranslation.TrackingStatus.SAME) {
                                     mMergeFromSpecificUrl = true;
+                                    importFailed = true; // we haven't imported yet
+                                    targetTranslationId = existingTargetTranslation.getId();
                                     notifyMergeConflicts();
                                 } else {
                                     //nothing to do since they are same
@@ -474,7 +476,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
             @Override
             public void onKeepLocal() {
                 try {
-                    // try to pull again
+                    // pull from server
                     pullFromServer(targetTranslation, MergeStrategy.OURS, sourceUrl);
                 } catch (Exception e) {
                     Logger.e(this.getClass().getName(), "Failed to keep local changes during import", e);
