@@ -473,22 +473,6 @@ public class NewLanguageActivityUiUtils {
     }
 
     /**
-     * generate intent for QuestionnaireActivity and load questions
-     * @param fileName
-     * @return
-     * @throws Exception
-     */
-    protected Intent getIntentForTestFile(String fileName) throws Exception {
-        Intent intent = new Intent();
-
-        InputStream usfmStream = mTestContext.getAssets().open(fileName);
-//        intent.putExtra(QuestionnaireActivity.EXTRA_NEW_LANGUAGE_QUESTIONS_JSON, mQuestions);
-
-        getQuestionPages();
-        return intent;
-    }
-
-    /**
      * get interaction for toolbar with title
      * @param title
      * @return
