@@ -746,7 +746,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 footnoteText.setText(initialNote);
 
                 // pop up note prompt
-//                final CustomAlertDialog dialog = CustomAlertDialog.Builder(mContext);
                 new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
                         .setTitle(R.string.title_add_footnote)
                         .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {

@@ -38,7 +38,6 @@ import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.Door43LoginDialog;
 import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.MergeConflictsDialog;

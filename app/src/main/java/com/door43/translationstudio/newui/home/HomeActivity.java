@@ -129,8 +129,6 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                                 FeedbackDialog dialog = new FeedbackDialog();
                                 dialog.show(ft, "bugDialog");
 
-//                                CustomAlertDialog.test(HomeActivity.this);
-
                                 return true;
                             case R.id.action_share_apk:
                                 try {
