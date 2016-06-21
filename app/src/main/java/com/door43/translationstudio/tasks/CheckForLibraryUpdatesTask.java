@@ -6,6 +6,9 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.LibraryUpdates;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TargetTranslationMigrator;
+
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 /**
@@ -60,6 +63,16 @@ public class CheckForLibraryUpdatesTask extends ManagedTask {
 
             // download the temp target languages
             library.downloadTempTargetLanguageAssignments();
+
+            // perform target translation migrations due to updates to languages
+            publishProgress(-1, AppContext.context().getResources().getString(R.string.updating_projects));
+            TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
+            mMaxProgress = targetTranslations.length;
+            for(int i = 0; i < targetTranslations.length; i ++) {
+                TargetTranslation t = targetTranslations[i];
+                publishProgress(i + 1, AppContext.context().getResources().getString(R.string.updating_projects));
+                TargetTranslationMigrator.migrate(t.getPath());
+            }
         }
     }
 

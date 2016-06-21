@@ -524,13 +524,16 @@ public class Translator {
 
     /**
      * Ensures the name of the target translation directory matches the target translation id and corrects it if not
-     *
+     * If the destination already exists the file path will not be changed
      * @param tt
      */
-    public void normalizePath(TargetTranslation tt) {
+    public boolean normalizePath(TargetTranslation tt) {
         if(!tt.getPath().getName().equals(tt.getId())) {
             File dest = new File(tt.getPath().getParentFile(), tt.getId());
-            FileUtilities.moveOrCopy(tt.getPath(), dest);
+            if(!dest.exists()) {
+                return FileUtilities.moveOrCopy(tt.getPath(), dest);
+            }
         }
+        return false;
     }
 }

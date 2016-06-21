@@ -804,4 +804,5 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="check_for_app_updates">Check the internet for updates to translationStudio App.</string>
     <string name="have_latest_app_update">You are already using the latest version of translationStudio.</string>
     <string name="download_latest_apk">Do you want to download this update?</string>
+    <string name="updating_projects">Updating projects</string>
 </resources>
