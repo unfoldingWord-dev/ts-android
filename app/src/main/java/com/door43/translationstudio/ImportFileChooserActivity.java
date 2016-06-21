@@ -313,7 +313,7 @@ public class ImportFileChooserActivity extends BaseActivity {
         mAdapter = new DocumentFileBrowserAdapter();
         mFileList.setAdapter(mAdapter);
 
-        Context context = AppContext.context();
+        Context context = App.context();
         List<DocumentFileItem> fileList = new ArrayList<>();
 
         mFileList.clearFocus();

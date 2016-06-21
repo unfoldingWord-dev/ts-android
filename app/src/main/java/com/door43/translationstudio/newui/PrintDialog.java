@@ -17,7 +17,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceLanguage;
@@ -66,8 +66,8 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         View v = inflater.inflate(R.layout.dialog_print, container, false);
 
-        translator = AppContext.getTranslator();
-        library = AppContext.getLibrary();
+        translator = App.getTranslator();
+        library = App.getLibrary();
 
         Bundle args = getArguments();
         if(args == null || !args.containsKey(ARG_TARGET_TRANSLATION_ID)) {
@@ -113,7 +113,7 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
         includeIncompleteCheckBox.setEnabled(true);
         includeIncompleteCheckBox.setChecked(includeIncompleteFrames);
 
-        mExportFile = new File(AppContext.getSharingDir(), mTargetTranslation.getId() + ".pdf");
+        mExportFile = new File(App.getSharingDir(), mTargetTranslation.getId() + ".pdf");
 
         Button cancelButton  = (Button)v.findViewById(R.id.cancel_button);
         cancelButton.setOnClickListener(new View.OnClickListener() {
@@ -128,7 +128,7 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
             public void onClick(View v) {
                 includeImages = includeImagesCheckBox.isChecked();
                 includeIncompleteFrames = includeIncompleteCheckBox.isChecked();
-                if(includeImages && !AppContext.getLibrary().hasImages()) {
+                if(includeImages && !App.getLibrary().hasImages()) {
                     new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                             .setTitle(R.string.use_internet_confirmation)
                             .setMessage(R.string.image_large_download)
@@ -167,9 +167,9 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
      */
 //    private void print() {
 //        // TODO: 11/16/2015 place the actual print operation within a task
-//        File exportFile = new File(AppContext.getSharingDir(), mTargetTranslation.getId() + ".pdf");
+//        File exportFile = new File(App.getSharingDir(), mTargetTranslation.getId() + ".pdf");
 //        try {
-//            SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(mTargetTranslation.getProjectId(), "en");
+//            SourceTranslation sourceTranslation = App.getLibrary().getDefaultSourceTranslation(mTargetTranslation.getProjectId(), "en");
 //            File imagesDir = library.getImagesDir();
 //            this.translator.exportPdf(library, mTargetTranslation, sourceTranslation.getFormat(), Typography.getAssetPath(getActivity()), imagesDir, includeImages, includeIncompleteFrames, exportFile);
 //            if (exportFile.exists()) {
@@ -224,7 +224,7 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
         } else if(task instanceof PrintPDFTask) {
             if(((PrintPDFTask)task).isSuccess()) {
                 // send to print provider
-                Uri u = FileProvider.getUriForFile(AppContext.context(), "com.door43.translationstudio.fileprovider", mExportFile);
+                Uri u = FileProvider.getUriForFile(App.context(), "com.door43.translationstudio.fileprovider", mExportFile);
                 Intent i = new Intent(Intent.ACTION_SEND);
                 i.setType("application/pdf");
                 i.putExtra(Intent.EXTRA_STREAM, u);

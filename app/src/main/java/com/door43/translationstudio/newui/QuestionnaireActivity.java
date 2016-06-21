@@ -12,7 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import org.unfoldingword.tools.logger.Logger;
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.QuestionnairePage;
 import com.door43.translationstudio.core.QuestionnaireQuestion;
@@ -184,7 +184,7 @@ public abstract class QuestionnaireActivity extends BaseActivity implements Ques
             mPreviousButton.setVisibility(View.VISIBLE);
         }
 
-        AppContext.closeKeyboard(this);
+        App.closeKeyboard(this);
     }
 
     @Override

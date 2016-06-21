@@ -178,7 +178,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ServerServic
                         // device
                         preferredLanguages.add(Locale.getDefault().getLanguage());
                         // current project
-//                        Project p = null;//AppContext.projectManager().getSelectedProject();
+//                        Project p = null;//App.projectManager().getSelectedProject();
 //                        if(p != null) {
 //                            preferredLanguages.add(p.getSelectedSourceLanguage().getId());
 //                        }
@@ -342,7 +342,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ServerServic
      * @param models an array of projects and sudo projects to choose from
      */
 //    private void showProjectSelectionDialog(Peer server, Model[] models) {
-//        AppContext.context().closeToastMessage();
+//        App.context().closeToastMessage();
 //        if(!isFinishing()) {
 //            FragmentTransaction ft = getFragmentManager().beginTransaction();
 //            Fragment prev = getFragmentManager().findFragmentByTag("dialog");
@@ -385,7 +385,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ServerServic
 //        try {
 //            json.put("id", event.getProject().getId());
 //            // check if we have the source for this project
-//            Project existingProject = null;//AppContext.projectManager().getProject(event.getProject().getId());
+//            Project existingProject = null;//App.projectManager().getProject(event.getProject().getId());
 //            if(existingProject == null || existingProject.getSelectedSourceLanguage() == null) {
 //                JSONArray sourceLanguagesJson = new JSONArray();
 //                sourceLanguagesJson.put(event.getProject().getSelectedSourceLanguage().getId());
@@ -401,7 +401,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ServerServic
 //            handle.post(new Runnable() {
 //                @Override
 //                public void run() {
-//                    AppContext.context().showException(e);
+//                    App.context().showException(e);
 //                }
 //            });
 //        }
@@ -413,7 +413,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ServerServic
      */
 //    private void showProjectLanguageSelectionDialog(Peer peer, Project p) {
 //        FragmentTransaction ft = getFragmentManager().beginTransaction();
-//        AppContext.context().closeToastMessage();
+//        App.context().closeToastMessage();
 //        // Create and show the dialog.
 //        ChooseProjectLanguagesToImportDialog newFragment = new ChooseProjectLanguagesToImportDialog();
 //        mPeerDialogs.put(peer.getIpAddress(), newFragment);
@@ -596,7 +596,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ServerServic
 //                Sharing.cleanImport(requests);
 ////                file.delete();
 //                hideProgress();
-//                AppContext.context().showToastMessage(R.string.success);
+//                App.context().showToastMessage(R.string.success);
 //                // TODO: success dialog
 //            }
 //

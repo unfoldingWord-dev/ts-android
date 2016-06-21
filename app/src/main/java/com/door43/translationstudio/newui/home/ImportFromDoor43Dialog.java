@@ -17,7 +17,8 @@ import android.widget.EditText;
 import android.widget.ListView;
 
 import org.unfoldingword.tools.logger.Logger;
-import com.door43.translationstudio.AppContext;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.TargetTranslation;
@@ -64,7 +65,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         this.taskWatcher = new SimpleTaskWatcher(getActivity(), R.string.loading);
         this.taskWatcher.setOnFinishedListener(this);
 
-        this.translator = AppContext.getTranslator();
+        this.translator = App.getTranslator();
 
         Button dismissButton = (Button) v.findViewById(R.id.dismiss_button);
         dismissButton.setOnClickListener(new View.OnClickListener() {
@@ -89,15 +90,17 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 String userQuery = userEditText.getText().toString();
                 String repoQuery = repoEditText.getText().toString();
 
-                AppContext.closeKeyboard(getActivity());
+                App.closeKeyboard(getActivity());
 
-                Profile profile = AppContext.getProfile();
+                Profile profile = App.getProfile();
                 if(profile != null && profile.gogsUser != null) {
                     AdvancedGogsRepoSearchTask task = new AdvancedGogsRepoSearchTask(profile.gogsUser, userQuery, repoQuery, 50);
                     TaskManager.addTask(task, AdvancedGogsRepoSearchTask.TASK_ID);
                     taskWatcher.watch(task);
                 } else {
-                    AppContext.context().showToastMessage(R.string.login_doo43);
+                    Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), getResources().getString(R.string.login_doo43), Snackbar.LENGTH_LONG);
+                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                    snack.show();
                     dismiss();
                 }
             }
@@ -111,7 +114,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Repository repo = adapter.getItem(position);
                 String repoName = repo.getFullName().replace("/", "-");
-                cloneDestDir = new File(AppContext.context().getCacheDir(), repoName + System.currentTimeMillis() + "/");
+                cloneDestDir = new File(App.context().getCacheDir(), repoName + System.currentTimeMillis() + "/");
                 cloneHtmlUrl = repo.getHtmlUrl();
                 CloneRepositoryTask task = new CloneRepositoryTask(cloneHtmlUrl, cloneDestDir);
                 taskWatcher.watch(task);
@@ -213,7 +216,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 } else if(status == CloneRepositoryTask.Status.AUTH_FAILURE) {
                     Logger.i(this.getClass().getName(), "Authentication failed");
                     // if we have already tried ask the user if they would like to try again
-                    if(AppContext.context().hasSSHKeys()) {
+                    if(App.hasSSHKeys()) {
                         showAuthFailure();
                         return;
                     }

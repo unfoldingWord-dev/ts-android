@@ -12,7 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -21,6 +20,7 @@ import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.CheckingQuestion;
 import com.door43.translationstudio.core.Frame;
@@ -37,7 +37,6 @@ import com.door43.translationstudio.spannables.ArticleLinkSpan;
 import com.door43.translationstudio.spannables.LinkSpan;
 import com.door43.translationstudio.spannables.PassageLinkSpan;
 import com.door43.translationstudio.spannables.Span;
-import com.door43.translationstudio.AppContext;
 
 import org.apmem.tools.layouts.FlowLayout;
 import org.sufficientlysecure.htmltextview.HtmlTextView;
@@ -182,7 +181,7 @@ public class ReviewModeFragment extends ViewModeFragment {
         if(mResourcesDrawerContent != null) {
             mResourcesDrawerContent.setVisibility(View.VISIBLE);
 //            mCloseResourcesDrawerButton.setText(getActivity().getResources().getString(R.string.translation_words_index));
-            Library library = AppContext.getLibrary();
+            Library library = App.getLibrary();
             ListView list = (ListView) getActivity().getLayoutInflater().inflate(R.layout.fragment_words_index_list, null);
             mResourcesDrawerContent.removeAllViews();
             mResourcesDrawerContent.addView(list);
@@ -226,7 +225,7 @@ public class ReviewModeFragment extends ViewModeFragment {
 //            TextView title = (TextView)view.findViewById(R.id.title);
 //            TextView descriptionView = (TextView)view.findViewById(R.id.description);
 
-            final Library library = AppContext.getLibrary();
+            final Library library = App.getLibrary();
             final SourceTranslation sourceTranslation = getSourceTranslation();
             LinkToHtmlRenderer renderer = new LinkToHtmlRenderer(new LinkToHtmlRenderer.OnPreprocessLink() {
                 @Override
@@ -313,7 +312,7 @@ public class ReviewModeFragment extends ViewModeFragment {
         mTranslationWordId = translationWordId;
         mTranslationNoteId = null;
 
-        final Library library = AppContext.getLibrary();
+        final Library library = App.getLibrary();
         final SourceTranslation sourceTranslation = getSourceTranslation();
         SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug);
         TranslationWord word = getPreferredWord(sourceTranslation, translationWordId);
@@ -454,7 +453,7 @@ public class ReviewModeFragment extends ViewModeFragment {
         mFrameId = frameId;
         mChapterId = chapterId;
 
-        final Library library = AppContext.getLibrary();
+        final Library library = App.getLibrary();
         final SourceTranslation sourceTranslation = getSourceTranslation();
         TranslationNote note = getPreferredNote(sourceTranslation, chapterId, frameId, noteId);
         if(mResourcesDrawerContent != null) {
@@ -543,7 +542,7 @@ public class ReviewModeFragment extends ViewModeFragment {
         mFrameId = frameId;
         mChapterId = chapterId;
 
-        final Library library = AppContext.getLibrary();
+        final Library library = App.getLibrary();
         SourceTranslation sourceTranslation = getSourceTranslation();
         CheckingQuestion question = getPreferredQuestion(sourceTranslation, chapterId, frameId, questionId);
         SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug);
@@ -647,7 +646,7 @@ public class ReviewModeFragment extends ViewModeFragment {
      * @return
      */
     private static TranslationNote getPreferredNote(SourceTranslation sourceTranslation, String chapterId, String frameId, String noteId) {
-        Library library = AppContext.getLibrary();
+        Library library = App.getLibrary();
         TranslationNote note = library.getTranslationNote(sourceTranslation, chapterId, frameId, noteId);
         if(note == null && !sourceTranslation.sourceLanguageSlug.equals("en")) {
             SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
@@ -663,7 +662,7 @@ public class ReviewModeFragment extends ViewModeFragment {
      * @return
      */
     private static TranslationWord getPreferredWord(SourceTranslation sourceTranslation, String wordId) {
-        Library library = AppContext.getLibrary();
+        Library library = App.getLibrary();
         TranslationWord word = library.getTranslationWord(sourceTranslation, wordId);
         if(word == null && !sourceTranslation.sourceLanguageSlug.equals("en")) {
             SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
@@ -681,7 +680,7 @@ public class ReviewModeFragment extends ViewModeFragment {
      * @return
      */
     private static CheckingQuestion getPreferredQuestion(SourceTranslation sourceTranslation, String chapterId, String frameId, String questionId) {
-        Library library = AppContext.getLibrary();
+        Library library = App.getLibrary();
         CheckingQuestion question = library.getCheckingQuestion(sourceTranslation, chapterId, frameId, questionId);
         if(question == null && !sourceTranslation.sourceLanguageSlug.equals("en")) {
             SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
@@ -699,7 +698,7 @@ public class ReviewModeFragment extends ViewModeFragment {
      * @param articleId  @return
      */
     private static TranslationArticle getPreferredTranslationArticle(SourceTranslation sourceTranslation, String volume, String manual, String articleId) {
-        Library library = AppContext.getLibrary();
+        Library library = App.getLibrary();
         TranslationArticle article = library.getTranslationArticle(sourceTranslation, volume, manual, articleId);
         if(article == null && !sourceTranslation.sourceLanguageSlug.equals("en")) {
             SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");

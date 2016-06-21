@@ -2,15 +2,13 @@ package com.door43.translationstudio.git;
 
 import android.util.SparseArray;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.git.tasks.StopTaskException;
 import com.door43.translationstudio.git.tasks.repo.RepoOpTask;
-import com.door43.translationstudio.AppContext;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.InitCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.errors.RepositoryNotFoundException;
 import org.eclipse.jgit.lib.StoredConfig;
 
 import java.io.File;
@@ -65,7 +63,8 @@ public class Repo {
         try {
             init.call();
         } catch (GitAPIException e) {
-            AppContext.context().showException(e, R.string.error_could_not_create_repository);
+            e.printStackTrace();
+            // could not create repo
         }
     }
 
@@ -117,7 +116,7 @@ public class Repo {
         try {
             return getGit().getRepository().getFullBranch();
         } catch (IOException e) {
-            AppContext.context().showException(e);
+//            App.context().showException(e);
         }
         return "";
     }

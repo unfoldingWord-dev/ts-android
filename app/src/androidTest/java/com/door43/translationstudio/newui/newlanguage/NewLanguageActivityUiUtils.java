@@ -1,6 +1,5 @@
 package com.door43.translationstudio.newui.newlanguage;
 
-import org.apache.commons.io.IOUtils;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.json.JSONArray;
@@ -8,6 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
+import org.unfoldingword.tools.logger.Logger;
 
 import android.app.Activity;
 import android.content.Context;
@@ -21,14 +21,15 @@ import android.support.test.rule.ActivityTestRule;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.Questionnaire;
+import com.door43.translationstudio.core.QuestionnairePage;
 import com.door43.translationstudio.core.QuestionnaireQuestion;
 import com.door43.translationstudio.newui.QuestionnaireActivity;
-import com.door43.translationstudio.tasks.UploadCrashReportTask;
 
 import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
 
 import static android.support.test.espresso.Espresso.onView;
@@ -60,26 +61,24 @@ import static org.junit.Assert.*;
 public class NewLanguageActivityUiUtils {
 
     private String mStringToBetyped;
-    private String mQuestions;
     Context mTestContext;
-    List<List<QuestionnaireQuestion>> mQuestionPages;
-    long mQuestionnaireID;
     Context mAppContext;
     Field mf_resultCode;
     Field mf_resultData;
 
 
     @Rule
-    public ActivityTestRule<QuestionnaireActivity> mActivityRule = new ActivityTestRule<>(
-            QuestionnaireActivity.class,
+    public ActivityTestRule<NewTempLanguageActivity> mActivityRule = new ActivityTestRule<>(
+            NewTempLanguageActivity.class,
             true,    // initialTouchMode
             false);  // don't launchActivity yet
+    private Questionnaire questionnaire;
 
     @Before
     public void setUp() {
         // Specify a valid string.
         mStringToBetyped = "Espresso";
-        UploadCrashReportTask.archiveErrorLogs();
+        Logger.flush();
         mTestContext = InstrumentationRegistry.getContext();
     }
 
@@ -209,7 +208,7 @@ public class NewLanguageActivityUiUtils {
      * @param hideKeyboard
      */
     protected void fillAllPagesAndRotate(boolean doDone, boolean requiredOnly, boolean valueForBooleans, boolean hideKeyboard) {
-        int pageCount = mQuestionPages.size();
+        int pageCount = questionnaire.getNumPages();
 
         for (int i = 0; i < pageCount - 1; i++) {
 
@@ -237,7 +236,7 @@ public class NewLanguageActivityUiUtils {
      * @param hideKeyboard
      */
     protected void fillAllPages(boolean doDone, boolean requiredOnly, boolean valueForBooleans, boolean hideKeyboard) {
-        int pageCount = mQuestionPages.size();
+        int pageCount = questionnaire.getNumPages();
 
         for (int i = 0; i < pageCount - 1; i++) {
 
@@ -261,7 +260,7 @@ public class NewLanguageActivityUiUtils {
      * @param hideKeyboard
      */
     protected void fillPage(int pageNum, boolean doNext, boolean requiredOnly, boolean valueForBooleans, boolean hideKeyboard) {
-        List<QuestionnaireQuestion> questions = mQuestionPages.get(pageNum);
+        List<QuestionnaireQuestion> questions = questionnaire.getPage(pageNum).getQuestions();
 
         for (int i = 0; i < questions.size(); i++) {
 
@@ -278,7 +277,7 @@ public class NewLanguageActivityUiUtils {
                 if(question.type == QuestionnaireQuestion.InputType.Boolean) {
                     verifyButtons(pageNum, i, false, false);
                 } else {
-                    verifyText(pageNum,i,"");
+                    verifyAnswer(pageNum,i,"");
                 }
             }
         }
@@ -312,11 +311,11 @@ public class NewLanguageActivityUiUtils {
      * @param questionNum
      * @param text
      */
-    protected void verifyText(int pageNum, int questionNum, String text) {
-        QuestionnaireQuestion question = mQuestionPages.get(pageNum).get(questionNum);
+    protected void verifyAnswer(int pageNum, int questionNum, String text) {
+        QuestionnaireQuestion question = questionnaire.getPage(pageNum).getQuestion(questionNum);
         String questionText = question.question;
         ViewInteraction interaction = onView(allOf(withId(R.id.edit_text), hasSibling(withText(questionText))));
-        interaction.perform(scrollTo());
+//        interaction.perform(scrollTo());
         interaction.check(matches(withText(text)));
     }
 
@@ -328,13 +327,13 @@ public class NewLanguageActivityUiUtils {
      * @param hideKeyboard
      */
     protected void addEditText(int pageNum, int questionNum, String newText, boolean hideKeyboard) {
-        verifyText(pageNum,questionNum,"");
-        QuestionnaireQuestion question = mQuestionPages.get(pageNum).get(questionNum);
+        verifyAnswer(pageNum, questionNum, "");
+        QuestionnaireQuestion question = questionnaire.getPage(pageNum).getQuestion(questionNum);
         String questionText = question.question;
         ViewInteraction interaction = onView(allOf(withId(R.id.edit_text), hasSibling(withText(questionText))));
-        interaction.perform(scrollTo());
+//        interaction.perform(scrollTo());
         interaction.perform( typeText(newText));
-//        interaction.check(matches(withHint(question.helpText))); // doesn't seem to work on second question
+        interaction.check(matches(withHint(question.helpText))); // doesn't seem to work on second question
         if(hideKeyboard) {
             interaction.perform(closeSoftKeyboard());
         }
@@ -349,7 +348,7 @@ public class NewLanguageActivityUiUtils {
      * @param isChecked
      */
     private void verifyButton(int pageNum, int questionNum, int resource, boolean isChecked) {
-        String questionText = mQuestionPages.get(pageNum).get(questionNum).question;
+        String questionText = questionnaire.getPage(pageNum).getQuestion(questionNum).question;
         Matcher<View> parent = allOf(withClassName(endsWith("RadioGroup")), hasSibling(withText(questionText)));
 
         ViewInteraction interaction = onView(allOf(withId(resource), withParent(parent)));
@@ -380,13 +379,13 @@ public class NewLanguageActivityUiUtils {
      */
     private void setBoolean(int pageNum, int questionNum, boolean value) {
         verifyButtons(pageNum, questionNum, false, false); // should not be set yet
-        String questionText = mQuestionPages.get(pageNum).get(questionNum).question;
+        String questionText = questionnaire.getPage(pageNum).getQuestion(questionNum).question;
         Matcher<View> parent = allOf(withClassName(endsWith("RadioGroup")), hasSibling(withText(questionText)));
 
         int resource = value ? R.id.radio_button_yes : R.id.radio_button_no;
         int oppositeResource = !value ? R.id.radio_button_yes : R.id.radio_button_no;
         ViewInteraction interaction = onView(allOf(withId(resource), withParent(parent)));
-        interaction.perform(scrollTo(), click());
+        interaction.perform(click());
         interaction.check(matches(isChecked()));
         onView(allOf(withId(oppositeResource), withParent(parent))).check(matches(not(isChecked())));
     }
@@ -396,11 +395,7 @@ public class NewLanguageActivityUiUtils {
      * @throws Exception
      */
     private void getQuestionPages() throws Exception {
-        mQuestionPages = new ArrayList<>();
-
-//        JSONObject questionnaire = (new NewLanguageAPI()).readQuestionnaireIntoPages(mTestContext, mQuestions, "en"); // TODO: 4/25/16 get actual language
-//        mQuestionnaireID = QuestionnaireActivity.getQuestionnaireID(questionnaire);
-//        QuestionnaireActivity.getQuestionPages(mQuestionPages, questionnaire);
+        questionnaire = App.getLibrary().getQuestionnaires()[0];
     }
 
     /**
@@ -410,8 +405,8 @@ public class NewLanguageActivityUiUtils {
      * @throws Exception
      */
     private QuestionnaireQuestion findQuestion(long id) throws Exception {
-        for (List<QuestionnaireQuestion> questionPage : mQuestionPages) {
-            for (QuestionnaireQuestion questionnaireQuestion : questionPage) {
+        for (QuestionnairePage questionPage : questionnaire.getPages()) {
+            for (QuestionnaireQuestion questionnaireQuestion : questionPage.getQuestions()) {
                 if(questionnaireQuestion.id == id) {
                     return questionnaireQuestion;
                 }
@@ -475,23 +470,6 @@ public class NewLanguageActivityUiUtils {
             onView(withId(R.id.done_button)).check(matches(isDisplayed()));
             onView(withId(R.id.next_button)).check(matches(not(isDisplayed())));
         }
-    }
-
-    /**
-     * generate intent for QuestionnaireActivity and load questions
-     * @param fileName
-     * @return
-     * @throws Exception
-     */
-    protected Intent getIntentForTestFile(String fileName) throws Exception {
-        Intent intent = new Intent();
-
-        InputStream usfmStream = mTestContext.getAssets().open(fileName);
-        mQuestions = IOUtils.toString(usfmStream, "UTF-8");
-//        intent.putExtra(QuestionnaireActivity.EXTRA_NEW_LANGUAGE_QUESTIONS_JSON, mQuestions);
-
-        getQuestionPages();
-        return intent;
     }
 
     /**

@@ -18,6 +18,8 @@ import android.view.MenuItem;
 import android.view.View;
 
 import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.ImportUsfm;
@@ -27,7 +29,6 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.newui.library.Searchable;
-import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.newui.newtranslation.ProjectListFragment;
 import com.door43.translationstudio.newui.newtranslation.TargetLanguageListFragment;
 import com.door43.util.FileUtilities;
@@ -351,7 +352,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
             @Override
             public void run() {
                 File[] imports = mUsfm.getImportProjects();
-                final Translator translator = AppContext.getTranslator();
+                final Translator translator = App.getTranslator();
                 int count = 0;
                 int size = imports.length;
                 final int numSteps = 4;
@@ -626,7 +627,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         if (savedInstanceState != null) {
             String targetLanguageId = savedInstanceState.getString(STATE_TARGET_LANGUAGE_ID, null);
             if (targetLanguageId != null) {
-                mTargetLanguage = AppContext.getLibrary().getTargetLanguage(targetLanguageId);
+                mTargetLanguage = App.getLibrary().getTargetLanguage(targetLanguageId);
             }
 
             mCurrentState = eImportState.fromInt(savedInstanceState.getInt(STATE_CURRENT_STATE, eImportState.needLanguage.getValue()));

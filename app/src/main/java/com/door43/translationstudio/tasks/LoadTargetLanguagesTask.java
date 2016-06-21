@@ -1,6 +1,7 @@
 package com.door43.translationstudio.tasks;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
+
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 /**
@@ -12,6 +13,6 @@ public class LoadTargetLanguagesTask extends ManagedTask {
 
     @Override
     public void start() {
-        AppContext.getLibrary().getTargetLanguages();
+        App.getLibrary().getTargetLanguages();
     }
 }

@@ -57,7 +57,7 @@ public class RegisterDoor43Activity extends AppCompatActivity implements Managed
         continueButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AppContext.closeKeyboard(RegisterDoor43Activity.this);
+                App.closeKeyboard(RegisterDoor43Activity.this);
 
                 final String fullName = fullNameText.getText().toString().trim();
                 final String username = usernameText.getText().toString();
@@ -128,7 +128,7 @@ public class RegisterDoor43Activity extends AppCompatActivity implements Managed
             // save gogs user to profile
             Profile profile = new Profile(user.fullName);
             profile.gogsUser = user;
-            AppContext.setProfile(profile);
+            App.setProfile(profile);
             finish();
         } else {
             String error =((RegisterDoor43Task)task).getError();

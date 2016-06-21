@@ -14,7 +14,6 @@ import android.os.Looper;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.ViewUtils;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -78,7 +77,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
         }
 
         // display device id
-        udidText.setText(String.format(getResources().getString(R.string.app_udid), AppContext.udid()));
+        udidText.setText(String.format(getResources().getString(R.string.app_udid), App.udid()));
 
         // set up copy handlers
         versionText.setOnClickListener(new View.OnClickListener() {
@@ -102,7 +101,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
         udidText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                StringUtilities.copyToClipboard(DeveloperToolsActivity.this, AppContext.udid());
+                StringUtilities.copyToClipboard(DeveloperToolsActivity.this, App.udid());
                 Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.copied_to_clipboard, Snackbar.LENGTH_LONG);
                 ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                 snack.show();
@@ -133,7 +132,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                     @Override
                     public void start() {
                         publishProgress(-1, "Regenerating keys");
-                        AppContext.context().generateSSHKeys();
+                        App.generateSSHKeys();
                     }
                 };
                 task.addOnProgressListener(DeveloperToolsActivity.this);
@@ -158,7 +157,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
         mDeveloperTools.add(new ToolItem("Expire library data", "Resets the modified date of indexed library data", R.drawable.ic_history_black_24dp, new ToolItem.ToolAction() {
             @Override
             public void run() {
-                AppContext.getLibrary().setExpired();
+                App.getLibrary().setExpired();
                 Snackbar snack = Snackbar.make(findViewById(android.R.id.content), "The resources have been expired", Snackbar.LENGTH_LONG);
                 ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                 snack.show();
@@ -192,7 +191,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                     @Override
                     public void start() {
                         publishProgress(-1, "Indexing tA...");
-                        Project[] projects = AppContext.getLibrary().getProjects("en");
+                        Project[] projects = App.getLibrary().getProjects("en");
                         String catalog = null;
                         try {
                             catalog = Util.readStream(getAssets().open("ta.json"));
@@ -201,10 +200,10 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                         }
                         if(catalog != null) {
                             for (Project p : projects) {
-                                Resource[] resources = AppContext.getLibrary().getResources(p.getId(), "en");
+                                Resource[] resources = App.getLibrary().getResources(p.getId(), "en");
                                 for (Resource r : resources) {
                                     SourceTranslation sourceTranslation = SourceTranslation.simple(p.getId(), "en", r.getId());
-                                    AppContext.getLibrary().manuallyIndexTranslationAcademy(sourceTranslation, catalog);
+                                    App.getLibrary().manuallyIndexTranslationAcademy(sourceTranslation, catalog);
                                 }
                             }
                         }
@@ -219,7 +218,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
             @Override
             public void run() {
                 // manually inject chunk marker details into db
-                AppContext.getLibrary().manuallyInjectChunkMarkerCatalogUrl();
+                App.getLibrary().manuallyInjectChunkMarkerCatalogUrl();
 
                 // run update check to index the chunk markers
                 CheckForLibraryUpdatesTask task = new CheckForLibraryUpdatesTask();
@@ -235,7 +234,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                     @Override
                     public void start() {
                         publishProgress(-1, "Exporting library...");
-                        File archive = AppContext.getLibrary().export(new File(getCacheDir(), "sharing/"));
+                        File archive = App.getLibrary().export(new File(getCacheDir(), "sharing/"));
                         this.setResult(archive);
                     }
                 };
@@ -253,7 +252,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
         mDeveloperTools.add(new ToolItem("Delete Library", "Deletes the entire library database so it can be rebuilt from scratch", R.drawable.ic_delete_black_24dp, new ToolItem.ToolAction() {
             @Override
             public void run() {
-                AppContext.getLibrary().delete();
+                App.getLibrary().delete();
                 Snackbar snack = Snackbar.make(findViewById(android.R.id.content), "The library content was deleted", Snackbar.LENGTH_LONG);
                 ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                 snack.show();

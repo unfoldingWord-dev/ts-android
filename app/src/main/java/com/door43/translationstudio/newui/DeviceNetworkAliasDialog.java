@@ -10,7 +10,7 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 
 /**
@@ -26,7 +26,7 @@ public class DeviceNetworkAliasDialog extends DialogFragment {
         View v = inflater.inflate(R.layout.dialog_device_network_alias, container, false);
 
         final EditText deviceName = (EditText)v.findViewById(R.id.device_name);
-        deviceName.setText(AppContext.getDeviceNetworkAlias());
+        deviceName.setText(App.getDeviceNetworkAlias());
 
         Button cancelButton = (Button)v.findViewById(R.id.cancel_button);
         cancelButton.setOnClickListener(new View.OnClickListener() {
@@ -39,7 +39,7 @@ public class DeviceNetworkAliasDialog extends DialogFragment {
         confirmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AppContext.setDeviceNetworkAlias(deviceName.getText().toString());
+                App.setDeviceNetworkAlias(deviceName.getText().toString());
                 dismiss();
             }
         });

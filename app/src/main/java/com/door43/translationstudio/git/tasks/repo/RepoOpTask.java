@@ -2,10 +2,10 @@ package com.door43.translationstudio.git.tasks.repo;
 
 import android.widget.Toast;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.tasks.GitSyncAsyncTask;
-import com.door43.translationstudio.AppContext;
 
 import org.eclipse.jgit.lib.ProgressMonitor;
 
@@ -30,7 +30,7 @@ public abstract class RepoOpTask extends GitSyncAsyncTask<Void, String, Boolean>
             return;
         }
         if (isSuccess && mSuccessMsg != 0) {
-            AppContext.context().showToastMessage(mSuccessMsg, Toast.LENGTH_SHORT);
+            // success
         }
     }
 
@@ -43,7 +43,7 @@ public abstract class RepoOpTask extends GitSyncAsyncTask<Void, String, Boolean>
             execute();
             return;
         }
-        AppContext.context().showToastMessage(R.string.error_task_running);
+        // task already running
     }
 
 //    protected void handleAuthError(OnPasswordEntered onPassEntered) {

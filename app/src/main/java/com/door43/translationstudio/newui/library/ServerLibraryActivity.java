@@ -26,7 +26,7 @@ import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.tasks.CheckForLibraryUpdatesTask;
 import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
 import com.door43.translationstudio.tasks.DownloadUpdatesTask;
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.widget.ViewUtil;
@@ -79,7 +79,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
             TaskManager.addTask(getUpdatesTask, CheckForLibraryUpdatesTask.TASK_ID);
         } else {
             // populated cached data
-            Library serverLibrary = AppContext.getLibrary();
+            Library serverLibrary = App.getLibrary();
             Project[] projects = serverLibrary.getProjects(Locale.getDefault().getLanguage());
             mListFragment.setData(serverLibrary.getAvailableUpdates(), projects);
 
@@ -190,7 +190,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
         });
         searchViewAction.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         // display download updates
-        if(AppContext.getLibrary().getAvailableUpdates().numSourceTranslationUpdates() > 0) {
+        if(App.getLibrary().getAvailableUpdates().numSourceTranslationUpdates() > 0) {
             menu.findItem(R.id.action_download_updates).setVisible(true);
         } else {
             menu.findItem(R.id.action_download_updates).setVisible(false);
@@ -235,7 +235,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                                 DownloadUpdatesTask task = (DownloadUpdatesTask)TaskManager.getTask(DownloadUpdatesTask.TASK_ID);
                                 if(task == null) {
                                     // start new task
-                                    task = new DownloadUpdatesTask(AppContext.getLibrary().getAvailableUpdates());
+                                    task = new DownloadUpdatesTask(App.getLibrary().getAvailableUpdates());
                                     task.addOnProgressListener(ServerLibraryActivity.this);
                                     task.addOnFinishedListener(ServerLibraryActivity.this);
                                     TaskManager.addTask(task, DownloadUpdatesTask.TASK_ID);
@@ -325,7 +325,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
             @Override
             public void run() {
                 invalidateOptionsMenu();
-                Library serverLibrary = AppContext.getLibrary();
+                Library serverLibrary = App.getLibrary();
                 Project[] projects = serverLibrary.getProjects(Locale.getDefault().getLanguage());
                 mListFragment.setData(serverLibrary.getAvailableUpdates(), projects);
 

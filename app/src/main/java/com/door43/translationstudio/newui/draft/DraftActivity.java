@@ -10,7 +10,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
@@ -45,8 +45,8 @@ public class DraftActivity extends BaseActivity implements SimpleTaskWatcher.OnF
         setContentView(R.layout.activity_draft_preview);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        mTranslator = AppContext.getTranslator();
-        mLibrary = AppContext.getLibrary();
+        mTranslator = App.getTranslator();
+        mLibrary = App.getLibrary();
 
         // validate parameters
         List<SourceTranslation> draftTranslations = new ArrayList<>();

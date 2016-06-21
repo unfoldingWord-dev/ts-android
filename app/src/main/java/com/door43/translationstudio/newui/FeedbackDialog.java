@@ -19,7 +19,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import com.door43.translationstudio.MainApplication;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.tasks.CheckForLatestReleaseTask;
 import com.door43.translationstudio.tasks.UploadBugReportTask;
@@ -171,7 +171,7 @@ public class FeedbackDialog extends DialogFragment implements ManagedTask.OnFini
      * @param release
      */
     private void notifyLatestRelease(final CheckForLatestReleaseTask.Release release) {
-        final Boolean isStoreVersion = ((MainApplication)getActivity().getApplication()).isStoreVersion();
+        final Boolean isStoreVersion = App.isStoreVersion();
 
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.apk_update_available)

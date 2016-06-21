@@ -20,7 +20,7 @@ import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.home.HomeActivity;
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -97,7 +97,7 @@ public class BackupService extends Service {
         boolean backupPerformed = false;
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
-            Translator translator = AppContext.getTranslator();
+            Translator translator = App.getTranslator();
             TargetTranslation[] targetTranslations = translator.getTargetTranslations();
             for (TargetTranslation t : targetTranslations) {
 
@@ -112,7 +112,7 @@ public class BackupService extends Service {
                 // run backup if there are translations
                 if (t.numTranslated() > 0) {
                     try {
-                        backupPerformed = AppContext.backupTargetTranslation(t, false) ? true : backupPerformed;
+                        backupPerformed = App.backupTargetTranslation(t, false) ? true : backupPerformed;
                     } catch (Exception e) {
                         Logger.e(this.getClass().getName(), "Failed to backup the target translation " + t.getId(), e);
                     }

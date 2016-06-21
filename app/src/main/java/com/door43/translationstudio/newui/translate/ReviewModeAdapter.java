@@ -36,6 +36,8 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.ChapterTranslation;
@@ -58,7 +60,6 @@ import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
-import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.rendering.ClickableRenderingEngine;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.USFMNoteSpan;
@@ -111,8 +112,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     public ReviewModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String startingChapterSlug, String startingFrameSlug, boolean resourcesOpened) {
 
-        mLibrary = AppContext.getLibrary();
-        mTranslator = AppContext.getTranslator();
+        mLibrary = App.getLibrary();
+        mTranslator = App.getTranslator();
         mContext = context;
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
@@ -181,7 +182,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      */
     private void loadTabInfo() {
         List<ContentValues> tabContents = new ArrayList<>();
-        String[] sourceTranslationIds = AppContext.getOpenSourceTranslationIds(mTargetTranslation.getId());
+        String[] sourceTranslationIds = App.getOpenSourceTranslationIds(mTargetTranslation.getId());
         for(String id:sourceTranslationIds) {
             SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
             if(sourceTranslation != null) {
@@ -362,7 +363,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @return
      */
     private static TranslationNote[] getPreferredNotes(SourceTranslation sourceTranslation, Frame frame) {
-        Library library = AppContext.getLibrary();
+        Library library = App.getLibrary();
         TranslationNote[] notes = library.getTranslationNotes(sourceTranslation, frame.getChapterId(), frame.getId());
         if(notes.length == 0 && !sourceTranslation.sourceLanguageSlug.equals("en")) {
             SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
@@ -379,7 +380,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @return
      */
     private static TranslationWord[] getPreferredWords(SourceTranslation sourceTranslation, Frame frame) {
-        Library library = AppContext.getLibrary();
+        Library library = App.getLibrary();
         TranslationWord[] words = library.getTranslationWords(sourceTranslation, frame.getChapterId(), frame.getId());
         if(words.length == 0 && !sourceTranslation.sourceLanguageSlug.equals("en")) {
             SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
@@ -397,7 +398,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @return
      */
     private static CheckingQuestion[] getPreferredQuestions(SourceTranslation sourceTranslation, String chapterId, String frameId) {
-        Library library = AppContext.getLibrary();
+        Library library = App.getLibrary();
         CheckingQuestion[] questions = library.getCheckingQuestions(sourceTranslation, chapterId, frameId);
         if(questions.length == 0 && !sourceTranslation.sourceLanguageSlug.equals("en")) {
             SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
@@ -745,7 +746,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 footnoteText.setText(initialNote);
 
                 // pop up note prompt
-//                final CustomAlertDialog dialog = CustomAlertDialog.Builder(mContext);
                 new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
                         .setTitle(R.string.title_add_footnote)
                         .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
@@ -1392,7 +1392,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     final VerseSpan pin = ((VerseSpan) span);
 
                     // create drag shadow
-                    LayoutInflater inflater = (LayoutInflater)AppContext.context().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    LayoutInflater inflater = (LayoutInflater) App.context().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                     FrameLayout verseLayout = (FrameLayout)inflater.inflate(R.layout.fragment_verse_marker, null);
                     TextView verseTitle = (TextView)verseLayout.findViewById(R.id.verse);
                     if(pin.getEndVerseNumber() > 0) {

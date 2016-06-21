@@ -16,7 +16,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NativeSpeaker;
 import com.door43.translationstudio.core.TargetTranslation;
@@ -54,7 +54,7 @@ public class ContributorDialog extends DialogFragment {
         if(args != null) {
             String nativeSpeakerName = args.getString(ARG_NATIVE_SPEAKER, null);
             String targetTranslationId = args.getString(ARG_TARGET_TRANSLATION, null);
-            mTargetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
+            mTargetTranslation = App.getTranslator().getTargetTranslation(targetTranslationId);
             if(nativeSpeakerName != null && mTargetTranslation != null) {
                 mNativeSpeaker = mTargetTranslation.getContributor(nativeSpeakerName);
             }

@@ -1,7 +1,8 @@
 package com.door43.translationstudio.core;
 
 import org.unfoldingword.tools.logger.Logger;
-import com.door43.translationstudio.AppContext;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
@@ -283,7 +284,7 @@ public class Downloader {
 
         String url = Resource.getImagesCatalogUrl();
         String filename = url.replaceAll(".*/", "");
-        File imagesDir = AppContext.getLibrary().getImagesDir();
+        File imagesDir = App.getLibrary().getImagesDir();
         File fullPath = new File(String.format("%s/%s", imagesDir, filename));
         if (!(imagesDir.isDirectory() || imagesDir.mkdirs())) {
             return false;
@@ -365,7 +366,7 @@ public class Downloader {
      */
     public boolean downloadNewLanguageQuestionnaire(LibraryData targetIndex) {
         // TODO: eventually this will be pulled from the library data
-        String catalog = request(AppContext.context().getResources().getString(R.string.questionnaire_api));
+        String catalog = request(App.context().getResources().getString(R.string.questionnaire_api));
         if(catalog != null) {
             return targetIndex.indexQuestionnaire(catalog);
         }

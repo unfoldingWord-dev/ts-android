@@ -53,7 +53,7 @@ public class ProfileActivity extends BaseActivity {
     public void onResume() {
         super.onResume();
 
-        if (AppContext.getProfile() != null) {
+        if (App.getProfile() != null) {
             Intent intent = new Intent(this, TermsOfUseActivity.class);
             startActivity(intent);
             finish();

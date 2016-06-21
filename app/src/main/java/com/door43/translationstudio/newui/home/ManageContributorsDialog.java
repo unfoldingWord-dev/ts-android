@@ -13,7 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NativeSpeaker;
 import com.door43.translationstudio.core.Profile;
@@ -47,11 +47,11 @@ public class ManageContributorsDialog extends DialogFragment implements Contribu
 
         String targetTranslationId = args.getString(ManageContributorsDialog.EXTRA_TARGET_TRANSLATION_ID);
 
-        Translator translator = AppContext.getTranslator();
+        Translator translator = App.getTranslator();
         mTargetTranslation = translator.getTargetTranslation(targetTranslationId);
 
 //         auto add profile
-        Profile profile = AppContext.getProfile();
+        Profile profile = App.getProfile();
         if(profile != null) {
             mTargetTranslation.addContributor(profile.getNativeSpeaker());
         }

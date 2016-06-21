@@ -26,7 +26,7 @@ import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.tasks.DownloadProjectImageTask;
 import com.door43.translationstudio.tasks.DownloadSourceLanguageTask;
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
@@ -53,7 +53,7 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mServerLibrary = AppContext.getLibrary();
+        mServerLibrary = App.getLibrary();
 
         if (getArguments().containsKey(ARG_PROJECT_ID)) {
             String projectId = getArguments().getString(ARG_PROJECT_ID);
@@ -93,13 +93,13 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
             mHolder.mIcon.setBackgroundResource(R.drawable.ic_library_books_black_24dp);
 
             // delete project
-            if (AppContext.getLibrary().projectHasSource(mProject.getId())) {
+            if (App.getLibrary().projectHasSource(mProject.getId())) {
                 mHolder.mDeleteButton.setVisibility(View.VISIBLE);
                 mHolder.mDeleteButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         // TRICKY: we can't let users delete projects that have target Translations
-                        TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
+                        TargetTranslation[] targetTranslations = App.getTranslator().getTargetTranslations();
                         boolean projectHasTargetTranslations = false;
                         for(TargetTranslation targetTranslation:targetTranslations){
                             if(targetTranslation.getProjectId().equals(mProject.getId())) {
@@ -122,7 +122,7 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
                                     .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
-                                            AppContext.getLibrary().deleteProject(mProject.getId());
+                                            App.getLibrary().deleteProject(mProject.getId());
                                             mListener.onProjectDeleted(mProject.getId());
                                         }
                                     })
@@ -223,7 +223,7 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
                     // ignore clicks if a task is already running.
                     DownloadSourceLanguageTask task = (DownloadSourceLanguageTask)TaskManager.getTask(mProject.getId() + "-" + item.sourceLanguage.getId());
                     if(task == null || task.isFinished()) {
-                        boolean isDownloaded = AppContext.getLibrary().sourceLanguageHasSource(mProject.getId(), item.sourceLanguage.getId());
+                        boolean isDownloaded = App.getLibrary().sourceLanguageHasSource(mProject.getId(), item.sourceLanguage.getId());
                         if (!isDownloaded) {
                             // just download the update
                             task = new DownloadSourceLanguageTask(mProject.getId(), item.sourceLanguage.getId());
@@ -348,7 +348,7 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
     private void loadImage() {
         // TODO: update this
 //        if(mImagePath != null) {
-//            AppContext.context().getImageLoader().loadImage(mImagePath, new SimpleImageLoadingListener() {
+//            App.context().getImageLoader().loadImage(mImagePath, new SimpleImageLoadingListener() {
 //                @Override
 //                public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
 //                    if (mIcon != null) {

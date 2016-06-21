@@ -15,13 +15,10 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.LibraryUpdates;
 import com.door43.translationstudio.core.Project;
-import com.door43.translationstudio.core.ProjectCategory;
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -41,7 +38,7 @@ public class ServerLibraryAdapter extends BaseAdapter {
 
     public ServerLibraryAdapter(Activity context) {
         mContext = context;
-        mLibrary = AppContext.getLibrary();
+        mLibrary = App.getLibrary();
     }
 
     @Override

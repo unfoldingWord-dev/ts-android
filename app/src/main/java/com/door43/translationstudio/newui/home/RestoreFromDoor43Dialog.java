@@ -16,7 +16,7 @@ import android.widget.Button;
 import android.widget.ListView;
 
 import org.unfoldingword.tools.logger.Logger;
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
@@ -58,7 +58,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements SimpleTas
         this.taskWatcher = new SimpleTaskWatcher(getActivity(), R.string.loading);
         this.taskWatcher.setOnFinishedListener(this);
 
-        this.translator = AppContext.getTranslator();
+        this.translator = App.getTranslator();
 
         Button dismissButton = (Button) v.findViewById(R.id.dismiss_button);
         dismissButton.setOnClickListener(new View.OnClickListener() {
@@ -83,7 +83,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements SimpleTas
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Repository repo = adapter.getItem(position);
                 String repoName = repo.getFullName().replace("/", "-");
-                cloneDestDir = new File(AppContext.context().getCacheDir(), repoName + System.currentTimeMillis() + "/");
+                cloneDestDir = new File(App.context().getCacheDir(), repoName + System.currentTimeMillis() + "/");
                 cloneSSHUrl = repo.getSshUrl();
                 CloneRepositoryTask task = new CloneRepositoryTask(cloneSSHUrl, cloneDestDir);
                 taskWatcher.watch(task);
@@ -150,7 +150,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements SimpleTas
                         // create orphaned backup of existing target translation
                         if (existingTargetTranslation != null) {
                             try {
-                                AppContext.backupTargetTranslation(existingTargetTranslation, true);
+                                App.backupTargetTranslation(existingTargetTranslation, true);
                             } catch (Exception e) {
                                 Logger.e(this.getClass().getName(), "Failed to backup the target translation", e);
                             }
@@ -188,7 +188,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements SimpleTas
                 } else if(status == CloneRepositoryTask.Status.AUTH_FAILURE) {
                     Logger.i(this.getClass().getName(), "Authentication failed");
                     // if we have already tried ask the user if they would like to try again
-                    if(AppContext.context().hasSSHKeys()) {
+                    if(App.hasSSHKeys()) {
                         showAuthFailure();
                         return;
                     }
