@@ -1,10 +1,12 @@
 package com.door43.translationstudio.newui.library;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.TabLayout;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +23,6 @@ import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Typography;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.tasks.DownloadProjectImageTask;
 import com.door43.translationstudio.tasks.DownloadSourceLanguageTask;
@@ -107,26 +108,26 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
                             }
                         }
                         if(projectHasTargetTranslations) {
-                            CustomAlertDialog.Builder(getActivity())
+                            new AlertDialog.Builder(getActivity(),R.style.AppTheme_Dialog)
                                     .setTitle(R.string.label_delete)
                                     .setIcon(R.drawable.ic_info_black_24dp)
                                     .setMessage(R.string.cannot_delete_project_with_translations)
                                     .setPositiveButton(R.string.dismiss, null)
-                                    .show("DelWarn");
+                                    .show();
                         } else {
-                            CustomAlertDialog.Builder(getActivity())
+                            new AlertDialog.Builder(getActivity(),R.style.AppTheme_Dialog)
                                     .setTitle(R.string.label_delete)
                                     .setIcon(R.drawable.ic_delete_black_24dp)
                                     .setMessage(R.string.confirm_delete_project)
-                                    .setPositiveButton(R.string.confirm, new View.OnClickListener() {
+                                    .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                                         @Override
-                                        public void onClick(View v) {
+                                        public void onClick(DialogInterface dialog, int which) {
                                             AppContext.getLibrary().deleteProject(mProject.getId());
                                             mListener.onProjectDeleted(mProject.getId());
                                         }
                                     })
                                     .setNegativeButton(R.string.no, null)
-                                    .show("DelConfirm");
+                                    .show();
                         }
                     }
                 });
@@ -233,13 +234,13 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
                             task.addOnProgressListener(item.onProgressListener);
                         } else {
                             // confirm with the user
-                            CustomAlertDialog.Builder(getActivity())
+                            new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                                     .setTitle(R.string.download)
                                     .setIcon(R.drawable.ic_refresh_black_24dp)
                                     .setMessage(R.string.source_language_already_downloaded)
-                                    .setPositiveButton(R.string.yes, new View.OnClickListener() {
+                                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                                         @Override
-                                        public void onClick(View v) {
+                                        public void onClick(DialogInterface dialog, int which) {
                                             DownloadSourceLanguageTask task = new DownloadSourceLanguageTask(mProject.getId(), item.sourceLanguage.getId());
                                             task.addOnFinishedListener(ServerLibraryDetailFragment.this);
                                             TaskManager.addTask(task, mProject.getId() + "-" + item.sourceLanguage.getId());
@@ -249,7 +250,7 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
                                         }
                                     })
                                     .setNegativeButton(R.string.no, null)
-                                    .show("LangAlready");
+                                    .show();
                         }
                     }
                 }

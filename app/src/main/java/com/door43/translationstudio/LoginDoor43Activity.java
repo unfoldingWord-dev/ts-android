@@ -9,7 +9,6 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.door43.translationstudio.core.Profile;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.LoginDoor43Task;
 
 import org.unfoldingword.gogsclient.User;
