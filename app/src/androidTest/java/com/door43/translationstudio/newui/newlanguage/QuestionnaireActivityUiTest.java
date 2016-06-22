@@ -1,6 +1,7 @@
 package com.door43.translationstudio.newui.newlanguage;
 
 import android.content.Intent;
+import android.support.test.espresso.assertion.ViewAssertions;
 import android.support.test.runner.AndroidJUnit4;
 import android.test.suitebuilder.annotation.LargeTest;
 
@@ -13,8 +14,14 @@ import org.junit.runner.RunWith;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.action.ViewActions.pressBack;
+import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(AndroidJUnit4.class)
@@ -96,7 +103,6 @@ public class QuestionnaireActivityUiTest extends NewLanguageActivityUiUtils {
         verifyPageLayout(pageCount(), pageNum);
 
         //when
-//        currentActivity.recreate();
         onView(withId(R.id.next_button)).perform(click());
         thenShouldHaveRequiredAnswerDialog();
         onView(withText(R.string.dismiss)).perform(click());
@@ -113,16 +119,15 @@ public class QuestionnaireActivityUiTest extends NewLanguageActivityUiUtils {
         boolean hideKeyboard = true;
         mActivityRule.launchActivity(new Intent());
         verifyPageLayout(pageCount(), pageNum);
-        addEditText(0, 0, "language_name", hideKeyboard);
 
         //when
-//        currentActivity.recreate();
         onView(withId(R.id.next_button)).perform(click());
-        thenShouldHaveMissingAnswerDialog();
-        onView(withId(R.id.positiveButton)).perform(click());
+        onView(withText(R.string.missing_question_answer)).check(matches(isDisplayed())); // dialog displayed
+        onView(withText(R.string.missing_question_answer)).perform(pressBack()); // dismiss
+        onView(withText(R.string.missing_question_answer)).check(doesNotExist()); // dialog dismissed
 
         //then
-        int pageNumExpected = 1;
+        int pageNumExpected = 0;
         verifyPageLayout(pageCount(), pageNumExpected);
     }
 
@@ -134,13 +139,12 @@ public class QuestionnaireActivityUiTest extends NewLanguageActivityUiUtils {
         boolean hideKeyboard = true;
         mActivityRule.launchActivity(new Intent());
         verifyPageLayout(pageCount(), pageNum);
-        addEditText(0, 0, "language_name", hideKeyboard);
 
         //when
-//        currentActivity.recreate();
         onView(withId(R.id.next_button)).perform(click());
-        thenShouldHaveMissingAnswerDialog();
-        onView(withId(R.id.negativeButton)).perform(click());
+        onView(withText(R.string.missing_question_answer)).check(matches(isDisplayed())); // dialog displayed
+        onView(withText(R.string.missing_question_answer)).perform(pressBack()); // dismiss dialog
+        onView(withText(R.string.missing_question_answer)).check(doesNotExist()); // dialog dismissed
 
         //then
         verifyPageLayout(pageCount(), pageNum);
