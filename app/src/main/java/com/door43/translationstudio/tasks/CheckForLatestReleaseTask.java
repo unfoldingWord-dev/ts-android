@@ -3,8 +3,8 @@ package com.door43.translationstudio.tasks;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.AppContext;
 import com.door43.util.http.GetRequest;
 
 import org.unfoldingword.tools.logger.Logger;
@@ -28,7 +28,7 @@ public class CheckForLatestReleaseTask extends ManagedTask {
 
     @Override
     public void start() {
-        String githubApiUrl = AppContext.context().getResources().getString(R.string.github_repo_api);
+        String githubApiUrl = App.context().getResources().getString(R.string.github_repo_api);
         String url = githubApiUrl + "/releases/latest";
         String latestRelease;
         try {
@@ -47,7 +47,7 @@ public class CheckForLatestReleaseTask extends ManagedTask {
                     if(tagParts.length == 2) {
                         int build = Integer.parseInt(tagParts[1]);
                         try {
-                            PackageInfo pInfo = AppContext.context().getPackageManager().getPackageInfo(AppContext.context().getPackageName(), 0);
+                            PackageInfo pInfo = App.context().getPackageManager().getPackageInfo(App.context().getPackageName(), 0);
                             if(build > pInfo.versionCode) {
                                 String downloadUrl = null;
                                 int downloadSize = 0;

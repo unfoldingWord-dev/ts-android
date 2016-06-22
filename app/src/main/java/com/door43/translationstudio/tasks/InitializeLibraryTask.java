@@ -1,7 +1,9 @@
 package com.door43.translationstudio.tasks;
 
 import org.unfoldingword.tools.logger.Logger;
-import com.door43.translationstudio.AppContext;
+
+import com.door43.translationstudio.App;
+
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 /**
@@ -13,7 +15,7 @@ public class InitializeLibraryTask extends ManagedTask {
     @Override
     public void start() {
         try {
-            AppContext.deployDefaultLibrary();
+            App.deployDefaultLibrary();
         } catch (Exception e) {
             Logger.e(this.getClass().getName(), "Failed to deploy the default index", e);
         }

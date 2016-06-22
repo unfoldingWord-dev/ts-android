@@ -5,7 +5,8 @@ import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 
 import org.unfoldingword.tools.logger.Logger;
-import com.door43.translationstudio.AppContext;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 
 import java.util.regex.Pattern;
@@ -49,7 +50,7 @@ public class ArticleLinkSpan extends Span {
         if(mSpannable == null) {
             mSpannable = super.render();
             // apply custom styles
-            mSpannable.setSpan(new ForegroundColorSpan(AppContext.context().getResources().getColor(R.color.accent)), 0, mSpannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            mSpannable.setSpan(new ForegroundColorSpan(App.context().getResources().getColor(R.color.accent)), 0, mSpannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         return mSpannable;
     }

@@ -3,7 +3,8 @@ package com.door43.translationstudio.tasks;
 import android.os.Process;
 
 import org.unfoldingword.tools.logger.Logger;
-import com.door43.translationstudio.AppContext;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Profile;
@@ -35,22 +36,22 @@ public class RegisterSSHKeysTask extends ManagedTask {
     public RegisterSSHKeysTask(boolean force) {
         setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
         this.force = force;
-        this.keyName = AppContext.context().getResources().getString(R.string.gogs_public_key_name) + " " + AppContext.udid();
+        this.keyName = App.context().getResources().getString(R.string.gogs_public_key_name) + " " + App.udid();
     }
 
     @Override
     public void start() {
-        if(AppContext.context().isNetworkAvailable()) {
+        if(App.isNetworkAvailable()) {
             publishProgress(-1, "Authenticating");
-            GogsAPI api = new GogsAPI(AppContext.getUserString(SettingsActivity.KEY_PREF_GOGS_API, R.string.pref_default_gogs_api));
-            Profile profile = AppContext.getProfile();
+            GogsAPI api = new GogsAPI(App.getUserString(SettingsActivity.KEY_PREF_GOGS_API, R.string.pref_default_gogs_api));
+            Profile profile = App.getProfile();
             if (profile != null && profile.gogsUser != null) {
-                if (!AppContext.context().hasSSHKeys() || this.force) {
-                    AppContext.context().generateSSHKeys();
+                if (!App.hasSSHKeys() || this.force) {
+                    App.generateSSHKeys();
                 }
                 String keyString = null;
                 try {
-                    keyString = FileUtilities.readFileToString(new File(AppContext.context().getPublicKey().getAbsolutePath())).trim();
+                    keyString = FileUtilities.readFileToString(new File(App.getPublicKey().getAbsolutePath())).trim();
                 } catch (IOException e) {
                     e.printStackTrace();
                     Logger.e(this.getClass().getName(), "Failed to retreive the public key", e);

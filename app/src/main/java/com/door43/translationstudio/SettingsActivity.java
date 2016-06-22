@@ -3,6 +3,7 @@ package com.door43.translationstudio;
 import android.annotation.TargetApi;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -18,13 +19,14 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 
 import org.unfoldingword.tools.logger.Logger;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
+
 import com.door43.translationstudio.newui.legal.LegalDocumentActivity;
 import com.door43.translationstudio.service.BackupService;
 import com.door43.translationstudio.tasks.CheckForLatestReleaseTask;
@@ -166,7 +168,7 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
         {
             for (int i = 0; i<fileList.length; i++)
             {
-                File typeface = AppContext.context().getAssetAsFile("fonts/" + fileList[i]);
+                File typeface = App.getAssetAsFile("fonts/" + fileList[i]);
                 if (typeface != null) {
                     TTFAnalyzer analyzer = new TTFAnalyzer();
                     String fontname = "";
@@ -305,13 +307,13 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
                 // restart the backup service.
                 if(BackupService.isRunning()) {
                     // TODO: only restart if changed
-                    Intent backupIntent = new Intent(AppContext.context(), BackupService.class);
-                    AppContext.context().stopService(backupIntent);
-                    AppContext.context().startService(backupIntent);
+                    Intent backupIntent = new Intent(App.context(), BackupService.class);
+                    App.context().stopService(backupIntent);
+                    App.context().startService(backupIntent);
                 }
             } else if(preference.getKey().equals(KEY_PREF_LOGGING_LEVEL)) {
                 // TODO: only re-configure if changed
-                AppContext.context().configureLogger(Integer.parseInt((String)value));
+                App.configureLogger(Integer.parseInt((String)value));
             }
 
             if (preference instanceof ListPreference) {
@@ -372,11 +374,11 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
 
                     CheckForLatestReleaseTask.Release release = checkForLatestReleaseTask.getLatestRelease();
                     if(release == null) {
-                        CustomAlertDialog.Builder(SettingsActivity.this)
+                        new AlertDialog.Builder(SettingsActivity.this, R.style.AppTheme_Dialog)
                                 .setTitle(R.string.check_for_updates)
                                 .setMessage(R.string.have_latest_app_update)
                                 .setPositiveButton(R.string.label_ok, null)
-                                .show("HaveLatest");
+                                .show();
                     } else { // have newer
                         promptUserToDownloadLatestVersion(checkForLatestReleaseTask.getLatestRelease());
                     }
@@ -389,17 +391,17 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
      * ask the user if they want to download the latest version
      */
     private void promptUserToDownloadLatestVersion(final CheckForLatestReleaseTask.Release release) {
-        CustomAlertDialog.Builder(this)
+        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                 .setTitle(R.string.apk_update_available)
                 .setMessage(R.string.download_latest_apk)
-                .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
+                .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         CrashReporterActivity.getLatestAppVersion(SettingsActivity.this, release);
                     }
                 })
                 .setNegativeButton(R.string.title_cancel, null)
-                .show("DownloadLatest");
+                .show();
     }
 
     /**
@@ -428,7 +430,7 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
             {
                 for (int i = 0; i<fileList.length; i++)
                 {
-                    File typeface = AppContext.context().getAssetAsFile("fonts/" + fileList[i]);
+                    File typeface = App.getAssetAsFile("fonts/" + fileList[i]);
                     if (typeface != null) {
                         TTFAnalyzer analyzer = new TTFAnalyzer();
                         String fontname = "";
@@ -454,7 +456,7 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
 
             final Preference appVersionPref = findPreference("app_version");
             try {
-                PackageInfo pInfo = AppContext.context().getPackageManager().getPackageInfo(AppContext.context().getPackageName(), 0);
+                PackageInfo pInfo = App.context().getPackageManager().getPackageInfo(App.context().getPackageName(), 0);
                 appVersionPref.setSummary(pInfo.versionName + " - " + pInfo.versionCode);
             } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();

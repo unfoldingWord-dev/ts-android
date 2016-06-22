@@ -1,7 +1,8 @@
 package com.door43.translationstudio.tasks;
 
 import org.unfoldingword.tools.logger.Logger;
-import com.door43.translationstudio.AppContext;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.git.TransportCallback;
 import com.door43.util.FileUtilities;
@@ -40,8 +41,8 @@ public class CloneRepositoryTask extends ManagedTask {
 
     @Override
     public void start() {
-        if(AppContext.context().isNetworkAvailable()) {
-            publishProgress(-1, AppContext.context().getResources().getString(R.string.downloading));
+        if(App.isNetworkAvailable()) {
+            publishProgress(-1, App.context().getResources().getString(R.string.downloading));
             FileUtilities.deleteRecursive(destDir);
 
             try {

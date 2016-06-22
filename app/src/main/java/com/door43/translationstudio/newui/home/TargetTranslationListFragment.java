@@ -10,10 +10,10 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.newui.BaseFragment;
-import com.door43.translationstudio.AppContext;
 
 /**
  * Displays a list of target translations
@@ -39,7 +39,7 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
                 }
                 ft.addToBackStack(null);
 
-                final TargetTranslation translation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
+                final TargetTranslation translation = App.getTranslator().getTargetTranslation(targetTranslationId);
                 if(translation != null) {
                     TargetTranslationInfoDialog dialog = new TargetTranslationInfoDialog();
                     Bundle args = new Bundle();
@@ -87,7 +87,7 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
      * Reloads the list of target translations
      */
     public void reloadList() {
-        mAdapter.changeData(AppContext.getTranslator().getTargetTranslations());
+        mAdapter.changeData(App.getTranslator().getTargetTranslations());
     }
 
     @Override

@@ -1,7 +1,9 @@
 package com.door43.translationstudio;
 
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputType;
@@ -11,7 +13,6 @@ import android.widget.EditText;
 import android.widget.ToggleButton;
 
 import com.door43.translationstudio.core.Profile;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.RegisterDoor43Task;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
@@ -56,7 +57,7 @@ public class RegisterDoor43Activity extends AppCompatActivity implements Managed
         continueButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AppContext.closeKeyboard(RegisterDoor43Activity.this);
+                App.closeKeyboard(RegisterDoor43Activity.this);
 
                 final String fullName = fullNameText.getText().toString().trim();
                 final String username = usernameText.getText().toString();
@@ -66,9 +67,9 @@ public class RegisterDoor43Activity extends AppCompatActivity implements Managed
 
                 if(!fullName.isEmpty() && !username.trim().isEmpty() && !email.trim().isEmpty() && !password.trim().isEmpty()) {
                     if(password.equals(password2)) {
-                        ProfileActivity.showPrivacyNotice(RegisterDoor43Activity.this, new View.OnClickListener() {
+                        ProfileActivity.showPrivacyNotice(RegisterDoor43Activity.this, new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(View v) {
+                            public void onClick(DialogInterface dialog, int which) {
                                 RegisterDoor43Task task = new RegisterDoor43Task(username, password, fullName, email);
                                 showProgressDialog();
                                 task.addOnFinishedListener(RegisterDoor43Activity.this);
@@ -127,17 +128,17 @@ public class RegisterDoor43Activity extends AppCompatActivity implements Managed
             // save gogs user to profile
             Profile profile = new Profile(user.fullName);
             profile.gogsUser = user;
-            AppContext.setProfile(profile);
+            App.setProfile(profile);
             finish();
         } else {
             String error =((RegisterDoor43Task)task).getError();
             error = error == null ? getResources().getString(R.string.registration_failed) : error;
             // registration failed
-            CustomAlertDialog.Builder(this)
+            new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                     .setTitle(R.string.error)
                     .setMessage(error)
                     .setPositiveButton(R.string.label_ok, null)
-                    .show("registration_failed");
+                    .show();
         }
     }
 }

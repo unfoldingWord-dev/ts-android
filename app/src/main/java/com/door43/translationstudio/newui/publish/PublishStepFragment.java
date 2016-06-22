@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
@@ -35,10 +35,10 @@ public abstract class PublishStepFragment extends BaseFragment {
     protected void openReview(String targetTranslationId, String chapterId, String frameId) {
         Intent intent = new Intent(getActivity(), TargetTranslationActivity.class);
         Bundle args = new Bundle();
-        args.putString(AppContext.EXTRA_TARGET_TRANSLATION_ID, targetTranslationId);
-        args.putString(AppContext.EXTRA_CHAPTER_ID, chapterId);
-        args.putString(AppContext.EXTRA_FRAME_ID, frameId);
-        args.putString(AppContext.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
+        args.putString(App.EXTRA_TARGET_TRANSLATION_ID, targetTranslationId);
+        args.putString(App.EXTRA_CHAPTER_ID, chapterId);
+        args.putString(App.EXTRA_FRAME_ID, frameId);
+        args.putString(App.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
         intent.putExtras(args);
         startActivity(intent);
         getActivity().finish();

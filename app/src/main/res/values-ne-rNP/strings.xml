@@ -124,7 +124,7 @@
   <string name="languages">भाषा</string>
   <string name="drafts">अनुवाद ड्राफ्ट</string>
   <string name="use_internet_confirmation">यो सर्भर जानकारी डाउनलोड गर्न आफ्नो इन्टरनेट जडान प्रयोग गर्नेछ, जारी?</string>
-  <string name="update_projects">अपडेट परियोजनाहरु</string>
+  <string name="update_library">अपडेट परियोजनाहरु</string>
   <string name="update_projects_description">सर्भर हेर्नुहोस् र डाउनलोड उपलब्ध अपडेट</string>
   <string name="action_download_all">सबै डाउनलोड</string>
   <string name="title_activity_project_updates">परियोजना अपडेट</string>

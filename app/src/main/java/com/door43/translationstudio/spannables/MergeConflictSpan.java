@@ -4,7 +4,7 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.BackgroundColorSpan;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 
 /**
@@ -29,9 +29,9 @@ public class MergeConflictSpan extends Span {
             mSpannable = super.render();
 
             SpannableStringBuilder headChanges = new SpannableStringBuilder(mHeadChanges);
-            headChanges.setSpan(new BackgroundColorSpan(AppContext.context().getResources().getColor(R.color.green)), 0, headChanges.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            headChanges.setSpan(new BackgroundColorSpan(App.context().getResources().getColor(R.color.green)), 0, headChanges.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             SpannableStringBuilder newChanges = new SpannableStringBuilder(mNewChanges);
-            newChanges.setSpan(new BackgroundColorSpan(AppContext.context().getResources().getColor(R.color.red)), 0, newChanges.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            newChanges.setSpan(new BackgroundColorSpan(App.context().getResources().getColor(R.color.red)), 0, newChanges.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
             mSpannable.append(headChanges);
             mSpannable.append("\n");

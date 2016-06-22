@@ -2,16 +2,20 @@ package com.door43.translationstudio.newui.newtranslation;
 
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.MenuItemCompat;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
 import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.NewLanguageRequest;
@@ -23,11 +27,9 @@ import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.BaseActivity;
-import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.newui.newlanguage.NewTempLanguageActivity;
 import com.door43.util.StringUtilities;
 import com.door43.widget.ViewUtil;
@@ -94,18 +96,18 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
      */
     private void registerTempLanguage(NewLanguageRequest request) {
         if(request != null) {
-            Questionnaire questionnaire = AppContext.getLibrary().getQuestionnaire(request.questionnaireId);
-            if (questionnaire != null && AppContext.addNewLanguageRequest(request)) {
+            Questionnaire questionnaire = App.getLibrary().getQuestionnaire(request.questionnaireId);
+            if (questionnaire != null && App.addNewLanguageRequest(request)) {
                 mSelectedTargetLanguage = request.getTempTargetLanguage();
                 this.createdNewLanguage = true;
                 confirmTempLanguage(mSelectedTargetLanguage);
                 return;
             }
         }
-        CustomAlertDialog.Builder(this)
+        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                 .setTitle(R.string.error)
                 .setMessage(R.string.try_again)
-                .show("error-questionnaire");
+                .show();
     }
 
     /**
@@ -115,28 +117,28 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     private void confirmTempLanguage(final TargetLanguage language) {
         if(language != null) {
             String msg = String.format(getResources().getString(R.string.new_language_confirmation), language.getId(), language.name);
-            final CustomAlertDialog dialog = CustomAlertDialog.Builder(this)
-                    .setCancelableChainable(false)
-                    .setAutoDismiss(false)
+            new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                    .setCancelable(false)
+//                    .setAutoDismiss(false)
                     .setTitle(R.string.language)
-                    .setMessage(msg);
-            dialog.setPositiveButton(R.string.label_continue, new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dialog.dismiss();
-                    onItemClick(language);
-                }
-            })
-            .setNeutralButton(R.string.copy, new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    StringUtilities.copyToClipboard(NewTargetTranslationActivity.this, language.code);
-                    Snackbar snack = Snackbar.make(v, R.string.copied_to_clipboard, Snackbar.LENGTH_SHORT);
-                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                    snack.show();
-                }
-            });
-            dialog.show(NEW_LANGUAGE_CONFIRMATION);
+                    .setMessage(msg)
+                    .setPositiveButton(R.string.label_continue, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            onItemClick(language);
+                        }
+                    })
+                    .setNeutralButton(R.string.copy, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            StringUtilities.copyToClipboard(NewTargetTranslationActivity.this, language.code);
+                            Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.copied_to_clipboard, Snackbar.LENGTH_SHORT);
+                            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                            snack.show();
+                        }
+                    })
+                    .show();
         }
     }
 
@@ -161,19 +163,19 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
 
     @Override
     public void onItemClick(String projectId) {
-        Translator translator = AppContext.getTranslator();
+        Translator translator = App.getTranslator();
         // TRICKY: android only supports translating regular text projects
         String resourceSlug = projectId.equals("obs") ? "obs" : Resource.REGULAR_SLUG;
         TargetTranslation existingTranslation = translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId, TranslationType.TEXT, resourceSlug));
         if(existingTranslation == null) {
             // create new target translation
-            SourceLanguage sourceLanguage = AppContext.getLibrary().getPreferredSourceLanguage(projectId, Locale.getDefault().getLanguage()); // get project name
+            SourceLanguage sourceLanguage = App.getLibrary().getPreferredSourceLanguage(projectId, Locale.getDefault().getLanguage()); // get project name
             // TODO: 3/2/2016 eventually the format will be specified in the project
-            SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(projectId, sourceLanguage.getId());
-            final TargetTranslation targetTranslation = AppContext.getTranslator().createTargetTranslation(AppContext.getProfile().getNativeSpeaker(), mSelectedTargetLanguage, projectId, TranslationType.TEXT, resourceSlug, sourceTranslation.getFormat());
+            SourceTranslation sourceTranslation = App.getLibrary().getDefaultSourceTranslation(projectId, sourceLanguage.getId());
+            final TargetTranslation targetTranslation = App.getTranslator().createTargetTranslation(App.getProfile().getNativeSpeaker(), mSelectedTargetLanguage, projectId, TranslationType.TEXT, resourceSlug, sourceTranslation.getFormat());
             if(targetTranslation != null) {
                 // deploy custom language code request to the translation
-                NewLanguageRequest request = AppContext.getNewLanguageRequest(mSelectedTargetLanguage.getId());
+                NewLanguageRequest request = App.getNewLanguageRequest(mSelectedTargetLanguage.getId());
                 if(request != null) {
                     try {
                         targetTranslation.setNewLanguageRequest(request);
@@ -184,7 +186,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
 
                 newProjectCreated(targetTranslation);
             } else {
-                AppContext.getTranslator().deleteTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId, TranslationType.TEXT, resourceSlug));
+                App.getTranslator().deleteTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId, TranslationType.TEXT, resourceSlug));
                 Intent data = new Intent();
                 setResult(RESULT_ERROR, data);
                 finish();
@@ -251,34 +253,34 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             case R.id.action_search:
                 return true;
             case R.id.action_add_language:
-                CustomAlertDialog.Builder(this)
+                new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                         .setTitle(R.string.title_new_language_code)
                         .setMessage(R.string.confirm_start_new_language_code)
-                        .setPositiveButton(R.string.label_continue, new View.OnClickListener() {
+                        .setPositiveButton(R.string.label_continue, new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(View v) {
+                            public void onClick(DialogInterface dialog, int which) {
                                 Intent requestNewLangaugeIntent = new Intent(NewTargetTranslationActivity.this, NewTempLanguageActivity.class);
                                 startActivityForResult(requestNewLangaugeIntent, NEW_LANGUAGE_REQUEST);
                             }
                         })
                         .setNegativeButton(R.string.title_cancel, null)
-                        .show("confirm-start-new-language");
+                        .show();
                 return true;
             case R.id.action_update:
-                CustomAlertDialog.Builder(this)
-                        .setTitle(R.string.update_projects)
+                new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                        .setTitle(R.string.update_library)
                         .setIcon(R.drawable.ic_local_library_black_24dp)
                         .setMessage(R.string.use_internet_confirmation)
-                        .setPositiveButton(R.string.yes, new View.OnClickListener() {
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(View v) {
+                            public void onClick(DialogInterface dialog, int which) {
                                 Intent intent = new Intent(NewTargetTranslationActivity.this, ServerLibraryActivity.class);
 //                                intent.putExtra(ServerLibraryActivity.ARG_SHOW_UPDATES, true);
                                 startActivity(intent);
                             }
                         })
                         .setNegativeButton(R.string.no, null)
-                        .show("Update");
+                        .show();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -314,7 +316,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                     snack.show();
                 } else if(secondResultCode == NewTempLanguageActivity.RESULT_USE_EXISTING_LANGUAGE) {
                     String targetLanguageId = data.getStringExtra(NewTempLanguageActivity.EXTRA_LANGUAGE_ID);
-                    TargetLanguage targetLanguage = AppContext.getLibrary().getTargetLanguage(targetLanguageId);
+                    TargetLanguage targetLanguage = App.getLibrary().getTargetLanguage(targetLanguageId);
                     if(targetLanguage != null) {
                         onItemClick(targetLanguage);
                     }

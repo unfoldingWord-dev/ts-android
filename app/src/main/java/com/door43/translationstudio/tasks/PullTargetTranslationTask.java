@@ -3,7 +3,8 @@ package com.door43.translationstudio.tasks;
 import android.os.Process;
 
 import org.unfoldingword.tools.logger.Logger;
-import com.door43.translationstudio.AppContext;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Profile;
@@ -81,14 +82,14 @@ public class PullTargetTranslationTask extends ManagedTask {
 
     @Override
     public void start() {
-        if(AppContext.context().isNetworkAvailable()) {
+        if(App.isNetworkAvailable()) {
             // submit new language requests
             delegate(new SubmitNewLanguageRequestsTask());
 
-            Profile profile = AppContext.getProfile();
-            if (targetTranslation != null && AppContext.context().isNetworkAvailable() && profile != null && profile.gogsUser != null) {
+            Profile profile = App.getProfile();
+            if (targetTranslation != null && App.isNetworkAvailable() && profile != null && profile.gogsUser != null) {
                 publishProgress(-1, "Downloading updates");
-                String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
+                String server = App.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, App.context().getResources().getString(R.string.pref_default_git_server));
 
                 if(sourceURL == null) {
                     sourceURL = server + ":" + profile.gogsUser.getUsername() + "/" + this.targetTranslation.getId() + ".git";

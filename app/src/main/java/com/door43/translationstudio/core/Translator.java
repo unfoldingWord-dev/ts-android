@@ -6,7 +6,7 @@ import android.text.Editable;
 import android.text.SpannedString;
 
 import org.unfoldingword.tools.logger.Logger;
-import com.door43.translationstudio.AppContext;
+
 import com.door43.translationstudio.rendering.USXtoUSFMConverter;
 import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
@@ -17,11 +17,9 @@ import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,8 +27,6 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by joel on 8/29/2015.
@@ -524,13 +520,16 @@ public class Translator {
 
     /**
      * Ensures the name of the target translation directory matches the target translation id and corrects it if not
-     *
+     * If the destination already exists the file path will not be changed
      * @param tt
      */
-    public void normalizePath(TargetTranslation tt) {
+    public boolean normalizePath(TargetTranslation tt) {
         if(!tt.getPath().getName().equals(tt.getId())) {
             File dest = new File(tt.getPath().getParentFile(), tt.getId());
-            FileUtilities.moveOrCopy(tt.getPath(), dest);
+            if(!dest.exists()) {
+                return FileUtilities.moveOrCopy(tt.getPath(), dest);
+            }
         }
+        return false;
     }
 }

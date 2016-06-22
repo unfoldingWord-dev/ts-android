@@ -1,10 +1,12 @@
 package com.door43.translationstudio.newui.home;
 
 import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,12 +16,11 @@ import android.widget.Button;
 import android.widget.ListView;
 
 import org.unfoldingword.tools.logger.Logger;
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.CloneRepositoryTask;
 import com.door43.translationstudio.tasks.GetUserRepositoriesTask;
 import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
@@ -57,7 +58,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements SimpleTas
         this.taskWatcher = new SimpleTaskWatcher(getActivity(), R.string.loading);
         this.taskWatcher.setOnFinishedListener(this);
 
-        this.translator = AppContext.getTranslator();
+        this.translator = App.getTranslator();
 
         Button dismissButton = (Button) v.findViewById(R.id.dismiss_button);
         dismissButton.setOnClickListener(new View.OnClickListener() {
@@ -82,7 +83,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements SimpleTas
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Repository repo = adapter.getItem(position);
                 String repoName = repo.getFullName().replace("/", "-");
-                cloneDestDir = new File(AppContext.context().getCacheDir(), repoName + System.currentTimeMillis() + "/");
+                cloneDestDir = new File(App.context().getCacheDir(), repoName + System.currentTimeMillis() + "/");
                 cloneSSHUrl = repo.getSshUrl();
                 CloneRepositoryTask task = new CloneRepositoryTask(cloneSSHUrl, cloneDestDir);
                 taskWatcher.watch(task);
@@ -149,7 +150,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements SimpleTas
                         // create orphaned backup of existing target translation
                         if (existingTargetTranslation != null) {
                             try {
-                                AppContext.backupTargetTranslation(existingTargetTranslation, true);
+                                App.backupTargetTranslation(existingTargetTranslation, true);
                             } catch (Exception e) {
                                 Logger.e(this.getClass().getName(), "Failed to backup the target translation", e);
                             }
@@ -187,7 +188,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements SimpleTas
                 } else if(status == CloneRepositoryTask.Status.AUTH_FAILURE) {
                     Logger.i(this.getClass().getName(), "Authentication failed");
                     // if we have already tried ask the user if they would like to try again
-                    if(AppContext.context().hasSSHKeys()) {
+                    if(App.hasSSHKeys()) {
                         showAuthFailure();
                         return;
                     }
@@ -213,31 +214,31 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements SimpleTas
     }
 
     public void showAuthFailure() {
-        CustomAlertDialog.Builder(getActivity())
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.error).setMessage(R.string.auth_failure_retry)
-                .setPositiveButton(R.string.yes, new View.OnClickListener() {
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(true);
                         taskWatcher.watch(keyTask);
                         TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
                     }
                 })
-                .setNegativeButton(R.string.no, new View.OnClickListener() {
+                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         notifyRestoreFailed();
                     }
                 })
-                .show("auth-failed");
+                .show();
     }
 
     public void notifyRestoreFailed() {
-        CustomAlertDialog.Builder(getActivity())
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.error)
                 .setMessage(R.string.restore_failed)
                 .setPositiveButton(R.string.dismiss, null)
-                .show("publish-failed");
+                .show();
     }
 
 

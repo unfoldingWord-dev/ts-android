@@ -6,14 +6,17 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
+import android.text.Html;
 import android.text.Selection;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -33,6 +36,8 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.ChapterTranslation;
@@ -52,11 +57,9 @@ import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
-import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.rendering.ClickableRenderingEngine;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.USFMNoteSpan;
@@ -109,8 +112,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     public ReviewModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String startingChapterSlug, String startingFrameSlug, boolean resourcesOpened) {
 
-        mLibrary = AppContext.getLibrary();
-        mTranslator = AppContext.getTranslator();
+        mLibrary = App.getLibrary();
+        mTranslator = App.getTranslator();
         mContext = context;
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
@@ -179,7 +182,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      */
     private void loadTabInfo() {
         List<ContentValues> tabContents = new ArrayList<>();
-        String[] sourceTranslationIds = AppContext.getOpenSourceTranslationIds(mTargetTranslation.getId());
+        String[] sourceTranslationIds = App.getOpenSourceTranslationIds(mTargetTranslation.getId());
         for(String id:sourceTranslationIds) {
             SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
             if(sourceTranslation != null) {
@@ -360,7 +363,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @return
      */
     private static TranslationNote[] getPreferredNotes(SourceTranslation sourceTranslation, Frame frame) {
-        Library library = AppContext.getLibrary();
+        Library library = App.getLibrary();
         TranslationNote[] notes = library.getTranslationNotes(sourceTranslation, frame.getChapterId(), frame.getId());
         if(notes.length == 0 && !sourceTranslation.sourceLanguageSlug.equals("en")) {
             SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
@@ -377,7 +380,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @return
      */
     private static TranslationWord[] getPreferredWords(SourceTranslation sourceTranslation, Frame frame) {
-        Library library = AppContext.getLibrary();
+        Library library = App.getLibrary();
         TranslationWord[] words = library.getTranslationWords(sourceTranslation, frame.getChapterId(), frame.getId());
         if(words.length == 0 && !sourceTranslation.sourceLanguageSlug.equals("en")) {
             SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
@@ -395,7 +398,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @return
      */
     private static CheckingQuestion[] getPreferredQuestions(SourceTranslation sourceTranslation, String chapterId, String frameId) {
-        Library library = AppContext.getLibrary();
+        Library library = App.getLibrary();
         CheckingQuestion[] questions = library.getCheckingQuestions(sourceTranslation, chapterId, frameId);
         if(questions.length == 0 && !sourceTranslation.sourceLanguageSlug.equals("en")) {
             SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
@@ -600,24 +603,24 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     String newBody = Translator.compileTranslation(changes);
                     item.bodyTranslation = newBody;
 
-                    CustomAlertDialog.Builder(mContext)
+                    new AlertDialog.Builder(mContext,R.style.AppTheme_Dialog)
                             .setTitle(R.string.chunk_checklist_title)
-                            .setMessageHtml(R.string.chunk_checklist_body)
-                            .setPositiveButton(R.string.confirm, new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            boolean success = onConfirmChunk(item, chapter, frame, mTargetTranslation.getFormat());
-                                            holder.mDoneSwitch.setChecked(success);
-                                        }
-                                    }
-                            )
-                            .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
+                            .setMessage(Html.fromHtml(mContext.getString(R.string.chunk_checklist_body)))
+                            .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                                 @Override
-                                public void onClick(View v) {
+                                public void onClick(DialogInterface dialog, int which) {
+                                        boolean success = onConfirmChunk(item, chapter, frame, mTargetTranslation.getFormat());
+                                        holder.mDoneSwitch.setChecked(success);
+                                    }
+                                }
+                            )
+                            .setNegativeButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
                                     holder.mDoneSwitch.setChecked(false); // force back off if not accepted
                                 }
                             })
-                            .show("Chunk2");
+                            .show();
 
                 } else { // done button checked off
 
@@ -743,13 +746,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 footnoteText.setText(initialNote);
 
                 // pop up note prompt
-                final CustomAlertDialog dialog = CustomAlertDialog.Builder(mContext);
-                dialog.setTitle(R.string.title_add_footnote)
-                        .setAutoDismiss(false)
-                        .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
+                new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
+                        .setTitle(R.string.title_add_footnote)
+                        .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(View v) {
-
+                            public void onClick(DialogInterface dialog, int which) {
                                 CharSequence footnote = footnoteText.getText();
                                 boolean validated = verifyAndReplaceFootnote(footnote, original, footnotePos, footnoteEndPos, holder, item, editText);
                                 if(validated) {
@@ -757,14 +758,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                 }
                             }
                         })
-                        .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
+                        .setNegativeButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(View v) {
-                                dialog.dismiss();
+                            public void onClick(DialogInterface dialog, int which) {
+                               dialog.dismiss();
                             }
                         })
                         .setView(footnoteFragment)
-                        .show("add-footnote");
+                        .show();
+
             }
         }
     }
@@ -796,11 +798,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param messageID
      */
     private void warnDialog(int titleID, int messageID) {
-        final CustomAlertDialog dialog = CustomAlertDialog.Builder(mContext);
-        dialog.setTitle(titleID)
-                .setMessage(messageID)
-                .setPositiveButton(R.string.dismiss, null)
-                .show("warn-dialog");
+        new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
+            .setTitle(titleID)
+            .setMessage(messageID)
+            .setPositiveButton(R.string.dismiss, null)
+            .show();
     }
 
     /**
@@ -1390,7 +1392,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     final VerseSpan pin = ((VerseSpan) span);
 
                     // create drag shadow
-                    LayoutInflater inflater = (LayoutInflater)AppContext.context().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    LayoutInflater inflater = (LayoutInflater) App.context().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                     FrameLayout verseLayout = (FrameLayout)inflater.inflate(R.layout.fragment_verse_marker, null);
                     TextView verseTitle = (TextView)verseLayout.findViewById(R.id.verse);
                     if(pin.getEndVerseNumber() > 0) {
@@ -1518,26 +1520,27 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
         CharSequence message = span.getNotes();
 
-        CustomAlertDialog dlg = CustomAlertDialog.Builder(mContext);
-        dlg.setTitle(title)
-           .setMessage(message)
-           .setPositiveButton(R.string.dismiss, null);
         if(editable && !item.isTranslationFinished) {
-            dlg.setNeutralButton(R.string.edit, new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    editFootnote(span.getNotes(), holder, item, start, end);
-                }
-            });
 
-            dlg.setNegativeButton(R.string.label_delete, new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    deleteFootnote(span.getNotes(), holder, item, start, end);
-                }
-            });
+            new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
+                    .setTitle(title)
+                    .setMessage(message)
+                    .setPositiveButton(R.string.dismiss, null)
+                    .setNeutralButton(R.string.edit, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            editFootnote(span.getNotes(), holder, item, start, end);
+                        }
+                    })
+
+                    .setNegativeButton(R.string.label_delete, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            deleteFootnote(span.getNotes(), holder, item, start, end);
+                        }
+                    })
+                    .show();
         }
-        dlg.show("viewNote");
     }
 
     /**
@@ -1552,18 +1555,17 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         final EditText editText = getEditText(holder, item);
         final CharSequence original = editText.getText();
 
-        // pop up delete prompt
-        final CustomAlertDialog dialog = CustomAlertDialog.Builder(mContext);
-        dialog.setTitle(R.string.footnote_confirm_delete)
+        new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
+                .setTitle(R.string.footnote_confirm_delete)
                 .setMessage(note)
-                .setPositiveButton(R.string.label_delete, new View.OnClickListener() {
+                .setPositiveButton(R.string.label_delete, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         placeFootnote(null, original, start, end, holder, item, editText);
                     }
                 })
                 .setNegativeButton(R.string.title_cancel, null)
-                .show("add-footnote");
+                .show();
     }
 
     /**

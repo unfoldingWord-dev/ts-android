@@ -1,7 +1,8 @@
 package com.door43.translationstudio.tasks;
 
 import org.unfoldingword.tools.logger.Logger;
-import com.door43.translationstudio.AppContext;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NewLanguageRequest;
 import com.door43.translationstudio.core.TargetTranslation;
@@ -33,7 +34,7 @@ public class SubmitNewLanguageRequestsTask extends ManagedTask {
 
     public SubmitNewLanguageRequestsTask() {
         // load requests that have not been submitted
-        NewLanguageRequest[] allRequests = AppContext.getNewLanguageRequests();
+        NewLanguageRequest[] allRequests = App.getNewLanguageRequests();
         for(NewLanguageRequest r:allRequests) {
             if(r.getSubmittedAt() == 0) {
                 this.requests.add(r);
@@ -43,9 +44,9 @@ public class SubmitNewLanguageRequestsTask extends ManagedTask {
 
     @Override
     public void start() {
-        if(AppContext.context().isNetworkAvailable()) {
+        if(App.isNetworkAvailable()) {
             // TODO: 6/3/16 can we reuse the connection multiple times?
-            String progressMessage = AppContext.context().getResources().getString(R.string.submitting_new_language_requests);
+            String progressMessage = App.context().getResources().getString(R.string.submitting_new_language_requests);
             mMaxProgress = requests.size();
             publishProgress(-1, progressMessage);
             for (int i = 0; i < requests.size(); i ++) {
@@ -53,7 +54,7 @@ public class SubmitNewLanguageRequestsTask extends ManagedTask {
 
                 try {
                     // TODO: eventually we'll be able to get the server url from the db
-                    URL url = new URL(AppContext.context().getResources().getString(R.string.questionnaire_api));
+                    URL url = new URL(App.context().getResources().getString(R.string.questionnaire_api));
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setRequestProperty("Content-Type", "application/json");
                     conn.setReadTimeout(10000); // 10 seconds
@@ -113,11 +114,11 @@ public class SubmitNewLanguageRequestsTask extends ManagedTask {
     private void sealRequest(NewLanguageRequest request) throws IOException {
         Logger.i(this.getClass().getName(), "Sealing new language request '" + request.tempLanguageCode + "'");
         request.setSubmittedAt(System.currentTimeMillis());
-        File requestFile = new File(AppContext.getPublicDirectory(), "new_languages/" + request.tempLanguageCode + ".json");
+        File requestFile = new File(App.getPublicDirectory(), "new_languages/" + request.tempLanguageCode + ".json");
         FileUtilities.writeStringToFile(requestFile, request.toJson());
 
         // updated affected target translations
-        TargetTranslation[] translations = AppContext.getTranslator().getTargetTranslations();
+        TargetTranslation[] translations = App.getTranslator().getTargetTranslations();
         for(TargetTranslation t:translations) {
             if(t.getTargetLanguageId().equals(request.tempLanguageCode)) {
                 Logger.i(this.getClass().getName(), "Updating language request in target translation '" + t.getId() + "'");
