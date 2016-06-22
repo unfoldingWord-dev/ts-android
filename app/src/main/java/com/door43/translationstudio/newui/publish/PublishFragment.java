@@ -432,16 +432,16 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
 
     public void showPushFailure() {
         mDialogShown = eDialogShown.PUSH_FAILURE;
-        CustomAlertDialog.Builder(getActivity())
+        new AlertDialog.Builder(getActivity())
                 .setTitle(R.string.error).setMessage(R.string.upload_push_failure)
-                .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
+                .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         mDialogShown = eDialogShown.NONE;
                         getListener().pushFailure();
                     }
                 })
-                .show("push_failure");
+                .show();
     }
 
     public void showAuthFailure() {

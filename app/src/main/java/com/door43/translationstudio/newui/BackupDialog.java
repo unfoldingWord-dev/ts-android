@@ -44,6 +44,7 @@ import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.merge.MergeStrategy;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.security.InvalidParameterException;
 import java.util.Map;
@@ -56,6 +57,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     public static final String ARG_TARGET_TRANSLATION_ID = "target_translation_id";
     public static final String TAG = "backup-dialog";
     private static final String STATE_SETTING_DEVICE_ALIAS = "state_setting_device_alias";
+    public static final boolean FORCE_PUSH = true;
     private TargetTranslation targetTranslation;
     private SimpleTaskWatcher taskWatcher;
     private boolean settingDeviceAlias = false;
@@ -409,13 +411,15 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                                     .show();
                             }
                         }).show();
+            } else if(status == PushTargetTranslationTask.Status.REJECTED) {
+                Logger.i(this.getClass().getName(), "Push Rejected");
+                showRejection(targetTranslation);
             } else if(status == PushTargetTranslationTask.Status.AUTH_FAILURE) {
                 Logger.i(this.getClass().getName(), "Authentication failed");
                 showAuthFailure();
             } else {
                 notifyBackupFailed(targetTranslation);
             }
-
         }
     }
 
@@ -535,6 +539,35 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                         args.putString(FeedbackDialog.ARG_MESSAGE, message);
                         feedbackDialog.setArguments(args);
                         feedbackDialog.show(ft, "bugDialog");
+                    }
+                }).show();
+    }
+
+
+    public void showRejection(final TargetTranslation targetTranslation) {
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                .setTitle(R.string.upload_failed)
+                .setMessage(R.string.push_rejected)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        PushTargetTranslationTask pushtask = new PushTargetTranslationTask(targetTranslation, false, FORCE_PUSH);
+                        taskWatcher.watch(pushtask);
+                        TaskManager.addTask(pushtask, PushTargetTranslationTask.TASK_ID);
+                    }
+                })
+                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        try { // restore before pull
+                            Git git = targetTranslation.getRepo().getGit();
+                            ResetCommand resetCommand = git.reset();
+                            resetCommand.setMode(ResetCommand.ResetType.HARD)
+                                    .setRef("backup-master")
+                                    .call();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 }).show();
     }

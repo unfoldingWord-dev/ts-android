@@ -810,4 +810,5 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="upload_push_failure">There are changes to this translation on your Door43 account. You must import those changes before uploading.</string>
     <string name="merge_request">There are changes to your translation of <xliff:g example="Hebrews" id="book">%1$s</xliff:g> in <xliff:g example="English" id="language">%2$s</xliff:g> on your Door43 account. Would you like to import those now?</string>
     <string name="import_failed_short">Import failed</string>
+    <string name="push_rejected">Upload failed because of changes on Server. Overwrite?</string>
 </resources>

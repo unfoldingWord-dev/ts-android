@@ -395,9 +395,9 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             ((TargetTranslationListFragment)mFragment).reloadList();
         }
 
-        String updatedTarget = AppContext.getNotifyTargetTranslationWithUpdates();
+        String updatedTarget = App.getNotifyTargetTranslationWithUpdates();
         if(updatedTarget != null) {
-            AppContext.setNotifyTargetTranslationWithUpdates(null); // clear notification
+            App.setNotifyTargetTranslationWithUpdates(null); // clear notification
             showMergePrompt(updatedTarget);
         }
     }
@@ -482,7 +482,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
 
         String targetLanguageName = targetTranslation.getTargetLanguageName();
         String projectID = targetTranslation.getProjectId();
-        Project project = AppContext.getLibrary().getProject(projectID, targetTranslation.getTargetLanguageName());
+        Project project = App.getLibrary().getProject(projectID, targetTranslation.getTargetLanguageName());
         if(project == null) {
             Logger.e(TAG, "invalid project id:" + projectID);
             return;
@@ -491,12 +491,12 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         String bookName = project.name;
         String message = String.format(getResources().getString(R.string.merge_request),bookName, targetLanguageName);
 
-        CustomAlertDialog.Builder(this)
+        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                 .setTitle(R.string.change_detected)
                 .setMessage(message)
-                .setPositiveButton(R.string.yes, new View.OnClickListener() {
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         mDialogShown = eDialogShown.NONE;
                         FragmentTransaction ft = getFragmentManager().beginTransaction();
                         Fragment prev = getFragmentManager().findFragmentByTag(ImportDialog.TAG);
@@ -505,18 +505,18 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                         }
                         ft.addToBackStack(null);
 
-                        ImportFromDoor43Dialog dialog = new ImportFromDoor43Dialog();
-                        dialog.doQuickLoad(targetTranslationId);
-                        dialog.show(ft, ImportDialog.TAG);
+                        ImportFromDoor43Dialog importDlg = new ImportFromDoor43Dialog();
+                        importDlg.doQuickLoad(targetTranslationId);
+                        importDlg.show(ft, ImportDialog.TAG);
                     }
                 })
-                .setNegativeButton(R.string.no, new View.OnClickListener() {
+                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         mDialogShown = eDialogShown.NONE;
                     }
                 })
-                .show("push_failure");
+                .show();
     }
 
     @Override

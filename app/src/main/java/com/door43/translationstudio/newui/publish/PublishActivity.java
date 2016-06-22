@@ -214,7 +214,7 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
         if(mTargetTranslation != null) {
             targetTranslationId = mTargetTranslation.getId();
         }
-        AppContext.setNotifyTargetTranslationWithUpdates(targetTranslationId);
+        App.setNotifyTargetTranslationWithUpdates(targetTranslationId);
         finish();
     }
 

@@ -217,7 +217,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 break;
 
             case MERGE_FAILED:
-                TargetTranslation targetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
+                TargetTranslation targetTranslation = App.getTranslator().getTargetTranslation(targetTranslationId);
                 notifyMergeFailed(targetTranslation);
                 break;
 
@@ -236,9 +236,9 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
      */
     public void doQuickLoad(String targetTranslationID) {
         this.targetTranslationId = targetTranslationID;
-        Profile profile = AppContext.getProfile();
+        Profile profile = App.getProfile();
         if(profile != null && profile.gogsUser != null) {
-            String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
+            String server = App.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, App.context().getResources().getString(R.string.pref_default_git_server));
             quickLoadPath = server + ":" + profile.gogsUser.getUsername() + "/" + targetTranslationID;
             cloneDestDir = getTempCloneDirectory(targetTranslationID);
         } else {
@@ -252,7 +252,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
      * @return
      */
     private File getTempCloneDirectory(String repoName) {
-        return new File(AppContext.context().getCacheDir(), repoName + System.currentTimeMillis() + "/");
+        return new File(App.context().getCacheDir(), repoName + System.currentTimeMillis() + "/");
     }
 
     /**
@@ -357,7 +357,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
             }
         } else if (task instanceof PullTargetTranslationTask) {
             PullTargetTranslationTask.Status status = ((PullTargetTranslationTask) task).getStatus();
-            TargetTranslation targetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
+            TargetTranslation targetTranslation = App.getTranslator().getTargetTranslation(targetTranslationId);
             if (mManualMerge) {
                 doManualMerge(targetTranslation);
             } else {
@@ -403,9 +403,9 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.error)
                 .setMessage(R.string.restore_failed)
-                .setPositiveButton(R.string.dismiss, new View.OnClickListener() {
+                .setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         mDialogShown = eDialogShown.NONE;
                     }
                 })
@@ -443,7 +443,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     }
 
     private void attachMergeConflictListener(MergeConflictsDialog dialog) {
-        final TargetTranslation targetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
+        final TargetTranslation targetTranslation = App.getTranslator().getTargetTranslation(targetTranslationId);
         final String sourceUrl = mMergeFromSpecificUrl ? cloneHtmlUrl : null; // if not a specific url, then will merge from default for target
 
         dialog.setOnClickListener(new MergeConflictsDialog.OnClickListener() {
@@ -502,11 +502,11 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         // ask parent activity to navigate to a new activity
         Intent intent = new Intent(getActivity(), TargetTranslationActivity.class);
         Bundle args = new Bundle();
-        args.putString(AppContext.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
+        args.putString(App.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
         // TODO: 4/20/16 it woulid be nice to navigate directly to the first conflict
-//                args.putString(AppContext.EXTRA_CHAPTER_ID, chapterId);
-//                args.putString(AppContext.EXTRA_FRAME_ID, frameId);
-        args.putString(AppContext.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
+//                args.putString(App.EXTRA_CHAPTER_ID, chapterId);
+//                args.putString(App.EXTRA_FRAME_ID, frameId);
+        args.putString(App.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
         intent.putExtras(args);
         startActivity(intent);
         getActivity().finish();
@@ -520,19 +520,19 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     private void notifyMergeFailed(final TargetTranslation targetTranslation) {
         mDialogShown = eDialogShown.MERGE_FAILED;
 
-        final Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
-        CustomAlertDialog.Builder(getActivity())
+        final Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), "en");
+        new AlertDialog.Builder(getActivity())
                 .setTitle(R.string.error)
                 .setMessage(R.string.import_failed_short)
-                .setPositiveButton(R.string.dismiss, new View.OnClickListener() {
+                .setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         mDialogShown = eDialogShown.NONE;
                     }
                 })
-                .setNeutralButton(R.string.menu_bug, new View.OnClickListener() {
+                .setNeutralButton(R.string.menu_bug, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         mDialogShown = eDialogShown.NONE;
 
                         // open bug report dialog
@@ -543,7 +543,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                         }
                         ft.addToBackStack(null);
 
-                        FeedbackDialog dialog = new FeedbackDialog();
+                        FeedbackDialog feebackDlg = new FeedbackDialog();
                         Bundle args = new Bundle();
                         String message = "Failed to publish the translation of " +
                                 project.name + " into " +
@@ -551,10 +551,10 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                                 + ".\ntargetTranslation: " + targetTranslation.getId() +
                                 "\n--------\n\n";
                         args.putString(FeedbackDialog.ARG_MESSAGE, message);
-                        dialog.setArguments(args);
-                        dialog.show(ft, "bugDialog");
+                        feebackDlg.setArguments(args);
+                        feebackDlg.show(ft, "bugDialog");
                     }
-                }).show("publish-failed");
+                }).show();
     }
 
 
