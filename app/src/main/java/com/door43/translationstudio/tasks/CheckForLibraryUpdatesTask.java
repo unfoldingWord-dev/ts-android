@@ -11,6 +11,7 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
 
 import org.unfoldingword.tools.logger.Logger;
+
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 /**
