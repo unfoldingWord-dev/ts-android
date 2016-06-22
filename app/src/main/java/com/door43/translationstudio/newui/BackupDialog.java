@@ -503,7 +503,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     private void notifyBackupFailed(final TargetTranslation targetTranslation) {
         final Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
         CustomAlertDialog.Builder(getActivity())
-                .setTitle(R.string.publish)
+                .setTitle(R.string.backup)
                 .setMessage(R.string.upload_failed)
                 .setPositiveButton(R.string.dismiss, null)
                 .setNeutralButton(R.string.menu_bug, new View.OnClickListener() {

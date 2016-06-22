@@ -284,15 +284,10 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                         if (existingTargetTranslation != null) {
                             // merge target translation
                             try {
-                                mImportCompareStatus = existingTargetTranslation.getCommitStatus(tempPath);
-                                if (mImportCompareStatus != TargetTranslation.TrackingStatus.SAME) {
-                                    mMergeFromSpecificUrl = true;
-                                    importFailed = true; // we haven't imported yet
-                                    targetTranslationId = existingTargetTranslation.getId();
-                                    notifyMergeConflicts();
-                                } else {
-                                    //nothing to do since they are same
-                                }
+                                mMergeFromSpecificUrl = true;
+                                importFailed = true; // we haven't imported yet
+                                targetTranslationId = existingTargetTranslation.getId();
+                                notifyMergeConflicts();
                             } catch (Exception e) {
                                 Logger.e(this.getClass().getName(), "Failed to merge the target translation", e);
                                 notifyImportFailed();
@@ -446,7 +441,6 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
 
     private void attachMergeConflictListener(MergeConflictsDialog dialog) {
         final TargetTranslation targetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
-
         final String sourceUrl = mMergeFromSpecificUrl ? cloneHtmlUrl : null; // if not a specific url, then will merge from default for target
 
         dialog.setOnClickListener(new MergeConflictsDialog.OnClickListener() {

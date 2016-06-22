@@ -2,6 +2,7 @@ package com.door43.translationstudio.tasks;
 
 import android.os.Process;
 
+import org.eclipse.jgit.merge.MergeStrategy;
 import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
@@ -30,6 +31,7 @@ import java.util.Collection;
 public class PushTargetTranslationTask extends ManagedTask {
 
     public static final String TASK_ID = "push_target_translation_task";
+    private final boolean mForcePush;
     private final TargetTranslation targetTranslation;
     private final boolean pushTags;
     private Status status = Status.UNKNOWN;
@@ -39,6 +41,14 @@ public class PushTargetTranslationTask extends ManagedTask {
         setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
         this.targetTranslation = targetTranslation;
         this.pushTags = pushTags;
+        this.mForcePush = false;
+    }
+
+    public PushTargetTranslationTask(TargetTranslation targetTranslation, boolean pushTags, boolean forcePush) {
+        setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
+        this.targetTranslation = targetTranslation;
+        this.pushTags = pushTags;
+        this.mForcePush = forcePush;
     }
 
     @Override
@@ -69,6 +79,7 @@ public class PushTargetTranslationTask extends ManagedTask {
         PushCommand pushCommand = git.push()
                 .setTransportConfigCallback(new TransportCallback())
                 .setRemote(remote)
+                .setForce(mForcePush)
                 .setProgressMonitor(new ProgressMonitor() {
                     @Override
                     public void start(int totalTasks) {
