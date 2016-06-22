@@ -149,4 +149,8 @@ public class Questionnaire {
         }
         return null;
     }
+
+    public List<QuestionnairePage> getPages() {
+        return pages;
+    }
 }

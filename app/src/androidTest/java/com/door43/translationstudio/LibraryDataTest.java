@@ -5,7 +5,6 @@ import android.test.InstrumentationTestCase;
 
 import com.door43.translationstudio.core.CheckingQuestion;
 import com.door43.translationstudio.core.LibraryData;
-import com.door43.translationstudio.core.LibrarySQLiteHelper;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.core.Util;
@@ -17,12 +16,10 @@ public class LibraryDataTest extends InstrumentationTestCase {
 
     private LibraryData mIndex;
     private Context mContext;
-    private MainApplication mApp;
 
     @Override
     protected void setUp() throws Exception {
-        mApp = AppContext.context();
-        mIndex = new LibraryData(mApp);
+        mIndex = new LibraryData(App.context());
         mContext = getInstrumentation().getContext();
     }
 
@@ -139,7 +136,7 @@ public class LibraryDataTest extends InstrumentationTestCase {
 
     public void test08IndexTranslationAcademy() throws Exception {
         SourceTranslation translation = SourceTranslation.simple("gen", "en", "ulb");
-        String catalog = Util.readStream(mApp.getAssets().open("ta.json"));
+        String catalog = Util.readStream(App.context().getAssets().open("ta.json"));
         mIndex.beginTransaction();
         assertTrue(mIndex.indexTranslationAcademy(translation, catalog));
         mIndex.endTransaction(true);

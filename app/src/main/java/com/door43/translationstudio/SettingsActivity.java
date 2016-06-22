@@ -26,7 +26,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import org.unfoldingword.tools.logger.Logger;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
+
 import com.door43.translationstudio.newui.legal.LegalDocumentActivity;
 import com.door43.translationstudio.service.BackupService;
 import com.door43.translationstudio.tasks.CheckForLatestReleaseTask;
@@ -168,7 +168,7 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
         {
             for (int i = 0; i<fileList.length; i++)
             {
-                File typeface = AppContext.context().getAssetAsFile("fonts/" + fileList[i]);
+                File typeface = App.getAssetAsFile("fonts/" + fileList[i]);
                 if (typeface != null) {
                     TTFAnalyzer analyzer = new TTFAnalyzer();
                     String fontname = "";
@@ -307,13 +307,13 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
                 // restart the backup service.
                 if(BackupService.isRunning()) {
                     // TODO: only restart if changed
-                    Intent backupIntent = new Intent(AppContext.context(), BackupService.class);
-                    AppContext.context().stopService(backupIntent);
-                    AppContext.context().startService(backupIntent);
+                    Intent backupIntent = new Intent(App.context(), BackupService.class);
+                    App.context().stopService(backupIntent);
+                    App.context().startService(backupIntent);
                 }
             } else if(preference.getKey().equals(KEY_PREF_LOGGING_LEVEL)) {
                 // TODO: only re-configure if changed
-                AppContext.context().configureLogger(Integer.parseInt((String)value));
+                App.configureLogger(Integer.parseInt((String)value));
             }
 
             if (preference instanceof ListPreference) {
@@ -430,7 +430,7 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
             {
                 for (int i = 0; i<fileList.length; i++)
                 {
-                    File typeface = AppContext.context().getAssetAsFile("fonts/" + fileList[i]);
+                    File typeface = App.getAssetAsFile("fonts/" + fileList[i]);
                     if (typeface != null) {
                         TTFAnalyzer analyzer = new TTFAnalyzer();
                         String fontname = "";
@@ -456,7 +456,7 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
 
             final Preference appVersionPref = findPreference("app_version");
             try {
-                PackageInfo pInfo = AppContext.context().getPackageManager().getPackageInfo(AppContext.context().getPackageName(), 0);
+                PackageInfo pInfo = App.context().getPackageManager().getPackageInfo(App.context().getPackageName(), 0);
                 appVersionPref.setSummary(pInfo.versionName + " - " + pInfo.versionCode);
             } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();

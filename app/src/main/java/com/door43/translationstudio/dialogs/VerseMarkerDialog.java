@@ -2,6 +2,7 @@ package com.door43.translationstudio.dialogs;
 
 import android.app.DialogFragment;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -11,12 +12,14 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.AppContext;
+import com.door43.widget.ViewUtil;
 
 /**
  * Created by joel on 1/29/2015.
  */
+@Deprecated
 public class VerseMarkerDialog extends DialogFragment {
     private OnClickListener mListener;
     private String mVerse;
@@ -75,7 +78,9 @@ public class VerseMarkerDialog extends DialogFragment {
                     verse = Integer.parseInt(mVerse);
                 }
                 if(verse != -1 && (verse > mMaxVerse || verse < mMinVerse)) {
-                    AppContext.context().showToastMessage(String.format(AppContext.context().getResources().getString(R.string.verse_out_of_bounds), mMinVerse, mMaxVerse));
+//                    Snackbar snack = Snackbar.make(view, String.format(getActivity().getResources().getString(R.string.verse_out_of_bounds), mMinVerse, mMaxVerse), Snackbar.LENGTH_LONG);
+//                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+//                    snack.show();
                 } else {
                     if (mListener != null) {
                         mListener.onClick(verse);

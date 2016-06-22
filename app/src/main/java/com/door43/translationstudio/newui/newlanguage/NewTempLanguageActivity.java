@@ -1,13 +1,12 @@
 package com.door43.translationstudio.newui.newlanguage;
 
-import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NewLanguageRequest;
 import com.door43.translationstudio.core.Questionnaire;
@@ -44,13 +43,13 @@ public class NewTempLanguageActivity extends QuestionnaireActivity implements La
                     snack.show();
 
                     // restart
-                    request = NewLanguageRequest.newInstance(this, questionnaire, "android", AppContext.getProfile().getFullName());
+                    request = NewLanguageRequest.newInstance(this, questionnaire, "android", App.getProfile().getFullName());
                     restartQuestionnaire();
                     return;
                 }
             } else {
                 // begin
-                request = NewLanguageRequest.newInstance(this, questionnaire, "android", AppContext.getProfile().getFullName());
+                request = NewLanguageRequest.newInstance(this, questionnaire, "android", App.getProfile().getFullName());
             }
         } else {
             // missing questionnaire
@@ -70,7 +69,7 @@ public class NewTempLanguageActivity extends QuestionnaireActivity implements La
     @Override
     protected Questionnaire getQuestionnaire() {
         // TRICKY: for now we only have one questionnaire
-        Questionnaire[] questionnaires = AppContext.getLibrary().getQuestionnaires();
+        Questionnaire[] questionnaires = App.getLibrary().getQuestionnaires();
         if(questionnaires.length > 0) {
             return questionnaires[0];
         }
@@ -85,9 +84,9 @@ public class NewTempLanguageActivity extends QuestionnaireActivity implements La
             if(q != null) {
                 String answer = request.getAnswer(q.id);
                 if (answer != null) {
-                    TargetLanguage[] languages = AppContext.getLibrary().findTargetLanguage(answer.trim());
+                    TargetLanguage[] languages = App.getLibrary().findTargetLanguage(answer.trim());
                     if (languages.length > 0) {
-                        AppContext.closeKeyboard(this);
+                        App.closeKeyboard(this);
                         FragmentTransaction ft = getFragmentManager().beginTransaction();
                         Fragment prev = getFragmentManager().findFragmentByTag(LanguageSuggestionsDialog.TAG);
                         if(prev != null) {

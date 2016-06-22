@@ -11,12 +11,13 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.LibraryUpdates;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.tasks.DownloadSourceLanguageTask;
-import com.door43.translationstudio.AppContext;
+
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
@@ -79,7 +80,7 @@ public class ServerLibraryLanguageAdapter extends BaseAdapter {
         }
 
         // icon
-        boolean isDownloaded = AppContext.getLibrary().sourceLanguageHasSource(mProjectId, item.sourceLanguage.getId());
+        boolean isDownloaded = App.getLibrary().sourceLanguageHasSource(mProjectId, item.sourceLanguage.getId());
         if(isDownloaded) {
             holder.mStatus.setBackgroundResource(R.drawable.ic_bookmark_black_24dp);
         } else {

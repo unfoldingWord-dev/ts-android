@@ -4,12 +4,15 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
 import android.support.v4.provider.DocumentFile;
+import android.support.v7.app.AlertDialog;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,13 +20,13 @@ import android.view.Window;
 import android.widget.Button;
 
 import org.unfoldingword.tools.logger.Logger;
-import com.door43.translationstudio.AppContext;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.tasks.CreateRepositoryTask;
 import com.door43.translationstudio.tasks.PullTargetTranslationTask;
@@ -73,7 +76,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         Bundle args = getArguments();
         if(args != null && args.containsKey(ARG_TARGET_TRANSLATION_ID)) {
             String targetTranslationId = args.getString(ARG_TARGET_TRANSLATION_ID, null);
-            targetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
+            targetTranslation = App.getTranslator().getTargetTranslation(targetTranslationId);
             if(targetTranslation == null) {
                 throw new InvalidParameterException("The target translation '" + targetTranslationId + "' is invalid");
             }
@@ -81,7 +84,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             throw new InvalidParameterException("The target translation id was not specified");
         }
 
-        targetTranslation.setDefaultContributor(AppContext.getProfile().getNativeSpeaker());
+        targetTranslation.setDefaultContributor(App.getProfile().getNativeSpeaker());
 
         mBackupToCloudButton = (Button)v.findViewById(R.id.backup_to_cloud);
         Button backupToSDButton = (Button)v.findViewById(R.id.backup_to_sd);
@@ -110,8 +113,8 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             @Override
             public void onClick(View v) {
                 // TODO: 11/18/2015 eventually we need to support bluetooth as well as an adhoc network
-                if(AppContext.context().isNetworkAvailable()) {
-                    if(AppContext.getDeviceNetworkAlias() == null) {
+                if(App.isNetworkAvailable()) {
+                    if(App.getDeviceNetworkAlias() == null) {
                         // get device alias
                         FragmentTransaction ft = getFragmentManager().beginTransaction();
                         Fragment prev = getFragmentManager().findFragmentByTag(BackupDialog.TAG);
@@ -138,9 +141,9 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         mBackupToCloudButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(AppContext.context().isNetworkAvailable()) {
+                if(App.isNetworkAvailable()) {
                     // make sure we have a gogs user
-                    if(AppContext.getProfile().gogsUser == null) {
+                    if(App.getProfile().gogsUser == null) {
                         FragmentTransaction ft = getFragmentManager().beginTransaction();
                         Door43LoginDialog dialog = new Door43LoginDialog();
                         dialog.show(ft, Door43LoginDialog.TAG);
@@ -162,22 +165,22 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             @Override
             public void onClick(View v) {
                 if (SdUtils.doWeNeedToRequestSdCardAccess()) {
-                    final CustomAlertDialog dialog = CustomAlertDialog.Builder(getActivity());
-                    dialog.setTitle(R.string.enable_sd_card_access_title)
-                            .setMessageHtml(R.string.enable_sd_card_access)
-                            .setPositiveButton(R.string.confirm, new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    SdUtils.triggerStorageAccessFramework(getActivity());
-                                }
-                            })
-                            .setNegativeButton(R.string.label_skip, new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    doSdCardBackup(filename);
-                                }
-                            })
-                            .show("approve-SD-access");
+                    new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                        .setTitle(R.string.enable_sd_card_access_title)
+                        .setMessage(Html.fromHtml(getString(R.string.enable_sd_card_access)))
+                        .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                SdUtils.triggerStorageAccessFramework(getActivity());
+                            }
+                        })
+                        .setNegativeButton(R.string.label_skip, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                doSdCardBackup(filename);
+                            }
+                        })
+                        .show();
                 } else {
                     doSdCardBackup(filename);
                 }
@@ -187,9 +190,9 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         backupToAppButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                File exportFile = new File(AppContext.getSharingDir(), filename);
+                File exportFile = new File(App.getSharingDir(), filename);
                 try {
-                    AppContext.getTranslator().exportArchive(targetTranslation, exportFile);
+                    App.getTranslator().exportArchive(targetTranslation, exportFile);
                 } catch (Exception e) {
                     Logger.e(BackupDialog.class.getName(), "Failed to export the target translation " + targetTranslation.getId(), e);
                 }
@@ -257,14 +260,14 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                 if (baseFolder.canWrite()) {
                     sdCardFile = baseFolder.createFile("image", fileName);
                     filePath = SdUtils.getPathString(sdCardFile);
-                    out = AppContext.context().getContentResolver().openOutputStream(sdCardFile.getUri());
-                    AppContext.getTranslator().exportArchive(targetTranslation, out, fileName);
+                    out = App.context().getContentResolver().openOutputStream(sdCardFile.getUri());
+                    App.getTranslator().exportArchive(targetTranslation, out, fileName);
                     success = true;
                 }
             } else {
-                File exportFile = new File(AppContext.getPublicDownloadsDirectory(), fileName);
+                File exportFile = new File(App.getPublicDownloadsDirectory(), fileName);
                 filePath = exportFile.toString();
-                AppContext.getTranslator().exportArchive(targetTranslation, exportFile);
+                App.getTranslator().exportArchive(targetTranslation, exportFile);
                 success = exportFile.exists();
 
             }
@@ -294,16 +297,16 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         if(filePath != null) {
             message += "\n" + filePath;
         }
-        CustomAlertDialog.Builder(getActivity())
+        new AlertDialog.Builder(getActivity(),R.style.AppTheme_Dialog)
                 .setTitle(R.string.backup_to_sd)
                 .setMessage(message)
                 .setNeutralButton(R.string.dismiss, null)
-                .show("Backup");
+                .show();
     }
 
     @Override
     public void onResume() {
-        if(settingDeviceAlias && AppContext.getDeviceNetworkAlias() != null) {
+        if(settingDeviceAlias && App.getDeviceNetworkAlias() != null) {
             settingDeviceAlias = false;
             showP2PDialog();
         }
@@ -325,7 +328,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         Bundle args = new Bundle();
         args.putInt(ShareWithPeerDialog.ARG_OPERATION_MODE, ShareWithPeerDialog.MODE_SERVER);
         args.putString(ShareWithPeerDialog.ARG_TARGET_TRANSLATION, targetTranslation.getId());
-        args.putString(ShareWithPeerDialog.ARG_DEVICE_ALIAS, AppContext.getDeviceNetworkAlias());
+        args.putString(ShareWithPeerDialog.ARG_DEVICE_ALIAS, App.getDeviceNetworkAlias());
         dialog.setArguments(args);
         dialog.show(ft, BackupDialog.TAG);
     }
@@ -347,7 +350,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             } else if(status == PullTargetTranslationTask.Status.AUTH_FAILURE) {
                 Logger.i(this.getClass().getName(), "Authentication failed");
                 // if we have already tried ask the user if they would like to try again
-                if(AppContext.context().hasSSHKeys()) {
+                if(App.hasSSHKeys()) {
                     showAuthFailure();
                     return;
                 }
@@ -392,15 +395,20 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
 
             if(status == PushTargetTranslationTask.Status.OK) {
                 Logger.i(this.getClass().getName(), "The target translation " + targetTranslation.getId() + " was pushed to the server");
-                CustomAlertDialog.Builder(getActivity())
-                        .setTitle(R.string.success).setMessage(R.string.project_uploaded).setPositiveButton(R.string.dismiss, null)
-                        .setNeutralButton(R.string.label_details, new View.OnClickListener() {
+                new AlertDialog.Builder(getActivity(),R.style.AppTheme_Dialog)
+                        .setTitle(R.string.success)
+                        .setMessage(R.string.project_uploaded)
+                        .setPositiveButton(R.string.dismiss, null)
+                        .setNeutralButton(R.string.label_details, new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(View v) {
-                                CustomAlertDialog.Builder(getActivity())
-                                        .setTitle(R.string.project_uploaded).setMessage(message).setPositiveButton(R.string.dismiss, null).show("PubDetails");
+                            public void onClick(DialogInterface dialog, int which) {
+                                new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                                    .setTitle(R.string.project_uploaded)
+                                    .setMessage(message)
+                                    .setPositiveButton(R.string.dismiss, null)
+                                    .show();
                             }
-                        }).show("backup-finished");
+                        }).show();
             } else if(status == PushTargetTranslationTask.Status.AUTH_FAILURE) {
                 Logger.i(this.getClass().getName(), "Authentication failed");
                 showAuthFailure();
@@ -430,11 +438,11 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                     // ask parent activity to navigate to a new activity
                     Intent intent = new Intent(getActivity(), TargetTranslationActivity.class);
                     Bundle args = new Bundle();
-                    args.putString(AppContext.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
+                    args.putString(App.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
                     // TODO: 4/20/16 it woulid be nice to navigate directly to the first conflict
-//                args.putString(AppContext.EXTRA_CHAPTER_ID, chapterId);
-//                args.putString(AppContext.EXTRA_FRAME_ID, frameId);
-                    args.putString(AppContext.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
+//                args.putString(App.EXTRA_CHAPTER_ID, chapterId);
+//                args.putString(App.EXTRA_FRAME_ID, frameId);
+                    args.putString(App.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
                     intent.putExtras(args);
                     startActivity(intent);
                     getActivity().finish();
@@ -501,16 +509,15 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
      * @param targetTranslation
      */
     private void notifyBackupFailed(final TargetTranslation targetTranslation) {
-        final Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
-        CustomAlertDialog.Builder(getActivity())
-                .setTitle(R.string.publish)
+        final Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), "en");
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+        .setTitle(R.string.publish)
                 .setMessage(R.string.upload_failed)
                 .setPositiveButton(R.string.dismiss, null)
-                .setNeutralButton(R.string.menu_bug, new View.OnClickListener() {
+                .setNeutralButton(R.string.menu_bug, new DialogInterface.OnClickListener(){
                     @Override
-                    public void onClick(View v) {
-
-                        // open bug report dialog
+                    public void onClick(DialogInterface dialog, int which) {
+                         // open bug report dialog
                         FragmentTransaction ft = getFragmentManager().beginTransaction();
                         Fragment prev = getFragmentManager().findFragmentByTag("bugDialog");
                         if (prev != null) {
@@ -518,7 +525,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                         }
                         ft.addToBackStack(null);
 
-                        FeedbackDialog dialog = new FeedbackDialog();
+                        FeedbackDialog feedbackDialog = new FeedbackDialog();
                         Bundle args = new Bundle();
                         String message = "Failed to backup the translation of " +
                                 project.name + " into " +
@@ -526,31 +533,30 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                                 + ".\ntargetTranslation: " + targetTranslation.getId() +
                                 "\n--------\n\n";
                         args.putString(FeedbackDialog.ARG_MESSAGE, message);
-                        dialog.setArguments(args);
-                        dialog.show(ft, "bugDialog");
+                        feedbackDialog.setArguments(args);
+                        feedbackDialog.show(ft, "bugDialog");
                     }
-                }).show("backup-failed");
+                }).show();
     }
 
-
     public void showAuthFailure() {
-        CustomAlertDialog.Builder(getActivity())
-                .setTitle(R.string.upload_failed).setMessage(R.string.auth_failure_retry)
-                .setPositiveButton(R.string.yes, new View.OnClickListener() {
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                .setTitle(R.string.upload_failed)
+                .setMessage(R.string.auth_failure_retry)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(true);
                         taskWatcher.watch(keyTask);
                         TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
                     }
                 })
-                .setNegativeButton(R.string.no, new View.OnClickListener() {
+                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         notifyBackupFailed(targetTranslation);
                     }
-                })
-                .show("auth-failed");
+                }).show();
     }
 
     @Override

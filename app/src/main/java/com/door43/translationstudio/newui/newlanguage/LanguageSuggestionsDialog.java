@@ -9,7 +9,7 @@ import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.newui.newtranslation.TargetLanguageAdapter;
@@ -32,7 +32,7 @@ public class LanguageSuggestionsDialog extends DialogFragment {
 
         Bundle args = getArguments();
         if(args != null) {
-            targetLanguages = AppContext.getLibrary().findTargetLanguage(args.getString(ARG_LANGUAGE_QUERY));
+            targetLanguages = App.getLibrary().findTargetLanguage(args.getString(ARG_LANGUAGE_QUERY));
         } else {
             dismiss();
             return v;

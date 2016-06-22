@@ -2,10 +2,10 @@ package com.door43.translationstudio.tasks;
 
 import android.support.annotation.Nullable;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.LibraryUpdates;
-import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.core.NewLanguageRequest;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
@@ -23,10 +23,10 @@ public class CheckForLibraryUpdatesTask extends ManagedTask {
 
     @Override
     public void start() {
-        if(AppContext.context().isNetworkAvailable()) {
+        if(App.isNetworkAvailable()) {
             publishProgress(-1, "");
 
-            Library library = AppContext.getLibrary();
+            Library library = App.getLibrary();
             if (library != null) {
                 mUpdates = library.checkServerForUpdates(new Library.OnProgressListener() {
                     @Override
@@ -43,12 +43,12 @@ public class CheckForLibraryUpdatesTask extends ManagedTask {
                     }
                 });
                 if (!isCanceled()) {
-                    AppContext.setLastCheckedForUpdates(System.currentTimeMillis());
+                    App.setLastCheckedForUpdates(System.currentTimeMillis());
                 }
             }
 
             // make sure we have the most recent new target language questionnaire
-            publishProgress(-1, AppContext.context().getResources().getString(R.string.loading));
+            publishProgress(-1, App.context().getResources().getString(R.string.loading));
             library.downloadNewLanguageQuestionnaire();
 
             // submit new language requests
@@ -57,7 +57,7 @@ public class CheckForLibraryUpdatesTask extends ManagedTask {
             delegate(task);
 
             // make sure we have the most recent target languages
-            publishProgress(-1, AppContext.context().getResources().getString(R.string.downloading_languages));
+            publishProgress(-1, App.context().getResources().getString(R.string.downloading_languages));
             library.downloadTargetLanguages();
 
             // download the temp target languages
@@ -67,21 +67,21 @@ public class CheckForLibraryUpdatesTask extends ManagedTask {
             library.downloadTempTargetLanguageAssignments();
 
             // clean up language requests that have already been submitted
-            NewLanguageRequest[] requests = AppContext.getNewLanguageRequests();
+            NewLanguageRequest[] requests = App.getNewLanguageRequests();
             for(NewLanguageRequest request:requests) {
                 if(library.getApprovedTargetLanguage(request.tempLanguageCode) != null) {
                     Logger.i(getClass().getName(), "Removing old language request " + request.tempLanguageCode);
-                    AppContext.removeNewLanguageRequest(request);
+                    App.removeNewLanguageRequest(request);
                 }
             }
 
             // perform target translation migrations due to updates to languages
-            publishProgress(-1, AppContext.context().getResources().getString(R.string.updating_projects));
-            TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
+            publishProgress(-1, App.context().getResources().getString(R.string.updating_projects));
+            TargetTranslation[] targetTranslations = App.getTranslator().getTargetTranslations();
             mMaxProgress = targetTranslations.length;
             for(int i = 0; i < targetTranslations.length; i ++) {
                 TargetTranslation t = targetTranslations[i];
-                publishProgress(i + 1, AppContext.context().getResources().getString(R.string.updating_projects));
+                publishProgress(i + 1, App.context().getResources().getString(R.string.updating_projects));
                 TargetTranslationMigrator.migrate(t.getPath());
             }
         }

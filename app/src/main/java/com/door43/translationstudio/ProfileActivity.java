@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
 
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BaseActivity;
 
 public class ProfileActivity extends BaseActivity {
@@ -54,7 +53,7 @@ public class ProfileActivity extends BaseActivity {
     public void onResume() {
         super.onResume();
 
-        if (AppContext.getProfile() != null) {
+        if (App.getProfile() != null) {
             Intent intent = new Intent(this, TermsOfUseActivity.class);
             startActivity(intent);
             finish();

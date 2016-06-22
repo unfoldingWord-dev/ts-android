@@ -22,15 +22,13 @@ public class QuestionnaireActivityUiTest extends NewLanguageActivityUiUtils {
     public void fillPageBoolean() throws Exception {
 
         //given
-        String fileName = "new_language/fullQuestionaire.json";
-        Intent intent = getIntentForTestFile(fileName);
         int pageCount = 11;
         int pageNum = 0;
         boolean hideKeyboard = false;
         boolean requiredOnly = false;
         boolean valueForBooleans = false;
         boolean doNext = true;
-        mActivityRule.launchActivity(intent);
+        mActivityRule.launchActivity(new Intent());
         verifyPageLayout(pageCount, pageNum);
         fillPage(pageNum, true, false, false, hideKeyboard);
         verifyPageLayout(pageCount, pageNum + 1);
@@ -47,15 +45,13 @@ public class QuestionnaireActivityUiTest extends NewLanguageActivityUiUtils {
     public void fillPageRequired() throws Exception {
 
         //given
-        String fileName = "new_language/fullQuestionaire.json";
-        Intent intent = getIntentForTestFile(fileName);
         int pageCount = 11;
         int pageNum = 0;
         boolean hideKeyboard = false;
         boolean requiredOnly = true;
         boolean valueForBooleans = true;
         boolean doNext = true;
-        mActivityRule.launchActivity(intent);
+        mActivityRule.launchActivity(new Intent());
         verifyPageLayout(pageCount, pageNum);
 
         //when
@@ -69,15 +65,13 @@ public class QuestionnaireActivityUiTest extends NewLanguageActivityUiUtils {
     public void fillPageNotRequired() throws Exception {
 
         //given
-        String fileName = "new_language/fullQuestionaire.json";
-        Intent intent = getIntentForTestFile(fileName);
         int pageCount = 11;
         int pageNum = 0;
         boolean hideKeyboard = false;
         boolean requiredOnly = false;
         boolean valueForBooleans = false;
         boolean doNext = true;
-        mActivityRule.launchActivity(intent);
+        mActivityRule.launchActivity(new Intent());
         verifyPageLayout(pageCount, pageNum);
 
         //when
@@ -93,11 +87,9 @@ public class QuestionnaireActivityUiTest extends NewLanguageActivityUiUtils {
     public void requiredAnswerContinue() throws Exception {
 
         //given
-        String fileName = "new_language/fullQuestionaire.json";
-        Intent intent = getIntentForTestFile(fileName);
         int pageCount = 11;
         int pageNum = 0;
-        mActivityRule.launchActivity(intent);
+        mActivityRule.launchActivity(new Intent());
         verifyPageLayout(pageCount, pageNum);
 
         //when
@@ -114,12 +106,10 @@ public class QuestionnaireActivityUiTest extends NewLanguageActivityUiUtils {
     public void missingAnswerContinue() throws Exception {
 
         //given
-        String fileName = "new_language/fullQuestionaire.json";
-        Intent intent = getIntentForTestFile(fileName);
         int pageCount = 11;
         int pageNum = 0;
         boolean hideKeyboard = true;
-        mActivityRule.launchActivity(intent);
+        mActivityRule.launchActivity(new Intent());
         verifyPageLayout(pageCount, pageNum);
         addEditText(0, 0, "language_name", hideKeyboard);
 
@@ -138,12 +128,10 @@ public class QuestionnaireActivityUiTest extends NewLanguageActivityUiUtils {
     public void missingAnswerCancel() throws Exception {
 
         //given
-        String fileName = "new_language/fullQuestionaire.json";
-        Intent intent = getIntentForTestFile(fileName);
         int pageCount = 11;
         int pageNum = 0;
         boolean hideKeyboard = true;
-        mActivityRule.launchActivity(intent);
+        mActivityRule.launchActivity(new Intent());
         verifyPageLayout(pageCount, pageNum);
         addEditText(0, 0, "language_name", hideKeyboard);
 

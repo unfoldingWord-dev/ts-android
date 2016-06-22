@@ -1,17 +1,24 @@
 package com.door43.translationstudio;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
+import android.support.multidex.MultiDex;
+import android.text.TextUtils;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
+import org.unfoldingword.tools.logger.LogLevel;
 import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.core.ArchiveDetails;
 import com.door43.translationstudio.core.Library;
@@ -21,18 +28,25 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Util;
+import com.door43.translationstudio.service.BackupService;
 import com.door43.translationstudio.util.SdUtils;
 import com.door43.util.FileUtilities;
 import com.door43.util.StorageUtils;
 import com.door43.util.StringUtilities;
 import com.door43.util.Zip;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.KeyPair;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -42,40 +56,201 @@ import java.util.Locale;
 /**
  * This class provides global access to the application context as well as other important tools
  */
-public class AppContext {
-    private static final String PREFERENCES_NAME = "com.door43.translationstudio.general";
-    private static final String DEFAULT_LIBRARY_ZIP = "library.zip";
-    private static final String TARGET_TRANSLATIONS_DIR = "translations";
-
-    public static final String PROFILES_DIR = "profiles";
-    public static final String TRANSLATION_STUDIO = "translationStudio";
-    public static final String LAST_VIEW_MODE = "last_view_mode_";
-    public static final String LAST_FOCUS_CHAPTER = "last_focus_chapter_";
-    public static final String LAST_FOCUS_FRAME = "last_focus_frame_";
-    public static final String OPEN_SOURCE_TRANSLATIONS = "open_source_translations_";
-    public static final String SELECTED_SOURCE_TRANSLATION = "selected_source_translation_";
-    public static final String LAST_CHECKED_SERVER_FOR_UPDATES = "last_checked_server_for_updates";
-    public static final String LAST_TRANSLATION = "last_translation";
+public class App extends Application {
+    public static final String PREFERENCES_TAG = "com.door43.translationstudio";
     public static final String EXTRA_SOURCE_DRAFT_TRANSLATION_ID = "extra_source_translation_id";
     public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
     public static final String EXTRA_CHAPTER_ID = "extra_chapter_id";
     public static final String EXTRA_FRAME_ID = "extra_frame_id";
     public static final String EXTRA_VIEW_MODE = "extra_view_mode_id";
-    private static final String PROFILE = "profile";
+    public static final String PUBLIC_DATA_DIR = "translationStudio";
+    public static final String TAG = App.class.toString();
 
-    public static final String TAG = AppContext.class.toString();
+    private static final String PREFERENCES_NAME = "com.door43.translationstudio.general";
+    private static final String DEFAULT_LIBRARY_ZIP = "library.zip";
+    private static final String LAST_VIEW_MODE = "last_view_mode_";
+    private static final String LAST_FOCUS_CHAPTER = "last_focus_chapter_";
+    private static final String LAST_FOCUS_FRAME = "last_focus_frame_";
+    private static final String OPEN_SOURCE_TRANSLATIONS = "open_source_translations_";
+    private static final String SELECTED_SOURCE_TRANSLATION = "selected_source_translation_";
+    private static final String LAST_CHECKED_SERVER_FOR_UPDATES = "last_checked_server_for_updates";
     private static final String ASSETS_DIR = "assets";
-    private static MainApplication mContext;
-    public static final Bundle args = new Bundle();
+    private static ImageLoader mImageLoader;
+    private static App sInstance;
+
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        MultiDex.install(this);
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        sInstance = this;
+
+        File dir = new File(App.getPublicDirectory(), "crashes");
+        Logger.registerGlobalExceptionHandler(dir);
+
+        // configure logger
+        int minLogLevel = Integer.parseInt(getUserPreferences().getString(SettingsActivity.KEY_PREF_LOGGING_LEVEL, getResources().getString(R.string.pref_default_logging_level)));
+        configureLogger(minLogLevel);
+
+        // initialize default settings
+        // NOTE: make sure to add any new preference files here in order to have their default values properly loaded.
+        PreferenceManager.setDefaultValues(this, R.xml.general_preferences, false);
+        PreferenceManager.setDefaultValues(this, R.xml.server_preferences, false);
+        PreferenceManager.setDefaultValues(this, R.xml.sharing_preferences, false);
+        PreferenceManager.setDefaultValues(this, R.xml.advanced_preferences, false);
+
+        // begins the backup manager service
+        Intent backupIntent = new Intent(this, BackupService.class);
+        startService(backupIntent);
+    }
+
+    public static void configureLogger(int minLogLevel) {
+        Logger.configure(new File(getPublicDirectory(), "log.txt"), LogLevel.getLevel(minLogLevel));
+    }
 
     /**
-     * Initializes the basic functions context.
-     * It is very important to initialize the class before using it because it assumes
-     * the context has already been set.
-     * @param context The application context. This can only be set once.
+     * Returns an instance of the user preferences.
+     * This is just the default shared preferences
+     * @return
      */
-    public AppContext(MainApplication context) {
-        mContext = context;
+    public static SharedPreferences getUserPreferences() {
+        return PreferenceManager.getDefaultSharedPreferences(sInstance);
+    }
+
+    /**
+     * Checks if we have internet
+     * @return
+     */
+    public static boolean isNetworkAvailable() {
+        ConnectivityManager cm = (ConnectivityManager) sInstance.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+    }
+
+    /**
+     * Generates a new RSA key pair for use with ssh
+     */
+    public static void generateSSHKeys() {
+        JSch jsch = new JSch();
+        int type = KeyPair.RSA;
+        File keysDir = getKeysFolder();
+        String privateKeyPath = keysDir.getAbsolutePath() + "/id_rsa";
+        String publicKeyPath = keysDir.getAbsolutePath() + "/id_rsa.pub";
+
+        try{
+            KeyPair kpair=KeyPair.genKeyPair(jsch, type);
+            new File(privateKeyPath).createNewFile();
+            kpair.writePrivateKey(privateKeyPath);
+            new File(publicKeyPath).createNewFile();
+            kpair.writePublicKey(publicKeyPath, App.udid());
+            kpair.dispose();
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Returns the public key file
+     * @return
+     */
+    public static File getPublicKey() {
+        File keysDir = getKeysFolder();
+        return  new File(keysDir.getAbsolutePath()+"/id_rsa.pub");
+    }
+
+    /**
+     * Returns the private key file
+     * @return
+     */
+    public static File getPrivateKey() {
+        File keysDir = getKeysFolder();
+        return  new File(keysDir.getAbsolutePath()+"/id_rsa");
+    }
+
+    /**
+     * Checks if the ssh keys have already been generated
+     * @return
+     */
+    public static boolean hasSSHKeys() {
+        File keysDir = getKeysFolder();
+        File privFile = new File(keysDir.getAbsolutePath()+"/id_rsa");
+        File pubFile = new File(keysDir.getAbsolutePath()+"/id_rsa.pub");
+        return privFile.exists() && pubFile.exists();
+    }
+
+    /**
+     * Returns the directory in which the ssh keys are stored
+     * @return
+     */
+    public static File getKeysFolder() {
+        File folder = new File(sInstance.getFilesDir() + "/" + sInstance.getResources().getString(R.string.keys_dir) + "/");
+        if(!folder.exists()) {
+            folder.mkdir();
+        }
+        return folder;
+    }
+
+    /**
+     * Generates and returns the image loader
+     * @return
+     */
+    public static ImageLoader getImageLoader() {
+        if(mImageLoader == null) {
+            ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(sInstance).build();
+            mImageLoader = ImageLoader.getInstance();
+            mImageLoader.init(config);
+        }
+        return mImageLoader;
+    }
+
+    /**
+     * Checks if this apk was installed from the playstore or sideloaded
+     * @return
+     */
+    public static boolean isStoreVersion() {
+        String installer = sInstance.getPackageManager().getInstallerPackageName(sInstance.getPackageName());
+        return !TextUtils.isEmpty(installer);
+    }
+
+    /**
+     * Moves an asset into the cache directory and returns a file reference to it
+     * @param path
+     * @return
+     */
+    public static File getAssetAsFile(String path) {
+        // TODO: we probably don't want to do this for everything.
+        // think about changing this up a bit.
+        // TODO: we need to figure out when the clear out these cached files. Probably just on version bumps.
+        File cacheFile = new File(sInstance.getCacheDir(), "assets/" + path);
+        if(!cacheFile.exists()) {
+            cacheFile.getParentFile().mkdirs();
+            try {
+                InputStream is = sInstance.getAssets().open(path);
+                try {
+                    FileOutputStream outputStream = new FileOutputStream(cacheFile);
+                    try {
+                        byte[] buf = new byte[1024];
+                        int len;
+                        while ((len = is.read(buf)) > 0) {
+                            outputStream.write(buf, 0, len);
+                        }
+                    } finally {
+                        outputStream.close();
+                    }
+                } finally {
+                    is.close();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+        }
+        return cacheFile;
     }
 
     /**
@@ -85,10 +260,10 @@ public class AppContext {
     @Nullable
     public static Library getLibrary() {
         // NOTE: rather than keeping the library around we rebuild it so that changes to the user settings will work
-        String server = mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, mContext.getResources().getString(R.string.pref_default_media_server));
-        String rootApiUrl = server + mContext.getResources().getString(R.string.root_catalog_api);
+        String server = sInstance.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, sInstance.getResources().getString(R.string.pref_default_media_server));
+        String rootApiUrl = server + sInstance.getResources().getString(R.string.root_catalog_api);
         try {
-            return new Library(mContext, rootApiUrl, new File(getPublicDirectory(), ASSETS_DIR));
+            return new Library(sInstance, rootApiUrl, new File(getPublicDirectory(), ASSETS_DIR));
         } catch (IOException e) {
             Logger.e(TAG, "Failed to create the library", e);
         }
@@ -100,7 +275,7 @@ public class AppContext {
      * @return
      */
     public static int getTermsOfUseVersion() {
-        return mContext.getResources().getInteger(R.integer.terms_of_use_version);
+        return sInstance.getResources().getInteger(R.integer.terms_of_use_version);
     }
 
     /**
@@ -108,7 +283,7 @@ public class AppContext {
      * @return
      */
     public static boolean isTablet() {
-        return (mContext.getResources().getConfiguration().screenLayout
+        return (sInstance.getResources().getConfiguration().screenLayout
                 & Configuration.SCREENLAYOUT_SIZE_MASK)
                 >= Configuration.SCREENLAYOUT_SIZE_LARGE;
     }
@@ -120,9 +295,9 @@ public class AppContext {
      */
     public static void deployDefaultLibrary() throws Exception {
         Library library = getLibrary();
-        File archive = mContext.getCacheDir().createTempFile("index", ".zip");
-        Util.writeStream(mContext.getAssets().open(DEFAULT_LIBRARY_ZIP), archive);
-        File tempLibraryDir = new File(mContext.getCacheDir(), System.currentTimeMillis() + "");
+        File archive = sInstance.getCacheDir().createTempFile("index", ".zip");
+        Util.writeStream(sInstance.getAssets().open(DEFAULT_LIBRARY_ZIP), archive);
+        File tempLibraryDir = new File(sInstance.getCacheDir(), System.currentTimeMillis() + "");
         tempLibraryDir.mkdirs();
         Zip.unzip(archive, tempLibraryDir);
         File[] dbs = tempLibraryDir.listFiles();
@@ -145,7 +320,7 @@ public class AppContext {
      * @return
      */
     public static Translator getTranslator() {
-        return new Translator(mContext, getProfile(), new File(getPublicDirectory(), TARGET_TRANSLATIONS_DIR));
+        return new Translator(sInstance, getProfile(), new File(getPublicDirectory(), "translations"));
     }
 
     /**
@@ -155,7 +330,7 @@ public class AppContext {
      */
     public static boolean assetExists(String path) {
         try {
-            mContext.getAssets().open(path);
+            sInstance.getAssets().open(path);
             return true;
         } catch (IOException e) {
             return false;
@@ -166,8 +341,8 @@ public class AppContext {
      * Returns the main application context
      * @return
      */
-    public static MainApplication context() {
-        return mContext;
+    public static App context() {
+        return sInstance;
     }
 
     /**
@@ -175,21 +350,8 @@ public class AppContext {
      * @return
      */
     public static String udid() {
-        return Settings.Secure.getString(mContext.getContentResolver(), Settings.Secure.ANDROID_ID);
+        return Settings.Secure.getString(sInstance.getContentResolver(), Settings.Secure.ANDROID_ID);
     }
-
-    /**
-     * Returns the directory in which the ssh keys are stored
-     * @return
-     */
-    public static File getKeysFolder() {
-        File folder = new File(mContext.getFilesDir() + "/" + mContext.getResources().getString(R.string.keys_dir) + "/");
-        if(!folder.exists()) {
-            folder.mkdir();
-        }
-        return folder;
-    }
-
 
     /**
      * Returns the file to the external public downloads directory
@@ -203,10 +365,10 @@ public class AppContext {
             if(removeableMediaInfo != null) {
                 dir = new File("/storage/" + removeableMediaInfo.getMountName() + SdUtils.DOWNLOAD_TRANSLATION_STUDIO_FOLDER);
             } else {
-                dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), TRANSLATION_STUDIO);
+                dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), PUBLIC_DATA_DIR);
             }
         } else {
-            dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), TRANSLATION_STUDIO);
+            dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), PUBLIC_DATA_DIR);
         }
         dir.mkdirs();
         return dir;
@@ -268,7 +430,7 @@ public class AppContext {
      * @return
      */
     public static File getPublicDirectory() {
-        File dir = new File(Environment.getExternalStorageDirectory(), TRANSLATION_STUDIO);
+        File dir = new File(Environment.getExternalStorageDirectory(), PUBLIC_DATA_DIR);
         dir.mkdirs();
         return dir;
     }
@@ -279,7 +441,7 @@ public class AppContext {
      * @param viewMode
      */
     public static void setLastViewMode(String targetTranslationId, TranslationViewMode viewMode) {
-        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(LAST_VIEW_MODE + targetTranslationId, viewMode.toString());
         editor.apply();
@@ -293,7 +455,7 @@ public class AppContext {
      * @return
      */
     public static TranslationViewMode getLastViewMode(String targetTranslationId) {
-        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         TranslationViewMode viewMode = TranslationViewMode.get(prefs.getString(LAST_VIEW_MODE + targetTranslationId, null));
         if(viewMode == null) {
             return TranslationViewMode.READ;
@@ -306,8 +468,8 @@ public class AppContext {
      * @return
      */
     public static String getLastFocusTargetTranslation() {
-        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
-        return prefs.getString(LAST_TRANSLATION, null);
+        SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        return prefs.getString("last_translation", null);
     }
 
 
@@ -316,9 +478,9 @@ public class AppContext {
      * @param targetTranslationId
      */
     public static void setLastFocusTargetTranslation(String targetTranslationId) {
-        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(LAST_TRANSLATION, targetTranslationId);
+        editor.putString("last_translation", targetTranslationId);
         editor.apply();
     }
 
@@ -329,7 +491,7 @@ public class AppContext {
      * @param frameId
      */
     public static void setLastFocus(String targetTranslationId, String chapterId, String frameId) {
-        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(LAST_FOCUS_CHAPTER + targetTranslationId, chapterId);
         editor.putString(LAST_FOCUS_FRAME + targetTranslationId, frameId);
@@ -343,7 +505,7 @@ public class AppContext {
      * @return
      */
     public static String getLastFocusChapterId(String targetTranslationId) {
-        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         return prefs.getString(LAST_FOCUS_CHAPTER + targetTranslationId, null);
     }
 
@@ -353,7 +515,7 @@ public class AppContext {
      * @return
      */
     public static String getLastFocusFrameId(String targetTranslationId) {
-        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         return prefs.getString(LAST_FOCUS_FRAME + targetTranslationId, null);
     }
 
@@ -364,7 +526,7 @@ public class AppContext {
      */
     public static void addOpenSourceTranslation(String targetTranslationId, String sourceTranslationId) {
         if(sourceTranslationId != null && !sourceTranslationId.isEmpty()) {
-            SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+            SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = prefs.edit();
             String[] sourceTranslationIds = getOpenSourceTranslationIds(targetTranslationId);
             String newIdSet = "";
@@ -386,7 +548,7 @@ public class AppContext {
      */
     public static void removeOpenSourceTranslation(String targetTranslationId, String sourceTranslationId) {
         if(sourceTranslationId != null && !sourceTranslationId.isEmpty()) {
-            SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+            SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = prefs.edit();
             String[] sourceTranslationIds = getOpenSourceTranslationIds(targetTranslationId);
             String newIdSet = "";
@@ -413,7 +575,7 @@ public class AppContext {
      * @return
      */
     public static String[] getOpenSourceTranslationIds(String targetTranslationId) {
-        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         String idSet = prefs.getString(OPEN_SOURCE_TRANSLATIONS + targetTranslationId, "").trim();
         if(idSet.isEmpty()) {
             return new String[0];
@@ -428,7 +590,7 @@ public class AppContext {
      * @param sourceTranslationId if null the selection will be unset
      */
     public static void setSelectedSourceTranslation(String targetTranslationId, String sourceTranslationId) {
-        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         if(sourceTranslationId != null && !sourceTranslationId.isEmpty()) {
             editor.putString(SELECTED_SOURCE_TRANSLATION + targetTranslationId, sourceTranslationId);
@@ -445,7 +607,7 @@ public class AppContext {
      * @return
      */
     public static String getSelectedSourceTranslationId(String targetTranslationId) {
-        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         String selectedSourceTranslationId = prefs.getString(SELECTED_SOURCE_TRANSLATION + targetTranslationId, null);
         if(selectedSourceTranslationId == null || selectedSourceTranslationId.isEmpty()) {
             // default to first tab
@@ -463,7 +625,7 @@ public class AppContext {
      * @param targetTranslationId
      */
     public static void clearTargetTranslationSettings(String targetTranslationId) {
-        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.remove(SELECTED_SOURCE_TRANSLATION + targetTranslationId);
         editor.remove(OPEN_SOURCE_TRANSLATIONS + targetTranslationId);
@@ -478,7 +640,7 @@ public class AppContext {
      * @return
      */
     public static String getMediaServer() {
-        String url = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, AppContext.context().getResources().getString(R.string.pref_default_media_server));
+        String url = sInstance.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, App.context().getResources().getString(R.string.pref_default_media_server));
         return StringUtilities.ltrim(url, '/');
     }
 
@@ -487,7 +649,7 @@ public class AppContext {
      * @return
      */
     public static File getSharingDir() {
-        File file = new File(mContext.getCacheDir(), "sharing");
+        File file = new File(sInstance.getCacheDir(), "sharing");
         file.mkdirs();
         return file;
     }
@@ -497,7 +659,7 @@ public class AppContext {
      * @return
      */
     public static long getLastCheckedForUpdates() {
-        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         return prefs.getLong(LAST_CHECKED_SERVER_FOR_UPDATES, 0L);
     }
 
@@ -506,7 +668,7 @@ public class AppContext {
      * @param timeMillis
      */
     public static void setLastCheckedForUpdates(long timeMillis) {
-        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putLong(LAST_CHECKED_SERVER_FOR_UPDATES, timeMillis);
         editor.apply();
@@ -542,7 +704,7 @@ public class AppContext {
      * @return
      */
     public static Profile getProfile() {
-        String profileString = getUserString(PROFILE, null);
+        String profileString = getUserString("profile", null);
 
         try {
             if (profileString != null) {
@@ -563,9 +725,9 @@ public class AppContext {
         try {
             if(profile != null) {
                 String profileString = profile.toJSON().toString();
-                setUserString(PROFILE, profileString);
+                setUserString("profile", profileString);
             } else {
-                setUserString(PROFILE, null);
+                setUserString("profile", null);
                 FileUtilities.deleteRecursive(getKeysFolder());
             }
         } catch (JSONException e) {
@@ -580,7 +742,7 @@ public class AppContext {
      * @return
      */
     public static String getUserString(String preferenceKey, int defaultResource) {
-        return getUserString(preferenceKey, mContext.getResources().getString(defaultResource));
+        return getUserString(preferenceKey, sInstance.getResources().getString(defaultResource));
     }
 
     /**
@@ -611,7 +773,7 @@ public class AppContext {
      * @return
      */
     public static String getUserString(String preferenceKey, String defaultValue) {
-        return mContext.getUserPreferences().getString(preferenceKey, defaultValue);
+        return sInstance.getUserPreferences().getString(preferenceKey, defaultValue);
     }
 
     /**
@@ -620,7 +782,7 @@ public class AppContext {
      * @param value if null the string will be removed
      */
     public static void setUserString(String preferenceKey, String value) {
-        SharedPreferences.Editor editor = mContext.getUserPreferences().edit();
+        SharedPreferences.Editor editor = sInstance.getUserPreferences().edit();
         if(value == null) {
             editor.remove(preferenceKey);
         } else {
@@ -642,7 +804,7 @@ public class AppContext {
             try {
                 data = FileUtilities.readFileToString(requestFile);
             } catch (IOException e) {
-                Logger.e(AppContext.class.getName(), "Failed to read the new language request", e);
+                Logger.e(App.class.getName(), "Failed to read the new language request", e);
             }
             return NewLanguageRequest.generate(data);
         }
@@ -666,11 +828,11 @@ public class AppContext {
                         requests.add(request);
                     }
                 } catch (IOException e) {
-                    Logger.e(AppContext.class.getName(), "Failed to read the language request file", e);
+                    Logger.e(App.class.getName(), "Failed to read the language request file", e);
                 }
             }
         }
-        return requests.toArray(new NewLanguageRequest[requestFiles.length]);
+        return requests.toArray(new NewLanguageRequest[requests.size()]);
     }
 
     /**
@@ -687,7 +849,7 @@ public class AppContext {
                 FileUtilities.writeStringToFile(requestFile, request.toJson());
                 return getLibrary().addTempTargetLanguage(request.getTempTargetLanguage());
             } catch (IOException e) {
-                Logger.e(AppContext.class.getName(), "Failed to save the new langauge request", e);
+                Logger.e(App.class.getName(), "Failed to save the new langauge request", e);
             }
         }
         return false;

@@ -13,12 +13,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BaseActivity;
-import com.door43.translationstudio.tasks.ArchiveCrashReportTask;
 import com.door43.translationstudio.tasks.CheckForLatestReleaseTask;
 import com.door43.translationstudio.tasks.UploadCrashReportTask;
 
+import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
@@ -29,10 +28,8 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
     private EditText mCrashReportText;
     private static final String STATE_LATEST_RELEASE = "state_latest_release";
     private static final String STATE_NOTES = "state_notes";
-    private static final String STATE_DOWNLOAD_UPDATES = "state_download_updates";
     private String mNotes = "";
     private CheckForLatestReleaseTask.Release mLatestRelease = null;
-    private boolean mDownloadAfterArchive = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,12 +61,8 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
         mCancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mLoadingDialog.setMessage(getResources().getString(R.string.loading));
-                mLoadingDialog.show();
-
-                ArchiveCrashReportTask task = new ArchiveCrashReportTask();
-                task.addOnFinishedListener(CrashReporterActivity.this);
-                TaskManager.addTask(task, ArchiveCrashReportTask.TASK_ID);
+                Logger.flush();
+                openSplash();
             }
         });
 
@@ -81,7 +74,6 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
         if(savedInstanceState != null) {
             mNotes = savedInstanceState.getString(STATE_NOTES, "");
             mLatestRelease = (CheckForLatestReleaseTask.Release)savedInstanceState.getSerializable(STATE_LATEST_RELEASE);
-            mDownloadAfterArchive = savedInstanceState.getBoolean(STATE_DOWNLOAD_UPDATES, false);
         }
         mCrashReportText.setText(mNotes);
         super.onRestoreInstanceState(savedInstanceState);
@@ -93,7 +85,6 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
 
         CheckForLatestReleaseTask checkTask = (CheckForLatestReleaseTask) TaskManager.getTask(CheckForLatestReleaseTask.TASK_ID);
         UploadCrashReportTask uploadTask = (UploadCrashReportTask)TaskManager.getTask(UploadCrashReportTask.TASK_ID);
-        ArchiveCrashReportTask archiveTask = (ArchiveCrashReportTask)TaskManager.getTask(ArchiveCrashReportTask.TASK_ID);
 
         if(checkTask != null) {
             mLoadingDialog.setMessage(getResources().getString(R.string.loading));
@@ -103,10 +94,6 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
             mLoadingDialog.setMessage(getResources().getString(R.string.uploading));
             mLoadingDialog.show();
             uploadTask.addOnFinishedListener(this);
-        } else if(archiveTask != null) {
-            mLoadingDialog.setMessage(getResources().getString(R.string.loading));
-            mLoadingDialog.show();
-            archiveTask.addOnFinishedListener(this);
         } else if(mLatestRelease != null) {
             notifyLatestRelease(mLatestRelease);
         }
@@ -125,27 +112,16 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
                     public void onClick(DialogInterface dialog, int which) {
                         mLatestRelease = null;
 
-                        // archive crash report
-                        mLoadingDialog.setMessage(getResources().getString(R.string.loading));
-                        mLoadingDialog.show();
-
-                        ArchiveCrashReportTask task = new ArchiveCrashReportTask();
-                        task.addOnFinishedListener(CrashReporterActivity.this);
-                        TaskManager.addTask(task, ArchiveCrashReportTask.TASK_ID);
+                        Logger.flush();
+                        openSplash();
                     }
                 })
                 .setNeutralButton(R.string.download_update, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mDownloadAfterArchive = true;
-
-                        // archive crash report
-                        mLoadingDialog.setMessage(getResources().getString(R.string.loading));
-                        mLoadingDialog.show();
-
-                        ArchiveCrashReportTask task = new ArchiveCrashReportTask();
-                        task.addOnFinishedListener(CrashReporterActivity.this);
-                        TaskManager.addTask(task, ArchiveCrashReportTask.TASK_ID);
+                        Logger.flush();
+                        getLatestAppVersion(CrashReporterActivity.this, mLatestRelease);
+                        finish();
                     }
                 })
                 .setPositiveButton(R.string.label_continue, new DialogInterface.OnClickListener() {
@@ -209,13 +185,6 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
             }
         } else if(task.getClass().getName().equals(UploadCrashReportTask.class.getName())) {
             openSplash();
-        } else if(task.getClass().getName().equals(ArchiveCrashReportTask.class.getName())) {
-            if(mDownloadAfterArchive) {
-                getLatestAppVersion(this, mLatestRelease);
-                finish();
-            } else {
-                openSplash();
-            }
         }
     }
 
@@ -229,7 +198,7 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
         if(release == null) {
             return false;
         }
-        Boolean isStoreVersion = ((MainApplication)activity.getApplication()).isStoreVersion();
+        Boolean isStoreVersion = App.isStoreVersion();
         if (isStoreVersion) {
             // open play store
             final String appPackageName = activity.getPackageName();
@@ -253,7 +222,6 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
         } else {
             outState.remove(STATE_LATEST_RELEASE);
         }
-        outState.putBoolean(STATE_DOWNLOAD_UPDATES, mDownloadAfterArchive);
         outState.putString(STATE_NOTES, mCrashReportText.getText().toString().trim());
         super.onSaveInstanceState(outState);
     }
@@ -268,10 +236,6 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
         UploadCrashReportTask uploadTask = (UploadCrashReportTask)TaskManager.getTask(UploadCrashReportTask.TASK_ID);
         if(uploadTask != null) {
             uploadTask.removeOnFinishedListener(this);
-        }
-        ArchiveCrashReportTask archiveTask = (ArchiveCrashReportTask)TaskManager.getTask(ArchiveCrashReportTask.TASK_ID);
-        if(archiveTask != null) {
-            archiveTask.removeOnFinishedListener(this);
         }
         super.onDestroy();
     }

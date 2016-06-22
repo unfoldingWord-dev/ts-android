@@ -21,6 +21,8 @@ import android.widget.ImageButton;
 import android.widget.PopupMenu;
 
 import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.ProfileActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
@@ -30,13 +32,11 @@ import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
 import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
-import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.tasks.ExamineImportsForCollisionsTask;
 import com.door43.translationstudio.tasks.ImportProjectsTask;
 import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
@@ -73,8 +73,8 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             }
         });
 
-        mLibrary = AppContext.getLibrary();
-        mTranslator = AppContext.getTranslator();
+        mLibrary = App.getLibrary();
+        mTranslator = App.getTranslator();
 
         if(findViewById(R.id.fragment_container) != null) {
             if(savedInstanceState != null) {
@@ -129,14 +129,12 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                                 FeedbackDialog dialog = new FeedbackDialog();
                                 dialog.show(ft, "bugDialog");
 
-//                                CustomAlertDialog.test(HomeActivity.this);
-
                                 return true;
                             case R.id.action_share_apk:
                                 try {
                                     PackageInfo pinfo = getPackageManager().getPackageInfo(getPackageName(), 0);
                                     File apkFile = new File(pinfo.applicationInfo.publicSourceDir);
-                                    File exportFile = new File(AppContext.getSharingDir(), pinfo.applicationInfo.loadLabel(getPackageManager()) + "_" + pinfo.versionName + ".apk");
+                                    File exportFile = new File(App.getSharingDir(), pinfo.applicationInfo.loadLabel(getPackageManager()) + "_" + pinfo.versionName + ".apk");
                                     FileUtils.copyFile(apkFile, exportFile);
                                     if (exportFile.exists()) {
                                         Uri u = FileProvider.getUriForFile(HomeActivity.this, "com.door43.translationstudio.fileprovider", exportFile);
@@ -151,7 +149,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                                 }
                                 return true;
                             case R.id.action_log_out:
-                                AppContext.setProfile(null);
+                                App.setProfile(null);
                                 Intent logoutIntent = new Intent(HomeActivity.this, ProfileActivity.class);
                                 startActivity(logoutIntent);
                                 finish();
@@ -238,26 +236,26 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
      * display the final import Results.
      */
     private void showImportResults(String projectPath, String projectNames, boolean success) {
-        final CustomAlertDialog dlg = CustomAlertDialog.Builder(this);
         String message;
         if(success) {
-            String format = AppContext.context().getResources().getString(R.string.import_project_success);
+            String format = App.context().getResources().getString(R.string.import_project_success);
             message = String.format(format, projectNames, projectPath);
         } else {
-            String format = AppContext.context().getResources().getString(R.string.import_failed);
+            String format = App.context().getResources().getString(R.string.import_failed);
             message = format + "\n" + projectPath;
         }
 
-        dlg.setTitle(success ? R.string.title_import_Success : R.string.title_import_Failed)
+        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                .setTitle(success ? R.string.title_import_Success : R.string.title_import_Failed)
                 .setMessage(message)
-                .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
+                .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         mExamineTask.cleanup();
                         HomeActivity.this.finish();
                     }
                 })
-                .show("USFMImportResults2");
+                .show();
     }
 
     /**
@@ -282,34 +280,33 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
      * show dialog to verify that we want to import, restore or cancel.
      */
     private void displayImportVerification() {
-        final CustomAlertDialog dlg = CustomAlertDialog.Builder(this);
-        dlg.setTitle(R.string.label_import)
+        AlertDialog.Builder dlg = new AlertDialog.Builder(this,R.style.AppTheme_Dialog);
+            dlg.setTitle(R.string.label_import)
                 .setMessage(String.format(getResources().getString(R.string.confirm_import_target_translation), mExamineTask.mProjectsFound))
-                .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
+                .setNegativeButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         mExamineTask.cleanup();
                         HomeActivity.this.finish();
                     }
                 })
-                .setPositiveButton(R.string.label_restore, new View.OnClickListener() {
+                .setPositiveButton(R.string.label_restore, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         doArchiveImport(true);
                     }
                 });
 
         if(mExamineTask.mAlreadyPresent) { // add merge option
-            dlg.setNeutralButton(R.string.label_import, new View.OnClickListener() {
+            dlg.setNeutralButton(R.string.label_import, new DialogInterface.OnClickListener() {
                 @Override
-                public void onClick(View v) {
+                public void onClick(DialogInterface dialog, int which) {
                     doArchiveImport(false);
-                    dlg.dismiss();
+                    dialog.dismiss();
                 }
             });
         }
-
-        dlg.show("confirm_import");
+        dlg.show();
     }
 
     /**
@@ -344,7 +341,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     @Override
     public void onResume() {
         super.onResume();
-        AppContext.setLastFocusTargetTranslation(null);
+        App.setLastFocusTargetTranslation(null);
 
         int numTranslations = mTranslator.getTargetTranslations().length;
         if(numTranslations > 0 && mFragment instanceof WelcomeFragment) {
@@ -379,7 +376,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
      */
     @Nullable
     private TargetTranslation getLastOpened() {
-        String lastTarget = AppContext.getLastFocusTargetTranslation();
+        String lastTarget = App.getLastFocusTargetTranslation();
         if (lastTarget != null) {
             TargetTranslation targetTranslation = mTranslator.getTargetTranslation(lastTarget);
             if (targetTranslation != null) {
@@ -392,16 +389,16 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     @Override
     public void onBackPressed() {
         // display confirmation before closing the app
-        CustomAlertDialog.Builder(this)
+        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                 .setMessage(R.string.exit_confirmation)
-                .setPositiveButton(R.string.yes, new View.OnClickListener() {
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         HomeActivity.super.onBackPressed();
                     }
                 })
                 .setNegativeButton(R.string.no, null)
-                .show("ExitConfirm");
+                .show();
     }
 
     @Override
@@ -418,7 +415,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 }
 
                 Intent intent = new Intent(HomeActivity.this, TargetTranslationActivity.class);
-                intent.putExtra(AppContext.EXTRA_TARGET_TRANSLATION_ID, data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID));
+                intent.putExtra(App.EXTRA_TARGET_TRANSLATION_ID, data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID));
                 startActivity(intent);
             } else if( NewTargetTranslationActivity.RESULT_DUPLICATE == resultCode ) {
                 // display duplicate notice to user
@@ -460,9 +457,9 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     public void onItemClick(TargetTranslation targetTranslation) {
         // validate project and target language
 
-        Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
-        TargetLanguage language = AppContext.getLibrary().getTargetLanguage(targetTranslation);
-        if(project == null || !AppContext.getLibrary().projectHasSource(project.getId())) {
+        Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), "en");
+        TargetLanguage language = App.getLibrary().getTargetLanguage(targetTranslation);
+        if(project == null || !App.getLibrary().projectHasSource(project.getId())) {
             // validate project source exists
             Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.missing_project, Snackbar.LENGTH_LONG);
             snack.setAction(R.string.download, new View.OnClickListener() {
@@ -488,7 +485,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             snack.show();
         } else {
             Intent intent = new Intent(HomeActivity.this, TargetTranslationActivity.class);
-            intent.putExtra(AppContext.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
+            intent.putExtra(App.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
             startActivity(intent);
         }
     }
