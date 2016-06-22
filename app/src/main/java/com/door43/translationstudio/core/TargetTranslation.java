@@ -137,6 +137,14 @@ public class TargetTranslation {
     }
 
     /**
+     * Returns the translation type of the target translation
+     * @return
+     */
+    public TranslationType getTranslationType() {
+        return translationType;
+    }
+
+    /**
      * Returns a properly formatted target translation id
      * @param targetLanguageSlug
      * @param projectSlug
@@ -1304,6 +1312,10 @@ public class TargetTranslation {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    public TargetLanguage getTargetLanguage() {
+        return new TargetLanguage(targetLanguageId, targetLanguageName, targetLanguageRegion, targetLanguageDirection);
     }
 
     public enum PublishStatus {

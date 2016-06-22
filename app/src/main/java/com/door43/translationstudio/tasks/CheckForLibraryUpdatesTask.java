@@ -6,6 +6,11 @@ import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.LibraryUpdates;
+import com.door43.translationstudio.core.NewLanguageRequest;
+import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TargetTranslationMigrator;
+
+import org.unfoldingword.tools.logger.Logger;
 
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
@@ -59,8 +64,27 @@ public class CheckForLibraryUpdatesTask extends ManagedTask {
             // download the temp target languages
             library.downloadTempTargetLanguages();
 
-            // download the temp target languages
+            // download the temp target languages assignments
             library.downloadTempTargetLanguageAssignments();
+
+            // clean up language requests that have already been submitted
+            NewLanguageRequest[] requests = App.getNewLanguageRequests();
+            for(NewLanguageRequest request:requests) {
+                if(library.getApprovedTargetLanguage(request.tempLanguageCode) != null) {
+                    Logger.i(getClass().getName(), "Removing old language request " + request.tempLanguageCode);
+                    App.removeNewLanguageRequest(request);
+                }
+            }
+
+            // perform target translation migrations due to updates to languages
+            publishProgress(-1, App.context().getResources().getString(R.string.updating_projects));
+            TargetTranslation[] targetTranslations = App.getTranslator().getTargetTranslations();
+            mMaxProgress = targetTranslations.length;
+            for(int i = 0; i < targetTranslations.length; i ++) {
+                TargetTranslation t = targetTranslations[i];
+                publishProgress(i + 1, App.context().getResources().getString(R.string.updating_projects));
+                TargetTranslationMigrator.migrate(t.getPath());
+            }
         }
     }
 
