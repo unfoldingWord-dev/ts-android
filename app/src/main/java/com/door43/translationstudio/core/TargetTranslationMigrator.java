@@ -145,7 +145,7 @@ public class TargetTranslationMigrator {
                     // make missing language codes usable even if we can't find the new language request
                     TargetLanguage tl = App.getLibrary().getTargetLanguage(tt.getTargetLanguageId());
                     if(tl == null) {
-                        Logger.i(TAG, "Importing missing language code " + tl.getId() + " from " + tt.getId());
+                        Logger.i(TAG, "Importing missing language code " + tt.getTargetLanguageId() + " from " + tt.getTargetLanguageId());
                         TargetLanguage tempLanguage = new TargetLanguage(tt.getTargetLanguageId(),
                                 tt.getTargetLanguageName(),
                                 tt.getTargetLanguageRegion(),
