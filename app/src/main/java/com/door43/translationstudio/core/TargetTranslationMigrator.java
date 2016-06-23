@@ -700,6 +700,11 @@ public class TargetTranslationMigrator {
         JSONObject manifest = new JSONObject(FileUtils.readFileToString(new File(path, MANIFEST_FILE)));
         String typeId = manifest.getJSONObject("type").getString("id");
         // android only supports TEXT translations for now
-        return TranslationType.get(typeId) == TranslationType.TEXT;
+        if(TranslationType.get(typeId) == TranslationType.TEXT) {
+            return true;
+        } else {
+            Logger.w(TAG, "Only text translation types are supported");
+            return false;
+        }
     }
 }
