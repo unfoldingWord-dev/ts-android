@@ -124,7 +124,7 @@
   <string name="languages">ቋንቋዎች</string>
   <string name="drafts">ንፎች</string>
   <string name="use_internet_confirmation">\?ይህ የእርስዎን ኢንቴርነት ይጠቀማል፤ ይቀጥል</string>
-  <string name="update_projects">የተሻሻሉ ፕሮጄክቶች</string>
+  <string name="update_library">የተሻሻሉ ፕሮጄክቶች</string>
   <string name="update_projects_description">ከሰርቨሩ ላይ የቀረቡትን ማሻሻያዎችን ያውርዱ እና ይመልከቱ</string>
   <string name="action_download_all">ሁሉንም ያውርዱ</string>
   <string name="title_activity_project_updates">የፕሮጄክት ማሻሻያዎች</string>

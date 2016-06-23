@@ -80,8 +80,17 @@ public class Profile {
         return profile;
     }
 
+    /**
+     * Returns the name of the translator.
+     * The name from their gogs account will be used if it exists
+     * @return
+     */
     public String getFullName() {
-        return this.fullName;
+        if(this.gogsUser != null) {
+            return this.gogsUser.fullName;
+        } else {
+            return this.fullName;
+        }
     }
 
     /**
@@ -90,7 +99,7 @@ public class Profile {
      * @return
      */
     public NativeSpeaker getNativeSpeaker() {
-        return new NativeSpeaker(this.fullName);
+        return new NativeSpeaker(getFullName());
     }
 
     public int getTermsOfUseLastAccepted() {

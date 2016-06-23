@@ -124,7 +124,7 @@
   <string name="languages">भाषा</string>
   <string name="drafts">भाषांतर ड्राफ्ट</string>
   <string name="use_internet_confirmation">हे कदाचित सर्व्हरवरील माहिती डाउनलोड करण्यासाठी आपले इंटरनेट कनेक्शन वापरेल, पुढे जायचे?</string>
-  <string name="update_projects">अद्यतनित प्रकल्प</string>
+  <string name="update_library">अद्यतनित प्रकल्प</string>
   <string name="update_projects_description">सर्व्हर पहा आणि डाउनलोड उपलब्ध अद्यतनांसाठी</string>
   <string name="action_download_all">सर्व डाउनलोड करा</string>
   <string name="title_activity_project_updates">प्रकल्प सुधारणा</string>

@@ -1,32 +1,38 @@
 package com.door43.translationstudio;
 
 import android.annotation.TargetApi;
-import android.app.Dialog;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.DialogPreference;
+import android.os.Handler;
+import android.os.Looper;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 
-import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.newui.DeviceNetworkAliasDialog;
+import org.unfoldingword.tools.logger.Logger;
+
 import com.door43.translationstudio.newui.legal.LegalDocumentActivity;
 import com.door43.translationstudio.service.BackupService;
+import com.door43.translationstudio.tasks.CheckForLatestReleaseTask;
 import com.door43.util.TTFAnalyzer;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -48,7 +54,7 @@ import java.util.List;
  *
  * NOTE: if you add new preference categories be sure to update MainApplication to load their default values.
  */
-public class SettingsActivity extends PreferenceActivity {
+public class SettingsActivity extends PreferenceActivity implements ManagedTask.OnFinishedListener {
     /**
      * Determines whether to always show the simplified settings UI, where
      * settings are presented in a single list. When false, settings are shown
@@ -74,6 +80,8 @@ public class SettingsActivity extends PreferenceActivity {
     public static final String KEY_SDCARD_ACCESS_URI = "internal_uri_extsdcard";
     public static final String KEY_SDCARD_ACCESS_FLAGS = "internal_flags_extsdcard";
     public static final String KEY_PREF_GOGS_API = "gogs_api";
+
+    ProgressDialog mLoadingDialog = null;
 
     /**
      * TRICKY: this was added after API 19 to fix a vulnerability.
@@ -117,6 +125,19 @@ public class SettingsActivity extends PreferenceActivity {
     }
 
     /**
+     * get progress dialog
+     * @return
+     */
+    private ProgressDialog getProgressDialog() {
+        if(mLoadingDialog == null) {
+            mLoadingDialog = new ProgressDialog(this);
+        }
+        mLoadingDialog.setCancelable(false);
+        mLoadingDialog.setCanceledOnTouchOutside(false);
+        return mLoadingDialog;
+    }
+
+    /**
      * Shows the simplified settings UI if the device configuration if the
      * device configuration dictates that a simplified, single-pane UI should be
      * shown.
@@ -147,7 +168,7 @@ public class SettingsActivity extends PreferenceActivity {
         {
             for (int i = 0; i<fileList.length; i++)
             {
-                File typeface = AppContext.context().getAssetAsFile("fonts/" + fileList[i]);
+                File typeface = App.getAssetAsFile("fonts/" + fileList[i]);
                 if (typeface != null) {
                     TTFAnalyzer analyzer = new TTFAnalyzer();
                     String fontname = "";
@@ -195,6 +216,7 @@ public class SettingsActivity extends PreferenceActivity {
         bindPreferenceClickToLegalDocument(findPreference("statement_of_faith"), R.string.statement_of_faith);
         bindPreferenceClickToLegalDocument(findPreference("translation_guidelines"), R.string.translation_guidlines);
         bindPreferenceClickToLegalDocument(findPreference("software_licenses"), R.string.software_licenses);
+        bindPreferenceClickToLegalDocument(findPreference("attribution"), R.string.attribution);
 
         // Bind the summaries of EditText/List/Dialog/Ringtone preferences to
         // their values. When their values change, their summaries are updated
@@ -210,6 +232,29 @@ public class SettingsActivity extends PreferenceActivity {
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_LOGGING_LEVEL));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_BACKUP_INTERVAL));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_TYPEFACE_SIZE));
+
+        final Preference appVersionPref = findPreference("app_version");
+        try {
+            PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+            appVersionPref.setSummary(pInfo.versionName + " - " + pInfo.versionCode);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        findPreference("app_updates").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+
+                ProgressDialog checkingDialog = getProgressDialog();
+                checkingDialog.setMessage(getResources().getString(R.string.checking_for_updates));
+                checkingDialog.show();
+
+                CheckForLatestReleaseTask task = new CheckForLatestReleaseTask();
+                task.addOnFinishedListener(SettingsActivity.this);
+                TaskManager.addTask(task, CheckForLatestReleaseTask.TASK_ID);
+                return true;
+            }
+        });
     }
 
     /** {@inheritDoc} */
@@ -262,13 +307,13 @@ public class SettingsActivity extends PreferenceActivity {
                 // restart the backup service.
                 if(BackupService.isRunning()) {
                     // TODO: only restart if changed
-                    Intent backupIntent = new Intent(AppContext.context(), BackupService.class);
-                    AppContext.context().stopService(backupIntent);
-                    AppContext.context().startService(backupIntent);
+                    Intent backupIntent = new Intent(App.context(), BackupService.class);
+                    App.context().stopService(backupIntent);
+                    App.context().startService(backupIntent);
                 }
             } else if(preference.getKey().equals(KEY_PREF_LOGGING_LEVEL)) {
                 // TODO: only re-configure if changed
-                AppContext.context().configureLogger(Integer.parseInt((String)value));
+                App.configureLogger(Integer.parseInt((String)value));
             }
 
             if (preference instanceof ListPreference) {
@@ -312,6 +357,53 @@ public class SettingsActivity extends PreferenceActivity {
                         .getString(preference.getKey(), ""));
     }
 
+    @Override
+    public void onTaskFinished(final ManagedTask task) {
+        TaskManager.clearTask(task);
+
+        if(task instanceof CheckForLatestReleaseTask) {
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    CheckForLatestReleaseTask checkForLatestReleaseTask = (CheckForLatestReleaseTask) task;
+                    final ProgressDialog checkingDialog = getProgressDialog();
+                    if (checkingDialog.isShowing()) {
+                        checkingDialog.dismiss();
+                    }
+
+                    CheckForLatestReleaseTask.Release release = checkForLatestReleaseTask.getLatestRelease();
+                    if(release == null) {
+                        new AlertDialog.Builder(SettingsActivity.this, R.style.AppTheme_Dialog)
+                                .setTitle(R.string.check_for_updates)
+                                .setMessage(R.string.have_latest_app_update)
+                                .setPositiveButton(R.string.label_ok, null)
+                                .show();
+                    } else { // have newer
+                        promptUserToDownloadLatestVersion(checkForLatestReleaseTask.getLatestRelease());
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * ask the user if they want to download the latest version
+     */
+    private void promptUserToDownloadLatestVersion(final CheckForLatestReleaseTask.Release release) {
+        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                .setTitle(R.string.apk_update_available)
+                .setMessage(R.string.download_latest_apk)
+                .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        CrashReporterActivity.getLatestAppVersion(SettingsActivity.this, release);
+                    }
+                })
+                .setNegativeButton(R.string.title_cancel, null)
+                .show();
+    }
+
     /**
      * This fragment shows general preferences only. It is used when the
      * activity is showing a two-pane settings UI.
@@ -338,7 +430,7 @@ public class SettingsActivity extends PreferenceActivity {
             {
                 for (int i = 0; i<fileList.length; i++)
                 {
-                    File typeface = AppContext.context().getAssetAsFile("fonts/" + fileList[i]);
+                    File typeface = App.getAssetAsFile("fonts/" + fileList[i]);
                     if (typeface != null) {
                         TTFAnalyzer analyzer = new TTFAnalyzer();
                         String fontname = "";
@@ -361,6 +453,29 @@ public class SettingsActivity extends PreferenceActivity {
             bindPreferenceSummaryToValue(fontPref);
 
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_TYPEFACE_SIZE));
+
+            final Preference appVersionPref = findPreference("app_version");
+            try {
+                PackageInfo pInfo = App.context().getPackageManager().getPackageInfo(App.context().getPackageName(), 0);
+                appVersionPref.setSummary(pInfo.versionName + " - " + pInfo.versionCode);
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
+
+            findPreference("app_updates").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+
+                    ProgressDialog checkingDialog = ((SettingsActivity) getActivity()).getProgressDialog();
+                    checkingDialog.setMessage(getResources().getString(R.string.checking_for_updates));
+                    checkingDialog.show();
+
+                    CheckForLatestReleaseTask task = new CheckForLatestReleaseTask();
+                    task.addOnFinishedListener((SettingsActivity)getActivity());
+                    TaskManager.addTask(task, CheckForLatestReleaseTask.TASK_ID);
+                    return true;
+                }
+            });
         }
     }
 
@@ -381,6 +496,7 @@ public class SettingsActivity extends PreferenceActivity {
 //            bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTOSAVE));
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTH_SERVER));
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_GIT_SERVER));
+            bindPreferenceSummaryToValue(findPreference(KEY_PREF_GOGS_API));
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTH_SERVER_PORT));
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_GIT_SERVER_PORT));
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_MEDIA_SERVER));
@@ -401,6 +517,7 @@ public class SettingsActivity extends PreferenceActivity {
             bindPreferenceClickToLegalDocument(findPreference("statement_of_faith"), R.string.statement_of_faith);
             bindPreferenceClickToLegalDocument(findPreference("translation_guidelines"), R.string.translation_guidlines);
             bindPreferenceClickToLegalDocument(findPreference("software_licenses"), R.string.software_licenses);
+            bindPreferenceClickToLegalDocument(findPreference("attribution"), R.string.attribution);
         }
     }
 

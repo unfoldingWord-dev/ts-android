@@ -3,7 +3,6 @@ package com.door43.translationstudio;
 import android.content.Context;
 import android.test.InstrumentationTestCase;
 
-import com.door43.translationstudio.Util;
 import com.door43.util.signing.Crypto;
 import com.door43.util.signing.SigningEntity;
 import com.door43.util.signing.Status;

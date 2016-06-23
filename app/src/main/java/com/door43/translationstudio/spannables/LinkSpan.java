@@ -1,11 +1,10 @@
 package com.door43.translationstudio.spannables;
 
-import android.os.Bundle;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 
 /**
@@ -38,7 +37,7 @@ public class LinkSpan extends Span {
         if(this.spannable == null) {
             this.spannable = super.render();
             // apply custom styles
-            this.spannable.setSpan(new ForegroundColorSpan(AppContext.context().getResources().getColor(R.color.accent)), 0, this.spannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            this.spannable.setSpan(new ForegroundColorSpan(App.context().getResources().getColor(R.color.accent)), 0, this.spannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         return this.spannable;
     }

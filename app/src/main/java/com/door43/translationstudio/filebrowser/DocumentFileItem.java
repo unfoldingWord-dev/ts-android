@@ -1,10 +1,9 @@
 package com.door43.translationstudio.filebrowser;
 
-import android.content.ContentResolver;
 import android.content.Context;
 import android.support.v4.provider.DocumentFile;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.ArchiveDetails;
 import com.door43.translationstudio.core.Library;
@@ -12,13 +11,12 @@ import com.door43.translationstudio.core.Translator;
 
 import org.apache.commons.io.FilenameUtils;
 
-import java.io.File;
-
 
 /**
  * This class represents a single file item
  */
 public class DocumentFileItem {
+    public static final String ZIP = "zip";
     public final DocumentFile file;
     public final Context context;
     public final boolean isUpButton;
@@ -67,7 +65,7 @@ public class DocumentFileItem {
     public void inspect(String preferredLocale, Library library) {
         if(file != null) {
             try {
-                this.archiveDetails = ArchiveDetails.newInstance(AppContext.context(), file, preferredLocale, library);
+                this.archiveDetails = ArchiveDetails.newInstance(App.context(), file, preferredLocale, library);
                 return;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -114,7 +112,7 @@ public class DocumentFileItem {
                 && file != null
                 && file.isDirectory()
                 && file.getName().equalsIgnoreCase("backups")
-                && file.getParentFile().getName().equalsIgnoreCase(AppContext.TRANSLATION_STUDIO);
+                && file.getParentFile().getName().equalsIgnoreCase(App.PUBLIC_DATA_DIR);
     }
 
     /**
@@ -126,5 +124,27 @@ public class DocumentFileItem {
                 && file != null
                 && !file.isDirectory()
                 && FilenameUtils.getExtension(file.getName()).equalsIgnoreCase(Translator.ARCHIVE_EXTENSION);
+    }
+
+    /**
+     * Checks if this file is a translation archive
+     * @return
+     */
+    public boolean isFileMatchesExtension(String extension) {
+        return !isUpButton
+                && file != null
+                && !file.isDirectory()
+                && FilenameUtils.getExtension(file.getName()).equalsIgnoreCase(extension);
+    }
+
+    /**
+     * Checks if this file is a zip file
+     * @return
+     */
+    public boolean isThisZipFile() {
+        return !isUpButton
+                && file != null
+                && !file.isDirectory()
+                && FilenameUtils.getExtension(file.getName()).equalsIgnoreCase(ZIP);
     }
 }

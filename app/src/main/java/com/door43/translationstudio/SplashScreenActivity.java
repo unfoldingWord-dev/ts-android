@@ -7,13 +7,14 @@ import android.os.Looper;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.door43.tools.reporting.GlobalExceptionHandler;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.tasks.InitializeLibraryTask;
 import com.door43.translationstudio.tasks.LoadTargetLanguagesTask;
 import com.door43.translationstudio.tasks.UpdateAppTask;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+
+import org.unfoldingword.tools.logger.Logger;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.io.File;
 
@@ -37,33 +38,35 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
         if(savedInstanceState != null) {
             mProgressTextView.setText(savedInstanceState.getString("message"));
         }
-
-        // check if we crashed
-        File dir = new File(AppContext.getPublicDirectory(), AppContext.context().STACKTRACE_DIR);
-        String[] files = GlobalExceptionHandler.getStacktraces(dir);
-        if (files.length > 0) {
-            Intent intent = new Intent(this, CrashReporterActivity.class);
-            startActivity(intent);
-            finish();
-        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
-        // connect to tasks
-        boolean isWorking = false;
-        isWorking = connectToTask(LoadTargetLanguagesTask.TASK_ID) ? true : isWorking;
-        isWorking = connectToTask(InitializeLibraryTask.TASK_ID) ? true : isWorking;
-        isWorking = connectToTask(UpdateAppTask.TASK_ID) ? true : isWorking;
+        if(!waitingForPermissions()) {
+            // check if we crashed
+            File[] files = Logger.listStacktraces();
+            if (files.length > 0) {
+                Intent intent = new Intent(this, CrashReporterActivity.class);
+                startActivity(intent);
+                finish();
+                return;
+            }
 
-        // start new task
-        if (!isWorking) {
-            UpdateAppTask updateTask = new UpdateAppTask(AppContext.context());
-            updateTask.addOnFinishedListener(this);
-            updateTask.addOnStartListener(this);
-            TaskManager.addTask(updateTask, UpdateAppTask.TASK_ID);
+            // connect to tasks
+            boolean isWorking = false;
+            isWorking = connectToTask(LoadTargetLanguagesTask.TASK_ID) ? true : isWorking;
+            isWorking = connectToTask(InitializeLibraryTask.TASK_ID) ? true : isWorking;
+            isWorking = connectToTask(UpdateAppTask.TASK_ID) ? true : isWorking;
+
+            // start new task
+            if (!isWorking) {
+                UpdateAppTask updateTask = new UpdateAppTask(App.context());
+                updateTask.addOnFinishedListener(this);
+                updateTask.addOnStartListener(this);
+                TaskManager.addTask(updateTask, UpdateAppTask.TASK_ID);
+            }
         }
     }
 
@@ -104,7 +107,7 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
     }
 
     @Override
-    public void onFinished(final ManagedTask task) {
+    public void onTaskFinished(final ManagedTask task) {
         TaskManager.clearTask(task);
         disconnectTask(task);
 
@@ -118,7 +121,7 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
         });
 
         if(task instanceof UpdateAppTask) {
-            if(!AppContext.getLibrary().exists()) {
+            if(!App.getLibrary().exists()) {
                 InitializeLibraryTask libraryTask = new InitializeLibraryTask();
                 libraryTask.addOnFinishedListener(this);
                 libraryTask.addOnStartListener(this);
@@ -147,7 +150,7 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
     }
 
     @Override
-    public void onStart(final ManagedTask task) {
+    public void onTaskStart(final ManagedTask task) {
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override

@@ -117,7 +117,7 @@
   <string name="languages">言語</string>
   <string name="drafts">翻訳下書き</string>
   <string name="use_internet_confirmation">これは、サーバから情報をダウンロードするためにあなたのインターネット接続を使用しますが、継続？</string>
-  <string name="update_projects">更新プロジェクト</string>
+  <string name="update_library">更新プロジェクト</string>
   <string name="update_projects_description">サーバーから利用可能なアップデートを確認してダウンロード</string>
   <string name="action_download_all">すべてのダウンロード</string>
   <string name="title_activity_project_updates">プロジェクトのアップデート</string>

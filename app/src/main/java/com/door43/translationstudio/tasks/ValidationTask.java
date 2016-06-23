@@ -1,17 +1,21 @@
 package com.door43.translationstudio.tasks;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.core.Chapter;
+import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.ProjectTranslation;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.publish.ValidationItem;
-import com.door43.translationstudio.AppContext;
-import com.door43.util.tasks.ManagedTask;
+
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,8 +37,8 @@ public class ValidationTask extends ManagedTask {
 
     @Override
     public void start() {
-        Library library = AppContext.getLibrary();
-        Translator translator = AppContext.getTranslator();
+        Library library = App.getLibrary();
+        Translator translator = App.getTranslator();
 
         TargetTranslation targetTranslation = translator.getTargetTranslation(mTargetTranslationId);
         TargetLanguage targetLanguage = library.getTargetLanguage(targetTranslation.getTargetLanguageId());
@@ -45,15 +49,39 @@ public class ValidationTask extends ManagedTask {
         // validate chapters
         int lastValidChapterIndex = -1;
         List<ValidationItem> chapterValidations = new ArrayList<>();
+
+        //check for project title
+        String projectTitle = sourceTranslation.getProjectTitle();
+        if(projectTitle != null) {
+            ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
+            boolean isFinished = projectTranslation.isTitleFinished();
+            if(!isFinished) {
+                mValidations.add(ValidationItem.generateInvalidGroup(projectTitle, sourceLanguage));
+                mValidations.add(ValidationItem.generateInvalidFrame(projectTitle, sourceLanguage, projectTranslation.getTitle(), targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, "0", "0"));
+            }
+        }
+
         for(int i = 0; i < chapters.length; i ++) {
             Chapter chapter = chapters[i];
-            // TODO: validate title and reference
+
             Frame[] frames = library.getFrames(sourceTranslation, chapter.getId());
 
             // validate frames
             int lastValidFrameIndex = -1;
             boolean chapterIsValid = true;
             List<ValidationItem> frameValidations = new ArrayList<>();
+
+            ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(chapter.getId());
+            if((chapter.title != null) && (!chapter.title.isEmpty()) && !chapterTranslation.isTitleFinished()) {
+                chapterIsValid = false;
+                frameValidations.add(ValidationItem.generateInvalidFrame(chapter.title, sourceLanguage, chapterTranslation.title, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapter.getId(), "00"));
+            }
+
+            if((chapter.reference != null) && (!chapter.reference.isEmpty()) && !chapterTranslation.isReferenceFinished()) {
+                chapterIsValid = false;
+                frameValidations.add(ValidationItem.generateInvalidFrame(chapter.reference, sourceLanguage, chapterTranslation.reference, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapter.getId(), "00"));
+            }
+
             for(int j = 0; j < frames.length; j ++) {
                 Frame frame = frames[j];
                 FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(frame);

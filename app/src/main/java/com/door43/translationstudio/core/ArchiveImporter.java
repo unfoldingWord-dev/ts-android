@@ -1,7 +1,5 @@
 package com.door43.translationstudio.core;
 
-import com.door43.tools.reporting.Logger;
-import com.door43.util.StringUtilities;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;

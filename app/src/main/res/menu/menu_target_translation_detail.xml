@@ -22,7 +22,7 @@
         app:showAsAction="never" />
 
     <item android:id="@+id/action_publish"
-        android:title="@string/publish"
+        android:title="@string/title_upload"
         android:orderInCategory="130"
         android:icon="@drawable/ic_cloud_done_black_24dp"
         app:showAsAction="never" />

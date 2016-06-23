@@ -5,8 +5,8 @@ import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.AppContext;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -86,7 +86,7 @@ public class USXVerseSpan extends VerseSpan {
             mSpannable = super.render();
             // apply custom styles
             mSpannable.setSpan(new RelativeSizeSpan(0.8f), 0, mSpannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            mSpannable.setSpan(new ForegroundColorSpan(AppContext.context().getResources().getColor(R.color.gray)), 0, mSpannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            mSpannable.setSpan(new ForegroundColorSpan(App.context().getResources().getColor(R.color.gray)), 0, mSpannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         return mSpannable;
     }

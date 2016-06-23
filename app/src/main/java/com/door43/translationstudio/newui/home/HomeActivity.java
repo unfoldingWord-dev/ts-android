@@ -3,61 +3,62 @@ package com.door43.translationstudio.newui.home;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.ContentResolver;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.os.Bundle;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.AlertDialog;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.ProfileActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
-import com.door43.translationstudio.core.ArchiveDetails;
-import com.door43.translationstudio.core.Chapter;
-import com.door43.translationstudio.core.ChapterTranslation;
-import com.door43.translationstudio.core.Frame;
-import com.door43.translationstudio.core.FrameTranslation;
+
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
-import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
 import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
-import com.door43.translationstudio.AppContext;
-import com.door43.util.Zip;
+import com.door43.translationstudio.tasks.ExamineImportsForCollisionsTask;
+import com.door43.translationstudio.tasks.ImportProjectsTask;
+import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.widget.ViewUtil;
 
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Locale;
 
-public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
+public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFinishedListener, WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
     private static final int REQUEST_CODE_STORAGE_ACCESS = 42;
     private static final int NEW_TARGET_TRANSLATION_REQUEST = 1;
     public static final String TAG = HomeActivity.class.getSimpleName();
     private Library mLibrary;
     private Translator mTranslator;
     private Fragment mFragment;
+    private boolean mUsfmImport = false;
+    private SimpleTaskWatcher taskWatcher;
+    private ExamineImportsForCollisionsTask mExamineTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,8 +73,8 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
             }
         });
 
-        mLibrary = AppContext.getLibrary();
-        mTranslator = AppContext.getTranslator();
+        mLibrary = App.getLibrary();
+        mTranslator = App.getTranslator();
 
         if(findViewById(R.id.fragment_container) != null) {
             if(savedInstanceState != null) {
@@ -128,14 +129,12 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                                 FeedbackDialog dialog = new FeedbackDialog();
                                 dialog.show(ft, "bugDialog");
 
-//                                CustomAlertDialog.test(HomeActivity.this);
-
                                 return true;
                             case R.id.action_share_apk:
                                 try {
                                     PackageInfo pinfo = getPackageManager().getPackageInfo(getPackageName(), 0);
                                     File apkFile = new File(pinfo.applicationInfo.publicSourceDir);
-                                    File exportFile = new File(AppContext.getSharingDir(), pinfo.applicationInfo.loadLabel(getPackageManager()) + "_" + pinfo.versionName + ".apk");
+                                    File exportFile = new File(App.getSharingDir(), pinfo.applicationInfo.loadLabel(getPackageManager()) + "_" + pinfo.versionName + ".apk");
                                     FileUtils.copyFile(apkFile, exportFile);
                                     if (exportFile.exists()) {
                                         Uri u = FileProvider.getUriForFile(HomeActivity.this, "com.door43.translationstudio.fileprovider", exportFile);
@@ -150,7 +149,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                                 }
                                 return true;
                             case R.id.action_log_out:
-                                AppContext.setProfile(null);
+                                App.setProfile(null);
                                 Intent logoutIntent = new Intent(HomeActivity.this, ProfileActivity.class);
                                 startActivity(logoutIntent);
                                 finish();
@@ -167,7 +166,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
             }
         });
 
-        Intent intent = getIntent();
+        Intent intent = getIntent(); // check if user is trying to open a tstudio file
         if(intent != null) {
             String action = intent.getAction();
             if(action != null) {
@@ -175,59 +174,13 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                     String scheme = intent.getScheme();
                     ContentResolver resolver = getContentResolver();
                     Uri contentUri = intent.getData();
-                    File tempFile = null;
-                    if (scheme.compareTo(ContentResolver.SCHEME_FILE) == 0) {
-                        finish();
-                        // TODO: 3/23/2016 we need to finish adding support for importing by clicking on a file.
-                        // the import needs to be ran in a task and a loading dialog should be displayed.
-                        try {
-                            tempFile = File.createTempFile("targettranslation", "." + Translator.ARCHIVE_EXTENSION);
-                            FileUtils.copyInputStreamToFile(resolver.openInputStream(contentUri), tempFile);
-                            ArchiveDetails details = ArchiveDetails.newInstance(tempFile, Locale.getDefault().getLanguage(), mLibrary);
-                            String names = "";
-                            for (ArchiveDetails.TargetTranslationDetails td : details.targetTranslationDetails) {
-                                names = td.projectName + " - " + td.targetLanguageName + ", ";
-                            }
-                            names = names.replaceAll(", $", "");
-                            final File archiveFile = tempFile;
-                            CustomAlertDialog.Create(this)
-                                    .setTitle(R.string.label_import)
-                                    .setMessage(String.format(getResources().getString(R.string.confirm_import_target_translation), names))
-                                    .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            FileUtils.deleteQuietly(archiveFile);
-                                            HomeActivity.this.finish();
-                                        }
-                                    })
-                                    .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            // TODO: 3/23/2016 import the file!
-                                            try {
-                                                String[] importedSlugs = AppContext.getTranslator().importArchive(archiveFile);
-                                                if (importedSlugs.length > 0) {
-                                                    // TODO: 3/23/2016 success!
-                                                    HomeActivity.this.notifyDatasetChanged();
-                                                } else {
-                                                    // TODO: 3/23/2016 nothing could be imported
-                                                }
-                                            } catch (Exception e) {
-                                                e.printStackTrace();
-                                            } finally {
-                                                FileUtils.deleteQuietly(archiveFile);
-                                                HomeActivity.this.finish();
-                                            }
-                                        }
-                                    })
-                                    .show("confirm_import");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            if (tempFile != null) {
-                                FileUtils.deleteQuietly(tempFile);
-                            }
-                            finish();
-                        }
+                    Logger.i(TAG,"Opening: " + contentUri.toString());
+                    if (scheme.compareTo(ContentResolver.SCHEME_CONTENT) == 0) {
+                        importFromUri(resolver, contentUri);
+                        return;
+                    } else if (scheme.compareTo(ContentResolver.SCHEME_FILE) == 0) {
+                        importFromUri(resolver, contentUri);
+                        return;
                     }
                 }
             }
@@ -243,29 +196,152 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
         }
     }
 
+    @Override
+    public void onFinished(ManagedTask task) {
+        taskWatcher.stop();
+        if (task instanceof ExamineImportsForCollisionsTask) {
+            final ExamineImportsForCollisionsTask examineTask = (ExamineImportsForCollisionsTask) task;
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (examineTask.mSuccess) {
+                        displayImportVerification();
+                    } else {
+                        Logger.e(TAG, "Could not process content URI: " + examineTask.mContentUri.toString());
+                        showImportResults(mExamineTask.mContentUri.toString(), null, false);
+                        examineTask.cleanup();
+                    }
+                }
+            });
+
+
+        } else if (task instanceof ImportProjectsTask) {
+
+            final ImportProjectsTask importTask = (ImportProjectsTask) task;
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    String[] importedSlugs = importTask.getImportedSlugs();
+                    boolean success = (importedSlugs != null) && (importedSlugs.length > 0);
+                    showImportResults(mExamineTask.mContentUri.toString(), mExamineTask.mProjectsFound, success);
+                }
+            });
+            mExamineTask.cleanup();
+        }
+    }
+
+    /**
+     * display the final import Results.
+     */
+    private void showImportResults(String projectPath, String projectNames, boolean success) {
+        String message;
+        if(success) {
+            String format = App.context().getResources().getString(R.string.import_project_success);
+            message = String.format(format, projectNames, projectPath);
+        } else {
+            String format = App.context().getResources().getString(R.string.import_failed);
+            message = format + "\n" + projectPath;
+        }
+
+        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                .setTitle(success ? R.string.title_import_Success : R.string.title_import_Failed)
+                .setMessage(message)
+                .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mExamineTask.cleanup();
+                        HomeActivity.this.finish();
+                    }
+                })
+                .show();
+    }
+
+    /**
+     * begin the uri import
+     * @param resolver
+     * @param contentUri
+     * @return
+     * @throws Exception
+     */
+    private void importFromUri(ContentResolver resolver, Uri contentUri) {
+        if(null == taskWatcher) {
+            taskWatcher = new SimpleTaskWatcher(this, R.string.import_project);
+            taskWatcher.setOnFinishedListener(this);
+        }
+
+        mExamineTask = new ExamineImportsForCollisionsTask(resolver, contentUri);
+        taskWatcher.watch(mExamineTask);
+        TaskManager.addTask(mExamineTask, ExamineImportsForCollisionsTask.TASK_ID);
+    }
+
+    /**
+     * show dialog to verify that we want to import, restore or cancel.
+     */
+    private void displayImportVerification() {
+        AlertDialog.Builder dlg = new AlertDialog.Builder(this,R.style.AppTheme_Dialog);
+            dlg.setTitle(R.string.label_import)
+                .setMessage(String.format(getResources().getString(R.string.confirm_import_target_translation), mExamineTask.mProjectsFound))
+                .setNegativeButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mExamineTask.cleanup();
+                        HomeActivity.this.finish();
+                    }
+                })
+                .setPositiveButton(R.string.label_restore, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        doArchiveImport(true);
+                    }
+                });
+
+        if(mExamineTask.mAlreadyPresent) { // add merge option
+            dlg.setNeutralButton(R.string.label_import, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    doArchiveImport(false);
+                    dialog.dismiss();
+                }
+            });
+        }
+        dlg.show();
+    }
+
+    /**
+     * import specified file
+     * @param overwrite
+     */
+    private void doArchiveImport(boolean overwrite) {
+        ImportProjectsTask importTask = new ImportProjectsTask(mExamineTask.mProjectsFolder, overwrite);
+        taskWatcher.watch(importTask);
+        TaskManager.addTask(importTask, ImportProjectsTask.TASK_ID);
+    }
+
     /**
      * Triggers the process of opening the server library
      */
     private void openLibrary() {
-        CustomAlertDialog.Create(HomeActivity.this)
-            .setTitle(R.string.update_projects)
-            .setIcon(R.drawable.ic_local_library_black_24dp)
-            .setMessage(R.string.use_internet_confirmation)
-            .setPositiveButton(R.string.yes, new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(HomeActivity.this, ServerLibraryActivity.class);
-                    startActivity(intent);
-                }
-            })
-            .setNegativeButton(R.string.no, null)
-            .show("UpdateLib");
+        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                .setTitle(R.string.update_library)
+                .setIcon(R.drawable.ic_local_library_black_24dp)
+                .setMessage(R.string.use_internet_confirmation)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(HomeActivity.this, ServerLibraryActivity.class);
+                        startActivity(intent);
+                    }
+                })
+                .setNegativeButton(R.string.no, null)
+                .show();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        AppContext.setLastFocusTargetTranslation(null);
+        App.setLastFocusTargetTranslation(null);
 
         int numTranslations = mTranslator.getTargetTranslations().length;
         if(numTranslations > 0 && mFragment instanceof WelcomeFragment) {
@@ -273,6 +349,16 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
             mFragment = new TargetTranslationListFragment();
             mFragment.setArguments(getIntent().getExtras());
             getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
+
+            // load list after fragment created
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                            ((TargetTranslationListFragment) mFragment).reloadList();
+                    }
+               });
+
         } else if(numTranslations == 0 && mFragment instanceof TargetTranslationListFragment) {
             // display welcome screen
             mFragment = new WelcomeFragment();
@@ -290,7 +376,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
      */
     @Nullable
     private TargetTranslation getLastOpened() {
-        String lastTarget = AppContext.getLastFocusTargetTranslation();
+        String lastTarget = App.getLastFocusTargetTranslation();
         if (lastTarget != null) {
             TargetTranslation targetTranslation = mTranslator.getTargetTranslation(lastTarget);
             if (targetTranslation != null) {
@@ -303,16 +389,16 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
     @Override
     public void onBackPressed() {
         // display confirmation before closing the app
-        CustomAlertDialog.Create(this)
+        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                 .setMessage(R.string.exit_confirmation)
-                .setPositiveButton(R.string.yes, new View.OnClickListener() {
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         HomeActivity.super.onBackPressed();
                     }
                 })
                 .setNegativeButton(R.string.no, null)
-                .show("ExitConfirm");
+                .show();
     }
 
     @Override
@@ -329,7 +415,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                 }
 
                 Intent intent = new Intent(HomeActivity.this, TargetTranslationActivity.class);
-                intent.putExtra(AppContext.EXTRA_TARGET_TRANSLATION_ID, data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID));
+                intent.putExtra(App.EXTRA_TARGET_TRANSLATION_ID, data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID));
                 startActivity(intent);
             } else if( NewTargetTranslationActivity.RESULT_DUPLICATE == resultCode ) {
                 // display duplicate notice to user
@@ -369,12 +455,25 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
 
     @Override
     public void onItemClick(TargetTranslation targetTranslation) {
-        // validate project (make sure it was downloaded)
-        Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
-        TargetLanguage targetLanguage = AppContext.getLibrary().getTargetLanguage(targetTranslation.getTargetLanguageId());
+        // validate project and target language
 
-        if(project == null || targetLanguage == null || !AppContext.getLibrary().projectHasSource(project.getId())) {
+        Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), "en");
+        TargetLanguage language = App.getLibrary().getTargetLanguage(targetTranslation);
+        if(project == null || !App.getLibrary().projectHasSource(project.getId())) {
+            // validate project source exists
             Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.missing_project, Snackbar.LENGTH_LONG);
+            snack.setAction(R.string.download, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    openLibrary();
+                }
+            });
+            snack.setActionTextColor(getResources().getColor(R.color.light_primary_text));
+            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+            snack.show();
+        } else if(language == null) {
+            // validate target language exists
+            Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.missing_language, Snackbar.LENGTH_LONG);
             snack.setAction(R.string.download, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -386,7 +485,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
             snack.show();
         } else {
             Intent intent = new Intent(HomeActivity.this, TargetTranslationActivity.class);
-            intent.putExtra(AppContext.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
+            intent.putExtra(App.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
             startActivity(intent);
         }
     }

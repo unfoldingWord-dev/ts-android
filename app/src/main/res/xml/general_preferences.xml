@@ -29,4 +29,13 @@
         android:summary="@string/pref_description_always_share"
         android:defaultValue="@string/pref_default_always_share" />
 
+    <Preference
+        android:key="app_version"
+        android:title="@string/version"
+        android:defaultValue="0.0.0" />
+
+    <Preference
+        android:key="app_updates"
+        android:title="@string/check_for_updates"
+        android:summary="@string/check_for_app_updates"/>
 </PreferenceScreen>

@@ -3,10 +3,7 @@ package com.door43.translationstudio;
 import android.content.Context;
 import android.test.InstrumentationTestCase;
 
-import com.door43.translationstudio.AppContext;
-import com.door43.translationstudio.Util;
 import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.Translator;
@@ -27,9 +24,9 @@ public class ImportExportTest extends InstrumentationTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         this.context = getInstrumentation().getContext();
-        this.testsDir = new File(AppContext.context().getCacheDir(), "import_export_tests");
+        this.testsDir = new File(App.context().getCacheDir(), "import_export_tests");
         this.translator = new Translator(this.context, null, new File(this.testsDir, "translator"));
-        this.library = AppContext.getLibrary();
+        this.library = App.getLibrary();
     }
 
     public void test01ImportV2Archive() throws Exception {

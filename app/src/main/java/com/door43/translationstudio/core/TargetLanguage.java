@@ -36,6 +36,7 @@ public class TargetLanguage implements Comparable {
         // TODO: we should restructure this output to match what we see in the api. if we do we'll need to migrate all the old manifest files.
         JSONObject json = new JSONObject();
         json.put("direction", this.direction.toString());
+        json.put("region", this.region);
         json.put("id", this.code);
         json.put("name", this.name);
         return json;
@@ -63,6 +64,25 @@ public class TargetLanguage implements Comparable {
                 json.getString("lr"),
                 LanguageDirection.get(json.getString("ld"))
         );
+    }
+
+    /**
+     * Formats the object as json
+     * @return
+     * @throws JSONException
+     */
+    public JSONObject toApiFormatJson() {
+        try {
+            JSONObject json = new JSONObject();
+            json.put("ld", this.direction.toString());
+            json.put("lc", this.code);
+            json.put("ln", this.name);
+            json.put("lr", this.region);
+            return json;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public LanguageDirection getDirection() {

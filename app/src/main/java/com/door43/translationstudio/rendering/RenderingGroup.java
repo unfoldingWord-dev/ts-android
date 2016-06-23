@@ -21,6 +21,32 @@ public class RenderingGroup {
     }
 
     /**
+     * if set to false verses will not be displayed in the output.
+     *
+     * @param enable default is true
+     */
+    public void setVersesEnabled(boolean enable) {
+        for (RenderingEngine engine : mEngines) {
+            if(engine instanceof ClickableRenderingEngine) {
+                ((ClickableRenderingEngine) engine).setVersesEnabled(enable);
+            }
+        }
+    }
+
+    /**
+     * if set to true, then line breaks will be shown in the output.
+     *
+     * @param enable default is false
+     */
+    public void setLinebreaksEnabled(boolean enable) {
+        for (RenderingEngine engine : mEngines) {
+            if(engine instanceof ClickableRenderingEngine) {
+                ((ClickableRenderingEngine) engine).setLinebreaksEnabled(enable);
+            }
+        }
+    }
+
+    /**
      * Begins the rendering operations
      */
     public CharSequence start() {

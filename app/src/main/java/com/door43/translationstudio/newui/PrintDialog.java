@@ -1,17 +1,14 @@
 package com.door43.translationstudio.newui;
 
-import android.app.AlertDialog;
 import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,24 +17,17 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
-import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Downloader;
 import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceLanguage;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.core.Typography;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.DownloadImagesTask;
 import com.door43.translationstudio.tasks.PrintPDFTask;
-import com.door43.util.tasks.GenericTaskWatcher;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
-import com.door43.widget.ViewUtil;
+import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.io.File;
 import java.security.InvalidParameterException;
@@ -46,7 +36,7 @@ import java.util.Locale;
 /**
  * Created by joel on 11/16/2015.
  */
-public class PrintDialog extends DialogFragment implements GenericTaskWatcher.OnFinishedListener, GenericTaskWatcher.OnCanceledListener {
+public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnFinishedListener, SimpleTaskWatcher.OnCanceledListener {
 
     public static final String ARG_TARGET_TRANSLATION_ID = "arg_target_translation_id";
     public static final String STATE_INCLUDE_IMAGES = "include_images";
@@ -61,7 +51,7 @@ public class PrintDialog extends DialogFragment implements GenericTaskWatcher.On
     private Button printButton;
     private CheckBox includeImagesCheckBox;
     private CheckBox includeIncompleteCheckBox;
-    private GenericTaskWatcher taskWatcher;
+    private SimpleTaskWatcher taskWatcher;
     private File mExportFile;
 
     @Override
@@ -76,8 +66,8 @@ public class PrintDialog extends DialogFragment implements GenericTaskWatcher.On
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         View v = inflater.inflate(R.layout.dialog_print, container, false);
 
-        translator = AppContext.getTranslator();
-        library = AppContext.getLibrary();
+        translator = App.getTranslator();
+        library = App.getLibrary();
 
         Bundle args = getArguments();
         if(args == null || !args.containsKey(ARG_TARGET_TRANSLATION_ID)) {
@@ -90,7 +80,7 @@ public class PrintDialog extends DialogFragment implements GenericTaskWatcher.On
             }
         }
 
-        taskWatcher = new GenericTaskWatcher(getActivity(), R.string.loading);
+        taskWatcher = new SimpleTaskWatcher(getActivity(), R.string.loading);
         taskWatcher.setOnFinishedListener(this);
         taskWatcher.setOnCanceledListener(this);
 
@@ -107,14 +97,23 @@ public class PrintDialog extends DialogFragment implements GenericTaskWatcher.On
             projectTitle.setText(mTargetTranslation.getProjectId() + " - " + mTargetTranslation.getTargetLanguageName());
         }
 
+        boolean isObsProject = mTargetTranslation.isObsProject();
+
         this.includeImagesCheckBox = (CheckBox)v.findViewById(R.id.print_images);
         this.includeIncompleteCheckBox = (CheckBox)v.findViewById(R.id.print_incomplete_frames);
-        includeImagesCheckBox.setEnabled(true);
+
+        if(isObsProject) {
+            includeImagesCheckBox.setEnabled(true);
+            includeImagesCheckBox.setChecked(includeImages);
+        } else { // no images in bible stories
+            includeImagesCheckBox.setVisibility(View.GONE);
+            includeImagesCheckBox.setChecked(false);
+        }
+
         includeIncompleteCheckBox.setEnabled(true);
-        includeImagesCheckBox.setChecked(includeImages);
         includeIncompleteCheckBox.setChecked(includeIncompleteFrames);
 
-        mExportFile = new File(AppContext.getSharingDir(), mTargetTranslation.getId() + ".pdf");
+        mExportFile = new File(App.getSharingDir(), mTargetTranslation.getId() + ".pdf");
 
         Button cancelButton  = (Button)v.findViewById(R.id.cancel_button);
         cancelButton.setOnClickListener(new View.OnClickListener() {
@@ -129,21 +128,20 @@ public class PrintDialog extends DialogFragment implements GenericTaskWatcher.On
             public void onClick(View v) {
                 includeImages = includeImagesCheckBox.isChecked();
                 includeIncompleteFrames = includeIncompleteCheckBox.isChecked();
-                if(includeImages && !AppContext.getLibrary().imagesPresent()) {
-                    CustomAlertDialog
-                            .Create(getActivity())
+                if(includeImages && !App.getLibrary().hasImages()) {
+                    new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                             .setTitle(R.string.use_internet_confirmation)
                             .setMessage(R.string.image_large_download)
                             .setNegativeButton(R.string.title_cancel, null)
-                            .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
+                            .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                                 @Override
-                                public void onClick(View v) {
+                                public void onClick(DialogInterface dialog, int which) {
                                     DownloadImagesTask task = new DownloadImagesTask();
                                     taskWatcher.watch(task);
                                     TaskManager.addTask(task, DownloadImagesTask.TASK_ID);
                                 }
                             })
-                            .show("print-download-images-confirmation");
+                            .show();
                 } else {
                     PrintPDFTask task = new PrintPDFTask(mTargetTranslation.getId(), mExportFile, includeImages, includeIncompleteFrames);
                     taskWatcher.watch(task);
@@ -169,9 +167,9 @@ public class PrintDialog extends DialogFragment implements GenericTaskWatcher.On
      */
 //    private void print() {
 //        // TODO: 11/16/2015 place the actual print operation within a task
-//        File exportFile = new File(AppContext.getSharingDir(), mTargetTranslation.getId() + ".pdf");
+//        File exportFile = new File(App.getSharingDir(), mTargetTranslation.getId() + ".pdf");
 //        try {
-//            SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(mTargetTranslation.getProjectId(), "en");
+//            SourceTranslation sourceTranslation = App.getLibrary().getDefaultSourceTranslation(mTargetTranslation.getProjectId(), "en");
 //            File imagesDir = library.getImagesDir();
 //            this.translator.exportPdf(library, mTargetTranslation, sourceTranslation.getFormat(), Typography.getAssetPath(getActivity()), imagesDir, includeImages, includeIncompleteFrames, exportFile);
 //            if (exportFile.exists()) {
@@ -215,30 +213,28 @@ public class PrintDialog extends DialogFragment implements GenericTaskWatcher.On
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        CustomAlertDialog
-                                .Create(getActivity())
+                        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                                 .setTitle(R.string.download_failed)
                                 .setMessage(R.string.downloading_images_for_print_failed)
                                 .setPositiveButton(R.string.label_ok, null)
-                                .show("print-download-images-failed");
+                                .show();
                     }
                 });
             }
         } else if(task instanceof PrintPDFTask) {
             if(((PrintPDFTask)task).isSuccess()) {
                 // send to print provider
-                Uri u = FileProvider.getUriForFile(AppContext.context(), "com.door43.translationstudio.fileprovider", mExportFile);
+                Uri u = FileProvider.getUriForFile(App.context(), "com.door43.translationstudio.fileprovider", mExportFile);
                 Intent i = new Intent(Intent.ACTION_SEND);
                 i.setType("application/pdf");
                 i.putExtra(Intent.EXTRA_STREAM, u);
                 startActivity(Intent.createChooser(i, "Print:"));
             } else {
-                CustomAlertDialog
-                        .Create(getActivity())
+                new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                         .setTitle(R.string.error)
                         .setMessage(R.string.print_failed)
                         .setPositiveButton(R.string.dismiss, null)
-                        .show("print-pdf-failed");
+                        .show();
             }
         }
     }

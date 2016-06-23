@@ -28,4 +28,31 @@ public class Security {
         }
         return md5;
     }
+
+
+    /**
+     * generate sha1 hash for string
+     * @param source
+     * @return
+     */
+    public static String sha1(String source)
+    {
+        try
+        {
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
+            messageDigest.update(source.getBytes("UTF-8"));
+            byte[] bytes = messageDigest.digest();
+            StringBuilder buffer = new StringBuilder();
+            for (byte b : bytes)
+            {
+                buffer.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
+            }
+            return buffer.toString();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

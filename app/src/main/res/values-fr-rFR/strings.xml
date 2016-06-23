@@ -117,7 +117,7 @@
   <string name="languages">Langues</string>
   <string name="drafts">Traduction Brouillons</string>
   <string name="use_internet_confirmation">Ce sera utiliser votre connexion Internet pour télécharger des informations à partir du serveur, continuer?</string>
-  <string name="update_projects">Projets de mise à jour</string>
+  <string name="update_library">Projets de mise à jour</string>
   <string name="update_projects_description">Consulter et télécharger les mises à jour disponibles sur le serveur</string>
   <string name="action_download_all">Télécharger tous</string>
   <string name="title_activity_project_updates">Mises à jour de projet</string>

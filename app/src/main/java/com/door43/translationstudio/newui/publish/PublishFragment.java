@@ -1,16 +1,25 @@
 package com.door43.translationstudio.newui.publish;
 
-import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.AlertDialog;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.method.LinkMovementMethod;
 import android.text.method.ScrollingMovementMethod;
+import android.text.style.ClickableSpan;
+import android.text.style.StyleSpan;
+import android.text.style.UnderlineSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,12 +29,15 @@ import android.widget.LinearLayout;
 import android.widget.Scroller;
 import android.widget.TextView;
 
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.Door43LoginDialog;
 import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.MergeConflictsDialog;
@@ -34,10 +46,10 @@ import com.door43.translationstudio.tasks.CreateRepositoryTask;
 import com.door43.translationstudio.tasks.PullTargetTranslationTask;
 import com.door43.translationstudio.tasks.PushTargetTranslationTask;
 import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
-import com.door43.translationstudio.AppContext;
-import com.door43.util.tasks.GenericTaskWatcher;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+
+import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.widget.ViewUtil;
 
 import org.eclipse.jgit.api.Git;
@@ -53,12 +65,12 @@ import java.util.Map;
 /**
  * Created by joel on 9/20/2015.
  */
-public class PublishFragment extends PublishStepFragment implements GenericTaskWatcher.OnFinishedListener {
+public class PublishFragment extends PublishStepFragment implements SimpleTaskWatcher.OnFinishedListener {
 
     private static final String STATE_UPLOADED = "state_uploaded";
     private boolean mUploaded = false;
     private Button mUploadButton;
-    private GenericTaskWatcher taskWatcher;
+    private SimpleTaskWatcher taskWatcher;
     private LinearLayout mUploadSuccess;
     private TargetTranslation targetTranslation;
 
@@ -78,7 +90,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             throw new InvalidParameterException("a valid target translation id is required");
         }
 
-        taskWatcher = new GenericTaskWatcher(getActivity(), R.string.uploading);
+        taskWatcher = new SimpleTaskWatcher(getActivity(), R.string.uploading);
         taskWatcher.setOnFinishedListener(this);
 
         // receive uploaded status from activity (overrides save state from fragment)
@@ -86,7 +98,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             mUploaded = args.getBoolean(ARG_PUBLISH_FINISHED, mUploaded);
         }
 
-        this.targetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
+        this.targetTranslation = App.getTranslator().getTargetTranslation(targetTranslationId);
 
         mUploadSuccess = (LinearLayout)v.findViewById(R.id.upload_success);
         mUploadButton = (Button)v.findViewById(R.id.upload_button);
@@ -112,14 +124,16 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
         mUploadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(AppContext.context().isNetworkAvailable()) {
+                if(App.isNetworkAvailable()) {
                     // make sure we have a gogs user
-                    if(AppContext.getProfile().gogsUser == null) {
+                    if(App.getProfile().gogsUser == null) {
                         FragmentTransaction ft = getFragmentManager().beginTransaction();
                         Door43LoginDialog dialog = new Door43LoginDialog();
                         dialog.show(ft, Door43LoginDialog.TAG);
                         return;
                     }
+
+                    // TODO: 5/26/16 this would be a lot easier if we tried to clone instead of pulling.  Then we could merge manually
                     PullTargetTranslationTask task = new PullTargetTranslationTask(targetTranslation);
                     taskWatcher.watch(task);
                     TaskManager.addTask(task, PullTargetTranslationTask.TASK_ID);
@@ -141,9 +155,9 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
         exportToApp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                File exportFile = new File(AppContext.getSharingDir(), filename);
+                File exportFile = new File(App.getSharingDir(), filename);
                 try {
-                    AppContext.getTranslator().exportDokuWiki(targetTranslation, exportFile);
+                    App.getTranslator().exportDokuWiki(targetTranslation, exportFile);
                 } catch (Exception e) {
                     Logger.e(PublishFragment.class.getName(), "Failed to export the target translation " + targetTranslation.getId(), e);
                 }
@@ -165,9 +179,9 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             @Override
             public void onClick(View v) {
                 // TODO: 10/27/2015 have the user choose where to save the file
-                File exportFile = new File(AppContext.getPublicDownloadsDirectory(), System.currentTimeMillis() / 1000L + "_" + filename);
+                File exportFile = new File(App.getPublicDownloadsDirectory(), System.currentTimeMillis() / 1000L + "_" + filename);
                 try {
-                    AppContext.getTranslator().exportDokuWiki(targetTranslation, exportFile);
+                    App.getTranslator().exportDokuWiki(targetTranslation, exportFile);
                 } catch (Exception e) {
                     Logger.e(PublishFragment.class.getName(), "Failed to export the target translation " + targetTranslation.getId(), e);
                 }
@@ -265,7 +279,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             } else if(status == PullTargetTranslationTask.Status.AUTH_FAILURE) {
                 Logger.i(this.getClass().getName(), "Authentication failed");
                 // if we have already tried ask the user if they would like to try again
-                if(AppContext.context().hasSSHKeys()) {
+                if(App.context().hasSSHKeys()) {
                     showAuthFailure();
                     return;
                 }
@@ -306,7 +320,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             }
         } else if(task instanceof PushTargetTranslationTask) {
             PushTargetTranslationTask.Status status =((PushTargetTranslationTask)task).getStatus();
-            final String message = ((PushTargetTranslationTask)task).getMessage();
+            final String uploadDetails = ((PushTargetTranslationTask)task).getMessage();
 
             if(status == PushTargetTranslationTask.Status.OK) {
                 Logger.i(this.getClass().getName(), "The target translation " + targetTranslation.getId() + " was pushed to the server");
@@ -318,23 +332,29 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                         mUploadButton.setVisibility(View.GONE);
                         mUploadSuccess.setVisibility(View.VISIBLE);
 
-                        CustomAlertDialog.Create(getActivity())
-                                .setTitle(R.string.success).setMessage(R.string.project_uploaded).setPositiveButton(R.string.dismiss, null)
-                                .setNeutralButton(R.string.label_details, new View.OnClickListener() {
+                        final String publishedUrl = getPublishedUrl(targetTranslation);
+                        String format = getActivity().getResources().getString(R.string.project_uploaded_to);
+                        final String destinationMessage = String.format(format, publishedUrl);
+
+                        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                                .setTitle(R.string.success)
+                                .setMessage(destinationMessage)
+                                .setPositiveButton(R.string.view_online, new DialogInterface.OnClickListener() {
                                     @Override
-                                    public void onClick(View v) {
-                                        AlertDialog dialog = new AlertDialog.Builder(getActivity())
-                                                .setTitle(R.string.project_uploaded)
-                                                .setMessage(message)
-                                                .setPositiveButton(R.string.dismiss, null)
-                                                .show();
-                                        TextView textView = (TextView) dialog.findViewById(android.R.id.message);
-                                        textView.setMaxLines(5);
-                                        textView.setScroller(new Scroller(getActivity()));
-                                        textView.setVerticalScrollBarEnabled(true);
-                                        textView.setMovementMethod(new ScrollingMovementMethod());
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        Intent i = new Intent(Intent.ACTION_VIEW);
+                                        i.setData(Uri.parse(publishedUrl));
+                                        startActivity(i);
                                     }
-                                }).show("publish-finished");
+                                })
+                                .setNegativeButton(R.string.dismiss, null)
+                                .setNeutralButton(R.string.label_details, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        showDetails(uploadDetails);
+                                    }
+                                })
+                                .show();
                     }
                 });
             } else if(status == PushTargetTranslationTask.Status.AUTH_FAILURE) {
@@ -343,8 +363,75 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             } else {
                 notifyPublishFailed(targetTranslation);
             }
-
         }
+    }
+
+    /**
+     * display the upload details
+     * @param destinationMessage
+     */
+    private void showDetails(String destinationMessage) {
+        AlertDialog dialog = new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                .setTitle(R.string.project_uploaded)
+                .setMessage(destinationMessage)
+                .setPositiveButton(R.string.dismiss, null)
+                .show();
+        TextView textView = (TextView) dialog.findViewById(android.R.id.message);
+        textView.setMaxLines(5);
+        textView.setScroller(new Scroller(getActivity()));
+        textView.setVerticalScrollBarEnabled(true);
+        textView.setMovementMethod(new ScrollingMovementMethod());
+    }
+
+    /**
+     * make selected text clickable
+     * @param textToClick
+     * @param entireText
+     * @param clickableSpan
+     * @return
+     */
+    private SpannableString getClickableText(String textToClick, String entireText, ClickableSpan clickableSpan) {
+        int startIndex = entireText.indexOf(textToClick);
+        int lastIndex;
+        if(startIndex < 0) { // if not found
+            startIndex = 0;
+            lastIndex = textToClick.length();
+        } else {
+            lastIndex = startIndex + textToClick.length();
+        }
+
+        SpannableString clickable = new SpannableString(entireText);
+        clickable.setSpan(clickableSpan,startIndex,lastIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); // set click
+        clickable.setSpan(new UnderlineSpan(),startIndex,lastIndex,0); // underline
+        clickable.setSpan(new StyleSpan(Typeface.BOLD),startIndex,lastIndex,0); // make bold
+        return clickable;
+    }
+
+    /**
+     * generate the url where the user can see that the published target is stored
+     * @param targetTranslation
+     * @return
+     */
+    public static String getPublishedUrl(TargetTranslation targetTranslation) {
+        String userName = "";
+        Profile profile = App.getProfile();
+        if(profile != null && profile.gogsUser != null) {
+            userName = profile.gogsUser.getUsername();
+        }
+
+        String server = "";
+        try {
+            server = App.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, App.context().getResources().getString(R.string.pref_default_git_server));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        String[] parts = server.split("git@");
+        if(parts.length == 2) {
+            server = parts[1];
+        }
+
+        return "https://" + server + "/" + userName + "/" + targetTranslation.getId();
     }
 
     private void notifyMergeConflicts(Map<String, int[][]> conflicts) {
@@ -361,11 +448,11 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 // ask parent activity to navigate to a new activity
                 Intent intent = new Intent(getActivity(), TargetTranslationActivity.class);
                 Bundle args = new Bundle();
-                args.putString(AppContext.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
+                args.putString(App.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
                 // TODO: 4/20/16 it woulid be nice to navigate directly to the first conflict
-//                args.putString(AppContext.EXTRA_CHAPTER_ID, chapterId);
-//                args.putString(AppContext.EXTRA_FRAME_ID, frameId);
-                args.putString(AppContext.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
+//                args.putString(App.EXTRA_CHAPTER_ID, chapterId);
+//                args.putString(App.EXTRA_FRAME_ID, frameId);
+                args.putString(App.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
                 intent.putExtras(args);
                 startActivity(intent);
                 getActivity().finish();
@@ -379,6 +466,8 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                     resetCommand.setMode(ResetCommand.ResetType.HARD)
                             .setRef("backup-master")
                             .call();
+
+                    targetTranslation.commitSync();
 
                     // try to pull again
                     PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, MergeStrategy.THEIRS);
@@ -398,6 +487,8 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                     resetCommand.setMode(ResetCommand.ResetType.HARD)
                             .setRef("backup-master")
                             .call();
+
+                    targetTranslation.commitSync();
 
                     // try to pull again
                     PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, MergeStrategy.OURS);
@@ -426,23 +517,22 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
     }
 
     public void showAuthFailure() {
-        CustomAlertDialog.Create(getActivity())
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.error).setMessage(R.string.auth_failure_retry)
-                .setPositiveButton(R.string.yes, new View.OnClickListener() {
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(true);
                         taskWatcher.watch(keyTask);
                         TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
                     }
                 })
-                .setNegativeButton(R.string.no, new View.OnClickListener() {
+                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         notifyPublishFailed(targetTranslation);
                     }
-                })
-                .show("auth-failed");
+                }).show();
     }
 
     /**
@@ -451,14 +541,14 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
      * @param targetTranslation
      */
     private void notifyPublishFailed(final TargetTranslation targetTranslation) {
-        final Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
-        CustomAlertDialog.Create(getActivity())
+        final Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), "en");
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.error)
                 .setMessage(R.string.upload_failed)
                 .setPositiveButton(R.string.dismiss, null)
-                .setNeutralButton(R.string.menu_bug, new View.OnClickListener() {
+                .setNeutralButton(R.string.menu_bug, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
 
                         // open bug report dialog
                         FragmentTransaction ft = getFragmentManager().beginTransaction();
@@ -468,7 +558,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                         }
                         ft.addToBackStack(null);
 
-                        FeedbackDialog dialog = new FeedbackDialog();
+                        FeedbackDialog feedbackDialog = new FeedbackDialog();
                         Bundle args = new Bundle();
                         String message = "Failed to publish the translation of " +
                                 project.name + " into " +
@@ -476,10 +566,10 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                                 + ".\ntargetTranslation: " + targetTranslation.getId() +
                                 "\n--------\n\n";
                         args.putString(FeedbackDialog.ARG_MESSAGE, message);
-                        dialog.setArguments(args);
-                        dialog.show(ft, "bugDialog");
+                        feedbackDialog.setArguments(args);
+                        feedbackDialog.show(ft, "bugDialog");
                     }
-                }).show("publish-failed");
+                }).show();
     }
 
     @Override

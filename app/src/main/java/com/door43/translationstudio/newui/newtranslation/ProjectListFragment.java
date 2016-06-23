@@ -16,7 +16,7 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.ProjectCategory;
 import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.BaseFragment;
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 
 import java.util.Locale;
 
@@ -31,7 +31,7 @@ public class ProjectListFragment extends BaseFragment implements Searchable {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_project_list, container, false);
 
-        mLibrary = AppContext.getLibrary();
+        mLibrary = App.getLibrary();
 
         EditText searchView = (EditText) rootView.findViewById(R.id.search_text);
         searchView.setHint(R.string.choose_a_project);

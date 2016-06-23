@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.USFMVerseSpan;
@@ -38,7 +39,10 @@ public class PdfPrinter extends PdfPageEventHelper {
     private final Font titleFont;
     private final Font chapterFont;
     private final Font bodyFont;
+    private final Font boldBodyFont;
+    private final Font underlineBodyFont;
     private final Font subFont;
+    private final Font headingFont;
     private final TranslationFormat format;
     private final Library library;
     private final SourceTranslation sourceTranslation;
@@ -51,6 +55,8 @@ public class PdfPrinter extends PdfPageEventHelper {
     private final Map<String, Integer> pageByTitle = new HashMap<>();
     private final float PAGE_NUMBER_FONT_SIZE = 10;
     private PdfWriter writer;
+    private Paragraph mCurrentParagraph;
+
 
     public PdfPrinter(Context context, Library library, TargetTranslation targetTranslation, TranslationFormat format, String fontPath, File imagesDir) throws IOException, DocumentException {
         this.targetTranslation = targetTranslation;
@@ -60,10 +66,13 @@ public class PdfPrinter extends PdfPageEventHelper {
         this.imagesDir = imagesDir;
         this.sourceTranslation = library.getDefaultSourceTranslation(targetTranslation.getProjectId(), "en");
 
-        baseFont = BaseFont.createFont(fontPath, "UTF-8", BaseFont.EMBEDDED);
+        baseFont = BaseFont.createFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
         titleFont = new Font(baseFont, 25, Font.BOLD);
         chapterFont = new Font(baseFont, 20);
         bodyFont = new Font(baseFont, 10);
+        boldBodyFont = new Font(baseFont, 10, Font.BOLD);
+        headingFont = new Font(baseFont, 14, Font.BOLD);
+        underlineBodyFont = new Font(baseFont, 10, Font.UNDERLINE);
         subFont = new Font(baseFont, 10, Font.ITALIC);
         superScriptFont = new Font(baseFont, 9);
         superScriptFont.setColor(94, 94, 94);
@@ -94,6 +103,7 @@ public class PdfPrinter extends PdfPageEventHelper {
         document.open();
         addMetaData(document);
         addTitlePage(document);
+        addLicensePage(document);
         addTOC(document);
         addContent(document);
         document.close();
@@ -102,7 +112,8 @@ public class PdfPrinter extends PdfPageEventHelper {
     }
 
     private void addTOC(Document document) throws DocumentException {
-        com.itextpdf.text.Chapter intro = new com.itextpdf.text.Chapter(new Paragraph("Table of Contents ", chapterFont), 0);
+        String toc = App.context().getResources().getString(R.string.table_of_contents);
+        com.itextpdf.text.Chapter intro = new com.itextpdf.text.Chapter(new Paragraph(toc, chapterFont), 0);
         intro.setNumberDepth(0);
         document.add(intro);
 
@@ -232,11 +243,9 @@ public class PdfPrinter extends PdfPageEventHelper {
      */
     private void addContent(Document document) throws DocumentException, IOException {
         for(ChapterTranslation c:targetTranslation.getChapterTranslations()) {
-            if(!includeIncomplete && !c.isTitleFinished() && !library.getChapter(sourceTranslation, c.getId()).title.isEmpty()) {
-                continue;
+            if(includeIncomplete || c.isTitleFinished() || library.getChapter(sourceTranslation, c.getId()).title.isEmpty()) {
+                addChapterPage(document, c);
             }
-
-            addChapterPage(document, c);
 
             // chapter body
             for(FrameTranslation f:targetTranslation.getFrameTranslations(c.getId(), this.format)) {
@@ -384,5 +393,221 @@ public class PdfPrinter extends PdfPageEventHelper {
         cb.showText(text);
         cb.endText();
         cb.restoreState();
+    }
+
+    /**
+     * add the license from resource
+     * @param document
+     * @throws DocumentException
+     */
+    private void addLicensePage(Document document) throws DocumentException {
+        // title
+        String title = "";
+        Anchor anchor = new Anchor(title, chapterFont);
+        anchor.setName("name");
+        Paragraph chapterParagraph = new Paragraph(anchor);
+        chapterParagraph.setAlignment(Element.ALIGN_CENTER);
+        com.itextpdf.text.Chapter chapter = new com.itextpdf.text.Chapter(chapterParagraph, 0);
+        chapter.setNumberDepth(0);
+
+        // table for vertical alignment
+        PdfPTable table = new PdfPTable(1);
+        table.setWidthPercentage(100);
+        PdfPCell cell = new PdfPCell();
+        cell.setBorder(Rectangle.NO_BORDER);
+        cell.setMinimumHeight(document.getPageSize().getHeight() - VERTICAL_PADDING * 2);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+//        cell.addElement(chapter);
+        table.addCell(cell);
+
+        // place chapter title on it's own page
+        document.newPage();
+        document.add(chapter);
+
+        // translate simple html to paragraphs
+        String license = App.context().getResources().getString(R.string.license_pdf);
+
+        license = license.replace("&#8226;", "\u2022");
+//        license = license.replace("<p>", "<br/>");
+//        license = license.replace("</p>", "<br/>");
+//        license = license.replace("<h2>", "<br/>");
+//        license = license.replace("</h2>", "<br/>");
+//        String[] lines = license.split("<br/>");
+//        for (String line : lines) {
+//            Paragraph paragraph = new Paragraph(line, bodyFont);
+//            document.add(paragraph);
+//        }
+
+        mCurrentParagraph = null;
+        parseHtml( document, license, 0);
+
+        nextParagraph(document);
+
+        document.newPage();
+    }
+
+    /**
+     * convert basic html to pdf chunks and add to document
+     * @param document
+     * @param text
+     * @param pos
+     * @throws DocumentException
+     */
+    private void parseHtml(Document document, String text, int pos) throws DocumentException {
+        if(text == null) {
+            return;
+        }
+
+        int length = text.length();
+        FoundHtml foundHtml;
+        while(pos < length) {
+            foundHtml = getNextHtml(text, pos);
+            if(null == foundHtml) {
+                break;
+            }
+
+            if(foundHtml.startPos > pos) {
+                String beforeText = text.substring(pos, foundHtml.startPos);
+                addHtmlChunk(beforeText, bodyFont);
+            }
+
+            if("b".equals(foundHtml.html)) { // bold
+                addHtmlChunk(foundHtml.enclosed, boldBodyFont);
+            } else if((foundHtml.html.length() > 0) && (foundHtml.html.charAt(0) == 'h')) { // header
+                nextParagraph(document);
+                mCurrentParagraph = new Paragraph(foundHtml.enclosed, headingFont);
+                nextParagraph(document);
+            } else if((foundHtml.html.length() > 0) && (foundHtml.html.charAt(0) == 'a')) { // anchor
+                addHtmlChunk(foundHtml.enclosed, underlineBodyFont);
+            } else if("br".equals(foundHtml.html)) { // line break
+                nextParagraph(document);
+            } else if("p".equals(foundHtml.html)) { // line break
+                blankLine(document);
+                parseHtml( document, foundHtml.enclosed, 0);
+                nextParagraph(document);
+            } else { // anything else just strip off the html tag
+                parseHtml( document, foundHtml.enclosed, 0);
+            }
+
+            pos = foundHtml.htmlFinishPos;
+        }
+
+        if(pos < length) {
+            String rest = text.substring(pos);
+            addHtmlChunk(rest, bodyFont);
+        }
+    }
+
+    /**
+     * add text to current paragraph, trim white space
+     * @param text
+     * @param font
+     * @throws DocumentException
+     */
+    private void addHtmlChunk(String text, Font font) throws DocumentException {
+        if((text != null) && !text.isEmpty()) {
+            Character c = text.charAt(0);
+            text = text.replace("\n","");
+            while((text.length() > 1) && ("  ".equals(text.substring(0,2)))) { // remove extra leading space
+                text = text.substring(1);
+            }
+            while((text.length() > 1) && ("  ".equals(text.substring(text.length() - 2)))) { // remove extra leading space
+                text = text.substring(0, text.length() - 1);
+            }
+
+            Chunk chunk = new Chunk(text, font);
+            addChunkToParagraph(chunk);
+        }
+    }
+
+    /**
+     * start a new paragraph
+     * @param document
+     * @throws DocumentException
+     */
+    private void nextParagraph(Document document) throws DocumentException {
+        if(mCurrentParagraph != null) {
+            document.add(mCurrentParagraph);
+        }
+        mCurrentParagraph = null;
+    }
+
+    /**
+     * insert a blank paragraph
+     * @param document
+     * @throws DocumentException
+     */
+    private void blankLine(Document document) throws DocumentException {
+        nextParagraph(document);
+        mCurrentParagraph = new Paragraph(" ", bodyFont);
+        nextParagraph(document);
+    }
+
+    /**
+     * add a chunk to current paragraph
+     * @param chunk
+     * @throws DocumentException
+     */
+    private void addChunkToParagraph(Chunk chunk) throws DocumentException {
+        if(null == mCurrentParagraph) {
+            mCurrentParagraph = new Paragraph("", bodyFont);
+        }
+        mCurrentParagraph.add(chunk);
+    }
+
+    /**
+     * get next html tag from start pos
+     * @param text
+     * @param startPos
+     * @return
+     */
+    private FoundHtml getNextHtml(String text, int startPos) {
+        int pos = text.indexOf("<", startPos);
+        if(pos < 0) {
+            return null;
+        }
+
+        int end = text.indexOf(">", pos + 1);
+        int length = text.length();
+        if(end < 0) {
+            return new FoundHtml(text.substring(pos + 1), pos, length, "");
+        }
+
+        String token = text.substring(pos + 1, end);
+        if(!token.isEmpty() && (token.charAt(token.length() - 1) == '/')) {
+            return new FoundHtml(token.substring(0, token.length() - 1), pos, end + 1, "");
+        }
+
+        String[] parts = token.split(" "); // ignore attibutes
+        String endToken = "</" + parts[0] + ">";
+        int finish = text.indexOf(endToken, end + 1);
+        if(finish < 0) { // if end token not found, then stop at next
+            int next = text.indexOf("<", end + 1);
+            if(next < 0) {
+                return new FoundHtml(token, pos, length, text.substring(end + 1, length));
+            } else {
+                return new FoundHtml(token, pos, next, text.substring(end + 1, next));
+            }
+        }
+
+        int htmlFinishPos = finish + endToken.length();
+        return new FoundHtml(token, pos, htmlFinishPos, text.substring(end + 1, finish));
+    }
+
+    /**
+     * class for keeping track of an html tag that was found, it's name, it's contents, and position
+     */
+    private class FoundHtml {
+        public String html;
+        public String enclosed;
+        public int startPos;
+        public int htmlFinishPos;
+
+        public FoundHtml(String html, int startPos, int htmlFinishPos, String enclosed) {
+            this.html = html;
+            this.startPos = startPos;
+            this.htmlFinishPos = htmlFinishPos;
+            this.enclosed = enclosed;
+        }
     }
 }
