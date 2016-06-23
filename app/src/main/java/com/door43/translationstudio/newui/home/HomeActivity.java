@@ -55,6 +55,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
     public static final String TAG = HomeActivity.class.getSimpleName();
     public static final String STATE_UPDATED_PROJECT_ID = "state_updated_project_id";
+    public static final String STATE_TARGET_TRANSLATION_ID = "state_target_translation_id";
     private Library mLibrary;
     private Translator mTranslator;
     private Fragment mFragment;
@@ -63,6 +64,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     private ExamineImportsForCollisionsTask mExamineTask;
     private eDialogShown mDialogShown = eDialogShown.NONE;
     private String mUpdatedProject;
+    private String mTargetTranslationId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,27 +114,10 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                                 openLibrary();
                                 return true;
                             case R.id.action_import:
-                                FragmentTransaction backupFt = getFragmentManager().beginTransaction();
-                                Fragment backupPrev = getFragmentManager().findFragmentByTag(ImportDialog.TAG);
-                                if (backupPrev != null) {
-                                    backupFt.remove(backupPrev);
-                                }
-                                backupFt.addToBackStack(null);
-
-                                ImportDialog importDialog = new ImportDialog();
-                                importDialog.show(backupFt, ImportDialog.TAG);
+                                showImportDialog();
                                 return true;
                             case R.id.action_feedback:
-                                FragmentTransaction ft = getFragmentManager().beginTransaction();
-                                Fragment prev = getFragmentManager().findFragmentByTag("bugDialog");
-                                if (prev != null) {
-                                    ft.remove(prev);
-                                }
-                                ft.addToBackStack(null);
-
-                                FeedbackDialog dialog = new FeedbackDialog();
-                                dialog.show(ft, "bugDialog");
-
+                                showFeedbackDialog();
                                 return true;
                             case R.id.action_share_apk:
                                 try {
@@ -200,17 +185,42 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         } else {
             mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
             mUpdatedProject = savedInstanceState.getString(STATE_UPDATED_PROJECT_ID, null);
+            mTargetTranslationId = savedInstanceState.getString(STATE_TARGET_TRANSLATION_ID, null);
             restoreDialogs();
         }
     }
 
-    /**
-     * recreate the dialogs that were displayed before rotation
+   /**
+     * restore the dialogs that were displayed before rotation
      */
     private void restoreDialogs() {
+        // attach to dialog fragments
+        ImportDialog importDialog = (ImportDialog)getFragmentManager().findFragmentByTag(ImportDialog.TAG);
+        if(importDialog != null) {
+            showImportDialog();
+        }
+
+        FeedbackDialog feedbackDialog = (FeedbackDialog)getFragmentManager().findFragmentByTag(FeedbackDialog.TAG);
+        if(feedbackDialog != null) {
+            showFeedbackDialog();
+        }
+
+        ImportFromDoor43Dialog importFromDoor43Dialog = (ImportFromDoor43Dialog)getFragmentManager().findFragmentByTag(ImportFromDoor43Dialog.TAG);
+        if(importFromDoor43Dialog != null) {
+            showImportFromDoor43Dialog(mTargetTranslationId);
+        }
+
         switch(mDialogShown) {
             case PROJECT_CHANGED:
                 showMergePrompt(mUpdatedProject);
+                break;
+
+            case IMPORT_VERIFICATION:
+                displayImportVerification();
+                break;
+
+            case OPEN_LIBRARY:
+                openLibrary();
                 break;
 
             case NONE:
@@ -220,6 +230,30 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 Logger.e(TAG,"Unsupported restore dialog: " + mDialogShown.toString());
                 break;
         }
+    }
+
+    private void showFeedbackDialog() {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag(FeedbackDialog.TAG);
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        FeedbackDialog dialog = new FeedbackDialog();
+        dialog.show(ft, FeedbackDialog.TAG);
+    }
+
+    private void showImportDialog() {
+        FragmentTransaction backupFt = getFragmentManager().beginTransaction();
+        Fragment backupPrev = getFragmentManager().findFragmentByTag(ImportDialog.TAG);
+        if (backupPrev != null) {
+            backupFt.remove(backupPrev);
+        }
+        backupFt.addToBackStack(null);
+
+        ImportDialog importDialog = new ImportDialog();
+        importDialog.show(backupFt, ImportDialog.TAG);
     }
 
     @Override
@@ -262,6 +296,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
      * display the final import Results.
      */
     private void showImportResults(String projectPath, String projectNames, boolean success) {
+        mDialogShown = eDialogShown.IMPORT_RESULTS;
         String message;
         if(success) {
             String format = App.context().getResources().getString(R.string.import_project_success);
@@ -277,6 +312,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
                         mExamineTask.cleanup();
                         HomeActivity.this.finish();
                     }
@@ -306,12 +342,14 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
      * show dialog to verify that we want to import, restore or cancel.
      */
     private void displayImportVerification() {
+        mDialogShown = eDialogShown.IMPORT_VERIFICATION;
         AlertDialog.Builder dlg = new AlertDialog.Builder(this,R.style.AppTheme_Dialog);
             dlg.setTitle(R.string.label_import)
                 .setMessage(String.format(getResources().getString(R.string.confirm_import_target_translation), mExamineTask.mProjectsFound))
                 .setNegativeButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
                         mExamineTask.cleanup();
                         HomeActivity.this.finish();
                     }
@@ -319,6 +357,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 .setPositiveButton(R.string.label_restore, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
                         doArchiveImport(true);
                     }
                 });
@@ -349,6 +388,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
      * Triggers the process of opening the server library
      */
     private void openLibrary() {
+        mDialogShown = eDialogShown.OPEN_LIBRARY;
         new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                 .setTitle(R.string.update_library)
                 .setIcon(R.drawable.ic_local_library_black_24dp)
@@ -356,11 +396,17 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
                         Intent intent = new Intent(HomeActivity.this, ServerLibraryActivity.class);
                         startActivity(intent);
                     }
                 })
-                .setNegativeButton(R.string.no, null)
+                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                    }
+                })
                 .show();
     }
 
@@ -498,16 +544,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mDialogShown = eDialogShown.NONE;
-                        FragmentTransaction ft = getFragmentManager().beginTransaction();
-                        Fragment prev = getFragmentManager().findFragmentByTag(ImportDialog.TAG);
-                        if (prev != null) {
-                            ft.remove(prev);
-                        }
-                        ft.addToBackStack(null);
-
-                        ImportFromDoor43Dialog importDlg = new ImportFromDoor43Dialog();
-                        importDlg.doQuickLoad(targetTranslationId);
-                        importDlg.show(ft, ImportDialog.TAG);
+                        showImportFromDoor43Dialog(targetTranslationId);
                     }
                 })
                 .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
@@ -517,6 +554,20 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                     }
                 })
                 .show();
+    }
+
+    private void showImportFromDoor43Dialog(String targetTranslationId) {
+        mTargetTranslationId = targetTranslationId;
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag(ImportFromDoor43Dialog.TAG);
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        ImportFromDoor43Dialog importDlg = new ImportFromDoor43Dialog();
+        importDlg.doQuickLoad(targetTranslationId);
+        importDlg.show(ft, ImportFromDoor43Dialog.TAG);
     }
 
     @Override
@@ -584,6 +635,9 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         if(mUpdatedProject != null) {
             out.putString(STATE_UPDATED_PROJECT_ID, mUpdatedProject);
         }
+        if(mTargetTranslationId != null) {
+            out.putString(STATE_TARGET_TRANSLATION_ID, mTargetTranslationId);
+        }
         super.onSaveInstanceState(out);
     }
 
@@ -592,7 +646,10 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
      */
     public enum eDialogShown {
         NONE(0),
-        PROJECT_CHANGED(1);
+        PROJECT_CHANGED(1),
+        IMPORT_VERIFICATION(2),
+        OPEN_LIBRARY(3),
+        IMPORT_RESULTS(4);
 
         private int _value;
 

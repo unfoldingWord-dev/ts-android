@@ -1,6 +1,5 @@
 package com.door43.translationstudio.newui.publish;
 
-import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
@@ -15,7 +14,6 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.text.SpannableString;
 import android.text.Spanned;
-import android.text.method.LinkMovementMethod;
 import android.text.method.ScrollingMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.StyleSpan;
@@ -37,13 +35,9 @@ import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
-import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.newui.Door43LoginDialog;
 import com.door43.translationstudio.newui.FeedbackDialog;
-import com.door43.translationstudio.newui.MergeConflictsDialog;
-import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.tasks.CreateRepositoryTask;
-import com.door43.translationstudio.tasks.PullTargetTranslationTask;
 import com.door43.translationstudio.tasks.PushTargetTranslationTask;
 import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
 
@@ -52,14 +46,10 @@ import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.widget.ViewUtil;
 
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ResetCommand;
-import org.eclipse.jgit.merge.MergeStrategy;
 import org.sufficientlysecure.htmltextview.HtmlTextView;
 
 import java.io.File;
 import java.security.InvalidParameterException;
-import java.util.Map;
 
 
 /**
@@ -134,9 +124,7 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
                 if(App.isNetworkAvailable()) {
                     // make sure we have a gogs user
                     if(App.getProfile().gogsUser == null) {
-                        FragmentTransaction ft = getFragmentManager().beginTransaction();
-                        Door43LoginDialog dialog = new Door43LoginDialog();
-                        dialog.show(ft, Door43LoginDialog.TAG);
+                        showDoor43LoginDialog();
                         return;
                     }
 
@@ -230,9 +218,21 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
     }
 
     /**
-     * recreate the dialogs that were displayed before rotation
+     * restore the dialogs that were displayed before rotation
      */
     private void restoreDialogs() {
+        // attach to dialog fragments
+        FeedbackDialog feedbackDialog = (FeedbackDialog)getFragmentManager().findFragmentByTag(FeedbackDialog.TAG);
+        if(feedbackDialog != null) {
+            showFeedbackDialog(targetTranslation); // recreate
+        }
+
+        Door43LoginDialog loginDialog = (Door43LoginDialog)getFragmentManager().findFragmentByTag(Door43LoginDialog.TAG);
+        if(loginDialog != null) {
+            showDoor43LoginDialog(); // recreate
+        }
+
+        //recreate dialog last shown
         switch(mDialogShown) {
             case PUBLISH_FAILED:
                 notifyPublishFailed(targetTranslation);
@@ -257,6 +257,18 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
                 Logger.e(TAG,"Unsupported restore dialog: " + mDialogShown.toString());
                 break;
         }
+    }
+
+    private void showDoor43LoginDialog() {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag(Door43LoginDialog.TAG);
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        Door43LoginDialog dialog = new Door43LoginDialog();
+        dialog.show(ft, Door43LoginDialog.TAG);
     }
 
     /**
@@ -350,9 +362,15 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
                         Intent i = new Intent(Intent.ACTION_VIEW);
                         i.setData(Uri.parse(publishedUrl));
                         startActivity(i);
+                        mDialogShown = eDialogShown.NONE;
                     }
                 })
-                .setNegativeButton(R.string.dismiss, null)
+                .setNegativeButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                    }
+                })
                 .setNeutralButton(R.string.label_details, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -474,7 +492,6 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
      */
     private void notifyPublishFailed(final TargetTranslation targetTranslation) {
         mDialogShown = eDialogShown.PUBLISH_FAILED;
-        final Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), "en");
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.error)
                 .setMessage(R.string.upload_failed)
@@ -487,28 +504,32 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
                 .setNeutralButton(R.string.menu_bug, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
-
-                        // open bug report dialog
-                        FragmentTransaction ft = getFragmentManager().beginTransaction();
-                        Fragment prev = getFragmentManager().findFragmentByTag("bugDialog");
-                        if (prev != null) {
-                            ft.remove(prev);
-                        }
-                        ft.addToBackStack(null);
-
-                        FeedbackDialog feedbackDialog = new FeedbackDialog();
-                        Bundle args = new Bundle();
-                        String message = "Failed to publish the translation of " +
-                                project.name + " into " +
-                                targetTranslation.getTargetLanguageName()
-                                + ".\ntargetTranslation: " + targetTranslation.getId() +
-                                "\n--------\n\n";
-                        args.putString(FeedbackDialog.ARG_MESSAGE, message);
-                        feedbackDialog.setArguments(args);
-                        feedbackDialog.show(ft, "bugDialog");
+                        showFeedbackDialog(targetTranslation);
                     }
                 }).show();
+    }
+
+    private void showFeedbackDialog(TargetTranslation targetTranslation) {
+        final Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), "en");
+
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag(FeedbackDialog.TAG);
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        // open bug report dialog
+        FeedbackDialog feedbackDialog = new FeedbackDialog();
+        Bundle args = new Bundle();
+        String message = "Failed to publish the translation of " +
+                project.name + " into " +
+                targetTranslation.getTargetLanguageName()
+                + ".\ntargetTranslation: " + targetTranslation.getId() +
+                "\n--------\n\n";
+        args.putString(FeedbackDialog.ARG_MESSAGE, message);
+        feedbackDialog.setArguments(args);
+        feedbackDialog.show(ft, FeedbackDialog.TAG);
     }
 
     @Override
@@ -530,7 +551,7 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
     }
 
     /**
-     * for keeping track if dialog is being shown for orientation changes
+     * for keeping track which dialog is being shown for orientation changes (not for DialogFragments)
      */
     public enum eDialogShown {
         NONE(0),

@@ -61,13 +61,13 @@ import java.util.List;
  * Created by joel on 5/10/16.
  */
 public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTaskWatcher.OnFinishedListener {
-    private static final String STATE_REPOSITORIES = "state_repositories";
-    public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
-    public static final String STATE_TARGET_TRANSLATION_ID = "state_target_translation_id";
     public static final String TAG = ImportFromDoor43Dialog.class.getSimpleName();
-    public static final String STATE_IMPORT_COMPARE_STATUS = "state_import_compare_status";
-    public static final String STATE_MERGE_FROM_URL = "state_merge_from_url";
-    public static final String STATE_MANUAL_MERGE = "state_manual_merge";
+    private static final String STATE_REPOSITORIES = "state_repositories";
+    private static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
+    private static final String STATE_TARGET_TRANSLATION_ID = "state_target_translation_id";
+    private static final String STATE_IMPORT_COMPARE_STATUS = "state_import_compare_status";
+    private static final String STATE_MERGE_FROM_URL = "state_merge_from_url";
+    private static final String STATE_MANUAL_MERGE = "state_manual_merge";
     private SimpleTaskWatcher taskWatcher;
     private RestoreFromCloudAdapter adapter;
     private Translator translator;
@@ -197,16 +197,17 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     }
 
     /**
-     * recreate the dialogs that were displayed before rotation
+     * restore the dialogs that were displayed before rotation
      */
     private void restoreDialogs() {
-        // attach to dialogs
+        // attach to dialog fragments
         MergeConflictsDialog mergeConflictsDialog = (MergeConflictsDialog)getFragmentManager().findFragmentByTag(MergeConflictsDialog.TAG);
         if(mergeConflictsDialog != null) {
             attachMergeConflictListener(mergeConflictsDialog);
             return;
         }
 
+        //recreate dialog last shown
         switch(mDialogShown) {
             case IMPORT_FAILED:
                 notifyImportFailed();
@@ -520,7 +521,6 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     private void notifyMergeFailed(final TargetTranslation targetTranslation) {
         mDialogShown = eDialogShown.MERGE_FAILED;
 
-        final Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), "en");
         new AlertDialog.Builder(getActivity())
                 .setTitle(R.string.error)
                 .setMessage(R.string.import_failed_short)
@@ -533,11 +533,11 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 .setNeutralButton(R.string.menu_bug, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
+                        Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), "en");
 
                         // open bug report dialog
                         FragmentTransaction ft = getFragmentManager().beginTransaction();
-                        Fragment prev = getFragmentManager().findFragmentByTag("bugDialog");
+                        Fragment prev = getFragmentManager().findFragmentByTag(FeedbackDialog.TAG);
                         if (prev != null) {
                             ft.remove(prev);
                         }
@@ -552,14 +552,14 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                                 "\n--------\n\n";
                         args.putString(FeedbackDialog.ARG_MESSAGE, message);
                         feebackDlg.setArguments(args);
-                        feebackDlg.show(ft, "bugDialog");
+                        feebackDlg.show(ft, FeedbackDialog.TAG);
                     }
                 }).show();
     }
 
 
     /**
-     * for keeping track if dialog is being shown for orientation changes
+     * for keeping track which dialog is being shown for orientation changes (not for DialogFragments)
      */
     public enum eDialogShown {
         NONE(0),

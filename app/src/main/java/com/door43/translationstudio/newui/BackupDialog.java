@@ -44,7 +44,6 @@ import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.merge.MergeStrategy;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.security.InvalidParameterException;
 import java.util.Map;
@@ -54,14 +53,22 @@ import java.util.Map;
  */
 public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.OnFinishedListener {
 
+    public static final String TAG = BackupDialog.class.getName();
     public static final String ARG_TARGET_TRANSLATION_ID = "target_translation_id";
-    public static final String TAG = "backup-dialog";
     private static final String STATE_SETTING_DEVICE_ALIAS = "state_setting_device_alias";
+    public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
+    public static final String STATE_DO_MERGE = "state_do_merge";
+    public static final String STATE_ACCESS_FILE = "state_access_file";
+    public static final String STATE_DIALOG_MESSAGE = "state_dialog_message";
     public static final boolean FORCE_PUSH = true;
     private TargetTranslation targetTranslation;
     private SimpleTaskWatcher taskWatcher;
     private boolean settingDeviceAlias = false;
     private Button mBackupToCloudButton = null;
+    private boolean mManualMerge = false;
+    private eDialogShown mDialogShown = eDialogShown.NONE;
+    private String mAccessFile;
+    private String mDialogMessage;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -101,6 +108,10 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         if(savedInstanceState != null) {
             // check if returning from device alias dialog
             settingDeviceAlias = savedInstanceState.getBoolean(STATE_SETTING_DEVICE_ALIAS, false);
+            mManualMerge = savedInstanceState.getBoolean(STATE_DO_MERGE, false);
+            mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
+            mAccessFile = savedInstanceState.getString(STATE_ACCESS_FILE, null);
+            mDialogMessage = savedInstanceState.getString(STATE_DIALOG_MESSAGE, null);
         }
 
         Button dismissButton = (Button)v.findViewById(R.id.dismiss_button);
@@ -115,27 +126,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             @Override
             public void onClick(View v) {
                 // TODO: 11/18/2015 eventually we need to support bluetooth as well as an adhoc network
-                if(App.isNetworkAvailable()) {
-                    if(App.getDeviceNetworkAlias() == null) {
-                        // get device alias
-                        FragmentTransaction ft = getFragmentManager().beginTransaction();
-                        Fragment prev = getFragmentManager().findFragmentByTag(BackupDialog.TAG);
-                        if (prev != null) {
-                            ft.remove(prev);
-                        }
-                        ft.addToBackStack(null);
-
-                        settingDeviceAlias = true;
-                        DeviceNetworkAliasDialog dialog = new DeviceNetworkAliasDialog();
-                        dialog.show(ft, BackupDialog.TAG);
-                    } else {
-                        showP2PDialog();
-                    }
-                } else {
-                    Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.internet_not_available, Snackbar.LENGTH_LONG);
-                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                    snack.show();
-                }
+                showDeviceNetworkAliasDialog();
             }
         });
 
@@ -146,9 +137,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                 if(App.isNetworkAvailable()) {
                     // make sure we have a gogs user
                     if(App.getProfile().gogsUser == null) {
-                        FragmentTransaction ft = getFragmentManager().beginTransaction();
-                        Door43LoginDialog dialog = new Door43LoginDialog();
-                        dialog.show(ft, Door43LoginDialog.TAG);
+                        showDoor43LoginDialog();
                         return;
                     }
 
@@ -167,22 +156,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             @Override
             public void onClick(View v) {
                 if (SdUtils.doWeNeedToRequestSdCardAccess()) {
-                    new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
-                        .setTitle(R.string.enable_sd_card_access_title)
-                        .setMessage(Html.fromHtml(getString(R.string.enable_sd_card_access)))
-                        .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                SdUtils.triggerStorageAccessFramework(getActivity());
-                            }
-                        })
-                        .setNegativeButton(R.string.label_skip, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                doSdCardBackup(filename);
-                            }
-                        })
-                        .show();
+                    showAccessRequestDialog(filename);
                 } else {
                     doSdCardBackup(filename);
                 }
@@ -196,7 +170,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                 try {
                     App.getTranslator().exportArchive(targetTranslation, exportFile);
                 } catch (Exception e) {
-                    Logger.e(BackupDialog.class.getName(), "Failed to export the target translation " + targetTranslation.getId(), e);
+                    Logger.e(TAG, "Failed to export the target translation " + targetTranslation.getId(), e);
                 }
                 if (exportFile.exists()) {
                     Uri u = FileProvider.getUriForFile(getActivity(), "com.door43.translationstudio.fileprovider", exportFile);
@@ -228,13 +202,122 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             taskWatcher.watch(pushTask);
         }
 
-        // attach to dialogs
+        restoreDialogs();
+        return v;
+    }
+
+
+        /**
+          * restore the dialogs that were displayed before rotation
+          */
+    private void restoreDialogs() {
+        // attach to dialog fragments
         MergeConflictsDialog mergeConflictsDialog = (MergeConflictsDialog)getFragmentManager().findFragmentByTag(MergeConflictsDialog.TAG);
         if(mergeConflictsDialog != null) {
             attachMergeConflictListener(mergeConflictsDialog);
         }
 
-        return v;
+        DeviceNetworkAliasDialog deviceNetworkAliasDialog = (DeviceNetworkAliasDialog)getFragmentManager().findFragmentByTag(DeviceNetworkAliasDialog.TAG);
+        if(deviceNetworkAliasDialog != null) {
+            showDeviceNetworkAliasDialog();
+        }
+
+        Door43LoginDialog door43LoginDialog = (Door43LoginDialog)getFragmentManager().findFragmentByTag(Door43LoginDialog.TAG);
+        if(door43LoginDialog != null) {
+            showDoor43LoginDialog();
+        }
+
+        switch(mDialogShown) {
+            case ACCESS_REQUEST:
+                showAccessRequestDialog(mAccessFile);
+                break;
+
+            case AUTH_FAILURE:
+                showAuthFailure();
+                break;
+
+            case SHOW_BACKUP_RESULTS:
+                showBackupResults(mDialogMessage);
+                break;
+
+            case SHOW_PUSH_SUCCESS:
+                showPushSuccess(mDialogMessage);
+                break;
+
+            case BACKUP_FAILED:
+                notifyBackupFailed(targetTranslation);
+                break;
+
+            case PUSH_REJECTED:
+                showPushRejection(targetTranslation);
+                break;
+
+            case NONE:
+                break;
+
+            default:
+                Logger.e(TAG,"Unsupported restore dialog: " + mDialogShown.toString());
+                break;
+        }
+    }
+
+    private void showDoor43LoginDialog() {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag(Door43LoginDialog.TAG);
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        Door43LoginDialog dialog = new Door43LoginDialog();
+        dialog.show(ft, Door43LoginDialog.TAG);
+    }
+
+    private void showDeviceNetworkAliasDialog() {
+        if(App.isNetworkAvailable()) {
+            if(App.getDeviceNetworkAlias() == null) {
+                // get device alias
+                FragmentTransaction ft = getFragmentManager().beginTransaction();
+                Fragment prev = getFragmentManager().findFragmentByTag(DeviceNetworkAliasDialog.TAG);
+                if (prev != null) {
+                    ft.remove(prev);
+                }
+                ft.addToBackStack(null);
+
+                settingDeviceAlias = true;
+                DeviceNetworkAliasDialog dialog = new DeviceNetworkAliasDialog();
+                dialog.show(ft, DeviceNetworkAliasDialog.TAG);
+            } else {
+                showP2PDialog();
+            }
+        } else {
+            Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.internet_not_available, Snackbar.LENGTH_LONG);
+            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+            snack.show();
+        }
+    }
+
+    private void showAccessRequestDialog(final String filename) {
+        mDialogShown = eDialogShown.ACCESS_REQUEST;
+        mAccessFile = filename;
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                .setTitle(R.string.enable_sd_card_access_title)
+                .setMessage(Html.fromHtml(getString(R.string.enable_sd_card_access)))
+                .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                        SdUtils.triggerStorageAccessFramework(getActivity());
+                    }
+                })
+                .setNegativeButton(R.string.label_skip, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                        doSdCardBackup(filename);
+                    }
+                })
+                .show();
     }
 
     /**
@@ -284,7 +367,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                 } catch(Exception e2) {
                 }
             }
-            Logger.e(BackupDialog.class.getName(), "Failed to export the target translation " + targetTranslation.getId(), e);
+            Logger.e(TAG, "Failed to export the target translation " + targetTranslation.getId(), e);
         }
 
         if (success) {
@@ -299,10 +382,21 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         if(filePath != null) {
             message += "\n" + filePath;
         }
-        new AlertDialog.Builder(getActivity(),R.style.AppTheme_Dialog)
+        showBackupResults(message);
+    }
+
+    private void showBackupResults(String message) {
+        mDialogShown = eDialogShown.SHOW_BACKUP_RESULTS;
+        mDialogMessage = message;
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.backup_to_sd)
                 .setMessage(message)
-                .setNeutralButton(R.string.dismiss, null)
+                .setNeutralButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                    }
+                })
                 .show();
     }
 
@@ -397,23 +491,10 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
 
             if(status == PushTargetTranslationTask.Status.OK) {
                 Logger.i(this.getClass().getName(), "The target translation " + targetTranslation.getId() + " was pushed to the server");
-                new AlertDialog.Builder(getActivity(),R.style.AppTheme_Dialog)
-                        .setTitle(R.string.success)
-                        .setMessage(R.string.project_uploaded)
-                        .setPositiveButton(R.string.dismiss, null)
-                        .setNeutralButton(R.string.label_details, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
-                                    .setTitle(R.string.project_uploaded)
-                                    .setMessage(message)
-                                    .setPositiveButton(R.string.dismiss, null)
-                                    .show();
-                            }
-                        }).show();
+                showPushSuccess(message);
             } else if(status == PushTargetTranslationTask.Status.REJECTED) {
                 Logger.i(this.getClass().getName(), "Push Rejected");
-                showRejection(targetTranslation);
+                showPushRejection(targetTranslation);
             } else if(status == PushTargetTranslationTask.Status.AUTH_FAILURE) {
                 Logger.i(this.getClass().getName(), "Authentication failed");
                 showAuthFailure();
@@ -421,6 +502,30 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                 notifyBackupFailed(targetTranslation);
             }
         }
+    }
+
+    private void showPushSuccess(final String message) {
+        mDialogShown = eDialogShown.SHOW_PUSH_SUCCESS;
+        mDialogMessage = message;
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                .setTitle(R.string.success)
+                .setMessage(R.string.project_uploaded)
+                .setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                    }
+                })
+                .setNeutralButton(R.string.label_details, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                            .setTitle(R.string.project_uploaded)
+                            .setMessage(message)
+                            .setPositiveButton(R.string.dismiss, null)
+                            .show();
+                    }
+                }).show();
     }
 
     private void notifyMergeConflicts(Map<String, int[][]> conflicts) {
@@ -456,11 +561,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             @Override
             public void onKeepServer() {
                 try {
-                    Git git = targetTranslation.getRepo().getGit();
-                    ResetCommand resetCommand = git.reset();
-                    resetCommand.setMode(ResetCommand.ResetType.HARD)
-                            .setRef("backup-master")
-                            .call();
+                    resetToMasterBackup(targetTranslation);
 
                     // try to pull again
                     PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, MergeStrategy.THEIRS);
@@ -475,11 +576,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             @Override
             public void onKeepLocal() {
                 try {
-                    Git git = targetTranslation.getRepo().getGit();
-                    ResetCommand resetCommand = git.reset();
-                    resetCommand.setMode(ResetCommand.ResetType.HARD)
-                            .setRef("backup-master")
-                            .call();
+                    resetToMasterBackup(targetTranslation);
 
                     // try to pull again
                     PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, MergeStrategy.OURS);
@@ -494,11 +591,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             @Override
             public void onCancel() {
                 try {
-                    Git git = targetTranslation.getRepo().getGit();
-                    ResetCommand resetCommand = git.reset();
-                    resetCommand.setMode(ResetCommand.ResetType.HARD)
-                            .setRef("backup-master")
-                            .call();
+                    resetToMasterBackup(targetTranslation);
                 } catch (Exception e) {
                     Logger.e(this.getClass().getName(), "Failed to restore local changes", e);
                 }
@@ -513,72 +606,94 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
      * @param targetTranslation
      */
     private void notifyBackupFailed(final TargetTranslation targetTranslation) {
-        final Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), "en");
+        mDialogShown = eDialogShown.BACKUP_FAILED;
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
         .setTitle(R.string.backup)
                 .setMessage(R.string.upload_failed)
-                .setPositiveButton(R.string.dismiss, null)
+                .setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                    }
+                })
                 .setNeutralButton(R.string.menu_bug, new DialogInterface.OnClickListener(){
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                         // open bug report dialog
-                        FragmentTransaction ft = getFragmentManager().beginTransaction();
-                        Fragment prev = getFragmentManager().findFragmentByTag("bugDialog");
-                        if (prev != null) {
-                            ft.remove(prev);
-                        }
-                        ft.addToBackStack(null);
-
-                        FeedbackDialog feedbackDialog = new FeedbackDialog();
-                        Bundle args = new Bundle();
-                        String message = "Failed to backup the translation of " +
-                                project.name + " into " +
-                                targetTranslation.getTargetLanguageName()
-                                + ".\ntargetTranslation: " + targetTranslation.getId() +
-                                "\n--------\n\n";
-                        args.putString(FeedbackDialog.ARG_MESSAGE, message);
-                        feedbackDialog.setArguments(args);
-                        feedbackDialog.show(ft, "bugDialog");
+                        showFeedbackDialog(targetTranslation);
                     }
                 }).show();
     }
 
+    private void showFeedbackDialog(TargetTranslation targetTranslation) {
+        Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), "en");
 
-    public void showRejection(final TargetTranslation targetTranslation) {
+        // open bug report dialog
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag(FeedbackDialog.TAG);
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        FeedbackDialog feedbackDialog = new FeedbackDialog();
+        Bundle args = new Bundle();
+        String message = "Failed to backup the translation of " +
+                project.name + " into " +
+                targetTranslation.getTargetLanguageName()
+                + ".\ntargetTranslation: " + targetTranslation.getId() +
+                "\n--------\n\n";
+        args.putString(FeedbackDialog.ARG_MESSAGE, message);
+        feedbackDialog.setArguments(args);
+        feedbackDialog.show(ft, FeedbackDialog.TAG);
+    }
+
+
+    public void showPushRejection(final TargetTranslation targetTranslation) {
+        mDialogShown = eDialogShown.PUSH_REJECTED;
+        mManualMerge = true;
+        resetToMasterBackup(targetTranslation);
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.upload_failed)
                 .setMessage(R.string.push_rejected)
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        PushTargetTranslationTask pushtask = new PushTargetTranslationTask(targetTranslation, false, FORCE_PUSH);
-                        taskWatcher.watch(pushtask);
-                        TaskManager.addTask(pushtask, PushTargetTranslationTask.TASK_ID);
+                        mDialogShown = eDialogShown.NONE;
+                        // TODO: 6/23/16
                     }
                 })
                 .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        try { // restore before pull
-                            Git git = targetTranslation.getRepo().getGit();
-                            ResetCommand resetCommand = git.reset();
-                            resetCommand.setMode(ResetCommand.ResetType.HARD)
-                                    .setRef("backup-master")
-                                    .call();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        mDialogShown = eDialogShown.NONE;
+                        BackupDialog.this.dismiss();
                     }
                 }).show();
     }
 
+    private boolean resetToMasterBackup(TargetTranslation targetTranslation) {
+        try { // restore state before the pull
+            Git git = targetTranslation.getRepo().getGit();
+            ResetCommand resetCommand = git.reset();
+            resetCommand.setMode(ResetCommand.ResetType.HARD)
+                    .setRef("backup-master")
+                    .call();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
     public void showAuthFailure() {
+        mDialogShown = eDialogShown.AUTH_FAILURE;
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.upload_failed)
                 .setMessage(R.string.auth_failure_retry)
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
                         RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(true);
                         taskWatcher.watch(keyTask);
                         TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
@@ -587,6 +702,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                 .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
                         notifyBackupFailed(targetTranslation);
                     }
                 }).show();
@@ -596,6 +712,14 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     public void onSaveInstanceState(Bundle out) {
         // remember if the device alias dialog is open
         out.putBoolean(STATE_SETTING_DEVICE_ALIAS, settingDeviceAlias);
+        out.putBoolean(STATE_DO_MERGE, mManualMerge);
+        out.putInt(STATE_DO_MERGE, mDialogShown.getValue());
+        if(mAccessFile != null) {
+            out.putString(STATE_ACCESS_FILE, mAccessFile);
+        }
+        if(mDialogMessage != null) {
+            out.putString(STATE_DIALOG_MESSAGE, mDialogMessage);
+        }
         super.onSaveInstanceState(out);
     }
 
@@ -606,5 +730,37 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         }
 
         super.onDestroy();
+    }
+
+    /**
+     * for keeping track which dialog is being shown for orientation changes (not for DialogFragments)
+     */
+    public enum eDialogShown {
+        NONE(0),
+        PUSH_REJECTED(1),
+        AUTH_FAILURE(2),
+        BACKUP_FAILED(3),
+        ACCESS_REQUEST(4),
+        SHOW_BACKUP_RESULTS(5),
+        SHOW_PUSH_SUCCESS(6);
+
+        private int _value;
+
+        eDialogShown(int Value) {
+            this._value = Value;
+        }
+
+        public int getValue() {
+            return _value;
+        }
+
+        public static eDialogShown fromInt(int i) {
+            for (eDialogShown b : eDialogShown.values()) {
+                if (b.getValue() == i) {
+                    return b;
+                }
+            }
+            return null;
+        }
     }
 }
