@@ -46,7 +46,6 @@ import org.eclipse.jgit.merge.MergeStrategy;
 import java.io.File;
 import java.io.OutputStream;
 import java.security.InvalidParameterException;
-import java.util.Map;
 
 /**
  * Created by joel on 10/5/2015.
@@ -69,6 +68,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     private eDialogShown mDialogShown = eDialogShown.NONE;
     private String mAccessFile;
     private String mDialogMessage;
+    private String mRemoteURL;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -141,9 +141,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                         return;
                     }
 
-                    PullTargetTranslationTask task = new PullTargetTranslationTask(targetTranslation);
-                    taskWatcher.watch(task);
-                    TaskManager.addTask(task, PullTargetTranslationTask.TASK_ID);
+                    doPullTargetTranslationTask(targetTranslation, MergeStrategy.RECURSIVE);
                 } else {
                     Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.internet_not_available, Snackbar.LENGTH_LONG);
                     ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
@@ -212,11 +210,6 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
           */
     private void restoreDialogs() {
         // attach to dialog fragments
-        MergeConflictsDialog mergeConflictsDialog = (MergeConflictsDialog)getFragmentManager().findFragmentByTag(MergeConflictsDialog.TAG);
-        if(mergeConflictsDialog != null) {
-            attachMergeConflictListener(mergeConflictsDialog);
-        }
-
         DeviceNetworkAliasDialog deviceNetworkAliasDialog = (DeviceNetworkAliasDialog)getFragmentManager().findFragmentByTag(DeviceNetworkAliasDialog.TAG);
         if(deviceNetworkAliasDialog != null) {
             showDeviceNetworkAliasDialog();
@@ -228,12 +221,20 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         }
 
         switch(mDialogShown) {
-            case ACCESS_REQUEST:
-                showAccessRequestDialog(mAccessFile);
+            case PUSH_REJECTED:
+                showPushRejection(targetTranslation);
                 break;
 
             case AUTH_FAILURE:
                 showAuthFailure();
+                break;
+
+            case BACKUP_FAILED:
+                notifyBackupFailed(targetTranslation);
+                break;
+
+            case ACCESS_REQUEST:
+                showAccessRequestDialog(mAccessFile);
                 break;
 
             case SHOW_BACKUP_RESULTS:
@@ -244,12 +245,8 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                 showPushSuccess(mDialogMessage);
                 break;
 
-            case BACKUP_FAILED:
-                notifyBackupFailed(targetTranslation);
-                break;
-
-            case PUSH_REJECTED:
-                showPushRejection(targetTranslation);
+            case MERGE_CONFLICT:
+                showMergeConflict(targetTranslation);
                 break;
 
             case NONE:
@@ -433,7 +430,9 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     public void onFinished(ManagedTask task) {
         taskWatcher.stop();
         if(task instanceof PullTargetTranslationTask) {
-            PullTargetTranslationTask.Status status = ((PullTargetTranslationTask)task).getStatus();
+            PullTargetTranslationTask pullTask = (PullTargetTranslationTask) task;
+            mRemoteURL = pullTask.getSourceURL();
+            PullTargetTranslationTask.Status status = pullTask.getStatus();
             //  TRICKY: we continue to push for unknown status in case the repo was just created (the missing branch is an error)
             // the pull task will catch any errors
             if(status == PullTargetTranslationTask.Status.UP_TO_DATE
@@ -462,7 +461,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                 TaskManager.addTask(repoTask, CreateRepositoryTask.TASK_ID);
             } else if(status == PullTargetTranslationTask.Status.MERGE_CONFLICTS) {
                 Logger.i(this.getClass().getName(), "The server contains conflicting changes for " + targetTranslation.getId());
-                notifyMergeConflicts(((PullTargetTranslationTask)task).getConflicts());
+                showMergeConflict(targetTranslation);
             } else {
                 notifyBackupFailed(targetTranslation);
             }
@@ -470,18 +469,14 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             if(((RegisterSSHKeysTask)task).isSuccess()) {
                 Logger.i(this.getClass().getName(), "SSH keys were registered with the server");
                 // try to push again
-                PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation);
-                taskWatcher.watch(pullTask);
-                TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
+                doPullTargetTranslationTask(targetTranslation, MergeStrategy.THEIRS);
             } else {
                 notifyBackupFailed(targetTranslation);
             }
         } else if(task instanceof CreateRepositoryTask) {
             if(((CreateRepositoryTask)task).isSuccess()) {
                 Logger.i(this.getClass().getName(), "A new repository " + targetTranslation.getId() + " was created on the server");
-                PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation);
-                taskWatcher.watch(pullTask);
-                TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
+                doPullTargetTranslationTask(targetTranslation, MergeStrategy.THEIRS);
             } else {
                 notifyBackupFailed(targetTranslation);
             }
@@ -492,7 +487,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             if(status == PushTargetTranslationTask.Status.OK) {
                 Logger.i(this.getClass().getName(), "The target translation " + targetTranslation.getId() + " was pushed to the server");
                 showPushSuccess(message);
-            } else if(status == PushTargetTranslationTask.Status.REJECTED) {
+            } else if(status.isRejected()) {
                 Logger.i(this.getClass().getName(), "Push Rejected");
                 showPushRejection(targetTranslation);
             } else if(status == PushTargetTranslationTask.Status.AUTH_FAILURE) {
@@ -528,76 +523,52 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                 }).show();
     }
 
-    private void notifyMergeConflicts(Map<String, int[][]> conflicts) {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        MergeConflictsDialog dialog = new MergeConflictsDialog();
-        attachMergeConflictListener(dialog);
-        dialog.show(ft, MergeConflictsDialog.TAG);
+    private void showMergeConflict(final TargetTranslation targetTranslation) {
+        mDialogShown = eDialogShown.MERGE_CONFLICT;
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                .setTitle(R.string.upload_failed)
+                .setMessage(R.string.push_rejected)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                        doManualMerge();
+                    }
+                })
+                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                        resetToMasterBackup(targetTranslation);
+                        BackupDialog.this.dismiss();
+                    }
+                }).show();
     }
 
-    private void attachMergeConflictListener(MergeConflictsDialog dialog) {
-        dialog.setOnClickListener(new MergeConflictsDialog.OnClickListener() {
-            @Override
-            public void onReview() {
-                if(getActivity() instanceof  TargetTranslationActivity) {
-                    ((TargetTranslationActivity) getActivity()).notifyDatasetChanged();
-                    BackupDialog.this.dismiss();
-                    // TODO: 4/20/16 it woulid be nice to navigate directly to the first conflict
-                } else {
-                    // ask parent activity to navigate to a new activity
-                    Intent intent = new Intent(getActivity(), TargetTranslationActivity.class);
-                    Bundle args = new Bundle();
-                    args.putString(App.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
-                    // TODO: 4/20/16 it woulid be nice to navigate directly to the first conflict
+    private void doManualMerge() {
+        if(getActivity() instanceof TargetTranslationActivity) {
+            ((TargetTranslationActivity) getActivity()).notifyDatasetChanged();
+            BackupDialog.this.dismiss();
+            // TODO: 4/20/16 it would be nice to navigate directly to the first conflict
+        } else {
+            // ask parent activity to navigate to a new activity
+            Intent intent = new Intent(getActivity(), TargetTranslationActivity.class);
+            Bundle args = new Bundle();
+            args.putString(App.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
+            // TODO: 4/20/16 it would be nice to navigate directly to the first conflict
 //                args.putString(App.EXTRA_CHAPTER_ID, chapterId);
 //                args.putString(App.EXTRA_FRAME_ID, frameId);
-                    args.putString(App.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
-                    intent.putExtras(args);
-                    startActivity(intent);
-                    getActivity().finish();
-                }
-            }
+            args.putString(App.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
+            intent.putExtras(args);
+            startActivity(intent);
+            getActivity().finish();
+        }
+    }
 
-            @Override
-            public void onKeepServer() {
-                try {
-                    resetToMasterBackup(targetTranslation);
-
-                    // try to pull again
-                    PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, MergeStrategy.THEIRS);
-                    taskWatcher.watch(pullTask);
-                    TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
-                } catch (Exception e) {
-                    Logger.e(this.getClass().getName(), "Failed to keep server changes durring publish", e);
-                    notifyBackupFailed(targetTranslation);
-                }
-            }
-
-            @Override
-            public void onKeepLocal() {
-                try {
-                    resetToMasterBackup(targetTranslation);
-
-                    // try to pull again
-                    PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, MergeStrategy.OURS);
-                    taskWatcher.watch(pullTask);
-                    TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
-                } catch (Exception e) {
-                    Logger.e(this.getClass().getName(), "Failed to keep local changes durring publish", e);
-                    notifyBackupFailed(targetTranslation);
-                }
-            }
-
-            @Override
-            public void onCancel() {
-                try {
-                    resetToMasterBackup(targetTranslation);
-                } catch (Exception e) {
-                    Logger.e(this.getClass().getName(), "Failed to restore local changes", e);
-                }
-                // TODO: 4/20/16 notify canceled
-            }
-        });
+    private void doPullTargetTranslationTask(TargetTranslation targetTranslation, MergeStrategy theirs) {
+        PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, theirs);
+        taskWatcher.watch(pullTask);
+        TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
     }
 
     /**
@@ -647,11 +618,9 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         feedbackDialog.show(ft, FeedbackDialog.TAG);
     }
 
-
     public void showPushRejection(final TargetTranslation targetTranslation) {
         mDialogShown = eDialogShown.PUSH_REJECTED;
-        mManualMerge = true;
-        resetToMasterBackup(targetTranslation);
+
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.upload_failed)
                 .setMessage(R.string.push_rejected)
@@ -659,13 +628,14 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mDialogShown = eDialogShown.NONE;
-                        // TODO: 6/23/16
+                        doManualMerge();
                     }
                 })
                 .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mDialogShown = eDialogShown.NONE;
+                        resetToMasterBackup(targetTranslation);
                         BackupDialog.this.dismiss();
                     }
                 }).show();
@@ -712,7 +682,6 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     public void onSaveInstanceState(Bundle out) {
         // remember if the device alias dialog is open
         out.putBoolean(STATE_SETTING_DEVICE_ALIAS, settingDeviceAlias);
-        out.putBoolean(STATE_DO_MERGE, mManualMerge);
         out.putInt(STATE_DO_MERGE, mDialogShown.getValue());
         if(mAccessFile != null) {
             out.putString(STATE_ACCESS_FILE, mAccessFile);
@@ -742,7 +711,8 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         BACKUP_FAILED(3),
         ACCESS_REQUEST(4),
         SHOW_BACKUP_RESULTS(5),
-        SHOW_PUSH_SUCCESS(6);
+        SHOW_PUSH_SUCCESS(6),
+        MERGE_CONFLICT(7);
 
         private int _value;
 

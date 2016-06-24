@@ -316,7 +316,7 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
                 CreateRepositoryTask repoTask = new CreateRepositoryTask(targetTranslation);
                 taskWatcher.watch(repoTask);
                 TaskManager.addTask(repoTask, CreateRepositoryTask.TASK_ID);
-            } else if (status == PushTargetTranslationTask.Status.REJECTED) {
+            } else if (status.isRejected()) {
                 showPushFailure();
             } else {
                 notifyPublishFailed(targetTranslation);

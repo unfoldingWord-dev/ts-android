@@ -4,12 +4,12 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.support.annotation.Nullable;
 
-import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.revwalk.RevWalkUtils;
 import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.git.Repo;
+import com.door43.translationstudio.git.TransportCallback;
 import com.door43.translationstudio.util.NumericStringComparator;
 import com.door43.util.FileUtilities;
 import com.door43.util.Manifest;
@@ -27,7 +27,6 @@ import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.TagCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.BranchTrackingStatus;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
@@ -1199,7 +1198,8 @@ public class TargetTranslation {
         SAME(0),
         BEHIND(1),
         AHEAD(2),
-        DIVERGED(3);
+        DIVERGED(3),
+        UNKNOWN(4);
 
         private int _value;
 
@@ -1222,9 +1222,26 @@ public class TargetTranslation {
     }
 
     /**
+     * Checks the status of current project compared to remote.  Not working yet, need to figure out how to add in the credentials.
+     * @param remoteURL
+     * @throws Exception
+     */
+    public TrackingStatus getRemoteStatus(String remoteURL) throws Exception {
+        commitSync();
+
+        Repo repo = getRepo();
+        Repository repository = repo.getGit().getRepository();
+
+        Ref newBranch = loadRemoteIntoNewBranch(repo, remoteURL);
+        Ref master = repository.getRef("master");
+
+        // compare commits of "master" and "new" branches
+        return compareBranches(repository, master, newBranch);
+    }
+
+    /**
      * Checks the commit status of current project compared to folder
      * @param newDir
-     * @return boolean false if there were merge conflicts
      * @throws Exception
      */
     public TrackingStatus getCommitStatus(File newDir) throws Exception {
@@ -1236,42 +1253,109 @@ public class TargetTranslation {
         commitSync();
 
         Repo repo = getRepo();
+        Repository repository = repo.getGit().getRepository();
+
+        String remote = newDir.getAbsolutePath();
+        Ref newBranch = loadRemoteIntoNewBranch(repo, remote);
+        Ref master = repository.getRef("master");
+
+        // compare commits of "master" and "new" branches
+        return compareBranches(repository, master, newBranch);
+    }
+
+    private Ref loadRemoteIntoNewBranch(Repo repo, String remote) throws IOException, GitAPIException {
+        Git git = repo.getGit();
 
         // attach remote
         repo.deleteRemote("new");
-        repo.setRemote("new", newDir.getAbsolutePath());
-        FetchCommand fetch = repo.getGit().fetch();
+        repo.setRemote("new", remote);
+
+        //update remote
+        FetchCommand fetch = git.fetch();
         fetch.setRemote("new");
+        fetch.setTransportConfigCallback(new TransportCallback());
         FetchResult fetchResult = fetch.call();
 
         // delete old "new" branch
-        DeleteBranchCommand deleteBranch = repo.getGit().branchDelete();
+        DeleteBranchCommand deleteBranch = git.branchDelete();
         deleteBranch.setBranchNames("new");
         deleteBranch.setForce(true);
         deleteBranch.call();
 
-        Repository repository = repo.getGit().getRepository();
-        Ref master = repository.getRef("master");
-
         // create "new" branch loaded with contents of newDir
-        CreateBranchCommand branch = repo.getGit().branchCreate();
+        CreateBranchCommand branch = git.branchCreate();
+        branch.setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.NOTRACK);
         branch.setName("new");
         branch.setForce(true);
         branch.setStartPoint("new/master");
-        Ref newBranch = branch.call();
-
-        // compare commits of "master" and "new" branches
-        return compareCommits(repository, master, newBranch);
+        return branch.call();
     }
 
     /**
      * compare both branches by checking ahead and behind counts
-     * @param repository
      * @param baseBranch
      * @param otherBranch
      * @return
      */
-    private TrackingStatus compareCommits(Repository repository, Ref baseBranch, Ref otherBranch) {
+    public TrackingStatus compareBranches(String baseBranch, String otherBranch) {
+        Repo repo = getRepo();
+        Repository repository = null;
+        try {
+            Git git = repo.getGit();
+            repository = git.getRepository();
+            Ref base = repository.getRef(baseBranch);
+            Ref other = repository.getRef(otherBranch);
+            return compareBranches( repository, base, other);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * compare both branches by checking ahead and behind counts
+     * @return
+     */
+    public void compareAllBranches(String comment) {
+        Logger.i(TAG, comment);
+
+        Repo repo = getRepo();
+        Repository repository = null;
+        try {
+            Git git = repo.getGit();
+            repository = git.getRepository();
+
+            List<Ref> refs = git.branchList().call();
+            if(refs.size() == 1) { // if only one then just show it
+                Ref base = refs.get(0);
+                Logger.i(TAG, "Branch: " + base + " " + base.getName() + " " + base.getObjectId().getName());
+                Logger.i(TAG, "Only one");
+            }
+            for (int i = 0; i < refs.size() - 1; i++) {
+                Ref base = refs.get(i);
+                Logger.i(TAG, "Branch: " + base + " " + base.getName() + " " + base.getObjectId().getName());
+                for (int j = i+1; j < refs.size(); j++) {
+                    Logger.i(TAG, "Branch: " + base + " " + base.getName() + " " + base.getObjectId().getName());
+                    Ref other = refs.get(j);
+                    Logger.i(TAG, "Branch: " + other + " " + other.getName() + " " + other.getObjectId().getName());
+                    TrackingStatus trackingStatus = compareBranches(repository, base, other);
+                    Logger.i(TAG, "Compare: " + trackingStatus.toString());
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+      * compare both branches by checking ahead and behind counts
+      * @param repository
+      * @param baseBranch
+      * @param otherBranch
+      * @return
+      */
+    private TrackingStatus compareBranches(Repository repository, Ref baseBranch, Ref otherBranch) {
         int aheadCount;
         int behindCount;
         RevWalk walk = new RevWalk( repository );
@@ -1286,6 +1370,8 @@ public class TargetTranslation {
             walk.setRevFilter(RevFilter.ALL);
             aheadCount = RevWalkUtils.count(walk, baseCommit, mergeBase);
             behindCount = RevWalkUtils.count(walk, otherCommit, mergeBase);
+            Logger.i(TAG, "aheadCount: " + aheadCount);
+            Logger.i(TAG, "behindCount: " + behindCount);
         } catch (Exception e) {
             e.printStackTrace();
             return TrackingStatus.DIVERGED;

@@ -193,6 +193,7 @@ public class PullTargetTranslationTask extends ManagedTask {
             } else {
                 this.status = Status.UP_TO_DATE;
             }
+
             return "message";
         } catch (TransportException e) {
             Logger.e(this.getClass().getName(), e.getMessage(), e);
@@ -236,6 +237,10 @@ public class PullTargetTranslationTask extends ManagedTask {
 
     public Map<String, int[][]> getConflicts() {
         return conflicts;
+    }
+
+    public String getSourceURL() {
+        return sourceURL;
     }
 
     public enum Status {
