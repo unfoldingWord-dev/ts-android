@@ -200,7 +200,6 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             taskWatcher.watch(pushTask);
         }
 
-        restoreDialogs();
         return v;
     }
 
@@ -403,6 +402,8 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             settingDeviceAlias = false;
             showP2PDialog();
         }
+
+        restoreDialogs();
         super.onResume();
     }
 
@@ -686,6 +687,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         if(mAccessFile != null) {
             out.putString(STATE_ACCESS_FILE, mAccessFile);
         }
+        out.putInt(STATE_DIALOG_SHOWN, mDialogShown.getValue());
         if(mDialogMessage != null) {
             out.putString(STATE_DIALOG_MESSAGE, mDialogMessage);
         }

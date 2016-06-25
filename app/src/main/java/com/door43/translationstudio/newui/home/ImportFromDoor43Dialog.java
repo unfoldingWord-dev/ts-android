@@ -192,8 +192,13 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
             taskWatcher.watch(cloneTask);
         }
 
-        restoreDialogs();
         return v;
+    }
+
+    @Override
+    public void onResume() {
+        restoreDialogs();
+        super.onResume();
     }
 
     /**
