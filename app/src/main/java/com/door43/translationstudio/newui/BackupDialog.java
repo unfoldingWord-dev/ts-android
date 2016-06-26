@@ -204,20 +204,37 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     }
 
 
-        /**
-          * restore the dialogs that were displayed before rotation
-          */
+    /** text for presence of DialogFragment by tag
+     *
+     * @param tag
+     * @return
+     */
+    private boolean isDialogFragmentPresent(String tag) {
+        Fragment fragment = getFragmentManager().findFragmentByTag(tag);
+        return (fragment != null);
+    }
+
+    /**
+      * restore the dialogs that were displayed before rotation
+      */
     private void restoreDialogs() {
         // attach to dialog fragments
-        DeviceNetworkAliasDialog deviceNetworkAliasDialog = (DeviceNetworkAliasDialog)getFragmentManager().findFragmentByTag(DeviceNetworkAliasDialog.TAG);
-        if(deviceNetworkAliasDialog != null) {
-            showDeviceNetworkAliasDialog();
+        if(isDialogFragmentPresent(DeviceNetworkAliasDialog.TAG)) {
+            showDeviceNetworkAliasDialogSub();
         }
 
-        Door43LoginDialog door43LoginDialog = (Door43LoginDialog)getFragmentManager().findFragmentByTag(Door43LoginDialog.TAG);
-        if(door43LoginDialog != null) {
+        if(isDialogFragmentPresent(Door43LoginDialog.TAG)) {
             showDoor43LoginDialog();
         }
+
+        if(isDialogFragmentPresent(FeedbackDialog.TAG)) {
+            showFeedbackDialog(targetTranslation);
+        }
+
+        if(isDialogFragmentPresent(ShareWithPeerDialog.TAG)) {
+            showP2PDialog();
+        }
+
 
         switch(mDialogShown) {
             case PUSH_REJECTED:
@@ -258,31 +275,15 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     }
 
     private void showDoor43LoginDialog() {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        Fragment prev = getFragmentManager().findFragmentByTag(Door43LoginDialog.TAG);
-        if (prev != null) {
-            ft.remove(prev);
-        }
-        ft.addToBackStack(null);
-
         Door43LoginDialog dialog = new Door43LoginDialog();
-        dialog.show(ft, Door43LoginDialog.TAG);
+        showDialogFragment(dialog, Door43LoginDialog.TAG);
     }
 
     private void showDeviceNetworkAliasDialog() {
         if(App.isNetworkAvailable()) {
             if(App.getDeviceNetworkAlias() == null) {
-                // get device alias
-                FragmentTransaction ft = getFragmentManager().beginTransaction();
-                Fragment prev = getFragmentManager().findFragmentByTag(DeviceNetworkAliasDialog.TAG);
-                if (prev != null) {
-                    ft.remove(prev);
-                }
-                ft.addToBackStack(null);
+                showDeviceNetworkAliasDialogSub();
 
-                settingDeviceAlias = true;
-                DeviceNetworkAliasDialog dialog = new DeviceNetworkAliasDialog();
-                dialog.show(ft, DeviceNetworkAliasDialog.TAG);
             } else {
                 showP2PDialog();
             }
@@ -291,6 +292,12 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
             snack.show();
         }
+    }
+
+    private void showDeviceNetworkAliasDialogSub() {
+       settingDeviceAlias = true;
+        DeviceNetworkAliasDialog dialog = new DeviceNetworkAliasDialog();
+        showDialogFragment(dialog, DeviceNetworkAliasDialog.TAG);
     }
 
     private void showAccessRequestDialog(final String filename) {
@@ -411,20 +418,35 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
      * Displays the dialog for p2p sharing
      */
     private void showP2PDialog() {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        Fragment prev = getFragmentManager().findFragmentByTag(BackupDialog.TAG);
-        if (prev != null) {
-            ft.remove(prev);
-        }
-        ft.addToBackStack(null);
-
         ShareWithPeerDialog dialog = new ShareWithPeerDialog();
         Bundle args = new Bundle();
         args.putInt(ShareWithPeerDialog.ARG_OPERATION_MODE, ShareWithPeerDialog.MODE_SERVER);
         args.putString(ShareWithPeerDialog.ARG_TARGET_TRANSLATION, targetTranslation.getId());
         args.putString(ShareWithPeerDialog.ARG_DEVICE_ALIAS, App.getDeviceNetworkAlias());
         dialog.setArguments(args);
-        dialog.show(ft, BackupDialog.TAG);
+        showDialogFragment(dialog, ShareWithPeerDialog.TAG);
+    }
+
+    /**
+     * this is to fix old method which when called in onResume() would create a
+     * second dialog overlaying the first.  The first was actually not removed.
+     * Doing a commit after the remove() and starting a second FragmentTransaction
+     * seems to fix the duplicate dialog bug.
+     *
+     * @param dialog
+     * @param tag
+     */
+    private void showDialogFragment(android.app.DialogFragment dialog, String tag) {
+        FragmentTransaction backupFt = getFragmentManager().beginTransaction();
+        Fragment backupPrev = getFragmentManager().findFragmentByTag(tag);
+        if (backupPrev != null) {
+            backupFt.remove(backupPrev);
+            backupFt.commit(); // apply the remove
+            backupFt = getFragmentManager().beginTransaction(); // start a new transaction
+        }
+        backupFt.addToBackStack(null);
+
+        dialog.show(backupFt, tag);
     }
 
     @Override
@@ -600,13 +622,6 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), "en");
 
         // open bug report dialog
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        Fragment prev = getFragmentManager().findFragmentByTag(FeedbackDialog.TAG);
-        if (prev != null) {
-            ft.remove(prev);
-        }
-        ft.addToBackStack(null);
-
         FeedbackDialog feedbackDialog = new FeedbackDialog();
         Bundle args = new Bundle();
         String message = "Failed to backup the translation of " +
@@ -616,7 +631,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                 "\n--------\n\n";
         args.putString(FeedbackDialog.ARG_MESSAGE, message);
         feedbackDialog.setArguments(args);
-        feedbackDialog.show(ft, FeedbackDialog.TAG);
+        showDialogFragment(feedbackDialog, FeedbackDialog.TAG);
     }
 
     public void showPushRejection(final TargetTranslation targetTranslation) {

@@ -186,8 +186,17 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
             mUpdatedProject = savedInstanceState.getString(STATE_UPDATED_PROJECT_ID, null);
             mTargetTranslationId = savedInstanceState.getString(STATE_TARGET_TRANSLATION_ID, null);
-            restoreDialogs();
         }
+    }
+
+    /** text for presence of DialogFragment by tag
+     *
+     * @param tag
+     * @return
+     */
+    private boolean isDialogFragmentPresent(String tag) {
+        Fragment fragment = getFragmentManager().findFragmentByTag(tag);
+        return (fragment != null);
     }
 
    /**
@@ -195,18 +204,15 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
      */
     private void restoreDialogs() {
         // attach to dialog fragments
-        ImportDialog importDialog = (ImportDialog)getFragmentManager().findFragmentByTag(ImportDialog.TAG);
-        if(importDialog != null) {
+        if(isDialogFragmentPresent(ImportDialog.TAG)) {
             showImportDialog();
         }
 
-        FeedbackDialog feedbackDialog = (FeedbackDialog)getFragmentManager().findFragmentByTag(FeedbackDialog.TAG);
-        if(feedbackDialog != null) {
+        if(isDialogFragmentPresent(FeedbackDialog.TAG)) {
             showFeedbackDialog();
         }
 
-        ImportFromDoor43Dialog importFromDoor43Dialog = (ImportFromDoor43Dialog)getFragmentManager().findFragmentByTag(ImportFromDoor43Dialog.TAG);
-        if(importFromDoor43Dialog != null) {
+        if(isDialogFragmentPresent(ImportFromDoor43Dialog.TAG)) {
             showImportFromDoor43Dialog(mTargetTranslationId);
         }
 
@@ -233,27 +239,35 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     }
 
     private void showFeedbackDialog() {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        Fragment prev = getFragmentManager().findFragmentByTag(FeedbackDialog.TAG);
-        if (prev != null) {
-            ft.remove(prev);
-        }
-        ft.addToBackStack(null);
-
         FeedbackDialog dialog = new FeedbackDialog();
-        dialog.show(ft, FeedbackDialog.TAG);
+        showDialogFragment(dialog, FeedbackDialog.TAG);
     }
 
     private void showImportDialog() {
+        ImportDialog importDialog = new ImportDialog();
+        showDialogFragment(importDialog, ImportDialog.TAG);
+    }
+
+    /**
+     * this is to fix old method which when called in onResume() would create a
+     * second dialog overlaying the first.  The first was actually not removed.
+     * Doing a commit after the remove() and starting a second FragmentTransaction
+     * seems to fix the duplicate dialog bug.
+     *
+     * @param dialog
+     * @param tag
+     */
+    private void showDialogFragment(android.app.DialogFragment dialog, String tag) {
         FragmentTransaction backupFt = getFragmentManager().beginTransaction();
-        Fragment backupPrev = getFragmentManager().findFragmentByTag(ImportDialog.TAG);
+        Fragment backupPrev = getFragmentManager().findFragmentByTag(tag);
         if (backupPrev != null) {
             backupFt.remove(backupPrev);
+            backupFt.commit(); // apply the remove
+            backupFt = getFragmentManager().beginTransaction(); // start a new transaction
         }
         backupFt.addToBackStack(null);
 
-        ImportDialog importDialog = new ImportDialog();
-        importDialog.show(backupFt, ImportDialog.TAG);
+        dialog.show(backupFt, tag);
     }
 
     @Override
@@ -446,6 +460,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             App.setNotifyTargetTranslationWithUpdates(null); // clear notification
             showMergePrompt(updatedTarget);
         }
+        restoreDialogs();
     }
 
     /**
@@ -558,16 +573,9 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
 
     private void showImportFromDoor43Dialog(String targetTranslationId) {
         mTargetTranslationId = targetTranslationId;
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        Fragment prev = getFragmentManager().findFragmentByTag(ImportFromDoor43Dialog.TAG);
-        if (prev != null) {
-            ft.remove(prev);
-        }
-        ft.addToBackStack(null);
-
         ImportFromDoor43Dialog importDlg = new ImportFromDoor43Dialog();
         importDlg.doQuickLoad(targetTranslationId);
-        importDlg.show(ft, ImportFromDoor43Dialog.TAG);
+        showDialogFragment(importDlg, ImportFromDoor43Dialog.TAG);
     }
 
     @Override

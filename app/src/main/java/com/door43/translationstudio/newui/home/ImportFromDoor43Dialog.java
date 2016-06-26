@@ -201,6 +201,16 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         super.onResume();
     }
 
+    /** text for presence of DialogFragment by tag
+     *
+     * @param tag
+     * @return
+     */
+    private boolean isDialogFragmentPresent(String tag) {
+        Fragment fragment = getFragmentManager().findFragmentByTag(tag);
+        return (fragment != null);
+    }
+
     /**
      * restore the dialogs that were displayed before rotation
      */
@@ -209,7 +219,11 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         MergeConflictsDialog mergeConflictsDialog = (MergeConflictsDialog)getFragmentManager().findFragmentByTag(MergeConflictsDialog.TAG);
         if(mergeConflictsDialog != null) {
             attachMergeConflictListener(mergeConflictsDialog);
-            return;
+        }
+
+        if(isDialogFragmentPresent(FeedbackDialog.TAG)) {
+            TargetTranslation targetTranslation = App.getTranslator().getTargetTranslation(targetTranslationId);
+            showFeedbackDialog(targetTranslation);
         }
 
         //recreate dialog last shown
@@ -538,30 +552,47 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 .setNeutralButton(R.string.menu_bug, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), "en");
-
-                        // open bug report dialog
-                        FragmentTransaction ft = getFragmentManager().beginTransaction();
-                        Fragment prev = getFragmentManager().findFragmentByTag(FeedbackDialog.TAG);
-                        if (prev != null) {
-                            ft.remove(prev);
-                        }
-                        ft.addToBackStack(null);
-
-                        FeedbackDialog feebackDlg = new FeedbackDialog();
-                        Bundle args = new Bundle();
-                        String message = "Failed to publish the translation of " +
-                                project.name + " into " +
-                                targetTranslation.getTargetLanguageName()
-                                + ".\ntargetTranslation: " + targetTranslation.getId() +
-                                "\n--------\n\n";
-                        args.putString(FeedbackDialog.ARG_MESSAGE, message);
-                        feebackDlg.setArguments(args);
-                        feebackDlg.show(ft, FeedbackDialog.TAG);
+                        showFeedbackDialog(targetTranslation);
                     }
                 }).show();
     }
 
+    private void showFeedbackDialog(TargetTranslation targetTranslation) {
+        Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), "en");
+
+        FeedbackDialog feebackDlg = new FeedbackDialog();
+        Bundle args = new Bundle();
+        String message = "Failed to publish the translation of " +
+                project.name + " into " +
+                targetTranslation.getTargetLanguageName()
+                + ".\ntargetTranslation: " + targetTranslation.getId() +
+                "\n--------\n\n";
+        args.putString(FeedbackDialog.ARG_MESSAGE, message);
+        feebackDlg.setArguments(args);
+        showDialogFragment(feebackDlg, FeedbackDialog.TAG);
+    }
+
+    /**
+     * this is to fix old method which when called in onResume() would create a
+     * second dialog overlaying the first.  The first was actually not removed.
+     * Doing a commit after the remove() and starting a second FragmentTransaction
+     * seems to fix the duplicate dialog bug.
+     *
+     * @param dialog
+     * @param tag
+     */
+    private void showDialogFragment(android.app.DialogFragment dialog, String tag) {
+        FragmentTransaction backupFt = getFragmentManager().beginTransaction();
+        Fragment backupPrev = getFragmentManager().findFragmentByTag(tag);
+        if (backupPrev != null) {
+            backupFt.remove(backupPrev);
+            backupFt.commit(); // apply the remove
+            backupFt = getFragmentManager().beginTransaction(); // start a new transaction
+        }
+        backupFt.addToBackStack(null);
+
+        dialog.show(backupFt, tag);
+    }
 
     /**
      * for keeping track which dialog is being shown for orientation changes (not for DialogFragments)

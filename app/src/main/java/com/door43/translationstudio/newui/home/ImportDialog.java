@@ -197,20 +197,36 @@ public class ImportDialog extends DialogFragment {
      * Displays the p2p dialog
      */
     private void showP2PDialog() {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        Fragment prev = getFragmentManager().findFragmentByTag(ImportDialog.TAG);
-        if (prev != null) {
-            ft.remove(prev);
-        }
-        ft.addToBackStack(null);
-
         ShareWithPeerDialog dialog = new ShareWithPeerDialog();
         Bundle args = new Bundle();
         args.putInt(ShareWithPeerDialog.ARG_OPERATION_MODE, ShareWithPeerDialog.MODE_CLIENT);
         args.putString(ShareWithPeerDialog.ARG_DEVICE_ALIAS, App.getDeviceNetworkAlias());
         dialog.setArguments(args);
-        dialog.show(ft, ImportDialog.TAG);
+        showDialogFragment(dialog,ShareWithPeerDialog.TAG);
     }
+
+    /**
+     * this is to fix old method which when called in onResume() would create a
+     * second dialog overlaying the first.  The first was actually not removed.
+     * Doing a commit after the remove() and starting a second FragmentTransaction
+     * seems to fix the duplicate dialog bug.
+     *
+     * @param dialog
+     * @param tag
+     */
+    private void showDialogFragment(android.app.DialogFragment dialog, String tag) {
+        FragmentTransaction backupFt = getFragmentManager().beginTransaction();
+        Fragment backupPrev = getFragmentManager().findFragmentByTag(tag);
+        if (backupPrev != null) {
+            backupFt.remove(backupPrev);
+            backupFt.commit(); // apply the remove
+            backupFt = getFragmentManager().beginTransaction(); // start a new transaction
+        }
+        backupFt.addToBackStack(null);
+
+        dialog.show(backupFt, tag);
+    }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
