@@ -1222,7 +1222,8 @@ public class TargetTranslation {
     }
 
     /**
-     * Checks the status of current project compared to remote.  Not working yet, need to figure out how to add in the credentials.
+     * Checks the commit status of current project compared to remote.  Not working yet, need to
+     * figure out how to add in the credentials for fetch and/or create branch.
      * @param remoteURL
      * @throws Exception
      */
@@ -1292,7 +1293,7 @@ public class TargetTranslation {
     }
 
     /**
-     * compare both branches by checking ahead and behind counts
+     * compare two branches by checking ahead and behind counts
      * @param baseBranch
      * @param otherBranch
      * @return

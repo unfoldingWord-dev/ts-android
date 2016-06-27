@@ -124,7 +124,8 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
                 if(App.isNetworkAvailable()) {
                     // make sure we have a gogs user
                     if(App.getProfile().gogsUser == null) {
-                        showDoor43LoginDialog();
+                        Door43LoginDialog dialog = new Door43LoginDialog();
+                        showDialogFragment(dialog, Door43LoginDialog.TAG);
                         return;
                     }
 
@@ -221,17 +222,6 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
      * restore the dialogs that were displayed before rotation
      */
     private void restoreDialogs() {
-        // attach to dialog fragments
-        FeedbackDialog feedbackDialog = (FeedbackDialog)getFragmentManager().findFragmentByTag(FeedbackDialog.TAG);
-        if(feedbackDialog != null) {
-            showFeedbackDialog(targetTranslation); // recreate
-        }
-
-        Door43LoginDialog loginDialog = (Door43LoginDialog)getFragmentManager().findFragmentByTag(Door43LoginDialog.TAG);
-        if(loginDialog != null) {
-            showDoor43LoginDialog(); // recreate
-        }
-
         //recreate dialog last shown
         switch(mDialogShown) {
             case PUBLISH_FAILED:
@@ -259,16 +249,26 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
         }
     }
 
-    private void showDoor43LoginDialog() {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        Fragment prev = getFragmentManager().findFragmentByTag(Door43LoginDialog.TAG);
-        if (prev != null) {
-            ft.remove(prev);
+    /**
+     * this is to fix old method which when called in onResume() would create a
+     * second dialog overlaying the first.  The first was actually not removed.
+     * Doing a commit after the remove() and starting a second FragmentTransaction
+     * seems to fix the duplicate dialog bug.
+     *
+     * @param dialog
+     * @param tag
+     */
+    private void showDialogFragment(android.app.DialogFragment dialog, String tag) {
+        FragmentTransaction backupFt = getFragmentManager().beginTransaction();
+        Fragment backupPrev = getFragmentManager().findFragmentByTag(tag);
+        if (backupPrev != null) {
+            backupFt.remove(backupPrev);
+            backupFt.commit(); // apply the remove
+            backupFt = getFragmentManager().beginTransaction(); // start a new transaction
         }
-        ft.addToBackStack(null);
+        backupFt.addToBackStack(null);
 
-        Door43LoginDialog dialog = new Door43LoginDialog();
-        dialog.show(ft, Door43LoginDialog.TAG);
+        dialog.show(backupFt, tag);
     }
 
     /**
@@ -512,13 +512,6 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
     private void showFeedbackDialog(TargetTranslation targetTranslation) {
         final Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), "en");
 
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        Fragment prev = getFragmentManager().findFragmentByTag(FeedbackDialog.TAG);
-        if (prev != null) {
-            ft.remove(prev);
-        }
-        ft.addToBackStack(null);
-
         // open bug report dialog
         FeedbackDialog feedbackDialog = new FeedbackDialog();
         Bundle args = new Bundle();
@@ -529,7 +522,7 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
                 "\n--------\n\n";
         args.putString(FeedbackDialog.ARG_MESSAGE, message);
         feedbackDialog.setArguments(args);
-        feedbackDialog.show(ft, FeedbackDialog.TAG);
+        showDialogFragment(feedbackDialog, FeedbackDialog.TAG);
     }
 
     @Override

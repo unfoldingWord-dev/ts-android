@@ -458,7 +458,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         String message = String.format(getResources().getString(R.string.merge_request),bookName, targetLanguageName);
 
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
-                .setTitle(R.string.upload_failed)
+                .setTitle(R.string.import_failed_short)
                 .setMessage(message)
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
