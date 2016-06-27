@@ -193,13 +193,8 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
             taskWatcher.watch(cloneTask);
         }
 
-        return v;
-    }
-
-    @Override
-    public void onResume() {
         restoreDialogs();
-        super.onResume();
+        return v;
     }
 
     /**
@@ -458,7 +453,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         String message = String.format(getResources().getString(R.string.merge_request),bookName, targetLanguageName);
 
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
-                .setTitle(R.string.import_failed_short)
+                .setTitle(R.string.import_failed_title)
                 .setMessage(message)
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
@@ -523,7 +518,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
 
         new AlertDialog.Builder(getActivity())
                 .setTitle(R.string.error)
-                .setMessage(R.string.import_failed_short)
+                .setMessage(R.string.import_failed_title)
                 .setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {

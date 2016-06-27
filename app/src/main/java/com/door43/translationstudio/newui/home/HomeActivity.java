@@ -189,6 +189,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             mUpdatedProject = savedInstanceState.getString(STATE_UPDATED_PROJECT_ID, null);
             mTargetTranslationId = savedInstanceState.getString(STATE_TARGET_TRANSLATION_ID, null);
         }
+        restoreDialogs();
     }
 
    /**
@@ -429,7 +430,6 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             App.setNotifyTargetTranslationWithUpdates(null); // clear notification
             showMergePrompt(updatedTarget);
         }
-        restoreDialogs();
     }
 
     /**

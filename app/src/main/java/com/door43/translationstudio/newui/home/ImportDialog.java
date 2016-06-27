@@ -147,6 +147,7 @@ public class ImportDialog extends DialogFragment {
             }
         });
 
+        restoreDialogs();
         return v;
     }
 
@@ -191,7 +192,6 @@ public class ImportDialog extends DialogFragment {
             settingDeviceAlias = false;
             showP2PDialog();
         }
-        restoreDialogs();
         super.onResume();
     }
 

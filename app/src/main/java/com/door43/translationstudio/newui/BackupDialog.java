@@ -198,6 +198,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             taskWatcher.watch(pushTask);
         }
 
+        restoreDialogs();
         return v;
     }
 
@@ -379,8 +380,6 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             settingDeviceAlias = false;
             showP2PDialog();
         }
-
-        restoreDialogs();
         super.onResume();
     }
 
@@ -519,8 +518,8 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     private void showMergeConflict(final TargetTranslation targetTranslation) {
         mDialogShown = eDialogShown.MERGE_CONFLICT;
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
-                .setTitle(R.string.upload_failed)
-                .setMessage(R.string.push_rejected)
+                .setTitle(R.string.backup_failed_title)
+                .setMessage(R.string.backup_rejected)
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
