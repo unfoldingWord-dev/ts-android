@@ -46,8 +46,4 @@ before_install:
   -iv $encrypted_f97207d0a082_iv -in translationstudio.keystore.enc -out translationstudio.keystore
   -d; fi
 after_failure:
-- wget http://imgur.com/tools/imgurbash.sh
-- chjmod a+x imgurbash.sh
-- adb shell screencap -p | sed 's/\r$//' > screen.png
-- ./imgurbash.sh screen.png
-- pandoc builder/build/reports/tests/index.html -t plain | sed -n '/^Failed tests/,/default-package/p' 
+- pandoc builder/build/reports/tests/index.html -t plain | sed -n '/^Failed tests/,/default-package/p' | cat
