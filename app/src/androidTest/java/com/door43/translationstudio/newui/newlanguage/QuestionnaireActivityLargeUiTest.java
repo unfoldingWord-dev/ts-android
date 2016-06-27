@@ -57,7 +57,6 @@ public class QuestionnaireActivityLargeUiTest extends NewLanguageActivityUiUtils
 
    @Test
     public void fillToPage2AndBack() throws Exception {
-
         //given
         int pageNum = 0;
         boolean hideKeyboard = true;

@@ -66,6 +66,9 @@ import com.door43.translationstudio.spannables.USFMNoteSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.USFMVerseSpan;
 import com.door43.translationstudio.spannables.VerseSpan;
+
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 import org.unfoldingword.tools.taskmanager.ThreadableUI;
 import com.door43.widget.ViewUtil;
 
@@ -73,9 +76,11 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -322,10 +327,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
     }
 
-
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
-//        this.onBind = true;
+        holder.currentPosition = position;
         final ListItem item = mListItems[position];
 
         // open/close resources
@@ -407,12 +411,43 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         return questions;
     }
 
-    private void renderSourceCard(int position, final ListItem item, ViewHolder holder) {
+    private void renderSourceCard(final int position, final ListItem item, final ViewHolder holder) {
         // render
+        ManagedTask oldTask = TaskManager.getTask(holder.currentSourceTaskId);
+        TaskManager.cancelTask(oldTask);
         if(item.renderedSourceBody == null) {
-            item.renderedSourceBody = renderSourceText(item.bodySource, mSourceTranslation.getFormat(), holder, item, false);
+            holder.mSourceBody.setText("");
+            ManagedTask task = new ManagedTask() {
+                @Override
+                public void start() {
+                    if(interrupted()) return;
+                    CharSequence text = renderSourceText(item.bodySource, mSourceTranslation.getFormat(), holder, item, false);
+                    if(interrupted()) return;
+                    setResult(text);
+                }
+            };
+            task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
+                @Override
+                public void onTaskFinished(ManagedTask task) {
+                    CharSequence data = (CharSequence)task.getResult();
+                    if(!task.isCanceled() && data != null && position == holder.currentPosition) {
+                        item.renderedSourceBody = data;
+                        Handler hand = new Handler(Looper.getMainLooper());
+                        hand.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                holder.mSourceBody.setText(item.renderedSourceBody);
+                            }
+                        });
+                    } else if (data != null && position == holder.currentPosition){
+                        item.renderedSourceBody = data;
+                    }
+                }
+            });
+            holder.currentSourceTaskId = TaskManager.addTask(task);
+        } else {
+            holder.mSourceBody.setText(item.renderedSourceBody);
         }
-        holder.mSourceBody.setText(item.renderedSourceBody);
     }
 
     private void renderTargetCard(int position, final ListItem item, final ViewHolder holder) {
@@ -1201,81 +1236,121 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             return;
         }
 
-        Frame  frame = loadFrame(item.chapterSlug, item.frameSlug);
+        final Frame  frame = loadFrame(item.chapterSlug, item.frameSlug);
 
-        // resource tabs
-        final TranslationNote[] notes = getPreferredNotes(mSourceTranslation, frame);
-        if(notes.length > 0) {
-            TabLayout.Tab tab = holder.mResourceTabs.newTab();
-            tab.setText(R.string.label_translation_notes);
-            tab.setTag(TAB_NOTES);
-            holder.mResourceTabs.addTab(tab);
-            if(mOpenResourceTab[position] == TAB_NOTES) {
-                tab.select();
-            }
-        }
-        final TranslationWord[] words = getPreferredWords(mSourceTranslation, frame);
-        if(words.length > 0) {
-            TabLayout.Tab tab = holder.mResourceTabs.newTab();
-            tab.setText(R.string.translation_words);
-            tab.setTag(TAB_WORDS);
-            holder.mResourceTabs.addTab(tab);
-            if(mOpenResourceTab[position] == TAB_WORDS) {
-                tab.select();
-            }
-        }
-        final CheckingQuestion[] questions = getPreferredQuestions(mSourceTranslation, frame.getChapterId(), frame.getId());
-        if(questions.length > 0) {
-            TabLayout.Tab tab = holder.mResourceTabs.newTab();
-            tab.setText(R.string.questions);
-            tab.setTag(TAB_QUESTIONS);
-            holder.mResourceTabs.addTab(tab);
-            if(mOpenResourceTab[position] == TAB_QUESTIONS) {
-                tab.select();
-            }
-        }
+        // clear resource card
+        renderResources(holder, position, new TranslationNote[0], new TranslationWord[0], new CheckingQuestion[0]);
 
-        // select default tab. first notes, then words, then questions
-        if(mOpenResourceTab[position] == TAB_NOTES && notes.length == 0) {
-            mOpenResourceTab[position] = TAB_WORDS;
-        }
-        if(mOpenResourceTab[position] == TAB_WORDS && words.length == 0) {
-            mOpenResourceTab[position] = TAB_QUESTIONS;
-        }
-
-        holder.mResourceTabs.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+        // prepare task to load resources
+        ManagedTask oldTask = TaskManager.getTask(holder.currentResourceTaskId);
+        TaskManager.cancelTask(oldTask);
+        ManagedTask task = new ManagedTask() {
             @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                if ((int) tab.getTag() == TAB_NOTES && mOpenResourceTab[position] != TAB_NOTES) {
-                    mOpenResourceTab[position] = TAB_NOTES;
-                    // render notes
-                    renderResources(holder, position, notes, words, questions);
-                } else if ((int) tab.getTag() == TAB_WORDS && mOpenResourceTab[position] != TAB_WORDS) {
-                    mOpenResourceTab[position] = TAB_WORDS;
-                    // render words
-                    renderResources(holder, position, notes, words, questions);
-                } else if ((int) tab.getTag() == TAB_QUESTIONS && mOpenResourceTab[position] != TAB_QUESTIONS) {
-                    mOpenResourceTab[position] = TAB_QUESTIONS;
-                    // render questions
-                    renderResources(holder, position, notes, words, questions);
+            public void start() {
+                if(interrupted()) return;
+                TranslationNote[] notes = getPreferredNotes(mSourceTranslation, frame);
+                if(interrupted()) return;
+                TranslationWord[] words = getPreferredWords(mSourceTranslation, frame);
+                if(interrupted()) return;
+                CheckingQuestion[] questions = getPreferredQuestions(mSourceTranslation, frame.getChapterId(), frame.getId());
+                if(interrupted()) return;
+                Map<String, Object> result = new HashMap<>();
+                result.put("notes", notes);
+                result.put("words", words);
+                result.put("questions", questions);
+                setResult(result);
+            }
+        };
+        task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
+            @Override
+            public void onTaskFinished(ManagedTask task) {
+                Map<String, Object> data = (Map<String, Object>)task.getResult();
+                if(!task.isCanceled() && data != null && position == holder.currentPosition) {
+                    final TranslationNote[] notes = (TranslationNote[]) data.get("notes");
+                    final TranslationWord[] words = (TranslationWord[]) data.get("words");
+                    final CheckingQuestion[] questions = (CheckingQuestion[]) data.get("questions");
+
+                    Handler hand = new Handler(Looper.getMainLooper());
+                    hand.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            holder.mResourceTabs.setOnTabSelectedListener(null);
+                            holder.mResourceTabs.removeAllTabs();
+                            if(notes.length > 0) {
+                                TabLayout.Tab tab = holder.mResourceTabs.newTab();
+                                tab.setText(R.string.label_translation_notes);
+                                tab.setTag(TAB_NOTES);
+                                holder.mResourceTabs.addTab(tab);
+                                if(mOpenResourceTab[position] == TAB_NOTES) {
+                                    tab.select();
+                                }
+                            }
+                            if(words.length > 0) {
+                                TabLayout.Tab tab = holder.mResourceTabs.newTab();
+                                tab.setText(R.string.translation_words);
+                                tab.setTag(TAB_WORDS);
+                                holder.mResourceTabs.addTab(tab);
+                                if(mOpenResourceTab[position] == TAB_WORDS) {
+                                    tab.select();
+                                }
+                            }
+                            if(questions.length > 0) {
+                                TabLayout.Tab tab = holder.mResourceTabs.newTab();
+                                tab.setText(R.string.questions);
+                                tab.setTag(TAB_QUESTIONS);
+                                holder.mResourceTabs.addTab(tab);
+                                if(mOpenResourceTab[position] == TAB_QUESTIONS) {
+                                    tab.select();
+                                }
+                            }
+
+                            // select default tab. first notes, then words, then questions
+                            if(mOpenResourceTab[position] == TAB_NOTES && notes.length == 0) {
+                                mOpenResourceTab[position] = TAB_WORDS;
+                            }
+                            if(mOpenResourceTab[position] == TAB_WORDS && words.length == 0) {
+                                mOpenResourceTab[position] = TAB_QUESTIONS;
+                            }
+
+                            // resource list
+                            if(notes.length > 0 || words.length > 0 || questions.length > 0) {
+                                renderResources(holder, position, notes, words, questions);
+                            }
+
+                            holder.mResourceTabs.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+                                @Override
+                                public void onTabSelected(TabLayout.Tab tab) {
+                                    if ((int) tab.getTag() == TAB_NOTES && mOpenResourceTab[position] != TAB_NOTES) {
+                                        mOpenResourceTab[position] = TAB_NOTES;
+                                        // render notes
+                                        renderResources(holder, position, notes, words, questions);
+                                    } else if ((int) tab.getTag() == TAB_WORDS && mOpenResourceTab[position] != TAB_WORDS) {
+                                        mOpenResourceTab[position] = TAB_WORDS;
+                                        // render words
+                                        renderResources(holder, position, notes, words, questions);
+                                    } else if ((int) tab.getTag() == TAB_QUESTIONS && mOpenResourceTab[position] != TAB_QUESTIONS) {
+                                        mOpenResourceTab[position] = TAB_QUESTIONS;
+                                        // render questions
+                                        renderResources(holder, position, notes, words, questions);
+                                    }
+                                }
+
+                                @Override
+                                public void onTabUnselected(TabLayout.Tab tab) {
+
+                                }
+
+                                @Override
+                                public void onTabReselected(TabLayout.Tab tab) {
+
+                                }
+                            });
+                        }
+                    });
                 }
             }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
         });
-
-        // resource list
-        if(notes.length > 0 || words.length > 0 || questions.length > 0) {
-            renderResources(holder, position, notes, words, questions);
-        }
+        holder.currentResourceTaskId = TaskManager.addTask(task);
 
         // tap to open resources
         if(!mResourcesOpened) {
@@ -1658,6 +1733,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        public int currentPosition = -1;
         public final ImageButton mAddNoteButton;
         public final ImageButton mUndoButton;
         public final ImageButton mRedoButton;
@@ -1679,6 +1755,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public final TabLayout mTranslationTabs;
         public final ImageButton mNewTabButton;
         public TextView mSourceBody;
+        public int currentResourceTaskId = -1;
+        public int currentSourceTaskId = -1;
 
         public ViewHolder(Context context, View v) {
             super(v);
