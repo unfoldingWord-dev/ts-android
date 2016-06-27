@@ -57,10 +57,6 @@ public class UpdateAppTask extends ManagedTask {
             e.printStackTrace();
         }
 
-        // TRICKY: we always migrate target translations because uninstalling the app removes our notion of a previous install
-        updateTargetTranslations();
-        updateBuildNumbers();
-
         if (pInfo != null) {
             // use current version if fresh install
             lastVersionCode = lastVersionCode == 0 ? pInfo.versionCode : lastVersionCode;
@@ -74,6 +70,16 @@ public class UpdateAppTask extends ManagedTask {
                 performUpdates(lastVersionCode, pInfo.versionCode);
             }
         }
+
+        if(!App.getLibrary().exists()) {
+            try {
+                App.deployDefaultLibrary();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        updateTargetTranslations();
+        updateBuildNumbers();
     }
 
     /**
@@ -89,9 +95,6 @@ public class UpdateAppTask extends ManagedTask {
         if(lastVersion < 103) {
             upgradePre103();
         }
-        if(lastVersion < 110) {
-            upgradePre110();
-        }
         if(lastVersion < 111) {
             upgradePre111();
         }
@@ -100,6 +103,7 @@ public class UpdateAppTask extends ManagedTask {
             PreferenceManager.setDefaultValues(App.context(), R.xml.general_preferences, true);
         }
         if(lastVersion < 139) {
+            // TRICKY: this was the old name of the database
             App.context().deleteDatabase("app");
         }
 
@@ -186,20 +190,6 @@ public class UpdateAppTask extends ManagedTask {
             if(!errors) {
                 FileUtils.deleteQuietly(legacyTranslationsDir);
             }
-        }
-    }
-
-    /**
-     * We need to migrate chunks in targetTranslations because some no longer match up to the source.
-     */
-    private void upgradePre110() {
-        App.context().deleteDatabase(LibraryData.DATABASE_NAME);
-
-        // TRICKY: we deploy the new library in a different task but since we are using it in the migration we need to do so now
-        try {
-            App.deployDefaultLibrary();
-        } catch (Exception e) {
-            Logger.e(this.getClass().getName(), "Failed to deploy the default index", e);
         }
     }
 
