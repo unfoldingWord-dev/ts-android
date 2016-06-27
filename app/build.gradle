@@ -37,7 +37,7 @@ android {
             variant.outputs.each { output ->
                 def apk = output.outputFile;
                 //def newName = "tS_" + defaultConfig.versionName + "_build" + defaultConfig.versionCode + ".apk";
-                deff newName = "release.apk";
+                def newName = "release.apk";
                 output.outputFile = new File(apk.parentFile, newName);
             }
         }
