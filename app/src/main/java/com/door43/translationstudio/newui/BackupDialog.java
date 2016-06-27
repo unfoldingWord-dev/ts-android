@@ -509,7 +509,12 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                             .setTitle(R.string.project_uploaded)
                             .setMessage(message)
-                            .setPositiveButton(R.string.dismiss, null)
+                            .setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    mDialogShown = eDialogShown.NONE;
+                                }
+                            })
                             .show();
                     }
                 }).show();
@@ -582,6 +587,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                 .setNeutralButton(R.string.menu_bug, new DialogInterface.OnClickListener(){
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
                         showFeedbackDialog(targetTranslation);
                     }
                 }).show();

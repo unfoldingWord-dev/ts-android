@@ -350,6 +350,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             dlg.setNeutralButton(R.string.label_import, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
+                    mDialogShown = eDialogShown.NONE;
                     doArchiveImport(false);
                     dialog.dismiss();
                 }

@@ -67,6 +67,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     private static final String STATE_MERGE_FROM_URL = "state_merge_from_url";
     private static final String STATE_MANUAL_MERGE = "state_manual_merge";
     public static final String STATE_CLONE_URL = "state_clone_url";
+    public static final String STATE_QUICK_LOAD_PATH = "state_quick_load_path";
     private SimpleTaskWatcher taskWatcher;
     private RestoreFromCloudAdapter adapter;
     private Translator translator;
@@ -75,7 +76,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     private File cloneDestDir;
     private EditText repoEditText;
     private EditText userEditText;
-    private String quickLoadPath;
+    private String mQuickLoadPath;
     private String targetTranslationId;
     private eDialogShown mDialogShown = eDialogShown.NONE;
     private TargetTranslation.TrackingStatus mImportCompareStatus = TargetTranslation.TrackingStatus.DIVERGED;
@@ -115,7 +116,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 String userQuery = userEditText.getText().toString();
                 String repoQuery = repoEditText.getText().toString();
 
-                App.closeKeyboard(getActivity());
+                App.closeKeyboard(getActivity()); // this doesn't seem to work here
 
                 Profile profile = App.getProfile();
                 if(profile != null && profile.gogsUser != null) {
@@ -153,6 +154,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
             mMergeFromSpecificUrl = savedInstanceState.getBoolean(STATE_MERGE_FROM_URL, false);
             mClonelUrl = savedInstanceState.getString(STATE_CLONE_URL, null);
             mManualMerge = savedInstanceState.getBoolean(STATE_MANUAL_MERGE, false);
+            mQuickLoadPath = savedInstanceState.getString(STATE_QUICK_LOAD_PATH, null);
 
             String[] repoJsonArray = savedInstanceState.getStringArray(STATE_REPOSITORIES);
             if(repoJsonArray != null) {
@@ -169,18 +171,9 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 adapter.setRepositories(repositories);
             }
         } else {
-            if(quickLoadPath != null) { // check if we already have a project to merge
-                mClonelUrl = quickLoadPath;
-                getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN); // stop annoying keyboard from popping up
-
-                Handler hand = new Handler(Looper.getMainLooper());
-                hand.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        TargetTranslation targetTranslation = App.getTranslator().getTargetTranslation(targetTranslationId);
-                        showMergeConflict(targetTranslation);
-                    }
-                });
+            if(mQuickLoadPath != null) { // check if we already have a project to merge
+                mClonelUrl = mQuickLoadPath;
+                notifyMergeConflictDelayed(targetTranslationId);
             }
         }
 
@@ -201,7 +194,6 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
      * restore the dialogs that were displayed before rotation
      */
     private void restoreDialogs() {
-        TargetTranslation targetTranslation = App.getTranslator().getTargetTranslation(targetTranslationId);
 
         //recreate dialog last shown
         switch(mDialogShown) {
@@ -214,11 +206,12 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 break;
 
             case MERGE_FAILED:
+                TargetTranslation targetTranslation = App.getTranslator().getTargetTranslation(targetTranslationId);
                 notifyMergeFailed(targetTranslation);
                 break;
 
             case MERGE_CONFLICT:
-                showMergeConflict(targetTranslation);
+                notifyMergeConflictDelayed(targetTranslationId);
                 break;
 
             case NONE:
@@ -231,6 +224,27 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     }
 
     /**
+     * displays the merge conflict dialog but delays for main dialog to finish initializing.
+     * @param targetTranslationId
+     */
+    private void notifyMergeConflictDelayed(final String targetTranslationId) {
+        hideKeyboard();
+
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                TargetTranslation targetTranslation = App.getTranslator().getTargetTranslation(targetTranslationId);
+                showMergeConflict(targetTranslation);
+            }
+        });
+    }
+
+    private void hideKeyboard() {
+        getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN); // stop annoying keyboard from popping up
+    }
+
+    /**
      * this will skip the search when dialog opens and go direct to merge of target
      * @param targetTranslationID
      */
@@ -239,7 +253,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         Profile profile = App.getProfile();
         if(profile != null && profile.gogsUser != null) {
             String server = App.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, App.context().getResources().getString(R.string.pref_default_git_server));
-            quickLoadPath = server + ":" + profile.gogsUser.getUsername() + "/" + targetTranslationID;
+            mQuickLoadPath = server + ":" + profile.gogsUser.getUsername() + "/" + targetTranslationID;
             cloneDestDir = getTempCloneDirectory(targetTranslationID);
         } else {
             Logger.e(ImportFromDoor43Dialog.class.getSimpleName(), "doQuickLoad failed, no gogsUser");
@@ -326,7 +340,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                                 ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                                 snack.show();
 
-                                if(quickLoadPath != null) {
+                                if(mQuickLoadPath != null) {
                                     dismiss();
                                 }
                             }
@@ -428,6 +442,9 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         if(mClonelUrl != null) {
             out.putString(STATE_CLONE_URL, mClonelUrl);
         }
+        if(mQuickLoadPath != null) {
+            out.putString(STATE_QUICK_LOAD_PATH, mQuickLoadPath);
+        }
         out.putBoolean(STATE_MANUAL_MERGE,  mManualMerge);
         super.onSaveInstanceState(out);
     }
@@ -528,6 +545,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 .setNeutralButton(R.string.menu_bug, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
                         showFeedbackDialog(targetTranslation);
                     }
                 }).show();

@@ -346,7 +346,7 @@ public class ImportDialog extends DialogFragment {
         new AlertDialog.Builder(getActivity(),R.style.AppTheme_Dialog)
                 .setTitle(R.string.import_from_sd)
                 .setMessage(message)
-                .setNeutralButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mDialogShown = eDialogShown.NONE;
