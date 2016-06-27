@@ -44,6 +44,7 @@ import java.util.List;
  */
 public class RestoreFromDoor43Dialog extends DialogFragment implements SimpleTaskWatcher.OnFinishedListener {
     private static final String STATE_REPOSITORIES = "state_repositories";
+    public static final String TAG = RestoreFromDoor43Dialog.class.getSimpleName();
     private SimpleTaskWatcher taskWatcher;
     private RestoreFromCloudAdapter adapter;
     private Translator translator;

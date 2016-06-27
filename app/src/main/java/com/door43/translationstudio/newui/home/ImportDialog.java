@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -43,9 +44,12 @@ public class ImportDialog extends DialogFragment {
     private static final int IMPORT_USFM_PROJECT_FROM_SD_REQUEST = 143;
     public static final String TAG = "importDialog";
     private static final String STATE_SETTING_DEVICE_ALIAS = "state_setting_device_alias";
+    public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
+    public static final String STATE_DIALOG_MESSAGE = "state_dialog_message";
     private boolean settingDeviceAlias = false;
     private boolean isDocumentFile = false;
-
+    private eDialogShown mDialogShown = eDialogShown.NONE;
+    private String mDialogMessage;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -67,6 +71,8 @@ public class ImportDialog extends DialogFragment {
         if(savedInstanceState != null) {
             // check if returning from device alias dialog
             settingDeviceAlias = savedInstanceState.getBoolean(STATE_SETTING_DEVICE_ALIAS, false);
+            mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
+            mDialogMessage = savedInstanceState.getString(STATE_DIALOG_MESSAGE, null);
         }
 
         importDoor43Button.setOnClickListener(new View.OnClickListener() {
@@ -74,22 +80,14 @@ public class ImportDialog extends DialogFragment {
             public void onClick(View v) {
                 // make sure we have a gogs user
                 if(App.getProfile().gogsUser == null) {
-                    FragmentTransaction ft = getFragmentManager().beginTransaction();
                     Door43LoginDialog dialog = new Door43LoginDialog();
-                    dialog.show(ft, Door43LoginDialog.TAG);
+                    showDialogFragment(dialog, Door43LoginDialog.TAG);
                     return;
                 }
 
                 // open dialog for browsing repositories
-                FragmentTransaction ft = getFragmentManager().beginTransaction();
-                Fragment prev = getFragmentManager().findFragmentByTag(ImportDialog.TAG);
-                if (prev != null) {
-                    ft.remove(prev);
-                }
-                ft.addToBackStack(null);
-
                 ImportFromDoor43Dialog dialog = new ImportFromDoor43Dialog();
-                dialog.show(ft, ImportDialog.TAG);
+                showDialogFragment(dialog, ImportFromDoor43Dialog.TAG);
             }
         });
 
@@ -98,22 +96,14 @@ public class ImportDialog extends DialogFragment {
             public void onClick(View v) {
                 // make sure we have a gogs user
                 if(App.getProfile().gogsUser == null) {
-                    FragmentTransaction ft = getFragmentManager().beginTransaction();
                     Door43LoginDialog dialog = new Door43LoginDialog();
-                    dialog.show(ft, Door43LoginDialog.TAG);
+                    showDialogFragment(dialog, Door43LoginDialog.TAG);
                     return;
                 }
 
                 // open dialog for browsing repositories
-                FragmentTransaction ft = getFragmentManager().beginTransaction();
-                Fragment prev = getFragmentManager().findFragmentByTag(ImportDialog.TAG);
-                if (prev != null) {
-                    ft.remove(prev);
-                }
-                ft.addToBackStack(null);
-
                 RestoreFromDoor43Dialog dialog = new RestoreFromDoor43Dialog();
-                dialog.show(ft, ImportDialog.TAG);
+                showDialogFragment(dialog, RestoreFromDoor43Dialog.TAG);
             }
         });
         importFromSDButton.setOnClickListener(new View.OnClickListener() {
@@ -135,16 +125,9 @@ public class ImportDialog extends DialogFragment {
                 if (App.isNetworkAvailable()) {
                     if (App.getDeviceNetworkAlias() == null) {
                         // get device alias
-                        FragmentTransaction ft = getFragmentManager().beginTransaction();
-                        Fragment prev = getFragmentManager().findFragmentByTag(ImportDialog.TAG);
-                        if (prev != null) {
-                            ft.remove(prev);
-                        }
-                        ft.addToBackStack(null);
-
                         settingDeviceAlias = true;
                         DeviceNetworkAliasDialog dialog = new DeviceNetworkAliasDialog();
-                        dialog.show(ft, ImportDialog.TAG);
+                        showDialogFragment(dialog, DeviceNetworkAliasDialog.TAG);
                     } else {
                         showP2PDialog();
                     }
@@ -165,6 +148,24 @@ public class ImportDialog extends DialogFragment {
         });
 
         return v;
+    }
+
+    /**
+     * restore the dialogs that were displayed before rotation
+     */
+    private void restoreDialogs() {
+        switch(mDialogShown) {
+            case SHOW_IMPORT_RESULTS:
+                showImportResults(mDialogMessage);
+                break;
+
+            case NONE:
+                break;
+
+            default:
+                Logger.e(TAG,"Unsupported restore dialog: " + mDialogShown.toString());
+                break;
+        }
     }
 
     private void doImportFromSdCard(boolean doingUsfmImport) {
@@ -190,6 +191,7 @@ public class ImportDialog extends DialogFragment {
             settingDeviceAlias = false;
             showP2PDialog();
         }
+        restoreDialogs();
         super.onResume();
     }
 
@@ -335,16 +337,58 @@ public class ImportDialog extends DialogFragment {
         if(filePath != null) {
             message += "\n" + filePath;
         }
+        showImportResults(message);
+    }
+
+    private void showImportResults(String message) {
+        mDialogShown = eDialogShown.SHOW_IMPORT_RESULTS;
+        mDialogMessage = message;
         new AlertDialog.Builder(getActivity(),R.style.AppTheme_Dialog)
                 .setTitle(R.string.import_from_sd)
                 .setMessage(message)
-                .setNeutralButton(R.string.dismiss, null)
+                .setNeutralButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                    }
+                })
                 .show();
     }
 
     @Override
     public void onSaveInstanceState(Bundle out) {
         out.putBoolean(STATE_SETTING_DEVICE_ALIAS, settingDeviceAlias);
+        out.putInt(STATE_DIALOG_SHOWN, mDialogShown.getValue());
+        if(mDialogMessage != null) {
+            out.putString(STATE_DIALOG_MESSAGE, mDialogMessage);
+        }
         super.onSaveInstanceState(out);
+    }
+
+    /**
+     * for keeping track which dialog is being shown for orientation changes (not for DialogFragments)
+     */
+    public enum eDialogShown {
+        NONE(0),
+        SHOW_IMPORT_RESULTS(1);
+
+        private int _value;
+
+        eDialogShown(int Value) {
+            this._value = Value;
+        }
+
+        public int getValue() {
+            return _value;
+        }
+
+        public static eDialogShown fromInt(int i) {
+            for (eDialogShown b : eDialogShown.values()) {
+                if (b.getValue() == i) {
+                    return b;
+                }
+            }
+            return null;
+        }
     }
 }

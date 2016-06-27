@@ -114,10 +114,12 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                                 openLibrary();
                                 return true;
                             case R.id.action_import:
-                                showImportDialog();
+                                ImportDialog importDialog = new ImportDialog();
+                                showDialogFragment(importDialog, ImportDialog.TAG);
                                 return true;
                             case R.id.action_feedback:
-                                showFeedbackDialog();
+                                FeedbackDialog dialog = new FeedbackDialog();
+                                showDialogFragment(dialog, FeedbackDialog.TAG);
                                 return true;
                             case R.id.action_share_apk:
                                 try {
@@ -189,33 +191,10 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         }
     }
 
-    /** text for presence of DialogFragment by tag
-     *
-     * @param tag
-     * @return
-     */
-    private boolean isDialogFragmentPresent(String tag) {
-        Fragment fragment = getFragmentManager().findFragmentByTag(tag);
-        return (fragment != null);
-    }
-
    /**
      * restore the dialogs that were displayed before rotation
      */
     private void restoreDialogs() {
-        // attach to dialog fragments
-        if(isDialogFragmentPresent(ImportDialog.TAG)) {
-            showImportDialog();
-        }
-
-        if(isDialogFragmentPresent(FeedbackDialog.TAG)) {
-            showFeedbackDialog();
-        }
-
-        if(isDialogFragmentPresent(ImportFromDoor43Dialog.TAG)) {
-            showImportFromDoor43Dialog(mTargetTranslationId);
-        }
-
         switch(mDialogShown) {
             case PROJECT_CHANGED:
                 showMergePrompt(mUpdatedProject);
@@ -236,16 +215,6 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 Logger.e(TAG,"Unsupported restore dialog: " + mDialogShown.toString());
                 break;
         }
-    }
-
-    private void showFeedbackDialog() {
-        FeedbackDialog dialog = new FeedbackDialog();
-        showDialogFragment(dialog, FeedbackDialog.TAG);
-    }
-
-    private void showImportDialog() {
-        ImportDialog importDialog = new ImportDialog();
-        showDialogFragment(importDialog, ImportDialog.TAG);
     }
 
     /**

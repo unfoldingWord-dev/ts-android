@@ -64,7 +64,6 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     private SimpleTaskWatcher taskWatcher;
     private boolean settingDeviceAlias = false;
     private Button mBackupToCloudButton = null;
-    private boolean mManualMerge = false;
     private eDialogShown mDialogShown = eDialogShown.NONE;
     private String mAccessFile;
     private String mDialogMessage;
@@ -108,7 +107,6 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         if(savedInstanceState != null) {
             // check if returning from device alias dialog
             settingDeviceAlias = savedInstanceState.getBoolean(STATE_SETTING_DEVICE_ALIAS, false);
-            mManualMerge = savedInstanceState.getBoolean(STATE_DO_MERGE, false);
             mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
             mAccessFile = savedInstanceState.getString(STATE_ACCESS_FILE, null);
             mDialogMessage = savedInstanceState.getString(STATE_DIALOG_MESSAGE, null);
@@ -204,38 +202,10 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     }
 
 
-    /** text for presence of DialogFragment by tag
-     *
-     * @param tag
-     * @return
-     */
-    private boolean isDialogFragmentPresent(String tag) {
-        Fragment fragment = getFragmentManager().findFragmentByTag(tag);
-        return (fragment != null);
-    }
-
     /**
       * restore the dialogs that were displayed before rotation
       */
     private void restoreDialogs() {
-        // attach to dialog fragments
-        if(isDialogFragmentPresent(DeviceNetworkAliasDialog.TAG)) {
-            showDeviceNetworkAliasDialogSub();
-        }
-
-        if(isDialogFragmentPresent(Door43LoginDialog.TAG)) {
-            showDoor43LoginDialog();
-        }
-
-        if(isDialogFragmentPresent(FeedbackDialog.TAG)) {
-            showFeedbackDialog(targetTranslation);
-        }
-
-        if(isDialogFragmentPresent(ShareWithPeerDialog.TAG)) {
-            showP2PDialog();
-        }
-
-
         switch(mDialogShown) {
             case PUSH_REJECTED:
                 showPushRejection(targetTranslation);
