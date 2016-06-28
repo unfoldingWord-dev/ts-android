@@ -439,8 +439,10 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     private void setupGraduations() {
-        final int numChapters = mSeekBar.getMax();
-        TranslationViewMode viewMode = App.getLastViewMode(mTargetTranslation.getId());
+        final int numCards =  mSeekBar.getMax();
+
+        String maxChapterStr = getChapterID(numCards - 1);
+        int maxChapter = Integer.valueOf(maxChapterStr);
 
         // Set up visibility of the graduation bar.
         // Display graduations evenly spaced by number of chapters (but not more than the number
@@ -448,8 +450,13 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         // Also, show nothing unless we're in read mode, since the other modes are indexed by
         // frame, not by chapter, so displaying either frame numbers or chapter numbers would be
         // nonsensical.
-        int numVisibleGraduations = Math.min(numChapters, mGraduations.getChildCount());
-        if (numChapters < 2) {
+        int numVisibleGraduations = Math.min(numCards, mGraduations.getChildCount());
+
+        if( (maxChapter > 0) && (maxChapter < numVisibleGraduations)) {
+            numVisibleGraduations = maxChapter;
+        }
+
+        if (numVisibleGraduations < 2) {
             numVisibleGraduations = 0;
         }
 
@@ -459,8 +466,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             container.setVisibility(View.VISIBLE);
             TextView text = (TextView) container.getChildAt(1);
 
-            int label = i * (numChapters - 1) / (numVisibleGraduations - 1);
-            String chapter = getChapterID(viewMode, label);
+            int position = i * (numCards - 1) / (numVisibleGraduations - 1);
+            String chapter = getChapterID(position);
             text.setText(chapter);
         }
 
@@ -472,12 +479,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     /**
      * get the chapter ID for the position
-     * @param viewMode
      * @param position
      * @return
      */
-    private String getChapterID(TranslationViewMode viewMode, int position) {
-        if( (viewMode != null) && (mFragment instanceof ViewModeFragment)) {
+    private String getChapterID(int position) {
+        if( (mFragment != null) && (mFragment instanceof ViewModeFragment)) {
             return ((ViewModeFragment) mFragment).getChapterID(position);
         }
 

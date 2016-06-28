@@ -31,6 +31,7 @@ import org.json.JSONException;
  */
 public abstract class ViewModeFragment extends BaseFragment implements ViewModeAdapter.OnEventListener, ChooseSourceTranslationDialog.OnClickListener {
 
+    public static final String TAG = ViewModeFragment.class.getSimpleName();
     private RecyclerView mRecyclerView;
     private LinearLayoutManager mLayoutManager;
     private ViewModeAdapter mAdapter;
@@ -316,6 +317,10 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     public void onScrollProgressUpdate(int scrollProgress) {
         mFingerScroll = false;
         mRecyclerView.scrollToPosition(scrollProgress);
+    }
+
+    public void setScrollProgress(int position) {
+        // TODO: 6/28/16 update scrollbar
     }
 
     @Override

@@ -23,6 +23,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.SectionIndexer;
 import android.widget.TextView;
 
 import org.unfoldingword.tools.logger.Logger;
@@ -60,7 +61,7 @@ import java.util.Map;
 /**
  * Created by joel on 9/9/2015.
  */
-public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolder> {
+public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolder> implements SectionIndexer {
     private SourceLanguage mSourceLanguage;
     private TargetLanguage mTargetLanguage;
     private final Activity mContext;
@@ -75,6 +76,9 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     private int mLayoutBuildNumber = 0;
     private ContentValues[] mTabs;
     private TranslationFormat mTargetFormat;
+    private String[] mChapterMarkers;
+    private Integer[] mStartPositionForSection;
+    private Integer[] mSectionForPosition;
 
     public ChunkModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String startingChapterSlug, String startingFrameSlug, boolean openSelectedTarget) {
         mLibrary = App.getLibrary();
@@ -239,11 +243,10 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     }
 
     /**
-     * get the chapter ID for the position
+     * get the closest chapter for the position
      * @param position
      */
-    @Override
-    public String getChapterID(int position) {
+    public String getNearestChapterID(int position) {
         if(position < 0) {
             position = 0;
         } else if(position >= mListItems.length) {
@@ -251,7 +254,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         }
 
         ListItem item;
-        for(int i = position; i >= 0; i--) { // check current frame and previous to get frame with valid chapter ID
+        for(int i = position ; i < mListItems.length; i++) { // check later frames to get frame with valid chapter ID
             item = mListItems[i];
             if(item.isFrame()) {
                 String chapterSlug = item.chapterSlug;
@@ -260,7 +263,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                 }
             }
         }
-        for(int i = position + 1; i < mListItems.length; i++) { // check later frames to get frame with valid chapter ID
+        for(int i = position - 1; i >= 0; i--) { // check current frame and previous to get frame with valid chapter ID
             item = mListItems[i];
             if(item.isFrame()) {
                 String chapterSlug = item.chapterSlug;
@@ -272,6 +275,85 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
         String chapterID = Integer.toString(position + 1);
         return chapterID;
+    }
+
+    /**
+     * get the chapter ID for the position
+     * @param position
+     */
+    @Override
+    public String getChapterID(int position) {
+        int section = getSectionForPosition( position);
+        if(section >= 0) {
+            return mChapterMarkers[section];
+        }
+        return "";
+    }
+
+    @Override
+    public Object[] getSections() {
+        makeSureChapterMarkersInitialized();
+        return mChapterMarkers;
+    }
+
+    @Override
+    public int getPositionForSection(int sectionIndex) {
+        makeSureChapterMarkersInitialized();
+
+        if( sectionIndex < 0 ) { // limit input range
+            sectionIndex = 0;
+        } else if( sectionIndex >= mStartPositionForSection.length ) {
+            sectionIndex = mStartPositionForSection.length - 1;
+        }
+
+        return mStartPositionForSection[sectionIndex];
+    }
+
+    /**
+     * if not yet cached, determine and cache the chapter boundaries
+     */
+    private void makeSureChapterMarkersInitialized() {
+        if(null == mChapterMarkers) {
+            List<String> chapterLists = new ArrayList<>();
+            List<Integer> sectionForPosition = new ArrayList<>();
+            List<Integer> startPositionForSection = new ArrayList<>();
+            int length = getItemCount();
+            String lastChapter = "00";
+            int currentSection = -1;
+            for (int i = 0; i < length; i++) {
+                String chapter = getNearestChapterID(i);
+                if(!lastChapter.equals(chapter)) {
+                    chapterLists.add(chapter);
+                    startPositionForSection.add(i);
+                    lastChapter = chapter;
+                    currentSection = Integer.valueOf(chapter) - 1;
+                }
+                sectionForPosition.add(currentSection);
+            }
+            mChapterMarkers = chapterLists.toArray(new String[chapterLists.size()]);
+            mStartPositionForSection = startPositionForSection.toArray(new Integer[chapterLists.size()]);
+            mSectionForPosition = sectionForPosition.toArray(new Integer[chapterLists.size()]);
+        }
+    }
+
+    @Override
+    public int getSectionForPosition(int position) {
+        makeSureChapterMarkersInitialized();
+
+        if( position < 0 ) { // limit input range
+            position = 0;
+        } else if( position >= mSectionForPosition.length ) {
+            position = mSectionForPosition.length - 1;
+        }
+
+        int section = mSectionForPosition[position];
+
+        if( section < 0 ) { // sanity check - limit output range
+            section = 0;
+        } else if( section >= mChapterMarkers.length ) {
+            section = mChapterMarkers.length - 1;
+        }
+        return section;
     }
 
     @Override
