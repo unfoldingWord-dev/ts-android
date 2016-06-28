@@ -3,12 +3,13 @@ package com.door43.translationstudio.tasks;
 import android.content.ContentResolver;
 import android.net.Uri;
 
-import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
+import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.core.ArchiveDetails;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.util.tasks.ManagedTask;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import org.apache.commons.io.FileUtils;
 
@@ -54,14 +55,14 @@ public class ExamineImportsForCollisionsTask extends ManagedTask {
         try {
             mProjectsFolder = File.createTempFile("targettranslation", "." + Translator.ARCHIVE_EXTENSION);
             FileUtils.copyInputStreamToFile(resolver.openInputStream(mContentUri), mProjectsFolder);
-            ArchiveDetails details = ArchiveDetails.newInstance(mProjectsFolder, Locale.getDefault().getLanguage(), AppContext.getLibrary());
+            ArchiveDetails details = ArchiveDetails.newInstance(mProjectsFolder, Locale.getDefault().getLanguage(), App.getLibrary());
             mProjectsFound = "";
             mAlreadyPresent = false;
             for (ArchiveDetails.TargetTranslationDetails td : details.targetTranslationDetails) {
                 mProjectsFound += td.projectName + " - " + td.targetLanguageName + ", ";
 
                 String targetTranslationId = td.targetTranslationSlug;
-                TargetTranslation localTargetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
+                TargetTranslation localTargetTranslation = App.getTranslator().getTargetTranslation(targetTranslationId);
                 if ((localTargetTranslation != null)) {
                     mAlreadyPresent = true;
                 }

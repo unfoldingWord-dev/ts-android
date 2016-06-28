@@ -117,7 +117,7 @@
   <string name="languages">Lugha</string>
   <string name="drafts">Tafsiri Rasimu</string>
   <string name="use_internet_confirmation">Hii kutumia internet connection yako download habari kutoka server, kuendelea?</string>
-  <string name="update_projects">Mwisho Miradi</string>
+  <string name="update_library">Mwisho Miradi</string>
   <string name="update_projects_description">View na download inapatikana updates kutoka server</string>
   <string name="action_download_all">Download wote</string>
   <string name="title_activity_project_updates">Mradi Updates</string>

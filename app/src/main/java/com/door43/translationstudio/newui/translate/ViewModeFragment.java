@@ -3,7 +3,6 @@ package com.door43.translationstudio.newui.translate;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -13,10 +12,10 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
 
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
@@ -24,11 +23,8 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.BaseFragment;
-import com.door43.translationstudio.AppContext;
 
 import org.json.JSONException;
-
-import java.security.InvalidParameterException;
 
 /**
  * Created by joel on 9/18/2015.
@@ -60,28 +56,28 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_stacked_card_list, container, false);
 
-        mLibrary = AppContext.getLibrary();
-        mTranslator = AppContext.getTranslator();
+        mLibrary = App.getLibrary();
+        mTranslator = App.getTranslator();
 
         Bundle args = getArguments();
-        String targetTranslationId = args.getString(AppContext.EXTRA_TARGET_TRANSLATION_ID, null);
+        String targetTranslationId = args.getString(App.EXTRA_TARGET_TRANSLATION_ID, null);
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         if(mTargetTranslation == null) {
             Logger.e(getClass().getName() ,"A valid target translation id is required. Received '" + targetTranslationId + "' but the translation could not be found");
             getActivity().finish();
         }
 
-        String chapterId = args.getString(AppContext.EXTRA_CHAPTER_ID, AppContext.getLastFocusChapterId(targetTranslationId));
-        String frameId = args.getString(AppContext.EXTRA_FRAME_ID, AppContext.getLastFocusFrameId(targetTranslationId));
+        String chapterId = args.getString(App.EXTRA_CHAPTER_ID, App.getLastFocusChapterId(targetTranslationId));
+        String frameId = args.getString(App.EXTRA_FRAME_ID, App.getLastFocusFrameId(targetTranslationId));
 
         // check if we have draft source
-        String draftTranslationId = args.getString(AppContext.EXTRA_SOURCE_DRAFT_TRANSLATION_ID, null);
+        String draftTranslationId = args.getString(App.EXTRA_SOURCE_DRAFT_TRANSLATION_ID, null);
         if(null != draftTranslationId) {
             SourceTranslation sourceTranslation = mLibrary.getDraftTranslation(draftTranslationId);
             mSourceTranslationId = sourceTranslation.getId();
         } else {
             // open selected tab
-            mSourceTranslationId = AppContext.getSelectedSourceTranslationId(targetTranslationId);
+            mSourceTranslationId = App.getSelectedSourceTranslationId(targetTranslationId);
         }
 
         if(null == mSourceTranslationId) {
@@ -277,7 +273,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      * Forces the software keyboard to close
      */
     public void closeKeyboard() {
-        AppContext.closeKeyboard(getActivity());
+        App.closeKeyboard(getActivity());
     }
 
     @Override
@@ -324,7 +320,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
 
     @Override
     public void onSourceTranslationTabClick(String sourceTranslationId) {
-        AppContext.setSelectedSourceTranslation(mTargetTranslation.getId(), sourceTranslationId);
+        App.setSelectedSourceTranslation(mTargetTranslation.getId(), sourceTranslationId);
         mSourceTranslationId = sourceTranslationId;
         mAdapter.setSourceTranslation(sourceTranslationId);
     }
@@ -353,9 +349,9 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
 
     @Override
     public void onConfirmTabsDialog(String targetTranslationId, String[] sourceTranslationIds) {
-        String[] oldSourceTranslationIds = AppContext.getOpenSourceTranslationIds(targetTranslationId);
+        String[] oldSourceTranslationIds = App.getOpenSourceTranslationIds(targetTranslationId);
         for(String id:oldSourceTranslationIds) {
-            AppContext.removeOpenSourceTranslation(targetTranslationId, id);
+            App.removeOpenSourceTranslation(targetTranslationId, id);
         }
 
         if(sourceTranslationIds.length > 0) {
@@ -363,7 +359,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
             for(String id:sourceTranslationIds) {
                 SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
                 if(sourceTranslation != null) {
-                    AppContext.addOpenSourceTranslation(targetTranslationId, sourceTranslation.getId());
+                    App.addOpenSourceTranslation(targetTranslationId, sourceTranslation.getId());
                     TargetTranslation targetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
                     if (targetTranslation != null) {
                         try {
@@ -374,7 +370,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
                     }
                 }
             }
-            String selectedSourceTranslationId = AppContext.getSelectedSourceTranslationId(targetTranslationId);
+            String selectedSourceTranslationId = App.getSelectedSourceTranslationId(targetTranslationId);
             mAdapter.setSourceTranslation(selectedSourceTranslationId);
         } else {
             mListener.onNoSourceTranslations(targetTranslationId);
@@ -388,7 +384,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
             int lastItemPosition = mLayoutManager.findFirstVisibleItemPosition();
             String chapterId = mAdapter.getFocusedChapterId(lastItemPosition);
             String frameId = mAdapter.getFocusedFrameId(lastItemPosition);
-            AppContext.setLastFocus(mTargetTranslation.getId(), chapterId, frameId);
+            App.setLastFocus(mTargetTranslation.getId(), chapterId, frameId);
         }
         super.onDestroy();
     }

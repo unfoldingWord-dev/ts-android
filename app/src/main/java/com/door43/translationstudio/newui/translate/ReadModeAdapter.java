@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.TabLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.GestureDetector;
@@ -19,6 +20,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.ChapterTranslation;
@@ -34,12 +36,10 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.rendering.ClickableRenderingEngine;
 import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
-import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.widget.ViewUtil;
@@ -70,13 +70,13 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     private ContentValues[] mTabs;
 
     public ReadModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId) {
-        mLibrary = AppContext.getLibrary();
-        mTranslator = AppContext.getTranslator();
+        mLibrary = App.getLibrary();
+        mTranslator = App.getTranslator();
         mContext = context;
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
         mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectSlug, mSourceTranslation.sourceLanguageSlug);
-        mTargetLanguage = mLibrary.getTargetLanguage(mTargetTranslation.getTargetLanguageId());
+        mTargetLanguage = mLibrary.getTargetLanguage(mTargetTranslation);
 
         mChapters = mLibrary.getChapters(mSourceTranslation);
         if(chapterId != null) {
@@ -161,7 +161,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
      */
     private void loadTabInfo() {
         List<ContentValues> tabContents = new ArrayList<>();
-        String[] sourceTranslationIds = AppContext.getOpenSourceTranslationIds(mTargetTranslation.getId());
+        String[] sourceTranslationIds = App.getOpenSourceTranslationIds(mTargetTranslation.getId());
         for(String id:sourceTranslationIds) {
             SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
             if(sourceTranslation != null) {
@@ -273,11 +273,11 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
                     @Override
                     public void onClick(View view, Span span, int start, int end) {
                         if(span instanceof NoteSpan) {
-                            CustomAlertDialog.Create(mContext)
+                            new AlertDialog.Builder(mContext,R.style.AppTheme_Dialog)
                                     .setTitle(R.string.title_note)
                                     .setMessage(((NoteSpan)span).getNotes())
                                     .setPositiveButton(R.string.dismiss, null)
-                                    .show("note");
+                                    .show();
                         }
                     }
 
@@ -340,7 +340,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
                 public boolean onSingleTapUp(MotionEvent e) {
                     Bundle args = new Bundle();
                     args.putBoolean(ChunkModeFragment.EXTRA_TARGET_OPEN, true);
-                    args.putString(AppContext.EXTRA_CHAPTER_ID, chapter.getId());
+                    args.putString(App.EXTRA_CHAPTER_ID, chapter.getId());
                     getListener().openTranslationMode(TranslationViewMode.CHUNK, args);
                     return true;
                 }

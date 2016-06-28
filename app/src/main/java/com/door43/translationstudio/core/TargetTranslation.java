@@ -4,14 +4,14 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.support.annotation.Nullable;
 
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.util.NumericStringComparator;
+import com.door43.util.FileUtilities;
 import com.door43.util.Manifest;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.AddCommand;
-import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.DeleteBranchCommand;
@@ -22,7 +22,6 @@ import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.TagCommand;
-import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
@@ -73,12 +72,13 @@ public class TargetTranslation {
     public static final String FIELD_MANIFEST_NAME = "name";
     public static final String FIELD_MANIFEST_BUILD = "build";
     public static final String APPLICATION_NAME = "ts-android";
+    public static final String OBS_PROJECT_TYPE = "obs";
 
     private final File targetTranslationDir;
     private final Manifest manifest;
-    private final String targetLanguageId;
-    private final String targetLanguageName;
-    private final LanguageDirection targetLanguageDirection;
+    private String targetLanguageId;
+    private String targetLanguageName;
+    private LanguageDirection targetLanguageDirection;
     private final String projectId;
     private final String projectName;
     private final TranslationType translationType;
@@ -89,6 +89,7 @@ public class TargetTranslation {
 
     private TranslationFormat mTranslationFormat;
     private PersonIdent author = null;
+    private String targetLanguageRegion = "unknown";
 
     /**
      * Creates a new instance of the target translation
@@ -103,6 +104,9 @@ public class TargetTranslation {
         this.targetLanguageId = targetLanguageJson.getString(FIELD_MANIFEST_ID);
         this.targetLanguageName = Manifest.valueExists(targetLanguageJson, FIELD_MANIFEST_NAME) ? targetLanguageJson.getString(FIELD_MANIFEST_NAME) : this.targetLanguageId.toUpperCase();
         this.targetLanguageDirection = LanguageDirection.get(targetLanguageJson.getString("direction"));
+        if(targetLanguageJson.has("region")) {
+            this.targetLanguageRegion = targetLanguageJson.getString("region");
+        }
 
         // project
         JSONObject projectJson = this.manifest.getJSONObject(FIELD_MANIFEST_PROJECT);
@@ -130,6 +134,14 @@ public class TargetTranslation {
      */
     public String getId() {
         return generateTargetTranslationId(this.targetLanguageId, this.projectId, this.translationType, this.resourceSlug);
+    }
+
+    /**
+     * Returns the translation type of the target translation
+     * @return
+     */
+    public TranslationType getTranslationType() {
+        return translationType;
     }
 
     /**
@@ -180,6 +192,10 @@ public class TargetTranslation {
         return targetLanguageName;
     }
 
+    public String getTargetLanguageRegion() {
+        return targetLanguageRegion;
+    }
+
     /**
      * Returns the id of the project being translated
      * @return
@@ -205,6 +221,14 @@ public class TargetTranslation {
     }
 
     /**
+     * determine if project type is OBS
+     * @return
+     */
+    public boolean isObsProject() {
+        return isObsProject(getProjectId());
+    }
+
+    /**
      * read the format of the translation
      * @return
      */
@@ -216,13 +240,17 @@ public class TargetTranslation {
                 return TranslationFormat.MARKDOWN;
             } else {
                 String projectIdStr = fetchProjectID(manifest);
-                if("obs".equalsIgnoreCase(projectIdStr)) {
+                if(isObsProject(projectIdStr)) {
                     return TranslationFormat.MARKDOWN;
                 }
                 return TranslationFormat.USFM;
             }
         }
         return format;
+    }
+
+    private static boolean isObsProject(String projectId) {
+        return OBS_PROJECT_TYPE.equalsIgnoreCase(projectId);
     }
 
     private static TranslationFormat fetchTranslationFormat(Manifest manifest) {
@@ -261,6 +289,7 @@ public class TargetTranslation {
      * @param targetTranslationDir
      * @return null if the directory does not exist or the manifest is invalid
      */
+    @Nullable
     public static TargetTranslation open(File targetTranslationDir) {
         if(targetTranslationDir != null) {
             File manifestFile = new File(targetTranslationDir, "manifest.json");
@@ -1230,6 +1259,63 @@ public class TargetTranslation {
             original.put(FIELD_PARENT_DRAFT, imported.getJSONObject(FIELD_PARENT_DRAFT));
         }
         return original;
+    }
+
+    /**
+     * Sets the new language request that represents the temporary language code being used by this target translation
+     * @param request
+     * @throws IOException
+     */
+    public void setNewLanguageRequest(NewLanguageRequest request) throws IOException {
+        File requestFile = new File(getPath(), "new_language.json");
+        if(request != null) {
+            FileUtilities.writeStringToFile(requestFile, request.toJson());
+        } else if(requestFile.exists()) {
+            FileUtilities.safeDelete(requestFile);
+        }
+    }
+
+    /**
+     * Returns the new language request if one exists
+     * @return
+     * @throws IOException
+     */
+    @Nullable
+    public NewLanguageRequest getNewLanguageRequest() {
+        File requestFile = new File(getPath(), "new_language.json");
+        if(requestFile.exists()) {
+            try {
+                String data = FileUtilities.readFileToString(requestFile);
+                return NewLanguageRequest.generate(data);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Changes the target langauge for this target translation
+     * This does not change the name of the directory where the target translation is stored.
+     * @param targetLanguage
+     */
+    public void changeTargetLanguage(TargetLanguage targetLanguage) {
+        JSONObject languageJson = this.manifest.getJSONObject("target_language");
+        try {
+            languageJson.put("name", targetLanguage.name);
+            languageJson.put("direction", targetLanguage.direction.getLabel());
+            languageJson.put("id", targetLanguage.getId());
+            this.manifest.put("target_language", languageJson);
+            this.targetLanguageDirection = targetLanguage.direction;
+            this.targetLanguageId = targetLanguage.getId();
+            this.targetLanguageName = targetLanguage.name;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public TargetLanguage getTargetLanguage() {
+        return new TargetLanguage(targetLanguageId, targetLanguageName, targetLanguageRegion, targetLanguageDirection);
     }
 
     public enum PublishStatus {

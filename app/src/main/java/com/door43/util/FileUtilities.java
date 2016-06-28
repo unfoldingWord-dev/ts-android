@@ -1,6 +1,6 @@
 package com.door43.util;
 
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.Logger;
 
 import org.apache.commons.io.FileUtils;
 

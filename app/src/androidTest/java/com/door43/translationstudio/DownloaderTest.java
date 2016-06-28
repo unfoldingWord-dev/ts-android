@@ -4,8 +4,7 @@ import android.test.InstrumentationTestCase;
 
 import com.door43.translationstudio.core.CheckingQuestion;
 import com.door43.translationstudio.core.Downloader;
-import com.door43.translationstudio.core.Indexer;
-import com.door43.translationstudio.core.IndexerSQLiteHelper;
+import com.door43.translationstudio.core.LibraryData;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TranslationWord;
 
@@ -15,15 +14,13 @@ import com.door43.translationstudio.core.TranslationWord;
 public class DownloaderTest extends InstrumentationTestCase {
 
     private Downloader mDownloader;
-    private Indexer mIndex;
+    private LibraryData mIndex;
 
     @Override
     protected void setUp() throws Exception {
-        MainApplication app = AppContext.context();
-        IndexerSQLiteHelper downloadIndexHelper = new IndexerSQLiteHelper(app, "downloader_test_downloads");
-        mIndex = new Indexer(app, "downloader_test_downloads", downloadIndexHelper);
-        String server = app.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, app.getResources().getString(R.string.pref_default_media_server));
-        mDownloader = new Downloader(server + app.getResources().getString(R.string.root_catalog_api));
+        mIndex = new LibraryData(App.context());
+        String server = App.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, App.context().getResources().getString(R.string.pref_default_media_server));
+        mDownloader = new Downloader(server + App.context().getResources().getString(R.string.root_catalog_api));
     }
 
     public void test1DownloadProjects() throws Exception {

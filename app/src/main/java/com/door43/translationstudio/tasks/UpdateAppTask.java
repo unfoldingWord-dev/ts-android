@@ -7,18 +7,19 @@ import android.content.pm.PackageManager;
 import android.os.Looper;
 import android.preference.PreferenceManager;
 
-import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.MainApplication;
+import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
-import com.door43.translationstudio.AppContext;
-import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.LibraryData;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
-import com.door43.util.tasks.ManagedTask;
+import com.door43.util.FileUtilities;
+
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.FileFileFilter;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -46,19 +47,15 @@ public class UpdateAppTask extends ManagedTask {
 
     @Override
     public void start() {
-        SharedPreferences settings = AppContext.context().getSharedPreferences(MainApplication.PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
+        SharedPreferences settings = App.context().getSharedPreferences(App.PREFERENCES_TAG, App.MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         int lastVersionCode = settings.getInt("last_version_code", 0);
         PackageInfo pInfo = null;
         try {
-            pInfo = AppContext.context().getPackageManager().getPackageInfo(AppContext.context().getPackageName(), 0);
+            pInfo = App.context().getPackageManager().getPackageInfo(App.context().getPackageName(), 0);
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
-
-        // TRICKY: we always migrate target translations because uninstalling the app removes our notion of a previous install
-        updateTargetTranslations();
-        updateBuildNumbers();
 
         if (pInfo != null) {
             // use current version if fresh install
@@ -73,6 +70,16 @@ public class UpdateAppTask extends ManagedTask {
                 performUpdates(lastVersionCode, pInfo.versionCode);
             }
         }
+
+        if(!App.getLibrary().exists()) {
+            try {
+                App.deployDefaultLibrary();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        updateTargetTranslations();
+        updateBuildNumbers();
     }
 
     /**
@@ -88,18 +95,21 @@ public class UpdateAppTask extends ManagedTask {
         if(lastVersion < 103) {
             upgradePre103();
         }
-        if(lastVersion < 110) {
-            upgradePre110();
-        }
         if(lastVersion < 111) {
             upgradePre111();
         }
         if(lastVersion < 122) {
             Looper.prepare();
-            PreferenceManager.setDefaultValues(AppContext.context(), R.xml.general_preferences, true);
+            PreferenceManager.setDefaultValues(App.context(), R.xml.general_preferences, true);
         }
-        if(lastVersion < 134) {
-            AppContext.context().deleteDatabase(Library.DATABASE_NAME);
+        if(lastVersion < 139) {
+            // TRICKY: this was the old name of the database
+            App.context().deleteDatabase("app");
+        }
+
+        // this should always be the latest version in which the library was updated
+        if(lastVersion < 140) {
+            App.context().deleteDatabase(LibraryData.DATABASE_NAME);
         }
     }
 
@@ -110,7 +120,7 @@ public class UpdateAppTask extends ManagedTask {
      */
     private void updateTargetTranslations() {
         // TRICKY: we manually list the target translations because they won't be viewable until updated
-        File translatorDir = AppContext.getTranslator().getPath();
+        File translatorDir = App.getTranslator().getPath();
         File[] dirs = translatorDir.listFiles(new FileFilter() {
             @Override
             public boolean accept(File pathname) {
@@ -126,7 +136,7 @@ public class UpdateAppTask extends ManagedTask {
         }
 
         // commit migration changes
-        TargetTranslation[] translations = AppContext.getTranslator().getTargetTranslations();
+        TargetTranslation[] translations = App.getTranslator().getTargetTranslations();
         for(TargetTranslation tt:translations) {
             try {
                 tt.commitSync();
@@ -140,7 +150,7 @@ public class UpdateAppTask extends ManagedTask {
      * Updates the generator information for the target translations
      */
     private void updateBuildNumbers() {
-        TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
+        TargetTranslation[] targetTranslations = App.getTranslator().getTargetTranslations();
         for(TargetTranslation tt:targetTranslations) {
             try {
                 TargetTranslation.updateGenerator(mContext, tt);
@@ -156,7 +166,7 @@ public class UpdateAppTask extends ManagedTask {
      */
     private void upgradePre111() {
         File legacyTranslationsDir = new File(mContext.getFilesDir(), "translations");
-        File translationsDir = AppContext.getTranslator().getPath();
+        File translationsDir = App.getTranslator().getPath();
 
         if(legacyTranslationsDir.exists()) {
             translationsDir.mkdirs();
@@ -184,20 +194,6 @@ public class UpdateAppTask extends ManagedTask {
     }
 
     /**
-     * We need to migrate chunks in targetTranslations because some no longer match up to the source.
-     */
-    private void upgradePre110() {
-        AppContext.context().deleteDatabase(Library.DATABASE_NAME);
-
-        // TRICKY: we deploy the new library in a different task but since we are using it in the migration we need to do so now
-        try {
-            AppContext.deployDefaultLibrary();
-        } catch (Exception e) {
-            Logger.e(this.getClass().getName(), "Failed to deploy the default index", e);
-        }
-    }
-
-    /**
      * Major changes.
      * Moved to the new object management system.
      */
@@ -206,11 +202,11 @@ public class UpdateAppTask extends ManagedTask {
         Logger.i(this.getClass().getName(), "Upgrading source data management from pre 103");
 
         // migrate target translations and profile
-        File oldTranslationsDir = new File(AppContext.context().getFilesDir(), "git");
-        File newTranslationsDir = AppContext.getTranslator().getPath();
+        File oldTranslationsDir = new File(App.context().getFilesDir(), "git");
+        File newTranslationsDir = App.getTranslator().getPath();
         newTranslationsDir.mkdirs();
         File oldProfileDir = new File(oldTranslationsDir, "profile");
-        File newProfileDir = new File(AppContext.context().getFilesDir(), AppContext.PROFILES_DIR + "/profile");
+        File newProfileDir = new File(App.context().getFilesDir(), "profiles/profile");
         newProfileDir.getParentFile().mkdirs();
         try {
             if(oldProfileDir.exists()) {
@@ -232,18 +228,18 @@ public class UpdateAppTask extends ManagedTask {
         }
 
         // remove old source
-        File oldSourceDir = new File(AppContext.context().getFilesDir(), "assets");
-        File oldTempSourceDir = new File(AppContext.context().getCacheDir(), "assets");
-        File oldIndexDir = new File(AppContext.context().getCacheDir(), "index");
+        File oldSourceDir = new File(App.context().getFilesDir(), "assets");
+        File oldTempSourceDir = new File(App.context().getCacheDir(), "assets");
+        File oldIndexDir = new File(App.context().getCacheDir(), "index");
         FileUtils.deleteQuietly(oldSourceDir);
         FileUtils.deleteQuietly(oldTempSourceDir);
         FileUtils.deleteQuietly(oldIndexDir);
 
         // remove old caches
-        File oldP2PDir = new File(AppContext.context().getExternalCacheDir(), "transferred");
-        File oldExportDir = new File(AppContext.context().getCacheDir(), "exported");
-        File oldImportDir = new File(AppContext.context().getCacheDir(), "imported");
-        File oldSharingDir = new File(AppContext.context().getCacheDir(), "sharing");
+        File oldP2PDir = new File(App.context().getExternalCacheDir(), "transferred");
+        File oldExportDir = new File(App.context().getCacheDir(), "exported");
+        File oldImportDir = new File(App.context().getCacheDir(), "imported");
+        File oldSharingDir = new File(App.context().getCacheDir(), "sharing");
         FileUtils.deleteQuietly(oldP2PDir);
         FileUtils.deleteQuietly(oldExportDir);
         FileUtils.deleteQuietly(oldImportDir);
@@ -251,8 +247,6 @@ public class UpdateAppTask extends ManagedTask {
 
         // clear old logs and crash reports
         Logger.flush();
-        File stacktraceDir = new File(AppContext.context().getExternalCacheDir(), AppContext.context().STACKTRACE_DIR);
-        FileUtils.deleteQuietly(stacktraceDir);
     }
 
     /**
@@ -261,8 +255,8 @@ public class UpdateAppTask extends ManagedTask {
     private void upgradePre87() {
         publishProgress(-1, "Updating fonts");
         Logger.i(this.getClass().getName(), "Upgrading fonts from pre 87");
-        SharedPreferences.Editor editor = AppContext.context().getUserPreferences().edit();
-        editor.putString(SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE, AppContext.context().getString(R.string.pref_default_translation_typeface));
+        SharedPreferences.Editor editor = App.context().getUserPreferences().edit();
+        editor.putString(SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE, App.context().getString(R.string.pref_default_translation_typeface));
         editor.apply();
     }
 

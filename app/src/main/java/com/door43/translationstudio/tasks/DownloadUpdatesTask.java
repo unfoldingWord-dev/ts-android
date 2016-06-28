@@ -1,9 +1,9 @@
 package com.door43.translationstudio.tasks;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.LibraryUpdates;
-import com.door43.util.tasks.ManagedTask;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 /**
  * Created by joel on 10/28/2015.
@@ -23,7 +23,7 @@ public class DownloadUpdatesTask extends ManagedTask {
         publishProgress(-1, "");
 
         if(availableUpdates != null) {
-            Library library = AppContext.getLibrary();
+            Library library = App.getLibrary();
             library.downloadUpdates(availableUpdates, new Library.OnProgressListener() {
                 @Override
                 public boolean onProgress(int progress, int max) {

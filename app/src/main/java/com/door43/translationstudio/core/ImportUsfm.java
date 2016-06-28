@@ -6,8 +6,9 @@ import android.content.pm.PackageInfo;
 import android.net.Uri;
 import android.text.TextUtils;
 
-import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
+import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.spannables.USFMVerseSpan;
 import com.door43.util.Zip;
@@ -602,7 +603,7 @@ public class ImportUsfm {
             String ext = FilenameUtils.getExtension(path);
             boolean zip = "zip".equalsIgnoreCase(ext);
 
-            InputStream usfmStream = AppContext.context().getContentResolver().openInputStream(uri);
+            InputStream usfmStream = App.context().getContentResolver().openInputStream(uri);
             if (!zip) {
                 String text = IOUtils.toString(usfmStream, "UTF-8");
                 success = processBook(text, uri.toString());
@@ -677,7 +678,7 @@ public class ImportUsfm {
 
             for (int i = 1; i <= mChapters.length; i++) { // get file names for chunks
                 String chapterId = getChapterFolderName(i + "");
-                String[] chapterFrameSlugs = AppContext.getLibrary().getFrameSlugs(sourceTranslation, chapterId);
+                String[] chapterFrameSlugs = App.getLibrary().getFrameSlugs(sourceTranslation, chapterId);
                 JSONArray verseBreaks = getVerseBreaksObj(i + "");
                 for (int j = 0; j < verseBreaks.length(); j++) {
                     JSONObject chunk = verseBreaks.getJSONObject(j);
@@ -795,7 +796,7 @@ public class ImportUsfm {
                 mBookName = mBookShortName;
             }
 
-            ChunkMarker[] markers = AppContext.getLibrary().getChunkMarkers(mBookShortName);
+            ChunkMarker[] markers = App.getLibrary().getChunkMarkers(mBookShortName);
             boolean haveChunksList = markers.length > 0;
 
             if (!haveChunksList) { // no chunk list
@@ -805,8 +806,8 @@ public class ImportUsfm {
                 addBookMissingName(mBookName, mBookShortName, book);
                 return promptForName;
             } else { // has chunks
-                SourceTranslation sourceTranslation = AppContext.getLibrary().getSourceTranslation(mBookShortName, "en", "ulb");
-                mChapters = AppContext.getLibrary().getChapters(sourceTranslation);
+                SourceTranslation sourceTranslation = App.getLibrary().getSourceTranslation(mBookShortName, "en", "ulb");
+                mChapters = App.getLibrary().getChapters(sourceTranslation);
 
                 mChunks = new HashMap<>(); // clear old map
                 addChunks(mBookShortName, markers, sourceTranslation);
@@ -877,11 +878,11 @@ public class ImportUsfm {
         PackageInfo pInfo;
         TargetTranslation targetTranslation;
         try {
-            Context context = AppContext.context();
+            Context context = App.context();
             pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
             String projectId = mBookShortName;
             String resourceSlug = Resource.REGULAR_SLUG;
-            targetTranslation = TargetTranslation.create(context, AppContext.getProfile().getNativeSpeaker(), TranslationFormat.USFM, mTargetLanguage, projectId, TranslationType.TEXT, resourceSlug, pInfo, mProjectFolder);
+            targetTranslation = TargetTranslation.create(context, App.getProfile().getNativeSpeaker(), TranslationFormat.USFM, mTargetLanguage, projectId, TranslationType.TEXT, resourceSlug, pInfo, mProjectFolder);
 
         } catch (Exception e) {
             addError(R.string.file_write_error);
@@ -1485,7 +1486,7 @@ public class ImportUsfm {
      * create the necessary temp folders for unzipped source and output
      */
     private void createTempFolders() {
-        mTempDir = new File(AppContext.context().getCacheDir(), System.currentTimeMillis() + "");
+        mTempDir = new File(App.context().getCacheDir(), System.currentTimeMillis() + "");
         mTempDir.mkdirs();
         mTempSrce = new File(mTempDir, "source");
         mTempSrce.mkdirs();

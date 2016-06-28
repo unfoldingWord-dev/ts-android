@@ -5,8 +5,9 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 
-import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
+import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
@@ -227,13 +228,13 @@ public class ServerService extends NetworkService {
                     try {
                         JSONObject json = new JSONObject();
                         json.put("name", deviceAlias);
-                        if(AppContext.isTablet()) {
+                        if(App.isTablet()) {
                             json.put("device", "tablet");
                         } else {
                             json.put("device", "phone");
                         }
                         MessageDigest md = MessageDigest.getInstance("SHA-256");
-                        md.update(AppContext.udid().getBytes("UTF-8"));
+                        md.update(App.udid().getBytes("UTF-8"));
                         byte[] digest = md.digest();
                         BigInteger bigInt = new BigInteger(1, digest);
                         String hash = bigInt.toString();
@@ -293,11 +294,11 @@ public class ServerService extends NetworkService {
                     break;
                 }
 
-                Translator translator = AppContext.getTranslator();
+                Translator translator = App.getTranslator();
                 TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationSlug);
                 if(targetTranslation != null) {
                     try {
-                        targetTranslation.setDefaultContributor(AppContext.getProfile().getNativeSpeaker());
+                        targetTranslation.setDefaultContributor(App.getProfile().getNativeSpeaker());
                         translator.exportArchive(targetTranslation, exportFile);
                         if(exportFile.exists()) {
                             ServerSocket fileSocket = openWriteSocket(new OnSocketEventListener() {
@@ -345,7 +346,7 @@ public class ServerService extends NetworkService {
 //                try {
 ////                    JSONArray preferredLanguagesJson = contextJson.getJSONArray("preferred_source_language_ids");
 ////                    for(int i = 0; i < preferredLanguagesJson.length(); i ++) {
-////                        Language lang =  null;//AppContext.projectManager().getLanguage(preferredLanguagesJson.getString(i));
+////                        Language lang =  null;//App.projectManager().getLanguage(preferredLanguagesJson.getString(i));
 ////                        if(lang != null) {
 ////                            preferredLanguages.add(lang);
 ////                        }
@@ -356,7 +357,7 @@ public class ServerService extends NetworkService {
 
                 // generate project library
                 // TODO: identifying the projects that have changes could be expensive if there are lots of clients and lots of projects. We might want to cache this
-                String library =  null;//Sharing.generateLibrary(AppContext.projectManager().getProjectSlugs(), preferredLanguages);
+                String library =  null;//Sharing.generateLibrary(App.projectManager().getProjectSlugs(), preferredLanguages);
 
                 sendMessage(client, SocketMessages.MSG_PROJECT_LIST + ":" + library);
                 break;
@@ -371,8 +372,8 @@ public class ServerService extends NetworkService {
      * @param targetTranslationSlug
      */
     public void offerTargetTranslation(Peer client, String targetTranslationSlug) {
-        Library library = AppContext.getLibrary();
-        TargetTranslation targetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationSlug);
+        Library library = App.getLibrary();
+        TargetTranslation targetTranslation = App.getTranslator().getTargetTranslation(targetTranslationSlug);
         if(targetTranslation != null) {
             SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
             if(sourceTranslation != null) {

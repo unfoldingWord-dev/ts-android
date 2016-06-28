@@ -5,9 +5,9 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 
-import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
-import com.door43.translationstudio.core.TargetTranslationMigrator;
+import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.device2device.SocketMessages;
 import com.door43.translationstudio.network.Connection;
@@ -232,13 +232,13 @@ public class ClientService extends NetworkService {
                 try {
                     JSONObject json = new JSONObject();
                     json.put("name", deviceAlias);
-                    if(AppContext.isTablet()) {
+                    if(App.isTablet()) {
                         json.put("device", "tablet");
                     } else {
                         json.put("device", "phone");
                     }
                     MessageDigest md = MessageDigest.getInstance("SHA-256");
-                    md.update(AppContext.udid().getBytes("UTF-8"));
+                    md.update(App.udid().getBytes("UTF-8"));
                     byte[] digest = md.digest();
                     BigInteger bigInt = new BigInteger(1, digest);
                     String hash = bigInt.toString();
@@ -355,7 +355,7 @@ public class ClientService extends NetworkService {
                                 in.close();
 
                                 // import the target translation
-                                Translator translator = AppContext.getTranslator();
+                                Translator translator = App.getTranslator();
                                 // TODO: 11/23/2015 perform a diff first
                                 try {
                                     String[] targetTranslationSlugs = translator.importArchive(file);

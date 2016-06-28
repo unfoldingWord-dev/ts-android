@@ -1,14 +1,14 @@
 package com.door43.translationstudio.tasks;
 
-import com.door43.tools.reporting.GithubReporter;
-import com.door43.tools.reporting.GlobalExceptionHandler;
+import org.unfoldingword.tools.logger.GithubReporter;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.AppContext;
-import com.door43.util.FileUtilities;
-import com.door43.util.tasks.ManagedTask;
+
+import org.unfoldingword.tools.logger.Logger;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
  * This task submits the latest crash report to github
@@ -24,58 +24,21 @@ public class UploadCrashReportTask extends ManagedTask {
 
     @Override
     public void start() {
-        File stacktraceDir = new File(AppContext.getPublicDirectory(), AppContext.context().STACKTRACE_DIR);
-        File logFile = new File(AppContext.getPublicDirectory(), "log.txt");
-        int githubTokenIdentifier = AppContext.context().getResources().getIdentifier("github_oauth2", "string", AppContext.context().getPackageName());
-        String githubUrl = AppContext.context().getResources().getString(R.string.github_bug_report_repo);
+        File logFile = new File(App.getPublicDirectory(), "log.txt");
+        int githubTokenIdentifier = App.context().getResources().getIdentifier("github_oauth2", "string", App.context().getPackageName());
+        String githubUrl = App.context().getResources().getString(R.string.github_bug_report_repo);
 
         // TRICKY: make sure the github_oauth2 token has been set
         if(githubTokenIdentifier != 0) {
-            GithubReporter reporter = new GithubReporter(AppContext.context(), githubUrl, AppContext.context().getResources().getString(githubTokenIdentifier));
-            String[] stacktraces = GlobalExceptionHandler.getStacktraces(stacktraceDir);
+            GithubReporter reporter = new GithubReporter(App.context(), githubUrl, App.context().getResources().getString(githubTokenIdentifier));
+            File[] stacktraces = Logger.listStacktraces();
             if (stacktraces.length > 0) {
                 // upload most recent stacktrace
-                reporter.reportCrash(mMessage, new File(stacktraces[0]), logFile);
+                reporter.reportCrash(mMessage, stacktraces[0], logFile);
+
                 // empty the log
-                try {
-                    FileUtilities.writeStringToFile(logFile, "");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                archiveStackTraces(stacktraceDir, stacktraces);
+                Logger.flush();
             }
-        }
-    }
-
-    /**
-     * archive the stack traces
-     * @param stacktraceDir
-     * @param stacktraces
-     */
-    private static void archiveStackTraces(File stacktraceDir, String[] stacktraces) {
-        // archive extra stacktraces
-        File archiveDir = new File(stacktraceDir, "archive");
-        archiveDir.mkdirs();
-        for (String filePath:stacktraces) {
-            File traceFile = new File(filePath);
-            if (traceFile.exists()) {
-                FileUtilities.moveOrCopy(traceFile, new File(archiveDir, traceFile.getName()));
-                if(traceFile.exists()) {
-                    traceFile.delete();
-                }
-            }
-        }
-    }
-
-    /**
-     * move error files into archive
-     */
-    public static void archiveErrorLogs() {
-        File stacktraceDir = new File(AppContext.getPublicDirectory(), AppContext.context().STACKTRACE_DIR);
-        String[] stacktraces = GlobalExceptionHandler.getStacktraces(stacktraceDir);
-        if(stacktraces.length > 0) {
-            archiveStackTraces(stacktraceDir, stacktraces);
         }
     }
 

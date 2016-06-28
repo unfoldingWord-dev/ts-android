@@ -3,13 +3,14 @@ package com.door43.translationstudio.newui;
 import android.app.DialogFragment;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,16 +20,15 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
+import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.device2device.PeerAdapter;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
-import com.door43.translationstudio.dialogs.NoteMarkerDialog;
 import com.door43.translationstudio.network.Peer;
 import com.door43.translationstudio.newui.home.HomeActivity;
 import com.door43.translationstudio.service.BroadcastListenerService;
@@ -37,8 +37,6 @@ import com.door43.translationstudio.service.ClientService;
 import com.door43.translationstudio.service.Request;
 import com.door43.translationstudio.service.ServerService;
 import com.door43.util.RSAEncryption;
-import com.door43.util.StringUtilities;
-import com.door43.widget.ViewUtil;
 
 import org.json.JSONException;
 
@@ -171,7 +169,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
             operationMode = args.getInt(ARG_OPERATION_MODE, MODE_CLIENT);
             targetTranslationSlug = args.getString(ARG_TARGET_TRANSLATION, null);
             deviceAlias = args.getString(ARG_DEVICE_ALIAS, null);
-            targetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationSlug);
+            targetTranslation = App.getTranslator().getTargetTranslation(targetTranslationSlug);
             if (operationMode == MODE_SERVER && targetTranslation == null) {
                 throw new InvalidParameterException("Server mode requires a valid target translation");
             }
@@ -191,7 +189,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
 
         if(operationMode == MODE_SERVER) {
             title.setText(getResources().getString(R.string.backup_to_friend));
-            SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+            SourceTranslation sourceTranslation = App.getLibrary().getDefaultSourceTranslation(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
             if(sourceTranslation != null) {
                 subTitle.setText(sourceTranslation.getProjectTitle() + " - " + targetTranslation.getTargetLanguageName());
             } else {
@@ -227,12 +225,12 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
                                 String targetLanguageName = request.context.getString("target_language_name");
                                 int packageVersion = request.context.getInt("package_version");
                                 if(packageVersion <= TargetTranslation.PACKAGE_VERSION) {
-                                    final CustomAlertDialog dialog = CustomAlertDialog.Create(getActivity());
-                                    dialog.setTitle(peer.getName())
+                                    new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                                            .setTitle(peer.getName())
                                             .setMessage(String.format(getResources().getString(R.string.confirm_import_target_translation), projectName + " - " + targetLanguageName))
-                                            .setPositiveButton(R.string.label_import, new View.OnClickListener() {
+                                            .setPositiveButton(R.string.label_import, new DialogInterface.OnClickListener() {
                                                 @Override
-                                                public void onClick(View v) {
+                                                public void onClick(DialogInterface dialog, int which) {
                                                     peer.dismissRequest(request);
                                                     if (adapter != null) {
                                                         adapter.notifyDataSetChanged();
@@ -241,9 +239,9 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
                                                     dialog.dismiss();
                                                 }
                                             })
-                                            .setNegativeButton(R.string.dismiss, new View.OnClickListener() {
+                                            .setNegativeButton(R.string.dismiss, new DialogInterface.OnClickListener() {
                                                 @Override
-                                                public void onClick(View v) {
+                                                public void onClick(DialogInterface dialog, int which) {
                                                     peer.dismissRequest(request);
                                                     if (adapter != null) {
                                                         adapter.notifyDataSetChanged();
@@ -251,7 +249,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
                                                     dialog.dismiss();
                                                 }
                                             })
-                                            .show("approve-request");
+                                            .show();
                                 } else {
                                     // our app is to old to import this version of a target translation
                                     Logger.w(ShareWithPeerDialog.class.getName(), "Could not import target translation with package version " + TargetTranslation.PACKAGE_VERSION + ". Supported version is " + TargetTranslation.PACKAGE_VERSION);
@@ -259,22 +257,22 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
                                     if (adapter != null) {
                                         adapter.notifyDataSetChanged();
                                     }
-                                    final CustomAlertDialog dialog = CustomAlertDialog.Create(getActivity());
-                                    dialog.setTitle(peer.getName())
+                                    new AlertDialog.Builder(getActivity(),R.style.AppTheme_Dialog)
+                                            .setTitle(peer.getName())
                                             .setMessage(String.format(getResources().getString(R.string.error_importing_unsupported_target_translation), projectName, targetLanguageName, getResources().getString(R.string.app_name)))
                                             .setNeutralButton(R.string.dismiss, null)
-                                            .show("approve-request");
+                                            .show();
                                 }
                             } catch (JSONException e) {
                                 peer.dismissRequest(request);
                                 if (adapter != null) {
                                     adapter.notifyDataSetChanged();
                                 }
-                                final CustomAlertDialog dialog = CustomAlertDialog.Create(getActivity());
-                                dialog.setTitle(peer.getName())
+                                new AlertDialog.Builder(getActivity(),R.style.AppTheme_Dialog)
+                                        .setTitle(peer.getName())
                                         .setMessage(R.string.error)
                                         .setNeutralButton(R.string.dismiss, null)
-                                        .show("approve-request");
+                                        .show();
                                 Logger.e(ShareWithPeerDialog.class.getName(), "Invalid request context", e);
                             }
                         } else {
@@ -353,7 +351,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
 
         intent.putExtra(ServerService.PARAM_PRIVATE_KEY, privateKey);
         intent.putExtra(ServerService.PARAM_PUBLIC_KEY, RSAEncryption.getPublicKeyAsString(publicKey));
-        intent.putExtra(ServerService.PARAM_DEVICE_ALIAS, AppContext.getDeviceNetworkAlias());
+        intent.putExtra(ServerService.PARAM_DEVICE_ALIAS, App.getDeviceNetworkAlias());
         Logger.i(this.getClass().getName(), "Starting service " + intent.getComponent().getClassName());
         getActivity().startService(intent);
     }
@@ -528,8 +526,8 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
     @Override
     public void onReceivedTargetTranslations(Peer server, String[] targetTranslations) {
         // build name list
-        Translator translator = AppContext.getTranslator();
-        Library library = AppContext.getLibrary();
+        Translator translator = App.getTranslator();
+        Library library = App.getLibrary();
         String targetTranslationNames = "";
         for(String targetTranslationSlug:targetTranslations) {
             TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationSlug);
@@ -543,11 +541,11 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
         hand.post(new Runnable() {
             @Override
             public void run() {
-                final CustomAlertDialog dialog = CustomAlertDialog.Create(getActivity());
-                dialog.setTitle(R.string.success)
+                new AlertDialog.Builder(getActivity(),R.style.AppTheme_Dialog)
+                        .setTitle(R.string.success)
                         .setMessage(String.format(getResources().getString(R.string.success_import_target_translation), names))
                         .setPositiveButton(R.string.dismiss, null)
-                        .show("import-success");
+                        .show();
                 // TODO: 12/1/2015 this is a bad hack
                 ((HomeActivity) getActivity()).notifyDatasetChanged();
             }

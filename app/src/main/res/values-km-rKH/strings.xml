@@ -124,7 +124,7 @@
   <string name="languages">ភាសា</string>
   <string name="drafts">សេចក្តី​ព្រាង​បកប្រែ</string>
   <string name="use_internet_confirmation">ការ​នេះ​នឹង​ប្រើ​ការ​តភ្ជាប់​អ៊ីនធឺណិត​របស់​អ្នក​ដើម្បី​ទាញ​យក​ព័ត៌មាន​ពី​ម៉ាស៊ីន​បម្រើ​បន្ត​ឬ​?</string>
-  <string name="update_projects">គម្រោង​ធ្វើ​ឱ្យ​ទាន់​សម័យ</string>
+  <string name="update_library">គម្រោង​ធ្វើ​ឱ្យ​ទាន់​សម័យ</string>
   <string name="update_projects_description">មើល​និង​ទាញ​យក​ភាព​ទាន់សម័យ​អាច​រក​ពី​ម៉ាស៊ីន​បម្រើ</string>
   <string name="action_download_all">ទាញ​យក​ទាំង​អស់</string>
   <string name="title_activity_project_updates">គម្រោង​ការ​ធ្វើ​ឱ្យ​ទាន់សម័យ</string>

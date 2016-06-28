@@ -13,12 +13,12 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.AppContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,8 +38,8 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         View v = inflater.inflate(R.layout.dialog_choose_source_translation, container, false);
 
-        mTranslator = AppContext.getTranslator();
-        mLibrary = AppContext.getLibrary();
+        mTranslator = App.getTranslator();
+        mLibrary = App.getLibrary();
 
         Bundle args = getArguments();
         if(args == null) {
@@ -63,7 +63,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
 
         mAdapter = new ChooseSourceTranslationAdapter(getActivity());
         // add selected
-        String[] sourceTranslationIds = AppContext.getOpenSourceTranslationIds(mTargetTranslation.getId());
+        String[] sourceTranslationIds = App.getOpenSourceTranslationIds(mTargetTranslation.getId());
         for(String id:sourceTranslationIds) {
             SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
             if(sourceTranslation != null) {

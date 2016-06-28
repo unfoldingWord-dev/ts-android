@@ -124,7 +124,7 @@
   <string name="languages">Idiomas</string>
   <string name="drafts">Borradores de Traducción</string>
   <string name="use_internet_confirmation">Esto utilizará su conexión a Internet para descargar información desde el servidor, continúe?</string>
-  <string name="update_projects">Actualizar Proyectos</string>
+  <string name="update_library">Actualizar Proyectos</string>
   <string name="update_projects_description">Ver y descargar actualizaciones disponibles desde el servidor</string>
   <string name="action_download_all">Descargar todo</string>
   <string name="title_activity_project_updates">Actualizaciones Proyecto</string>

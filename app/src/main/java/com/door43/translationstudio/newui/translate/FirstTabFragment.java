@@ -11,7 +11,9 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceLanguage;
@@ -19,7 +21,6 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.BaseFragment;
-import com.door43.translationstudio.AppContext;
 
 import org.json.JSONException;
 
@@ -39,11 +40,11 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_first_tab, container, false);
 
-        mTranslator = AppContext.getTranslator();
-        mLibrary = AppContext.getLibrary();
+        mTranslator = App.getTranslator();
+        mLibrary = App.getLibrary();
 
         Bundle args = getArguments();
-        final String targetTranslationId = args.getString(AppContext.EXTRA_TARGET_TRANSLATION_ID, null);
+        final String targetTranslationId = args.getString(App.EXTRA_TARGET_TRANSLATION_ID, null);
         TargetTranslation targetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         if(targetTranslation == null) {
             throw new InvalidParameterException("a valid target translation id is required");
@@ -104,9 +105,9 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
 
     @Override
     public void onConfirmTabsDialog(String targetTranslationId, String[] sourceTranslationIds) {
-        String[] oldSourceTranslationIds = AppContext.getOpenSourceTranslationIds(targetTranslationId);
+        String[] oldSourceTranslationIds = App.getOpenSourceTranslationIds(targetTranslationId);
         for(String id:oldSourceTranslationIds) {
-            AppContext.removeOpenSourceTranslation(targetTranslationId, id);
+            App.removeOpenSourceTranslation(targetTranslationId, id);
         }
 
         if(sourceTranslationIds.length > 0) {
@@ -114,7 +115,7 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
             for(String id:sourceTranslationIds) {
                 SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
                 if(sourceTranslation != null) {
-                    AppContext.addOpenSourceTranslation(targetTranslationId, sourceTranslation.getId());
+                    App.addOpenSourceTranslation(targetTranslationId, sourceTranslation.getId());
                     TargetTranslation targetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
                     if (targetTranslation != null) {
                         try {

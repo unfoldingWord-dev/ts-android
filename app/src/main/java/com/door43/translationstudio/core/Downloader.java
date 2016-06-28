@@ -1,7 +1,9 @@
 package com.door43.translationstudio.core;
 
-import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
+import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
+import com.door43.translationstudio.R;
 import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
@@ -46,7 +48,7 @@ public class Downloader {
             urlConnection.disconnect();
             return response;
         } catch (IOException e) {
-            Logger.e(this.getClass().getName(), "Failed to download file", e);
+            Logger.e(this.getClass().getName(), "Failed to download file " + apiUrl, e);
             return null;
         } finally {
             if(urlConnection != null) {
@@ -99,7 +101,7 @@ public class Downloader {
     /**
      * Downloads the project catalog from the server
      */
-    public boolean downloadProjectList(Indexer targetIndex) {
+    public boolean downloadProjectList(LibraryData targetIndex) {
         String catalog = request(mRootApiUrl);
         if(catalog != null) {
             return targetIndex.indexProjects(catalog);
@@ -113,7 +115,7 @@ public class Downloader {
      * @param targetIndex
      * @return
      */
-    public boolean downloadChunkMarkerList(String projectSlug, Indexer targetIndex) {
+    public boolean downloadChunkMarkerList(String projectSlug, LibraryData targetIndex) {
         Project project = targetIndex.getProject(projectSlug);
         if(project != null && project.chunkMarkerCatalog != null
                 && (project.chunkMarkerCatalogLocalDateModified < project.chunkMarkerCatalogServerDateModified
@@ -134,7 +136,7 @@ public class Downloader {
      * @param targetIndex
      * @return
      */
-    public boolean downloadSourceLanguageList(String projectSlug, Indexer targetIndex) {
+    public boolean downloadSourceLanguageList(String projectSlug, LibraryData targetIndex) {
         Project project = targetIndex.getProject(projectSlug);
         if(project != null && project.sourceLanguageCatalog != null
                 && (project.sourceLanguageCatalogLocalDateModified < project.sourceLanguageCatalogServerDateModified
@@ -155,7 +157,7 @@ public class Downloader {
      * @param sourceLanguageSlug
      * @return
      */
-    public boolean downloadResourceList(String projectSlug, String sourceLanguageSlug, Indexer targetIndex) {
+    public boolean downloadResourceList(String projectSlug, String sourceLanguageSlug, LibraryData targetIndex) {
         SourceLanguage sourceLanguage = targetIndex.getSourceLanguage(projectSlug, sourceLanguageSlug);
         if(sourceLanguage != null && sourceLanguage.resourceCatalog != null
                 && (sourceLanguage.resourceCatalogLocalDateModified < sourceLanguage.resourceCatalogServerDateModified
@@ -176,7 +178,7 @@ public class Downloader {
      * @param targetIndex the index into which the source will be downloaded
      * @return
      */
-    public boolean downloadSource(SourceTranslation translation, Indexer targetIndex) {
+    public boolean downloadSource(SourceTranslation translation, LibraryData targetIndex) {
         Resource resource = targetIndex.getResource(translation);
         if(resource != null && resource.getSourceCatalogUrl() != null
                 && (resource.getSourceDateModified() < resource.getSourceServerDateModified()
@@ -198,7 +200,7 @@ public class Downloader {
      * @param targetIndex the index to which the terms will be downloaded
      * @return
      */
-    public boolean downloadWords(SourceTranslation translation, Indexer targetIndex) {
+    public boolean downloadWords(SourceTranslation translation, LibraryData targetIndex) {
         Resource resource = targetIndex.getResource(translation);
         if(resource != null && resource.getWordsCatalogUrl() != null
                 && (resource.getWordsDateModified() < resource.getWordsServerDateModified()
@@ -219,7 +221,7 @@ public class Downloader {
      * @param targetIndex the index to which the term assignments will be downloaded
      * @return
      */
-    public boolean downloadWordAssignments(SourceTranslation translation, Indexer targetIndex) {
+    public boolean downloadWordAssignments(SourceTranslation translation, LibraryData targetIndex) {
         Resource resource = targetIndex.getResource(translation);
         if(resource != null && resource.getWordAssignmentsCatalogUrl() != null
                 && (resource.getWordAssignmentsDateModified() < resource.getWordAssignmentsServerDateModified()
@@ -240,7 +242,7 @@ public class Downloader {
      * @param targetIndex the index to which the notes will be downloaded
      * @return
      */
-    public boolean downloadNotes(SourceTranslation translation, Indexer targetIndex) {
+    public boolean downloadNotes(SourceTranslation translation, LibraryData targetIndex) {
         Resource resource = targetIndex.getResource(translation);
         if(resource != null && resource.getNotesCatalogUrl() != null
                 && (resource.getNotesDateModified() < resource.getNotesServerDateModified()
@@ -261,7 +263,7 @@ public class Downloader {
      * @param targetIndex the index to which the checking questions will be downloaded
      * @return
      */
-    public boolean downloadCheckingQuestions(SourceTranslation translation, Indexer targetIndex) {
+    public boolean downloadCheckingQuestions(SourceTranslation translation, LibraryData targetIndex) {
         Resource resource = targetIndex.getResource(translation);
         if(resource != null && resource.getQuestionsCatalogUrl() != null
                 && (resource.getQuestionsDateModified() < resource.getQuestionsServerDateModified()
@@ -282,7 +284,7 @@ public class Downloader {
 
         String url = Resource.getImagesCatalogUrl();
         String filename = url.replaceAll(".*/", "");
-        File imagesDir = AppContext.getLibrary().getImagesDir();
+        File imagesDir = App.getLibrary().getImagesDir();
         File fullPath = new File(String.format("%s/%s", imagesDir, filename));
         if (!(imagesDir.isDirectory() || imagesDir.mkdirs())) {
             return false;
@@ -320,11 +322,53 @@ public class Downloader {
      * @param targetIndex
      * @return
      */
-    public boolean downloadTargetLanguages(Indexer targetIndex) {
+    public boolean downloadTargetLanguages(LibraryData targetIndex) {
         // TODO: 10/19/2015 don't hardcode the url
         String catalog = request("http://td.unfoldingword.org/exports/langnames.json");
         if(catalog != null) {
             return targetIndex.indexTargetLanguages(catalog);
+        }
+        return false;
+    }
+
+    /**
+     * Downloads the target languages from the server
+     * @param targetIndex
+     * @return
+     */
+    public boolean downloadTempTargetLanguages(LibraryData targetIndex) {
+        // TODO: 10/19/2015 this will eventually be pulled from the library data
+        String catalog = request("http://td-demo.unfoldingword.org/api/templanguages/");
+        if(catalog != null) {
+            return targetIndex.indexTempTargetLanguages(catalog);
+        }
+        return false;
+    }
+
+    /**
+     * Downloads the target languages from the server
+     * @param targetIndex
+     * @return
+     */
+    public boolean downloadTempTargetLanguageAssignments(LibraryData targetIndex) {
+        // TODO: 10/19/2015 this will eventually be pulled from the library data
+        String catalog = request("http://td-demo.unfoldingword.org/api/templanguages/assignment/changed/");
+        if(catalog != null) {
+            return targetIndex.indexTempTargetLanguageAssignments(catalog);
+        }
+        return false;
+    }
+
+    /**
+     * Downloads the new language questionnaire from the server
+     * @param targetIndex
+     * @return
+     */
+    public boolean downloadNewLanguageQuestionnaire(LibraryData targetIndex) {
+        // TODO: eventually this will be pulled from the library data
+        String catalog = request(App.context().getResources().getString(R.string.questionnaire_api));
+        if(catalog != null) {
+            return targetIndex.indexQuestionnaire(catalog);
         }
         return false;
     }

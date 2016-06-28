@@ -117,7 +117,7 @@
   <string name="languages">Языки</string>
   <string name="drafts">Перевод Черновики</string>
   <string name="use_internet_confirmation">Это позволит использовать ваше интернет-соединение для загрузки информации с сервера, продолжить?</string>
-  <string name="update_projects">Обновление Проекты</string>
+  <string name="update_library">Обновление Проекты</string>
   <string name="update_projects_description">Просмотр и загрузка доступных обновлений с сервера</string>
   <string name="action_download_all">Скачать все</string>
   <string name="title_activity_project_updates">Обновления проекта</string>

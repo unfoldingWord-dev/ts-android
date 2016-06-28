@@ -3,7 +3,9 @@ package com.door43.translationstudio.newui.home;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -11,16 +13,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NativeSpeaker;
 import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.ContributorsAdapter;
 import com.door43.translationstudio.newui.ContributorDialog;
-import com.door43.translationstudio.newui.ContributorsFragment;
 
 /**
  * Created by joel on 2/22/2016.
@@ -47,11 +47,11 @@ public class ManageContributorsDialog extends DialogFragment implements Contribu
 
         String targetTranslationId = args.getString(ManageContributorsDialog.EXTRA_TARGET_TRANSLATION_ID);
 
-        Translator translator = AppContext.getTranslator();
+        Translator translator = App.getTranslator();
         mTargetTranslation = translator.getTargetTranslation(targetTranslationId);
 
 //         auto add profile
-        Profile profile = AppContext.getProfile();
+        Profile profile = App.getProfile();
         if(profile != null) {
             mTargetTranslation.addContributor(profile.getNativeSpeaker());
         }
@@ -139,18 +139,23 @@ public class ManageContributorsDialog extends DialogFragment implements Contribu
      * Displays the privacy notice
      * @param listener if set the dialog will become a confirmation dialog
      */
-    public void showPrivacyNotice(View.OnClickListener listener) {
-        CustomAlertDialog privacy = CustomAlertDialog.Create(getActivity())
-                .setTitle(R.string.privacy_notice)
-                .setIcon(R.drawable.ic_info_black_24dp)
-                .setMessage(R.string.publishing_privacy_notice);
+    public void showPrivacyNotice(DialogInterface.OnClickListener listener) {
 
         if(listener != null) {
-            privacy.setPositiveButton(R.string.label_continue, listener);
-            privacy.setNegativeButton(R.string.title_cancel, null);
+            new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                    .setTitle(R.string.privacy_notice)
+                    .setIcon(R.drawable.ic_info_black_24dp)
+                    .setMessage(R.string.publishing_privacy_notice)
+                    .setPositiveButton(R.string.label_continue, listener)
+                    .setNegativeButton(R.string.title_cancel, null)
+                    .show();
         } else {
-            privacy.setPositiveButton(R.string.dismiss, null);
+            new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                    .setTitle(R.string.privacy_notice)
+                    .setIcon(R.drawable.ic_info_black_24dp)
+                    .setMessage(R.string.publishing_privacy_notice)
+                    .setPositiveButton(R.string.dismiss, null)
+                    .show();
         }
-        privacy.show("privacy-notice");
     }
 }

@@ -3,15 +3,15 @@ package com.door43.translationstudio.core;
 import android.content.Context;
 import android.test.InstrumentationTestCase;
 
-import com.door43.tools.reporting.FileUtils;
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.spannables.USFMVerseSpan;
-import com.door43.translationstudio.tasks.UploadCrashReportTask;
+import com.door43.util.FileUtilities;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.unfoldingword.tools.logger.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,13 +36,13 @@ public class ImportUsfmTest extends InstrumentationTestCase {
     public void setUp() throws Exception {
         super.setUp();
         mExpectedBooks = new JSONArray();
-        mLibrary = AppContext.getLibrary();
-        UploadCrashReportTask.archiveErrorLogs();
+        mLibrary = App.getLibrary();
+        Logger.flush();
         mTargetLanguage = mLibrary.getTargetLanguage("es");
         mTestContext = getInstrumentation().getContext();
-        mAppContext = AppContext.context();
-        if(AppContext.getProfile() == null) { // make sure this is initialized
-            AppContext.setProfile(new Profile("testing"));
+        mAppContext = App.context();
+        if(App.getProfile() == null) { // make sure this is initialized
+            App.setProfile(new Profile("testing"));
         }
     }
 
@@ -493,7 +493,7 @@ public class ImportUsfmTest extends InstrumentationTestCase {
                         File chunkPath = new File(chapterPath, chapterFrameSlug + ".txt");
                         assertTrue("Chunk missing " + chunkPath.toString(), chunkPath.exists());
                         try {
-                            chunk = FileUtils.readFileToString(chunkPath);
+                            chunk = FileUtilities.readFileToString(chunkPath);
                             int count = getVerseCount(chunk);
                             if(noEmptyChunks) {
                                 boolean emptyChunk = chunk.isEmpty();
