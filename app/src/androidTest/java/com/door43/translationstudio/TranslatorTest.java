@@ -11,8 +11,7 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.Translator;
-
-import org.apache.commons.io.FileUtils;
+import com.door43.util.FileUtilities;
 
 import java.io.File;
 
@@ -36,7 +35,7 @@ public class TranslatorTest extends InstrumentationTestCase {
 
     public void test01Clean() throws Exception {
         library.delete();
-        FileUtils.deleteQuietly(mTranslatorDir);
+        FileUtilities.deleteQuietly(mTranslatorDir);
         App.deployDefaultLibrary();
         library = new Library(App.context(), rootApiUrl, null);
         assertTrue(library.exists());

@@ -19,8 +19,6 @@ import com.door43.util.FileUtilities;
 
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
-import org.apache.commons.io.FileUtils;
-
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -176,9 +174,9 @@ public class UpdateAppTask extends ManagedTask {
                 File newFile = new File(translationsDir, file.getName());
                 try {
                     if(file.isDirectory()) {
-                        FileUtils.copyDirectory(file, newFile);
+                        FileUtilities.copyDirectory(file, newFile, null);
                     } else {
-                        FileUtils.copyFile(file, newFile);
+                        FileUtilities.copyFile(file, newFile);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -188,7 +186,7 @@ public class UpdateAppTask extends ManagedTask {
             }
             // remove old files if there were no errors
             if(!errors) {
-                FileUtils.deleteQuietly(legacyTranslationsDir);
+                FileUtilities.deleteQuietly(legacyTranslationsDir);
             }
         }
     }
@@ -208,42 +206,34 @@ public class UpdateAppTask extends ManagedTask {
         File oldProfileDir = new File(oldTranslationsDir, "profile");
         File newProfileDir = new File(App.context().getFilesDir(), "profiles/profile");
         newProfileDir.getParentFile().mkdirs();
-        try {
-            if(oldProfileDir.exists()) {
-                FileUtils.deleteQuietly(newProfileDir);
-                FileUtils.moveDirectory(oldProfileDir, newProfileDir);
-            }
-        } catch (IOException e) {
-            Logger.e(this.getClass().getName(), "Failed to migrate the profile", e);
+        if(oldProfileDir.exists()) {
+            FileUtilities.deleteQuietly(newProfileDir);
+            FileUtilities.moveOrCopyQuietly(oldProfileDir, newProfileDir);
         }
-        try {
-            if(oldTranslationsDir.exists() && oldTranslationsDir.list().length > 0) {
-                FileUtils.deleteQuietly(newTranslationsDir);
-                FileUtils.moveDirectory(oldTranslationsDir, newTranslationsDir);
-            } else if(oldTranslationsDir.exists()) {
-                FileUtils.deleteQuietly(oldTranslationsDir);
-            }
-        } catch (IOException e) {
-            Logger.e(this.getClass().getName(), "Failed to migrate the target translations", e);
+        if(oldTranslationsDir.exists() && oldTranslationsDir.list().length > 0) {
+            FileUtilities.deleteQuietly(newTranslationsDir);
+            FileUtilities.moveOrCopyQuietly(oldTranslationsDir, newTranslationsDir);
+        } else if(oldTranslationsDir.exists()) {
+            FileUtilities.deleteQuietly(oldTranslationsDir);
         }
 
         // remove old source
         File oldSourceDir = new File(App.context().getFilesDir(), "assets");
         File oldTempSourceDir = new File(App.context().getCacheDir(), "assets");
         File oldIndexDir = new File(App.context().getCacheDir(), "index");
-        FileUtils.deleteQuietly(oldSourceDir);
-        FileUtils.deleteQuietly(oldTempSourceDir);
-        FileUtils.deleteQuietly(oldIndexDir);
+        FileUtilities.deleteQuietly(oldSourceDir);
+        FileUtilities.deleteQuietly(oldTempSourceDir);
+        FileUtilities.deleteQuietly(oldIndexDir);
 
         // remove old caches
         File oldP2PDir = new File(App.context().getExternalCacheDir(), "transferred");
         File oldExportDir = new File(App.context().getCacheDir(), "exported");
         File oldImportDir = new File(App.context().getCacheDir(), "imported");
         File oldSharingDir = new File(App.context().getCacheDir(), "sharing");
-        FileUtils.deleteQuietly(oldP2PDir);
-        FileUtils.deleteQuietly(oldExportDir);
-        FileUtils.deleteQuietly(oldImportDir);
-        FileUtils.deleteQuietly(oldSharingDir);
+        FileUtilities.deleteQuietly(oldP2PDir);
+        FileUtilities.deleteQuietly(oldExportDir);
+        FileUtilities.deleteQuietly(oldImportDir);
+        FileUtilities.deleteQuietly(oldSharingDir);
 
         // clear old logs and crash reports
         Logger.flush();

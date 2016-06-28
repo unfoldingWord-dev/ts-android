@@ -13,12 +13,11 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.SettingsActivity;
-
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
+import com.door43.util.FileUtilities;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -488,7 +487,11 @@ public class SdUtils {
             Logger.i(SdUtils.class.getName(), "Could not write to folder");
             success = false; // write failed
         } finally {
-            IOUtils.closeQuietly(fout);
+            try {
+                fout.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         return success;
@@ -637,7 +640,7 @@ public class SdUtils {
 
             DocumentFile[] files = document.listFiles();
             for(DocumentFile file: files) {
-                String ext = FilenameUtils.getExtension(file.getName());
+                String ext = FileUtilities.getExtension(file.getName());
                 if(ext != null) {
                     if (ext.toLowerCase().equals(extension)) {
                         if ((file != null) && file.canRead()) {

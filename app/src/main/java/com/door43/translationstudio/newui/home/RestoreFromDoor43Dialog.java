@@ -27,9 +27,10 @@ import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
 import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
+
+import com.door43.util.FileUtilities;
 import com.door43.widget.ViewUtil;
 
-import org.apache.commons.io.FileUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.unfoldingword.gogsclient.Repository;
@@ -169,7 +170,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements SimpleTas
                         notifyRestoreFailed();
                         restoreFailed = true;
                     }
-                    FileUtils.deleteQuietly(tempPath);
+                    FileUtilities.deleteQuietly(tempPath);
 
                     if(!restoreFailed) {
                         Handler hand = new Handler(Looper.getMainLooper());

@@ -1,6 +1,5 @@
 package com.door43.translationstudio.newui;
 
-import org.apache.commons.io.FileUtils;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.junit.After;
@@ -30,6 +29,7 @@ import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.tasks.UploadCrashReportTask;
+import com.door43.util.FileUtilities;
 
 
 import java.io.File;
@@ -75,7 +75,7 @@ public class ImportUsfmActivityUiTest {
     @After
     public void tearDown() {
         if(mTempDir != null) {
-            FileUtils.deleteQuietly(mTempDir);
+            FileUtilities.deleteQuietly(mTempDir);
             mTempDir = null;
             mTestFile = null;
         }
@@ -326,7 +326,7 @@ public class ImportUsfmActivityUiTest {
 
         InputStream usfmStream = mTestContext.getAssets().open(fileName);
         mTestFile = new File(mTempDir, "testFile.usfm");
-        FileUtils.copyInputStreamToFile(usfmStream, mTestFile);
+        FileUtilities.copyInputStreamToFile(usfmStream, mTestFile);
 
         intent.putExtra(ImportUsfmActivity.EXTRA_USFM_IMPORT_FILE, mTestFile);
         return intent;

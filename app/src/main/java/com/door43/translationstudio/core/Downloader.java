@@ -7,8 +7,6 @@ import com.door43.translationstudio.R;
 import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
-import org.apache.commons.io.FileUtils;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -304,12 +302,12 @@ public class Downloader {
                     for (File dir:extractedFiles) {
                         if(dir.isDirectory()) {
                             for(File f:dir.listFiles()) {
-                                FileUtils.moveFile(f, new File(imagesDir, f.getName()));
+                                FileUtilities.moveOrCopyQuietly(f, new File(imagesDir, f.getName()));
                             }
                         }
                     }
                 }
-                FileUtils.deleteQuietly(tempDir);
+                FileUtilities.deleteQuietly(tempDir);
             } catch (IOException e) {
                 success = false;
             }
