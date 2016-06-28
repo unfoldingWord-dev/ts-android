@@ -19,8 +19,8 @@ android {
         applicationId "com.translationstudio.androidapp"
         minSdkVersion 15
         targetSdkVersion 23
-        versionCode 140
-        versionName "8.0"
+        versionCode 141
+        versionName "9.0"
         multiDexEnabled = true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }

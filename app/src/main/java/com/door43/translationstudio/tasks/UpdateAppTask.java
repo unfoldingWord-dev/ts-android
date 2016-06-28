@@ -106,7 +106,7 @@ public class UpdateAppTask extends ManagedTask {
         }
 
         // this should always be the latest version in which the library was updated
-        if(lastVersion < 140) {
+        if(lastVersion < 141) {
             App.context().deleteDatabase(LibraryData.DATABASE_NAME);
         }
     }

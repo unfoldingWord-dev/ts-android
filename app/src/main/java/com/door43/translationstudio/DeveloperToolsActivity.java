@@ -239,7 +239,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                     }
                 };
                 task.addOnProgressListener(DeveloperToolsActivity.this);
-                task.addOnProgressListener(DeveloperToolsActivity.this);
+                task.addOnFinishedListener(DeveloperToolsActivity.this);
                 TaskManager.addTask(task, TASK_EXPORT_LIBRARY);
             }
         }));
