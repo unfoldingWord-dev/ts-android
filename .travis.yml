@@ -49,5 +49,3 @@ before_install:
 - if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then openssl aes-256-cbc -K $encrypted_f97207d0a082_key
   -iv $encrypted_f97207d0a082_iv -in translationstudio.keystore.enc -out translationstudio.keystore
   -d; fi
-after_failure:
-- pandoc builder/build/reports/tests/index.html -t plain | sed -n '/^Failed tests/,/default-package/p' | cat
