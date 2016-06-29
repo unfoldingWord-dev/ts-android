@@ -15,10 +15,10 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
--dontwarn com.itextpdf.**
--dontwarn com.jcraft.jsch.jcraft.Compression
--dontwarn com.jcraft.jsch.jgss.GSSContextKrb5
--dontwarn org.eclipse.jgit.**
--dontwarn org.slf4j.**
--dontwarn org.spongycastle.jce.provider.X509LDAPCertStoreSpi
--dontwarn org.spongycastle.x509.util.LDAPStoreHelper
+
+-dontobfuscate
+-dontoptimize
+-ignorewarnings
+-keepattributes **
+
+-keep class android.support.v7.widget.SearchView { *; }
