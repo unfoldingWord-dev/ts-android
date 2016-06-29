@@ -2,6 +2,8 @@
 <LinearLayout
     android:id="@+id/leftToolbar"
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:hint="http://schemas.android.com/apk/lib/it.moondroid.seekbarhint.library"
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:background="?attr/colorPrimary"
@@ -55,7 +57,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <SeekBar
+            <it.moondroid.seekbarhint.library.SeekBarHint
                 android:id="@+id/action_seek"
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
@@ -63,7 +65,12 @@
                 android:thumbTint="@color/white"
                 android:progressTint="@color/white"
                 android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp" />
+                android:layout_marginRight="16dp"
+                android:layout_centerInParent="true"
+                android:max="1000"
+                hint:popupWidth="100dp"
+                hint:yOffset="15dp"
+                hint:popupStyle="fixed" />
 
             <LinearLayout
                 android:id="@+id/action_seek_graduations"
