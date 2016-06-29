@@ -10,6 +10,8 @@ before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
 sudo: false
 env:
+  global:
+  - GRADLE_OPTS="-Xms128m"
   matrix:
   - ANDROID_TARGET=android-21  ANDROID_ABI=armeabi-v7a
 android:
