@@ -32,7 +32,7 @@ public class QuestionnaireActivityUiTest extends NewLanguageActivityUiUtils {
         Questionnaire[] questionnaires = App.getLibrary().getQuestionnaires();
         return questionnaires[0].getNumPages();
     }
-//    @Test
+    @Test
     public void fillPageBoolean() throws Exception {
 
         //given
@@ -54,7 +54,7 @@ public class QuestionnaireActivityUiTest extends NewLanguageActivityUiUtils {
     }
 
 
-//    @Test
+    @Test
     public void fillPageRequired() throws Exception {
 
         //given
@@ -73,7 +73,7 @@ public class QuestionnaireActivityUiTest extends NewLanguageActivityUiUtils {
         thenShouldHaveMissingAnswerDialog();
     }
 
-//    @Test
+    @Test
     public void fillPageNotRequired() throws Exception {
 
         //given
@@ -94,7 +94,7 @@ public class QuestionnaireActivityUiTest extends NewLanguageActivityUiUtils {
     }
 
 
-//    @Test
+    @Test
     public void requiredAnswerContinue() throws Exception {
 
         //given
@@ -111,7 +111,7 @@ public class QuestionnaireActivityUiTest extends NewLanguageActivityUiUtils {
         verifyPageLayout(pageCount(), pageNum);
     }
 
-//    @Test
+    @Test
     public void missingAnswerContinue() throws Exception {
 
         //given
@@ -131,7 +131,7 @@ public class QuestionnaireActivityUiTest extends NewLanguageActivityUiUtils {
         verifyPageLayout(pageCount(), pageNumExpected);
     }
 
-//    @Test
+    @Test
     public void missingAnswerCancel() throws Exception {
 
         //given
