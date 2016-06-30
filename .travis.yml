@@ -35,8 +35,9 @@ before_script:
 - adb shell input keyevent 82 &
 script:
 - travis_wait ./gradlew connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.size=medium --continue --stacktrace
-#- travis_wait ./gradlew connectedAndroidTest --continue  --stacktrace
 deploy:
+  on:
+    all_branches: true
   skip_cleanup: true
   provider: testfairy
   api-key:
