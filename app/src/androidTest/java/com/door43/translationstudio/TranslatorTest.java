@@ -1,6 +1,7 @@
 package com.door43.translationstudio;
 
 import android.test.InstrumentationTestCase;
+import android.test.suitebuilder.annotation.MediumTest;
 
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.NativeSpeaker;
@@ -18,6 +19,7 @@ import java.io.File;
 /**
  * Created by joel on 9/15/2015.
  */
+@MediumTest
 public class TranslatorTest extends InstrumentationTestCase {
 
     private File mTranslatorDir;
