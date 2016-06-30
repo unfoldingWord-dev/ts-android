@@ -83,7 +83,7 @@ public class ImportUsfmActivityUiTest {
         finishActivity();
     }
 
-    @Test
+//    @Test
     public void markNoChapter() throws Exception {
 
         //given
@@ -104,7 +104,7 @@ public class ImportUsfmActivityUiTest {
     }
 
 
-    @Test
+//    @Test
     public void markNoId() throws Exception {
 
         //given
@@ -131,7 +131,7 @@ public class ImportUsfmActivityUiTest {
     }
 
 
-    @Test
+//    @Test
     public void markValid() throws Exception {
 
         //given
@@ -155,7 +155,7 @@ public class ImportUsfmActivityUiTest {
         matchImportResultsDialog(true);
     }
 
-    @Test
+//    @Test
     public void judeNoVerses() throws Exception {
 
         //given

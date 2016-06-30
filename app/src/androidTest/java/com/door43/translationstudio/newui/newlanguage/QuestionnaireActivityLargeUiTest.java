@@ -29,7 +29,7 @@ public class QuestionnaireActivityLargeUiTest extends NewLanguageActivityUiUtils
         return questionnaires[0].getNumPages();
     }
 
-    @Test
+//    @Test
     public void fillToPage2AndPrevious() throws Exception {
 
         //given
@@ -55,7 +55,7 @@ public class QuestionnaireActivityLargeUiTest extends NewLanguageActivityUiUtils
         rotateScreen();
     }
 
-   @Test
+//   @Test
     public void fillToPage2AndBack() throws Exception {
         //given
         int pageNum = 0;
@@ -92,7 +92,7 @@ public class QuestionnaireActivityLargeUiTest extends NewLanguageActivityUiUtils
         return currentActivity;
     }
 
-    @Test
+//    @Test
     public void fillToPage2AndHome() throws Exception {
 
         //given
@@ -124,7 +124,7 @@ public class QuestionnaireActivityLargeUiTest extends NewLanguageActivityUiUtils
     }
 
 
-    @Test
+//    @Test
     public void fillAllPages() throws Exception {
 
         //given
