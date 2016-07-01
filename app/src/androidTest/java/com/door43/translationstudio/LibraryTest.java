@@ -40,7 +40,6 @@ public class LibraryTest extends InstrumentationTestCase {
     public void test03ChunkMarkers() throws Exception {
         ChunkMarker[] markers = mLibrary.getChunkMarkers("gen");
         assertTrue(markers.length > 0);
-        assertTrue(false); // testing travis is acctually working
     }
 
     public void test04ChunkMarkers() throws Exception {
