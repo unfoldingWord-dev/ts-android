@@ -2,7 +2,9 @@
 <LinearLayout
     android:id="@+id/leftToolbar"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="?attr/actionBarSize"
+    xmlns:hint="http://schemas.android.com/apk/lib/it.moondroid.seekbarhint.library"
+    android:orientation="vertical"
+    android:layout_width="?attr/actionBarSize"
     android:background="?attr/colorPrimary"
     android:fitsSystemWindows="true"
     android:layout_height="match_parent">
@@ -54,16 +56,21 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <com.door43.widget.VerticalSeekBar
+            <it.moondroid.seekbarhint.library.SeekBarHint
                 android:id="@+id/action_seek"
                 android:layout_height="match_parent"
-                android:layout_width="wrap_content"
-                android:layout_gravity="center"
+                android:layout_width="96dp"
                 android:padding="8dp"
+                android:thumbTint="@color/red"
+                android:progressTint="@color/red"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="16dp"
-                android:thumbTint="@color/white"
-                android:progressTint="@color/white"/>
+                android:layout_centerInParent="true"
+                android:max="1000"
+                android:rotation="90"
+                hint:popupOffset="4dp"
+                hint:popupStyle="follow"
+                android:backgroundTint="@android:color/holo_blue_light" />
 
             <LinearLayout
                 android:id="@+id/action_seek_graduations"
@@ -71,7 +78,7 @@
                 android:layout_alignTop="@+id/action_seek"
                 android:layout_alignRight="@+id/action_seek"
                 android:layout_alignBottom="@+id/action_seek"
-                android:layout_width="match_parent"
+                android:layout_width="96dp"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:alpha="0">

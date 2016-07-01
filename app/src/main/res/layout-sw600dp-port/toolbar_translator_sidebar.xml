@@ -61,15 +61,17 @@
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
                 android:padding="10dp"
-                android:thumbTint="@color/white"
-                android:progressTint="@color/white"
+                android:thumbTint="@color/red"
+                android:progressTint="@color/red"
                 android:layout_marginLeft="16dp"
                 android:layout_marginRight="16dp"
                 android:layout_centerInParent="true"
                 android:max="1000"
-                hint:popupWidth="100dp"
-                hint:yOffset="15dp"
-                hint:popupStyle="fixed" />
+                android:rotation="0"
+                hint:popupOffset="4dp"
+                hint:popupStyle="follow"
+                android:backgroundTint="@android:color/holo_blue_light"
+                />
 
             <LinearLayout
                 android:id="@+id/action_seek_graduations"

@@ -8,7 +8,8 @@
     android:layout_width="match_parent"
     android:background="?attr/colorPrimary"
     android:fitsSystemWindows="true"
-    android:layout_height="?attr/actionBarSize">
+    android:layout_height="?attr/actionBarSize"
+    android:visibility="visible">
 
      <!--left -->
     <LinearLayout
@@ -20,7 +21,7 @@
         <ImageButton
             android:id="@+id/action_read"
             android:layout_width="wrap_content"
-            android:layout_height="fill_parent"
+            android:layout_height="48dp"
             android:padding="16dp"
             android:src="@drawable/icon_study_inactive"
             android:background="?attr/selectableItemBackground"
@@ -62,15 +63,16 @@
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
                 android:padding="10dp"
-                android:thumbTint="@color/white"
-                android:progressTint="@color/white"
+                android:thumbTint="@color/red"
+                android:progressTint="@color/red"
                 android:layout_marginLeft="16dp"
                 android:layout_marginRight="16dp"
                 android:layout_centerInParent="true"
                 android:max="1000"
-                hint:popupWidth="100dp"
-                hint:yOffset="15dp"
-                hint:popupStyle="fixed" />
+                android:rotation="0"
+                hint:popupOffset="4dp"
+                hint:popupStyle="follow"
+                android:backgroundTint="@android:color/holo_blue_light" />
 
             <LinearLayout
                 android:id="@+id/action_seek_graduations"

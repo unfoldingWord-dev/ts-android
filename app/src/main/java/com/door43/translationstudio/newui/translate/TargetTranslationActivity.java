@@ -46,13 +46,15 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import it.moondroid.seekbarhint.library.SeekBarHint;
+
 public class TargetTranslationActivity extends BaseActivity implements ViewModeFragment.OnEventListener, FirstTabFragment.OnEventListener {
 
     private static final String TAG = TargetTranslationActivity.class.getSimpleName();
 
     private static final long COMMIT_INTERVAL = 2 * 60 * 1000; // commit changes every 2 minutes
     private Fragment mFragment;
-    private SeekBar mSeekBar;
+    private SeekBarHint mSeekBar;
     private ViewGroup mGraduations;
     private Translator mTranslator;
     private TargetTranslation mTargetTranslation;
@@ -144,7 +146,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
         // set up menu items
         mGraduations = (ViewGroup) findViewById(R.id.action_seek_graduations);
-        mSeekBar = (SeekBar) findViewById(R.id.action_seek);
+        mSeekBar = (SeekBarHint) findViewById(R.id.action_seek);
         mSeekBar.setMax(100);
         mSeekBar.setProgress(computePositionFromProgress(0));
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -493,7 +495,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
 
     private boolean displaySeekBarAsInverted() {
-        return mSeekBar instanceof VerticalSeekBar;
+//        return mSeekBar instanceof VerticalSeekBar;
+        return false;
     }
 
     private int computeProgressFromPosition(int position) {
