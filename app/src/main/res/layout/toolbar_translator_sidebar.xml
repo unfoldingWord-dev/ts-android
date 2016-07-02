@@ -2,7 +2,7 @@
 <LinearLayout
     android:id="@+id/leftToolbar"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:hint="http://schemas.android.com/apk/lib/it.moondroid.seekbarhint.library"
+    xmlns:hint="http://schemas.android.com/apk/lib/it.moondroid.seekbarhint"
     android:orientation="vertical"
     android:layout_width="?attr/actionBarSize"
     android:background="?attr/colorPrimary"
@@ -56,7 +56,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <it.moondroid.seekbarhint.library.SeekBarHint
+            <SeekBar
                 android:id="@+id/action_seek"
                 android:layout_height="match_parent"
                 android:layout_width="96dp"
@@ -67,9 +67,6 @@
                 android:layout_marginBottom="16dp"
                 android:layout_centerInParent="true"
                 android:max="1000"
-                android:rotation="90"
-                hint:popupOffset="4dp"
-                hint:popupStyle="follow"
                 android:backgroundTint="@android:color/holo_blue_light" />
 
             <LinearLayout
