@@ -68,7 +68,7 @@
                 android:layout_centerInParent="true"
                 android:max="1000"
                 android:rotation="0"
-                hint:popupOffset="48dp"
+                hint:yOffset="48dp"
                 hint:popupStyle="fixed"
                 android:backgroundTint="@android:color/holo_blue_light"
                 />

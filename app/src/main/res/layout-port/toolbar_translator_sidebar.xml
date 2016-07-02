@@ -3,7 +3,7 @@
     android:id="@+id/leftToolbar"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    xmlns:hint="http://schemas.android.com/apk/lib/it.moondroid.seekbarhint.library"
+    xmlns:hint="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:background="?attr/colorPrimary"
@@ -70,7 +70,7 @@
                 android:layout_centerInParent="true"
                 android:max="1000"
                 android:rotation="0"
-                hint:popupOffset="4dp"
+                hint:yOffset="4dp"
                 hint:popupStyle="follow"
                 android:backgroundTint="@android:color/holo_blue_light" />
 
