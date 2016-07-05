@@ -54,7 +54,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     private static final long COMMIT_INTERVAL = 2 * 60 * 1000; // commit changes every 2 minutes
     private Fragment mFragment;
-    private SeekBarHint mSeekBar;
+    private SeekBar mSeekBar;
     private ViewGroup mGraduations;
     private Translator mTranslator;
     private TargetTranslation mTargetTranslation;
@@ -146,7 +146,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
         // set up menu items
         mGraduations = (ViewGroup) findViewById(R.id.action_seek_graduations);
-        mSeekBar = (SeekBarHint) findViewById(R.id.action_seek);
+        mSeekBar = (SeekBar) findViewById(R.id.action_seek);
         mSeekBar.setMax(100);
         mSeekBar.setProgress(computePositionFromProgress(0));
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {

@@ -12,6 +12,10 @@ import android.widget.PopupWindow;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+/**
+ * 7/1/2016
+ * added X offset for popup
+ */
 public class SeekBarHint extends SeekBar implements SeekBar.OnSeekBarChangeListener {
 
     private int mPopupWidth;
@@ -21,6 +25,7 @@ public class SeekBarHint extends SeekBar implements SeekBar.OnSeekBarChangeListe
 
     private PopupWindow mPopup;
     private TextView mPopupTextView;
+    private int mXLocationOffset;
     private int mYLocationOffset;
 
     private OnSeekBarChangeListener mInternalListener;
@@ -55,6 +60,7 @@ public class SeekBarHint extends SeekBar implements SeekBar.OnSeekBarChangeListe
 
         mPopupWidth = (int) a.getDimension(R.styleable.SeekBarHint_popupWidth, ViewGroup.LayoutParams.WRAP_CONTENT);
         mYLocationOffset = (int) a.getDimension(R.styleable.SeekBarHint_yOffset, 0);
+        mXLocationOffset = (int) a.getDimension(R.styleable.SeekBarHint_xOffset, 0);
         mPopupStyle = a.getInt(R.styleable.SeekBarHint_popupStyle, POPUP_FOLLOW);
 
         a.recycle();
@@ -169,7 +175,7 @@ public class SeekBarHint extends SeekBar implements SeekBar.OnSeekBarChangeListe
         int textWidth = mPopupWidth;
         float textCenter = (textWidth / 2.0f);
 
-        float newX = val + offset - textCenter;
+        float newX = val + offset - textCenter + mXLocationOffset;
 
         return newX;
     }
