@@ -2,7 +2,7 @@
 <LinearLayout
     android:id="@+id/leftToolbar"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:hint="http://schemas.android.com/apk/lib/it.moondroid.seekbarhint"
+    xmlns:hint="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="?attr/actionBarSize"
     android:background="?attr/colorPrimary"
@@ -56,18 +56,18 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <SeekBar
+            <com.door43.translationstudio.newui.translate.VerticalSeekBarHint
                 android:id="@+id/action_seek"
                 android:layout_height="match_parent"
-                android:layout_width="96dp"
+                android:layout_width="wrap_content"
+                android:layout_gravity="center"
                 android:padding="8dp"
-                android:thumbTint="@color/red"
-                android:progressTint="@color/red"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="16dp"
-                android:layout_centerInParent="true"
-                android:max="1000"
-                android:backgroundTint="@android:color/holo_blue_light" />
+                android:thumbTint="@color/white"
+                android:progressTint="@color/white"
+                hint:popupLayout="@layout/seekbar_hint_popup"
+                hint:popupStyle="follow"/>
 
             <LinearLayout
                 android:id="@+id/action_seek_graduations"
@@ -75,7 +75,7 @@
                 android:layout_alignTop="@+id/action_seek"
                 android:layout_alignRight="@+id/action_seek"
                 android:layout_alignBottom="@+id/action_seek"
-                android:layout_width="96dp"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:alpha="0">
