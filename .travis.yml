@@ -35,6 +35,7 @@ before_script:
 - adb shell input keyevent 82 &
 script:
 - travis_wait ./gradlew connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.size=medium --continue --stacktrace
+- ./gradlew assembleRelease
 deploy:
   on:
     all_branches: true
@@ -42,7 +43,7 @@ deploy:
   provider: testfairy
   api-key:
     secure: Ly2BzebfVJmzCQa954vjiSlobVRWrk4A3q/99GzkjnfxdyCW8NecPzd7UHV+JpbRpD8Fs5P1WJ7CMKjEEGNX5Y/lQYdHhVCqkkPz1zy3FOHWgKH3DNB6JppQRHaYW0v+U0smr+Tzs/ht1uOuZ6OauJs5GohR3q/FjMPygK0wMfQ=
-  app-file: app/release.apk
+  app-file: app/build/outputs/apk/release.apk
   keystore-file: translationstudio.keystore
   alias: translationstudio
   storepass:
