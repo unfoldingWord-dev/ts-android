@@ -47,6 +47,8 @@ deploy:
   alias: translationstudio
   storepass:
     secure: DQPVq3oXh0odcvgcUPPgrGQYAP9Ke+9x3vhSxGwSglLV6MWJ7PBT49iNlqglJqBj6YguMtydbHKm77y0G3ZJgQ08olkNza3Uq/iOOZjmlirNjXRlOiIxS9DSpc1dqCF+djbmEb6SB41P2WQnTHpLB5q4q6pw5Bw3egDWdu/QxQA=
+  aliaspass:
+    secure: DQPVq3oXh0odcvgcUPPgrGQYAP9Ke+9x3vhSxGwSglLV6MWJ7PBT49iNlqglJqBj6YguMtydbHKm77y0G3ZJgQ08olkNza3Uq/iOOZjmlirNjXRlOiIxS9DSpc1dqCF+djbmEb6SB41P2WQnTHpLB5q4q6pw5Bw3egDWdu/QxQA=
 before_install:
 - if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then openssl aes-256-cbc -K $encrypted_f97207d0a082_key
   -iv $encrypted_f97207d0a082_iv -in translationstudio.keystore.enc -out translationstudio.keystore
