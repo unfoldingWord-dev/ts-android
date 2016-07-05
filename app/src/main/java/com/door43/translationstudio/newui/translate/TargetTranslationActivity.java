@@ -9,6 +9,7 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.text.Layout;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -22,20 +23,20 @@ import android.widget.PopupMenu;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BackupDialog;
 import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.PrintDialog;
 import com.door43.translationstudio.newui.draft.DraftActivity;
 import com.door43.translationstudio.newui.publish.PublishActivity;
-import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.util.SdUtils;
 import com.door43.widget.VerticalSeekBar;
 import com.door43.widget.ViewUtil;
@@ -67,11 +68,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_target_translation_detail);
 
-        mTranslator = AppContext.getTranslator();
+        mTranslator = App.getTranslator();
 
         // validate parameters
         Bundle args = getIntent().getExtras();
-        final String targetTranslationId = args.getString(AppContext.EXTRA_TARGET_TRANSLATION_ID, null);
+        final String targetTranslationId = args.getString(App.EXTRA_TARGET_TRANSLATION_ID, null);
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         if (mTargetTranslation == null) {
             Logger.e(TAG ,"A valid target translation id is required. Received '" + targetTranslationId + "' but the translation could not be found");
@@ -80,12 +81,12 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         }
 
         // open used source translations by default
-        if(AppContext.getOpenSourceTranslationIds(mTargetTranslation.getId()).length == 0) {
+        if(App.getOpenSourceTranslationIds(mTargetTranslation.getId()).length == 0) {
             String[] slugs = mTargetTranslation.getSourceTranslations();
             for (String slug : slugs) {
-                SourceTranslation sourceTranslation = AppContext.getLibrary().getSourceTranslation(slug);
+                SourceTranslation sourceTranslation = App.getLibrary().getSourceTranslation(slug);
                 if(sourceTranslation != null) {
-                    AppContext.addOpenSourceTranslation(mTargetTranslation.getId(), sourceTranslation.getId());
+                    App.addOpenSourceTranslation(mTargetTranslation.getId(), sourceTranslation.getId());
                 }
             }
         }
@@ -106,9 +107,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         }
 
         // manual location settings
-        String viewModeId = args.getString(AppContext.EXTRA_VIEW_MODE, null);
+        String viewModeId = args.getString(App.EXTRA_VIEW_MODE, null);
         if (viewModeId != null && TranslationViewMode.get(viewModeId) != null) {
-            AppContext.setLastViewMode(targetTranslationId, TranslationViewMode.get(viewModeId));
+            App.setLastViewMode(targetTranslationId, TranslationViewMode.get(viewModeId));
         }
 
         mReadButton = (ImageButton) findViewById(R.id.action_read);
@@ -122,7 +123,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             if (savedInstanceState != null) {
                 mFragment = getFragmentManager().findFragmentById(R.id.fragment_container);
             } else {
-                TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
+                TranslationViewMode viewMode = App.getLastViewMode(mTargetTranslation.getId());
                 switch (viewMode) {
                     case READ:
                         mFragment = new ReadModeFragment();
@@ -312,7 +313,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 //            } else {
 //                // check for second best
 //                if (draftTranslations == null) {
-//                    draftTranslations = AppContext.getLibrary().getDraftTranslations(mTargetTranslation.getProjectId(), mTargetTranslation.getTargetLanguageId());
+//                    draftTranslations = App.getLibrary().getDraftTranslations(mTargetTranslation.getProjectId(), mTargetTranslation.getTargetLanguageId());
 //                }
 //                for (SourceTranslation st : draftTranslations) {
 //                    if (st.resourceSlug.equals(mTargetTranslation.getParentDraft().resourceSlug)) {
@@ -331,17 +332,17 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      */
     private boolean draftIsAvailable() {
         if(draftTranslations == null) {
-            draftTranslations = AppContext.getLibrary().getDraftTranslations(mTargetTranslation.getProjectId(), mTargetTranslation.getTargetLanguageId());
+            draftTranslations = App.getLibrary().getDraftTranslations(mTargetTranslation.getProjectId(), mTargetTranslation.getTargetLanguageId());
         }
         for(SourceTranslation st:draftTranslations) {
-            if(AppContext.getLibrary().sourceTranslationHasSource(st)) {
+            if(App.getLibrary().sourceTranslationHasSource(st)) {
                 return true;
             }
         }
         return false;
         // TODO: 1/20/2016 once users are forced to specify a resource they are translating into we'll use this to check
 //        for(SourceTranslation st:draftTranslations) {
-//            if(st.resourceSlug.equals(mTargetTranslation.resourceSlug) && AppContext.getLibrary().sourceTranslationHasSource(st)) {
+//            if(st.resourceSlug.equals(mTargetTranslation.resourceSlug) && App.getLibrary().sourceTranslationHasSource(st)) {
 //                return true;
 //            }
 //        }
@@ -439,7 +440,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     private void setupGraduations() {
         final int numChapters = mSeekBar.getMax();
-        TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
+        TranslationViewMode viewMode = App.getLastViewMode(mTargetTranslation.getId());
 
         // Set up visibility of the graduation bar.
         // Display graduations evenly spaced by number of chapters (but not more than the number
@@ -515,7 +516,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         }
 
-        AppContext.setLastViewMode(mTargetTranslation.getId(), mode);
+        App.setLastViewMode(mTargetTranslation.getId(), mode);
         setupSidebarModeIcons();
 
         switch (mode) {
@@ -578,7 +579,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     @Override
     public void onHasSourceTranslations() {
-        TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
+        TranslationViewMode viewMode = App.getLastViewMode(mTargetTranslation.getId());
         if (viewMode == TranslationViewMode.READ) {
             mFragment = new ReadModeFragment();
         } else if (viewMode == TranslationViewMode.CHUNK) {
@@ -631,7 +632,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      * Call this when creating the activity or when changing modes.
      */
     private void setupSidebarModeIcons() {
-        TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
+        TranslationViewMode viewMode = App.getLastViewMode(mTargetTranslation.getId());
 
         // Set the non-highlighted icons by default.
         mReviewButton.setImageResource(R.drawable.icon_check_inactive);
@@ -684,11 +685,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             } else {
                 msg = getResources().getString(R.string.access_skipped);
             }
-            CustomAlertDialog.Create(this)
+            new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                     .setTitle(R.string.access_title)
                     .setMessage(msg)
                     .setPositiveButton(R.string.label_ok, null)
-                    .show("AccessResults");
+                    .show();
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }

@@ -9,7 +9,7 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 
     <application
-        android:name=".MainApplication"
+        android:name=".App"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
@@ -163,6 +163,10 @@
         <activity
             android:name=".newui.publish.PublishActivity"
             android:label="@string/title_activity_publish"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".newui.newlanguage.NewTempLanguageActivity"
+            android:label="@string/title_activity_new_language"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".newui.legal.LegalDocumentActivity"

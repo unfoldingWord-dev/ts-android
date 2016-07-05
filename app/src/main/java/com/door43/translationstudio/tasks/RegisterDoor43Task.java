@@ -1,10 +1,10 @@
 package com.door43.translationstudio.tasks;
 
-import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
+import org.unfoldingword.tools.logger.Logger;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
-import com.door43.util.tasks.ManagedTask;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import org.unfoldingword.gogsclient.GogsAPI;
 import org.unfoldingword.gogsclient.Response;
@@ -29,17 +29,17 @@ public class RegisterDoor43Task extends ManagedTask {
         this.password = password;
         this.fullName = fullName;
         this.email = email;
-        this.tokenName = AppContext.context().getResources().getString(R.string.gogs_token_name);
+        this.tokenName = App.context().getResources().getString(R.string.gogs_token_name);
     }
 
     @Override
     public void start() {
-        int gogsAdminTokenIdentifier = AppContext.context().getResources().getIdentifier("gogs_admin_token", "string", AppContext.context().getPackageName());
+        int gogsAdminTokenIdentifier = App.context().getResources().getIdentifier("gogs_admin_token", "string", App.context().getPackageName());
         if(gogsAdminTokenIdentifier != 0) {
-            GogsAPI api = new GogsAPI(AppContext.getUserString(SettingsActivity.KEY_PREF_GOGS_API, R.string.pref_default_gogs_api));
+            GogsAPI api = new GogsAPI(App.getUserString(SettingsActivity.KEY_PREF_GOGS_API, R.string.pref_default_gogs_api));
 
             // build admin user
-            String tokenSha1 = AppContext.context().getResources().getString(gogsAdminTokenIdentifier);
+            String tokenSha1 = App.context().getResources().getString(gogsAdminTokenIdentifier);
             User authUser = new User("", "");
             authUser.token = new Token("", tokenSha1);
 
@@ -55,7 +55,7 @@ public class RegisterDoor43Task extends ManagedTask {
                 // check if username already exists
                 User existingUser = api.getUser(userTemplate, null);
                 if(existingUser != null) {
-                    this.error = AppContext.context().getResources().getString(R.string.gogs_username_already_exists);
+                    this.error = App.context().getResources().getString(R.string.gogs_username_already_exists);
                 }
 
                 Logger.w(LoginDoor43Task.class.getName(), "gogs api responded with " + response.code + ": " + response.toString(), response.exception);

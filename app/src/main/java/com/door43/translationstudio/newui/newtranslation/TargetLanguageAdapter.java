@@ -25,10 +25,30 @@ public class TargetLanguageAdapter extends BaseAdapter {
     private TargetLanguageFilter mTargetLanguageFilter;
 
     public TargetLanguageAdapter(TargetLanguage[] targetLanguages) {
-        List<TargetLanguage> targetLanguagesList = Arrays.asList(targetLanguages);
-        Collections.sort(targetLanguagesList);
-        mTargetLanguages = targetLanguagesList.toArray(new TargetLanguage[targetLanguagesList.size()]);
-        mFilteredTargetLanguages = mTargetLanguages;
+        if(targetLanguages != null) {
+            List<TargetLanguage> targetLanguagesList = Arrays.asList(targetLanguages);
+            Collections.sort(targetLanguagesList);
+            mTargetLanguages = targetLanguagesList.toArray(new TargetLanguage[targetLanguagesList.size()]);
+            mFilteredTargetLanguages = mTargetLanguages;
+        }
+    }
+
+    /**
+     * Adds the target languages to the adapter with the option to be sorted or not
+     * @param targetLanguages
+     * @param sorted
+     */
+    public TargetLanguageAdapter(TargetLanguage[] targetLanguages, boolean sorted) {
+        if(targetLanguages != null) {
+            if(sorted) {
+                List<TargetLanguage> targetLanguagesList = Arrays.asList(targetLanguages);
+                Collections.sort(targetLanguagesList);
+                mTargetLanguages = targetLanguagesList.toArray(new TargetLanguage[targetLanguagesList.size()]);
+            } else {
+                mTargetLanguages = targetLanguages;
+            }
+            mFilteredTargetLanguages = mTargetLanguages;
+        }
     }
 
     @Override
@@ -107,7 +127,7 @@ public class TargetLanguageAdapter extends BaseAdapter {
                     // match the target language id
                     boolean match = language.getId().toLowerCase().startsWith(charSequence.toString().toLowerCase());
                     if(!match) {
-                        if (language.name.toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
+                        if (language.name.toLowerCase().contains(charSequence.toString().toLowerCase())) {
                             // match the target language name
                             match = true;
                         }
@@ -145,10 +165,16 @@ public class TargetLanguageAdapter extends BaseAdapter {
                 String lhId = lhs.getId();
                 String rhId = rhs.getId();
                 // give priority to matches with the reference
-                if(lhId.startsWith(referenceId.toString().toLowerCase())) {
+                if(lhId.toLowerCase().startsWith(referenceId.toString().toLowerCase())) {
+                    lhId = "!!" + lhId;
+                }
+                if(rhId.toLowerCase().startsWith(referenceId.toString().toLowerCase())) {
+                    rhId = "!!" + rhId;
+                }
+                if(lhs.name.toLowerCase().startsWith(referenceId.toString().toLowerCase())) {
                     lhId = "!" + lhId;
                 }
-                if(rhId.startsWith(referenceId.toString().toLowerCase())) {
+                if(rhs.name.toLowerCase().startsWith(referenceId.toString().toLowerCase())) {
                     rhId = "!" + rhId;
                 }
                 return lhId.compareToIgnoreCase(rhId);

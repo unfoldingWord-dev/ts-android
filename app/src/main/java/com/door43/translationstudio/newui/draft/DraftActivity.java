@@ -1,33 +1,33 @@
 package com.door43.translationstudio.newui.draft;
 
-import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.tasks.ImportDraftTask;
-import com.door43.util.tasks.GenericTaskWatcher;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class DraftActivity extends BaseActivity implements GenericTaskWatcher.OnFinishedListener {
+public class DraftActivity extends BaseActivity implements SimpleTaskWatcher.OnFinishedListener {
     public static final String TAG = "DraftActivity";
     public static final String EXTRA_TARGET_TRANSLATION_ID = "target_translation_id";
     private TargetTranslation mTargetTranslation;
@@ -36,7 +36,7 @@ public class DraftActivity extends BaseActivity implements GenericTaskWatcher.On
     private RecyclerView mRecylerView;
     private LinearLayoutManager mLayoutManager;
     private DraftAdapter mAdapter;
-    private GenericTaskWatcher taskWatcher;
+    private SimpleTaskWatcher taskWatcher;
     private SourceTranslation mDraftTranslation;
 
     @Override
@@ -45,8 +45,8 @@ public class DraftActivity extends BaseActivity implements GenericTaskWatcher.On
         setContentView(R.layout.activity_draft_preview);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        mTranslator = AppContext.getTranslator();
-        mLibrary = AppContext.getLibrary();
+        mTranslator = App.getTranslator();
+        mLibrary = App.getLibrary();
 
         // validate parameters
         List<SourceTranslation> draftTranslations = new ArrayList<>();
@@ -78,27 +78,26 @@ public class DraftActivity extends BaseActivity implements GenericTaskWatcher.On
         mAdapter = new DraftAdapter(this, mDraftTranslation);
         mRecylerView.setAdapter(mAdapter);
 
-        taskWatcher = new GenericTaskWatcher(this, R.string.loading);
+        taskWatcher = new SimpleTaskWatcher(this, R.string.loading);
         taskWatcher.setOnFinishedListener(this);
 
         FloatingActionButton fab = (FloatingActionButton)findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CustomAlertDialog.Create(DraftActivity.this)
+                new AlertDialog.Builder(DraftActivity.this,R.style.AppTheme_Dialog)
                         .setTitle(R.string.import_draft)
                         .setMessage(R.string.import_draft_confirmation)
                         .setNegativeButton(R.string.menu_cancel, null)
-                        .setPositiveButton(R.string.label_import, new View.OnClickListener() {
+                        .setPositiveButton(R.string.label_import, new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(View v) {
+                            public void onClick(DialogInterface dialog, int which) {
                                 // // TODO: 1/20/2016 use the draft from the selected tab
                                 ImportDraftTask task = new ImportDraftTask(mDraftTranslation);
                                 taskWatcher.watch(task);
                                 TaskManager.addTask(task, ImportDraftTask.TASK_ID);
                             }
-                        })
-                        .show("confirm_draft_import");
+                        }).show();
             }
         });
 
@@ -127,11 +126,11 @@ public class DraftActivity extends BaseActivity implements GenericTaskWatcher.On
         if(targetTranslation != null) {
             finish();
         } else {
-            CustomAlertDialog.Create(this)
+            new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                     .setTitle(R.string.error)
                     .setMessage(R.string.translation_import_failed)
                     .setNeutralButton(R.string.dismiss, null)
-                    .show("draft-import-failed");
+                    .show();
         }
     }
     @Override

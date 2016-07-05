@@ -1,6 +1,6 @@
 package com.door43.translationstudio.network;
 
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.Logger;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

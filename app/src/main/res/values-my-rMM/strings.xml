@@ -124,7 +124,7 @@
   <string name="languages">ဘာသာစကားများ</string>
   <string name="drafts">ဘာသာပြန်ချက်မူကြမ်း</string>
   <string name="use_internet_confirmation">ဤရွေ့ကား, ဆာဗာကနေသတင်းအချက်အလက်ကို download လုပ်ကိုဆက်လက်သင့်ရဲ့အင်တာနက် connection ကိုအသုံးပြုမလဲ</string>
-  <string name="update_projects">Update ကိုစီမံကိန်းများ</string>
+  <string name="update_library">Update ကိုစီမံကိန်းများ</string>
   <string name="update_projects_description">ထိုဆာဗာကနေရရှိနိုင်တဲ့ updates တွေကိုကြည့်ရှုခြင်းနှင့် download လုပ်</string>
   <string name="action_download_all">အားလုံးကို Download လုပ်</string>
   <string name="title_activity_project_updates">Project က Updates ကို</string>

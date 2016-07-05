@@ -9,26 +9,26 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 
-import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
+import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.ImportFileChooserActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.DeviceNetworkAliasDialog;
 import com.door43.translationstudio.newui.ImportUsfmActivity;
 import com.door43.translationstudio.newui.Door43LoginDialog;
 import com.door43.translationstudio.newui.ShareWithPeerDialog;
 import com.door43.translationstudio.util.SdUtils;
+import com.door43.util.FileUtilities;
 import com.door43.widget.ViewUtil;
-
-import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.InputStream;
@@ -72,7 +72,7 @@ public class ImportDialog extends DialogFragment {
             @Override
             public void onClick(View v) {
                 // make sure we have a gogs user
-                if(AppContext.getProfile().gogsUser == null) {
+                if(App.getProfile().gogsUser == null) {
                     FragmentTransaction ft = getFragmentManager().beginTransaction();
                     Door43LoginDialog dialog = new Door43LoginDialog();
                     dialog.show(ft, Door43LoginDialog.TAG);
@@ -96,7 +96,7 @@ public class ImportDialog extends DialogFragment {
             @Override
             public void onClick(View v) {
                 // make sure we have a gogs user
-                if(AppContext.getProfile().gogsUser == null) {
+                if(App.getProfile().gogsUser == null) {
                     FragmentTransaction ft = getFragmentManager().beginTransaction();
                     Door43LoginDialog dialog = new Door43LoginDialog();
                     dialog.show(ft, Door43LoginDialog.TAG);
@@ -131,8 +131,8 @@ public class ImportDialog extends DialogFragment {
             @Override
             public void onClick(View v) {
                 // TODO: 11/18/2015 eventually we need to support bluetooth as well as an adhoc network
-                if (AppContext.context().isNetworkAvailable()) {
-                    if (AppContext.getDeviceNetworkAlias() == null) {
+                if (App.isNetworkAvailable()) {
+                    if (App.getDeviceNetworkAlias() == null) {
                         // get device alias
                         FragmentTransaction ft = getFragmentManager().beginTransaction();
                         Fragment prev = getFragmentManager().findFragmentByTag(ImportDialog.TAG);
@@ -185,7 +185,7 @@ public class ImportDialog extends DialogFragment {
 
     @Override
     public void onResume() {
-        if(settingDeviceAlias && AppContext.getDeviceNetworkAlias() != null) {
+        if(settingDeviceAlias && App.getDeviceNetworkAlias() != null) {
             settingDeviceAlias = false;
             showP2PDialog();
         }
@@ -206,7 +206,7 @@ public class ImportDialog extends DialogFragment {
         ShareWithPeerDialog dialog = new ShareWithPeerDialog();
         Bundle args = new Bundle();
         args.putInt(ShareWithPeerDialog.ARG_OPERATION_MODE, ShareWithPeerDialog.MODE_CLIENT);
-        args.putString(ShareWithPeerDialog.ARG_DEVICE_ALIAS, AppContext.getDeviceNetworkAlias());
+        args.putString(ShareWithPeerDialog.ARG_DEVICE_ALIAS, App.getDeviceNetworkAlias());
         dialog.setArguments(args);
         dialog.show(ft, ImportDialog.TAG);
     }
@@ -242,7 +242,7 @@ public class ImportDialog extends DialogFragment {
      */
     private void doUsfmImportUri(Uri uri) {
         String path = uri.toString();
-        String ext = FilenameUtils.getExtension(path).toLowerCase();
+        String ext = FileUtilities.getExtension(path).toLowerCase();
         ImportUsfmActivity.startActivityForUriImport(getActivity(), uri);
     }
 
@@ -252,7 +252,7 @@ public class ImportDialog extends DialogFragment {
      */
     private void doUsfmImportFile(String path) {
         File file = new File(path);
-        String ext = FilenameUtils.getExtension(path).toLowerCase();
+        String ext = FileUtilities.getExtension(path).toLowerCase();
         boolean tstudio = ext.equalsIgnoreCase(Translator.ARCHIVE_EXTENSION);
         if (tstudio) {
             importFile(file);
@@ -266,10 +266,10 @@ public class ImportDialog extends DialogFragment {
      * @param file
      */
     private void importFile(File file) {
-        if (FilenameUtils.getExtension(file.getName()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
+        if (FileUtilities.getExtension(file.getName()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
             try {
                 Logger.i(this.getClass().getName(), "Importing internal file: " + file.toString());
-                final Translator translator = AppContext.getTranslator();
+                final Translator translator = App.getTranslator();
                 final String[] targetTranslationSlugs = translator.importArchive(file);
                 showImportResults(R.string.import_success, file.toString());
             } catch (Exception e) {
@@ -289,11 +289,11 @@ public class ImportDialog extends DialogFragment {
      * @param uri
      */
     private void importUri(Uri uri) {
-        if(FilenameUtils.getExtension(uri.getPath()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
+        if(FileUtilities.getExtension(uri.getPath()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
             try {
                 Logger.i(this.getClass().getName(), "Importing SD card: " + uri);
-                final InputStream in = AppContext.context().getContentResolver().openInputStream(uri);
-                final Translator translator = AppContext.getTranslator();
+                final InputStream in = App.context().getContentResolver().openInputStream(uri);
+                final Translator translator = App.getTranslator();
                 final String[] targetTranslationSlugs = translator.importArchive(in);
                 showImportResults(R.string.import_success, SdUtils.getPathString(uri.toString()));
             } catch (Exception e) {
@@ -318,11 +318,11 @@ public class ImportDialog extends DialogFragment {
         if(filePath != null) {
             message += "\n" + filePath;
         }
-        CustomAlertDialog.Create(getActivity())
+        new AlertDialog.Builder(getActivity(),R.style.AppTheme_Dialog)
                 .setTitle(R.string.import_from_sd)
                 .setMessage(message)
                 .setNeutralButton(R.string.dismiss, null)
-                .show("Import");
+                .show();
     }
 
     @Override

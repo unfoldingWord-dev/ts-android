@@ -117,7 +117,7 @@
   <string name="languages">ਭਾਸ਼ਾ</string>
   <string name="drafts">ਅਨੁਵਾਦ ਡਰਾਫਟ</string>
   <string name="use_internet_confirmation">ਇਹ ਸਰਵਰ ਜਾਣਕਾਰੀ ਡਾਊਨਲੋਡ ਕਰਨ ਲਈ ਆਪਣੇ ਇੰਟਰਨੈੱਟ ਕੁਨੈਕਸ਼ਨ ਦੀ ਵਰਤੋ ਕਰਦਾ ਹੈ, ਜਾਰੀ ਰੱਖਣਾ ਹੈ?</string>
-  <string name="update_projects">ਅੱਪਡੇਟ ਪ੍ਰਾਜੈਕਟ</string>
+  <string name="update_library">ਅੱਪਡੇਟ ਪ੍ਰਾਜੈਕਟ</string>
   <string name="update_projects_description">ਸਰਵਰ ਨੂੰ ਵੇਖੋ ਅਤੇ ਡਾਊਨਲੋਡ ਕਰੋ ਉਪਲੱਬਧ ਅੱਪਡੇਟ</string>
   <string name="action_download_all">ਸਭ ਨੂੰ ਡਾਊਨਲੋਡ ਕਰੋ</string>
   <string name="title_activity_project_updates">ਪ੍ਰੋਜੈਕਟ ਅੱਪਡੇਟ</string>

@@ -1,5 +1,6 @@
 package com.door43.translationstudio.tasks;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.Frame;
@@ -13,8 +14,8 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.publish.ValidationItem;
-import com.door43.translationstudio.AppContext;
-import com.door43.util.tasks.ManagedTask;
+
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,8 +37,8 @@ public class ValidationTask extends ManagedTask {
 
     @Override
     public void start() {
-        Library library = AppContext.getLibrary();
-        Translator translator = AppContext.getTranslator();
+        Library library = App.getLibrary();
+        Translator translator = App.getTranslator();
 
         TargetTranslation targetTranslation = translator.getTargetTranslation(mTargetTranslationId);
         TargetLanguage targetLanguage = library.getTargetLanguage(targetTranslation.getTargetLanguageId());

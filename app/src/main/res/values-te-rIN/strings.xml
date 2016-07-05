@@ -117,7 +117,7 @@
   <string name="languages">భాషలు</string>
   <string name="drafts">అనువాద డ్రాఫ్టులు</string>
   <string name="use_internet_confirmation">ఈ సర్వర్ నుండి సమాచారాన్ని డౌన్లోడ్ మీ ఇంటర్నెట్ కనెక్షన్ను ఉపయోగిస్తుంది, కొనసాగాలా?</string>
-  <string name="update_projects">నవీకరణ ప్రాజెక్ట్స్</string>
+  <string name="update_library">నవీకరణ ప్రాజెక్ట్స్</string>
   <string name="update_projects_description">సర్వర్ నుండి వీక్షించండి మరియు డౌన్లోడ్ అందుబాటులో నవీకరణలను</string>
   <string name="action_download_all">అన్ని డౌన్లోడ్</string>
   <string name="title_activity_project_updates">ప్రాజెక్ట్ నవీకరణలు</string>

@@ -1,6 +1,7 @@
 package com.door43.translationstudio;
 
 import android.test.InstrumentationTestCase;
+import android.test.suitebuilder.annotation.MediumTest;
 
 import com.door43.translationstudio.core.ChunkMarker;
 import com.door43.translationstudio.core.Library;
@@ -14,11 +15,12 @@ import com.door43.translationstudio.core.TargetLanguage;
 /**
  * Created by joel on 8/31/2015.
  */
+@MediumTest
 public class LibraryTest extends InstrumentationTestCase {
     private Library mLibrary;
 
     protected void setUp() throws Exception {
-        mLibrary = AppContext.getLibrary();
+        mLibrary = App.getLibrary();
     }
 
     public void test01Clean() throws Exception {
@@ -28,8 +30,8 @@ public class LibraryTest extends InstrumentationTestCase {
     public void test02ExtractLibrary() throws Exception {
         // NOTE: the default library is large so we don't include in the repo. So this test should always fall through
         assertFalse(mLibrary.exists());
-        AppContext.deployDefaultLibrary();
-        mLibrary = AppContext.getLibrary();
+        App.deployDefaultLibrary();
+        mLibrary = App.getLibrary();
 
         // NOTE: this will fail when first updating the db version
         assertTrue(mLibrary.exists());
@@ -59,7 +61,7 @@ public class LibraryTest extends InstrumentationTestCase {
 //        LibraryUpdates updates = mLibrary.checkServerForUpdates(null);
 //
 //        // cache updates
-//        FileOutputStream fos = AppContext.context().openFileOutput("library_updates", Context.MODE_PRIVATE);
+//        FileOutputStream fos = App.context().openFileOutput("library_updates", Context.MODE_PRIVATE);
 //        ObjectOutputStream os = new ObjectOutputStream(fos);
 //        os.writeObject(updates);
 //        os.close();
@@ -74,7 +76,7 @@ public class LibraryTest extends InstrumentationTestCase {
 //    }
 
 //    public void test05DownloadUpdates() throws Exception {
-//        FileInputStream fis = AppContext.context().openFileInput("library_updates");
+//        FileInputStream fis = App.context().openFileInput("library_updates");
 //        ObjectInputStream is = new ObjectInputStream(fis);
 //        LibraryUpdates updates = (LibraryUpdates) is.readObject();
 //        is.close();
@@ -86,7 +88,7 @@ public class LibraryTest extends InstrumentationTestCase {
 
 //    public void test06DownloadEverything() throws Exception {
 //        mLibrary.delete();
-//        mLibrary = AppContext.getLibrary();
+//        mLibrary = App.getLibrary();
 //        assertFalse(mLibrary.exists());
 //        mLibrary.checkServerForUpdates(null);
 //        assertTrue(mLibrary.downloadTargetLanguages());
@@ -94,7 +96,7 @@ public class LibraryTest extends InstrumentationTestCase {
 //    }
 
 //    public void test07Export() throws Exception {
-//        File archive = mLibrary.export(AppContext.getPublicDownloadsDirectory());
+//        File archive = mLibrary.export(App.getPublicDownloadsDirectory());
 //        assertNotNull(archive);
 //        assertTrue(archive.exists());
 //    }

@@ -10,12 +10,12 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.ArchiveDetails;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Util;
-import com.door43.util.tasks.ThreadableUI;
+import org.unfoldingword.tools.taskmanager.ThreadableUI;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -34,7 +34,7 @@ public class DocumentFileBrowserAdapter extends BaseAdapter {
     private int mSelectedPosition = -1;
 
     public void loadFiles(Context context, List<DocumentFileItem> files) {
-        final Library library = AppContext.getLibrary();
+        final Library library = App.getLibrary();
         mFiles = files;
         new ThreadableUI(context) {
 
