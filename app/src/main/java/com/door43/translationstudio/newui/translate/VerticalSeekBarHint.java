@@ -212,7 +212,10 @@ public class VerticalSeekBarHint extends com.door43.widget.VerticalSeekBar imple
         float position = (progress * maxScale / seekBar.getMax());
         float offset = seekBarThumbOffset;
 
-        float newY = position + offset;
+        int height = mPopup.getHeight();
+        int center = height / 2;
+
+        float newY = position + offset + center;
         return newY;
     }
 }

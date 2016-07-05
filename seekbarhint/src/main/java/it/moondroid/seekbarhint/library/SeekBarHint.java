@@ -185,7 +185,7 @@ public class SeekBarHint extends SeekBar implements SeekBar.OnSeekBarChangeListe
         int textWidth = mPopupWidth;
         float textCenter = (textWidth / 2.0f);
 
-        float newX = val + offset - textCenter;
+        float newX = val + offset + textCenter;
         return newX;
     }
 }

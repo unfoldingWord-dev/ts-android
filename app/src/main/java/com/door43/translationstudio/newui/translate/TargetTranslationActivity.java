@@ -64,6 +64,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private ImageButton mReviewButton;
     private List<SourceTranslation> draftTranslations;
     private ImageButton mMoreButton;
+    private boolean enableGrids = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -145,7 +146,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         }
 
         // set up menu items
-        mGraduations = (ViewGroup) findViewById(R.id.action_seek_graduations);
+        if(enableGrids) {
+            mGraduations = (ViewGroup) findViewById(R.id.action_seek_graduations);
+        }
         mSeekBar = (SeekBar) findViewById(R.id.action_seek);
         mSeekBar.setMax(100);
         mSeekBar.setProgress(computePositionFromProgress(0));
@@ -175,14 +178,37 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                mGraduations.animate().alpha(1.f);
+                if(mGraduations != null) {
+                    mGraduations.animate().alpha(1.f);
+                }
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                mGraduations.animate().alpha(0.f);
+                if(mGraduations != null) {
+                    mGraduations.animate().alpha(0.f);
+                }
             }
         });
+
+        if(mSeekBar instanceof SeekBarHint) {
+            ((SeekBarHint) mSeekBar).setOnProgressChangeListener(new SeekBarHint.OnSeekBarHintProgressChangeListener() {
+                @Override
+                public String onHintTextChanged(SeekBarHint seekBarHint, int progress) {
+                    return getFormattedChapter(progress);
+                }
+            });
+        }
+
+        if(mSeekBar instanceof VerticalSeekBarHint) {
+            ((VerticalSeekBarHint) mSeekBar).setOnProgressChangeListener(new VerticalSeekBarHint.OnSeekBarHintProgressChangeListener() {
+                @Override
+                public String onHintTextChanged(VerticalSeekBarHint seekBarHint, int progress) {
+                    return getFormattedChapter(progress);
+                }
+            });
+        }
+
         mMoreButton = (ImageButton) findViewById(R.id.action_more);
         buildMenu();
 
@@ -214,6 +240,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         });
 
         restartAutoCommitTimer();
+    }
+
+    private String getFormattedChapter(int progress) {
+        String formattedText = String.format(" %02d ", progress);
+        return formattedText;
     }
 
     private void buildMenu() {
@@ -441,41 +472,43 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     private void setupGraduations() {
-        final int numCards =  mSeekBar.getMax();
+        if(enableGrids) {
+            final int numCards = mSeekBar.getMax();
 
-        String maxChapterStr = getChapterID(numCards - 1);
-        int maxChapter = Integer.valueOf(maxChapterStr);
+            String maxChapterStr = getChapterID(numCards - 1);
+            int maxChapter = Integer.valueOf(maxChapterStr);
 
-        // Set up visibility of the graduation bar.
-        // Display graduations evenly spaced by number of chapters (but not more than the number
-        // of chapters that exist). As a special case, display nothing if there's only one chapter.
-        // Also, show nothing unless we're in read mode, since the other modes are indexed by
-        // frame, not by chapter, so displaying either frame numbers or chapter numbers would be
-        // nonsensical.
-        int numVisibleGraduations = Math.min(numCards, mGraduations.getChildCount());
+            // Set up visibility of the graduation bar.
+            // Display graduations evenly spaced by number of chapters (but not more than the number
+            // of chapters that exist). As a special case, display nothing if there's only one chapter.
+            // Also, show nothing unless we're in read mode, since the other modes are indexed by
+            // frame, not by chapter, so displaying either frame numbers or chapter numbers would be
+            // nonsensical.
+            int numVisibleGraduations = Math.min(numCards, mGraduations.getChildCount());
 
-        if( (maxChapter > 0) && (maxChapter < numVisibleGraduations)) {
-            numVisibleGraduations = maxChapter;
-        }
+            if ((maxChapter > 0) && (maxChapter < numVisibleGraduations)) {
+                numVisibleGraduations = maxChapter;
+            }
 
-        if (numVisibleGraduations < 2) {
-            numVisibleGraduations = 0;
-        }
+            if (numVisibleGraduations < 2) {
+                numVisibleGraduations = 0;
+            }
 
-        // Set up the visible chapters.
-        for (int i = 0; i < numVisibleGraduations; ++i) {
-            ViewGroup container = (ViewGroup) mGraduations.getChildAt(i);
-            container.setVisibility(View.VISIBLE);
-            TextView text = (TextView) container.getChildAt(1);
+            // Set up the visible chapters.
+            for (int i = 0; i < numVisibleGraduations; ++i) {
+                ViewGroup container = (ViewGroup) mGraduations.getChildAt(i);
+                container.setVisibility(View.VISIBLE);
+                TextView text = (TextView) container.getChildAt(1);
 
-            int position = i * (numCards - 1) / (numVisibleGraduations - 1);
-            String chapter = getChapterID(position);
-            text.setText(chapter);
-        }
+                int position = i * (numCards - 1) / (numVisibleGraduations - 1);
+                String chapter = getChapterID(position);
+                text.setText(chapter);
+            }
 
-        // Undisplay the invisible chapters.
-        for (int i = numVisibleGraduations; i < mGraduations.getChildCount(); ++i) {
-            mGraduations.getChildAt(i).setVisibility(View.GONE);
+            // Undisplay the invisible chapters.
+            for (int i = numVisibleGraduations; i < mGraduations.getChildCount(); ++i) {
+                mGraduations.getChildAt(i).setVisibility(View.GONE);
+            }
         }
     }
 

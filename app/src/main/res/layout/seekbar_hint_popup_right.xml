@@ -3,7 +3,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:background="@drawable/section_indicator_background_default_rounded"
+    android:background="@drawable/section_indicator_background_default_rounded_right"
     android:gravity="center">
 
     <TextView
