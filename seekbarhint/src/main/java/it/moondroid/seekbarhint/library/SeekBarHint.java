@@ -14,7 +14,7 @@ import android.widget.TextView;
 
 /**
  * 7/1/2016
- * added X offset for popup
+ * added custom layout and X offset for popup
  */
 public class SeekBarHint extends SeekBar implements SeekBar.OnSeekBarChangeListener {
 

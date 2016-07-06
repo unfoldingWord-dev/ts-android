@@ -151,7 +151,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             mGraduations = (ViewGroup) findViewById(R.id.action_seek_graduations);
         }
         mSeekBar = (SeekBar) findViewById(R.id.action_seek);
-        mSeekBar.setMax(100 * seekbarMultiplier);
+        mSeekBar.setMax(100);
         mSeekBar.setProgress(computePositionFromProgress(0));
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -246,11 +246,18 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         restartAutoCommitTimer();
     }
 
+    /**
+     * clips value to within range min to max
+     * @param value
+     * @param min
+     * @param max
+     * @return
+     */
     private int limitRange(int value, int min, int max) {
         int newValue = value;
         if(newValue < min) {
             newValue = min;
-        }
+        } else
         if(newValue > max) {
             newValue = max;
         }
@@ -264,9 +271,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      */
     private String getFormattedChapter(int progress) {
         int position = computePositionFromProgress(progress);
-        int chapter = position + 1; // chapters start at 1
-        String formattedText = String.format(" %02d ", chapter);
-        return formattedText;
+        String chapter = getChapterID(position);
+        String displayedText = " " + chapter + " ";
+        return displayedText;
     }
 
     private void buildMenu() {
@@ -487,14 +494,14 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     @Override
     public void onItemCountChanged(int itemCount, int progress) {
-        final int minimumStepSize = 300;
+        final int minimumSteps = 300;
 
         if(itemCount < 1) { // sanity check
             itemCount = 0;
         }
 
-        if(itemCount < minimumStepSize) {  // increase step size if number of cards is small, this gives more granularity in positioning
-            seekbarMultiplier = (int) (minimumStepSize / itemCount) + 1;
+        if(itemCount < minimumSteps) {  // increase step size if number of cards is small, this gives more granularity in positioning
+            seekbarMultiplier = (int) (minimumSteps / itemCount) + 1;
         } else {
             seekbarMultiplier = 1;
         }
@@ -505,6 +512,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         setupGraduations();
     }
 
+    /**
+     * initialize text on graduations if enabled
+     */
     private void setupGraduations() {
         if(enableGrids) {
             final int numCards = mSeekBar.getMax() / seekbarMultiplier;
