@@ -487,8 +487,14 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     @Override
     public void onItemCountChanged(int itemCount, int progress) {
-        if(itemCount < 100) {  // increase step size if number of cards is small, this gives more granularity in positioning
-            seekbarMultiplier = (int) (100f / itemCount) + 1;
+        final int minimumStepSize = 300;
+
+        if(itemCount < 1) { // sanity check
+            itemCount = 0;
+        }
+
+        if(itemCount < minimumStepSize) {  // increase step size if number of cards is small, this gives more granularity in positioning
+            seekbarMultiplier = (int) (minimumStepSize / itemCount) + 1;
         } else {
             seekbarMultiplier = 1;
         }

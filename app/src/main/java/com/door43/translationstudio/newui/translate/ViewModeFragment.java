@@ -333,20 +333,19 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      */
     private void fineScrollToPosition(int position, int percent) {
 
+        mRecyclerView.scrollToPosition(position); // do coarse adjustment
+
         View visibleChild = mRecyclerView.getChildAt(0);
         if (visibleChild == null) {
-            mRecyclerView.scrollToPosition(position); // do coarse adjustment
             return;
         }
 
         RecyclerView.ViewHolder holder = mRecyclerView.getChildViewHolder(visibleChild);
         if(holder == null) {
-            mRecyclerView.scrollToPosition(position); // do coarse adjustment
             return;
         }
 
-        int itemHeight = holder.itemView.getHeight();  // looks like there is an assumption that view items are same height
-
+        int itemHeight = holder.itemView.getHeight();
         int offset = (int) (percent * itemHeight / 100);
 
         LinearLayoutManager layoutManager = (LinearLayoutManager) mRecyclerView.getLayoutManager();
