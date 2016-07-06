@@ -1,6 +1,7 @@
 package com.door43.translationstudio;
 
 import android.test.InstrumentationTestCase;
+import android.test.suitebuilder.annotation.MediumTest;
 
 import com.door43.translationstudio.core.ChunkMarker;
 import com.door43.translationstudio.core.Library;
@@ -14,6 +15,7 @@ import com.door43.translationstudio.core.TargetLanguage;
 /**
  * Created by joel on 8/31/2015.
  */
+@MediumTest
 public class LibraryTest extends InstrumentationTestCase {
     private Library mLibrary;
 

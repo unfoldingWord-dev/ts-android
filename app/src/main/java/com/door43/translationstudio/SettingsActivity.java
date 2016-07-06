@@ -34,8 +34,6 @@ import com.door43.util.TTFAnalyzer;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
-import org.apache.commons.io.FilenameUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -174,7 +172,7 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
                     String fontname = "";
                     fontname = analyzer.getTtfFontName(typeface.getAbsolutePath());
                     if(fontname == null) {
-                        fontname = FilenameUtils.removeExtension(typeface.getName());
+                        fontname = typeface.getName().substring(0, typeface.getName().lastIndexOf("."));
                     }
                     entries.add(fontname);
                     entryValues.add(fileList[i]);
@@ -436,7 +434,7 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
                         String fontname = "";
                         fontname = analyzer.getTtfFontName(typeface.getAbsolutePath());
                         if(fontname == null) {
-                            fontname = FilenameUtils.removeExtension(typeface.getName());
+                            fontname = typeface.getName().substring(0, typeface.getName().lastIndexOf("."));
                         }
                         // add valid fonts to the list
                         entries.add(fontname);

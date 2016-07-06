@@ -15,3 +15,13 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+-dontobfuscate
+-dontoptimize
+-ignorewarnings
+-keepattributes **
+
+-keep class android.support.v7.widget.SearchView { *; }
+-keep class com.jcraft.jsch.** { *; }
+-keep class com.door43.** { *; }
+-keep class org.spongycastle.** { *; }

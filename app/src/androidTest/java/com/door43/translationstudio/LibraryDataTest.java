@@ -2,6 +2,7 @@ package com.door43.translationstudio;
 
 import android.content.Context;
 import android.test.InstrumentationTestCase;
+import android.test.suitebuilder.annotation.MediumTest;
 
 import com.door43.translationstudio.core.CheckingQuestion;
 import com.door43.translationstudio.core.LibraryData;
@@ -12,6 +13,7 @@ import com.door43.translationstudio.core.Util;
 /**
  * Created by joel on 8/27/2015.
  */
+@MediumTest
 public class LibraryDataTest extends InstrumentationTestCase {
 
     private LibraryData mIndex;
