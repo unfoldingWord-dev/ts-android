@@ -11,6 +11,7 @@ import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.unfoldingword.tools.logger.Logger;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -25,6 +26,7 @@ public class TargetTranslationMigrator {
 
     private static final String MANIFEST_FILE = "manifest.json";
     public static final String LICENSE = "LICENSE";
+    public static final String TAG = "TargetTranslationMigrator";
 
     /**
      * Performs a migration on a manifest object.
@@ -106,12 +108,19 @@ public class TargetTranslationMigrator {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
+                        TargetLanguage originalTargetLanguage = tt.getTargetLanguage();
                         tt.changeTargetLanguage(approvedTargetLanguage);
-                        App.getTranslator().normalizePath(tt);
+                        if(App.getTranslator().normalizePath(tt)) {
+                            Logger.i(TAG, "Migrated target langauge of target translation " + tt.getId() + " to " + approvedTargetLanguage.getId());
+                        } else {
+                            // revert if normalization failed
+                            tt.changeTargetLanguage(originalTargetLanguage);
+                        }
                     } else {
                         NewLanguageRequest existingRequest = App.getNewLanguageRequest(newRequest.tempLanguageCode);
                         if(existingRequest == null) {
                             // we don't have this language request
+                            Logger.i(TAG, "Importing language request " + newRequest.tempLanguageCode + " from " + tt.getId());
                             App.addNewLanguageRequest(newRequest);
                         } else {
                             // we already have this language request
@@ -136,6 +145,7 @@ public class TargetTranslationMigrator {
                     // make missing language codes usable even if we can't find the new language request
                     TargetLanguage tl = App.getLibrary().getTargetLanguage(tt.getTargetLanguageId());
                     if(tl == null) {
+                        Logger.i(TAG, "Importing missing language code " + tt.getTargetLanguageId() + " from " + tt.getId());
                         TargetLanguage tempLanguage = new TargetLanguage(tt.getTargetLanguageId(),
                                 tt.getTargetLanguageName(),
                                 tt.getTargetLanguageRegion(),
@@ -690,6 +700,11 @@ public class TargetTranslationMigrator {
         JSONObject manifest = new JSONObject(FileUtils.readFileToString(new File(path, MANIFEST_FILE)));
         String typeId = manifest.getJSONObject("type").getString("id");
         // android only supports TEXT translations for now
-        return TranslationType.get(typeId) == TranslationType.TEXT;
+        if(TranslationType.get(typeId) == TranslationType.TEXT) {
+            return true;
+        } else {
+            Logger.w(TAG, "Only text translation types are supported");
+            return false;
+        }
     }
 }

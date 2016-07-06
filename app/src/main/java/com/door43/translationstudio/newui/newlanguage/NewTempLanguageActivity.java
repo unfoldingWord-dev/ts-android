@@ -35,6 +35,8 @@ public class NewTempLanguageActivity extends QuestionnaireActivity implements La
         this.questionnaire = getQuestionnaire();
 
         if(questionnaire != null) {
+            // TRICKY: the profile can be null when running unit tests
+            String translatorName = App.getProfile() != null ? App.getProfile().getFullName() : "unknown";
             if (savedInstanceState != null) {
                 request = NewLanguageRequest.generate(savedInstanceState.getString(EXTRA_LANGUAGE_REQUEST));
                 if (request == null) {
@@ -43,13 +45,13 @@ public class NewTempLanguageActivity extends QuestionnaireActivity implements La
                     snack.show();
 
                     // restart
-                    request = NewLanguageRequest.newInstance(this, questionnaire, "android", App.getProfile().getFullName());
+                    request = NewLanguageRequest.newInstance(this, questionnaire, "android", translatorName);
                     restartQuestionnaire();
                     return;
                 }
             } else {
                 // begin
-                request = NewLanguageRequest.newInstance(this, questionnaire, "android", App.getProfile().getFullName());
+                request = NewLanguageRequest.newInstance(this, questionnaire, "android", translatorName);
             }
         } else {
             // missing questionnaire
