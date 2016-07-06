@@ -65,6 +65,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private List<SourceTranslation> draftTranslations;
     private ImageButton mMoreButton;
     private boolean enableGrids = false;
+    private int seekbarMultiplier = 1; // allows for more granularity in setting position if cards are few
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -150,19 +151,12 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             mGraduations = (ViewGroup) findViewById(R.id.action_seek_graduations);
         }
         mSeekBar = (SeekBar) findViewById(R.id.action_seek);
-        mSeekBar.setMax(100);
+        mSeekBar.setMax(100 * seekbarMultiplier);
         mSeekBar.setProgress(computePositionFromProgress(0));
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                int position;
-                if (progress < 0) {
-                    position = computePositionFromProgress(0);
-                } else if (progress <= seekBar.getMax()) {
-                    position = computePositionFromProgress(progress);
-                } else {
-                    position = 0;
-                }
+                int position = computePositionFromProgress(progress);
 
                 // If this change was initiated by a click on a UI element (rather than as a result
                 // of updates within the program), then update the view accordingly.
@@ -242,8 +236,26 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         restartAutoCommitTimer();
     }
 
+    private int limitRange(int value, int min, int max) {
+        int newValue = value;
+        if(newValue < min) {
+            newValue = min;
+        }
+        if(newValue > max) {
+            newValue = max;
+        }
+        return newValue;
+    }
+
+    /**
+     * get chapter string to display
+     * @param progress
+     * @return
+     */
     private String getFormattedChapter(int progress) {
-        String formattedText = String.format(" %02d ", progress);
+        int position = computePositionFromProgress(progress);
+        int chapter = position + 1; // chapters start at 1
+        String formattedText = String.format(" %02d ", chapter);
         return formattedText;
     }
 
@@ -465,15 +477,21 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     @Override
     public void onItemCountChanged(int itemCount, int progress) {
-        mSeekBar.setMax(itemCount);
-        mSeekBar.setProgress(itemCount - progress);
+        if(itemCount < 100) {  // increase step size if number of cards is small, this gives more granularity in positioning
+            seekbarMultiplier = (int) (100f / itemCount) + 1;
+        } else {
+            seekbarMultiplier = 1;
+        }
+
+        mSeekBar.setMax(itemCount * seekbarMultiplier);
+        mSeekBar.setProgress((itemCount - progress) * seekbarMultiplier);
         closeKeyboard();
         setupGraduations();
     }
 
     private void setupGraduations() {
         if(enableGrids) {
-            final int numCards = mSeekBar.getMax();
+            final int numCards = mSeekBar.getMax() / seekbarMultiplier;
 
             String maxChapterStr = getChapterID(numCards - 1);
             int maxChapter = Integer.valueOf(maxChapterStr);
@@ -528,16 +546,29 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
 
     private boolean displaySeekBarAsInverted() {
-//        return mSeekBar instanceof VerticalSeekBar;
-        return false;
+        return mSeekBar instanceof VerticalSeekBar;
     }
 
     private int computeProgressFromPosition(int position) {
-        return displaySeekBarAsInverted() ? mSeekBar.getMax() - position : position;
+        int correctedProgress = correctProgress(position * seekbarMultiplier);
+        int progress = limitRange(correctedProgress, 0, mSeekBar.getMax());
+        return progress;
     }
 
     private int computePositionFromProgress(int progress) {
-        return displaySeekBarAsInverted() ? Math.abs(mSeekBar.getMax() - progress) : progress;
+        int correctedProgress = correctProgress(progress);
+        correctedProgress = limitRange(correctedProgress, 0, mSeekBar.getMax() - 1);
+        int position = correctedProgress / seekbarMultiplier;
+        return position;
+    }
+
+    /**
+     * if seekbar is inverted, this will correct the progress
+     * @param progress
+     * @return
+     */
+    private int correctProgress(int progress) {
+        return displaySeekBarAsInverted() ? mSeekBar.getMax() - progress : progress;
     }
 
     @Override

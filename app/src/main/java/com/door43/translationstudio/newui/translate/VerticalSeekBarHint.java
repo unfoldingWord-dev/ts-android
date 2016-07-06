@@ -15,7 +15,7 @@ import org.unfoldingword.tools.logger.Logger;
 
 /**
  * 7/1/2016
- * added X offset for popup
+ * modified SeekBarHint to work with VerticalSeekBar
  */
 public class VerticalSeekBarHint extends com.door43.widget.VerticalSeekBar implements SeekBar.OnSeekBarChangeListener {
 
@@ -149,17 +149,16 @@ public class VerticalSeekBarHint extends com.door43.widget.VerticalSeekBar imple
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean b) {
         String popupText = null;
-        int newProgress = invertProgress(seekBar, progress);
 
         if (mProgressChangeListener != null) {
-            popupText = mProgressChangeListener.onHintTextChanged(this, newProgress);
+            popupText = mProgressChangeListener.onHintTextChanged(this, progress);
         }
 
         if (mExternalListener != null) {
-            mExternalListener.onProgressChanged(seekBar, newProgress, b);
+            mExternalListener.onProgressChanged(seekBar, progress, b);
         }
 
-        mPopupTextView.setText(popupText != null ? popupText : String.valueOf(newProgress));
+        mPopupTextView.setText(popupText != null ? popupText : String.valueOf(progress));
 
         if (mPopupStyle == POPUP_FOLLOW) {
             int x = getXPosition();
@@ -167,12 +166,6 @@ public class VerticalSeekBarHint extends com.door43.widget.VerticalSeekBar imple
             mPopup.update(x, y, -1, -1);
             Logger.i(TAG,"(x,y)= " + x + "," + y);
         }
-
-    }
-
-    private int invertProgress(SeekBar seekBar, int progress) {
-        int newProgress = seekBar.getMax() - progress;
-        return limitProgress(seekBar, newProgress);
     }
 
     private int limitProgress(SeekBar seekBar, int progress) {
