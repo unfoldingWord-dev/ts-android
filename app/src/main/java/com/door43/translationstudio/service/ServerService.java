@@ -375,7 +375,7 @@ public class ServerService extends NetworkService {
         Library library = App.getLibrary();
         TargetTranslation targetTranslation = App.getTranslator().getTargetTranslation(targetTranslationSlug);
         if(targetTranslation != null) {
-            SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+            SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(targetTranslation.getProjectId(), App.getDeviceLanguageCode());
             if(sourceTranslation != null) {
                 try {
                     JSONObject json = new JSONObject();

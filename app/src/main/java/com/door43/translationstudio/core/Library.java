@@ -543,7 +543,7 @@ public class Library {
      */
     public float getTranslationProgress(TargetTranslation targetTranslation) {
         int numFinishedItems = targetTranslation.numFinished();
-        SourceLanguage sourceLanguage = getPreferredSourceLanguage(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+        SourceLanguage sourceLanguage = getPreferredSourceLanguage(targetTranslation.getProjectId(), "en"); // the language does not matter
         if(sourceLanguage != null) {
             SourceTranslation sourceTranslation = getDefaultSourceTranslation(targetTranslation.getProjectId(), sourceLanguage.getId());
             int numAvailableTranslations = libraryData.numTranslatable(sourceTranslation);

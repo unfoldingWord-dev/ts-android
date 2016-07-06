@@ -44,7 +44,7 @@ public class ProjectListFragment extends BaseFragment implements Searchable {
         // TODO: set up update button
 
         ListView list = (ListView) rootView.findViewById(R.id.list);
-        mAdapter = new ProjectCategoryAdapter(mLibrary.getProjectCategories(Locale.getDefault().getLanguage()));
+        mAdapter = new ProjectCategoryAdapter(mLibrary.getProjectCategories(App.getDeviceLanguageCode()));
         list.setAdapter(mAdapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

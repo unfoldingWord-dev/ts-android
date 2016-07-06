@@ -114,7 +114,7 @@ public class Downloader {
      * @return
      */
     public boolean downloadChunkMarkerList(String projectSlug, LibraryData targetIndex) {
-        Project project = targetIndex.getProject(projectSlug);
+        Project project = targetIndex.getProject(projectSlug, App.getDeviceLanguageCode());
         if(project != null && project.chunkMarkerCatalog != null
                 && (project.chunkMarkerCatalogLocalDateModified < project.chunkMarkerCatalogServerDateModified
                 || project.chunkMarkerCatalogServerDateModified == 0)) {
@@ -135,7 +135,7 @@ public class Downloader {
      * @return
      */
     public boolean downloadSourceLanguageList(String projectSlug, LibraryData targetIndex) {
-        Project project = targetIndex.getProject(projectSlug);
+        Project project = targetIndex.getProject(projectSlug, App.getDeviceLanguageCode());
         if(project != null && project.sourceLanguageCatalog != null
                 && (project.sourceLanguageCatalogLocalDateModified < project.sourceLanguageCatalogServerDateModified
                 || project.sourceLanguageCatalogServerDateModified == 0)) {
