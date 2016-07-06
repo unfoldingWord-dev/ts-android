@@ -1,7 +1,7 @@
 package com.door43.translationstudio.core;
 
+import com.door43.util.FileUtilities;
 
-import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,7 +31,7 @@ public class ArchiveImporter {
         File manifestFile = new File(expandedArchiveDir, "manifest.json");
         File[] targetTranslationDirs;
         if(manifestFile.exists()) {
-            JSONObject manifestJson = new JSONObject(FileUtils.readFileToString(manifestFile));
+            JSONObject manifestJson = new JSONObject(FileUtilities.readFileToString(manifestFile));
             if(manifestJson.has("package_version")) {
                 int packageVersion = manifestJson.getInt("package_version");
                 switch (packageVersion) {

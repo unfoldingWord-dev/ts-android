@@ -8,7 +8,6 @@ import com.door43.translationstudio.git.TransportCallback;
 import com.door43.util.FileUtilities;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
-import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.TransportException;
@@ -43,7 +42,7 @@ public class CloneRepositoryTask extends ManagedTask {
     public void start() {
         if(App.isNetworkAvailable()) {
             publishProgress(-1, App.context().getResources().getString(R.string.downloading));
-            FileUtilities.deleteRecursive(destDir);
+            FileUtilities.deleteQuietly(destDir);
 
             try {
                 // prepare destination
@@ -83,7 +82,7 @@ public class CloneRepositoryTask extends ManagedTask {
                 }
             } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "Failed to clone the repository " + cloneUrl, e);
-                FileUtils.deleteQuietly(destDir);
+                FileUtilities.deleteQuietly(destDir);
                 stop();
             }
         }
