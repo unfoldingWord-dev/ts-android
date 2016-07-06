@@ -423,7 +423,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 String targetTranslationId = data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID);
                 TargetTranslation existingTranslation = mTranslator.getTargetTranslation(targetTranslationId);
                 if(existingTranslation != null) {
-                    Project project = mLibrary.getProject(existingTranslation.getProjectId(), Locale.getDefault().getLanguage());
+                    Project project = mLibrary.getProject(existingTranslation.getProjectId(), App.getDeviceLanguageCode());
                     Snackbar snack = Snackbar.make(findViewById(android.R.id.content), String.format(getResources().getString(R.string.duplicate_target_translation), project.name, existingTranslation.getTargetLanguageName()), Snackbar.LENGTH_LONG);
                     ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                     snack.show();

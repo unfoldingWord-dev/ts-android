@@ -56,7 +56,7 @@ public class ExamineImportsForCollisionsTask extends ManagedTask {
         try {
             mProjectsFolder = File.createTempFile("targettranslation", "." + Translator.ARCHIVE_EXTENSION);
             FileUtilities.copyInputStreamToFile(resolver.openInputStream(mContentUri), mProjectsFolder);
-            ArchiveDetails details = ArchiveDetails.newInstance(mProjectsFolder, Locale.getDefault().getLanguage(), App.getLibrary());
+            ArchiveDetails details = ArchiveDetails.newInstance(mProjectsFolder, App.getDeviceLanguageCode(), App.getLibrary());
             mProjectsFound = "";
             mAlreadyPresent = false;
             for (ArchiveDetails.TargetTranslationDetails td : details.targetTranslationDetails) {

@@ -57,7 +57,7 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
 
         if (getArguments().containsKey(ARG_PROJECT_ID)) {
             String projectId = getArguments().getString(ARG_PROJECT_ID);
-            mProject = mServerLibrary.getProject(projectId, Locale.getDefault().getLanguage());
+            mProject = mServerLibrary.getProject(projectId, App.getDeviceLanguageCode());
             // TODO: handle null project
 
         }
@@ -365,7 +365,7 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
      * @param projectId
      */
     public void setProjectId(String projectId) {
-        mProject = mServerLibrary.getProject(projectId, Locale.getDefault().getLanguage());
+        mProject = mServerLibrary.getProject(projectId, App.getDeviceLanguageCode());
         // TODO: handle null project
         rebuildLayout();
     }

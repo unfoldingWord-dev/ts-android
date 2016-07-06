@@ -124,6 +124,16 @@ public class App extends Application {
     }
 
     /**
+     * Returns the langauge code used by the device.
+     * This will trim off dangling special characters
+     * @return
+     */
+    public static String getDeviceLanguageCode() {
+        String code = Locale.getDefault().getLanguage();
+        return code.replaceAll("[\\_-]$", "");
+    }
+
+    /**
      * Generates a new RSA key pair for use with ssh
      */
     public static void generateSSHKeys() {

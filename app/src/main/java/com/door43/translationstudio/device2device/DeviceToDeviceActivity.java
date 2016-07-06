@@ -15,6 +15,8 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.network.Peer;
 import com.door43.translationstudio.newui.BaseActivity;
@@ -176,7 +178,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ServerServic
                         // This just makes it easier for users to read the results
                         ArrayList<String> preferredLanguages = new ArrayList<>();
                         // device
-                        preferredLanguages.add(Locale.getDefault().getLanguage());
+                        preferredLanguages.add(App.getDeviceLanguageCode());
                         // current project
 //                        Project p = null;//App.projectManager().getSelectedProject();
 //                        if(p != null) {
