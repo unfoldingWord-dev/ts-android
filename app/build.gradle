@@ -86,5 +86,6 @@ dependencies {
     androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.1'
 //    // Optional -- UI testing with UI Automator
 //    androidTestCompile 'com.android.support.test.uiautomator:uiautomator-v18:2.1.1'
+    testCompile 'junit:junit:4.12'
 
 }
