@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -313,10 +314,44 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     /**
      * Called when the scroll progress manually changes
      * @param scrollProgress
+     * @param percent - percentage to scroll within card
      */
-    public void onScrollProgressUpdate(int scrollProgress) {
+    public void onScrollProgressUpdate(int scrollProgress, int percent) {
         mFingerScroll = false;
-        mRecyclerView.scrollToPosition(scrollProgress);
+        if(percent == 0) {
+            mRecyclerView.scrollToPosition(scrollProgress);
+        } else {
+            fineScrollToPosition(scrollProgress, percent);
+        }
+    }
+
+    /**
+     * makes sure view is visible, plus it scrolls down proportionally in view
+     * @param position
+     * @param percent - percentage to scroll within card
+     * @return
+     */
+    private void fineScrollToPosition(int position, int percent) {
+
+        View visibleChild = mRecyclerView.getChildAt(0);
+        if (visibleChild == null) {
+            mRecyclerView.scrollToPosition(position); // do coarse adjustment
+            return;
+        }
+
+        RecyclerView.ViewHolder holder = mRecyclerView.getChildViewHolder(visibleChild);
+        if(holder == null) {
+            mRecyclerView.scrollToPosition(position); // do coarse adjustment
+            return;
+        }
+
+        int itemHeight = holder.itemView.getHeight();  // looks like there is an assumption that view items are same height
+
+        int offset = (int) (percent * itemHeight / 100);
+
+        LinearLayoutManager layoutManager = (LinearLayoutManager) mRecyclerView.getLayoutManager();
+        layoutManager.scrollToPositionWithOffset(position, -offset);
+        return;
     }
 
     public void setScrollProgress(int position) {

@@ -156,12 +156,22 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                int position = computePositionFromProgress(progress);
+                int correctedProgress = correctProgress(progress);
+                correctedProgress = limitRange(correctedProgress, 0, mSeekBar.getMax() - 1);
+                int position = correctedProgress / seekbarMultiplier;
+                int percentage = 0;
+
+                if(seekbarMultiplier > 1) { // if we need some granularity, calculate fractional amount
+                    int fractional = correctedProgress - position * seekbarMultiplier;
+                    if(fractional != 0) {
+                        percentage = 100 * fractional / seekbarMultiplier;
+                    }
+                }
 
                 // If this change was initiated by a click on a UI element (rather than as a result
                 // of updates within the program), then update the view accordingly.
                 if (mFragment instanceof ViewModeFragment && fromUser) {
-                    ((ViewModeFragment) mFragment).onScrollProgressUpdate(position);
+                    ((ViewModeFragment) mFragment).onScrollProgressUpdate(position, percentage);
                 }
 
                 TargetTranslationActivity activity = (TargetTranslationActivity) seekBar.getContext();
