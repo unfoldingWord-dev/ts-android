@@ -2,7 +2,9 @@ package com.door43.translationstudio.newui.translate;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,6 +32,7 @@ public class VerticalSeekBarHint extends com.door43.widget.VerticalSeekBar imple
     private TextView mPopupTextView;
     private int mXLocationOffset;
     private int mYLocationOffset;
+    private Rect mSeekbarRectangle;
 
     private OnSeekBarChangeListener mInternalListener;
     private OnSeekBarChangeListener mExternalListener;
@@ -81,42 +84,71 @@ public class VerticalSeekBarHint extends com.door43.widget.VerticalSeekBar imple
     }
 
     private void initHintPopup() {
-        String popupText = null;
-
-        if (mProgressChangeListener != null) {
-            popupText = mProgressChangeListener.onHintTextChanged(this, getProgress());
-        }
-
         LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         final View undoView = inflater.inflate(mPopupLayout, null);
         mPopupTextView = (TextView) undoView.findViewById(it.moondroid.seekbarhint.library.R.id.text);
-        mPopupTextView.setText(popupText != null ? popupText : String.valueOf(getProgress()));
+
+        initPopupText();
+
+        mSeekbarRectangle = new Rect();
+        this.getGlobalVisibleRect(mSeekbarRectangle);
+        Log.d(TAG,"initHintPopup: Rect=" + mSeekbarRectangle);
 
         mPopup = new PopupWindow(undoView, mPopupWidth, ViewGroup.LayoutParams.WRAP_CONTENT, false);
-
         mPopup.setAnimationStyle(it.moondroid.seekbarhint.library.R.style.fade_animation);
+    }
 
+    private void initPopupText() {
+        String popupText = null;
+        if (mProgressChangeListener != null) {
+            popupText = mProgressChangeListener.onHintTextChanged(this, getProgress());
+        }
+        if(popupText == null) {
+            popupText = String.valueOf(getProgress());
+        }
+        mPopupTextView.setText( popupText );
+        Log.d(TAG,"initPopupText: popupText=" + popupText);
     }
 
     private void showPopup() {
+        getMeasurements();
+        initPopupText();
 
         if (mPopupStyle == POPUP_FOLLOW) {
-            mPopup.showAtLocation(this, Gravity.LEFT | Gravity.BOTTOM, getXPosition(), getYPosition(this));
+            int xPosition = getXPosition();
+            int yPosition = getYPosition(this);
+            Log.d(TAG,"showPopup: show Hint at =" + xPosition + "," + yPosition);
+            mPopup.showAtLocation(this, Gravity.LEFT | Gravity.BOTTOM, xPosition, yPosition);
         }
         if (mPopupStyle == POPUP_FIXED) {
-            mPopup.showAtLocation(this, Gravity.CENTER | Gravity.BOTTOM, 0, getYPosition(this));
+            int xPosition = getXPosition();
+            int yPosition = 0;
+            Log.d(TAG,"showPopup: show Hint at =" + xPosition + "," + yPosition);
+            mPopup.showAtLocation(this, Gravity.LEFT | Gravity.CENTER, xPosition, yPosition);
         }
+    }
+
+    private void getMeasurements() {
+        mSeekbarRectangle = new Rect();
+        this.getGlobalVisibleRect(mSeekbarRectangle);
+        Log.d(TAG,"getMeasurements: Rect=" + mSeekbarRectangle);
     }
 
     private int getXPosition() {
         int textWidth = mPopupWidth;
         float textCenter = (textWidth / 2.0f);
         int x = (int) (this.getX() + textCenter + mXLocationOffset + this.getWidth());
+        Log.d(TAG,"mXLocationOffset: " + mXLocationOffset);
+        Log.d(TAG,"getWidth(): " + this.getWidth());
+        Log.d(TAG,"getXPosition: " + x);
         return x;
     }
 
     private int getYPosition(SeekBar seekBar) {
-        int y = (int) (this.getY() + mYLocationOffset + (int) getYOffset(seekBar));
+//        int y = (int) (this.getY() + mYLocationOffset + (int) getYOffset(seekBar));
+        int y = mSeekbarRectangle.top + mYLocationOffset + (int) getYOffset(seekBar);
+        Log.d(TAG,"mYLocationOffset: " + mYLocationOffset);
+        Log.d(TAG,"getYPosition: " + y);
         return y;
     }
 
@@ -158,13 +190,18 @@ public class VerticalSeekBarHint extends com.door43.widget.VerticalSeekBar imple
             mExternalListener.onProgressChanged(seekBar, progress, b);
         }
 
-        mPopupTextView.setText(popupText != null ? popupText : String.valueOf(progress));
+        if(popupText == null) {
+            popupText = String.valueOf(getProgress());
+        }
+        mPopupTextView.setText( popupText );
+        Log.d(TAG,"onProgressChanged: popupText=" + popupText);
 
         if (mPopupStyle == POPUP_FOLLOW) {
+            getMeasurements();
             int x = getXPosition();
             int y = getYPosition(seekBar);
             mPopup.update(x, y, -1, -1);
-            Logger.i(TAG,"(x,y)= " + x + "," + y);
+            Logger.i(TAG,"onProgressChanged: new Hint =" + x + "," + y);
         }
     }
 
@@ -199,16 +236,23 @@ public class VerticalSeekBarHint extends com.door43.widget.VerticalSeekBar imple
 
     private float getYOffset(SeekBar seekBar) {
         float progress = (float) limitProgress( seekBar, seekBar.getProgress());
+        Log.d(TAG,"getYOffset: progress=" + progress);
+        int seekBarMax = seekBar.getMax();
+        Log.d(TAG,"getYOffset: seekBarMax=" + seekBarMax);
         int seekBarHeight = seekBar.getHeight();
         int seekBarThumbOffset = seekBar.getThumbOffset();
+        Log.d(TAG,"getYOffset: seekBarThumbOffset=" + seekBarThumbOffset);
         float maxScale = (float) (seekBarHeight - 2 * seekBarThumbOffset);
-        float position = (progress * maxScale / seekBar.getMax());
+        float position = (progress * maxScale / seekBarMax);
+        Log.d(TAG,"getYOffset: position=" + position);
         float offset = seekBarThumbOffset;
+        Log.d(TAG,"getYOffset: offset=" + offset);
 
         int height = mPopup.getHeight();
         int center = height / 2;
 
         float newY = position + offset + center;
+        Log.d(TAG,"getYOffset: newY=" + newY);
         return newY;
     }
 }

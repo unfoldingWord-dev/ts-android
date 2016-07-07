@@ -3,7 +3,9 @@ package it.moondroid.seekbarhint.library;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +20,7 @@ import android.widget.TextView;
  */
 public class SeekBarHint extends SeekBar implements SeekBar.OnSeekBarChangeListener {
 
+    public static final String TAG = SeekBarHint.class.getSimpleName();
     private int mPopupLayout;
     private int mPopupWidth;
     private int mPopupStyle;
@@ -28,6 +31,7 @@ public class SeekBarHint extends SeekBar implements SeekBar.OnSeekBarChangeListe
     private TextView mPopupTextView;
     private int mXLocationOffset;
     private int mYLocationOffset;
+    private Rect mSeekbarRectangle;
 
     private OnSeekBarChangeListener mInternalListener;
     private OnSeekBarChangeListener mExternalListener;
@@ -78,39 +82,73 @@ public class SeekBarHint extends SeekBar implements SeekBar.OnSeekBarChangeListe
     }
 
     private void initHintPopup() {
-        String popupText = null;
-
-        if (mProgressChangeListener != null) {
-            popupText = mProgressChangeListener.onHintTextChanged(this, getProgress());
-        }
-
         LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         final View undoView = inflater.inflate(mPopupLayout, null);
         mPopupTextView = (TextView) undoView.findViewById(R.id.text);
-        mPopupTextView.setText(popupText != null ? popupText : String.valueOf(getProgress()));
+
+        initPopupText();
+
+        mSeekbarRectangle = new Rect();
+        this.getGlobalVisibleRect(mSeekbarRectangle);
+        Log.d(TAG,"initHintPopup: Rect=" + mSeekbarRectangle);
 
         mPopup = new PopupWindow(undoView, mPopupWidth, ViewGroup.LayoutParams.WRAP_CONTENT, false);
-
         mPopup.setAnimationStyle(R.style.fade_animation);
+    }
 
+    private void initPopupText() {
+        String popupText = null;
+        if (mProgressChangeListener != null) {
+            popupText = mProgressChangeListener.onHintTextChanged(this, getProgress());
+        }
+        if(popupText == null) {
+            popupText = String.valueOf(getProgress());
+        }
+        mPopupTextView.setText( popupText );
+        Log.d(TAG,"initPopupText: popupText=" + popupText);
     }
 
     private void showPopup() {
+        getMeasurements();
+        initPopupText();
 
         if (mPopupStyle == POPUP_FOLLOW) {
+            int yPosition = getYPosition();
+            int xPosition = getXPosition(this);
+            Log.d(TAG,"showPopup: show Hint at =" + xPosition + "," + yPosition);
             mPopup.showAtLocation(this, Gravity.LEFT | Gravity.BOTTOM, getXPosition(this), getYPosition());
         }
         if (mPopupStyle == POPUP_FIXED) {
-            mPopup.showAtLocation(this, Gravity.CENTER | Gravity.BOTTOM, 0, getYPosition());
+            int yPosition = getYPosition();
+            int xPosition = 0;
+            Log.d(TAG,"showPopup: show Hint at =" + xPosition + "," + yPosition);
+            mPopup.showAtLocation(this, Gravity.CENTER | Gravity.BOTTOM, 0, yPosition);
         }
     }
 
+    private void getMeasurements() {
+        mSeekbarRectangle = new Rect();
+        this.getGlobalVisibleRect(mSeekbarRectangle);
+        Log.d(TAG,"getMeasurements: Rect=" + mSeekbarRectangle);
+    }
+
     private int getXPosition(SeekBar seekBar) {
-        return (int) this.getX() + mXLocationOffset + (int) getXOffset(seekBar);
+//        int location[] = new int[2];
+//        this.getLocationOnScreen(location);
+//        float x = this.getX();
+        int x = mSeekbarRectangle.left + mXLocationOffset + (int) getXOffset(seekBar);
+        Log.d(TAG,"mXLocationOffset: " + mXLocationOffset);
+        Log.d(TAG,"getXPosition: " + x);
+        return x;
     }
 
     private int getYPosition() {
-        return (int) this.getY() + mYLocationOffset + this.getHeight();
+//        int y = mSeekbarRectangle.top + mYLocationOffset + this.getHeight();
+        int y = (int) this.getY() + mYLocationOffset + this.getHeight();
+        Log.d(TAG,"mYLocationOffset: " + mYLocationOffset);
+        Log.d(TAG,"getHeight(): " + this.getHeight());
+        Log.d(TAG,"getYPosition: " + y);
+        return y;
     }
 
     private void hidePopup() {
@@ -150,13 +188,19 @@ public class SeekBarHint extends SeekBar implements SeekBar.OnSeekBarChangeListe
             mExternalListener.onProgressChanged(seekBar, progress, b);
         }
 
-
-        mPopupTextView.setText(popupText != null ? popupText : String.valueOf(progress));
+        if(popupText == null) {
+            popupText = String.valueOf(getProgress());
+        }
+        mPopupTextView.setText( popupText );
+        Log.d(TAG,"onProgressChanged: popupText=" + popupText);
 
         if (mPopupStyle == POPUP_FOLLOW) {
-            mPopup.update(getXPosition(seekBar), getYPosition(), -1, -1);
+            getMeasurements();
+            int yPosition = getYPosition();
+            int xPosition = getXPosition(seekBar);
+            Log.d(TAG,"onProgressChanged: new Hint =" + xPosition + "," + yPosition);
+            mPopup.update(xPosition, yPosition, -1, -1);
         }
-
     }
 
     @Override
@@ -177,15 +221,23 @@ public class SeekBarHint extends SeekBar implements SeekBar.OnSeekBarChangeListe
         hidePopup();
     }
 
-
     private float getXOffset(SeekBar seekBar) {
-        float val = (((float) seekBar.getProgress() * (float) (seekBar.getWidth() - 2 * seekBar.getThumbOffset())) / seekBar.getMax());
-        float offset = seekBar.getThumbOffset();
+        int progress = seekBar.getProgress();
+        Log.d(TAG,"getXOffset: progress=" + progress);
+        int seekBarMax = seekBar.getMax();
+        Log.d(TAG,"getXOffset: seekBarMax=" + seekBarMax);
+        int seekBarThumbOffset = seekBar.getThumbOffset();
+        Log.d(TAG,"getXOffset: seekBarThumbOffset=" + seekBarThumbOffset);
+        float xPosition = (( progress * (float) (seekBar.getWidth() - 2 * seekBarThumbOffset)) / seekBarMax);
+        Log.d(TAG,"getXOffset: xPosition=" + xPosition);
+        float offset = seekBarThumbOffset;
+        Log.d(TAG,"getXOffset: offset=" + offset);
 
         int textWidth = mPopupWidth;
         float textCenter = (textWidth / 2.0f);
 
-        float newX = val + offset + textCenter;
+        float newX = xPosition + offset + textCenter;
+        Log.d(TAG,"getXOffset: newX=" + newX);
         return newX;
     }
 }

@@ -11,6 +11,8 @@ import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.text.Layout;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -146,7 +148,44 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             }
         }
 
+
+        setUpSeekBar();
+
         // set up menu items
+        mMoreButton = (ImageButton) findViewById(R.id.action_more);
+        buildMenu();
+
+        mReadButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openTranslationMode(TranslationViewMode.READ, null);
+
+                TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
+            }
+        });
+
+        mChunkButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openTranslationMode(TranslationViewMode.CHUNK, null);
+
+                TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
+            }
+        });
+
+        mReviewButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openTranslationMode(TranslationViewMode.REVIEW, null);
+
+                TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
+            }
+        });
+
+        restartAutoCommitTimer();
+    }
+
+    private void setUpSeekBar() {
         if(enableGrids) {
             mGraduations = (ViewGroup) findViewById(R.id.action_seek_graduations);
         }
@@ -213,37 +252,14 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             });
         }
 
-        mMoreButton = (ImageButton) findViewById(R.id.action_more);
-        buildMenu();
+        DisplayMetrics metrics = this.getResources().getDisplayMetrics();
+        int width = metrics.widthPixels;
+        int height = metrics.heightPixels;
+        Log.d(TAG,"setUpSeekBar: DisplayMetrics=" + metrics);
 
-        mReadButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openTranslationMode(TranslationViewMode.READ, null);
-
-                TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
-            }
-        });
-
-        mChunkButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openTranslationMode(TranslationViewMode.CHUNK, null);
-
-                TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
-            }
-        });
-
-        mReviewButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openTranslationMode(TranslationViewMode.REVIEW, null);
-
-                TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
-            }
-        });
-
-        restartAutoCommitTimer();
+        Rect windowSize = new Rect();
+        this.getWindow().getDecorView().getWindowVisibleDisplayFrame(windowSize);
+        Log.d(TAG,"setUpSeekBar: windowSize=" + windowSize);
     }
 
     /**
