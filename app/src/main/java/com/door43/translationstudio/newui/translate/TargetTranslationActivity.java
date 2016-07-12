@@ -252,14 +252,14 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             });
         }
 
-        DisplayMetrics metrics = this.getResources().getDisplayMetrics();
-        int width = metrics.widthPixels;
-        int height = metrics.heightPixels;
-        Log.d(TAG,"setUpSeekBar: DisplayMetrics=" + metrics);
-
-        Rect windowSize = new Rect();
-        this.getWindow().getDecorView().getWindowVisibleDisplayFrame(windowSize);
-        Log.d(TAG,"setUpSeekBar: windowSize=" + windowSize);
+//        DisplayMetrics metrics = this.getResources().getDisplayMetrics();
+//        int width = metrics.widthPixels;
+//        int height = metrics.heightPixels;
+//        Log.d(TAG,"setUpSeekBar: DisplayMetrics=" + metrics);
+//
+//        Rect windowSize = new Rect();
+//        this.getWindow().getDecorView().getWindowVisibleDisplayFrame(windowSize);
+//        Log.d(TAG,"setUpSeekBar: windowSize=" + windowSize);
     }
 
     /**
