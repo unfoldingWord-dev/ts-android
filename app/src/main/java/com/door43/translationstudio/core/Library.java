@@ -217,6 +217,15 @@ public class Library {
     }
 
     /**
+     * Removes temp target language from database
+     * This is a utility method for unit tests
+     * @param languageCode
+     */
+    public void deleteTempTargetLanguage(String languageCode) {
+        libraryData.deleteTempTargetLanguage(languageCode);
+    }
+
+    /**
      * Downloads the new language questionnaire from the server
      * @return
      */
@@ -1071,6 +1080,16 @@ public class Library {
      */
     public TargetLanguage getApprovedTargetLanguage(String tempLanguageCode) {
         return getActiveIndex().getApprovedTargetLanguage(tempLanguageCode);
+    }
+
+    /**
+     * Retrieves a temp target language from database
+     * This is a utility method for unit tests
+     * @param code
+     * @return
+     */
+    public TargetLanguage getTempTargetLanguage(String code) {
+        return libraryData.getTempTargetLanguage(code);
     }
 
     public interface OnProgressListener {
