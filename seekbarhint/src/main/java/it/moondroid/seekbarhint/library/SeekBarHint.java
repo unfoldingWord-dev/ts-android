@@ -70,10 +70,6 @@ public class SeekBarHint extends SeekBar implements SeekBar.OnSeekBarChangeListe
         mXLocationOffset = (int) a.getDimension(R.styleable.SeekBarHint_xOffset, 0);
         mPopupStyle = a.getInt(R.styleable.SeekBarHint_popupStyle, POPUP_FIXED);
 
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
-            mYLocationOffset = (int) a.getDimension(it.moondroid.seekbarhint.library.R.styleable.SeekBarHint_yOffsetKitKat, mYLocationOffset);
-        }
-
         a.recycle();
         initHintPopup();
     }

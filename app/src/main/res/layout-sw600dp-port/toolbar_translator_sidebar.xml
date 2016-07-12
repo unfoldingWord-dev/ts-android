@@ -66,8 +66,7 @@
                 android:layout_marginLeft="16dp"
                 android:layout_marginRight="16dp"
                 hint:xOffset="0dp"
-                hint:yOffset="56dp"
-                hint:yOffsetKitKat="8dp"
+                hint:yOffset="8dp"
                 hint:popupLayout="@layout/seekbar_hint_popup"
                 hint:popupStyle="follow" />
 
