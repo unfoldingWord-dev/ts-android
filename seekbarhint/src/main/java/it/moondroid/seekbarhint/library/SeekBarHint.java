@@ -4,6 +4,7 @@ package it.moondroid.seekbarhint.library;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Rect;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
@@ -68,6 +69,10 @@ public class SeekBarHint extends SeekBar implements SeekBar.OnSeekBarChangeListe
         mYLocationOffset = (int) a.getDimension(R.styleable.SeekBarHint_yOffset, 0);
         mXLocationOffset = (int) a.getDimension(R.styleable.SeekBarHint_xOffset, 0);
         mPopupStyle = a.getInt(R.styleable.SeekBarHint_popupStyle, POPUP_FIXED);
+
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
+            mYLocationOffset = (int) a.getDimension(it.moondroid.seekbarhint.library.R.styleable.SeekBarHint_yOffsetKitKat, mYLocationOffset);
+        }
 
         a.recycle();
         initHintPopup();
