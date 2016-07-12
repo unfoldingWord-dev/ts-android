@@ -7,7 +7,6 @@ import com.door43.translationstudio.App;
 import com.door43.translationstudio.spannables.USFMVerseSpan;
 import com.door43.util.FileUtilities;
 
-import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -95,7 +94,7 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         boolean exactVerseCount = true;
         mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
         InputStream usfmStream = mTestContext.getAssets().open("usfm/" + source);
-        String text = IOUtils.toString(usfmStream, "UTF-8");
+        String text = FileUtilities.readStreamToString(usfmStream);
 
         //when
         boolean success = mUsfm.processText(text, source, false, useName);

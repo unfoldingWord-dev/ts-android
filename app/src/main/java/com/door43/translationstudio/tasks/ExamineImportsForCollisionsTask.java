@@ -9,9 +9,10 @@ import com.door43.translationstudio.App;
 import com.door43.translationstudio.core.ArchiveDetails;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
+import com.door43.util.FileUtilities;
+
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.util.Locale;
@@ -44,7 +45,7 @@ public class ExamineImportsForCollisionsTask extends ManagedTask {
 
     public void cleanup() {
         if(mProjectsFolder != null) {
-            FileUtils.deleteQuietly(mProjectsFolder);
+            FileUtilities.deleteQuietly(mProjectsFolder);
         }
         mProjectsFolder = null;
     }
@@ -54,8 +55,8 @@ public class ExamineImportsForCollisionsTask extends ManagedTask {
         mSuccess = false;
         try {
             mProjectsFolder = File.createTempFile("targettranslation", "." + Translator.ARCHIVE_EXTENSION);
-            FileUtils.copyInputStreamToFile(resolver.openInputStream(mContentUri), mProjectsFolder);
-            ArchiveDetails details = ArchiveDetails.newInstance(mProjectsFolder, Locale.getDefault().getLanguage(), App.getLibrary());
+            FileUtilities.copyInputStreamToFile(resolver.openInputStream(mContentUri), mProjectsFolder);
+            ArchiveDetails details = ArchiveDetails.newInstance(mProjectsFolder, App.getDeviceLanguageCode(), App.getLibrary());
             mProjectsFound = "";
             mAlreadyPresent = false;
             for (ArchiveDetails.TargetTranslationDetails td : details.targetTranslationDetails) {

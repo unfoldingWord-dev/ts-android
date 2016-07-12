@@ -31,9 +31,10 @@ import com.door43.translationstudio.tasks.SearchGogsRepositoriesTask;
 import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
+
+import com.door43.util.FileUtilities;
 import com.door43.widget.ViewUtil;
 
-import org.apache.commons.io.FileUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.unfoldingword.gogsclient.Repository;
@@ -197,7 +198,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                         notifyImportFailed();
                         importFailed = true;
                     }
-                    FileUtils.deleteQuietly(tempPath);
+                    FileUtilities.deleteQuietly(tempPath);
 
                     if(!importFailed) {
                         Handler hand = new Handler(Looper.getMainLooper());

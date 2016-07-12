@@ -90,7 +90,7 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
         }
 
         TextView projectTitle = (TextView)v.findViewById(R.id.project_title);
-        SourceLanguage sourceLanguage = library.getPreferredSourceLanguage(mTargetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+        SourceLanguage sourceLanguage = library.getPreferredSourceLanguage(mTargetTranslation.getProjectId(), App.getDeviceLanguageCode());
         if(sourceLanguage != null) {
             projectTitle.setText(sourceLanguage.projectTitle + " - " + mTargetTranslation.getTargetLanguageName());
         } else {
