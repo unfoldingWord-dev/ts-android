@@ -28,9 +28,8 @@ import com.door43.translationstudio.newui.ImportUsfmActivity;
 import com.door43.translationstudio.newui.Door43LoginDialog;
 import com.door43.translationstudio.newui.ShareWithPeerDialog;
 import com.door43.translationstudio.util.SdUtils;
+import com.door43.util.FileUtilities;
 import com.door43.widget.ViewUtil;
-
-import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.InputStream;
@@ -261,7 +260,7 @@ public class ImportDialog extends DialogFragment {
      */
     private void doUsfmImportUri(Uri uri) {
         String path = uri.toString();
-        String ext = FilenameUtils.getExtension(path).toLowerCase();
+        String ext = FileUtilities.getExtension(path).toLowerCase();
         ImportUsfmActivity.startActivityForUriImport(getActivity(), uri);
     }
 
@@ -271,7 +270,7 @@ public class ImportDialog extends DialogFragment {
      */
     private void doUsfmImportFile(String path) {
         File file = new File(path);
-        String ext = FilenameUtils.getExtension(path).toLowerCase();
+        String ext = FileUtilities.getExtension(path).toLowerCase();
         boolean tstudio = ext.equalsIgnoreCase(Translator.ARCHIVE_EXTENSION);
         if (tstudio) {
             importFile(file);
@@ -285,7 +284,7 @@ public class ImportDialog extends DialogFragment {
      * @param file
      */
     private void importFile(File file) {
-        if (FilenameUtils.getExtension(file.getName()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
+        if (FileUtilities.getExtension(file.getName()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
             try {
                 Logger.i(this.getClass().getName(), "Importing internal file: " + file.toString());
                 final Translator translator = App.getTranslator();
@@ -308,7 +307,7 @@ public class ImportDialog extends DialogFragment {
      * @param uri
      */
     private void importUri(Uri uri) {
-        if(FilenameUtils.getExtension(uri.getPath()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
+        if(FileUtilities.getExtension(uri.getPath()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
             try {
                 Logger.i(this.getClass().getName(), "Importing SD card: " + uri);
                 final InputStream in = App.context().getContentResolver().openInputStream(uri);

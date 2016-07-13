@@ -190,7 +190,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
 
         if(operationMode == MODE_SERVER) {
             title.setText(getResources().getString(R.string.backup_to_friend));
-            SourceTranslation sourceTranslation = App.getLibrary().getDefaultSourceTranslation(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+            SourceTranslation sourceTranslation = App.getLibrary().getDefaultSourceTranslation(targetTranslation.getProjectId(), App.getDeviceLanguageCode());
             if(sourceTranslation != null) {
                 subTitle.setText(sourceTranslation.getProjectTitle() + " - " + targetTranslation.getTargetLanguageName());
             } else {
@@ -532,7 +532,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
         String targetTranslationNames = "";
         for(String targetTranslationSlug:targetTranslations) {
             TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationSlug);
-            SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+            SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(targetTranslation.getProjectId(), App.getDeviceLanguageCode());
             targetTranslationNames += sourceTranslation.getProjectTitle() + " - " + targetTranslation.getTargetLanguageName() + ", ";
         }
         final String names = targetTranslationNames.trim().replaceAll(",$", "");

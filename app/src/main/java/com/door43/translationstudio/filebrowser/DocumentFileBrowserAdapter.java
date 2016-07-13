@@ -47,7 +47,7 @@ public class DocumentFileBrowserAdapter extends BaseAdapter {
             public void run() {
                 for(DocumentFileItem item:mFiles) {
                     if(item.isTranslationArchive()) {
-                        item.inspect(Locale.getDefault().getLanguage(), library);
+                        item.inspect(App.getDeviceLanguageCode(), library);
                     }
                 }
             }

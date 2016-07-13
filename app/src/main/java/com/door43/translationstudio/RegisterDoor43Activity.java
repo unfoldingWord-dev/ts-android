@@ -2,6 +2,8 @@ package com.door43.translationstudio;
 
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -131,14 +133,21 @@ public class RegisterDoor43Activity extends AppCompatActivity implements Managed
             App.setProfile(profile);
             finish();
         } else {
-            String error =((RegisterDoor43Task)task).getError();
-            error = error == null ? getResources().getString(R.string.registration_failed) : error;
+            final String error = ((RegisterDoor43Task)task).getError() == null
+                    ? getResources().getString(R.string.registration_failed)
+                    : ((RegisterDoor43Task)task).getError();
             // registration failed
-            new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
-                    .setTitle(R.string.error)
-                    .setMessage(error)
-                    .setPositiveButton(R.string.label_ok, null)
-                    .show();
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    new AlertDialog.Builder(RegisterDoor43Activity.this, R.style.AppTheme_Dialog)
+                            .setTitle(R.string.error)
+                            .setMessage(error)
+                            .setPositiveButton(R.string.label_ok, null)
+                            .show();
+                }
+            });
         }
     }
 }

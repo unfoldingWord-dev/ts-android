@@ -80,7 +80,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
         } else {
             // populated cached data
             Library serverLibrary = App.getLibrary();
-            Project[] projects = serverLibrary.getProjects(Locale.getDefault().getLanguage());
+            Project[] projects = serverLibrary.getProjects(App.getDeviceLanguageCode());
             mListFragment.setData(serverLibrary.getAvailableUpdates(), projects);
 
             // connect to tasks
@@ -326,7 +326,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
             public void run() {
                 invalidateOptionsMenu();
                 Library serverLibrary = App.getLibrary();
-                Project[] projects = serverLibrary.getProjects(Locale.getDefault().getLanguage());
+                Project[] projects = serverLibrary.getProjects(App.getDeviceLanguageCode());
                 mListFragment.setData(serverLibrary.getAvailableUpdates(), projects);
 
                 if(mProgressDialog != null && mProgressDialog.isShowing()) {

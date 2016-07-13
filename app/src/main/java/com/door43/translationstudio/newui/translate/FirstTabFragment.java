@@ -53,7 +53,7 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
         ImageButton newTabButton = (ImageButton) rootView.findViewById(R.id.newTabButton);
         LinearLayout secondaryNewTabButton = (LinearLayout) rootView.findViewById(R.id.secondaryNewTabButton);
         TextView translationTitle = (TextView) rootView.findViewById(R.id.source_translation_title);
-        SourceLanguage sourceLanguage = mLibrary.getPreferredSourceLanguage(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+        SourceLanguage sourceLanguage = mLibrary.getPreferredSourceLanguage(targetTranslation.getProjectId(), App.getDeviceLanguageCode());
         translationTitle.setText(sourceLanguage.projectTitle + " - " + targetTranslation.getTargetLanguageName());
 
         View.OnClickListener clickListener = new View.OnClickListener() {

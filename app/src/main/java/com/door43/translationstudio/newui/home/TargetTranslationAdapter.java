@@ -110,7 +110,7 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
         }
 
         // render view
-        Project project = library.getProject(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+        Project project = library.getProject(targetTranslation.getProjectId(), App.getDeviceLanguageCode());
         if(project != null) {
             if(!targetTranslation.getResourceSlug().equals(Resource.REGULAR_SLUG) && !targetTranslation.getResourceSlug().equals("obs")) {
                 // display the resource type if not a regular resource e.g. this is for a gateway language

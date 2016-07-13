@@ -4,9 +4,9 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 
 import org.unfoldingword.tools.logger.Logger;
-import com.door43.util.Zip;
 
-import org.apache.commons.io.FileUtils;
+import com.door43.util.FileUtilities;
+import com.door43.util.Zip;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -381,7 +381,7 @@ public class Library {
     public Boolean downloadImages(OnProgressListener listener) {
         boolean success = mDownloader.downloadImages(listener);
         if(!success) {
-            FileUtils.deleteQuietly(getImagesDir());
+            FileUtilities.deleteQuietly(getImagesDir());
         }
         return success;
     }
@@ -416,7 +416,6 @@ public class Library {
         destDir.mkdirs();
         try {
             destFile.createNewFile();
-//            Tar.tar(mContext.getDatabasePath(getActiveIndex().getIndexId()).getPath(), destFile.getPath());
             Zip.zip(mContext.getDatabasePath(getActiveIndex().getIndexId()).getPath(), destFile.getPath());
         } catch (IOException e) {
             Logger.e(TAG, "Failed to export the library", e);
@@ -544,7 +543,7 @@ public class Library {
      */
     public float getTranslationProgress(TargetTranslation targetTranslation) {
         int numFinishedItems = targetTranslation.numFinished();
-        SourceLanguage sourceLanguage = getPreferredSourceLanguage(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+        SourceLanguage sourceLanguage = getPreferredSourceLanguage(targetTranslation.getProjectId(), "en"); // the language does not matter
         if(sourceLanguage != null) {
             SourceTranslation sourceTranslation = getDefaultSourceTranslation(targetTranslation.getProjectId(), sourceLanguage.getId());
             int numAvailableTranslations = libraryData.numTranslatable(sourceTranslation);

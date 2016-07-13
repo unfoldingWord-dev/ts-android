@@ -239,7 +239,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                     }
                 };
                 task.addOnProgressListener(DeveloperToolsActivity.this);
-                task.addOnProgressListener(DeveloperToolsActivity.this);
+                task.addOnFinishedListener(DeveloperToolsActivity.this);
                 TaskManager.addTask(task, TASK_EXPORT_LIBRARY);
             }
         }));
@@ -334,24 +334,24 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
             progressDialog.dismiss();
         }
 
+        final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this, R.style.AppTheme_Dialog);
+
         if(task.getTaskId().equals(TASK_REGENERATE_KEYS)) {
-            new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+            dialogBuilder
                     .setTitle(R.string.success)
                     .setMessage("The SSH keys have been regenerated")
-                    .setNeutralButton(R.string.dismiss, null)
-                    .show();
+                    .setNeutralButton(R.string.dismiss, null);
         }
         if(task.getTaskId().equals(TASK_INDEX_TA)) {
-            new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+            dialogBuilder
                     .setTitle(R.string.success)
                     .setMessage("tA has been indexed")
-                    .setNeutralButton(R.string.dismiss, null)
-                    .show();
+                    .setNeutralButton(R.string.dismiss, null);
         }
         if(task.getTaskId().equals(TASK_EXPORT_LIBRARY)) {
             final File archive = (File)task.getResult();
             if(archive != null && archive.exists()) {
-                new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                dialogBuilder
                         .setTitle(R.string.success)
                         .setIcon(R.drawable.ic_done_black_24dp)
                         .setMessage(R.string.source_export_complete)
@@ -364,46 +364,47 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                                 intent.putExtra(Intent.EXTRA_STREAM, u);
                                 startActivity(Intent.createChooser(intent, "Email:"));
                             }
-                        })
-                        .show();
+                        });
             } else {
-                new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                dialogBuilder
                         .setTitle(R.string.error)
                         .setIcon(R.drawable.ic_done_black_24dp)
                         .setMessage("The library could not be exported")
-                        .setPositiveButton(R.string.dismiss, null)
-                        .show();
+                        .setPositiveButton(R.string.dismiss, null);
             }
         }
-
         if(task.getTaskId().equals(TASK_INDEX_CHUNK_MARKERS)) {
             if(!task.isCanceled()) {
-                new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                dialogBuilder
                         .setTitle(R.string.success)
                         .setIcon(R.drawable.ic_done_black_24dp)
                         .setMessage("Chunk Markers have been indexed")
                         .setCancelable(false)
-                        .setPositiveButton(R.string.label_ok, null)
-                        .show();
+                        .setPositiveButton(R.string.label_ok, null);
             }
         }
-
         if(task.getTaskId().equals(CheckForLibraryUpdatesTask.TASK_ID)) {
             DownloadAllProjectsTask newTask = new DownloadAllProjectsTask();
             newTask.addOnProgressListener(this);
             newTask.addOnFinishedListener(this);
             TaskManager.addTask(newTask, DownloadAllProjectsTask.TASK_ID);
         }
-
         if(task.getTaskId().equals(DownloadAllProjectsTask.TASK_ID)) {
-            new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+            dialogBuilder
                     .setTitle(R.string.success)
                     .setIcon(R.drawable.ic_done_black_24dp)
                     .setMessage(R.string.download_complete)
                     .setCancelable(false)
-                    .setPositiveButton(R.string.label_ok, null)
-                    .show();
+                    .setPositiveButton(R.string.label_ok, null);
         }
+
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                dialogBuilder.show();
+            }
+        });
     }
 
     @Override

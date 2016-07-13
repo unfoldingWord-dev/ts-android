@@ -14,7 +14,6 @@ import com.door43.translationstudio.util.NumericStringComparator;
 import com.door43.util.FileUtilities;
 import com.door43.util.Manifest;
 
-import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.CreateBranchCommand;
@@ -299,7 +298,7 @@ public class TargetTranslation {
             File manifestFile = new File(targetTranslationDir, "manifest.json");
             if (manifestFile.exists()) {
                 try {
-                    JSONObject manifest = new JSONObject(FileUtils.readFileToString(manifestFile));
+                    JSONObject manifest = new JSONObject(FileUtilities.readFileToString(manifestFile));
                     int version = manifest.getInt(FIELD_MANIFEST_PACKAGE_VERSION);
                     if (version == PACKAGE_VERSION) {
                         return new TargetTranslation(targetTranslationDir);
@@ -361,7 +360,7 @@ public class TargetTranslation {
             is = context.getAssets().open(LICENSE_FILE);
         }
         if(is != null) {
-            FileUtils.copyInputStreamToFile(is, licenseFile);
+            FileUtilities.copyInputStreamToFile(is, licenseFile);
         } else {
             throw new FileNotFoundException("The template LICENSE.md file could not be found in the assets");
         }
@@ -583,7 +582,7 @@ public class TargetTranslation {
         File frameFile = getFrameFile(chapterId, frameId);
         if(frameFile.exists()) {
             try {
-                String body = FileUtils.readFileToString(frameFile);
+                String body = FileUtilities.readFileToString(frameFile);
                 return new FrameTranslation(frameId, chapterId, body, format, isFrameFinished(chapterId + "-" + frameId));
             } catch (IOException e) {
                 e.printStackTrace();
@@ -619,14 +618,14 @@ public class TargetTranslation {
         String title = "";
         if(referenceFile.exists()) {
             try {
-                reference = FileUtils.readFileToString(referenceFile);
+                reference = FileUtilities.readFileToString(referenceFile);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         if(titleFile.exists()) {
             try {
-                title = FileUtils.readFileToString(titleFile);
+                title = FileUtilities.readFileToString(titleFile);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -645,7 +644,7 @@ public class TargetTranslation {
         String title = "";
         if(titleFile.exists()) {
             try {
-                title = FileUtils.readFileToString(titleFile);
+                title = FileUtilities.readFileToString(titleFile);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -677,7 +676,7 @@ public class TargetTranslation {
             titleFile.delete();
         } else {
             titleFile.getParentFile().mkdirs();
-            FileUtils.write(titleFile, translatedText);
+            FileUtilities.writeStringToFile(titleFile, translatedText);
         }
     }
 
@@ -693,7 +692,7 @@ public class TargetTranslation {
             frameFile.delete();
         } else {
             frameFile.getParentFile().mkdirs();
-            FileUtils.write(frameFile, translatedText);
+            FileUtilities.writeStringToFile(frameFile, translatedText);
         }
     }
 
@@ -710,7 +709,7 @@ public class TargetTranslation {
             chapterReferenceFile.delete();
         } else {
             chapterReferenceFile.getParentFile().mkdirs();
-            FileUtils.write(chapterReferenceFile, translatedText);
+            FileUtilities.writeStringToFile(chapterReferenceFile, translatedText);
         }
     }
 
@@ -727,7 +726,7 @@ public class TargetTranslation {
             chapterTitleFile.delete();
         } else {
             chapterTitleFile.getParentFile().mkdirs();
-            FileUtils.write(chapterTitleFile, translatedText);
+            FileUtilities.writeStringToFile(chapterTitleFile, translatedText);
         }
     }
 

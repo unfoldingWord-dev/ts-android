@@ -36,9 +36,10 @@ import com.door43.translationstudio.util.SdUtils;
 import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
+
+import com.door43.util.FileUtilities;
 import com.door43.widget.ViewUtil;
 
-import org.apache.commons.io.IOUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.merge.MergeStrategy;
@@ -335,7 +336,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             if(sdCardFile != null) {
                 try {
                     if(null != out) {
-                        IOUtils.closeQuietly(out);
+                        FileUtilities.closeQuietly(out);
                     }
                     sdCardFile.delete();
                 } catch(Exception e2) {

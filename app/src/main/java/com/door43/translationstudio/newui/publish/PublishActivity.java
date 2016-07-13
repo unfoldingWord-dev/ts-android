@@ -114,7 +114,7 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
                 if(sourceTranslationId == null) {
                     // use the default target translation if they have not chosen one.
                     Library library = App.getLibrary();
-                    SourceLanguage sourceLanguage = library.getPreferredSourceLanguage(mTargetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+                    SourceLanguage sourceLanguage = library.getPreferredSourceLanguage(mTargetTranslation.getProjectId(), App.getDeviceLanguageCode());
                     if(sourceLanguage != null) {
                         SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(mTargetTranslation.getProjectId(), sourceLanguage.getId());
                         if (sourceTranslation != null) {
@@ -319,7 +319,7 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
         String sourceTranslationId = App.getSelectedSourceTranslationId(mTargetTranslation.getId());
         // TRICKY: if the user has not chosen a source translation (this is an empty translation) the id will be null
         if(sourceTranslationId == null) {
-            SourceTranslation sourceTranslation = App.getLibrary().getDefaultSourceTranslation(mTargetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+            SourceTranslation sourceTranslation = App.getLibrary().getDefaultSourceTranslation(mTargetTranslation.getProjectId(), App.getDeviceLanguageCode());
             if(sourceTranslation != null) {
                 sourceTranslationId = sourceTranslation.getId();
             }

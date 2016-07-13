@@ -42,9 +42,10 @@ import com.door43.translationstudio.tasks.ImportProjectsTask;
 import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
+
+import com.door43.util.FileUtilities;
 import com.door43.widget.ViewUtil;
 
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.util.Locale;
@@ -126,7 +127,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                                     PackageInfo pinfo = getPackageManager().getPackageInfo(getPackageName(), 0);
                                     File apkFile = new File(pinfo.applicationInfo.publicSourceDir);
                                     File exportFile = new File(App.getSharingDir(), pinfo.applicationInfo.loadLabel(getPackageManager()) + "_" + pinfo.versionName + ".apk");
-                                    FileUtils.copyFile(apkFile, exportFile);
+                                    FileUtilities.copyFile(apkFile, exportFile);
                                     if (exportFile.exists()) {
                                         Uri u = FileProvider.getUriForFile(HomeActivity.this, "com.door43.translationstudio.fileprovider", exportFile);
                                         Intent i = new Intent(Intent.ACTION_SEND);
@@ -485,7 +486,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 String targetTranslationId = data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID);
                 TargetTranslation existingTranslation = mTranslator.getTargetTranslation(targetTranslationId);
                 if(existingTranslation != null) {
-                    Project project = mLibrary.getProject(existingTranslation.getProjectId(), Locale.getDefault().getLanguage());
+                    Project project = mLibrary.getProject(existingTranslation.getProjectId(), App.getDeviceLanguageCode());
                     Snackbar snack = Snackbar.make(findViewById(android.R.id.content), String.format(getResources().getString(R.string.duplicate_target_translation), project.name, existingTranslation.getTargetLanguageName()), Snackbar.LENGTH_LONG);
                     ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                     snack.show();

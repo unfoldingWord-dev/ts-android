@@ -13,7 +13,6 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
-import android.support.multidex.MultiDex;
 import android.text.TextUtils;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -39,7 +38,6 @@ import com.jcraft.jsch.KeyPair;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
-import org.apache.commons.io.FileUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -78,12 +76,6 @@ public class App extends Application {
     private static ImageLoader mImageLoader;
     private static App sInstance;
     private static String targetTranslationWithUpdates = null;
-
-    @Override
-    protected void attachBaseContext(Context base) {
-        super.attachBaseContext(base);
-        MultiDex.install(this);
-    }
 
     @Override
     public void onCreate() {
@@ -130,6 +122,16 @@ public class App extends Application {
         ConnectivityManager cm = (ConnectivityManager) sInstance.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+    }
+
+    /**
+     * Returns the langauge code used by the device.
+     * This will trim off dangling special characters
+     * @return
+     */
+    public static String getDeviceLanguageCode() {
+        String code = Locale.getDefault().getLanguage();
+        return code.replaceAll("[\\_-]$", "");
     }
 
     /**
@@ -305,14 +307,14 @@ public class App extends Application {
         if(dbs.length == 1) {
             library.deploy(dbs[0]);
         } else {
-            FileUtils.deleteQuietly(archive);
-            FileUtils.deleteQuietly(tempLibraryDir);
+            FileUtilities.deleteQuietly(archive);
+            FileUtilities.deleteQuietly(tempLibraryDir);
             throw new Exception("Invalid index count in '" + DEFAULT_LIBRARY_ZIP + "'. Expecting 1 but found " + dbs.length);
         }
 
         // clean up
-        FileUtils.deleteQuietly(archive);
-        FileUtils.deleteQuietly(tempLibraryDir);
+        FileUtilities.deleteQuietly(archive);
+        FileUtilities.deleteQuietly(tempLibraryDir);
     }
 
     /**
@@ -411,13 +413,13 @@ public class App extends Application {
                         }
                     }
 
-                    FileUtils.copyFile(temp, downloadsBackup);
-                    FileUtils.copyFile(temp, publicBackup);
+                    FileUtilities.copyFile(temp, downloadsBackup);
+                    FileUtilities.copyFile(temp, publicBackup);
                     return true;
                 }
             } catch (Exception e) {
                 if (temp != null) {
-                    FileUtils.deleteQuietly(temp);
+                    FileUtilities.deleteQuietly(temp);
                 }
                 throw e;
             }
@@ -745,7 +747,7 @@ public class App extends Application {
                 setUserString("profile", profileString);
             } else {
                 setUserString("profile", null);
-                FileUtilities.deleteRecursive(getKeysFolder());
+                FileUtilities.deleteQuietly(getKeysFolder());
             }
         } catch (JSONException e) {
             Logger.e(TAG, "setProfile: Failed to encode profile data", e);

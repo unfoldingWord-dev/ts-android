@@ -11,11 +11,9 @@ import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.spannables.USFMVerseSpan;
+import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -566,7 +564,7 @@ public class ImportUsfm {
         }
 
         try {
-            String ext = FilenameUtils.getExtension(file.toString());
+            String ext = FileUtilities.getExtension(file.toString());
             boolean zip = "zip".equalsIgnoreCase(ext);
             if (!zip) {
                 success = processBook(file);
@@ -600,12 +598,12 @@ public class ImportUsfm {
         String path = uri.toString();
 
         try {
-            String ext = FilenameUtils.getExtension(path);
+            String ext = FileUtilities.getExtension(path);
             boolean zip = "zip".equalsIgnoreCase(ext);
 
             InputStream usfmStream = App.context().getContentResolver().openInputStream(uri);
             if (!zip) {
-                String text = IOUtils.toString(usfmStream, "UTF-8");
+                String text = FileUtilities.readStreamToString(usfmStream);
                 success = processBook(text, uri.toString());
             } else {
                 success = readZipStream(usfmStream);
@@ -628,13 +626,13 @@ public class ImportUsfm {
     public boolean readResourceFile(Context context, String fileName) {
         boolean success = true;
         updateStatus(R.string.initializing_import);
-        String ext = FilenameUtils.getExtension(fileName).toLowerCase();
+        String ext = FileUtilities.getExtension(fileName).toLowerCase();
         boolean zip = "zip".equals(ext);
 
         try {
             InputStream usfmStream = context.getAssets().open(fileName);
             if (!zip) {
-                String text = IOUtils.toString(usfmStream, "UTF-8");
+                String text = FileUtilities.readStreamToString(usfmStream);
                 success = processBook(text, fileName);
             } else {
                 success = readZipStream(usfmStream);
@@ -723,7 +721,7 @@ public class ImportUsfm {
     private boolean processBook(File file) {
         boolean success;
         try {
-            String book = FileUtils.readFileToString(file);
+            String book = FileUtilities.readFileToString(file);
             success = processBook(book, file.toString());
         } catch (Exception e) {
             Logger.e(TAG, "error reading book " + file.toString(), e);
@@ -1315,9 +1313,9 @@ public class ImportUsfm {
         File chapterFolder = new File(mProjectFolder, chapter);
         try {
             String cleanChunk = removePattern(section, PATTERN_SECTION_MARKER);
-            FileUtils.forceMkdir(chapterFolder);
+            FileUtilities.forceMkdir(chapterFolder);
             File output = new File(chapterFolder, fileName + ".txt");
-            FileUtils.write(output, cleanChunk);
+            FileUtilities.writeStringToFile(output, cleanChunk);
             return true;
         } catch (Exception e) {
             Logger.e(TAG, "error parsing chapter " + mChapter, e);
@@ -1498,7 +1496,7 @@ public class ImportUsfm {
      * cleanup working directory and values
      */
     public void cleanup() {
-        FileUtils.deleteQuietly(mTempDir);
+        FileUtilities.deleteQuietly(mTempDir);
         mTempDir = null;
         mTempSrce = null;
         mTempOutput = null;

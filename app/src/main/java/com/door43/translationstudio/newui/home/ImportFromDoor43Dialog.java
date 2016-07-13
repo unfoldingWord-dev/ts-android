@@ -41,9 +41,10 @@ import com.door43.translationstudio.tasks.SearchGogsRepositoriesTask;
 import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
+
+import com.door43.util.FileUtilities;
 import com.door43.widget.ViewUtil;
 
-import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.merge.MergeStrategy;
 import org.json.JSONException;
@@ -326,7 +327,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                         notifyImportFailed();
                         importFailed = true;
                     }
-                    FileUtils.deleteQuietly(tempPath);
+                    FileUtilities.deleteQuietly(tempPath);
 
                     if(!importFailed) {
                         Handler hand = new Handler(Looper.getMainLooper());

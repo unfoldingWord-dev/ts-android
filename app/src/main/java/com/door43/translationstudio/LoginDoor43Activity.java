@@ -1,6 +1,8 @@
 package com.door43.translationstudio;
 
 import android.app.ProgressDialog;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -79,11 +81,17 @@ public class LoginDoor43Activity extends AppCompatActivity implements ManagedTas
             finish();
         } else {
             // login failed
-            new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
-                    .setTitle(R.string.error)
-                    .setMessage(R.string.double_check_credentials)
-                    .setPositiveButton(R.string.label_ok, null)
-                    .show();
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    new AlertDialog.Builder(LoginDoor43Activity.this, R.style.AppTheme_Dialog)
+                            .setTitle(R.string.error)
+                            .setMessage(R.string.double_check_credentials)
+                            .setPositiveButton(R.string.label_ok, null)
+                            .show();
+                }
+            });
         }
     }
 
