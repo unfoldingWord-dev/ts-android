@@ -236,7 +236,8 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
             @Override
             public void run() {
                 TargetTranslation targetTranslation = App.getTranslator().getTargetTranslation(targetTranslationId);
-                showMergeConflict(targetTranslation);
+                doRecursiveMerge(targetTranslation);
+//                showMergeConflict(targetTranslation);
             }
         });
     }
@@ -477,14 +478,9 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mDialogShown = eDialogShown.NONE;
-                        mManualMerge = true;
-                        try {
-                            final String sourceUrl = mMergeFromSpecificUrl ? mClonelUrl : null; // if not a specific url, then will merge from default for target
-                            pullFromServer(targetTranslation, MergeStrategy.RECURSIVE, sourceUrl);
-                        } catch (Exception e) {
-                            Logger.e(this.getClass().getName(), "Failed to merge during import", e);
-                            notifyMergeFailed(targetTranslation);
-                        }                    }
+                        doRecursiveMerge(targetTranslation);
+                    }
+
                 })
                 .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     @Override
@@ -493,6 +489,21 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                         ImportFromDoor43Dialog.this.dismiss();
                     }
                 }).show();
+    }
+
+    /**
+     * do pull request with manual merge
+     * @param targetTranslation
+     */
+    private void doRecursiveMerge(TargetTranslation targetTranslation) {
+        mManualMerge = true;
+        try {
+            final String sourceUrl = mMergeFromSpecificUrl ? mClonelUrl : null; // if not a specific url, then will merge from default for target
+            pullFromServer(targetTranslation, MergeStrategy.RECURSIVE, sourceUrl);
+        } catch (Exception e) {
+            Logger.e(this.getClass().getName(), "Failed to merge during import", e);
+            notifyMergeFailed(targetTranslation);
+        }
     }
 
     /**
