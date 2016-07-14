@@ -19,6 +19,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -51,6 +52,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private static final String TAG = TargetTranslationActivity.class.getSimpleName();
 
     private static final long COMMIT_INTERVAL = 2 * 60 * 1000; // commit changes every 2 minutes
+    public static final String STATE_SEARCH_ENABLED = "state_search_enabled";
     private Fragment mFragment;
     private SeekBar mSeekBar;
     private ViewGroup mGraduations;
@@ -62,6 +64,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private ImageButton mReviewButton;
     private List<SourceTranslation> draftTranslations;
     private ImageButton mMoreButton;
+    private boolean mSearchEnabled = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -211,7 +214,19 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             }
         });
 
+        if(savedInstanceState != null) {
+            mSearchEnabled = savedInstanceState.getBoolean(STATE_SEARCH_ENABLED, false);
+        }
+
+        setSearchBarVisibility(mSearchEnabled);
+
         restartAutoCommitTimer();
+    }
+
+    public void onSaveInstanceState(Bundle out) {
+        out.putBoolean(STATE_SEARCH_ENABLED, mSearchEnabled);
+
+        super.onSaveInstanceState(out);
     }
 
     private void buildMenu() {
@@ -290,6 +305,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                                 Intent settingsIntent = new Intent(TargetTranslationActivity.this, SettingsActivity.class);
                                 startActivity(settingsIntent);
                                 return true;
+                            case R.id.action_search:
+                                toggleSearchBar();
+                                return true;
                         }
                         return false;
                     }
@@ -297,6 +315,43 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 moreMenu.show();
             }
         });
+    }
+
+    /**
+     * change state of search bar
+     */
+    private void toggleSearchBar() {
+        // toggle search bar
+        LinearLayout searchPane = (LinearLayout) findViewById(R.id.search_pane);
+        if(searchPane != null) {
+            int visibility = searchPane.getVisibility();
+
+            if(View.GONE == visibility) {
+                mSearchEnabled = false;
+            } else {
+                mSearchEnabled = true;
+            }
+
+            mSearchEnabled = !mSearchEnabled; // toggle state
+
+            setSearchBarVisibility(mSearchEnabled);
+        }
+    }
+
+    /**
+     * change state of search bar
+     */
+    private void setSearchBarVisibility(boolean show) {
+        // toggle search bar
+        LinearLayout searchPane = (LinearLayout) findViewById(R.id.search_pane);
+        if(searchPane != null) {
+
+            int visibility = View.GONE;
+            if(show) {
+                visibility = View.VISIBLE;
+            }
+            searchPane.setVisibility(visibility);
+        }
     }
 
     /**

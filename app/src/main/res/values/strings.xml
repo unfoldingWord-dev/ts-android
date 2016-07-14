@@ -806,4 +806,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="download_latest_apk">Do you want to download this update?</string>
     <string name="updating_projects">Updating projects</string>
     <string name="view_online">View Online</string>
+    <string name="search_hint">Enter Search String</string>
+    <string name="search_for">Search For:</string>
+
 </resources>
