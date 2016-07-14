@@ -5,6 +5,7 @@ import android.support.v4.app.Fragment;
 import android.util.Log;
 
 import com.door43.translationstudio.core.Chapter;
+import com.door43.translationstudio.core.CheckingQuestion;
 import com.door43.translationstudio.core.ChunkMarker;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.LanguageDirection;
@@ -18,7 +19,9 @@ import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationArticle;
 import com.door43.translationstudio.core.TranslationNote;
+import com.door43.translationstudio.core.TranslationWord;
 
 import static org.hamcrest.Matchers.is;
 
@@ -144,9 +147,9 @@ public class LibraryStraightThroughTest implements ManagedTask.OnFinishedListene
 
         Log.e(TAG,"getTargetLanguages: "+targetLanguages.length);
 
-//        for(TargetLanguage tl:targetLanguages){
-//            Log.e(TAG,"Target Language id: " + tl.getId() + ", region: " + tl.region + ", name: " + tl.name + ", code: " + tl.code);
-//        }
+        for(TargetLanguage tl:targetLanguages){
+            Log.e(TAG,"Target Language id: " + tl.getId() + ", region: " + tl.region + ", name: " + tl.name + ", code: " + tl.code);
+        }
     }
 
     @Test
@@ -188,7 +191,7 @@ public class LibraryStraightThroughTest implements ManagedTask.OnFinishedListene
 
     @Test
     public void getResource() {
-        SourceTranslation anotherSourceTranslation = mLibrary.getSourceTranslation("obs", "en", "obs");
+        SourceTranslation anotherSourceTranslation = mLibrary.getSourceTranslation("obs", "en", "obs"); //"ulb"
         assertNotNull(mLibrary.getResource(anotherSourceTranslation));
     }
 
@@ -292,12 +295,70 @@ public class LibraryStraightThroughTest implements ManagedTask.OnFinishedListene
     public void getTranslationNote() {
         SourceTranslation sourceTranslation = mLibrary.getSourceTranslation("obs", "en", "obs");
         Log.e(TAG, "sourceTranslation: " + sourceTranslation.getId());
-        TranslationNote[] translationNotes = mLibrary.getTranslationNotes(sourceTranslation, "5", "0");
-//        Log.e(TAG, "TranslationNote[] length: " + translationNotes.length + ", getId at 0: " + translationNotes[0].getId());
+        TranslationNote[] translationNotes = mLibrary.getTranslationNotes(sourceTranslation, "01", "01");
+        Log.e(TAG, "TranslationNote[] length: " + translationNotes.length );
+//        + ", getId at 0: " + translationNotes[0].getId());
         assertNotNull(translationNotes);
         for (TranslationNote s:translationNotes) {
             Log.e(TAG, "TranslationNote: " + s.getId());
         }
+
+//        mLibrary.getTranslationNote(sourceTranslation, chapterId, frameId, noteId);
+    }
+
+    @Test
+    public void getTranslationWords() {
+        SourceTranslation sourceTranslation = mLibrary.getSourceTranslation("obs", "en", "obs");
+        TranslationWord[] tWords = mLibrary.getTranslationWords(sourceTranslation);
+        for(TranslationWord t:tWords) {
+            Log.e(TAG, "translationWords, id:" + t.getId());
+        }
+        assertNotNull(tWords);
+
+        TranslationWord[] translationWords = mLibrary.getTranslationWords(sourceTranslation, "01", "04");
+        for(TranslationWord t:translationWords) {
+            Log.e(TAG, "translationWords2: " + t.getTerm());
+        }
+        assertNotNull(translationWords);
+
+        TranslationWord tWord = mLibrary.getTranslationWord(sourceTranslation, "heaven");
+        Log.e(TAG, "translation word heaven: " + tWord.getDefinition());
+        assertNotNull(tWord);
+    }
+
+    @Test
+    public void getTranslationArticle() {
+        SourceTranslation sourceTranslation = mLibrary.getSourceTranslation("obs", "en", "obs");
+        TranslationArticle translationArticle = mLibrary.getTranslationArticle(sourceTranslation, "01", "01", "01");
+        assertNotNull(translationArticle);
+    }
+
+    @Test
+    public void getCheckingQuestion() {
+        SourceTranslation sourceTranslation = mLibrary.getSourceTranslation("obs", "en", "obs");
+        CheckingQuestion[] checkingQuestions = mLibrary.getCheckingQuestions(sourceTranslation, "12", "12");
+        for(CheckingQuestion check:checkingQuestions) {
+            Log.e(TAG, "checking question: " + check.getId() + ", " + check.getQuestion()+ ", Answer: " + check.getAnswer());
+        }
+        assertNotNull(checkingQuestions);
+
+        assertNotNull(mLibrary.getCheckingQuestion(sourceTranslation, "12", "12", "26a12a8643bd53a7c69ab2c4fc7657a1"));
+    }
+
+    @Test
+    public void getProjectHasSource() {
+        assertTrue(mLibrary.projectHasSource("obs"));
+    }
+
+    @Test
+    public void getSourceLanguageHasSource() {
+        assertTrue(mLibrary.sourceLanguageHasSource("obs", "en"));
+        assertTrue(mLibrary.sourceLanguageHasSource("obs", "fr"));
+    }
+
+    @Test
+    public void getSourceTranslationHasSource() {
+        assertTrue(mLibrary.sourceTranslationHasSource(mLibrary.getSourceTranslation("obs", "en", "obs")));
     }
 
     @Override
