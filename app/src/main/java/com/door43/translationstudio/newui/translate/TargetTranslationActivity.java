@@ -316,7 +316,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                                 startActivity(settingsIntent);
                                 return true;
                             case R.id.action_search:
-                                toggleSearchBar();
+                                setSearchBarVisibility(true);
                                 return true;
                         }
                         return false;
@@ -392,6 +392,17 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                     };
                     edit.addTextChangedListener(mSearchTextWatcher);
                 }
+            }
+
+            ImageButton close = (ImageButton) searchPane.findViewById(R.id.close_search);
+            if(close != null) {
+
+                close.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        setSearchBarVisibility(false);
+                    }
+                });
             }
         }
     }
