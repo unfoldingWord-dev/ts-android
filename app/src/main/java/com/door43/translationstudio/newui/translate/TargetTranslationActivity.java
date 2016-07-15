@@ -8,9 +8,14 @@ import android.content.Intent;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
+import android.text.Editable;
 import android.text.Layout;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -53,6 +58,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     private static final long COMMIT_INTERVAL = 2 * 60 * 1000; // commit changes every 2 minutes
     public static final String STATE_SEARCH_ENABLED = "state_search_enabled";
+    public static final int SEARCH_START_DELAY = 1000;
     private Fragment mFragment;
     private SeekBar mSeekBar;
     private ViewGroup mGraduations;
@@ -65,6 +71,10 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private List<SourceTranslation> draftTranslations;
     private ImageButton mMoreButton;
     private boolean mSearchEnabled = false;
+    private TextWatcher mSearchTextWatcher;
+    private SearchTimerTask mSearchTimerTask;
+    private Timer mSearchTimer;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -351,7 +361,56 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 visibility = View.VISIBLE;
             }
             searchPane.setVisibility(visibility);
+
+            EditText edit = (EditText) searchPane.findViewById(R.id.search_text);
+            if(edit != null) {
+                edit.removeTextChangedListener(mSearchTextWatcher); // remove old listener
+
+                if(show) {
+                    mSearchTextWatcher = new TextWatcher() {
+                        @Override
+                        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                        }
+
+                        @Override
+                        public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                        }
+
+                        @Override
+                        public void afterTextChanged(Editable s) {
+
+                            if(mSearchTimer != null) {
+                                mSearchTimer.cancel();
+                            }
+
+                            mSearchTimer = new Timer();
+                            mSearchTimerTask = new SearchTimerTask(TargetTranslationActivity.this, s);
+                            mSearchTimer.schedule(mSearchTimerTask, SEARCH_START_DELAY);
+                        }
+                    };
+                    edit.addTextChangedListener(mSearchTextWatcher);
+                }
+            }
         }
+    }
+
+    /**
+     * this gets called after one second timer elapses
+     * @param searchString
+     */
+    public void kickOffSearch(final String searchString) {
+        Log.d(TAG,"kickOffSearch: " + searchString);
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                if((mFragment != null) && (mFragment instanceof ReviewModeFragment)) {
+                    ((ReviewModeFragment) mFragment).kickOffSearch(searchString);
+                }
+             }
+        });
     }
 
     /**
@@ -747,6 +806,22 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                     .show();
         } else {
             super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    private class SearchTimerTask extends TimerTask {
+
+        private TargetTranslationActivity activity;
+        private Editable searchString;
+
+        public SearchTimerTask(TargetTranslationActivity activity, Editable searchString) {
+            this.activity = activity;
+            this.searchString = searchString;
+        }
+
+        @Override
+        public void run() {
+             activity.kickOffSearch(searchString.toString());
         }
     }
 }

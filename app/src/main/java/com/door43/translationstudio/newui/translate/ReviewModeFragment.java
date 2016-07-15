@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
+import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.MotionEvent;
 import android.view.View;
@@ -302,6 +303,18 @@ public class ReviewModeFragment extends ViewModeFragment {
             mScrollingResourcesDrawerContent.addView(view);
         }
 
+    }
+
+    /**
+     * this gets called after one second timer elapses
+     * @param searchString
+     */
+    public void kickOffSearch(String searchString) {
+        Log.d(ReviewModeFragment.class.getSimpleName(),"kickOffSearch: " + searchString);
+        ReviewModeAdapter adapter = (ReviewModeAdapter) getAdapter();
+        if(adapter != null) {
+            adapter.getFilter().filter(searchString);
+        }
     }
 
     /**

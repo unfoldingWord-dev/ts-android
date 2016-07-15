@@ -29,6 +29,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.Filter;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -76,8 +77,8 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -106,7 +107,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private SourceTranslation mSourceTranslation;
     private SourceLanguage mSourceLanguage;
     private final TargetLanguage mTargetLanguage;
-    private ListItem[] mListItems;
+    private ListItem[] mUnfilteredItems;
+    private ListItem[] mFilteredItems;
     private int mLayoutBuildNumber = 0;
     private boolean mResourcesOpened = false;
     private ContentValues[] mTabs;
@@ -170,7 +172,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 listItems.add(new ListItem(frameSlug, c.getId()));
             }
         }
-        mListItems = listItems.toArray(new ListItem[listItems.size()]);
+        mUnfilteredItems = listItems.toArray(new ListItem[listItems.size()]);
+        mFilteredItems = mUnfilteredItems;
         mOpenResourceTab = new int[listItems.size()];
 
         loadTabInfo();
@@ -240,7 +243,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 listItems.add(new ListItem(frameSlug, c.getId()));
             }
         }
-        mListItems = listItems.toArray(new ListItem[listItems.size()]);
+        mUnfilteredItems = listItems.toArray(new ListItem[listItems.size()]);
+        mFilteredItems = mUnfilteredItems;
         mOpenResourceTab = new int[listItems.size()];
 
         loadTabInfo();
@@ -273,24 +277,24 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     @Override
     public String getFocusedFrameId(int position) {
-        if(position >= 0 && position < mListItems.length) {
-            return mListItems[position].frameSlug;
+        if(position >= 0 && position < mFilteredItems.length) {
+            return mFilteredItems[position].frameSlug;
         }
         return null;
     }
 
     @Override
     public String getFocusedChapterId(int position) {
-        if(position >= 0 && position < mListItems.length) {
-            return mListItems[position].chapterSlug;
+        if(position >= 0 && position < mFilteredItems.length) {
+            return mFilteredItems[position].chapterSlug;
         }
         return null;
     }
 
     @Override
     public int getItemPosition(String chapterId, String frameId) {
-        for(int i = 0; i < mListItems.length; i ++) {
-            ListItem item = mListItems[i];
+        for(int i = 0; i < mFilteredItems.length; i ++) {
+            ListItem item = mFilteredItems[i];
             if(item.isFrame() && item.chapterSlug.equals(chapterId) && item.frameSlug.equals(frameId)) {
                 return i;
             }
@@ -330,7 +334,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         holder.currentPosition = position;
-        final ListItem item = mListItems[position];
+        final ListItem item = mFilteredItems[position];
 
         // open/close resources
         if(mResourcesOpened) {
@@ -1701,7 +1705,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     @Override
     public int getItemCount() {
-        return mListItems.length;
+        return mFilteredItems.length;
     }
 
     /**
@@ -1887,4 +1891,61 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         }
     }
+
+    private SearchFilter mSearchFilter;
+
+    /**
+     * Returns the target language filter
+     * @return
+     */
+    public Filter getFilter() {
+        if(mSearchFilter == null) {
+            mSearchFilter = new SearchFilter();
+        }
+        return mSearchFilter;
+    }
+
+    private class SearchFilter extends Filter {
+
+        @Override
+        protected FilterResults performFiltering(CharSequence charSequence) {
+            FilterResults results = new FilterResults();
+            if(charSequence == null || charSequence.length() == 0) {
+                // no filter
+                results.values = Arrays.asList(mUnfilteredItems);
+                results.count = mUnfilteredItems.length;
+            } else {
+                // perform filter
+                String matchString = charSequence.toString().toLowerCase();
+                List<ListItem> filteredCategories = new ArrayList<>();
+                for(ListItem item: mUnfilteredItems) {
+
+                    if(item.bodySource == null) { // if source hasn't been loaded
+                        item.loadTranslations(mSourceTranslation, mTargetTranslation, mChapters.get(item.chapterSlug), loadFrame(item.chapterSlug, item.frameSlug));
+                    }
+
+                    if(item.bodySource == null) {
+                        continue;
+                    }
+
+                    // match the source
+                    boolean match = item.bodySource.toLowerCase().contains(matchString);
+                    if(match) {
+                        filteredCategories.add(item);
+                    }
+                }
+                results.values = filteredCategories;
+                results.count = filteredCategories.size();
+            }
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+            List<ListItem> filteredLanguages = (List<ListItem>)filterResults.values;
+            mFilteredItems = filteredLanguages.toArray(new ListItem[filteredLanguages.size()]);
+            notifyDataSetChanged();
+        }
+    }
+
 }
