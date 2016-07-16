@@ -258,6 +258,10 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 MenuItem draftsMenuItem = moreMenu.getMenu().findItem(R.id.action_drafts_available);
                 draftsMenuItem.setVisible(draftIsAvailable() && !targetTranslationHasDraft());
 
+                MenuItem searchMenuItem = moreMenu.getMenu().findItem(R.id.action_search);
+                boolean searchSupported = isSearchSupported();
+                searchMenuItem.setVisible(searchSupported);
+
                 moreMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
@@ -332,6 +336,17 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 moreMenu.show();
             }
         });
+    }
+
+
+    /**
+     * method to see if searching is supported
+     */
+    public boolean isSearchSupported() {
+        if(mFragment != null) {
+            return ((ViewModeFragment) mFragment).isSearchSupported();
+        }
+        return false;
     }
 
     /**
@@ -467,9 +482,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         hand.post(new Runnable() {
             @Override
             public void run() {
-                if((mFragment != null) && (mFragment instanceof ReviewModeFragment)) {
+                if((mFragment != null) && (mFragment instanceof ViewModeFragment)) {
                     boolean searchTarget = false; // TODO: 7/16/16 get search type
-                    ((ReviewModeFragment) mFragment).kickOffSearchFilter(searchString, searchTarget);
+                    ((ViewModeFragment) mFragment).kickOffSearchFilter(searchString, searchTarget);
                 }
              }
         });

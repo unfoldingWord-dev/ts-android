@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.Filter;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -53,6 +54,7 @@ import com.door43.widget.ViewUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,11 +72,13 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     private SourceTranslation mSourceTranslation;
     private final Library mLibrary;
     private final Translator mTranslator;
-    private ListItem[] mListItems;
+    private ListItem[] mUnfilteredItems;
+    private ListItem[] mFilteredItems;
     private Map<String, Chapter> mChapters = new HashMap<>();
     private int mLayoutBuildNumber = 0;
     private ContentValues[] mTabs;
     private TranslationFormat mTargetFormat;
+    private SearchFilter mSearchFilter;
 
     public ChunkModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String startingChapterSlug, String startingFrameSlug, boolean openSelectedTarget) {
         mLibrary = App.getLibrary();
@@ -121,8 +125,9 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                 listItems.add(new ListItem(frameSlug, c.getId()));
             }
         }
-        mListItems = listItems.toArray(new ListItem[listItems.size()]);
-        mListItems[getListStartPosition()].isTargetCardOpen = openSelectedTarget;
+        mUnfilteredItems = listItems.toArray(new ListItem[listItems.size()]);
+        mUnfilteredItems[getListStartPosition()].isTargetCardOpen = openSelectedTarget;
+        mFilteredItems = mUnfilteredItems;
 
         loadTabInfo();
     }
@@ -187,7 +192,8 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                 listItems.add(new ListItem(frameSlug, c.getId()));
             }
         }
-        mListItems = listItems.toArray(new ListItem[listItems.size()]);
+        mUnfilteredItems = listItems.toArray(new ListItem[listItems.size()]);
+        mFilteredItems = mUnfilteredItems;
 
         loadTabInfo();
 
@@ -201,24 +207,24 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
     @Override
     public String getFocusedFrameId(int position) {
-        if(position >= 0 && position < mListItems.length) {
-            return mListItems[position].frameSlug;
+        if(position >= 0 && position < mFilteredItems.length) {
+            return mFilteredItems[position].frameSlug;
         }
         return null;
     }
 
     @Override
     public String getFocusedChapterId(int position) {
-        if(position >= 0 && position < mListItems.length) {
-            return mListItems[position].chapterSlug;
+        if(position >= 0 && position < mFilteredItems.length) {
+            return mFilteredItems[position].chapterSlug;
         }
         return null;
     }
 
     @Override
     public int getItemPosition(String chapterSlug, String frameSlug) {
-        for(int i = 0; i < mListItems.length; i ++) {
-            ListItem item = mListItems[i];
+        for(int i = 0; i < mFilteredItems.length; i ++) {
+            ListItem item = mFilteredItems[i];
             if(item.isFrame() && item.chapterSlug.equals(chapterSlug) && item.frameSlug.equals(frameSlug)) {
                 return i;
             }
@@ -242,7 +248,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         int cardMargin = mContext.getResources().getDimensionPixelSize(R.dimen.card_margin);
         int stackedCardMargin = mContext.getResources().getDimensionPixelSize(R.dimen.stacked_card_margin);
-        ListItem item = mListItems[position];
+        ListItem item = mFilteredItems[position];
         if(item.isTargetCardOpen) {
             // target on top
             // elevation takes precedence for API 21+
@@ -288,7 +294,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             public boolean onTouch(View v, MotionEvent event) { // for touches on card other than edit area
                 if(MotionEvent.ACTION_UP == event.getAction()) {
 
-                    return checkForPromptToEditDoneTargetCard( holder, mListItems[position]);
+                    return checkForPromptToEditDoneTargetCard( holder, mFilteredItems[position]);
                 }
                 return false;
             }
@@ -299,7 +305,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             public boolean onTouch(View v, MotionEvent event) {
                 if(MotionEvent.ACTION_UP == event.getAction()) {
 
-                    return checkForPromptToEditDoneTargetCard( holder, mListItems[position]);
+                    return checkForPromptToEditDoneTargetCard( holder, mFilteredItems[position]);
                 }
                 return false;
             }
@@ -314,7 +320,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                 // but only if the text is actually editable (i.e., not yet done).
 
                 if(!targetCardOpened && holder.mTargetBody.isEnabled()) {
-                    editTarget( holder.mTargetBody, mListItems[position]);
+                    editTarget( holder.mTargetBody, mFilteredItems[position]);
                 }
 
                 // if marked as done (disabled for edit), enable to allow capture of click events, but do not make it focusable so they can't edit
@@ -549,7 +555,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
          * @param chapterId
          */
     private void renderChapterTitle(final ViewHolder holder, final int position, String chapterId) {
-        final ListItem item = mListItems[position];
+        final ListItem item = mFilteredItems[position];
         Chapter chapter = mChapters.get(chapterId);
         if(chapter != null) {
             // source title
@@ -612,7 +618,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
      * @param chapterId
      */
     private void renderChapterReference(final ViewHolder holder, final int position, String chapterId) {
-        final ListItem item = mListItems[position];
+        final ListItem item = mFilteredItems[position];
         Chapter chapter = mChapters.get(chapterId);
         if(chapter != null) {
             // source title
@@ -674,7 +680,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
      * @param position
      */
     private void renderFrame(final ViewHolder holder, final int position) {
-        final ListItem item = mListItems[position];
+        final ListItem item = mFilteredItems[position];
         Frame frame = mLibrary.getFrame(mSourceTranslation, item.chapterSlug, item.frameSlug);
 
         // render the source frame body
@@ -796,7 +802,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
     @Override
     public int getItemCount() {
-        return mListItems.length;
+        return mFilteredItems.length;
     }
 
     /**
@@ -818,7 +824,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
      * @return true if action was taken, else false
      */
     public boolean toggleTargetTranslationCard(final ViewHolder holder, final int position, final boolean swipeLeft) {
-        final ListItem item = mListItems[position];
+        final ListItem item = mFilteredItems[position];
         if (item.isTargetCardOpen) {
             return closeTargetTranslationCard( holder, position, !swipeLeft);
         }
@@ -836,7 +842,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
      * @return true if action was taken, else false
      */
     public boolean closeTargetTranslationCard(final ViewHolder holder, final int position, final boolean leftToRight) {
-        final ListItem item = mListItems[position];
+        final ListItem item = mFilteredItems[position];
         if(item.isTargetCardOpen) {
 
             clearSelectionFromTarget(holder);
@@ -889,7 +895,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
      * @return true if action was taken, else false
      */
     public boolean openTargetTranslationCard(final ViewHolder holder, final int position, final boolean leftToRight) {
-        final ListItem item = mListItems[position];
+        final ListItem item = mFilteredItems[position];
         if(!item.isTargetCardOpen) {
             ViewUtil.animateSwapCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, leftToRight, new Animation.AnimationListener() {
                 @Override
@@ -992,6 +998,120 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
          */
         public boolean isChapter() {
             return this.frameSlug == null && this.chapterSlug != null;
+        }
+
+        /**
+         * Loads the correct translation information into the item
+         * @param targetTranslation
+         * @param chapter
+         * @param frame
+         */
+        public void loadTranslations(SourceTranslation sourceTranslation, TargetTranslation targetTranslation, Chapter chapter, Frame frame, ChunkModeAdapter adapter) {
+            if(isChapterReference || isChapterTitle) {
+                ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(chapter);
+                if (isChapterTitle) {
+                    renderedTargetBody = chapterTranslation.title;
+                    renderedSourceBody = chapter.title;
+                } else {
+                    renderedTargetBody = chapterTranslation.reference;
+                    renderedSourceBody = chapter.reference;
+                }
+            } else if(isProjectTitle) {
+                ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
+                renderedTargetBody = projectTranslation.getTitle();
+                renderedSourceBody = sourceTranslation.getProjectTitle();
+            } else {
+                FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(frame);
+                TranslationFormat targetFormat =  targetTranslation.getFormat();
+                renderedSourceBody = adapter.renderText(frame.body, frame.getFormat());
+                renderedTargetBody = adapter.renderText(frameTranslation.body, targetFormat);
+            }
+        }
+    }
+
+    /**
+     * Loads a frame from the index and caches it
+     * @param chapterSlug
+     * @param frameSlug
+     * @return
+     */
+    private Frame loadFrame(String chapterSlug, String frameSlug) {
+        String complexSlug = chapterSlug + "-" + frameSlug;
+        Frame frame = mLibrary.getFrame(mSourceTranslation, chapterSlug, frameSlug);
+        return frame;
+    }
+
+    /**
+     * Returns the target language filter
+     * @return
+     */
+    public Filter getFilter() {
+        if(mSearchFilter == null) {
+            mSearchFilter = new SearchFilter();
+        }
+        return mSearchFilter;
+    }
+
+    /**
+     * class for searching text
+     */
+    private class SearchFilter extends TranslationSearchFilter {
+
+        private boolean searchTarget = false;
+
+        public SearchFilter setTargetSearch(boolean searchTarget) { // chainable
+            this.searchTarget = searchTarget;
+            return this;
+        }
+
+        @Override
+        protected FilterResults performFiltering(CharSequence charSequence) {
+            FilterResults results = new FilterResults();
+            if(charSequence == null || charSequence.length() == 0) {
+                // no filter
+                results.values = Arrays.asList(mUnfilteredItems);
+                results.count = mUnfilteredItems.length;
+            } else {
+                // perform filter
+                String matchString = charSequence.toString().toLowerCase();
+                List<ListItem> filteredCategories = new ArrayList<>();
+                for(ListItem item: mUnfilteredItems) {
+                    boolean match = false;
+
+                    if(!searchTarget) { // match the source
+                        if (item.renderedSourceBody == null) { // if source hasn't been loaded
+                            item.loadTranslations(mSourceTranslation, mTargetTranslation, mChapters.get(item.chapterSlug), loadFrame(item.chapterSlug, item.frameSlug), ChunkModeAdapter.this);
+                        }
+                        if (item.renderedSourceBody == null) { // if still no text, then skip
+                            continue;
+                        }
+
+                        match = item.renderedSourceBody.toString().toLowerCase().contains(matchString);
+                    } else { // match target
+                        if (item.renderedTargetBody == null) { // if source hasn't been loaded
+                            item.loadTranslations(mSourceTranslation, mTargetTranslation, mChapters.get(item.chapterSlug), loadFrame(item.chapterSlug, item.frameSlug), ChunkModeAdapter.this);
+                        }
+                        if (item.renderedTargetBody == null) { // if still no text, then skip
+                            continue;
+                        }
+
+                        match = item.renderedTargetBody.toString().toLowerCase().contains(matchString);                    }
+
+                    if(match) {
+                        filteredCategories.add(item);
+                    }
+                }
+                results.values = filteredCategories;
+                results.count = filteredCategories.size();
+            }
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+            List<ListItem> filteredLanguages = (List<ListItem>)filterResults.values;
+            mFilteredItems = filteredLanguages.toArray(new ListItem[filteredLanguages.size()]);
+            notifyDataSetChanged();
         }
     }
 }

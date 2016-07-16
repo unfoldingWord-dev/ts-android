@@ -259,9 +259,17 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     /**
      * start search (filter)
      * @param searchString
+     * @param searchTarget - if true then search target text, else search source text
      */
     public void kickOffSearchFilter(String searchString, boolean searchTarget) {
         // default is do nothing
+    }
+
+    /**
+     * method to see if searching is supported
+     */
+    public boolean isSearchSupported() {
+        return false; // default is not supported
     }
 
     /**

@@ -306,8 +306,9 @@ public class ReviewModeFragment extends ViewModeFragment {
     }
 
     /**
-     * this gets called after one second timer elapses
+     * start search (filter)
      * @param searchString
+     * @param searchTarget - if true then search target text, else search source text
      */
     public void kickOffSearchFilter(String searchString, boolean searchTarget) {
         Log.d(ReviewModeFragment.class.getSimpleName(),"kickOffSearchFilter: " + searchString);
@@ -315,6 +316,13 @@ public class ReviewModeFragment extends ViewModeFragment {
         if(adapter != null) {
             ((TranslationSearchFilter) adapter.getFilter()).setTargetSearch(searchTarget).filter(searchString);
         }
+    }
+
+    /**
+     * method to see if searching is supported
+     */
+    public boolean isSearchSupported() {
+        return true;
     }
 
     /**

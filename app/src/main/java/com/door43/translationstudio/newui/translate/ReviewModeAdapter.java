@@ -1905,6 +1905,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         return mSearchFilter;
     }
 
+    /**
+     * class for searching text
+     */
     private class SearchFilter extends TranslationSearchFilter {
 
         private boolean searchTarget = false;
@@ -1964,5 +1967,4 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             notifyDataSetChanged();
         }
     }
-
 }
