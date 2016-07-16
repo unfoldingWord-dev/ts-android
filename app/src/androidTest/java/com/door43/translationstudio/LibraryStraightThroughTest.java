@@ -1,7 +1,6 @@
 package com.door43.translationstudio;
 
 
-import android.support.v4.app.Fragment;
 import android.util.Log;
 
 import com.door43.translationstudio.core.Chapter;
@@ -10,7 +9,6 @@ import com.door43.translationstudio.core.ChunkMarker;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.LanguageDirection;
 import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.LibraryData;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.ProjectCategory;
 import com.door43.translationstudio.core.Questionnaire;
@@ -21,7 +19,9 @@ import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationArticle;
 import com.door43.translationstudio.core.TranslationNote;
+import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.TranslationWord;
+import com.door43.translationstudio.core.Translator;
 
 import static org.hamcrest.Matchers.is;
 
@@ -38,6 +38,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  * Created by Andrew on 6/29/2016.
@@ -45,6 +46,7 @@ import static org.junit.Assert.assertNotNull;
 public class LibraryStraightThroughTest implements ManagedTask.OnFinishedListener {
     private Library mLibrary;
     private String TAG = "LibraryStraightThroughTest";
+    private Translator mTranslator;
 
     @Before
     public void setup() {
@@ -107,13 +109,11 @@ public class LibraryStraightThroughTest implements ManagedTask.OnFinishedListene
         assertTrue(subCategories.length > 0);
     }
 
-
     @Test
     public void getTargetLanguage() {
         TargetLanguage targetLanguage = mLibrary.getTargetLanguage("en");
         assertEquals("en", targetLanguage.getId());
     }
-
 
     @Test
     public void getQuestionaires() {
@@ -129,15 +129,32 @@ public class LibraryStraightThroughTest implements ManagedTask.OnFinishedListene
         assertNotNull(mLibrary.getQuestionnaire(0));
     }
 
-    // not sure we need this
     @Test
     public void setExport() {
-        ManagedTask task = new ManagedTask() {
-            @Override
-            public void start() {
-                this.setResult(App.getLibrary().export(new File(App.context().getCacheDir(), "sharing/")));
+        File fileLocation = new File(App.context().getCacheDir(), "sharing/");
+        if(fileLocation.listFiles() != null){
+            deleteDirectoryFiles(fileLocation);
+        }
+        assertNull(fileLocation.listFiles());
+
+        assertNotNull(mLibrary.export(fileLocation));
+
+        deleteDirectoryFiles(fileLocation);  //cleanup
+
+        assertNull(fileLocation.listFiles());   //verify that created file is deleted
+    }
+
+    public boolean deleteDirectoryFiles(File dir) {
+        if (dir.isDirectory()) {
+            File[] children = dir.listFiles();
+            for (int i = 0; i < children.length; i++) {
+                boolean success = deleteDirectoryFiles(children[i]);
+                if (!success) {
+                    return false; }
             }
-        };
+        } // either file or an empty directory
+        Log.e(TAG, "removing file or directory : " + dir.getName());
+        return dir.delete();
     }
 
     @Test
@@ -204,12 +221,24 @@ public class LibraryStraightThroughTest implements ManagedTask.OnFinishedListene
 
     @Test
     public void getTranslationProgress() {
-//        do we need this ?
+//        TargetTranslation[] targetTranslations = App.getTranslator().getTargetTranslations();
+//        for(TargetTranslation t:targetTranslations) {
+//            Log.e(TAG, "progress: " + (mLibrary.getTranslationProgress(t) * 100 + "%"));
+//            assertNotNull(mLibrary.getTranslationProgress(t));
+//        }
+
+        TargetLanguage[] targetLanguages = mLibrary.getTargetLanguages();
+        for(TargetLanguage t:targetLanguages) {
+            Log.e(TAG, "targetLanguages: " + t.getId());
+        }
+        TargetLanguage targetLanguage = targetLanguages[0];
+        TargetTranslation targetTranslation = mTranslator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), "obs", TranslationType.TEXT, Resource.REGULAR_SLUG));
+        Log.e(TAG, "progress: " + (mLibrary.getTranslationProgress(targetTranslation) * 100 + "%"));
+        Log.e(TAG, "targetTranslation: " + targetTranslation.getProjectId());
     }
 
     @Test
     public void getChapters() {
-//        SourceTranslation sourceTranslations = mLibrary.getSourceTranslation("");
         SourceTranslation sourceTranslations = mLibrary.getSourceTranslation("obs", "en", "obs");
         Chapter[] c = mLibrary.getChapters(sourceTranslations);
         for (Chapter chap : c) {
@@ -359,6 +388,20 @@ public class LibraryStraightThroughTest implements ManagedTask.OnFinishedListene
     @Test
     public void getSourceTranslationHasSource() {
         assertTrue(mLibrary.sourceTranslationHasSource(mLibrary.getSourceTranslation("obs", "en", "obs")));
+    }
+
+    //deleteProject?
+
+    //getTargetLanguagesLength isn't used
+
+    @Test
+    public void getChapterBodyFormat() {
+        SourceTranslation sourceTranslation = mLibrary.getSourceTranslation("obs", "en", "obs");
+        Log.e(TAG, "chapter body format: " + mLibrary.getChapterBodyFormat(sourceTranslation, "01")); //insert anything into second parameter, it always returns 'default' ??
+        assertNotEquals("default", mLibrary.getChapterBodyFormat(sourceTranslation, "01"));
+
+        Log.e(TAG, "chapter body: " + mLibrary.getChapterBody(sourceTranslation, "01"));
+        assertNotEquals("", mLibrary.getChapterBody(sourceTranslation, "01"));
     }
 
     @Override
