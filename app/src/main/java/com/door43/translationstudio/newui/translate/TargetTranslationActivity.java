@@ -59,6 +59,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private static final long COMMIT_INTERVAL = 2 * 60 * 1000; // commit changes every 2 minutes
     public static final String STATE_SEARCH_ENABLED = "state_search_enabled";
     public static final int SEARCH_START_DELAY = 1000;
+    public static final String STATE_SEARCH_TEXT = "state_search_text";
     private Fragment mFragment;
     private SeekBar mSeekBar;
     private ViewGroup mGraduations;
@@ -74,6 +75,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private TextWatcher mSearchTextWatcher;
     private SearchTimerTask mSearchTimerTask;
     private Timer mSearchTimer;
+    private String mSearchString;
 
 
     @Override
@@ -226,6 +228,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
         if(savedInstanceState != null) {
             mSearchEnabled = savedInstanceState.getBoolean(STATE_SEARCH_ENABLED, false);
+            mSearchString = savedInstanceState.getString(STATE_SEARCH_TEXT, null);
         }
 
         setSearchBarVisibility(mSearchEnabled);
@@ -235,6 +238,10 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     public void onSaveInstanceState(Bundle out) {
         out.putBoolean(STATE_SEARCH_ENABLED, mSearchEnabled);
+        String searchText = getSearchText();
+        if( mSearchEnabled ) {
+            out.putString(STATE_SEARCH_TEXT, searchText);
+        }
 
         super.onSaveInstanceState(out);
     }
@@ -350,6 +357,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     /**
      * change state of search bar
+     * @param show - if true set visible
      */
     private void setSearchBarVisibility(boolean show) {
         // toggle search bar
@@ -361,10 +369,16 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 visibility = View.VISIBLE;
             }
             searchPane.setVisibility(visibility);
+            mSearchEnabled = show;
 
             EditText edit = (EditText) searchPane.findViewById(R.id.search_text);
             if(edit != null) {
                 edit.removeTextChangedListener(mSearchTextWatcher); // remove old listener
+
+                if(mSearchString != null) {
+                    edit.setText(mSearchString);
+                    mSearchString = null;
+                }
 
                 if(show) {
                     mSearchTextWatcher = new TextWatcher() {
@@ -408,17 +422,54 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     /**
+     * get search text in search bar
+     */
+    private String getSearchText() {
+        String text = null;
+
+        LinearLayout searchPane = (LinearLayout) findViewById(R.id.search_pane);
+        if(searchPane != null) {
+
+            EditText edit = (EditText) searchPane.findViewById(R.id.search_text);
+            if(edit != null) {
+                text = edit.getText().toString();
+            }
+        }
+        return text;
+    }
+
+    /**
+     * set search text in search bar
+     */
+    private void setSearchText(String text) {
+
+        if(text == null) {
+            text = "";
+        }
+
+        LinearLayout searchPane = (LinearLayout) findViewById(R.id.search_pane);
+        if(searchPane != null) {
+
+            EditText edit = (EditText) searchPane.findViewById(R.id.search_text);
+            if(edit != null) {
+                edit.setText(text);
+            }
+        }
+    }
+
+    /**
      * this gets called after one second timer elapses
      * @param searchString
      */
-    public void kickOffSearch(final String searchString) {
-        Log.d(TAG,"kickOffSearch: " + searchString);
+    public void kickOffSearchFilter(final String searchString) {
+        Log.d(TAG,"kickOffSearchFilter: " + searchString);
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
             public void run() {
                 if((mFragment != null) && (mFragment instanceof ReviewModeFragment)) {
-                    ((ReviewModeFragment) mFragment).kickOffSearch(searchString);
+                    boolean searchTarget = false; // TODO: 7/16/16 get search type
+                    ((ReviewModeFragment) mFragment).kickOffSearchFilter(searchString, searchTarget);
                 }
              }
         });
@@ -832,7 +883,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
         @Override
         public void run() {
-             activity.kickOffSearch(searchString.toString());
+             activity.kickOffSearchFilter(searchString.toString());
         }
     }
 }

@@ -309,11 +309,11 @@ public class ReviewModeFragment extends ViewModeFragment {
      * this gets called after one second timer elapses
      * @param searchString
      */
-    public void kickOffSearch(String searchString) {
-        Log.d(ReviewModeFragment.class.getSimpleName(),"kickOffSearch: " + searchString);
+    public void kickOffSearchFilter(String searchString, boolean searchTarget) {
+        Log.d(ReviewModeFragment.class.getSimpleName(),"kickOffSearchFilter: " + searchString);
         ReviewModeAdapter adapter = (ReviewModeAdapter) getAdapter();
         if(adapter != null) {
-            adapter.getFilter().filter(searchString);
+            ((TranslationSearchFilter) adapter.getFilter()).setTargetSearch(searchTarget).filter(searchString);
         }
     }
 

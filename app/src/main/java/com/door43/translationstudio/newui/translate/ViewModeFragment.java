@@ -257,6 +257,14 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     /**
+     * start search (filter)
+     * @param searchString
+     */
+    public void kickOffSearchFilter(String searchString, boolean searchTarget) {
+        // default is do nothing
+    }
+
+    /**
      * Forces the software keyboard to close
      */
     public void closeKeyboard() {
