@@ -807,6 +807,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="updating_projects">Updating projects</string>
     <string name="view_online">View Online</string>
     <string name="search_hint">Enter Search String</string>
-    <string name="search_for">Search For:</string>
+    <string name="search_source">Search Source:</string>
+    <string name="search_translation">Search Translation:</string>
 
 </resources>
