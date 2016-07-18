@@ -1,6 +1,5 @@
 package com.door43.translationstudio.newui.library;
 
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
@@ -11,6 +10,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -22,14 +22,13 @@ import android.widget.ListView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BaseActivity;
+import com.door43.translationstudio.tasks.CheckForLibraryUpdatesTask;
 import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
 import com.door43.translationstudio.tasks.DownloadUpdatesTask;
-import com.door43.translationstudio.tasks.GetLibraryUpdatesTask;
-import com.door43.translationstudio.AppContext;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import com.door43.translationstudio.App;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.widget.ViewUtil;
 
 import java.text.NumberFormat;
@@ -39,7 +38,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
 
     public static final String ARG_SHOW_UPDATES = "only_show_updates";
     public static final String ARG_SHOW_NEW = "only_show_new";
-    private CustomAlertDialog mConfirmDialog;
+    private AlertDialog.Builder mConfirmDialog;
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -74,20 +73,20 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
 
         if(savedInstanceState == null) {
             // check for available updates
-            GetLibraryUpdatesTask getUpdatesTask = new GetLibraryUpdatesTask();
+            CheckForLibraryUpdatesTask getUpdatesTask = new CheckForLibraryUpdatesTask();
             getUpdatesTask.addOnFinishedListener(this);
             getUpdatesTask.addOnProgressListener(this);
-            TaskManager.addTask(getUpdatesTask, GetLibraryUpdatesTask.TASK_ID);
+            TaskManager.addTask(getUpdatesTask, CheckForLibraryUpdatesTask.TASK_ID);
         } else {
             // populated cached data
-            Library serverLibrary = AppContext.getLibrary();
-            Project[] projects = serverLibrary.getProjects(Locale.getDefault().getLanguage());
+            Library serverLibrary = App.getLibrary();
+            Project[] projects = serverLibrary.getProjects(App.getDeviceLanguageCode());
             mListFragment.setData(serverLibrary.getAvailableUpdates(), projects);
 
             // connect to tasks
             DownloadAllProjectsTask downloadAllTask = (DownloadAllProjectsTask)TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
             DownloadUpdatesTask downloadUpdatesTask = (DownloadUpdatesTask)TaskManager.getTask(DownloadUpdatesTask.TASK_ID);
-            GetLibraryUpdatesTask getUpdatesTask = (GetLibraryUpdatesTask)TaskManager.getTask(GetLibraryUpdatesTask.TASK_ID);
+            CheckForLibraryUpdatesTask getUpdatesTask = (CheckForLibraryUpdatesTask)TaskManager.getTask(CheckForLibraryUpdatesTask.TASK_ID);
             if(downloadAllTask != null) {
                 downloadAllTask.addOnProgressListener(this);
                 downloadAllTask.addOnFinishedListener(this);
@@ -167,7 +166,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
             downloadUpdatesTask.addOnProgressListener(this);
             downloadUpdatesTask.addOnProgressListener(this);
         } else {
-            onFinished(null);
+            onTaskFinished(null);
         }
     }
 
@@ -191,7 +190,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
         });
         searchViewAction.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         // display download updates
-        if(AppContext.getLibrary().getAvailableUpdates().numSourceTranslationUpdates() > 0) {
+        if(App.getLibrary().getAvailableUpdates().numSourceTranslationUpdates() > 0) {
             menu.findItem(R.id.action_download_updates).setVisible(true);
         } else {
             menu.findItem(R.id.action_download_updates).setVisible(false);
@@ -203,13 +202,13 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_download_all:
-                mConfirmDialog =  CustomAlertDialog.Create(this);
+                mConfirmDialog =  new AlertDialog.Builder(this, R.style.AppTheme_Dialog);
                 mConfirmDialog.setTitle(R.string.action_download_all)
                         .setMessage(R.string.download_confirmation)
                         .setIcon(R.drawable.ic_cloud_download_black_24dp)
-                        .setPositiveButton(R.string.yes, new View.OnClickListener() {
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(View v) {
+                            public void onClick(DialogInterface dialog, int which) {
                                 DownloadAllProjectsTask task = (DownloadAllProjectsTask)TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
                                 if(task == null) {
                                     // start new task
@@ -223,20 +222,20 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                             }
                         })
                         .setNegativeButton(R.string.no, null)
-                    .show("DlAllConfirm");
+                    .show();
                 return true;
             case R.id.action_download_updates:
-                mConfirmDialog = CustomAlertDialog.Create(this);
+                mConfirmDialog = new AlertDialog.Builder(this, R.style.AppTheme_Dialog);
                 mConfirmDialog.setTitle(R.string.action_download_updates)
                         .setMessage(R.string.download_confirmation)
                         .setIcon(R.drawable.ic_cloud_download_black_24dp)
-                        .setPositiveButton(R.string.yes, new View.OnClickListener() {
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(View v) {
+                            public void onClick(DialogInterface dialog, int which) {
                                 DownloadUpdatesTask task = (DownloadUpdatesTask)TaskManager.getTask(DownloadUpdatesTask.TASK_ID);
                                 if(task == null) {
                                     // start new task
-                                    task = new DownloadUpdatesTask(AppContext.getLibrary().getAvailableUpdates());
+                                    task = new DownloadUpdatesTask(App.getLibrary().getAvailableUpdates());
                                     task.addOnProgressListener(ServerLibraryActivity.this);
                                     task.addOnFinishedListener(ServerLibraryActivity.this);
                                     TaskManager.addTask(task, DownloadUpdatesTask.TASK_ID);
@@ -246,7 +245,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                             }
                         })
                         .setNegativeButton(R.string.no, null)
-                        .show("DlUpdateConfirm");
+                        .show();
                 return true;
             case R.id.action_search:
                 return true;
@@ -269,7 +268,8 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
 
     public void onDestroy() {
         if(mConfirmDialog != null) {
-            mConfirmDialog.dismiss();
+            AlertDialog show =mConfirmDialog.show();
+            show.dismiss();
         }
         if(mProgressDialog != null) {
             mProgressDialog.dismiss();
@@ -284,7 +284,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
             downloadUpdatesTask.removeOnFinishedListener(this);
             downloadUpdatesTask.removeOnProgressListener(this);
         }
-        GetLibraryUpdatesTask getLibraryUpdatesTask = (GetLibraryUpdatesTask)TaskManager.getTask(GetLibraryUpdatesTask.TASK_ID);
+        CheckForLibraryUpdatesTask getLibraryUpdatesTask = (CheckForLibraryUpdatesTask)TaskManager.getTask(CheckForLibraryUpdatesTask.TASK_ID);
         if(getLibraryUpdatesTask != null) {
             getLibraryUpdatesTask.removeOnFinishedListener(this);
             getLibraryUpdatesTask.removeOnProgressListener(this);
@@ -317,7 +317,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
     }
 
     @Override
-    public void onFinished(final ManagedTask task) {
+    public void onTaskFinished(final ManagedTask task) {
         TaskManager.clearTask(task);
 
         Handler hand = new Handler(Looper.getMainLooper());
@@ -325,8 +325,8 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
             @Override
             public void run() {
                 invalidateOptionsMenu();
-                Library serverLibrary = AppContext.getLibrary();
-                Project[] projects = serverLibrary.getProjects(Locale.getDefault().getLanguage());
+                Library serverLibrary = App.getLibrary();
+                Project[] projects = serverLibrary.getProjects(App.getDeviceLanguageCode());
                 mListFragment.setData(serverLibrary.getAvailableUpdates(), projects);
 
                 if(mProgressDialog != null && mProgressDialog.isShowing()) {
@@ -336,13 +336,15 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
 
                 if(task instanceof DownloadAllProjectsTask || task instanceof DownloadUpdatesTask) {
                     if (!task.isCanceled()) {
-                        CustomAlertDialog.Create(ServerLibraryActivity.this)
+                        new AlertDialog.Builder(ServerLibraryActivity.this,R.style.AppTheme_Dialog)
                                 .setTitle(R.string.success)
                                 .setIcon(R.drawable.ic_done_black_24dp)
                                 .setMessage(R.string.download_complete)
-                                .setCancelableChainable(false)
+                                .setCancelable(false)
                                 .setPositiveButton(R.string.label_ok, null)
-                                .show("DlComplete");
+                                .show();
+//                                .show("DlComplete");
+
                     }
                 }
             }
@@ -350,7 +352,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
     }
 
     @Override
-    public void onProgress(final ManagedTask task, final double progress, final String message, final boolean secondary) {
+    public void onTaskProgress(final ManagedTask task, final double progress, final String message, final boolean secondary) {
         if(!task.isFinished()) {
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {
@@ -371,14 +373,14 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                         mProgressDialog.setCanceledOnTouchOutside(false);
                         mProgressDialog.setOnCancelListener(ServerLibraryActivity.this);
                         mProgressDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
-                        if(task instanceof GetLibraryUpdatesTask) {
+                        if(task instanceof CheckForLibraryUpdatesTask) {
                             mProgressDialog.setTitle(getResources().getString(R.string.checking_for_updates));
                         } else if(task instanceof DownloadAllProjectsTask) {
                             mProgressDialog.setTitle(getResources().getString(R.string.downloading));
                         } else if(task instanceof DownloadUpdatesTask) {
                             mProgressDialog.setTitle(getResources().getString(R.string.downloading));
                         }
-                        mProgressDialog.setMessage("");
+                        mProgressDialog.setMessage(message);
                     }
                     mProgressDialog.setMax(task.maxProgress());
                     if (!mProgressDialog.isShowing()) {
@@ -394,7 +396,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                         if(secondary) {
                             mProgressDialog.setSecondaryProgress((int)progress);
                         } else {
-                            mProgressDialog.setProgress((int) progress);
+                            mProgressDialog.setProgress((int) (progress * mProgressDialog.getMax()));
                         }
                         mProgressDialog.setProgressNumberFormat("%1d/%2d");
                         mProgressDialog.setProgressPercentFormat(NumberFormat.getPercentInstance());
@@ -402,7 +404,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                     if ((task instanceof DownloadAllProjectsTask || task instanceof DownloadUpdatesTask) && !message.isEmpty()) {
                         mProgressDialog.setMessage(String.format(getResources().getString(R.string.downloading_project), message));
                     } else {
-                        mProgressDialog.setMessage("");
+                        mProgressDialog.setMessage(message);
                     }
                 }
             });
@@ -421,7 +423,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
         if(downloadUpdatesTask != null) {
             TaskManager.cancelTask(downloadUpdatesTask);
         }
-        GetLibraryUpdatesTask getLibraryUpdatesTask = (GetLibraryUpdatesTask) TaskManager.getTask(GetLibraryUpdatesTask.TASK_ID);
+        CheckForLibraryUpdatesTask getLibraryUpdatesTask = (CheckForLibraryUpdatesTask) TaskManager.getTask(CheckForLibraryUpdatesTask.TASK_ID);
         if(getLibraryUpdatesTask != null) {
             TaskManager.cancelTask(getLibraryUpdatesTask);
             // warn user they may not see all the available updates

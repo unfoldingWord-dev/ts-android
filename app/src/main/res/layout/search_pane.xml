@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:visibility="visible"
+    android:id="@+id/search_pane"
+    tools:showIn="@layout/activity_target_translation_detail">
+
+    <Spinner
+        android:layout_width="185dp"
+        android:layout_height="match_parent"
+        android:spinnerMode="dropdown"
+        android:layout_marginLeft="@dimen/dialog_controls_margin"
+        android:layout_marginRight="@dimen/dialog_controls_margin"
+        android:id="@+id/search_type"
+        android:prompt="@string/search_translation"
+        android:layout_gravity="end"
+        android:textAlignment="viewEnd" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/search_text"
+        android:layout_marginRight="@dimen/dialog_controls_margin"
+        android:hint="@string/search_hint"
+        android:layout_weight="1" />
+
+    <ImageButton
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:id="@+id/close_search"
+        android:src="@drawable/ic_clear_black_24dp"
+        android:layout_marginLeft="@dimen/dialog_controls_margin"
+        android:layout_marginRight="@dimen/dialog_controls_margin"
+        android:layout_gravity="center_vertical"
+        android:focusableInTouchMode="false" />
+
+</LinearLayout>

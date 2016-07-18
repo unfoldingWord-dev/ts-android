@@ -3,10 +3,10 @@ package com.door43.translationstudio;
 import android.content.Context;
 
 import com.door43.util.FileUtilities;
-import com.door43.util.tasks.ManagedTask;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -31,14 +31,6 @@ public class Util {
         JSONArray json = new JSONArray(sigJson);
         JSONObject sigObj = json.getJSONObject(0);
         return sigObj.getString("sig");
-    }
-
-    /**
-     * Executes a task
-     * @param task
-     */
-    public static void runTask(ManagedTask task) {
-        task.start();
     }
 
     public static String readStream(InputStream is) {

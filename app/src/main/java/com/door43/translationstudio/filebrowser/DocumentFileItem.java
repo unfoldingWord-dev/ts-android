@@ -1,18 +1,14 @@
 package com.door43.translationstudio.filebrowser;
 
-import android.content.ContentResolver;
 import android.content.Context;
 import android.support.v4.provider.DocumentFile;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.ArchiveDetails;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Translator;
-
-import org.apache.commons.io.FilenameUtils;
-
-import java.io.File;
+import com.door43.util.FileUtilities;
 
 
 /**
@@ -68,7 +64,7 @@ public class DocumentFileItem {
     public void inspect(String preferredLocale, Library library) {
         if(file != null) {
             try {
-                this.archiveDetails = ArchiveDetails.newInstance(AppContext.context(), file, preferredLocale, library);
+                this.archiveDetails = ArchiveDetails.newInstance(App.context(), file, preferredLocale, library);
                 return;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -115,7 +111,7 @@ public class DocumentFileItem {
                 && file != null
                 && file.isDirectory()
                 && file.getName().equalsIgnoreCase("backups")
-                && file.getParentFile().getName().equalsIgnoreCase(AppContext.TRANSLATION_STUDIO);
+                && file.getParentFile().getName().equalsIgnoreCase(App.PUBLIC_DATA_DIR);
     }
 
     /**
@@ -126,7 +122,7 @@ public class DocumentFileItem {
         return !isUpButton
                 && file != null
                 && !file.isDirectory()
-                && FilenameUtils.getExtension(file.getName()).equalsIgnoreCase(Translator.ARCHIVE_EXTENSION);
+                && FileUtilities.getExtension(file.getName()).equalsIgnoreCase(Translator.ARCHIVE_EXTENSION);
     }
 
     /**
@@ -137,7 +133,7 @@ public class DocumentFileItem {
         return !isUpButton
                 && file != null
                 && !file.isDirectory()
-                && FilenameUtils.getExtension(file.getName()).equalsIgnoreCase(extension);
+                && FileUtilities.getExtension(file.getName()).equalsIgnoreCase(extension);
     }
 
     /**
@@ -148,6 +144,6 @@ public class DocumentFileItem {
         return !isUpButton
                 && file != null
                 && !file.isDirectory()
-                && FilenameUtils.getExtension(file.getName()).equalsIgnoreCase(ZIP);
+                && FileUtilities.getExtension(file.getName()).equalsIgnoreCase(ZIP);
     }
 }

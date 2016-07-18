@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceLanguage;
@@ -18,7 +19,6 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
-import com.door43.translationstudio.AppContext;
 import com.door43.widget.ViewUtil;
 
 import java.security.InvalidParameterException;
@@ -56,7 +56,7 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        mTranslator = AppContext.getTranslator();
+        mTranslator = App.getTranslator();
 
         // validate parameters
         Bundle args = getIntent().getExtras();
@@ -110,11 +110,11 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
                 mFragment = (PublishStepFragment)getFragmentManager().findFragmentById(R.id.fragment_container);
             } else {
                 mFragment = new ValidationFragment();
-                String sourceTranslationId = AppContext.getSelectedSourceTranslationId(targetTranslationId);
+                String sourceTranslationId = App.getSelectedSourceTranslationId(targetTranslationId);
                 if(sourceTranslationId == null) {
                     // use the default target translation if they have not chosen one.
-                    Library library = AppContext.getLibrary();
-                    SourceLanguage sourceLanguage = library.getPreferredSourceLanguage(mTargetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+                    Library library = App.getLibrary();
+                    SourceLanguage sourceLanguage = library.getPreferredSourceLanguage(mTargetTranslation.getProjectId(), App.getDeviceLanguageCode());
                     if(sourceLanguage != null) {
                         SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(mTargetTranslation.getProjectId(), sourceLanguage.getId());
                         if (sourceTranslation != null) {
@@ -172,7 +172,7 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
                 // because we may have to go back and forth and don't want to fill up the stack
                 Intent intent = new Intent(this, TargetTranslationActivity.class);
                 Bundle args = new Bundle();
-                args.putString(AppContext.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                args.putString(App.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
                 intent.putExtras(args);
                 startActivity(intent);
             }
@@ -188,7 +188,7 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
         if(mCallingActivity == ACTIVITY_TRANSLATION) {
             Intent intent = new Intent(this, TargetTranslationActivity.class);
             Bundle args = new Bundle();
-            args.putString(AppContext.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+            args.putString(App.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
             intent.putExtras(args);
             startActivity(intent);
         }
@@ -211,6 +211,7 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
     /**
      * checks if the user can go to this step yet
      * @param step
+     * @param force forces the step to be opened even if it has never been opened before
      * @return
      */
     private boolean validateStep(int step, boolean force) {
@@ -305,10 +306,10 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
         }
 
         Bundle args = getIntent().getExtras();
-        String sourceTranslationId = AppContext.getSelectedSourceTranslationId(mTargetTranslation.getId());
+        String sourceTranslationId = App.getSelectedSourceTranslationId(mTargetTranslation.getId());
         // TRICKY: if the user has not chosen a source translation (this is an empty translation) the id will be null
         if(sourceTranslationId == null) {
-            SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(mTargetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+            SourceTranslation sourceTranslation = App.getLibrary().getDefaultSourceTranslation(mTargetTranslation.getProjectId(), App.getDeviceLanguageCode());
             if(sourceTranslation != null) {
                 sourceTranslationId = sourceTranslation.getId();
             }

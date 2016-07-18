@@ -13,31 +13,13 @@ import android.text.style.ForegroundColorSpan;
 import android.text.style.ImageSpan;
 import android.text.style.StyleSpan;
 
-import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 /**
  * Class to create NoteSpans from USFM format text
@@ -98,14 +80,14 @@ public class USFMNoteSpan extends NoteSpan {
             mSpannable = super.render();
             // apply custom styles
             if(getHumanReadable().toString().isEmpty()) {
-                Bitmap image = BitmapFactory.decodeResource(AppContext.context().getResources(), R.drawable.ic_description_black_24dp);
-                BitmapDrawable background = new BitmapDrawable(AppContext.context().getResources(), image);
+                Bitmap image = BitmapFactory.decodeResource(App.context().getResources(), R.drawable.ic_description_black_24dp);
+                BitmapDrawable background = new BitmapDrawable(App.context().getResources(), image);
                 background.setBounds(0, 0, background.getMinimumWidth(), background.getMinimumHeight());
                 mSpannable.setSpan(new ImageSpan(background), 0, mSpannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             } else {
-                mSpannable.setSpan(new BackgroundColorSpan(AppContext.context().getResources().getColor(R.color.footnote_yellow)), 0, mSpannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                mSpannable.setSpan(new BackgroundColorSpan(App.context().getResources().getColor(R.color.footnote_yellow)), 0, mSpannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 mSpannable.setSpan(new StyleSpan(Typeface.ITALIC), 0, mSpannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                mSpannable.setSpan(new ForegroundColorSpan(AppContext.context().getResources().getColor(R.color.dark_gray)), 0, mSpannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                mSpannable.setSpan(new ForegroundColorSpan(App.context().getResources().getColor(R.color.dark_gray)), 0, mSpannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
         }
         return mSpannable;

@@ -3,14 +3,16 @@ package com.door43.translationstudio.tasks;
 import android.content.ContentResolver;
 import android.net.Uri;
 
-import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
+import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.core.ArchiveDetails;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.util.tasks.ManagedTask;
+import com.door43.util.FileUtilities;
 
-import org.apache.commons.io.FileUtils;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+
 
 import java.io.File;
 import java.util.Locale;
@@ -43,7 +45,7 @@ public class ExamineImportsForCollisionsTask extends ManagedTask {
 
     public void cleanup() {
         if(mProjectsFolder != null) {
-            FileUtils.deleteQuietly(mProjectsFolder);
+            FileUtilities.deleteQuietly(mProjectsFolder);
         }
         mProjectsFolder = null;
     }
@@ -53,15 +55,15 @@ public class ExamineImportsForCollisionsTask extends ManagedTask {
         mSuccess = false;
         try {
             mProjectsFolder = File.createTempFile("targettranslation", "." + Translator.ARCHIVE_EXTENSION);
-            FileUtils.copyInputStreamToFile(resolver.openInputStream(mContentUri), mProjectsFolder);
-            ArchiveDetails details = ArchiveDetails.newInstance(mProjectsFolder, Locale.getDefault().getLanguage(), AppContext.getLibrary());
+            FileUtilities.copyInputStreamToFile(resolver.openInputStream(mContentUri), mProjectsFolder);
+            ArchiveDetails details = ArchiveDetails.newInstance(mProjectsFolder, App.getDeviceLanguageCode(), App.getLibrary());
             mProjectsFound = "";
             mAlreadyPresent = false;
             for (ArchiveDetails.TargetTranslationDetails td : details.targetTranslationDetails) {
                 mProjectsFound += td.projectName + " - " + td.targetLanguageName + ", ";
 
                 String targetTranslationId = td.targetTranslationSlug;
-                TargetTranslation localTargetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
+                TargetTranslation localTargetTranslation = App.getTranslator().getTargetTranslation(targetTranslationId);
                 if ((localTargetTranslation != null)) {
                     mAlreadyPresent = true;
                 }

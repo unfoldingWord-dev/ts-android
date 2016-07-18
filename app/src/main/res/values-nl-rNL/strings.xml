@@ -117,7 +117,7 @@
   <string name="languages">Talen</string>
   <string name="drafts">Vertaling Concepten</string>
   <string name="use_internet_confirmation">Dit zal uw internetverbinding gebruiken om informatie van de server te downloaden, ga dan verder?</string>
-  <string name="update_projects">Projecten-update</string>
+  <string name="update_library">Projecten-update</string>
   <string name="update_projects_description">Bekijk en download beschikbare updates van de server</string>
   <string name="action_download_all">Alle downloaden</string>
   <string name="title_activity_project_updates">Project Updates</string>

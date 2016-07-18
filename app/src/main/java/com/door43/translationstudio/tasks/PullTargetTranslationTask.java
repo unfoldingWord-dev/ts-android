@@ -2,9 +2,9 @@ package com.door43.translationstudio.tasks;
 
 import android.os.Process;
 
-import com.door43.tools.reporting.FileUtils;
-import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
+import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Profile;
@@ -12,7 +12,7 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.TransportCallback;
 import com.door43.util.Manifest;
-import com.door43.util.tasks.ManagedTask;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.CreateBranchCommand;
@@ -21,9 +21,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.PullResult;
-import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.errors.NoRemoteRepositoryException;
 import org.eclipse.jgit.lib.ProgressMonitor;
@@ -69,19 +67,24 @@ public class PullTargetTranslationTask extends ManagedTask {
 
     @Override
     public void start() {
-        Profile profile = AppContext.getProfile();
-        if(targetTranslation != null && AppContext.context().isNetworkAvailable() && profile != null && profile.gogsUser != null) {
-            publishProgress(-1, "Downloading updates");
-            String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
-            String remote = server + ":" + profile.gogsUser.getUsername() + "/" + this.targetTranslation.getId() + ".git";
-            try {
-                this.targetTranslation.commitSync();
-            } catch (Exception e) {
-                Logger.w(this.getClass().getName(), "Failed to commit the target translation " + targetTranslation.getId(), e);
+        if(App.isNetworkAvailable()) {
+            // submit new language requests
+            delegate(new SubmitNewLanguageRequestsTask());
+
+            Profile profile = App.getProfile();
+            if (targetTranslation != null && App.isNetworkAvailable() && profile != null && profile.gogsUser != null) {
+                publishProgress(-1, "Downloading updates");
+                String server = App.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, App.context().getResources().getString(R.string.pref_default_git_server));
+                String remote = server + ":" + profile.gogsUser.getUsername() + "/" + this.targetTranslation.getId() + ".git";
+                try {
+                    this.targetTranslation.commitSync();
+                } catch (Exception e) {
+                    Logger.w(this.getClass().getName(), "Failed to commit the target translation " + targetTranslation.getId(), e);
+                }
+                Repo repo = this.targetTranslation.getRepo();
+                createBackupBranch(repo);
+                this.message = pull(repo, remote);
             }
-            Repo repo = this.targetTranslation.getRepo();
-            createBackupBranch(repo);
-            this.message = pull(repo, remote);
         }
     }
 

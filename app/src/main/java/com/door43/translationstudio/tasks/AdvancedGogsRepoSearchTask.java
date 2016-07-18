@@ -1,13 +1,13 @@
 package com.door43.translationstudio.tasks;
 
-import com.door43.translationstudio.AppContext;
-import com.door43.util.tasks.ManagedTask;
+import com.door43.translationstudio.App;
+
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import org.unfoldingword.gogsclient.Repository;
 import org.unfoldingword.gogsclient.User;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -48,7 +48,10 @@ public class AdvancedGogsRepoSearchTask extends ManagedTask {
 
     @Override
     public void start() {
-        if(AppContext.context().isNetworkAvailable()) {
+        if(App.isNetworkAvailable()) {
+            // submit new language requests
+            delegate(new SubmitNewLanguageRequestsTask());
+
             if(!userQuery.isEmpty()) {
 
                 // start by searching users

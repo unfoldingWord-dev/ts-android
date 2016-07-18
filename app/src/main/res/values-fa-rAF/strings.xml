@@ -124,7 +124,7 @@
   <string name="languages">زبان</string>
   <string name="drafts">پیش نویسهای ترجمه</string>
   <string name="use_internet_confirmation">این اتصال به اینترنت خود را به دانلود اطلاعات از سرور استفاده کنید، ادامه دهید؟</string>
-  <string name="update_projects">پروژه های به روز رسانی</string>
+  <string name="update_library">پروژه های به روز رسانی</string>
   <string name="update_projects_description">مشاهده و دانلود به روز رسانی در دسترس از سرور</string>
   <string name="action_download_all">دانلود همه</string>
   <string name="title_activity_project_updates">پروژه به روز رسانی</string>

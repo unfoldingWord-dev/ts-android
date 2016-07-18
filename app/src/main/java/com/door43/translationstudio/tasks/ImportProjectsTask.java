@@ -1,7 +1,7 @@
 package com.door43.translationstudio.tasks;
 
-import com.door43.translationstudio.AppContext;
-import com.door43.util.tasks.ManagedTask;
+import com.door43.translationstudio.App;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.io.File;
 
@@ -24,7 +24,7 @@ public class ImportProjectsTask extends ManagedTask {
     @Override
     public void start() {
         try {
-            importedSlugs = AppContext.getTranslator().importArchive(projectsFolder, overwrite);
+            importedSlugs = App.getTranslator().importArchive(projectsFolder, overwrite);
         } catch (Exception e) {
             e.printStackTrace();
         }

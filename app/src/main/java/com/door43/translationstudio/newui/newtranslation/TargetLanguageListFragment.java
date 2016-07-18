@@ -15,7 +15,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.BaseFragment;
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 
 /**
  * Created by joel on 9/4/2015.
@@ -29,7 +29,7 @@ public class TargetLanguageListFragment extends BaseFragment implements Searchab
         View rootView = inflater.inflate(R.layout.fragment_language_list, container, false);
 
         ListView list = (ListView) rootView.findViewById(R.id.list);
-        mAdapter = new TargetLanguageAdapter(AppContext.getLibrary().getTargetLanguages());
+        mAdapter = new TargetLanguageAdapter(App.getLibrary().getTargetLanguages());
         list.setAdapter(mAdapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

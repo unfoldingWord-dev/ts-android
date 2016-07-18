@@ -12,16 +12,15 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.TargetTranslation;
-import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.tasks.CalculateTargetTranslationProgressTask;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.widget.ViewUtil;
 import com.filippudak.ProgressPieView.ProgressPieView;
 
@@ -88,7 +87,7 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
         }
 
         final TargetTranslation targetTranslation = getItem(position);
-        final Library library = AppContext.getLibrary();
+        final Library library = App.getLibrary();
         holder.currentTargetTranslation = targetTranslation;
         holder.mProgressView.setVisibility(View.INVISIBLE);
 
@@ -111,7 +110,7 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
         }
 
         // render view
-        Project project = library.getProject(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+        Project project = library.getProject(targetTranslation.getProjectId(), App.getDeviceLanguageCode());
         if(project != null) {
             if(!targetTranslation.getResourceSlug().equals(Resource.REGULAR_SLUG) && !targetTranslation.getResourceSlug().equals("obs")) {
                 // display the resource type if not a regular resource e.g. this is for a gateway language
@@ -144,7 +143,7 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
     }
 
     @Override
-    public void onFinished(ManagedTask task) {
+    public void onTaskFinished(ManagedTask task) {
         TaskManager.clearTask(task);
         // save progress
         final int progress = ((CalculateTargetTranslationProgressTask)task).translationProgress;

@@ -23,8 +23,6 @@
     <!-- The terms that users must agree with in order to use the app -->
     <string name="terms_title">Terms of Use</string>
     <string name="terms">By using this app you agree with the statement of faith and translation guidelines and to release your work under the terms of the Creative Commons Attribution-ShareAlike 4.0 International License.</string>
-    <!-- Re-create the ssh keys for the git repositories -->
-    <string name="regenerate_keys" translatable="false">Regenerate SSH Keys</string>
     <!-- stub needed for the drawer open and close listener -->
     <string name="title_close_drawer" translatable="false">close</string>
     <string name="chapter_title_field">Chapter Title</string>
@@ -256,18 +254,11 @@
     <!-- displays the unique device id -->
     <string name="app_udid" translatable="false">UDID <xliff:g example="4c3lk3id9392kkdnw983" id="unique_device_id">%1$s</xliff:g></string>
     <string name="copied_to_clipboard" translatable="false">Copied to clipboard</string>
-    <string name="force_update_projects" translatable="false">Force update projects</string>
-    <string name="force_update_projects_description" translatable="false">Re-downloads all the source for projects on the device without regard to the cache</string>
-    <string name="regenerate_keys_description" translatable="false">Discards and regenerates the ssh keys used for git</string>
-    <string name="read_debugging_log" translatable="false">Read debugging log</string>
-    <string name="read_debugging_log_description" translatable="false">View the error logs that have been generated on this device.</string>
     <string name="downloading_project">Downloading project <xliff:g example="obs" id="project_id">%1$s</xliff:g></string>
     <!-- This is the direction up. The opposite of down. -->
     <string name="up">Up</string>
     <!-- indicates the directory/folder on the device does not contain any files -->
     <string name="empty_directory">Directory empty</string>
-    <string name="export_source" translatable="false">Export Source</string>
-    <string name="export_source_description" translatable="false">Exports all of the project sources into an archive that may be imported to another device or added to an apk</string>
     <string name="exporting">Exporting</string>
     <string name="get_more_projects">Get more projects</string>
     <string name="title_activity_get_more_projects" translatable="false">@string/get_more_projects</string>
@@ -277,7 +268,7 @@
     <string name="languages">Languages</string>
     <string name="drafts">Drafts</string>
     <string name="use_internet_confirmation">This will use your internet connection, continue?</string>
-    <string name="update_projects">Update Library</string>
+    <string name="update_library">Update Library</string>
     <string name="update_projects_description">View and download available updates from the server</string>
     <string name="action_download_all">Download all</string>
     <string name="title_activity_project_updates">Project Updates</string>
@@ -293,8 +284,6 @@
     <string name="import_from_storage_description">Projects will be imported from the external storage on this device</string>
     <string name="download_complete">Download complete</string>
     <string name="source_export_complete">Export complete</string>
-    <string name="simulate_crash" translatable="false">Simulate crash</string>
-    <string name="simulate_crash_description" translatable="false">Simulates the app encountering an unrecoverable error and crashing</string>
     <string name="exit_confirmation">Exit <xliff:g id="app_name">translationStudio</xliff:g>?</string>
     <string name="read_chapter_menu">Read chapter</string>
     <string name="preview_chapter_translation">Preview translation</string>
@@ -368,8 +357,6 @@
 ]]>
     </string>
 
-    <string name="hello_world">Hello world!</string>
-    <string name="next_step">Next step</string>
     <string name="your_name">Your Name or Pseudonym</string>
     <string name="your_email">Your Email Address</string>
     <string name="your_phone">Your Phone Number</string>
@@ -685,6 +672,14 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="invalidate_keys" translatable="false">Invalidate SSH Keys</string>
     <string name="invalidate_keys_description" translatable="false">Sets keys invalid for auth testing</string>
     <string name="person_agrees_with_licenses">This person has agreed to the License Agreement, Statement of Faith, and Translation Guidelines</string>
+    <string name="invalid_entry_title">Invalid Entry</string>
+    <string name="answers_missing_title">Answers Missing</string>
+    <string name="missing_question_answer">Missing answer for question</string>
+    <string name="answer_missing_for">Missing answer for question:\n%s</string>
+    <string name="answers_missing_continue">Answers are missing for questions.\nContinue anyway?</string>
+    <string name="previous">Previous</string>
+    <string name="title_activity_new_language">New Language Request</string>
+    <string name="new_language_confirmation">Your new language code is \"<xliff:g example="zz-zzz" id="temp_language_code">%1$s</xliff:g>\" for \"<xliff:g example="Greek" id="language_name">%2$s</xliff:g>\".</string>
     <string name="error_importing_unsupported_target_translation">The  translation of <xliff:g example="Open Bible Stories" id="project_name">%1$s</xliff:g> into <xliff:g example="Afaraf" id="language_name">%2$s</xliff:g> was created by a different version of <xliff:g example="translationStudio" id="app_name">%3$s</xliff:g> and cannot be opened. Please update your app and try again.</string>
     <string name="version">Version</string>
     <string name="username">login name</string>
@@ -791,4 +786,28 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
 <br/><b>Use of trademarks:</b> unfoldingWord is a trademark of Distant Shores Media and may not be included on any derivative works created from this content. Unaltered content from <a href="http://unfoldingword.org" title="http://unfoldingword.org" >http://unfoldingword.org</a> must include the unfoldingWord logo when distributed to others. But if you alter the content in any way, you must remove the unfoldingWord logo before distributing your work.
 </p>]]>
     </string>
+    <string name="questionnaire_title">Page <xliff:g example="1" id="page_num">%1$d</xliff:g> of <xliff:g example="10" id="page_count">%2$d</xliff:g></string>
+    <string name="new_lang_api_upload_failure_title">New Language Error</string>
+    <string name="new_lang_api_upload_failure">We could not save the answers to the New Language Questionnaire.  We will try again the next time you</string>
+    <string name="answer_not_saved">Your answer could not be saved. Please try again.</string>
+    <string name="missing_questionnaire" translatable="false">The questionnaire is missing. Update the library and try again.</string>
+    <string name="try_again">Please try again</string>
+    <string name="copy">Copy</string>
+    <string name="submitting_new_language_requests">Submitting new language requests</string>
+    <string name="downloading_languages">Downloading languages</string>
+    <string name="confirm_leave_questionnaire">Are you sure you want to leave the questionnaire?</string>
+    <string name="continue_requesting_new_language">Continue requesting new language</string>
+    <string name="request_new_language">Request new language</string>
+    <string name="title_new_language_code">New Language Code</string>
+    <string name="confirm_start_new_language_code">You are about to request a new language code.</string>
+    <string name="check_for_updates">Check for updates</string>
+    <string name="check_for_app_updates">Check the internet for updates to translationStudio App.</string>
+    <string name="have_latest_app_update">You are already using the latest version of translationStudio.</string>
+    <string name="download_latest_apk">Do you want to download this update?</string>
+    <string name="updating_projects">Updating projects</string>
+    <string name="view_online">View Online</string>
+    <string name="search_hint">Enter Search String</string>
+    <string name="search_source">Search Source:</string>
+    <string name="search_translation">Search Translation:</string>
+
 </resources>

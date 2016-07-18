@@ -3,6 +3,7 @@ package com.door43.translationstudio.newui.translate;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.MotionEvent;
 
 /**
@@ -48,5 +49,24 @@ public class ChunkModeFragment extends ViewModeFragment {
     @Override
     protected void onLeftSwipe(MotionEvent e1, MotionEvent e2) {
         doTranslationCardToggle(e1, e2, true);
+    }
+
+    /**
+     * this gets called after one second timer elapses
+     * @param searchString
+     */
+    public void kickOffSearchFilter(String searchString, boolean searchTarget) {
+        Log.d(ChunkModeFragment.class.getSimpleName(),"kickOffSearchFilter: " + searchString);
+        ChunkModeAdapter adapter = (ChunkModeAdapter) getAdapter();
+        if(adapter != null) {
+            ((TranslationSearchFilter) adapter.getFilter()).setTargetSearch(searchTarget).filter(searchString);
+        }
+    }
+
+    /**
+     * method to see if searching is supported
+     */
+    public boolean isSearchSupported() {
+        return true;
     }
 }

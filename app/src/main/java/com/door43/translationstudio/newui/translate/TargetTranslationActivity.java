@@ -8,48 +8,62 @@ import android.content.Intent;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
+import android.text.Editable;
 import android.text.Layout;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.BackupDialog;
 import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.PrintDialog;
 import com.door43.translationstudio.newui.draft.DraftActivity;
 import com.door43.translationstudio.newui.publish.PublishActivity;
-import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.util.SdUtils;
 import com.door43.widget.VerticalSeekBar;
 import com.door43.widget.ViewUtil;
 import com.door43.translationstudio.newui.BaseActivity;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class TargetTranslationActivity extends BaseActivity implements ViewModeFragment.OnEventListener, FirstTabFragment.OnEventListener {
+public class TargetTranslationActivity extends BaseActivity implements ViewModeFragment.OnEventListener, FirstTabFragment.OnEventListener, Spinner.OnItemSelectedListener {
 
     private static final String TAG = TargetTranslationActivity.class.getSimpleName();
 
     private static final long COMMIT_INTERVAL = 2 * 60 * 1000; // commit changes every 2 minutes
+    public static final String STATE_SEARCH_ENABLED = "state_search_enabled";
+    public static final int SEARCH_START_DELAY = 1000;
+    public static final String STATE_SEARCH_TEXT = "state_search_text";
     private Fragment mFragment;
     private SeekBar mSeekBar;
     private ViewGroup mGraduations;
@@ -61,17 +75,23 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private ImageButton mReviewButton;
     private List<SourceTranslation> draftTranslations;
     private ImageButton mMoreButton;
+    private boolean mSearchEnabled = false;
+    private TextWatcher mSearchTextWatcher;
+    private SearchTimerTask mSearchTimerTask;
+    private Timer mSearchTimer;
+    private String mSearchString;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_target_translation_detail);
 
-        mTranslator = AppContext.getTranslator();
+        mTranslator = App.getTranslator();
 
         // validate parameters
         Bundle args = getIntent().getExtras();
-        final String targetTranslationId = args.getString(AppContext.EXTRA_TARGET_TRANSLATION_ID, null);
+        final String targetTranslationId = args.getString(App.EXTRA_TARGET_TRANSLATION_ID, null);
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         if (mTargetTranslation == null) {
             Logger.e(TAG ,"A valid target translation id is required. Received '" + targetTranslationId + "' but the translation could not be found");
@@ -80,12 +100,12 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         }
 
         // open used source translations by default
-        if(AppContext.getOpenSourceTranslationIds(mTargetTranslation.getId()).length == 0) {
+        if(App.getOpenSourceTranslationIds(mTargetTranslation.getId()).length == 0) {
             String[] slugs = mTargetTranslation.getSourceTranslations();
             for (String slug : slugs) {
-                SourceTranslation sourceTranslation = AppContext.getLibrary().getSourceTranslation(slug);
+                SourceTranslation sourceTranslation = App.getLibrary().getSourceTranslation(slug);
                 if(sourceTranslation != null) {
-                    AppContext.addOpenSourceTranslation(mTargetTranslation.getId(), sourceTranslation.getId());
+                    App.addOpenSourceTranslation(mTargetTranslation.getId(), sourceTranslation.getId());
                 }
             }
         }
@@ -106,9 +126,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         }
 
         // manual location settings
-        String viewModeId = args.getString(AppContext.EXTRA_VIEW_MODE, null);
+        String viewModeId = args.getString(App.EXTRA_VIEW_MODE, null);
         if (viewModeId != null && TranslationViewMode.get(viewModeId) != null) {
-            AppContext.setLastViewMode(targetTranslationId, TranslationViewMode.get(viewModeId));
+            App.setLastViewMode(targetTranslationId, TranslationViewMode.get(viewModeId));
         }
 
         mReadButton = (ImageButton) findViewById(R.id.action_read);
@@ -122,7 +142,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             if (savedInstanceState != null) {
                 mFragment = getFragmentManager().findFragmentById(R.id.fragment_container);
             } else {
-                TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
+                TranslationViewMode viewMode = App.getLastViewMode(mTargetTranslation.getId());
                 switch (viewMode) {
                     case READ:
                         mFragment = new ReadModeFragment();
@@ -186,6 +206,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mReadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                setSearchBarVisibility(false);
                 openTranslationMode(TranslationViewMode.READ, null);
 
                 TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
@@ -195,6 +216,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mChunkButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                setSearchBarVisibility(false);
                 openTranslationMode(TranslationViewMode.CHUNK, null);
 
                 TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
@@ -204,13 +226,31 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mReviewButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                setSearchBarVisibility(false);
                 openTranslationMode(TranslationViewMode.REVIEW, null);
 
                 TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
             }
         });
 
+        if(savedInstanceState != null) {
+            mSearchEnabled = savedInstanceState.getBoolean(STATE_SEARCH_ENABLED, false);
+            mSearchString = savedInstanceState.getString(STATE_SEARCH_TEXT, null);
+        }
+
+        setSearchBarVisibility(mSearchEnabled);
+
         restartAutoCommitTimer();
+    }
+
+    public void onSaveInstanceState(Bundle out) {
+        out.putBoolean(STATE_SEARCH_ENABLED, mSearchEnabled);
+        String searchText = getSearchText();
+        if( mSearchEnabled ) {
+            out.putString(STATE_SEARCH_TEXT, searchText);
+        }
+
+        super.onSaveInstanceState(out);
     }
 
     private void buildMenu() {
@@ -224,6 +264,10 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 // display menu item for draft translations
                 MenuItem draftsMenuItem = moreMenu.getMenu().findItem(R.id.action_drafts_available);
                 draftsMenuItem.setVisible(draftIsAvailable() && !targetTranslationHasDraft());
+
+                MenuItem searchMenuItem = moreMenu.getMenu().findItem(R.id.action_search);
+                boolean searchSupported = isSearchSupported();
+                searchMenuItem.setVisible(searchSupported);
 
                 moreMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
@@ -289,12 +333,233 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                                 Intent settingsIntent = new Intent(TargetTranslationActivity.this, SettingsActivity.class);
                                 startActivity(settingsIntent);
                                 return true;
+                            case R.id.action_search:
+                                setSearchBarVisibility(true);
+                                return true;
                         }
                         return false;
                     }
                 });
                 moreMenu.show();
             }
+        });
+    }
+
+
+    /**
+     * method to see if searching is supported
+     */
+    public boolean isSearchSupported() {
+        if(mFragment != null) {
+            return ((ViewModeFragment) mFragment).isSearchSupported();
+        }
+        return false;
+    }
+
+    /**
+     * change state of search bar
+     */
+    private void toggleSearchBar() {
+        // toggle search bar
+        LinearLayout searchPane = (LinearLayout) findViewById(R.id.search_pane);
+        if(searchPane != null) {
+            int visibility = searchPane.getVisibility();
+
+            if(View.GONE == visibility) {
+                mSearchEnabled = false;
+            } else {
+                mSearchEnabled = true;
+            }
+
+            mSearchEnabled = !mSearchEnabled; // toggle state
+
+            setSearchBarVisibility(mSearchEnabled);
+        }
+    }
+
+    /**
+     * change state of search bar
+     * @param show - if true set visible
+     */
+    private void setSearchBarVisibility(boolean show) {
+        // toggle search bar
+        LinearLayout searchPane = (LinearLayout) findViewById(R.id.search_pane);
+        if(searchPane != null) {
+
+            int visibility = View.GONE;
+            if(show) {
+                visibility = View.VISIBLE;
+            }
+            searchPane.setVisibility(visibility);
+            mSearchEnabled = show;
+
+            EditText edit = (EditText) searchPane.findViewById(R.id.search_text);
+            if(edit != null) {
+                edit.removeTextChangedListener(mSearchTextWatcher); // remove old listener
+
+                if(mSearchString != null) {
+                    edit.setText(mSearchString);
+                    mSearchString = null;
+                }
+
+                if(show) {
+                    mSearchTextWatcher = new TextWatcher() {
+                        @Override
+                        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                        }
+
+                        @Override
+                        public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                        }
+
+                        @Override
+                        public void afterTextChanged(Editable s) {
+
+                            if(mSearchTimer != null) {
+                                mSearchTimer.cancel();
+                            }
+
+                            mSearchTimer = new Timer();
+                            mSearchTimerTask = new SearchTimerTask(TargetTranslationActivity.this, s);
+                            mSearchTimer.schedule(mSearchTimerTask, SEARCH_START_DELAY);
+                        }
+                    };
+                    edit.addTextChangedListener(mSearchTextWatcher);
+                }
+            }
+
+            ImageButton close = (ImageButton) searchPane.findViewById(R.id.close_search);
+            if(close != null) {
+
+                close.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        setSearchBarVisibility(false);
+                    }
+                });
+            }
+
+            Spinner type = (Spinner) searchPane.findViewById(R.id.search_type);
+            if(type != null) {
+                List<String> types = new ArrayList<String>();
+                types.add(this.getResources().getString(R.string.search_source));
+                types.add(this.getResources().getString(R.string.search_translation));
+                ArrayAdapter<String> typesAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, types);
+                typesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                type.setAdapter(typesAdapter);
+
+                type.setOnItemSelectedListener(this);
+            }
+        }
+    }
+
+    /**
+     * called if search type is changed
+     * @param parent
+     * @param view
+     * @param pos
+     * @param id
+     */
+    public void onItemSelected(AdapterView<?> parent, View view,
+                               int pos, long id) {
+        kickOffSearchFilter();
+    }
+
+    /**
+     * called if no search type is selected
+     * @param parent
+     */
+    public void onNothingSelected(AdapterView<?> parent) {
+        // do nothing
+    }
+
+    /**
+     * see if translation search is selected
+     */
+    private boolean isTranslationSearchSelected() {
+        int position = getSearchTypeSelection();
+        return position == 1;
+    }
+
+    /**
+     * get the type of search (position)
+     */
+    private int getSearchTypeSelection() {
+        LinearLayout searchPane = (LinearLayout) findViewById(R.id.search_pane);
+        if(searchPane != null) {
+
+            Spinner type = (Spinner) searchPane.findViewById(R.id.search_type);
+            if(type != null) {
+                int pos = type.getSelectedItemPosition();
+                if(pos >= 0) {
+                    return pos;
+                }
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * get search text in search bar
+     */
+    private String getSearchText() {
+        String text = null;
+
+        LinearLayout searchPane = (LinearLayout) findViewById(R.id.search_pane);
+        if(searchPane != null) {
+
+            EditText edit = (EditText) searchPane.findViewById(R.id.search_text);
+            if(edit != null) {
+                text = edit.getText().toString();
+            }
+        }
+        return text;
+    }
+
+    /**
+     * set search text in search bar
+     */
+    private void setSearchText(String text) {
+
+        if(text == null) {
+            text = "";
+        }
+
+        LinearLayout searchPane = (LinearLayout) findViewById(R.id.search_pane);
+        if(searchPane != null) {
+
+            EditText edit = (EditText) searchPane.findViewById(R.id.search_text);
+            if(edit != null) {
+                edit.setText(text);
+            }
+        }
+    }
+
+    /**
+     * do search with search string
+     */
+    public void kickOffSearchFilter() {
+        kickOffSearchFilter(getSearchText());
+    }
+
+    /**
+     * this gets called after one second timer elapses
+     * @param searchString
+     */
+    public void kickOffSearchFilter(final String searchString) {
+        Log.d(TAG,"kickOffSearchFilter: " + searchString);
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                if((mFragment != null) && (mFragment instanceof ViewModeFragment)) {
+                    boolean searchTarget = isTranslationSearchSelected();
+                    ((ViewModeFragment) mFragment).kickOffSearchFilter(searchString, searchTarget);
+                }
+             }
         });
     }
 
@@ -312,7 +577,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 //            } else {
 //                // check for second best
 //                if (draftTranslations == null) {
-//                    draftTranslations = AppContext.getLibrary().getDraftTranslations(mTargetTranslation.getProjectId(), mTargetTranslation.getTargetLanguageId());
+//                    draftTranslations = App.getLibrary().getDraftTranslations(mTargetTranslation.getProjectId(), mTargetTranslation.getTargetLanguageId());
 //                }
 //                for (SourceTranslation st : draftTranslations) {
 //                    if (st.resourceSlug.equals(mTargetTranslation.getParentDraft().resourceSlug)) {
@@ -331,17 +596,17 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      */
     private boolean draftIsAvailable() {
         if(draftTranslations == null) {
-            draftTranslations = AppContext.getLibrary().getDraftTranslations(mTargetTranslation.getProjectId(), mTargetTranslation.getTargetLanguageId());
+            draftTranslations = App.getLibrary().getDraftTranslations(mTargetTranslation.getProjectId(), mTargetTranslation.getTargetLanguageId());
         }
         for(SourceTranslation st:draftTranslations) {
-            if(AppContext.getLibrary().sourceTranslationHasSource(st)) {
+            if(App.getLibrary().sourceTranslationHasSource(st)) {
                 return true;
             }
         }
         return false;
         // TODO: 1/20/2016 once users are forced to specify a resource they are translating into we'll use this to check
 //        for(SourceTranslation st:draftTranslations) {
-//            if(st.resourceSlug.equals(mTargetTranslation.resourceSlug) && AppContext.getLibrary().sourceTranslationHasSource(st)) {
+//            if(st.resourceSlug.equals(mTargetTranslation.resourceSlug) && App.getLibrary().sourceTranslationHasSource(st)) {
 //                return true;
 //            }
 //        }
@@ -439,7 +704,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     private void setupGraduations() {
         final int numChapters = mSeekBar.getMax();
-        TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
+        TranslationViewMode viewMode = App.getLastViewMode(mTargetTranslation.getId());
 
         // Set up visibility of the graduation bar.
         // Display graduations evenly spaced by number of chapters (but not more than the number
@@ -515,7 +780,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         }
 
-        AppContext.setLastViewMode(mTargetTranslation.getId(), mode);
+        App.setLastViewMode(mTargetTranslation.getId(), mode);
         setupSidebarModeIcons();
 
         switch (mode) {
@@ -578,7 +843,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     @Override
     public void onHasSourceTranslations() {
-        TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
+        TranslationViewMode viewMode = App.getLastViewMode(mTargetTranslation.getId());
         if (viewMode == TranslationViewMode.READ) {
             mFragment = new ReadModeFragment();
         } else if (viewMode == TranslationViewMode.CHUNK) {
@@ -631,7 +896,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      * Call this when creating the activity or when changing modes.
      */
     private void setupSidebarModeIcons() {
-        TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
+        TranslationViewMode viewMode = App.getLastViewMode(mTargetTranslation.getId());
 
         // Set the non-highlighted icons by default.
         mReviewButton.setImageResource(R.drawable.icon_check_inactive);
@@ -684,13 +949,29 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             } else {
                 msg = getResources().getString(R.string.access_skipped);
             }
-            CustomAlertDialog.Create(this)
+            new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                     .setTitle(R.string.access_title)
                     .setMessage(msg)
                     .setPositiveButton(R.string.label_ok, null)
-                    .show("AccessResults");
+                    .show();
         } else {
             super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    private class SearchTimerTask extends TimerTask {
+
+        private TargetTranslationActivity activity;
+        private Editable searchString;
+
+        public SearchTimerTask(TargetTranslationActivity activity, Editable searchString) {
+            this.activity = activity;
+            this.searchString = searchString;
+        }
+
+        @Override
+        public void run() {
+             activity.kickOffSearchFilter(searchString.toString());
         }
     }
 }
