@@ -9,14 +9,15 @@
     tools:showIn="@layout/activity_target_translation_detail">
 
     <Spinner
-        android:layout_width="170dp"
+        android:layout_width="185dp"
         android:layout_height="match_parent"
         android:spinnerMode="dropdown"
         android:layout_marginLeft="@dimen/dialog_controls_margin"
         android:layout_marginRight="@dimen/dialog_controls_margin"
         android:id="@+id/search_type"
         android:prompt="@string/search_translation"
-        android:layout_gravity="bottom" />
+        android:layout_gravity="end"
+        android:textAlignment="viewEnd" />
 
     <EditText
         android:layout_width="match_parent"
