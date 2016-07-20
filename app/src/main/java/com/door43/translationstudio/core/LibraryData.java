@@ -5,12 +5,12 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.Nullable;
-import android.util.Pair;
 
 import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.util.FileUtilities;
 import com.door43.util.Security;
 
-import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -93,7 +93,7 @@ public class LibraryData {
         librarySQLiteHelper.deleteDatabase(context);
         File databasePath = context.getDatabasePath(librarySQLiteHelper.getDatabaseName());
         databasePath.getParentFile().mkdirs();
-        FileUtils.moveFile(newDatabasePath, databasePath);
+        FileUtilities.moveOrCopy(databasePath, newDatabasePath);
         librarySQLiteHelper = null;
     }
 

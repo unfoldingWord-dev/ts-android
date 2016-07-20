@@ -4,9 +4,9 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 
 import org.unfoldingword.tools.logger.Logger;
-import com.door43.util.Zip;
 
-import org.apache.commons.io.FileUtils;
+import com.door43.util.FileUtilities;
+import com.door43.util.Zip;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -390,7 +390,7 @@ public class Library {
     public Boolean downloadImages(OnProgressListener listener) {
         boolean success = mDownloader.downloadImages(listener);
         if(!success) {
-            FileUtils.deleteQuietly(getImagesDir());
+            FileUtilities.deleteRecursive(getImagesDir());
         }
         return success;
     }

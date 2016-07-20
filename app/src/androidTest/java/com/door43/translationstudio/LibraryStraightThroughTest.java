@@ -4,11 +4,13 @@ package com.door43.translationstudio;
 import android.util.Log;
 
 import com.door43.translationstudio.core.Chapter;
+import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.CheckingQuestion;
 import com.door43.translationstudio.core.ChunkMarker;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.LanguageDirection;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.NativeSpeaker;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.ProjectCategory;
 import com.door43.translationstudio.core.Questionnaire;
@@ -18,10 +20,12 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationArticle;
+import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.TranslationNote;
 import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.core.Translator;
+import com.door43.util.FileUtilities;
 
 import static org.hamcrest.Matchers.is;
 
@@ -69,18 +73,27 @@ public class LibraryStraightThroughTest implements ManagedTask.OnFinishedListene
 
     }
 
+    /**
+     * it should return chunk markers for a single project
+     */
     @Test
     public void getChunkMarkers() {
         ChunkMarker[] markers = mLibrary.getChunkMarkers("gen");
         assertTrue(markers.length > 0);
     }
 
+    /**
+     * it should return all target languages
+     */
     @Test
     public void getTargetLanguages() {
         TargetLanguage[] languages = mLibrary.getTargetLanguages();
         assertTrue(languages.length > 0);
     }
 
+    /**
+     * it should return a temp target language
+     */
     @Test
     public void getTempTargetLanguage() {
         TargetLanguage t = new TargetLanguage("qaa-x-cheeseburger", "testString", "usa", LanguageDirection.LeftToRight);
@@ -92,11 +105,14 @@ public class LibraryStraightThroughTest implements ManagedTask.OnFinishedListene
         assertNotNull(mLibrary.getTempTargetLanguage(t.code));
     }
 
+    /**
+     * it should return categories for a single project
+     */
     @Test
     public void getProjectCategories() {
         ProjectCategory[] projectCategories = mLibrary.getProjectCategories("en");
         // for now we just have obs, nt, and ot
-        assertEquals(3, projectCategories.length);
+        assertTrue(projectCategories.length > 0);
         ProjectCategory category = null;
         for(ProjectCategory projectCategory:projectCategories) {
             if(!projectCategory.isProject()) {
@@ -109,12 +125,18 @@ public class LibraryStraightThroughTest implements ManagedTask.OnFinishedListene
         assertTrue(subCategories.length > 0);
     }
 
+    /**
+     * it shoulid return a single target language
+     */
     @Test
     public void getTargetLanguage() {
         TargetLanguage targetLanguage = mLibrary.getTargetLanguage("en");
         assertEquals("en", targetLanguage.getId());
     }
 
+    /**
+     * it should return all the questionnaires
+     */
     @Test
     public void getQuestionaires() {
         Questionnaire [] questionnaires = mLibrary.getQuestionnaires();
@@ -124,72 +146,63 @@ public class LibraryStraightThroughTest implements ManagedTask.OnFinishedListene
         }
     }
 
+    /**
+     * it should return a single questionnaire
+     */
     @Test
     public void getQuestionaire() {
         assertNotNull(mLibrary.getQuestionnaire(0));
     }
 
+    /**
+     * it should export the library to a location on the disk
+     */
     @Test
-    public void setExport() {
+    public void exportLibrary() {
         File fileLocation = new File(App.context().getCacheDir(), "sharing/");
-        if(fileLocation.listFiles() != null){
-            deleteDirectoryFiles(fileLocation);
+        if(fileLocation.listFiles() != null) {
+            FileUtilities.deleteRecursive(fileLocation);
         }
         assertNull(fileLocation.listFiles());
 
         assertNotNull(mLibrary.export(fileLocation));
 
-        deleteDirectoryFiles(fileLocation);  //cleanup
+        FileUtilities.deleteRecursive(fileLocation);
 
         assertNull(fileLocation.listFiles());   //verify that created file is deleted
     }
 
-    public boolean deleteDirectoryFiles(File dir) {
-        if (dir.isDirectory()) {
-            File[] children = dir.listFiles();
-            for (int i = 0; i < children.length; i++) {
-                boolean success = deleteDirectoryFiles(children[i]);
-                if (!success) {
-                    return false; }
-            }
-        } // either file or an empty directory
-        Log.e(TAG, "removing file or directory : " + dir.getName());
-        return dir.delete();
-    }
-
+    /**
+     * it should return a single project
+     */
     @Test
-    public void getLanguages() {
-        TargetLanguage [] targetLanguages = mLibrary.getTargetLanguages();
-        assertNotNull(targetLanguages);
-
-        Log.e(TAG,"getTargetLanguages: "+targetLanguages.length);
-
-        for(TargetLanguage tl:targetLanguages){
-            Log.e(TAG,"Target Language id: " + tl.getId() + ", region: " + tl.region + ", name: " + tl.name + ", code: " + tl.code);
-        }
+    public void getProject() {
+        Project p = mLibrary.getProject("obs", "en");
+        assertNotNull(p);
+        assertEquals("obs", p.getId());
     }
 
+    /**
+     * it should return all projects
+     */
     @Test
     public void getProjects() {
-        Project [] project = mLibrary.getProjects("");
-        assertNotNull(project);
+        Project [] project = mLibrary.getProjects("en");
+        assertTrue(project.length > 0);
     }
 
-    @Test
-    public void getProjectCategory() {
-        ProjectCategory [] pc = mLibrary.getProjectCategories("en");    //there is no default language, need to pass two letter language to return something "en", "fr", etc
-        assertNotNull(pc);
-        for(ProjectCategory projCat:pc) {
-            Log.e(TAG, "projectCategory: " + projCat.getId());
-        }
-    }
-
+    /**
+     * it should return the preferrred source language for a project
+     */
     @Test
     public void getPreferredSourceLanguage() {
         SourceLanguage sourceLanguage = mLibrary.getPreferredSourceLanguage("obs", "en");
         assertNotNull(sourceLanguage);
     }
 
+    /**
+     * it should return all the source languages in a project
+     */
     @Test
     public void getSourceLanguages() {
         SourceLanguage[] sourceLanguages = mLibrary.getSourceLanguages("obs");
@@ -200,124 +213,124 @@ public class LibraryStraightThroughTest implements ManagedTask.OnFinishedListene
         assertEquals("en", sourceLanguage.getId());
     }
 
+    /**
+     * it should return all the resources in a source language + project
+     */
     @Test
     public void getResources() {
         Resource[] resources = mLibrary.getResources("obs", "en");
         assertTrue(resources.length > 0);
     }
 
+    /**
+     * it should return a single resource
+     */
     @Test
     public void getResource() {
         SourceTranslation anotherSourceTranslation = mLibrary.getSourceTranslation("obs", "en", "obs"); //"ulb"
         assertNotNull(mLibrary.getResource(anotherSourceTranslation));
     }
 
-    @Test
-    public void getProject() {
-        Project p = mLibrary.getProject("obs", "en");
-        assertNotNull(p);
-        assertEquals("obs", p.getId());
-    }
-
+    /**
+     * it should return positive progress on a translation
+     */
     @Test
     public void getTranslationProgress() {
-//        TargetTranslation[] targetTranslations = App.getTranslator().getTargetTranslations();
-//        for(TargetTranslation t:targetTranslations) {
-//            Log.e(TAG, "progress: " + (mLibrary.getTranslationProgress(t) * 100 + "%"));
-//            assertNotNull(mLibrary.getTranslationProgress(t));
-//        }
-
-        TargetLanguage[] targetLanguages = mLibrary.getTargetLanguages();
-        for(TargetLanguage t:targetLanguages) {
-            Log.e(TAG, "targetLanguages: " + t.getId());
-        }
-        TargetLanguage targetLanguage = targetLanguages[0];
-        TargetTranslation targetTranslation = mTranslator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), "obs", TranslationType.TEXT, Resource.REGULAR_SLUG));
-        Log.e(TAG, "progress: " + (mLibrary.getTranslationProgress(targetTranslation) * 100 + "%"));
-        Log.e(TAG, "targetTranslation: " + targetTranslation.getProjectId());
+        TargetLanguage targetLanguage = mLibrary.getTargetLanguage("en");
+        TargetTranslation targetTranslation = mTranslator.createTargetTranslation(new NativeSpeaker("demo speaker"), targetLanguage, "obs", TranslationType.TEXT, Resource.REGULAR_SLUG, TranslationFormat.USFM);
+        ChapterTranslation ct = targetTranslation.getChapterTranslation("01");
+        targetTranslation.applyChapterTitleTranslation(ct, "Some chapter title");
+        assertTrue(mLibrary.getTranslationProgress(targetTranslation) > 0);
     }
 
+    /**
+     * it should return all the chapters in a source translation
+     */
     @Test
     public void getChapters() {
         SourceTranslation sourceTranslations = mLibrary.getSourceTranslation("obs", "en", "obs");
         Chapter[] c = mLibrary.getChapters(sourceTranslations);
-        for (Chapter chap : c) {
-            Log.e(TAG, "chapters: " +chap.title);
-        }
+        assertTrue(c.length > 0);
     }
 
+    /**
+     * it should return a single chapter
+     */
     @Test
     public void getChapter() {
         SourceTranslation sourceTranslations = mLibrary.getSourceTranslation("obs", "en", "obs");
-        Chapter c = mLibrary.getChapter(sourceTranslations, "25");  //check 1 - 50 chapterIds
+        Chapter c = mLibrary.getChapter(sourceTranslations, "01");
         assertNotNull(c);
-        Log.e(TAG, "chapter: " + c.getId() + ", " + c.reference);
     }
 
+    /**
+     * it should return all the frames in a chapter
+     */
     @Test
     public void getFrames() {
         SourceTranslation sourceTranslations = mLibrary.getSourceTranslation("obs", "en", "obs");
         Chapter[] chapters = mLibrary.getChapters(sourceTranslations);
-        Frame[] frame = mLibrary.getFrames(sourceTranslations, chapters[49].getId());
-        assertNotNull(frame);
-        for(Frame f:frame){
-            Log.e(TAG, "frame: " + f.getId() + ", " +f.getChapterId() + ", " +f.getStartVerse() + ", " + f.getEndVerse() + ", " + f.body + ", " + f.getTitle());
-        }
+        Frame[] frame = mLibrary.getFrames(sourceTranslations, chapters[0].getId());
+        assertTrue(frame.length > 0);
     }
 
+    /**
+     * it should return all the frame slugs in a chapter
+     */
     @Test
     public void getFrameSlugs() {
         SourceTranslation sourceTranslations = mLibrary.getSourceTranslation("obs", "en", "obs");
         Chapter[] chapters = mLibrary.getChapters(sourceTranslations);
-        Log.e(TAG, "chapterSlug: " + chapters[48].getId());
-        String[] frameSlugs = mLibrary.getFrameSlugs(sourceTranslations, chapters[48].getId());
-        assertNotNull(frameSlugs);
-        Log.e(TAG, "frameSlugs: " + frameSlugs.toString());
-        for (String s:frameSlugs){
-            Log.e(TAG, "frameSlugs: " + s.toString());
-        }
+        String[] frameSlugs = mLibrary.getFrameSlugs(sourceTranslations, chapters[0].getId());
+        assertTrue(frameSlugs.length > 0);
     }
 
+    /**
+     * it should return a single frame
+     */
     @Test
     public void getFrame() {
         SourceTranslation sourceTranslation = mLibrary.getSourceTranslation("obs", "en", "obs");
-        Chapter[] chapters = mLibrary.getChapters(sourceTranslation);
-        Frame[] frame = mLibrary.getFrames(sourceTranslation, chapters[48].getId());
-        Frame localFrame = mLibrary.getFrame(sourceTranslation, chapters[48].getId(), frame[0].getId());
+        Frame localFrame = mLibrary.getFrame(sourceTranslation, "01", "01");
         assertNotNull(localFrame);
-        Log.e(TAG, "frame: " + localFrame.getTitle() +", " + localFrame.getChapterId());
     }
 
-//    @Test
-//    public void findTargetLanguage() {
-//        TargetLanguage[] targetLanguages = mLibrary.findTargetLanguage("en");
-//        for(TargetLanguage t:targetLanguages) {
-//            Log.e(TAG, "targetLanguages: " + t.getId());
-//        }
-//    }
+    /**
+     * it should return a found target language
+     */
+    @Test
+    public void findTargetLanguage() {
+        TargetLanguage[] targetLanguages = mLibrary.findTargetLanguage("English");
+        assertTrue(targetLanguages.length > 0);
+    }
 
+    /**
+     * it should return a single source translation
+     */
     @Test
     public void getSourceTranslation() {
         SourceTranslation[] sourceTranslations = mLibrary.getSourceTranslations("obs");
         SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(sourceTranslations[0].getId());
         assertNotNull(sourceTranslation);
-        assertEquals(sourceTranslations[0].getId(), sourceTranslation.getId());
 
         assertNotNull(mLibrary.getSourceTranslation("obs", "en", "obs"));
 
         assertNotNull(mLibrary.getDefaultSourceTranslation("obs", "en"));
     }
 
+    /**
+     * it should return a single draft translation
+     */
     @Test
     public void getDraftTranslation() {
-        assertNotNull(mLibrary.getDraftTranslations("obs"));
-
-        assertNotNull(mLibrary.getDraftTranslations("obs", "en"));
+        assertTrue(mLibrary.getDraftTranslations("obs").length > 0);
+        assertTrue(mLibrary.getDraftTranslations("obs", "en").size() > 0);
 
         // min checking level issue causing this to fail
+
         assertNotNull(mLibrary.getDraftTranslation("obs", "en", "obs"));  //am, bn, ceb, en, es, etc...
 
-        assertNotNull(mLibrary.getDraftTranslation("obs"));
+//        assertNotNull(mLibrary.getDraftTranslation("obs"));
     }
 
     @Test
