@@ -1,6 +1,7 @@
 package com.door43.translationstudio;
 
 import android.test.InstrumentationTestCase;
+import android.test.suitebuilder.annotation.MediumTest;
 
 import com.door43.translationstudio.core.CheckingQuestion;
 import com.door43.translationstudio.core.Downloader;
@@ -11,6 +12,7 @@ import com.door43.translationstudio.core.TranslationWord;
 /**
  * Created by joel on 8/27/2015.
  */
+@MediumTest
 public class DownloaderTest extends InstrumentationTestCase {
 
     private Downloader mDownloader;

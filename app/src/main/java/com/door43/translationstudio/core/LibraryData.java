@@ -93,7 +93,7 @@ public class LibraryData {
         librarySQLiteHelper.deleteDatabase(context);
         File databasePath = context.getDatabasePath(librarySQLiteHelper.getDatabaseName());
         databasePath.getParentFile().mkdirs();
-        FileUtilities.moveOrCopy(databasePath, newDatabasePath);
+        FileUtilities.moveOrCopyQuietly(newDatabasePath, databasePath);
         librarySQLiteHelper = null;
     }
 
@@ -198,18 +198,21 @@ public class LibraryData {
      * @return
      */
     public ProjectCategory[] getCategoryBranch(String sourcelanguageSlug, long parentCategoryId) {
+        // TODO: 7/6/16 this method will not return the correctly localized title as is
+        // this needs to be updated to do so.
         List<ProjectCategory> categories = new ArrayList<>();
         Cursor cursor = this.database.rawQuery("SELECT * FROM ("
                 + " SELECT `c`.`slug` AS `category_slug`, `slc`.`category_name` AS `title`, NULL AS `project_slug`, 0 AS `sort`, `c`.`id` AS `category_id` FROM `category` AS `c`"
                 + " LEFT JOIN `source_language__category` AS `slc` ON `slc`.`category_id`=`c`.`id`"
                 + " LEFT JOIN `source_language` AS `sl` ON `sl`.`id`=`slc`.`source_language_id`"
-                + " WHERE `sl`.`slug`=? AND `c`.`parent_id`=" + parentCategoryId
+                + " WHERE `sl`.`slug` IN (?, 'en') AND `c`.`parent_id`=" + parentCategoryId
+                + " GROUP BY `c`.`id`"
                 + " UNION"
                 + " SELECT `c`.`slug` AS `category_slug`, `sl`.`project_name` AS `title`, `p`.`slug` AS `project_id`, `p`.`sort` AS `sort`, " + parentCategoryId + " AS `category_id` FROM `project` AS `p`"
                 + " LEFT JOIN `project__category` AS `pc` ON `pc`.`project_id`=`p`.`id`"
                 + " LEFT JOIN `category` AS `c` ON `c`.`id`=`pc`.`category_id`"
                 + " LEFT JOIN `source_language` AS `sl` ON `sl`.`project_id`=`p`.`id`"
-                + " WHERE CASE WHEN " + parentCategoryId + "=0 THEN `pc`.`category_id` IS NULL ELSE `pc`.`category_id`=" + parentCategoryId + " END AND `sl`.`slug`=?"
+                + " WHERE CASE WHEN " + parentCategoryId + "=0 THEN `pc`.`category_id` IS NULL ELSE `pc`.`category_id`=" + parentCategoryId + " END AND `sl`.`slug` IN (?, 'en')"
                 + ") ORDER BY `sort` ASC", new String[]{sourcelanguageSlug, sourcelanguageSlug});
         cursor.moveToFirst();
         while(!cursor.isAfterLast()) {

@@ -11,9 +11,6 @@ import com.door43.translationstudio.rendering.USXtoUSFMConverter;
 import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -230,7 +227,7 @@ public class Translator {
         } catch (Exception e) {
             throw e;
         } finally {
-            IOUtils.closeQuietly(out);
+            FileUtilities.closeQuietly(out);
         }
     }
 
@@ -240,7 +237,7 @@ public class Translator {
      * @param out
      */
     public void exportArchive(TargetTranslation targetTranslation, OutputStream out, String fileName) throws Exception {
-        if(!FilenameUtils.getExtension(fileName).toLowerCase().equals(ARCHIVE_EXTENSION)) {
+        if(!FileUtilities.getExtension(fileName).toLowerCase().equals(ARCHIVE_EXTENSION)) {
             throw new Exception("Output file must have '" + ARCHIVE_EXTENSION + "' extension");
         }
         if(targetTranslation == null) {
@@ -255,13 +252,13 @@ public class Translator {
             tempCache.mkdirs();
             File manifestFile = new File(tempCache, "manifest.json");
             manifestFile.createNewFile();
-            FileUtils.write(manifestFile, manifestJson.toString());
+            FileUtilities.writeStringToFile(manifestFile, manifestJson.toString());
             Zip.zipToStream(new File[]{manifestFile, targetTranslation.getPath()}, out);
         } catch (Exception e) {
             throw e;
         } finally {
-            IOUtils.closeQuietly(out);
-            FileUtils.deleteQuietly(tempCache);
+            FileUtilities.closeQuietly(out);
+            FileUtilities.deleteQuietly(tempCache);
         }
     }
 
@@ -336,7 +333,7 @@ public class Translator {
         } catch (Exception e) {
             throw e;
         } finally {
-            IOUtils.closeQuietly(in);
+            FileUtilities.closeQuietly(in);
         }
     }
 
@@ -386,7 +383,7 @@ public class Translator {
                     }  else {
                         // import new translation
                         FileUtilities.safeDelete(localDir); // in case local was an invalid target translation
-                        FileUtils.moveDirectory(newDir, localDir);
+                        FileUtilities.moveOrCopyQuietly(newDir, localDir);
                     }
                     // update the generator info. TRICKY: we re-open to get the updated manifest.
                     TargetTranslation.updateGenerator(mContext, TargetTranslation.open(localDir));
@@ -397,8 +394,8 @@ public class Translator {
         } catch (Exception e) {
             throw e;
         } finally {
-            IOUtils.closeQuietly(in);
-            FileUtils.deleteQuietly(archiveDir);
+            FileUtilities.closeQuietly(in);
+            FileUtilities.deleteQuietly(archiveDir);
         }
 
         return importedSlugs.toArray(new String[importedSlugs.size()]);
@@ -416,7 +413,7 @@ public class Translator {
         File pdf = printer.print();
         if(pdf.exists()) {
             outputFile.delete();
-            FileUtils.moveFile(pdf, outputFile);
+            FileUtilities.moveOrCopyQuietly(pdf, outputFile);
         }
 
 //        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -497,11 +494,11 @@ public class Translator {
             try {
                 Zip.zip(chapterFiles, outputFile);
             } catch (IOException e) {
-                FileUtils.deleteQuietly(tempDir);
+                FileUtilities.deleteQuietly(tempDir);
                 throw (e);
             }
         }
-        FileUtils.deleteQuietly(tempDir);
+        FileUtilities.deleteQuietly(tempDir);
     }
 
     /**
@@ -514,7 +511,7 @@ public class Translator {
         if(tempTargetTranslation != null) {
             File destDir = new File(mRootDir, tempTargetTranslation.getId());
             FileUtilities.safeDelete(destDir);
-            FileUtils.moveDirectory(tempTargetTranslation.getPath(), destDir);
+            FileUtilities.moveOrCopyQuietly(tempTargetTranslation.getPath(), destDir);
         }
     }
 
@@ -527,7 +524,7 @@ public class Translator {
         if(!tt.getPath().getName().equals(tt.getId())) {
             File dest = new File(tt.getPath().getParentFile(), tt.getId());
             if(!dest.exists()) {
-                return FileUtilities.moveOrCopy(tt.getPath(), dest);
+                return FileUtilities.moveOrCopyQuietly(tt.getPath(), dest);
             }
         }
         return false;

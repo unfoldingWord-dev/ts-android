@@ -7,8 +7,6 @@ import com.door43.translationstudio.R;
 import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
-import org.apache.commons.io.FileUtils;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -116,7 +114,7 @@ public class Downloader {
      * @return
      */
     public boolean downloadChunkMarkerList(String projectSlug, LibraryData targetIndex) {
-        Project project = targetIndex.getProject(projectSlug);
+        Project project = targetIndex.getProject(projectSlug, App.getDeviceLanguageCode());
         if(project != null && project.chunkMarkerCatalog != null
                 && (project.chunkMarkerCatalogLocalDateModified < project.chunkMarkerCatalogServerDateModified
                 || project.chunkMarkerCatalogServerDateModified == 0)) {
@@ -137,7 +135,7 @@ public class Downloader {
      * @return
      */
     public boolean downloadSourceLanguageList(String projectSlug, LibraryData targetIndex) {
-        Project project = targetIndex.getProject(projectSlug);
+        Project project = targetIndex.getProject(projectSlug, App.getDeviceLanguageCode());
         if(project != null && project.sourceLanguageCatalog != null
                 && (project.sourceLanguageCatalogLocalDateModified < project.sourceLanguageCatalogServerDateModified
                 || project.sourceLanguageCatalogServerDateModified == 0)) {
@@ -304,12 +302,12 @@ public class Downloader {
                     for (File dir:extractedFiles) {
                         if(dir.isDirectory()) {
                             for(File f:dir.listFiles()) {
-                                FileUtils.moveFile(f, new File(imagesDir, f.getName()));
+                                FileUtilities.moveOrCopyQuietly(f, new File(imagesDir, f.getName()));
                             }
                         }
                     }
                 }
-                FileUtils.deleteQuietly(tempDir);
+                FileUtilities.deleteQuietly(tempDir);
             } catch (IOException e) {
                 success = false;
             }

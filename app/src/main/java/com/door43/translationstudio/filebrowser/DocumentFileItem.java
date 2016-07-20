@@ -8,8 +8,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.ArchiveDetails;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Translator;
-
-import org.apache.commons.io.FilenameUtils;
+import com.door43.util.FileUtilities;
 
 
 /**
@@ -123,7 +122,7 @@ public class DocumentFileItem {
         return !isUpButton
                 && file != null
                 && !file.isDirectory()
-                && FilenameUtils.getExtension(file.getName()).equalsIgnoreCase(Translator.ARCHIVE_EXTENSION);
+                && FileUtilities.getExtension(file.getName()).equalsIgnoreCase(Translator.ARCHIVE_EXTENSION);
     }
 
     /**
@@ -134,7 +133,7 @@ public class DocumentFileItem {
         return !isUpButton
                 && file != null
                 && !file.isDirectory()
-                && FilenameUtils.getExtension(file.getName()).equalsIgnoreCase(extension);
+                && FileUtilities.getExtension(file.getName()).equalsIgnoreCase(extension);
     }
 
     /**
@@ -145,6 +144,6 @@ public class DocumentFileItem {
         return !isUpButton
                 && file != null
                 && !file.isDirectory()
-                && FilenameUtils.getExtension(file.getName()).equalsIgnoreCase(ZIP);
+                && FileUtilities.getExtension(file.getName()).equalsIgnoreCase(ZIP);
     }
 }

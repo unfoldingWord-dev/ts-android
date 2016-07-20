@@ -18,15 +18,19 @@ import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.App;
 
-import org.apache.commons.io.input.CharSequenceReader;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.CharArrayReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -238,7 +242,7 @@ public class USXNoteSpan extends NoteSpan {
         XmlPullParser parser = Xml.newPullParser();
         try {
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
-            parser.setInput(new CharSequenceReader(usx));
+            parser.setInput(new InputStreamReader(getStream(usx)));
             parser.nextTag();
             return readXML(parser);
         } catch (XmlPullParserException e) {
@@ -247,6 +251,22 @@ public class USXNoteSpan extends NoteSpan {
         } catch(IOException e) {
             return null;
         }
+    }
+
+    /**
+     * Converts charsequence to an input stream
+     * @param charSequence
+     * @return
+     */
+    private static InputStream getStream(final CharSequence charSequence) {
+        return new InputStream() {
+            int index = 0;
+            int length = charSequence.length();
+            @Override
+            public int read() throws IOException {
+              return index >= length ? -1 : charSequence.charAt(index++);
+            }
+        };
     }
 
     /**

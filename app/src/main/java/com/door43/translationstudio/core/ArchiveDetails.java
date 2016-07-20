@@ -3,9 +3,9 @@ package com.door43.translationstudio.core;
 import android.content.Context;
 import android.support.v4.provider.DocumentFile;
 
+import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
-import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,7 +47,7 @@ public class ArchiveDetails {
     public static ArchiveDetails newInstance(InputStream archiveStream, String preferredLocale, Library library) throws Exception {
         if(archiveStream != null) {
             File tempFile = File.createTempFile("targettranslation", "." + Translator.ARCHIVE_EXTENSION);
-            FileUtils.copyInputStreamToFile(archiveStream, tempFile);
+            FileUtilities.copyInputStreamToFile(archiveStream, tempFile);
 
             String rawManifest = Zip.read(tempFile, MANIFEST_JSON);
             if (rawManifest != null) {

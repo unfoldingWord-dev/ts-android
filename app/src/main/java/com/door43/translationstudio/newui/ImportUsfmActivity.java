@@ -33,8 +33,6 @@ import com.door43.translationstudio.newui.newtranslation.ProjectListFragment;
 import com.door43.translationstudio.newui.newtranslation.TargetLanguageListFragment;
 import com.door43.util.FileUtilities;
 
-import org.apache.commons.io.FileUtils;
-
 import java.io.File;
 import java.io.Serializable;
 
@@ -399,7 +397,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
                             } else {
                                 // import new translation
                                 FileUtilities.safeDelete(localDir); // in case local was an invalid target translation
-                                FileUtils.moveDirectory(newDir, localDir);
+                                FileUtilities.moveOrCopyQuietly(newDir, localDir);
                             }
                             // update the generator info. TRICKY: we re-open to get the updated manifest.
                             TargetTranslation.updateGenerator(ImportUsfmActivity.this, TargetTranslation.open(localDir));
