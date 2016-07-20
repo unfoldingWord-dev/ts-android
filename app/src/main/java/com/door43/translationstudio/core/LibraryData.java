@@ -3358,4 +3358,40 @@ public class LibraryData {
                 "`approved_target_language_slug`=?\n" +
                 "WHERE `slug`=?", new String[]{assignedTargetLanguageSlug, tempTargetLangaugeSlug});
     }
+
+    /**
+     * Removes a temp target language from database
+     * This is a utility method for unit tests
+     * @param languageCode
+     */
+    public void deleteTempTargetLanguage(String languageCode) {
+        this.database.delete("temp_target_language", "`slug`=?", new String[]{languageCode});
+    }
+
+    /**
+     * Retrives a temp target language from database
+     * This is a utility method for unit tests
+     * @param code
+     */
+    public TargetLanguage getTempTargetLanguage(String code) {
+        Cursor cursor = this.database.rawQuery(
+//                "SELECT * FROM (" +
+//                "SELECT `slug`, `name`, `direction`, `region` FROM `target_language`\n" +
+//                "UNION\n" +
+                "SELECT `slug`, `name`, `direction`, `region` FROM `temp_target_language` AS `ttl`\n" +
+//                "WHERE `approved_target_language_slug` IS NULL)\n" +
+                "WHERE `slug`=?", new String[]{code});
+        TargetLanguage targetLanguage = null;
+        if(cursor.moveToFirst()) {
+            String name = cursor.getString(1);
+            LanguageDirection direction = LanguageDirection.get(cursor.getString(2));
+            if(direction == null) {
+                direction = LanguageDirection.LeftToRight;
+            }
+            String region = cursor.getString(3);
+            targetLanguage = new TargetLanguage(code, name, region, direction);
+        }
+        cursor.close();
+        return targetLanguage;
+    }
 }
