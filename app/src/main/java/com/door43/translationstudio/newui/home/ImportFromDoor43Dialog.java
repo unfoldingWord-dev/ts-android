@@ -2,6 +2,9 @@ package com.door43.translationstudio.newui.home;
 
 import android.app.DialogFragment;
 import android.content.DialogInterface;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -11,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -20,12 +24,18 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Profile;
+import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
+import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.newui.FeedbackDialog;
+import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.tasks.AdvancedGogsRepoSearchTask;
 import com.door43.translationstudio.tasks.CloneRepositoryTask;
+import com.door43.translationstudio.tasks.PullTargetTranslationTask;
 import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
 import com.door43.translationstudio.tasks.SearchGogsRepositoriesTask;
 import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
@@ -35,6 +45,8 @@ import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.util.FileUtilities;
 import com.door43.widget.ViewUtil;
 
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.merge.MergeStrategy;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.unfoldingword.gogsclient.Repository;
@@ -48,15 +60,29 @@ import java.util.List;
  * Created by joel on 5/10/16.
  */
 public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTaskWatcher.OnFinishedListener {
+    public static final String TAG = ImportFromDoor43Dialog.class.getSimpleName();
     private static final String STATE_REPOSITORIES = "state_repositories";
+    private static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
+    private static final String STATE_TARGET_TRANSLATION_ID = "state_target_translation_id";
+    private static final String STATE_IMPORT_COMPARE_STATUS = "state_import_compare_status";
+    private static final String STATE_MERGE_FROM_URL = "state_merge_from_url";
+    private static final String STATE_MANUAL_MERGE = "state_manual_merge";
+    public static final String STATE_CLONE_URL = "state_clone_url";
+    public static final String STATE_QUICK_LOAD_PATH = "state_quick_load_path";
     private SimpleTaskWatcher taskWatcher;
     private RestoreFromCloudAdapter adapter;
     private Translator translator;
     private List<Repository> repositories = new ArrayList<>();
-    private String cloneHtmlUrl;
+    private String mClonelUrl;
     private File cloneDestDir;
     private EditText repoEditText;
     private EditText userEditText;
+    private String mQuickLoadPath;
+    private String targetTranslationId;
+    private eDialogShown mDialogShown = eDialogShown.NONE;
+    private TargetTranslation.TrackingStatus mImportCompareStatus = TargetTranslation.TrackingStatus.DIVERGED;
+    private boolean mMergeFromSpecificUrl = false;
+    private boolean mManualMerge = false;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
@@ -91,7 +117,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 String userQuery = userEditText.getText().toString();
                 String repoQuery = repoEditText.getText().toString();
 
-                App.closeKeyboard(getActivity());
+                App.closeKeyboard(getActivity()); // this doesn't seem to work here
 
                 Profile profile = App.getProfile();
                 if(profile != null && profile.gogsUser != null) {
@@ -115,16 +141,22 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Repository repo = adapter.getItem(position);
                 String repoName = repo.getFullName().replace("/", "-");
-                cloneDestDir = new File(App.context().getCacheDir(), repoName + System.currentTimeMillis() + "/");
-                cloneHtmlUrl = repo.getHtmlUrl();
-                CloneRepositoryTask task = new CloneRepositoryTask(cloneHtmlUrl, cloneDestDir);
-                taskWatcher.watch(task);
-                TaskManager.addTask(task, CloneRepositoryTask.TASK_ID);
+                cloneDestDir = getTempCloneDirectory(repoName);
+                mClonelUrl = repo.getHtmlUrl();
+                doCloneRepository();
             }
         });
 
         // restore state
         if(savedInstanceState != null) {
+            mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
+            targetTranslationId = savedInstanceState.getString(STATE_TARGET_TRANSLATION_ID, null);
+            mImportCompareStatus = TargetTranslation.TrackingStatus.fromInt(savedInstanceState.getInt(STATE_IMPORT_COMPARE_STATUS, TargetTranslation.TrackingStatus.DIVERGED.getValue()));
+            mMergeFromSpecificUrl = savedInstanceState.getBoolean(STATE_MERGE_FROM_URL, false);
+            mClonelUrl = savedInstanceState.getString(STATE_CLONE_URL, null);
+            mManualMerge = savedInstanceState.getBoolean(STATE_MANUAL_MERGE, false);
+            mQuickLoadPath = savedInstanceState.getString(STATE_QUICK_LOAD_PATH, null);
+
             String[] repoJsonArray = savedInstanceState.getStringArray(STATE_REPOSITORIES);
             if(repoJsonArray != null) {
                 for (String json : repoJsonArray) {
@@ -139,6 +171,11 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 }
                 adapter.setRepositories(repositories);
             }
+        } else {
+            if(mQuickLoadPath != null) { // check if we already have a project to merge
+                mClonelUrl = mQuickLoadPath;
+                notifyMergeConflictDelayed(targetTranslationId);
+            }
         }
 
         // connect to existing task
@@ -150,7 +187,97 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
             taskWatcher.watch(cloneTask);
         }
 
+        restoreDialogs();
         return v;
+    }
+
+    /**
+     * restore the dialogs that were displayed before rotation
+     */
+    private void restoreDialogs() {
+
+        //recreate dialog last shown
+        switch(mDialogShown) {
+            case IMPORT_FAILED:
+                notifyImportFailed();
+                break;
+
+            case AUTH_FAILURE:
+                showAuthFailure();
+                break;
+
+            case MERGE_FAILED:
+                TargetTranslation targetTranslation = App.getTranslator().getTargetTranslation(targetTranslationId);
+                notifyMergeFailed(targetTranslation);
+                break;
+
+            case MERGE_CONFLICT:
+                notifyMergeConflictDelayed(targetTranslationId);
+                break;
+
+            case NONE:
+                break;
+
+            default:
+                Logger.e(TAG,"Unsupported restore dialog: " + mDialogShown.toString());
+                break;
+        }
+    }
+
+    /**
+     * displays the merge conflict dialog but delays for main dialog to finish initializing.
+     * @param targetTranslationId
+     */
+    private void notifyMergeConflictDelayed(final String targetTranslationId) {
+        hideKeyboard();
+
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                TargetTranslation targetTranslation = App.getTranslator().getTargetTranslation(targetTranslationId);
+                doRecursiveMerge(targetTranslation);
+//                showMergeConflict(targetTranslation);
+            }
+        });
+    }
+
+    private void hideKeyboard() {
+        getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN); // stop annoying keyboard from popping up
+    }
+
+    /**
+     * this will skip the search when dialog opens and go direct to merge of target
+     * @param targetTranslationID
+     */
+    public void doQuickLoad(String targetTranslationID) {
+        this.targetTranslationId = targetTranslationID;
+        Profile profile = App.getProfile();
+        if(profile != null && profile.gogsUser != null) {
+            String server = App.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, App.context().getResources().getString(R.string.pref_default_git_server));
+            mQuickLoadPath = server + ":" + profile.gogsUser.getUsername() + "/" + targetTranslationID;
+            cloneDestDir = getTempCloneDirectory(targetTranslationID);
+        } else {
+            Logger.e(ImportFromDoor43Dialog.class.getSimpleName(), "doQuickLoad failed, no gogsUser");
+        }
+    }
+
+    /**
+     * generate a temp folder to load project into for later merge
+     * @param repoName
+     * @return
+     */
+    private File getTempCloneDirectory(String repoName) {
+        return new File(App.context().getCacheDir(), repoName + System.currentTimeMillis() + "/");
+    }
+
+    /**
+     * starts task to clone repository
+     */
+    private void doCloneRepository() {
+        CloneRepositoryTask task = new CloneRepositoryTask(mClonelUrl, cloneDestDir);
+        taskWatcher.watch(task);
+        TaskManager.addTask(task, CloneRepositoryTask.TASK_ID);
     }
 
     @Override
@@ -177,7 +304,10 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                         if (existingTargetTranslation != null) {
                             // merge target translation
                             try {
-                                existingTargetTranslation.merge(tempPath);
+                                mMergeFromSpecificUrl = true;
+                                mClonelUrl = cloneUrl;
+                                importFailed = true; // we haven't imported yet
+                                showMergeConflict(existingTargetTranslation);
                             } catch (Exception e) {
                                 Logger.e(this.getClass().getName(), "Failed to merge the target translation", e);
                                 notifyImportFailed();
@@ -211,6 +341,10 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                                 Snackbar snack = Snackbar.make(ImportFromDoor43Dialog.this.getView(), R.string.success, Snackbar.LENGTH_SHORT);
                                 ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                                 snack.show();
+
+                                if(mQuickLoadPath != null) {
+                                    dismiss();
+                                }
                             }
                         });
                     }
@@ -233,22 +367,39 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         } else if(task instanceof RegisterSSHKeysTask) {
             if(((RegisterSSHKeysTask)task).isSuccess()) {
                 Logger.i(this.getClass().getName(), "SSH keys were registered with the server");
-                // try to clone again
-                CloneRepositoryTask pullTask = new CloneRepositoryTask(cloneHtmlUrl, cloneDestDir);
-                taskWatcher.watch(pullTask);
-                TaskManager.addTask(pullTask, CloneRepositoryTask.TASK_ID);
+                doCloneRepository(); // try to clone again
             } else {
                 notifyImportFailed();
             }
+        } else if (task instanceof PullTargetTranslationTask) {
+            PullTargetTranslationTask.Status status = ((PullTargetTranslationTask) task).getStatus();
+            TargetTranslation targetTranslation = App.getTranslator().getTargetTranslation(targetTranslationId);
+            if (mManualMerge) {
+                doManualMerge(targetTranslation);
+            } else {
+                //  TRICKY: we continue to push for unknown status in case the repo was just created (the missing branch is an error)
+                // the pull task will catch any errors
+                if (status == PullTargetTranslationTask.Status.UP_TO_DATE
+                        || status == PullTargetTranslationTask.Status.UNKNOWN) {
+                    Logger.i(this.getClass().getName(), "Changes on the server were synced with " + targetTranslation.getId());
+
+                } else if (status == PullTargetTranslationTask.Status.MERGE_CONFLICTS) {
+                    Logger.i(this.getClass().getName(), "The server contains conflicting changes for " + targetTranslation.getId());
+                    doManualMerge(targetTranslation);
+                }
+            }
+            this.dismiss();
         }
     }
 
     public void showAuthFailure() {
+        mDialogShown = eDialogShown.AUTH_FAILURE;
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.error).setMessage(R.string.auth_failure_retry)
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
                         RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(true);
                         taskWatcher.watch(keyTask);
                         TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
@@ -257,16 +408,23 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
                         notifyImportFailed();
                     }
                 }).show();
     }
 
     public void notifyImportFailed() {
+        mDialogShown = eDialogShown.IMPORT_FAILED;
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.error)
                 .setMessage(R.string.restore_failed)
-                .setPositiveButton(R.string.dismiss, null)
+                .setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                    }
+                })
                 .show();
     }
 
@@ -277,6 +435,19 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
             repoJsonList.add(r.toJSON().toString());
         }
         out.putStringArray(STATE_REPOSITORIES, repoJsonList.toArray(new String[repoJsonList.size()]));
+        out.putInt(STATE_DIALOG_SHOWN, mDialogShown.getValue());
+        if(targetTranslationId != null) {
+            out.putString(STATE_TARGET_TRANSLATION_ID, targetTranslationId);
+        }
+        out.putInt(STATE_IMPORT_COMPARE_STATUS,  mImportCompareStatus.getValue());
+        out.putBoolean(STATE_MERGE_FROM_URL,  mMergeFromSpecificUrl);
+        if(mClonelUrl != null) {
+            out.putString(STATE_CLONE_URL, mClonelUrl);
+        }
+        if(mQuickLoadPath != null) {
+            out.putString(STATE_QUICK_LOAD_PATH, mQuickLoadPath);
+        }
+        out.putBoolean(STATE_MANUAL_MERGE,  mManualMerge);
         super.onSaveInstanceState(out);
     }
 
@@ -284,5 +455,178 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     public void onDestroy() {
         taskWatcher.stop();
         super.onDestroy();
+    }
+
+    private void showMergeConflict(final TargetTranslation targetTranslation) {
+        mDialogShown = eDialogShown.MERGE_CONFLICT;
+        this.targetTranslationId = targetTranslation.getId();
+        String targetLanguageName = targetTranslation.getTargetLanguageName();
+        String projectID = targetTranslation.getProjectId();
+        Project project = App.getLibrary().getProject(projectID, targetTranslation.getTargetLanguageName());
+        if(project == null) {
+            Logger.e(TAG, "invalid project id:" + projectID);
+            return;
+        }
+
+        String bookName = project.name;
+        String message = String.format(getResources().getString(R.string.merge_request),bookName, targetLanguageName);
+
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                .setTitle(R.string.import_failed_title)
+                .setMessage(message)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                        doRecursiveMerge(targetTranslation);
+                    }
+
+                })
+                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                        ImportFromDoor43Dialog.this.dismiss();
+                    }
+                }).show();
+    }
+
+    /**
+     * do pull request with manual merge
+     * @param targetTranslation
+     */
+    private void doRecursiveMerge(TargetTranslation targetTranslation) {
+        mManualMerge = true;
+        try {
+            final String sourceUrl = mMergeFromSpecificUrl ? mClonelUrl : null; // if not a specific url, then will merge from default for target
+            pullFromServer(targetTranslation, MergeStrategy.RECURSIVE, sourceUrl);
+        } catch (Exception e) {
+            Logger.e(this.getClass().getName(), "Failed to merge during import", e);
+            notifyMergeFailed(targetTranslation);
+        }
+    }
+
+    /**
+     * Initiate a pull request with specific merge strategy
+     * @param targetTranslation
+     * @param mergeStrategy
+     * @param sourceURL - if null then load from current user and default server
+     * @throws Exception
+     */
+    private void pullFromServer(TargetTranslation targetTranslation, MergeStrategy mergeStrategy, String sourceURL) throws Exception {
+        Git git = targetTranslation.getRepo().getGit();
+        targetTranslation.commitSync();
+
+        // pull from server
+        PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, mergeStrategy, sourceURL);
+        taskWatcher.watch(pullTask);
+        TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
+    }
+
+    private void doManualMerge(TargetTranslation targetTranslation) {
+        // ask parent activity to navigate to a new activity
+        Intent intent = new Intent(getActivity(), TargetTranslationActivity.class);
+        Bundle args = new Bundle();
+        args.putString(App.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
+        // TODO: 4/20/16 it woulid be nice to navigate directly to the first conflict
+//                args.putString(App.EXTRA_CHAPTER_ID, chapterId);
+//                args.putString(App.EXTRA_FRAME_ID, frameId);
+        args.putString(App.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
+        intent.putExtras(args);
+        startActivity(intent);
+        getActivity().finish();
+    }
+
+    /**
+     * Displays a dialog to the user indicating the merge failed.
+     * Includes an option to submit a bug report
+     * @param targetTranslation
+     */
+    private void notifyMergeFailed(final TargetTranslation targetTranslation) {
+        mDialogShown = eDialogShown.MERGE_FAILED;
+
+        new AlertDialog.Builder(getActivity())
+                .setTitle(R.string.error)
+                .setMessage(R.string.import_failed_title)
+                .setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                    }
+                })
+                .setNeutralButton(R.string.menu_bug, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                        showFeedbackDialog(targetTranslation);
+                    }
+                }).show();
+    }
+
+    private void showFeedbackDialog(TargetTranslation targetTranslation) {
+        Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), "en");
+
+        FeedbackDialog feebackDlg = new FeedbackDialog();
+        Bundle args = new Bundle();
+        String message = "Failed to publish the translation of " +
+                project.name + " into " +
+                targetTranslation.getTargetLanguageName()
+                + ".\ntargetTranslation: " + targetTranslation.getId() +
+                "\n--------\n\n";
+        args.putString(FeedbackDialog.ARG_MESSAGE, message);
+        feebackDlg.setArguments(args);
+        showDialogFragment(feebackDlg, FeedbackDialog.TAG);
+    }
+
+    /**
+     * this is to fix old method which when called in onResume() would create a
+     * second dialog overlaying the first.  The first was actually not removed.
+     * Doing a commit after the remove() and starting a second FragmentTransaction
+     * seems to fix the duplicate dialog bug.
+     *
+     * @param dialog
+     * @param tag
+     */
+    private void showDialogFragment(android.app.DialogFragment dialog, String tag) {
+        FragmentTransaction backupFt = getFragmentManager().beginTransaction();
+        Fragment backupPrev = getFragmentManager().findFragmentByTag(tag);
+        if (backupPrev != null) {
+            backupFt.remove(backupPrev);
+            backupFt.commit(); // apply the remove
+            backupFt = getFragmentManager().beginTransaction(); // start a new transaction
+        }
+        backupFt.addToBackStack(null);
+
+        dialog.show(backupFt, tag);
+    }
+
+    /**
+     * for keeping track which dialog is being shown for orientation changes (not for DialogFragments)
+     */
+    public enum eDialogShown {
+        NONE(0),
+        IMPORT_FAILED(1),
+        AUTH_FAILURE(2),
+        MERGE_FAILED(3),
+        MERGE_CONFLICT(4);
+
+        private int _value;
+
+        eDialogShown(int Value) {
+            this._value = Value;
+        }
+
+        public int getValue() {
+            return _value;
+        }
+
+        public static eDialogShown fromInt(int i) {
+            for (eDialogShown b : eDialogShown.values()) {
+                if (b.getValue() == i) {
+                    return b;
+                }
+            }
+            return null;
+        }
     }
 }
