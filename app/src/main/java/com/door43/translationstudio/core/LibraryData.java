@@ -273,7 +273,7 @@ public class LibraryData {
      * @param categorySlugs
      * @return
      */
-    private long addProject(String slug, int sort, int dateModified, String sourceLanguageCatalogUrl, int sourceLanguageCatalogServerModifiedAt, String[] categorySlugs ) {
+    public long addProject(String slug, int sort, int dateModified, String sourceLanguageCatalogUrl, int sourceLanguageCatalogServerModifiedAt, String[] categorySlugs ) {
         ContentValues values = new ContentValues();
         values.put("slug", slug);
         values.put("sort", sort);
@@ -400,7 +400,7 @@ public class LibraryData {
      * @param dateModified
      * @param resourceCatalogUrl
      */
-    private long addSourceLanguage(String slug, long projectId, String name, String projectName, String projectDescription, String direction, int dateModified, String resourceCatalogUrl, int resourceCatalogServerModifiedAt, String[] categoryNames) {
+    public long addSourceLanguage(String slug, long projectId, String name, String projectName, String projectDescription, String direction, int dateModified, String resourceCatalogUrl, int resourceCatalogServerModifiedAt, String[] categoryNames) {
         ContentValues values = new ContentValues();
         values.put("slug", slug);
         values.put("project_id", projectId);
@@ -475,7 +475,7 @@ public class LibraryData {
      * @param projectSlug
      * @return returns 0 if no record was found
      */
-    private long getProjectDBId(String projectSlug) {
+    public long getProjectDBId(String projectSlug) {
         Cursor cursor = this.database.rawQuery("SELECT `id` FROM `project` WHERE `slug`=?", new String[]{projectSlug});
         long projectId = 0;
         if(cursor.moveToFirst()) {
@@ -491,7 +491,7 @@ public class LibraryData {
      * @param projectId
      * @return returns 0 if no record was found
      */
-    private long getSourceLanguageDBId(String slug, long projectId) {
+    public long getSourceLanguageDBId(String slug, long projectId) {
         Cursor cursor = this.database.rawQuery("SELECT `id` FROM `source_language` WHERE `slug`=? AND `project_id`=" + projectId, new String[]{slug});
         long sourceLanguageId = 0;
         if(cursor.moveToFirst()) {
@@ -507,7 +507,7 @@ public class LibraryData {
      * @param sourceLanguageId
      * @return
      */
-    private long getResourceDBId(String slug, long sourceLanguageId) {
+    public long getResourceDBId(String slug, long sourceLanguageId) {
         Cursor cursor = this.database.rawQuery("SELECT `id` FROM `resource` WHERE `slug`=? AND `source_language_id`=" + sourceLanguageId, new String[]{slug});
         long resourceId = 0;
         if(cursor.moveToFirst()) {
@@ -577,7 +577,7 @@ public class LibraryData {
      * @param questionsCatalog
      * @param questionsServerDateModified
      */
-    private long addResource(String slug, long sourceLanguageId, String name,
+    public long addResource(String slug, long sourceLanguageId, String name,
                             int checkingLevel, String version, int dateModified, String sourceCatalog,
                             int sourceServerDateModified, String notesCatalog, int notesServerDateModified,
                             String wordsCatalog, int wordsServerDateModified, String wordAssignmentsCatalog,
@@ -917,7 +917,7 @@ public class LibraryData {
      * @param title
      * @return
      */
-    private long addChapter(String slug, long resourceId, String reference, String title) {
+    public long addChapter(String slug, long resourceId, String reference, String title) {
         ContentValues values = new ContentValues();
         values.put("slug", slug);
         values.put("resource_id", resourceId);
@@ -948,7 +948,7 @@ public class LibraryData {
      * @param imageUrl
      * @return
      */
-    private long addFrame(String slug, long chapterId, String body, String format, String imageUrl) {
+    public long addFrame(String slug, long chapterId, String body, String format, String imageUrl) {
         ContentValues values = new ContentValues();
         values.put("slug", slug);
         values.put("chapter_id", chapterId);

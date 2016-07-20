@@ -10,6 +10,7 @@ import com.door43.translationstudio.core.ChunkMarker;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.LanguageDirection;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.LibraryData;
 import com.door43.translationstudio.core.NativeSpeaker;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.ProjectCategory;
@@ -36,8 +37,10 @@ import org.spongycastle.asn1.x509.Target;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -47,25 +50,22 @@ import static org.junit.Assert.assertNotEquals;
 /**
  * Created by Andrew on 6/29/2016.
  */
-public class LibraryStraightThroughTest implements ManagedTask.OnFinishedListener {
+public class LibraryStraightThroughTest {
     private Library mLibrary;
     private String TAG = "LibraryStraightThroughTest";
     private Translator mTranslator;
 
     @Before
     public void setup() {
+        try {
+            App.deployDefaultLibrary();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         mLibrary = App.getLibrary();
         assertTrue(mLibrary.exists());
-
-//        try {
-//            App.deployDefaultLibrary();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        mLibrary = App.getLibrary();
-
-//        // NOTE: this will fail when first updating the db version
-//        assertTrue(mLibrary.exists());
+        mTranslator = App.getTranslator();
     }
 
     @After
@@ -161,13 +161,13 @@ public class LibraryStraightThroughTest implements ManagedTask.OnFinishedListene
     public void exportLibrary() {
         File fileLocation = new File(App.context().getCacheDir(), "sharing/");
         if(fileLocation.listFiles() != null) {
-            FileUtilities.deleteRecursive(fileLocation);
+            FileUtilities.deleteQuietly(fileLocation);
         }
         assertNull(fileLocation.listFiles());
 
         assertNotNull(mLibrary.export(fileLocation));
 
-        FileUtilities.deleteRecursive(fileLocation);
+        FileUtilities.deleteQuietly(fileLocation);
 
         assertNull(fileLocation.listFiles());   //verify that created file is deleted
     }
@@ -240,6 +240,7 @@ public class LibraryStraightThroughTest implements ManagedTask.OnFinishedListene
         TargetTranslation targetTranslation = mTranslator.createTargetTranslation(new NativeSpeaker("demo speaker"), targetLanguage, "obs", TranslationType.TEXT, Resource.REGULAR_SLUG, TranslationFormat.USFM);
         ChapterTranslation ct = targetTranslation.getChapterTranslation("01");
         targetTranslation.applyChapterTitleTranslation(ct, "Some chapter title");
+        targetTranslation.finishChapterTitle(new Chapter("", "", "01"));
         assertTrue(mLibrary.getTranslationProgress(targetTranslation) > 0);
     }
 
@@ -322,103 +323,123 @@ public class LibraryStraightThroughTest implements ManagedTask.OnFinishedListene
      * it should return a single draft translation
      */
     @Test
-    public void getDraftTranslation() {
+    public void getDraftTranslation() throws IOException {
+        // fabricate draft
+        LibraryData data = new LibraryData(App.context());
+        long sourceLanguageDBId = data.getSourceLanguageDBId("en", data.getProjectDBId("obs"));
+        long resourceDBId = data.addResource("hi", sourceLanguageDBId, "Hello World", 1, "v1", 0, "", 0, "", 0, "", 0, "", 0, "", 0);
+
+        // test
         assertTrue(mLibrary.getDraftTranslations("obs").length > 0);
         assertTrue(mLibrary.getDraftTranslations("obs", "en").size() > 0);
+        assertNotNull(mLibrary.getDraftTranslation("obs", "en", "hi"));
+        SourceTranslation st = SourceTranslation.simple("obs", "en", "hi");
+        assertNotNull(mLibrary.getDraftTranslation(st.getId()));
 
-        // min checking level issue causing this to fail
-
-        assertNotNull(mLibrary.getDraftTranslation("obs", "en", "obs"));  //am, bn, ceb, en, es, etc...
-
-//        assertNotNull(mLibrary.getDraftTranslation("obs"));
+        // clean
+        data.deleteResource(resourceDBId);
     }
 
+    /**
+     * it should return translation notes on a frame
+     */
     @Test
     public void getTranslationNote() {
         SourceTranslation sourceTranslation = mLibrary.getSourceTranslation("obs", "en", "obs");
-        Log.e(TAG, "sourceTranslation: " + sourceTranslation.getId());
         TranslationNote[] translationNotes = mLibrary.getTranslationNotes(sourceTranslation, "01", "01");
-        Log.e(TAG, "TranslationNote[] length: " + translationNotes.length );
-//        + ", getId at 0: " + translationNotes[0].getId());
-        assertNotNull(translationNotes);
-        for (TranslationNote s:translationNotes) {
-            Log.e(TAG, "TranslationNote: " + s.getId());
-        }
+        assertTrue(translationNotes.length > 0);
 
-//        mLibrary.getTranslationNote(sourceTranslation, chapterId, frameId, noteId);
+        assertNotNull(mLibrary.getTranslationNote(sourceTranslation, "01", "01", translationNotes[0].getId()));
     }
 
+    /**
+     * it should return translation words for a frame
+     */
     @Test
     public void getTranslationWords() {
         SourceTranslation sourceTranslation = mLibrary.getSourceTranslation("obs", "en", "obs");
-        TranslationWord[] tWords = mLibrary.getTranslationWords(sourceTranslation);
-        for(TranslationWord t:tWords) {
-            Log.e(TAG, "translationWords, id:" + t.getId());
-        }
-        assertNotNull(tWords);
+        assertTrue(mLibrary.getTranslationWords(sourceTranslation).length > 0);
 
-        TranslationWord[] translationWords = mLibrary.getTranslationWords(sourceTranslation, "01", "04");
-        for(TranslationWord t:translationWords) {
-            Log.e(TAG, "translationWords2: " + t.getTerm());
-        }
-        assertNotNull(translationWords);
+        assertTrue(mLibrary.getTranslationWords(sourceTranslation, "01", "01").length > 0);
 
-        TranslationWord tWord = mLibrary.getTranslationWord(sourceTranslation, "heaven");
-        Log.e(TAG, "translation word heaven: " + tWord.getDefinition());
-        assertNotNull(tWord);
+        assertNotNull(mLibrary.getTranslationWord(sourceTranslation, "heaven"));
     }
 
+    /**
+     * it should return a single article
+     */
     @Test
     public void getTranslationArticle() {
         SourceTranslation sourceTranslation = mLibrary.getSourceTranslation("obs", "en", "obs");
-        TranslationArticle translationArticle = mLibrary.getTranslationArticle(sourceTranslation, "01", "01", "01");
+        TranslationArticle translationArticle = mLibrary.getTranslationArticle(sourceTranslation, "vol1", "intro", "vol1_intro_ta_intro");
         assertNotNull(translationArticle);
     }
 
+    /**
+     * it should return translation questions for a frame
+     */
     @Test
     public void getCheckingQuestion() {
         SourceTranslation sourceTranslation = mLibrary.getSourceTranslation("obs", "en", "obs");
-        CheckingQuestion[] checkingQuestions = mLibrary.getCheckingQuestions(sourceTranslation, "12", "12");
-        for(CheckingQuestion check:checkingQuestions) {
-            Log.e(TAG, "checking question: " + check.getId() + ", " + check.getQuestion()+ ", Answer: " + check.getAnswer());
-        }
-        assertNotNull(checkingQuestions);
+        CheckingQuestion[] checkingQuestions = mLibrary.getCheckingQuestions(sourceTranslation, "01", "01");
+        assertTrue(checkingQuestions.length > 0);
 
-        assertNotNull(mLibrary.getCheckingQuestion(sourceTranslation, "12", "12", "26a12a8643bd53a7c69ab2c4fc7657a1"));
+        assertNotNull(mLibrary.getCheckingQuestion(sourceTranslation, "01", "01", checkingQuestions[0].getId()));
     }
 
+    /**
+     * it should check if the project has source content
+     */
     @Test
     public void getProjectHasSource() {
         assertTrue(mLibrary.projectHasSource("obs"));
     }
 
+    /**
+     * it should check if the source language has source content
+     */
     @Test
     public void getSourceLanguageHasSource() {
         assertTrue(mLibrary.sourceLanguageHasSource("obs", "en"));
-        assertTrue(mLibrary.sourceLanguageHasSource("obs", "fr"));
     }
 
+    /**
+     * it should check if the source translation has source content
+     */
     @Test
     public void getSourceTranslationHasSource() {
-        assertTrue(mLibrary.sourceTranslationHasSource(mLibrary.getSourceTranslation("obs", "en", "obs")));
+        assertTrue(mLibrary.sourceTranslationHasSource(SourceTranslation.simple("obs", "en", "obs")));
     }
 
-    //deleteProject?
+    /**
+     * it should delete a single project
+     */
+    @Test
+    public void deleteProject() throws IOException {
+        // set up test data
+        LibraryData data = new LibraryData(App.context());
+        String slug = "yoyoyoyo";
+        long projectDBID = data.addProject(slug, 0, 0, "", 0, new String[]{});
+        long sourceLanguageDBId = data.addSourceLanguage("en", projectDBID, "English", "YO project", "", "ltr", 0, "", 0, new String[]{});
+        long resourceDBId = data.addResource("hi", sourceLanguageDBId, "Hello World", 1, "v1", 0, "", 0, "", 0, "", 0, "", 0, "", 0);
+        long chapterDBId = data.addChapter("01", resourceDBId, "reference", "title");
+        data.addFrame("01", chapterDBId, "this is the body", "usfm", "");
 
-    //getTargetLanguagesLength isn't used
+        // test
+        assertTrue(mLibrary.projectHasSource(slug));
+        mLibrary.deleteProject(slug);
+        assertFalse(mLibrary.projectHasSource(slug));
 
+        // clean up test data
+        data.deleteProject(slug);
+    }
+
+    /**
+     * it should return the format of the chapter body
+     */
     @Test
     public void getChapterBodyFormat() {
-        SourceTranslation sourceTranslation = mLibrary.getSourceTranslation("obs", "en", "obs");
-        Log.e(TAG, "chapter body format: " + mLibrary.getChapterBodyFormat(sourceTranslation, "01")); //insert anything into second parameter, it always returns 'default' ??
-        assertNotEquals("default", mLibrary.getChapterBodyFormat(sourceTranslation, "01"));
-
-        Log.e(TAG, "chapter body: " + mLibrary.getChapterBody(sourceTranslation, "01"));
-        assertNotEquals("", mLibrary.getChapterBody(sourceTranslation, "01"));
-    }
-
-    @Override
-    public void onTaskFinished(ManagedTask task) {
-        Log.e(TAG, "finished!");
+        SourceTranslation sourceTranslation = SourceTranslation.simple("gen", "en", "ulb");
+        assertNotEquals(TranslationFormat.DEFAULT, mLibrary.getChapterBodyFormat(sourceTranslation, "01"));
     }
 }

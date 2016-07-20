@@ -971,14 +971,6 @@ public class Library {
     }
 
     /**
-     * Returns the number of target languages without loading them from the disk.
-     * @return
-     */
-    public int getTargetLanguagesLength() {
-        return getActiveIndex().getNumTargetLanguages();
-    }
-
-    /**
      * Downloads updates from the server
      * @param updates
      * @param listener
