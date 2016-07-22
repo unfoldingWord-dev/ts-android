@@ -27,6 +27,7 @@ import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.newui.publish.PublishFragment;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.tasks.CreateRepositoryTask;
 import com.door43.translationstudio.tasks.PullTargetTranslationTask;
@@ -90,6 +91,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         mBackupToCloudButton = (Button)v.findViewById(R.id.backup_to_cloud);
         Button backupToSDButton = (Button)v.findViewById(R.id.backup_to_sd);
         Button backupToAppButton = (Button)v.findViewById(R.id.backup_to_app);
+        Button exportUsfmToSD = (Button)v.findViewById(R.id.export_usfm_to_sd);
         Button backupToDeviceButton = (Button)v.findViewById(R.id.backup_to_device);
 
         final String filename = targetTranslation.getId() + "." + Translator.ARCHIVE_EXTENSION;
@@ -107,6 +109,13 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             @Override
             public void onClick(View v) {
                 dismiss();
+            }
+        });
+
+        exportUsfmToSD.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                PublishFragment.saveToUsfmWithPrompt(getActivity(),targetTranslation);
             }
         });
 

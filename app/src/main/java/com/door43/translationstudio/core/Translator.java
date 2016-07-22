@@ -426,13 +426,18 @@ public class Translator {
     /**
      * Exports a target translation as a USFM file
      * @param targetTranslation
-     * @return
+     * @param outputFolder - folder for output file
+     * @param zipFileName - if chapters are separated, then they will be zipped together and this is the filename to be used for zip file.  If chapters are all combined this is ignored.
+     * @param separateChapters - if true then each chapter will be in a different file
+     * @return output file
      */
-    public void exportAsUSFM(TargetTranslation targetTranslation, File outputFile, boolean separateChapters) throws IOException {
+    public File exportAsUSFM(TargetTranslation targetTranslation, File outputFolder, String zipFileName, boolean separateChapters) throws IOException {
         File tempDir = new File(getLocalCacheDir(), System.currentTimeMillis() + "");
         tempDir.mkdirs();
         ChapterTranslation[] chapters = targetTranslation.getChapterTranslations();
         PrintStream ps = null;
+        String outputFileName = null;
+        File chapterFile = null;
         for(ChapterTranslation chapter:chapters) {
             // TRICKY: the translation format doesn't matter for exporting
             FrameTranslation[] frames = targetTranslation.getFrameTranslations(chapter.getId(), TranslationFormat.DEFAULT);
@@ -440,17 +445,10 @@ public class Translator {
 
             boolean needNewFile = (ps == null) || (separateChapters);
             if(needNewFile) {
-                File chapterFile = new File(tempDir, chapter.getId() + ".txt");
-                chapterFile.createNewFile();
-
-                if(ps != null) {
-                    ps.close();
-                }
-                ps = new PrintStream(chapterFile);
-
-                // id
+                // chapter id
                 String bookCode = targetTranslation.getProjectId().toUpperCase();
-                String languageName = targetTranslation.getTargetLanguageId() + ", " + targetTranslation.getTargetLanguageName();
+                String languageId = targetTranslation.getTargetLanguageId();
+                String languageName = targetTranslation.getTargetLanguageName();
                 ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
                 String bookTitle = "";
                 if((projectTranslation != null) && projectTranslation.isTitleFinished()) {
@@ -463,7 +461,21 @@ public class Translator {
                     bookTitle += " " + chapter.getId();
                 }
 
-                String id = "\\id " + bookCode + " " + bookTitle + ", " + languageName;
+                // generate file name
+                if(separateChapters) {
+                    outputFileName = "chapter_" + chapter.getId() + ".usfm";
+                } else {
+                    outputFileName = System.currentTimeMillis() + "_" + languageId + "_" + bookCode + "_" + bookTitle + ".usfm";
+                }
+                chapterFile = new File(tempDir, outputFileName);
+                chapterFile.createNewFile();
+
+                if(ps != null) {
+                    ps.close();
+                }
+                ps = new PrintStream(chapterFile);
+
+                String id = "\\id " + bookCode + " " + bookTitle + ", " + (languageId + ", " + languageName);
                 ps.println(id);
                 String bookID = "\\toc1 " + bookTitle;
                 ps.println(bookID);
@@ -498,16 +510,25 @@ public class Translator {
 
         ps.close();
 
-        File[] chapterFiles = tempDir.listFiles();
-        if(chapterFiles != null && chapterFiles.length > 0) {
-            try {
-                Zip.zip(chapterFiles, outputFile);
-            } catch (IOException e) {
-                FileUtilities.deleteQuietly(tempDir);
-                throw (e);
+        File destFile = null;
+        if(separateChapters) { // zip them together
+            File[] chapterFiles = tempDir.listFiles();
+            if (chapterFiles != null && chapterFiles.length > 0) {
+                try {
+                    File zipFile = new File(outputFolder, zipFileName);
+                    Zip.zip(chapterFiles, zipFile);
+                    destFile = zipFile;
+                } catch (IOException e) {
+                    FileUtilities.deleteQuietly(tempDir);
+                    throw (e);
+                }
             }
+        } else if( (chapterFile != null) && (outputFileName != null) ) {
+            destFile = new File(outputFolder, outputFileName);
+            FileUtilities.moveOrCopyQuietly(chapterFile, destFile);
         }
         FileUtilities.deleteQuietly(tempDir);
+        return destFile;
     }
 
     /**
