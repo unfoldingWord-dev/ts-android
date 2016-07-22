@@ -424,71 +424,80 @@ public class Translator {
     }
 
     /**
-     * Exports a target translation as a single DokuWiki file
+     * Exports a target translation as a USFM file
      * @param targetTranslation
      * @return
      */
-    @Deprecated
-    public void exportDokuWiki(TargetTranslation targetTranslation, File outputFile) throws IOException {
+    public void exportAsUSFM(TargetTranslation targetTranslation, File outputFile, boolean separateChapters) throws IOException {
         File tempDir = new File(getLocalCacheDir(), System.currentTimeMillis() + "");
         tempDir.mkdirs();
         ChapterTranslation[] chapters = targetTranslation.getChapterTranslations();
+        PrintStream ps = null;
         for(ChapterTranslation chapter:chapters) {
             // TRICKY: the translation format doesn't matter for exporting
             FrameTranslation[] frames = targetTranslation.getFrameTranslations(chapter.getId(), TranslationFormat.DEFAULT);
             if(frames.length == 0) continue;
 
-            // compile translation
-            File chapterFile = new File(tempDir, chapter.getId() + ".txt");
-            chapterFile.createNewFile();
-            PrintStream ps = new PrintStream(chapterFile);
+            boolean needNewFile = (ps == null) || (separateChapters);
+            if(needNewFile) {
+                File chapterFile = new File(tempDir, chapter.getId() + ".txt");
+                chapterFile.createNewFile();
 
-            // language
-            ps.print("//");
-            ps.print(targetTranslation.getTargetLanguageName());
-            ps.println("//");
-            ps.println();
+                if(ps != null) {
+                    ps.close();
+                }
+                ps = new PrintStream(chapterFile);
 
-            // project
-            ps.print("//");
-            ps.print(targetTranslation.getProjectId());
-            ps.println("//");
-            ps.println();
+                // id
+                String bookCode = targetTranslation.getProjectId().toUpperCase();
+                String languageName = targetTranslation.getTargetLanguageId() + ", " + targetTranslation.getTargetLanguageName();
+                ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
+                String bookTitle = "";
+                if((projectTranslation != null) && projectTranslation.isTitleFinished()) {
+                    bookTitle = projectTranslation.getTitle().trim();
+                }
+                if(bookTitle.isEmpty()) {
+                    bookTitle = bookCode;
+                }
+                if(separateChapters) {
+                    bookTitle += " " + chapter.getId();
+                }
 
-            // chapter title
-            ps.print("======");
-            ps.print(chapter.title.trim());
-            ps.println("======");
-            ps.println();
+                String id = "\\id " + bookCode + " " + bookTitle + ", " + languageName;
+                ps.println(id);
+                String bookID = "\\toc1 " + bookTitle;
+                ps.println(bookID);
+                String shortBookID = "\\toc3 " + bookCode;
+                ps.println(shortBookID);
+            }
+
+            if(chapter.isTitleFinished()) {
+                String chapterTitle = "\\cl " + chapter.title;
+                ps.println(chapterTitle);
+            }
+
+            String chapterNumber = "\\c " + chapter.getId();
+            ps.println(chapterNumber);
+
+            if(chapter.isReferenceFinished()) {
+                String chapterRef = "\\cd " + chapter.reference;
+                ps.println(chapterRef);
+            }
 
             // frames
             for(FrameTranslation frame:frames) {
-                // image
-                ps.print("{{");
-                // TODO: the api version and image dimensions should be placed in the user preferences
-                String apiVersion = "1";
-                // TODO: for now all images use the english versions
-                String languageCode = "en"; // eventually we should use: getSelectedTargetLanguage().getId()
-                ps.print("https://api.unfoldingword.org/" + targetTranslation.getProjectId() + "/jpg/" + apiVersion + "/" + languageCode + "/360px/" + targetTranslation.getProjectId() + "-" + languageCode + "-" + chapter.getId() + "-" + frame.getId() + ".jpg");
-                ps.println("}}");
-                ps.println();
 
-                // convert tags
-                String text = frame.body.trim();
-
-                // TODO: convert usx tags to USFM
+                String text = frame.body;
 
                 // text
+                ps.println("\\s5"); // section marker
                 ps.println(text);
                 ps.println();
             }
-
-            // chapter reference
-            ps.print("//");
-            ps.print(chapter.reference.trim());
-            ps.println("//");
-            ps.close();
         }
+
+        ps.close();
+
         File[] chapterFiles = tempDir.listFiles();
         if(chapterFiles != null && chapterFiles.length > 0) {
             try {

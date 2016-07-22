@@ -1,6 +1,5 @@
 package com.door43.translationstudio.newui.publish;
 
-import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
@@ -15,7 +14,6 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.text.SpannableString;
 import android.text.Spanned;
-import android.text.method.LinkMovementMethod;
 import android.text.method.ScrollingMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.StyleSpan;
@@ -157,7 +155,7 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
             public void onClick(View v) {
                 File exportFile = new File(App.getSharingDir(), filename);
                 try {
-                    App.getTranslator().exportDokuWiki(targetTranslation, exportFile);
+                    App.getTranslator().exportAsUSFM(targetTranslation, exportFile, false);
                 } catch (Exception e) {
                     Logger.e(PublishFragment.class.getName(), "Failed to export the target translation " + targetTranslation.getId(), e);
                 }
@@ -181,7 +179,7 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
                 // TODO: 10/27/2015 have the user choose where to save the file
                 File exportFile = new File(App.getPublicDownloadsDirectory(), System.currentTimeMillis() / 1000L + "_" + filename);
                 try {
-                    App.getTranslator().exportDokuWiki(targetTranslation, exportFile);
+                    App.getTranslator().exportAsUSFM(targetTranslation, exportFile, true); // TODO: 7/21/16 prompt to split chapters
                 } catch (Exception e) {
                     Logger.e(PublishFragment.class.getName(), "Failed to export the target translation " + targetTranslation.getId(), e);
                 }
