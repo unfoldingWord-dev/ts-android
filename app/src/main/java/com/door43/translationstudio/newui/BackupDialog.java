@@ -23,6 +23,7 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.ExportUsfm;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
@@ -115,7 +116,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         exportUsfmToSD.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PublishFragment.saveToUsfmWithPrompt(getActivity(),targetTranslation);
+                ExportUsfm.saveToUsfmWithPrompt(getActivity(), targetTranslation);
             }
         });
 

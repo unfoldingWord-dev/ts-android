@@ -78,7 +78,7 @@ public class Translator {
      * This is where import and export operations can expand files.
      * @return
      */
-    private File getLocalCacheDir() {
+    public File getLocalCacheDir() {
         return new File(mRootDir, "cache");
     }
 
@@ -423,115 +423,7 @@ public class Translator {
 //        }
     }
 
-    /**
-     * Exports a target translation as a USFM file
-     * @param targetTranslation
-     * @param outputFolder - folder for output file
-     * @param zipFileName - if chapters are separated, then they will be zipped together and this is the filename to be used for zip file.  If chapters are all combined this is ignored.
-     * @param separateChapters - if true then each chapter will be in a different file
-     * @return output file
-     */
-    public File exportAsUSFM(TargetTranslation targetTranslation, File outputFolder, String zipFileName, boolean separateChapters) throws IOException {
-        File tempDir = new File(getLocalCacheDir(), System.currentTimeMillis() + "");
-        tempDir.mkdirs();
-        ChapterTranslation[] chapters = targetTranslation.getChapterTranslations();
-        PrintStream ps = null;
-        String outputFileName = null;
-        File chapterFile = null;
-        for(ChapterTranslation chapter:chapters) {
-            // TRICKY: the translation format doesn't matter for exporting
-            FrameTranslation[] frames = targetTranslation.getFrameTranslations(chapter.getId(), TranslationFormat.DEFAULT);
-            if(frames.length == 0) continue;
-
-            boolean needNewFile = (ps == null) || (separateChapters);
-            if(needNewFile) {
-                // chapter id
-                String bookCode = targetTranslation.getProjectId().toUpperCase();
-                String languageId = targetTranslation.getTargetLanguageId();
-                String languageName = targetTranslation.getTargetLanguageName();
-                ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
-                String bookTitle = "";
-                if((projectTranslation != null) && projectTranslation.isTitleFinished()) {
-                    bookTitle = projectTranslation.getTitle().trim();
-                }
-                if(bookTitle.isEmpty()) {
-                    bookTitle = bookCode;
-                }
-                if(separateChapters) {
-                    bookTitle += " " + chapter.getId();
-                }
-
-                // generate file name
-                if(separateChapters) {
-                    outputFileName = "chapter_" + chapter.getId() + ".usfm";
-                } else {
-                    outputFileName = System.currentTimeMillis() + "_" + languageId + "_" + bookCode + "_" + bookTitle + ".usfm";
-                }
-                chapterFile = new File(tempDir, outputFileName);
-                chapterFile.createNewFile();
-
-                if(ps != null) {
-                    ps.close();
-                }
-                ps = new PrintStream(chapterFile);
-
-                String id = "\\id " + bookCode + " " + bookTitle + ", " + (languageId + ", " + languageName);
-                ps.println(id);
-                String bookID = "\\toc1 " + bookTitle;
-                ps.println(bookID);
-                String shortBookID = "\\toc3 " + bookCode;
-                ps.println(shortBookID);
-            }
-
-            if(chapter.isTitleFinished()) {
-                String chapterTitle = "\\cl " + chapter.title;
-                ps.println(chapterTitle);
-            }
-
-            String chapterNumber = "\\c " + chapter.getId();
-            ps.println(chapterNumber);
-
-            if(chapter.isReferenceFinished()) {
-                String chapterRef = "\\cd " + chapter.reference;
-                ps.println(chapterRef);
-            }
-
-            // frames
-            for(FrameTranslation frame:frames) {
-
-                String text = frame.body;
-
-                // text
-                ps.println("\\s5"); // section marker
-                ps.println(text);
-                ps.println();
-            }
-        }
-
-        ps.close();
-
-        File destFile = null;
-        if(separateChapters) { // zip them together
-            File[] chapterFiles = tempDir.listFiles();
-            if (chapterFiles != null && chapterFiles.length > 0) {
-                try {
-                    File zipFile = new File(outputFolder, zipFileName);
-                    Zip.zip(chapterFiles, zipFile);
-                    destFile = zipFile;
-                } catch (IOException e) {
-                    FileUtilities.deleteQuietly(tempDir);
-                    throw (e);
-                }
-            }
-        } else if( (chapterFile != null) && (outputFileName != null) ) {
-            destFile = new File(outputFolder, outputFileName);
-            FileUtilities.moveOrCopyQuietly(chapterFile, destFile);
-        }
-        FileUtilities.deleteQuietly(tempDir);
-        return destFile;
-    }
-
-    /**
+     /**
      * This will move a target translation into the root dir.
      * Any existing target translation will be replaced
      * @param tempTargetTranslation

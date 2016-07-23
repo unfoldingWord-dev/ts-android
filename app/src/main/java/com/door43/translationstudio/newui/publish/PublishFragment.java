@@ -33,6 +33,7 @@ import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.core.ExportUsfm;
 import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
@@ -152,12 +153,7 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
         exportToApp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                File exportFile = null;
-                try {
-                    exportFile = App.getTranslator().exportAsUSFM(targetTranslation, App.getSharingDir(), targetTranslation.getId() + ".zip", true);
-                } catch (Exception e) {
-                    Logger.e(PublishFragment.class.getName(), "Failed to export the target translation " + targetTranslation.getId(), e);
-                }
+                File exportFile = ExportUsfm.saveToUSFM( targetTranslation, App.getSharingDir(), targetTranslation.getId() + ".zip", true);
                 if( exportFile != null ) {
                     Uri u = FileProvider.getUriForFile(getActivity(), "com.door43.translationstudio.fileprovider", exportFile);
                     Intent i = new Intent(Intent.ACTION_SEND);
@@ -175,7 +171,7 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
         exportToSD.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                saveToUsfmWithPrompt(getActivity(), targetTranslation);
+                ExportUsfm.saveToUsfmWithPrompt(getActivity(), targetTranslation);
             }
         });
         Button exportToDevice = (Button)v.findViewById(R.id.backup_to_device);
@@ -211,84 +207,6 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
         }
 
         return v;
-    }
-
-    /**
-     * save target translation as USFM file
-     * @param activity
-     * @param targetTranslation
-     */
-    static public void saveToUsfmWithPrompt(final Activity activity, final TargetTranslation targetTranslation) {
-        new AlertDialog.Builder(activity, R.style.AppTheme_Dialog)
-                .setTitle(R.string.title_export_usfm)
-                .setMessage(R.string.export_usfm_by_chapter)
-                .setPositiveButton(R.string.label_separate, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        saveToUsfmWithSuccessIndication(activity, targetTranslation, true);
-                    }
-                })
-                .setNeutralButton(R.string.dismiss, null)
-                .setNegativeButton(R.string.label_whole, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        saveToUsfmWithSuccessIndication(activity, targetTranslation, false);
-                    }
-                })
-                .show();
-    }
-
-    /**
-     * save to usfm file and give success notification
-     * @param separateChapters
-     */
-    static private void saveToUsfmWithSuccessIndication(Activity activity, TargetTranslation targetTranslation, boolean separateChapters) {
-        File exportFile = saveToUSFM( targetTranslation, null, null, separateChapters);
-        boolean success = (exportFile != null);
-        String message;
-        if(success) {
-            String format = activity.getResources().getString(R.string.export_success);
-            message = String.format(format, exportFile.toString());
-        } else {
-            message = activity.getResources().getString(R.string.export_failed);
-        }
-        new AlertDialog.Builder(activity, R.style.AppTheme_Dialog)
-                .setTitle(R.string.title_export_usfm)
-                .setMessage(message)
-                .setPositiveButton(R.string.dismiss, null)
-                .show();
-    }
-
-    /**
-     * output USFM to file, returns file name to check for success
-     * @param targetTranslation
-     * @param destinationFolder - if null then public downloads folder on SD card will be used
-     * @param filename - if null then a default file name will be generated
-     * @param separateChapters - if true then chapters will be separated
-     * @return target filename or null if error
-     */
-    static private File saveToUSFM(TargetTranslation targetTranslation, File destinationFolder, String filename, boolean separateChapters) {
-        // TODO: 10/27/2015 have the user choose where to save the file
-        String outputFile = filename;
-        if( filename == null) { // if not given, then generate default
-            outputFile = System.currentTimeMillis() / 1000L + "_" + targetTranslation.getId() + "_usfm.zip";
-        }
-
-        if(destinationFolder == null) {
-            destinationFolder = App.getPublicDownloadsDirectory();
-        }
-
-        File exportFile = null;
-        try {
-            exportFile = App.getTranslator().exportAsUSFM(targetTranslation, destinationFolder, outputFile, separateChapters);
-        } catch (Exception e) {
-            Logger.e(PublishFragment.class.getName(), "Failed to export the target translation " + targetTranslation.getId(), e);
-        }
-        if( (exportFile == null) || !exportFile.exists()) {
-            return null;
-        }
-
-        return exportFile;
     }
 
     /**

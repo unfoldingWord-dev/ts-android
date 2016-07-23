@@ -812,5 +812,5 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="label_whole">Whole</string>
     <string name="export_to_usfm">Export USFM to SD Card</string>
     <string name="export_failed">Export failed!</string>
-    <string name="export_success">Export successful.  File is at:\n\n<xliff:g example="/sd_card/downloads" id="file_path">%1$s</xliff:g></string>
+    <string name="export_success">Export successful!\n\nExported file is at:\n<xliff:g example="/sd_card/downloads" id="file_path">%1$s</xliff:g></string>
 </resources>
