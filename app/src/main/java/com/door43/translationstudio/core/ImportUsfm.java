@@ -41,8 +41,8 @@ public class ImportUsfm {
     public static final String SECTION_MARKER = "\\\\s5([^\\n]*)";
     private static final Pattern PATTERN_SECTION_MARKER = Pattern.compile(SECTION_MARKER);
     public static final String CHAPTER_NUMBER_MARKER = "\\\\c\\s(\\d+(-\\d+)?)\\s";
-    private static final Pattern PATTERN_CHAPTER_NUMBER_MARKER = Pattern.compile(CHAPTER_NUMBER_MARKER);
-    private static final Pattern PATTERN_USFM_VERSE_SPAN = Pattern.compile(USFMVerseSpan.PATTERN);
+    public static final Pattern PATTERN_CHAPTER_NUMBER_MARKER = Pattern.compile(CHAPTER_NUMBER_MARKER);
+    public static final Pattern PATTERN_USFM_VERSE_SPAN = Pattern.compile(USFMVerseSpan.PATTERN);
     public static final int END_MARKER = 999999;
     public static final String FIRST_VERSE = "first_verse";
     public static final String FILE_NAME = "file_name";
