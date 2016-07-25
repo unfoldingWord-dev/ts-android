@@ -177,6 +177,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
                 // verify verses in last chapter
                 String inputChapter = usfmInputText.substring(lastInputChapterStart, inputMatcher.start());
                 String outputChapter = FileUtilities.readFileToString(usfmFiles[chapterInInt-2]);
+                verifyBookID(usfmInputText, outputChapter);
                 compareVersesInChapter(chapterInInt-1, inputChapter, outputChapter);
             }
 
@@ -188,6 +189,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         // verify verses in last chapter
         String inputChapter = usfmInputText.substring(lastInputChapterStart);
         String outputChapter = FileUtilities.readFileToString(usfmFiles[chapterInInt-1]);
+        verifyBookID(usfmInputText, outputChapter);
         compareVersesInChapter(chapterInInt, inputChapter, outputChapter);
     }
 
