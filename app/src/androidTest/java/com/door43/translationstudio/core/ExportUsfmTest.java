@@ -13,7 +13,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -93,18 +92,22 @@ public class ExportUsfmTest extends InstrumentationTestCase {
     }
 
     private void verifyBookID(String input, String output) {
-        String mBookName = extractString(input, ImportUsfm.PATTERN_BOOK_NAME_MARKER);
-        String mBookShortName = extractString(input, ImportUsfm.PATTERN_BOOK_SHORT_NAME_MARKER);
-        String mBookNameOut = extractString(output, ImportUsfm.PATTERN_BOOK_NAME_MARKER);
-        String mBookShortNameOut = extractString(output, ImportUsfm.PATTERN_BOOK_SHORT_NAME_MARKER);
+        String bookTitle = extractString(input, ImportUsfm.PATTERN_BOOK_TITLE_MARKER);
+        String bookLongName = extractString(input, ImportUsfm.PATTERN_BOOK_LONG_NAME_MARKER);
+        String bookShortName = extractString(input, ImportUsfm.PATTERN_BOOK_ABBREVIATION_MARKER);
+        String bookTitleOut = extractString(output, ImportUsfm.PATTERN_BOOK_TITLE_MARKER);
+        String bookLongNameOut = extractString(output, ImportUsfm.PATTERN_BOOK_LONG_NAME_MARKER);
+        String bookShortNameOut = extractString(output, ImportUsfm.PATTERN_BOOK_ABBREVIATION_MARKER);
 
-        String mBookID = extractString(input, ImportUsfm.ID_TAG_MARKER);
-        String mBookIDOut = extractString(output, ImportUsfm.ID_TAG_MARKER);
+        String bookID = extractString(input, ImportUsfm.ID_TAG_MARKER);
+        String[] bookIdParts = bookID.split(" ");
+        String bookIDOut = extractString(output, ImportUsfm.ID_TAG_MARKER);
+        String[] bookIdOutParts = bookIDOut.split(" ");
 
-        assertEquals("Input and output book names should equal", mBookName.toLowerCase(), mBookNameOut.toLowerCase());
-        assertEquals("Input and output book codes should equal", mBookShortName.toLowerCase(), mBookShortNameOut.toLowerCase());
-
-        // TODO: 7/25/16 check ID
+        assertEquals("Input and output book titles (\\toc1) should equal", bookTitle.toLowerCase(), bookTitleOut.toLowerCase());
+        assertEquals("Input and output book codes (\\toc3) should equal", bookShortName.toLowerCase(), bookShortNameOut.toLowerCase());
+        assertEquals("Input and output book long name (\\toc2) should equal", bookLongName.toLowerCase(), bookLongNameOut.toLowerCase());
+        assertEquals("Input and output book ID code (\\id) should equal", bookIdParts[0].toLowerCase(), bookIdOutParts[0].toLowerCase());
     }
 
     /**
@@ -290,7 +293,16 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         assertEquals("In chapter '" + chapterNum + "' verse '" + verseIn + "' verse content should match", input, output);
     }
 
+    public static final String CHAPTER_LABEL_MARKER = "\\\\cl\\s([^\\n]*)";
+    public static final Pattern PATTERN_CHAPTER_LABEL_MARKER = Pattern.compile(CHAPTER_LABEL_MARKER);
+
     private String cleanUpVerse(String text) {
+
+        Matcher chapterLabelMatcher = PATTERN_CHAPTER_LABEL_MARKER.matcher(text);
+        if(chapterLabelMatcher.find()) {
+            text = text.substring(0,chapterLabelMatcher.start());
+        }
+
         text = text.replace("\\s5\n", "\n"); // remove section markers
         text = replaceAll(text,"\n\n", "\n");
         return text;

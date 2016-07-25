@@ -168,7 +168,7 @@ public class ExportUsfm {
                 ps.println(shortBookID);
             }
 
-            if(chapter.title != null) {
+            if((chapter.title != null) && (!chapter.title.isEmpty())) {
                 String chapterTitle = "\\cl " + chapter.title;
                 ps.println(chapterTitle);
             }
@@ -176,7 +176,7 @@ public class ExportUsfm {
             String chapterNumber = "\\c " + chapter.getId();
             ps.println(chapterNumber);
 
-            if(chapter.reference != null) {
+            if( (chapter.reference != null) && (!chapter.title.isEmpty())) {
                 String chapterRef = "\\cd " + chapter.reference;
                 ps.println(chapterRef);
             }
