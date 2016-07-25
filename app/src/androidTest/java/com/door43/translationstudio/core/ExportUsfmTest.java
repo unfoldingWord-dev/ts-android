@@ -5,14 +5,17 @@ import android.test.InstrumentationTestCase;
 
 import com.door43.translationstudio.App;
 import com.door43.util.FileUtilities;
+import com.door43.util.Zip;
 
 import org.unfoldingword.tools.logger.Logger;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by blm on 7/25/16.
@@ -41,7 +44,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
 
     @Override
     public void tearDown() throws Exception {
-        if(mUsfm != null) {
+        if (mUsfm != null) {
             mUsfm.cleanup();
         }
         FileUtilities.deleteQuietly(mTempFolder);
@@ -52,7 +55,6 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         String zipFileName = null;
         boolean separateChapters = false;
         String source = "mrk.usfm";
-        int expectedChapters = 16;
         importTestTranslation(source);
 
         //when
@@ -62,57 +64,179 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         verifyExportedUsfmFile(zipFileName, separateChapters, source, usfmOutput);
     }
 
+    public void test02ValidExportMarkZip() throws Exception {
+        //given
+        String zipFileName = "test_usfm.zip";
+        boolean separateChapters = true;
+        String source = "mrk.usfm";
+        importTestTranslation(source);
+
+        //when
+        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, zipFileName, separateChapters);
+
+        //then
+        verifyExportedUsfmFile(zipFileName, separateChapters, source, usfmOutput);
+    }
+
+    public void test03ValidExportPsalmSingle() throws Exception {
+        //given
+        String zipFileName = null;
+        boolean separateChapters = false;
+        String source = "19-PSA.usfm";
+        importTestTranslation(source);
+
+        //when
+        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, zipFileName, separateChapters);
+
+        //then
+        verifyExportedUsfmFile(zipFileName, separateChapters, source, usfmOutput);
+    }
+
+    private void verifyBookID(String input, String output) {
+        String mBookName = extractString(input, ImportUsfm.PATTERN_BOOK_NAME_MARKER);
+        String mBookShortName = extractString(input, ImportUsfm.PATTERN_BOOK_SHORT_NAME_MARKER);
+        String mBookNameOut = extractString(output, ImportUsfm.PATTERN_BOOK_NAME_MARKER);
+        String mBookShortNameOut = extractString(output, ImportUsfm.PATTERN_BOOK_SHORT_NAME_MARKER);
+
+        String mBookID = extractString(input, ImportUsfm.ID_TAG_MARKER);
+        String mBookIDOut = extractString(output, ImportUsfm.ID_TAG_MARKER);
+
+        assertEquals("Input and output book names should equal", mBookName.toLowerCase(), mBookNameOut.toLowerCase());
+        assertEquals("Input and output book codes should equal", mBookShortName.toLowerCase(), mBookShortNameOut.toLowerCase());
+
+        // TODO: 7/25/16 check ID
+    }
+
+    /**
+     * match regexPattern and get string in group 1 if present
+     *
+     * @param text
+     * @param regexPattern
+     * @return
+     */
+    private String extractString(CharSequence text, Pattern regexPattern) {
+        if (text.length() > 0) {
+            // find instance
+            Matcher matcher = regexPattern.matcher(text);
+            String foundItem = null;
+            if (matcher.find()) {
+                foundItem = matcher.group(1);
+                return foundItem.trim();
+            }
+        }
+
+        return null;
+    }
+
     private void verifyExportedUsfmFile(String zipFileName, boolean separateChapters, String source, File usfmOutput) throws IOException {
         assertNotNull("exported file", usfmOutput);
-        if(zipFileName == null) {
-            if(!separateChapters) {
-                String usfmOutputText = FileUtilities.readFileToString(usfmOutput);
-
-                InputStream usfmStream = mTestContext.getAssets().open( "usfm/" + source);
-                String usfmInputText = FileUtilities.readStreamToString(usfmStream);
-
-                Matcher inputMatcher = ImportUsfm.PATTERN_CHAPTER_NUMBER_MARKER.matcher(usfmInputText);
-                Matcher outputMatcher = ImportUsfm.PATTERN_CHAPTER_NUMBER_MARKER.matcher(usfmOutputText);
-
-                int lastInputChapterStart = -1;
-                int lastOutputChapterStart = -1;
-                String chapterIn = "";
-                while (inputMatcher.find()) {
-                    chapterIn = inputMatcher.group(1); // chapter number in input
-                    int chapterInInt = Integer.valueOf(chapterIn);
-
-                    if (outputMatcher.find()) {
-                        String chapterOut = outputMatcher.group(1); // chapter number in output
-                        int chapterOutInt = Integer.valueOf(chapterOut);
-                        assertEquals("chapter input should match chapter output", chapterInInt,chapterOutInt);
-                    } else {
-                        fail("chapter '" + chapterIn + "' missing in output");
-                    }
-
-                    if(chapterInInt > 1) {
-                        // verify verses in last chapter
-                        String inputChapter = usfmInputText.substring(lastInputChapterStart, inputMatcher.start());
-                        String outputChapter = usfmOutputText.substring(lastOutputChapterStart, outputMatcher.start());
-                        compareVersesInChapter(chapterIn, inputChapter, outputChapter);
-                    }
-
-                    lastInputChapterStart = inputMatcher.end();
-                    lastOutputChapterStart = outputMatcher.end();
-                }
-
-                if (outputMatcher.find()) {
-                    fail("extra chapter in output: " + outputMatcher.group(1));
-                }
-
-                // verify verses in last chapter
-                String inputChapter = usfmInputText.substring(lastInputChapterStart);
-                String outputChapter = usfmOutputText.substring(lastOutputChapterStart);
-                compareVersesInChapter(chapterIn, inputChapter, outputChapter);
+        if (zipFileName == null) {
+            if (!separateChapters) {
+                verifySingleUsfmFile(source, usfmOutput);
+            } else {
+                fail("separate chapters without zip is not supported");
+            }
+        } else {
+            if (separateChapters) {
+                verifyUsfmZipFile(source, usfmOutput);
+            } else {
+                fail("single book with zip is not supported");
             }
         }
     }
 
-    private void compareVersesInChapter(String chapterId, String inputChapter, String outputChapter) {
+    private void verifyUsfmZipFile(String source, File usfmOutput) throws IOException {
+
+        File unzipFolder = new File(mTempFolder,"scratch_test_unzip");
+        FileUtilities.forceMkdir(unzipFolder);
+
+        InputStream zipStream = new FileInputStream(usfmOutput);
+        Zip.unzipFromStream(zipStream, unzipFolder);
+        File[] usfmFiles = unzipFolder.listFiles();
+
+//        String usfmOutputText = FileUtilities.readFileToString(usfmOutput);
+
+        InputStream usfmStream = mTestContext.getAssets().open("usfm/" + source);
+        String usfmInputText = FileUtilities.readStreamToString(usfmStream);
+
+        Matcher inputMatcher = ImportUsfm.PATTERN_CHAPTER_NUMBER_MARKER.matcher(usfmInputText);
+
+        int lastInputChapterStart = -1;
+        String chapterIn = "";
+        int chapterInInt = -1;
+        while (inputMatcher.find()) {
+            chapterIn = inputMatcher.group(1); // chapter number in input
+            chapterInInt = Integer.valueOf(chapterIn);
+
+            assertTrue("chapter count should be greater than or equal to chapter", usfmFiles.length >= chapterInInt);
+
+           if (chapterInInt > 1) {
+                // verify verses in last chapter
+                String inputChapter = usfmInputText.substring(lastInputChapterStart, inputMatcher.start());
+                String outputChapter = FileUtilities.readFileToString(usfmFiles[chapterInInt-2]);
+                compareVersesInChapter(chapterInInt-1, inputChapter, outputChapter);
+            }
+
+            lastInputChapterStart = inputMatcher.end();
+        }
+
+        assertTrue("chapter count should equal last chapter", usfmFiles.length == chapterInInt);
+
+        // verify verses in last chapter
+        String inputChapter = usfmInputText.substring(lastInputChapterStart);
+        String outputChapter = FileUtilities.readFileToString(usfmFiles[chapterInInt-1]);
+        compareVersesInChapter(chapterInInt, inputChapter, outputChapter);
+    }
+
+    private void verifySingleUsfmFile(String source, File usfmOutput) throws IOException {
+        String usfmOutputText = FileUtilities.readFileToString(usfmOutput);
+
+        InputStream usfmStream = mTestContext.getAssets().open("usfm/" + source);
+        String usfmInputText = FileUtilities.readStreamToString(usfmStream);
+
+        verifyBookID(usfmInputText, usfmOutputText);
+
+        Matcher inputMatcher = ImportUsfm.PATTERN_CHAPTER_NUMBER_MARKER.matcher(usfmInputText);
+        Matcher outputMatcher = ImportUsfm.PATTERN_CHAPTER_NUMBER_MARKER.matcher(usfmOutputText);
+
+        int lastInputChapterStart = -1;
+        int lastOutputChapterStart = -1;
+        String chapterIn = "";
+        int chapterInInt = -1;
+        while (inputMatcher.find()) {
+            chapterIn = inputMatcher.group(1); // chapter number in input
+            chapterInInt = Integer.valueOf(chapterIn);
+
+            if (outputMatcher.find()) {
+                String chapterOut = outputMatcher.group(1); // chapter number in output
+                int chapterOutInt = Integer.valueOf(chapterOut);
+                assertEquals("chapter input should match chapter output", chapterInInt, chapterOutInt);
+            } else {
+                fail("chapter '" + chapterIn + "' missing in output");
+            }
+
+            if (chapterInInt > 1) {
+                // verify verses in last chapter
+                String inputChapter = usfmInputText.substring(lastInputChapterStart, inputMatcher.start());
+                String outputChapter = usfmOutputText.substring(lastOutputChapterStart, outputMatcher.start());
+                compareVersesInChapter(chapterInInt-1, inputChapter, outputChapter);
+            }
+
+            lastInputChapterStart = inputMatcher.end();
+            lastOutputChapterStart = outputMatcher.end();
+        }
+
+        if (outputMatcher.find()) {
+            fail("extra chapter in output: " + outputMatcher.group(1));
+        }
+
+        // verify verses in last chapter
+        String inputChapter = usfmInputText.substring(lastInputChapterStart);
+        String outputChapter = usfmOutputText.substring(lastOutputChapterStart);
+        compareVersesInChapter(chapterInInt, inputChapter, outputChapter);
+    }
+
+    private void compareVersesInChapter(int chapter, String inputChapter, String outputChapter) {
         Matcher inputVerseMatcher = ImportUsfm.PATTERN_USFM_VERSE_SPAN.matcher(inputChapter);
         Matcher outputVerseMatcher = ImportUsfm.PATTERN_USFM_VERSE_SPAN.matcher(outputChapter);
         int lastInputVerseStart = -1;
@@ -122,15 +246,15 @@ public class ExportUsfmTest extends InstrumentationTestCase {
             verseIn = inputVerseMatcher.group(1); // verse number in input
             if (outputVerseMatcher.find()) {
                 String verseOut = outputVerseMatcher.group(1); // verse number in output
-                assertEquals("in chapter '" + chapterId + "' verse input should match verse output", verseIn, verseOut);
+                assertEquals("in chapter '" + chapter + "' verse input should match verse output", verseIn, verseOut);
             } else {
                 fail("verse '" + verseIn + "' missing in output");
             }
 
-            if(lastInputVerseStart > 0) {
+            if (lastInputVerseStart > 0) {
                 String inputVerse = inputChapter.substring(lastInputVerseStart, inputVerseMatcher.start());
                 String outputVerse = outputChapter.substring(lastOutputVerseStart, outputVerseMatcher.start());
-                compareVerses(chapterId, verseIn, inputVerse, outputVerse);
+                compareVerses(chapter, verseIn, inputVerse, outputVerse);
             }
 
             lastInputVerseStart = inputVerseMatcher.end();
@@ -138,28 +262,50 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         }
 
         if (outputVerseMatcher.find()) {
-            fail("In chapter '" + chapterId + "' extra verse in output: " + outputVerseMatcher.group(1));
+            fail("In chapter '" + chapter + "' extra verse in output: " + outputVerseMatcher.group(1));
         }
 
         String inputVerse = inputChapter.substring(lastInputVerseStart);
         String outputVerse = outputChapter.substring(lastOutputVerseStart);
-        compareVerses(chapterId, verseIn, inputVerse, outputVerse);
+        compareVerses(chapter, verseIn, inputVerse, outputVerse);
     }
 
-    private void compareVerses(String chapterId, String verseIn, String inputVerse, String outputVerse) {
-        if(inputVerse.equals(outputVerse)) {
+    private void compareVerses(int chapterNum, String verseIn, String inputVerse, String outputVerse) {
+
+        String input = inputVerse;
+        String output = outputVerse;
+
+        if (input.equals(output)) {
             return;
         }
 
         //remove extra white space
-        inputVerse = inputVerse.replace("\\s5\n", "");
-        inputVerse = inputVerse.replace("\n\n", "\n");
-        inputVerse = inputVerse.replace("\n\n", "\n");
-        outputVerse = outputVerse.replace("\\s5\n", "");
-        outputVerse = outputVerse.replace("\n\n", "\n");
-        outputVerse = outputVerse.replace("\n\n", "\n");
+        input = cleanUpVerse(input);
+        output = cleanUpVerse(output);
 
-        assertEquals( "In chapter '" + chapterId + "' verse '" + verseIn + "' verse content should match", inputVerse,outputVerse);
+        if (input.equals(output)) {
+            return;
+        }
+
+        assertEquals("In chapter '" + chapterNum + "' verse '" + verseIn + "' verse content should match", input, output);
+    }
+
+    private String cleanUpVerse(String text) {
+        text = text.replace("\\s5\n", "\n"); // remove section markers
+        text = replaceAll(text,"\n\n", "\n");
+        return text;
+    }
+
+    private String replaceAll(String text, CharSequence target, CharSequence replacement)  {
+        String oldText = null;
+        String newText = text;
+
+        while(newText != oldText) {
+            oldText = newText;
+            newText = newText.replace(target, replacement);
+        }
+
+        return newText;
     }
 
     private void importTestTranslation(String source) throws IOException {

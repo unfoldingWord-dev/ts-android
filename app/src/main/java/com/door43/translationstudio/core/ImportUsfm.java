@@ -33,11 +33,11 @@ import java.util.regex.Pattern;
 public class ImportUsfm {
     public static final String TAG = ImportUsfm.class.getSimpleName();
     public static final String BOOK_NAME_MARKER = "\\\\toc1\\s([^\\n]*)";
-    private static final Pattern PATTERN_BOOK_NAME_MARKER = Pattern.compile(BOOK_NAME_MARKER);
+    public static final Pattern PATTERN_BOOK_NAME_MARKER = Pattern.compile(BOOK_NAME_MARKER);
     public static final String ID_TAG = "\\\\id\\s([^\\n]*)";
-    private static final Pattern ID_TAG_MARKER = Pattern.compile(ID_TAG);
+    public static final Pattern ID_TAG_MARKER = Pattern.compile(ID_TAG);
     public static final String BOOK_SHORT_NAME_MARKER = "\\\\toc3\\s([^\\n]*)";
-    private static final Pattern PATTERN_BOOK_SHORT_NAME_MARKER = Pattern.compile(BOOK_SHORT_NAME_MARKER);
+    public static final Pattern PATTERN_BOOK_SHORT_NAME_MARKER = Pattern.compile(BOOK_SHORT_NAME_MARKER);
     public static final String SECTION_MARKER = "\\\\s5([^\\n]*)";
     private static final Pattern PATTERN_SECTION_MARKER = Pattern.compile(SECTION_MARKER);
     public static final String CHAPTER_NUMBER_MARKER = "\\\\c\\s(\\d+(-\\d+)?)\\s";
@@ -1051,7 +1051,7 @@ public class ImportUsfm {
             String chapter0 = "0000".substring(0, chapter1.length()); // match length of chapter 1
             success = saveSection(".", "before", text);
             successOverall = successOverall && success;
-            success = saveSection(".", "title", mBookName);
+            success = saveSection(chapter0, "title", mBookName);
             successOverall = successOverall && success;
         }
         return successOverall;

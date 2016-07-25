@@ -126,22 +126,29 @@ public class ExportUsfm {
                 String languageId = targetTranslation.getTargetLanguageId();
                 String languageName = targetTranslation.getTargetLanguageName();
                 ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
+                Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), languageId);
+
+                String bookName = bookCode; // default name
+                if( (project != null) && (project.name != null)) {
+                    bookName = project.name;
+                }
+
                 String bookTitle = "";
-                if((projectTranslation != null) && projectTranslation.isTitleFinished()) {
-                    bookTitle = projectTranslation.getTitle().trim();
+                if(projectTranslation != null) {
+                    String title = projectTranslation.getTitle();
+                    if( title != null ) {
+                        bookTitle = title.trim();
+                    }
                 }
                 if(bookTitle.isEmpty()) {
                     bookTitle = bookCode;
-                }
-                if(separateChapters) {
-                    bookTitle += " " + chapter.getId();
                 }
 
                 // generate file name
                 if(separateChapters) {
                     outputFileName = "chapter_" + chapter.getId() + ".usfm";
                 } else {
-                    outputFileName = System.currentTimeMillis() + "_" + languageId + "_" + bookCode + "_" + bookTitle + ".usfm";
+                    outputFileName = System.currentTimeMillis() + "_" + languageId + "_" + bookCode + "_" + bookName + ".usfm";
                 }
                 chapterFile = new File(tempDir, outputFileName);
                 chapterFile.createNewFile();
@@ -151,15 +158,17 @@ public class ExportUsfm {
                 }
                 ps = new PrintStream(chapterFile);
 
-                String id = "\\id " + bookCode + " " + bookTitle + ", " + (languageId + ", " + languageName);
+                String id = "\\id " + bookCode + " " + bookTitle + ", " + bookName + ", " + (languageId + ", " + languageName);
                 ps.println(id);
                 String bookID = "\\toc1 " + bookTitle;
                 ps.println(bookID);
+                String bookNameID = "\\toc2 " + bookName;
+                ps.println(bookNameID);
                 String shortBookID = "\\toc3 " + bookCode;
                 ps.println(shortBookID);
             }
 
-            if(chapter.isTitleFinished()) {
+            if(chapter.title != null) {
                 String chapterTitle = "\\cl " + chapter.title;
                 ps.println(chapterTitle);
             }
@@ -167,7 +176,7 @@ public class ExportUsfm {
             String chapterNumber = "\\c " + chapter.getId();
             ps.println(chapterNumber);
 
-            if(chapter.isReferenceFinished()) {
+            if(chapter.reference != null) {
                 String chapterRef = "\\cd " + chapter.reference;
                 ps.println(chapterRef);
             }
@@ -179,8 +188,7 @@ public class ExportUsfm {
 
                 // text
                 ps.println("\\s5"); // section marker
-                ps.println(text);
-                ps.println();
+                ps.print(text);
             }
         }
 
