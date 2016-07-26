@@ -91,6 +91,53 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         verifyExportedUsfmFile(zipFileName, separateChapters, source, usfmOutput);
     }
 
+    public void test04ValidExportPsalmZip() throws Exception {
+        //given
+        String zipFileName = "test_usfm.zip";
+        boolean separateChapters = true;
+        String source = "19-PSA.usfm";
+        importTestTranslation(source);
+
+        //when
+        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, zipFileName, separateChapters);
+
+        //then
+        verifyExportedUsfmFile(zipFileName, separateChapters, source, usfmOutput);
+    }
+
+    public void test05ValidExportJudeSingle() throws Exception {
+        //given
+        String zipFileName = null;
+        boolean separateChapters = false;
+        String source = "66-JUD.usfm";
+        importTestTranslation(source);
+
+        //when
+        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, zipFileName, separateChapters);
+
+        //then
+        verifyExportedUsfmFile(zipFileName, separateChapters, source, usfmOutput);
+    }
+
+    public void test06ValidExportJudeZip() throws Exception {
+        //given
+        String zipFileName = "test_usfm.zip";
+        boolean separateChapters = true;
+        String source = "66-JUD.usfm";
+        importTestTranslation(source);
+
+        //when
+        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, zipFileName, separateChapters);
+
+        //then
+        verifyExportedUsfmFile(zipFileName, separateChapters, source, usfmOutput);
+    }
+
+    /**
+     * match all the book identifiers
+     * @param input
+     * @param output
+     */
     private void verifyBookID(String input, String output) {
         String bookTitle = extractString(input, ImportUsfm.PATTERN_BOOK_TITLE_MARKER);
         String bookLongName = extractString(input, ImportUsfm.PATTERN_BOOK_LONG_NAME_MARKER);
@@ -131,6 +178,14 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         return null;
     }
 
+    /**
+     * handles validation of exported USFM file by comparing to original imported USFM file
+     * @param zipFileName - to determine if zip file was expected
+     * @param separateChapters
+     * @param source
+     * @param usfmOutput - actual output file
+     * @throws IOException
+     */
     private void verifyExportedUsfmFile(String zipFileName, boolean separateChapters, String source, File usfmOutput) throws IOException {
         assertNotNull("exported file", usfmOutput);
         if (zipFileName == null) {
@@ -148,6 +203,12 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         }
     }
 
+    /**
+     * handles validation of exported USFM zip file containing chapters by comparing to original imported USFM file
+     * @param source
+     * @param usfmOutput
+     * @throws IOException
+     */
     private void verifyUsfmZipFile(String source, File usfmOutput) throws IOException {
 
         File unzipFolder = new File(mTempFolder,"scratch_test_unzip");
@@ -156,8 +217,6 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         InputStream zipStream = new FileInputStream(usfmOutput);
         Zip.unzipFromStream(zipStream, unzipFolder);
         File[] usfmFiles = unzipFolder.listFiles();
-
-//        String usfmOutputText = FileUtilities.readFileToString(usfmOutput);
 
         InputStream usfmStream = mTestContext.getAssets().open("usfm/" + source);
         String usfmInputText = FileUtilities.readStreamToString(usfmStream);
@@ -193,6 +252,12 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         compareVersesInChapter(chapterInInt, inputChapter, outputChapter);
     }
 
+    /**
+     * handles validation of exported USFM file by comparing to original imported USFM file
+     * @param source
+     * @param usfmOutput
+     * @throws IOException
+     */
     private void verifySingleUsfmFile(String source, File usfmOutput) throws IOException {
         String usfmOutputText = FileUtilities.readFileToString(usfmOutput);
 
@@ -241,6 +306,13 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         compareVersesInChapter(chapterInInt, inputChapter, outputChapter);
     }
 
+    /**
+     * compares the verses in exported chapter to make sure they are in same order and have same
+     *  contents as imported chapter
+     * @param chapter
+     * @param inputChapter
+     * @param outputChapter
+     */
     private void compareVersesInChapter(int chapter, String inputChapter, String outputChapter) {
         Matcher inputVerseMatcher = ImportUsfm.PATTERN_USFM_VERSE_SPAN.matcher(inputChapter);
         Matcher outputVerseMatcher = ImportUsfm.PATTERN_USFM_VERSE_SPAN.matcher(outputChapter);
@@ -275,6 +347,13 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         compareVerses(chapter, verseIn, inputVerse, outputVerse);
     }
 
+    /**
+     * compares contents of verses
+     * @param chapterNum
+     * @param verseIn
+     * @param inputVerse
+     * @param outputVerse
+     */
     private void compareVerses(int chapterNum, String verseIn, String inputVerse, String outputVerse) {
 
         String input = inputVerse;
@@ -283,6 +362,8 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         if (input.equals(output)) {
             return;
         }
+
+        //if not exact match, try stripping section marker and removing double new-lines
 
         //remove extra white space
         input = cleanUpVerse(input);
@@ -298,6 +379,11 @@ public class ExportUsfmTest extends InstrumentationTestCase {
     public static final String CHAPTER_LABEL_MARKER = "\\\\cl\\s([^\\n]*)";
     public static final Pattern PATTERN_CHAPTER_LABEL_MARKER = Pattern.compile(CHAPTER_LABEL_MARKER);
 
+    /**
+     * clean up by stripping section marker and removing double new-lines
+     * @param text
+     * @return
+     */
     private String cleanUpVerse(String text) {
 
         Matcher chapterLabelMatcher = PATTERN_CHAPTER_LABEL_MARKER.matcher(text);
@@ -306,10 +392,17 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         }
 
         text = text.replace("\\s5\n", "\n"); // remove section markers
-        text = replaceAll(text,"\n\n", "\n");
+        text = replaceAll(text,"\n\n", "\n"); // remove double new-lines
         return text;
     }
 
+    /**
+     * repeatedly replaces strings - useful
+     * @param text
+     * @param target
+     * @param replacement
+     * @return
+     */
     private String replaceAll(String text, CharSequence target, CharSequence replacement)  {
         String oldText = null;
         String newText = text;
@@ -322,6 +415,11 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         return newText;
     }
 
+    /**
+     * import a usfm file to be used for export testing.
+     * @param source
+     * @throws IOException
+     */
     private void importTestTranslation(String source) throws IOException {
         //import USFM file to be used for testing
         mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
