@@ -1200,14 +1200,14 @@ public class TargetTranslation {
         DIVERGED(3),
         UNKNOWN(4);
 
-        private int _value;
+        private int value;
 
         TrackingStatus(int Value) {
-            this._value = Value;
+            this.value = Value;
         }
 
         public int getValue() {
-            return _value;
+            return value;
         }
 
         public static TrackingStatus fromInt(int i) {

@@ -60,7 +60,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     public static final String STATE_DO_MERGE = "state_do_merge";
     public static final String STATE_ACCESS_FILE = "state_access_file";
     public static final String STATE_DIALOG_MESSAGE = "state_dialog_message";
-    public static final boolean FORCE_PUSH = true;
+//    public static final boolean FORCE_PUSH = true;
     private TargetTranslation targetTranslation;
     private SimpleTaskWatcher taskWatcher;
     private boolean settingDeviceAlias = false;
@@ -111,6 +111,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
             mAccessFile = savedInstanceState.getString(STATE_ACCESS_FILE, null);
             mDialogMessage = savedInstanceState.getString(STATE_DIALOG_MESSAGE, null);
+            restoreDialogs();
         }
 
         Button dismissButton = (Button)v.findViewById(R.id.dismiss_button);
@@ -199,10 +200,8 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             taskWatcher.watch(pushTask);
         }
 
-        restoreDialogs();
         return v;
     }
-
 
     /**
       * restore the dialogs that were displayed before rotation
@@ -424,7 +423,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         taskWatcher.stop();
         if(task instanceof PullTargetTranslationTask) {
             PullTargetTranslationTask pullTask = (PullTargetTranslationTask) task;
-            mRemoteURL = pullTask.getSourceURL();
+//            mRemoteURL = pullTask.getSourceURL();
             PullTargetTranslationTask.Status status = pullTask.getStatus();
             //  TRICKY: we continue to push for unknown status in case the repo was just created (the missing branch is an error)
             // the pull task will catch any errors
@@ -707,14 +706,14 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         SHOW_PUSH_SUCCESS(6),
         MERGE_CONFLICT(7);
 
-        private int _value;
+        private int value;
 
         eDialogShown(int Value) {
-            this._value = Value;
+            this.value = Value;
         }
 
         public int getValue() {
-            return _value;
+            return value;
         }
 
         public static eDialogShown fromInt(int i) {

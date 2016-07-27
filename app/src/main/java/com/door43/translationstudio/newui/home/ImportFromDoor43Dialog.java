@@ -492,7 +492,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     }
 
     /**
-     * do pull request with manual merge
+      * do pull request with manual merge
      * @param targetTranslation
      */
     private void doRecursiveMerge(TargetTranslation targetTranslation) {
