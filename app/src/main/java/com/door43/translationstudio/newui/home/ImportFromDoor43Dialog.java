@@ -61,14 +61,15 @@ import java.util.List;
  */
 public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTaskWatcher.OnFinishedListener {
     public static final String TAG = ImportFromDoor43Dialog.class.getSimpleName();
+
     private static final String STATE_REPOSITORIES = "state_repositories";
     private static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
     private static final String STATE_TARGET_TRANSLATION_ID = "state_target_translation_id";
-    private static final String STATE_IMPORT_COMPARE_STATUS = "state_import_compare_status";
     private static final String STATE_MERGE_FROM_URL = "state_merge_from_url";
     private static final String STATE_MANUAL_MERGE = "state_manual_merge";
     public static final String STATE_CLONE_URL = "state_clone_url";
     public static final String STATE_QUICK_LOAD_PATH = "state_quick_load_path";
+
     private SimpleTaskWatcher taskWatcher;
     private RestoreFromCloudAdapter adapter;
     private Translator translator;
@@ -77,6 +78,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     private File cloneDestDir;
     private EditText repoEditText;
     private EditText userEditText;
+    @Deprecated
     private String mQuickLoadPath;
     private String targetTranslationId;
     private eDialogShown mDialogShown = eDialogShown.NONE;
@@ -142,7 +144,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 String repoName = repo.getFullName().replace("/", "-");
                 cloneDestDir = getTempCloneDirectory(repoName);
                 mClonelUrl = repo.getHtmlUrl();
-                doCloneRepository();
+                doCloneRepository(mClonelUrl, cloneDestDir);
             }
         });
 
@@ -248,6 +250,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
      * this will skip the search when dialog opens and go direct to merge of target
      * @param targetTranslationID
      */
+    @Deprecated
     public void doQuickLoad(String targetTranslationID) {
         this.targetTranslationId = targetTranslationID;
         Profile profile = App.getProfile();
@@ -270,10 +273,12 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     }
 
     /**
-     * starts task to clone repository
+     * Clones a remote repository to a directory
+     * @param url
+     * @param dest
      */
-    private void doCloneRepository() {
-        CloneRepositoryTask task = new CloneRepositoryTask(mClonelUrl, cloneDestDir);
+    private void doCloneRepository(String url, File dest) {
+        CloneRepositoryTask task = new CloneRepositoryTask(url, dest);
         taskWatcher.watch(task);
         TaskManager.addTask(task, CloneRepositoryTask.TASK_ID);
     }
@@ -365,7 +370,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         } else if(task instanceof RegisterSSHKeysTask) {
             if(((RegisterSSHKeysTask)task).isSuccess()) {
                 Logger.i(this.getClass().getName(), "SSH keys were registered with the server");
-                doCloneRepository(); // try to clone again
+                doCloneRepository(mClonelUrl, cloneDestDir); // try to clone again
             } else {
                 notifyImportFailed();
             }

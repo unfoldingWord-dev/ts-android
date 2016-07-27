@@ -342,7 +342,7 @@ public class ImportDialog extends DialogFragment {
     private void showImportResults(String message) {
         mDialogShown = eDialogShown.SHOW_IMPORT_RESULTS;
         mDialogMessage = message;
-        new AlertDialog.Builder(getActivity(),R.style.AppTheme_Dialog)
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.import_from_sd)
                 .setMessage(message)
                 .setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
@@ -371,14 +371,14 @@ public class ImportDialog extends DialogFragment {
         NONE(0),
         SHOW_IMPORT_RESULTS(1);
 
-        private int _value;
+        private int value;
 
         eDialogShown(int Value) {
-            this._value = Value;
+            this.value = Value;
         }
 
         public int getValue() {
-            return _value;
+            return value;
         }
 
         public static eDialogShown fromInt(int i) {

@@ -43,29 +43,24 @@ import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
+import com.door43.translationstudio.tasks.PullTargetTranslationTask;
 import com.door43.util.FileUtilities;
 import com.door43.widget.ViewUtil;
 
 
 import java.io.File;
-import java.util.Locale;
 
 public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFinishedListener, WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
-    private static final int REQUEST_CODE_STORAGE_ACCESS = 42;
     private static final int NEW_TARGET_TRANSLATION_REQUEST = 1;
     public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
     public static final String TAG = HomeActivity.class.getSimpleName();
-    public static final String STATE_UPDATED_PROJECT_ID = "state_updated_project_id";
-    public static final String STATE_TARGET_TRANSLATION_ID = "state_target_translation_id";
     private Library mLibrary;
     private Translator mTranslator;
     private Fragment mFragment;
-    private boolean mUsfmImport = false;
     private SimpleTaskWatcher taskWatcher;
     private ExamineImportsForCollisionsTask mExamineTask;
     private eDialogShown mDialogShown = eDialogShown.NONE;
-    private String mUpdatedProject;
-    private String mTargetTranslationId;
+    private String mTargetTranslationWithUpdates;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -187,9 +182,46 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             }
         } else {
             mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
-            mUpdatedProject = savedInstanceState.getString(STATE_UPDATED_PROJECT_ID, null);
-            mTargetTranslationId = savedInstanceState.getString(STATE_TARGET_TRANSLATION_ID, null);
         }
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        App.setLastFocusTargetTranslation(null);
+
+        int numTranslations = mTranslator.getTargetTranslations().length;
+        if(numTranslations > 0 && mFragment instanceof WelcomeFragment) {
+            // display target translations list
+            mFragment = new TargetTranslationListFragment();
+            mFragment.setArguments(getIntent().getExtras());
+            getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
+
+            // load list after fragment created
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    ((TargetTranslationListFragment) mFragment).reloadList();
+                }
+            });
+
+        } else if(numTranslations == 0 && mFragment instanceof TargetTranslationListFragment) {
+            // display welcome screen
+            mFragment = new WelcomeFragment();
+            mFragment.setArguments(getIntent().getExtras());
+            getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
+        } else if(numTranslations > 0 && mFragment instanceof TargetTranslationListFragment) {
+            // reload list
+            ((TargetTranslationListFragment)mFragment).reloadList();
+        }
+
+        mTargetTranslationWithUpdates = App.getNotifyTargetTranslationWithUpdates();
+        if(mTargetTranslationWithUpdates != null) {
+            showMergePrompt(mTargetTranslationWithUpdates);
+        }
+
         restoreDialogs();
     }
 
@@ -199,7 +231,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     private void restoreDialogs() {
         switch(mDialogShown) {
             case PROJECT_CHANGED:
-                showMergePrompt(mUpdatedProject);
+                showMergePrompt(mTargetTranslationWithUpdates);
                 break;
 
             case IMPORT_VERIFICATION:
@@ -396,44 +428,6 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 .show();
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        App.setLastFocusTargetTranslation(null);
-
-        int numTranslations = mTranslator.getTargetTranslations().length;
-        if(numTranslations > 0 && mFragment instanceof WelcomeFragment) {
-            // display target translations list
-            mFragment = new TargetTranslationListFragment();
-            mFragment.setArguments(getIntent().getExtras());
-            getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
-
-            // load list after fragment created
-            Handler hand = new Handler(Looper.getMainLooper());
-            hand.post(new Runnable() {
-                    @Override
-                    public void run() {
-                            ((TargetTranslationListFragment) mFragment).reloadList();
-                    }
-               });
-
-        } else if(numTranslations == 0 && mFragment instanceof TargetTranslationListFragment) {
-            // display welcome screen
-            mFragment = new WelcomeFragment();
-            mFragment.setArguments(getIntent().getExtras());
-            getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
-        } else if(numTranslations > 0 && mFragment instanceof TargetTranslationListFragment) {
-            // reload list
-            ((TargetTranslationListFragment)mFragment).reloadList();
-        }
-
-        String updatedTarget = App.getNotifyTargetTranslationWithUpdates();
-        if(updatedTarget != null) {
-            App.setNotifyTargetTranslationWithUpdates(null); // clear notification
-            showMergePrompt(updatedTarget);
-        }
-    }
-
     /**
      * get last project opened and make sure it is still present
      * @return
@@ -505,14 +499,12 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
      */
     public void showMergePrompt(final String targetTranslationId) {
         mDialogShown = eDialogShown.PROJECT_CHANGED;
-        mUpdatedProject = targetTranslationId;
         TargetTranslation targetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         if(targetTranslation == null) {
             Logger.e(TAG, "invalid target translation id:" + targetTranslationId);
             return;
         }
 
-        String targetLanguageName = targetTranslation.getTargetLanguageName();
         String projectID = targetTranslation.getProjectId();
         Project project = App.getLibrary().getProject(projectID, targetTranslation.getTargetLanguageName());
         if(project == null) {
@@ -520,8 +512,8 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             return;
         }
 
-        String bookName = project.name;
-        String message = String.format(getResources().getString(R.string.merge_request),bookName, targetLanguageName);
+        String message = String.format(getResources().getString(R.string.merge_request),
+                project.name, targetTranslation.getTargetLanguageName());
 
         new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                 .setTitle(R.string.change_detected)
@@ -530,20 +522,25 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mDialogShown = eDialogShown.NONE;
-                        showImportFromDoor43Dialog(targetTranslationId);
+                        updateTargetTranslationFromDoor43(targetTranslationId);
                     }
                 })
                 .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        App.setNotifyTargetTranslationWithUpdates(null);
                         mDialogShown = eDialogShown.NONE;
                     }
                 })
                 .show();
     }
 
-    private void showImportFromDoor43Dialog(String targetTranslationId) {
-        mTargetTranslationId = targetTranslationId;
+    /**
+     * @deprecated we should not call the import from door43 dialog but instead display a progress dialog and initiate the download directly.
+     * @param targetTranslationId
+     */
+    @Deprecated
+    private void updateTargetTranslationFromDoor43(String targetTranslationId) {
         ImportFromDoor43Dialog importDlg = new ImportFromDoor43Dialog();
         importDlg.doQuickLoad(targetTranslationId);
         showDialogFragment(importDlg, ImportFromDoor43Dialog.TAG);
@@ -611,12 +608,6 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     @Override
     public void onSaveInstanceState(Bundle out) {
         out.putInt(STATE_DIALOG_SHOWN, mDialogShown.getValue());
-        if(mUpdatedProject != null) {
-            out.putString(STATE_UPDATED_PROJECT_ID, mUpdatedProject);
-        }
-        if(mTargetTranslationId != null) {
-            out.putString(STATE_TARGET_TRANSLATION_ID, mTargetTranslationId);
-        }
         super.onSaveInstanceState(out);
     }
 
