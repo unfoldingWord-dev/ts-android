@@ -31,9 +31,9 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
     public static final int STEP_REVIEW = 2;
     public static final int STEP_PUBLISH = 3;
     public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
+    public static final String EXTRA_CALLING_ACTIVITY = "extra_calling_activity";
     private static final String STATE_STEP = "state_step";
     private static final String STATE_PUBLISH_FINISHED = "state_publish_finished";
-    public static final String EXTRA_CALLING_ACTIVITY = "extra_calling_activity";
     private PublishStepFragment mFragment;
     private Translator mTranslator;
     private TargetTranslation mTargetTranslation;
@@ -206,6 +206,16 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
         mPublishIndicator.setDone(true);
         mPublishIndicator.setActive(true);
         mPublishFinished = true;
+    }
+
+    @Override
+    public void pushFailure() {
+        String targetTranslationId = null;
+        if(mTargetTranslation != null) {
+            targetTranslationId = mTargetTranslation.getId();
+        }
+        App.setNotifyTargetTranslationWithUpdates(targetTranslationId);
+        finish();
     }
 
     /**
