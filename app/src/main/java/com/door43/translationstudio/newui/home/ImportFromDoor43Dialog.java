@@ -80,7 +80,6 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     private String mQuickLoadPath;
     private String targetTranslationId;
     private eDialogShown mDialogShown = eDialogShown.NONE;
-    private TargetTranslation.TrackingStatus mImportCompareStatus = TargetTranslation.TrackingStatus.DIVERGED;
     private boolean mMergeFromSpecificUrl = false;
     private boolean mManualMerge = false;
 
@@ -151,7 +150,6 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         if(savedInstanceState != null) {
             mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
             targetTranslationId = savedInstanceState.getString(STATE_TARGET_TRANSLATION_ID, null);
-            mImportCompareStatus = TargetTranslation.TrackingStatus.fromInt(savedInstanceState.getInt(STATE_IMPORT_COMPARE_STATUS, TargetTranslation.TrackingStatus.DIVERGED.getValue()));
             mMergeFromSpecificUrl = savedInstanceState.getBoolean(STATE_MERGE_FROM_URL, false);
             mClonelUrl = savedInstanceState.getString(STATE_CLONE_URL, null);
             mManualMerge = savedInstanceState.getBoolean(STATE_MANUAL_MERGE, false);
@@ -439,7 +437,6 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         if(targetTranslationId != null) {
             out.putString(STATE_TARGET_TRANSLATION_ID, targetTranslationId);
         }
-        out.putInt(STATE_IMPORT_COMPARE_STATUS,  mImportCompareStatus.getValue());
         out.putBoolean(STATE_MERGE_FROM_URL,  mMergeFromSpecificUrl);
         if(mClonelUrl != null) {
             out.putString(STATE_CLONE_URL, mClonelUrl);
@@ -575,7 +572,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 "\n--------\n\n";
         args.putString(FeedbackDialog.ARG_MESSAGE, message);
         feebackDlg.setArguments(args);
-        showDialogFragment(feebackDlg, FeedbackDialog.TAG);
+        showDialogFragment(feebackDlg, "feedback-dialog");
     }
 
     /**

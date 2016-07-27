@@ -312,14 +312,14 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements SimpleTas
         MERGE_FAILED(3),
         MERGE_CONFLICT(4);
 
-        private int _value;
+        private int value;
 
         eDialogShown(int Value) {
-            this._value = Value;
+            this.value = Value;
         }
 
         public int getValue() {
-            return _value;
+            return value;
         }
 
         public static eDialogShown fromInt(int i) {

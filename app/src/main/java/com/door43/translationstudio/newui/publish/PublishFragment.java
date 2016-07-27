@@ -522,7 +522,7 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
                 "\n--------\n\n";
         args.putString(FeedbackDialog.ARG_MESSAGE, message);
         feedbackDialog.setArguments(args);
-        showDialogFragment(feedbackDialog, FeedbackDialog.TAG);
+        showDialogFragment(feedbackDialog, "feedback-dialog");
     }
 
     @Override

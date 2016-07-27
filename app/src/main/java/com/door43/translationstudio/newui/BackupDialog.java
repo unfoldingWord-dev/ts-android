@@ -268,7 +268,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     private void showDeviceNetworkAliasDialogSub() {
        settingDeviceAlias = true;
         DeviceNetworkAliasDialog dialog = new DeviceNetworkAliasDialog();
-        showDialogFragment(dialog, DeviceNetworkAliasDialog.TAG);
+        showDialogFragment(dialog, "device-name-dialog");
     }
 
     private void showAccessRequestDialog(final String filename) {
@@ -393,7 +393,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         args.putString(ShareWithPeerDialog.ARG_TARGET_TRANSLATION, targetTranslation.getId());
         args.putString(ShareWithPeerDialog.ARG_DEVICE_ALIAS, App.getDeviceNetworkAlias());
         dialog.setArguments(args);
-        showDialogFragment(dialog, ShareWithPeerDialog.TAG);
+        showDialogFragment(dialog, "share-dialog");
     }
 
     /**
@@ -606,7 +606,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                 "\n--------\n\n";
         args.putString(FeedbackDialog.ARG_MESSAGE, message);
         feedbackDialog.setArguments(args);
-        showDialogFragment(feedbackDialog, FeedbackDialog.TAG);
+        showDialogFragment(feedbackDialog, "feedback-dialog");
     }
 
     public void showPushRejection(final TargetTranslation targetTranslation) {

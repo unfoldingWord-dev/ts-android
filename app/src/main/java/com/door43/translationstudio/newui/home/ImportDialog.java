@@ -126,7 +126,7 @@ public class ImportDialog extends DialogFragment {
                         // get device alias
                         settingDeviceAlias = true;
                         DeviceNetworkAliasDialog dialog = new DeviceNetworkAliasDialog();
-                        showDialogFragment(dialog, DeviceNetworkAliasDialog.TAG);
+                        showDialogFragment(dialog, "device-name-dialog");
                     } else {
                         showP2PDialog();
                     }
@@ -203,7 +203,7 @@ public class ImportDialog extends DialogFragment {
         args.putInt(ShareWithPeerDialog.ARG_OPERATION_MODE, ShareWithPeerDialog.MODE_CLIENT);
         args.putString(ShareWithPeerDialog.ARG_DEVICE_ALIAS, App.getDeviceNetworkAlias());
         dialog.setArguments(args);
-        showDialogFragment(dialog,ShareWithPeerDialog.TAG);
+        showDialogFragment(dialog, "share-dialog");
     }
 
     /**

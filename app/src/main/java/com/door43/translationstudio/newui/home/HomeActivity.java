@@ -120,7 +120,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                                 return true;
                             case R.id.action_feedback:
                                 FeedbackDialog dialog = new FeedbackDialog();
-                                showDialogFragment(dialog, FeedbackDialog.TAG);
+                                showDialogFragment(dialog, "feedback-dialog");
                                 return true;
                             case R.id.action_share_apk:
                                 try {

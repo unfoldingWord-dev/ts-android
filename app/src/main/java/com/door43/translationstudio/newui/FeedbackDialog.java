@@ -35,7 +35,6 @@ public class FeedbackDialog extends DialogFragment implements ManagedTask.OnFini
     private static final String STATE_LATEST_RELEASE = "latest_release";
     private static final String STATE_NOTES = "bug_notes";
     public static final String ARG_MESSAGE = "arg_message";
-    public static final String TAG = FeedbackDialog.class.getSimpleName();
     private String mMessage = "";
     private CheckForLatestReleaseTask.Release mLatestRelease;
     private LinearLayout mLoadingLayout;
