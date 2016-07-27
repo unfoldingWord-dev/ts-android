@@ -563,7 +563,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     }
 
     private void doPullTargetTranslationTask(TargetTranslation targetTranslation, MergeStrategy theirs) {
-        PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, theirs);
+        PullTargetTranslationTask pullTask = new PullTargetTranslationTask(targetTranslation, theirs, null);
         taskWatcher.watch(pullTask);
         TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
     }

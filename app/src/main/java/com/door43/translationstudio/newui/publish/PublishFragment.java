@@ -456,7 +456,10 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mDialogShown = eDialogShown.NONE;
-                        getListener().pushFailure();
+                        if(targetTranslation != null) {
+                            App.setNotifyTargetTranslationWithUpdates(targetTranslation.getId());
+                        }
+                        getActivity().finish();
                     }
                 })
                 .show();

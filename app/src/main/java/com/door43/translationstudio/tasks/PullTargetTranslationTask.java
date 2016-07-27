@@ -45,29 +45,6 @@ public class PullTargetTranslationTask extends ManagedTask {
     private String sourceURL = null;
 
     /**
-     * todo: eventually we need to support pulling from a particular user.
-     * We may need to create a different task or just pass in the target translation id
-     * @param targetTranslation
-     */
-    public PullTargetTranslationTask(TargetTranslation targetTranslation) {
-        setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
-        this.targetTranslation = targetTranslation;
-        this.mergeStrategy = MergeStrategy.RECURSIVE;
-    }
-
-    /**
-     * todo: eventually we need to support pulling from a particular user.
-     * We may need to create a different task or just pass in the target translation id
-     * @param targetTranslation
-     * @param mergeStrategy
-     */
-    public PullTargetTranslationTask(TargetTranslation targetTranslation, MergeStrategy mergeStrategy) {
-        setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
-        this.targetTranslation = targetTranslation;
-        this.mergeStrategy = mergeStrategy;
-    }
-
-    /**
      * do a pull from a specific URL
      * @param targetTranslation
      * @param mergeStrategy
@@ -89,9 +66,9 @@ public class PullTargetTranslationTask extends ManagedTask {
             Profile profile = App.getProfile();
             if (targetTranslation != null && App.isNetworkAvailable() && profile != null && profile.gogsUser != null) {
                 publishProgress(-1, "Downloading updates");
-                String server = App.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, App.context().getResources().getString(R.string.pref_default_git_server));
 
                 if(sourceURL == null) {
+                    String server = App.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, App.context().getResources().getString(R.string.pref_default_git_server));
                     sourceURL = server + ":" + profile.gogsUser.getUsername() + "/" + this.targetTranslation.getId() + ".git";
                 }
 
@@ -233,14 +210,6 @@ public class PullTargetTranslationTask extends ManagedTask {
 
     public Status getStatus() {
         return status;
-    }
-
-    public Map<String, int[][]> getConflicts() {
-        return conflicts;
-    }
-
-    public String getSourceURL() {
-        return sourceURL;
     }
 
     public enum Status {

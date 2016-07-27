@@ -208,16 +208,6 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
         mPublishFinished = true;
     }
 
-    @Override
-    public void pushFailure() {
-        String targetTranslationId = null;
-        if(mTargetTranslation != null) {
-            targetTranslationId = mTargetTranslation.getId();
-        }
-        App.setNotifyTargetTranslationWithUpdates(targetTranslationId);
-        finish();
-    }
-
     /**
      * checks if the user can go to this step yet
      * @param step

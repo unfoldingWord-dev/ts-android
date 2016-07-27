@@ -192,30 +192,21 @@ public class PushTargetTranslationTask extends ManagedTask {
         REJECTED_REMOTE_CHANGED(7),
         UNKNOWN(8);
 
-        private int _value;
+        private int value;
 
         Status(int Value) {
-            this._value = Value;
+            this.value = Value;
         }
 
         public int getValue() {
-            return _value;
-        }
-
-        public static Status fromInt(int i) {
-            for (Status b : Status.values()) {
-                if (b.getValue() == i) {
-                    return b;
-                }
-            }
-            return null;
+            return value;
         }
 
         public boolean isRejected() {
-            return ( (_value == REJECTED_NODELETE.getValue())
-                    || (_value == REJECTED_NONFASTFORWARD.getValue())
-                    || (_value == REJECTED_OTHER_REASON.getValue())
-                    || (_value == REJECTED_REMOTE_CHANGED.getValue())
+            return ( (value == REJECTED_NODELETE.getValue())
+                    || (value == REJECTED_NONFASTFORWARD.getValue())
+                    || (value == REJECTED_OTHER_REASON.getValue())
+                    || (value == REJECTED_REMOTE_CHANGED.getValue())
             );
         }
     }
