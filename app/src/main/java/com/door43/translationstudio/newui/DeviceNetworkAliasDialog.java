@@ -19,7 +19,6 @@ import com.door43.translationstudio.R;
 public class DeviceNetworkAliasDialog extends DialogFragment {
 
     private OnDismissListener listener = null;
-    public static String TAG = DeviceNetworkAliasDialog.class.getSimpleName();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
