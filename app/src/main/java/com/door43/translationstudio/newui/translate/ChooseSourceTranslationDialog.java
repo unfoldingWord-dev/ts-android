@@ -33,6 +33,8 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
     private OnClickListener mListener;
     private ChooseSourceTranslationAdapter mAdapter;
     private Library mLibrary;
+    public static final boolean ENABLE_DRAFTS = true;
+    private static final int MIN_CHECKING_LEVEL = 1; // the minimum level to be considered a source translation
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -67,15 +69,28 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
         for(String id:sourceTranslationIds) {
             SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
             if(sourceTranslation != null) {
-                String title = sourceTranslation.getSourceLanguageTitle() + " - " + sourceTranslation.getResourceTitle();
-                mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation.getId(), true));
+                addSourceTranslation(sourceTranslation, true);
             }
         }
+
+        int min_checking = Library.MIN_CHECKING_LEVEL;
+        if(ENABLE_DRAFTS) {
+            min_checking = this.MIN_CHECKING_LEVEL;
+        }
+
         // add available (duplicates are filtered by the adapter)
-        SourceTranslation[] availableSourceTranslations = mLibrary.getSourceTranslations(mTargetTranslation.getProjectId());
+        SourceTranslation[] availableSourceTranslations = mLibrary.getSourceTranslations(mTargetTranslation.getProjectId(), min_checking);
         for(SourceTranslation sourceTranslation:availableSourceTranslations) {
-            String title = sourceTranslation.getSourceLanguageTitle() + " - " + sourceTranslation.getResourceTitle();
-            mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation.getId(), false));
+            addSourceTranslation(sourceTranslation, false);
+        }
+
+        if(ENABLE_DRAFTS) {
+            SourceTranslation[] draftSourceTranslations = mLibrary.getDraftTranslations(mTargetTranslation.getProjectId());
+            for(SourceTranslation sourceTranslation:draftSourceTranslations) {
+                if(sourceTranslation != null && sourceTranslation.getCheckingLevel() >= min_checking) {
+                    addSourceTranslation(sourceTranslation, false);
+                }
+            }
         }
         mAdapter.sort();
 
@@ -129,6 +144,18 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
         });
 
         return v;
+    }
+
+    private void addSourceTranslation(SourceTranslation sourceTranslation, boolean selected) {
+        String title = sourceTranslation.getSourceLanguageTitle() + " - " + sourceTranslation.getResourceTitle();
+
+        if(sourceTranslation.getCheckingLevel() < Library.MIN_CHECKING_LEVEL) { // see if draft
+            String format = getActivity().getResources().getString(R.string.draft_translation);
+            String newTitle = String.format(format, sourceTranslation.getCheckingLevel(), title);
+            title = newTitle;
+        }
+
+        mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation.getId(), selected));
     }
 
     /**
