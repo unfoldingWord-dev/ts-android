@@ -21,8 +21,9 @@ import java.util.TreeSet;
  * Created by joel on 9/15/2015.
  */
 public class ChooseSourceTranslationAdapter extends BaseAdapter {
-    public static final int TYPE_ITEM = 0;
+    public static final int TYPE_ITEM_SELECTABLE = 0;
     public static final int TYPE_SEPARATOR = 1;
+    public static final int TYPE_ITEM_NEED_DOWNLOAD = 2;
     private final Context mContext;
     private Map<String, ViewItem> mData = new HashMap<>();
     private List<String> mSelected = new ArrayList<>();
@@ -60,19 +61,50 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         return mSortedData.get(position);
     }
 
+    public void doClickOnItem(int position) {
+        int type = getItemViewType( position);
+        switch (type) {
+            case TYPE_ITEM_SELECTABLE:
+                ChooseSourceTranslationAdapter.ViewItem item = getItem(position);
+                if(item.selected) {
+                    deselect(position);
+                } else {
+                    select(position);
+                }
+                break;
+
+            case TYPE_ITEM_NEED_DOWNLOAD:
+                // TODO: 7/28/16 add download
+//                deselect(position);
+                break;
+        }
+    }
+
     @Override
     public long getItemId(int position) {
         return position;
     }
 
+    public boolean isSelectableItem(int position) {
+        boolean selectable = getItemViewType(position) != ChooseSourceTranslationAdapter.TYPE_SEPARATOR;
+        return selectable;
+    }
+
     @Override
     public int getItemViewType(int position) {
-        return mSectionHeader.contains(position) ? TYPE_SEPARATOR : TYPE_ITEM;
+        int type = mSectionHeader.contains(position) ? TYPE_SEPARATOR : TYPE_ITEM_SELECTABLE;
+        if(type == TYPE_ITEM_SELECTABLE) {
+            ViewItem v = getItem(position);
+            if(!v.downloaded) { // check if we need to download
+                type = TYPE_ITEM_NEED_DOWNLOAD;
+            }
+        }
+        return type;
     }
 
     @Override
     public int getViewTypeCount() {
-        return 2;
+        return 3;
     }
 
     /**
@@ -83,13 +115,13 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         mSectionHeader = new TreeSet<>();
 
         // build list
-        ViewItem selectedHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.selected), null, false);
+        ViewItem selectedHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.selected), null, false, false);
         mSortedData.add(selectedHeader);
         mSectionHeader.add(mSortedData.size() - 1);
         for(String id:mSelected) {
             mSortedData.add(mData.get(id));
         }
-        ViewItem availableHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.available), null, false);
+        ViewItem availableHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.available), null, false, false);
         mSortedData.add(availableHeader);
         mSectionHeader.add(mSortedData.size() - 1);
         for(String id:mAvailable) {
@@ -111,11 +143,17 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
                     holder = new ViewHolder();
                     holder.titleView = (TextView)v;
                     break;
-                case TYPE_ITEM:
+                case TYPE_ITEM_SELECTABLE:
                     v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_select_source_translation_list_item, null);
                     holder = new ViewHolder();
                     holder.titleView = (TextView)v.findViewById(R.id.title);
                     holder.checkboxView = (ImageView) v.findViewById(R.id.checkBoxView);
+                    break;
+                case TYPE_ITEM_NEED_DOWNLOAD:
+                    v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_select_source_translation_list_download_item, null);
+                    holder = new ViewHolder();
+                    holder.titleView = (TextView)v.findViewById(R.id.title);
+                    holder.checkboxView = (ImageView) v.findViewById(R.id.download_resource);
                     break;
             }
             v.setTag(holder);
@@ -124,7 +162,10 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         }
 
         holder.titleView.setText(getItem(position).title);
-        if(rowType == TYPE_ITEM) {
+        if(rowType == TYPE_ITEM_NEED_DOWNLOAD) {
+            holder.checkboxView.setBackgroundResource(R.drawable.ic_file_download_black_24dp);
+            ViewUtil.tintViewDrawable(holder.checkboxView, parent.getContext().getResources().getColor(R.color.accent));
+        } else if(rowType == TYPE_ITEM_SELECTABLE) {
             if (getItem(position).selected) {
                 holder.checkboxView.setBackgroundResource(R.drawable.ic_check_box_black_24dp);
                 ViewUtil.tintViewDrawable(holder.checkboxView, parent.getContext().getResources().getColor(R.color.accent));
@@ -163,12 +204,14 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
     public static class ViewItem {
         public final String title;
         public final String id;
-        public Boolean selected;
+        public boolean selected;
+        public final boolean downloaded;
 
-        public ViewItem(String title, String id, Boolean selected) {
+        public ViewItem(String title, String id, boolean selected, boolean downloaded) {
             this.title = title;
             this.id = id;
             this.selected = selected;
+            this.downloaded = downloaded;
         }
     }
 }

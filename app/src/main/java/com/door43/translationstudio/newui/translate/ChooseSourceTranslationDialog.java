@@ -16,6 +16,7 @@ import android.widget.ListView;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
@@ -99,13 +100,8 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if(mAdapter.getItemViewType(position) == ChooseSourceTranslationAdapter.TYPE_ITEM) {
-                    ChooseSourceTranslationAdapter.ViewItem item = mAdapter.getItem(position);
-                    if(item.selected) {
-                        mAdapter.deselect(position);
-                    } else {
-                        mAdapter.select(position);
-                    }
+                if(mAdapter.isSelectableItem(position)) {
+                    mAdapter.doClickOnItem(position);
                     mAdapter.sort();
                 }
             }
@@ -129,7 +125,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
                 int count = mAdapter.getCount();
                 List<String> sourceTranslationIds = new ArrayList<>();
                 for(int i = 0; i < count; i ++) {
-                    if(mAdapter.getItemViewType(i) == ChooseSourceTranslationAdapter.TYPE_ITEM) {
+                    if(mAdapter.isSelectableItem(i)) {
                         ChooseSourceTranslationAdapter.ViewItem item = mAdapter.getItem(i);
                         if(item.selected) {
                             sourceTranslationIds.add(item.id);
@@ -155,7 +151,9 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
             title = newTitle;
         }
 
-        mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation.getId(), selected));
+        Resource resource = mLibrary.getResource( sourceTranslation);
+        boolean downloaded = resource.isDownloaded();
+        mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation.getId(), selected, downloaded));
     }
 
     /**
