@@ -21,6 +21,8 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 
+import org.unfoldingword.tools.logger.Logger;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +31,7 @@ import java.util.List;
  */
 public class ChooseSourceTranslationDialog extends DialogFragment {
     public static final String ARG_TARGET_TRANSLATION_ID = "arg_target_translation_id";
+    public static final String TAG = ChooseSourceTranslationDialog.class.getSimpleName();
     private Translator mTranslator;
     private TargetTranslation mTargetTranslation;
     private OnClickListener mListener;
@@ -157,9 +160,12 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
         }
 
         Resource resource = mLibrary.getResource( sourceTranslation);
-        boolean downloaded = resource.isDownloaded();
-        String projectID = sourceTranslation.projectSlug;
-        mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation.getId(), projectID, selected, downloaded));
+        if(resource != null) {
+            boolean downloaded = resource.isDownloaded();
+            mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation, selected, downloaded));
+        } else {
+            Logger.e(TAG, "Failed to get resource for " + sourceTranslation.getId());
+        }
     }
 
     /**

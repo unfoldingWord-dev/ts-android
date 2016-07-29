@@ -8,11 +8,16 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.Resource;
+import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.newui.library.ServerLibraryDetailFragment;
 import com.door43.translationstudio.tasks.DownloadSourceLanguageTask;
 import com.door43.widget.ViewUtil;
 
+import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
@@ -29,6 +34,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
     public static final int TYPE_ITEM_SELECTABLE = 0;
     public static final int TYPE_SEPARATOR = 1;
     public static final int TYPE_ITEM_NEED_DOWNLOAD = 2;
+    public static final String TAG = ChooseSourceTranslationAdapter.class.getSimpleName();
     private final Context mContext;
     private Map<String, ViewItem> mData = new HashMap<>();
     private List<String> mSelected = new ArrayList<>();
@@ -79,32 +85,39 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
                 break;
 
             case TYPE_ITEM_NEED_DOWNLOAD:
-                DownloadSourceLanguageTask task = new DownloadSourceLanguageTask(item.projectID, item.id);
+                DownloadSourceLanguageTask task = new DownloadSourceLanguageTask(item.sourceTranslation.projectSlug, item.sourceTranslation.sourceLanguageSlug);
                 task.addOnFinishedListener(this);
-                TaskManager.addTask(task, item.projectID + "-" + item.id);
+                TaskManager.addTask(task, item.sourceTranslation.projectSlug + "-" + item.id);
                 TaskManager.groupTask(task, ServerLibraryDetailFragment.DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP);
-//                task.addOnFinishedListener(item.onFinishedListener);
-//                task.addOnProgressListener(item.onProgressListener);
                 break;
         }
     }
 
     public void onTaskFinished(ManagedTask task) {
         DownloadSourceLanguageTask downloadTask = (DownloadSourceLanguageTask) task;
+        Library library = App.getLibrary();
         if(downloadTask.isFinished() && downloadTask.getSuccess()) {
             String sourceLang = downloadTask.getSourceLanguageId();
             String projectId = downloadTask.getProjectId();
-
             if((sourceLang != null) && (projectId != null)) {
-
                 // find entry that was changed
                 for (int i = 0; i < getCount(); i++) {
                     ChooseSourceTranslationAdapter.ViewItem item = getItem(i);
-                    if ((item != null) && sourceLang.equals(item.id) && projectId.equals(item.projectID)) {
-                        item.downloaded = true;
-                        notifyDataSetChanged();
-                        break;
+                    if (item != null) {
+                        if((item.sourceTranslation != null) && sourceLang.equals(item.sourceTranslation.sourceLanguageSlug) && projectId.equals(item.sourceTranslation.projectSlug)) {
+                            Resource resource = library.getResource(item.sourceTranslation);
+                            if (resource != null) {
+                                item.downloaded = resource.isDownloaded();
+                            } else {
+                                Logger.e(TAG, "Failed to get resource for " + item.sourceTranslation.getId());
+                            }
+                            notifyDataSetChanged();
+                            break;
+                        }
+                    } else {
+                        Logger.e(TAG, "Failed to get SourceTranslation for " + item.id);
                     }
+
                 }
             }
         }
@@ -145,13 +158,13 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
         mSectionHeader = new TreeSet<>();
 
         // build list
-        ViewItem selectedHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.selected), null, null, false, false);
+        ViewItem selectedHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.selected), null, false, false);
         mSortedData.add(selectedHeader);
         mSectionHeader.add(mSortedData.size() - 1);
         for(String id:mSelected) {
             mSortedData.add(mData.get(id));
         }
-        ViewItem availableHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.available), null, null, false, false);
+        ViewItem availableHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.available), null, false, false);
         mSortedData.add(availableHeader);
         mSectionHeader.add(mSortedData.size() - 1);
         for(String id:mAvailable) {
@@ -234,15 +247,19 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
     public static class ViewItem {
         public final String title;
         public final String id;
-        public final String projectID;
+        public final SourceTranslation sourceTranslation;
         public boolean selected;
         public boolean downloaded;
 
-        public ViewItem(String title, String id, String projectID, boolean selected, boolean downloaded) {
+        public ViewItem(String title, SourceTranslation sourceTranslation, boolean selected, boolean downloaded) {
             this.title = title;
-            this.id = id;
             this.selected = selected;
-            this.projectID = projectID;
+            this.sourceTranslation = sourceTranslation;
+            if(sourceTranslation != null) {
+                this.id = sourceTranslation.getId();
+            } else {
+                this.id = null;
+            }
             this.downloaded = downloaded;
         }
     }
