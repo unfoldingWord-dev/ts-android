@@ -9,7 +9,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.newui.library.ServerLibraryDetailFragment;
+import com.door43.translationstudio.tasks.DownloadSourceLanguageTask;
 import com.door43.widget.ViewUtil;
+
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,7 +25,7 @@ import java.util.TreeSet;
 /**
  * Created by joel on 9/15/2015.
  */
-public class ChooseSourceTranslationAdapter extends BaseAdapter {
+public class ChooseSourceTranslationAdapter extends BaseAdapter  implements ManagedTask.OnFinishedListener {
     public static final int TYPE_ITEM_SELECTABLE = 0;
     public static final int TYPE_SEPARATOR = 1;
     public static final int TYPE_ITEM_NEED_DOWNLOAD = 2;
@@ -63,9 +68,9 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
 
     public void doClickOnItem(int position) {
         int type = getItemViewType( position);
+        ChooseSourceTranslationAdapter.ViewItem item = getItem(position);
         switch (type) {
             case TYPE_ITEM_SELECTABLE:
-                ChooseSourceTranslationAdapter.ViewItem item = getItem(position);
                 if(item.selected) {
                     deselect(position);
                 } else {
@@ -74,9 +79,34 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
                 break;
 
             case TYPE_ITEM_NEED_DOWNLOAD:
-                // TODO: 7/28/16 add download
-//                deselect(position);
+                DownloadSourceLanguageTask task = new DownloadSourceLanguageTask(item.projectID, item.id);
+                task.addOnFinishedListener(this);
+                TaskManager.addTask(task, item.projectID + "-" + item.id);
+                TaskManager.groupTask(task, ServerLibraryDetailFragment.DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP);
+//                task.addOnFinishedListener(item.onFinishedListener);
+//                task.addOnProgressListener(item.onProgressListener);
                 break;
+        }
+    }
+
+    public void onTaskFinished(ManagedTask task) {
+        DownloadSourceLanguageTask downloadTask = (DownloadSourceLanguageTask) task;
+        if(downloadTask.isFinished() && downloadTask.getSuccess()) {
+            String sourceLang = downloadTask.getSourceLanguageId();
+            String projectId = downloadTask.getProjectId();
+
+            if((sourceLang != null) && (projectId != null)) {
+
+                // find entry that was changed
+                for (int i = 0; i < getCount(); i++) {
+                    ChooseSourceTranslationAdapter.ViewItem item = getItem(i);
+                    if ((item != null) && sourceLang.equals(item.id) && projectId.equals(item.projectID)) {
+                        item.downloaded = true;
+                        notifyDataSetChanged();
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -115,13 +145,13 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         mSectionHeader = new TreeSet<>();
 
         // build list
-        ViewItem selectedHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.selected), null, false, false);
+        ViewItem selectedHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.selected), null, null, false, false);
         mSortedData.add(selectedHeader);
         mSectionHeader.add(mSortedData.size() - 1);
         for(String id:mSelected) {
             mSortedData.add(mData.get(id));
         }
-        ViewItem availableHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.available), null, false, false);
+        ViewItem availableHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.available), null, null, false, false);
         mSortedData.add(availableHeader);
         mSectionHeader.add(mSortedData.size() - 1);
         for(String id:mAvailable) {
@@ -204,13 +234,15 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
     public static class ViewItem {
         public final String title;
         public final String id;
+        public final String projectID;
         public boolean selected;
-        public final boolean downloaded;
+        public boolean downloaded;
 
-        public ViewItem(String title, String id, boolean selected, boolean downloaded) {
+        public ViewItem(String title, String id, String projectID, boolean selected, boolean downloaded) {
             this.title = title;
             this.id = id;
             this.selected = selected;
+            this.projectID = projectID;
             this.downloaded = downloaded;
         }
     }

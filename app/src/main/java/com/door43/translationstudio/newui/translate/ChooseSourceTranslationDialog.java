@@ -142,6 +142,11 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
         return v;
     }
 
+    /**
+     * adds this source translation to the adapter
+     * @param sourceTranslation
+     * @param selected
+     */
     private void addSourceTranslation(SourceTranslation sourceTranslation, boolean selected) {
         String title = sourceTranslation.getSourceLanguageTitle() + " - " + sourceTranslation.getResourceTitle();
 
@@ -153,7 +158,8 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
 
         Resource resource = mLibrary.getResource( sourceTranslation);
         boolean downloaded = resource.isDownloaded();
-        mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation.getId(), selected, downloaded));
+        String projectID = sourceTranslation.projectSlug;
+        mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation.getId(), projectID, selected, downloaded));
     }
 
     /**
