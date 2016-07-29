@@ -1495,8 +1495,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                 int[] spanRange = (int[])event.getLocalState();
                                 if((spanRange != null) && (spanRange.length >= 2) ) {
                                     CharSequence in = editText.getText();
-                                    CharSequence out = TextUtils.concat(in.subSequence(0, spanRange[0]), in.subSequence(spanRange[1], in.length()));
-                                    editText.setText(out);
+                                    if( (spanRange[0] < in.length()) && spanRange[1] < in.length()) {
+                                        CharSequence out = TextUtils.concat(in.subSequence(0, spanRange[0]), in.subSequence(spanRange[1], in.length()));
+                                        editText.setText(out);
+                                    }
                                 }
                             } else if(event.getAction() == DragEvent.ACTION_DROP) {
                                 int offset = editText.getOffsetForPosition(event.getX(), event.getY());
