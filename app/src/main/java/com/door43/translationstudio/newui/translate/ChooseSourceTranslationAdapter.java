@@ -1,6 +1,8 @@
 package com.door43.translationstudio.newui.translate;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -85,14 +87,46 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
                 break;
 
             case TYPE_ITEM_NEED_DOWNLOAD:
-                DownloadSourceLanguageTask task = new DownloadSourceLanguageTask(item.sourceTranslation.projectSlug, item.sourceTranslation.sourceLanguageSlug);
-                task.addOnFinishedListener(this);
-                TaskManager.addTask(task, item.sourceTranslation.projectSlug + "-" + item.id);
-                TaskManager.groupTask(task, ServerLibraryDetailFragment.DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP);
+                promptToDownloadSourceLangauge(item);
                 break;
         }
     }
 
+    /**
+     * make sure the user is aware that download will use the internet
+     * @param item
+     */
+    private void promptToDownloadSourceLangauge(final ViewItem item) {
+        String format = mContext.getResources().getString(R.string.download_source_language);
+        String message = String.format(format, item.title);
+        new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
+                .setTitle(R.string.title_download_source_language)
+                .setMessage(message)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        downloadSourceLanguage(item);
+                    }
+                })
+                .setNegativeButton(R.string.no, null)
+                .show();
+    }
+
+    /**
+     * initiate download
+     * @param item
+     */
+    private void downloadSourceLanguage(ViewItem item) {
+        DownloadSourceLanguageTask task = new DownloadSourceLanguageTask(item.sourceTranslation.projectSlug, item.sourceTranslation.sourceLanguageSlug);
+        task.addOnFinishedListener(this);
+        TaskManager.addTask(task, item.sourceTranslation.projectSlug + "-" + item.id);
+        TaskManager.groupTask(task, ServerLibraryDetailFragment.DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP);
+    }
+
+    /**
+     * called when download is finished
+     * @param task
+     */
     public void onTaskFinished(ManagedTask task) {
         DownloadSourceLanguageTask downloadTask = (DownloadSourceLanguageTask) task;
         Library library = App.getLibrary();
