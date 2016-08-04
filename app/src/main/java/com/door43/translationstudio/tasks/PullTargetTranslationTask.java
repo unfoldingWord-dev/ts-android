@@ -37,7 +37,7 @@ import java.util.Map;
 public class PullTargetTranslationTask extends ManagedTask {
 
     public static final String TASK_ID = "pull_target_translation_task";
-    private final TargetTranslation targetTranslation;
+    public final TargetTranslation targetTranslation;
     private final MergeStrategy mergeStrategy;
     private String message = "";
     private Status status = Status.UNKNOWN;

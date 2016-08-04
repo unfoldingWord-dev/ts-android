@@ -813,4 +813,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="push_rejected">Upload failed because of changes on Server. Do you want to review conflicts?</string>
     <string name="backup_rejected">Backup failed because of changes on Server. Do you want to review conflicts?</string>
     <string name="backup_failed_title">Backup failed</string>
+    <string name="update_failed">Update Failed</string>
+    <string name="success_translation_update">Your translation has been successfully updated.</string>
+    <string name="success_translation_update_with_conflicts">Your translation has been successfully updated.\nSome chunks had conflicts and need review.</string>
 </resources>
