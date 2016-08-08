@@ -63,6 +63,7 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
     private static final String STATE_UPLOADED = "state_uploaded";
     public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
     public static final String STATE_UPLOAD_DETAILS = "state_upload_details";
+    public static final String STATE_DIALOG_MESSAGE = "state_dialog_message";
     private boolean mUploaded = false;
     private Button mUploadButton;
     private SimpleTaskWatcher taskWatcher;
@@ -70,6 +71,7 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
     private TargetTranslation targetTranslation;
     private eDialogShown mDialogShown = eDialogShown.NONE;
     private String mUploadDetails;
+    private String mDialogMessage;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_publish_publish, container, false);
@@ -81,6 +83,7 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
             mUploaded = savedInstanceState.getBoolean(STATE_UPLOADED, false);
             mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
             mUploadDetails = savedInstanceState.getString(STATE_UPLOAD_DETAILS, null);
+            mDialogMessage = savedInstanceState.getString(STATE_DIALOG_MESSAGE, null);
         }
 
         Bundle args = getArguments();
@@ -168,7 +171,7 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
         exportToSD.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ExportUsfm.saveToUsfmWithPrompt(getActivity(), targetTranslation);
+                showExportToUsfmPrompt();
             }
         });
         Button exportToDevice = (Button)v.findViewById(R.id.backup_to_device);
@@ -199,6 +202,38 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
     }
 
     /**
+     * display confirmation prompt before USFM export
+     */
+    private void showExportToUsfmPrompt() {
+        mDialogShown = eDialogShown.EXPORT_TO_USFM_PROMPT;
+        ExportUsfm.saveToUsfmWithPrompt(getActivity(), targetTranslation, new ExportUsfm.OnResultsListener() {
+            @Override
+            public void onFinished(ExportUsfm.eResults result, String outputFilePath, String defaultMessage) {
+                mDialogShown = eDialogShown.NONE;
+                if(result != null) {
+                    showUsfmExportResults(defaultMessage);
+                }
+            }
+        });
+    }
+
+    /**
+     * show USFM export results
+     * @param message
+     */
+    private void showUsfmExportResults(String message) {
+        mDialogShown = eDialogShown.EXPORT_TO_USFM_RESULTS;
+        mDialogMessage = message;
+
+        ExportUsfm.showResults(getActivity(), message, new ExportUsfm.OnFinishedListener() {
+            @Override
+            public void onFinished() {
+                mDialogShown = eDialogShown.NONE;
+            }
+        });
+    }
+
+    /**
      * restore the dialogs that were displayed before rotation
      */
     private void restoreDialogs() {
@@ -218,6 +253,14 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
 
             case PUBLISH_SUCCESS:
                 showPublishSuccessDialog(mUploadDetails);
+                break;
+
+            case EXPORT_TO_USFM_PROMPT:
+                showExportToUsfmPrompt();
+                break;
+
+            case EXPORT_TO_USFM_RESULTS:
+                showUsfmExportResults(mDialogMessage);
                 break;
 
             case NONE:
@@ -515,6 +558,9 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
         if(mUploadDetails != null) {
             out.putString(STATE_UPLOAD_DETAILS, mUploadDetails);
         }
+        if(mDialogMessage != null) {
+            out.putString(STATE_DIALOG_MESSAGE, mDialogMessage);
+        }
         super.onSaveInstanceState(out);
     }
 
@@ -534,7 +580,9 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
         PUBLISH_FAILED(1),
         AUTH_FAILURE(2),
         PUSH_FAILURE(3),
-        PUBLISH_SUCCESS(4);
+        PUBLISH_SUCCESS(4),
+        EXPORT_TO_USFM_PROMPT(5),
+        EXPORT_TO_USFM_RESULTS(6);
 
         private int _value;
 

@@ -26,22 +26,23 @@ public class ExportUsfm {
      * save target translation as USFM file
      * @param activity
      * @param targetTranslation
+     * @param listener
      */
-    static public void saveToUsfmWithPrompt(final Activity activity, final TargetTranslation targetTranslation) {
+    static public void saveToUsfmWithPrompt(final Activity activity, final TargetTranslation targetTranslation, final OnResultsListener listener) {
         new AlertDialog.Builder(activity, R.style.AppTheme_Dialog)
                 .setTitle(R.string.title_export_usfm)
                 .setMessage(R.string.export_usfm_by_chapter)
                 .setPositiveButton(R.string.label_separate, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        saveToUsfmWithSuccessIndication(activity, targetTranslation, true, true);
+                        saveToUsfmWithSuccessIndication(activity, targetTranslation, true, true, listener);
                     }
                 })
                 .setNeutralButton(R.string.dismiss, null)
                 .setNegativeButton(R.string.label_whole, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        saveToUsfmWithSuccessIndication(activity, targetTranslation, false, false);
+                        saveToUsfmWithSuccessIndication(activity, targetTranslation, false, false, listener);
                     }
                 })
                 .show();
@@ -49,9 +50,14 @@ public class ExportUsfm {
 
     /**
      * save to usfm file and give success notification
+     *
+     * @param activity
+     * @param targetTranslation
      * @param separateChapters
+     * @param zipFiles
+     * @param listener
      */
-    static private void saveToUsfmWithSuccessIndication(Activity activity, TargetTranslation targetTranslation, boolean separateChapters, boolean zipFiles) {
+    static private void saveToUsfmWithSuccessIndication(Activity activity, TargetTranslation targetTranslation, boolean separateChapters, boolean zipFiles, final OnResultsListener listener) {
         String zipFileName = null;
         if(zipFiles) {
             zipFileName = targetTranslation.getId() + ".zip";
@@ -59,17 +65,47 @@ public class ExportUsfm {
 
         File exportFile = saveToUSFM( targetTranslation, null, zipFileName, separateChapters);
         boolean success = (exportFile != null);
-        String message;
-        if(success) {
-            String format = activity.getResources().getString(R.string.export_success);
-            message = String.format(format, exportFile.toString());
-        } else {
-            message = activity.getResources().getString(R.string.export_failed);
+        eResults results = success ? eResults.SUCCESS : eResults.FAILED;
+
+        String defaultResultsMessage;
+        String format;
+        switch (results) {
+            case SUCCESS:
+                format = activity.getResources().getString(R.string.export_success);
+                defaultResultsMessage = String.format(format, exportFile.toString());
+                break;
+
+            default:
+                defaultResultsMessage = activity.getResources().getString(R.string.export_failed);
+                break;
         }
+
+        if(listener == null) {
+            showResults(activity, defaultResultsMessage, null);
+        } else {
+            listener.onFinished(results, exportFile.toString(), defaultResultsMessage);
+        }
+    }
+
+    /**
+     * show results of USFM export
+     *
+     * @param activity
+     * @param message
+     * @param listener
+     */
+    public static void showResults(Activity activity, String message, final OnFinishedListener listener) {
         new AlertDialog.Builder(activity, R.style.AppTheme_Dialog)
                 .setTitle(R.string.title_export_usfm)
                 .setMessage(message)
-                .setPositiveButton(R.string.dismiss, null)
+                .setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if(listener != null) {
+                            listener.onFinished();
+                        }
+                    }
+                })
                 .show();
     }
 
@@ -216,5 +252,29 @@ public class ExportUsfm {
         }
         FileUtilities.deleteQuietly(tempDir);
         return destFile;
+    }
+
+    public interface OnResultsListener {
+
+        /**
+         * report the results from export
+         * @param result
+         * @param outputFilePath
+         */
+        public void onFinished(eResults result, String outputFilePath, String defaultMessage);
+    }
+
+    public interface OnFinishedListener {
+
+        /**
+         * results dialog finished
+         */
+        public void onFinished();
+    }
+
+    public enum eResults {
+        CANCELLED,
+        SUCCESS,
+        FAILED
     }
 }
