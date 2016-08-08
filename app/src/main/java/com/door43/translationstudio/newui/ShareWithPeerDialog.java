@@ -51,7 +51,6 @@ import java.util.Locale;
  * Created by joel on 11/19/2015.
  */
 public class ShareWithPeerDialog extends DialogFragment implements ServerService.OnServerEventListener, BroadcastListenerService.Callbacks, ClientService.OnClientEventListener {
-
     // TODO: 11/30/2015 get port from settings
     private static final int PORT_CLIENT_UDP = 9939;
     private static final int REFRESH_FREQUENCY = 2000;

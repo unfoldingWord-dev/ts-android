@@ -75,6 +75,7 @@ public class App extends Application {
     private static final String ASSETS_DIR = "assets";
     private static ImageLoader mImageLoader;
     private static App sInstance;
+    private static String targetTranslationWithUpdates = null;
 
     @Override
     public void onCreate() {
@@ -435,6 +436,22 @@ public class App extends Application {
         File dir = new File(Environment.getExternalStorageDirectory(), PUBLIC_DATA_DIR);
         dir.mkdirs();
         return dir;
+    }
+
+    /**
+     * check for cached value that project has changed
+     * @return
+     */
+    public static String getNotifyTargetTranslationWithUpdates() {
+        return targetTranslationWithUpdates;
+    }
+
+    /**
+     * for keeping track of project that has changed
+     * @param targetTranslationId
+     */
+    public static void setNotifyTargetTranslationWithUpdates(String targetTranslationId) {
+        targetTranslationWithUpdates = targetTranslationId;
     }
 
     /**
