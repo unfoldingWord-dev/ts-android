@@ -38,7 +38,14 @@ public class ExportUsfm {
                         saveToUsfmWithSuccessIndication(activity, targetTranslation, true, true, listener);
                     }
                 })
-                .setNeutralButton(R.string.dismiss, null)
+                .setNeutralButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if(listener != null) {
+                            listener.onFinished(eResults.CANCELLED, null, null);
+                        }
+                    }
+                })
                 .setNegativeButton(R.string.label_whole, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
