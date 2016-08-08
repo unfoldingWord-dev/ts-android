@@ -210,7 +210,7 @@ public class PublishFragment extends PublishStepFragment implements SimpleTaskWa
             @Override
             public void onFinished(ExportUsfm.eResults result, String outputFilePath, String defaultMessage) {
                 mDialogShown = eDialogShown.NONE;
-                if(result != null) {
+                if(result != ExportUsfm.eResults.CANCELLED) {
                     showUsfmExportResults(defaultMessage);
                 }
             }
