@@ -819,4 +819,5 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="draft_translation">Draft Level <xliff:g example="3" id="checking_level">%1$d</xliff:g>: <xliff:g example="Pig Latin" id="language">%2$s</xliff:g></string>
     <string name="title_download_source_language">Download from Online</string>
     <string name="download_source_language">Do you want to download \'<xliff:g example="Pig Latin" id="language">%1$s</xliff:g>\' from Online (requires internet)?</string>
+    <string name="downloading_source">Downloading source <xliff:g example="en" id="source_language">%1$s</xliff:g></string>
 </resources>

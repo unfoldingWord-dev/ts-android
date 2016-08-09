@@ -1,7 +1,10 @@
 package com.door43.translationstudio.newui.translate;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,11 +14,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.App;
+import com.door43.translationstudio.DeveloperToolsActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.newui.library.ServerLibraryDetailFragment;
+import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
 import com.door43.translationstudio.tasks.DownloadSourceLanguageTask;
 import com.door43.widget.ViewUtil;
 
@@ -23,6 +28,7 @@ import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +38,7 @@ import java.util.TreeSet;
 /**
  * Created by joel on 9/15/2015.
  */
-public class ChooseSourceTranslationAdapter extends BaseAdapter  implements ManagedTask.OnFinishedListener {
+public class ChooseSourceTranslationAdapter extends BaseAdapter  implements ManagedTask.OnFinishedListener,  ManagedTask.OnProgressListener {
     public static final int TYPE_ITEM_SELECTABLE = 0;
     public static final int TYPE_SEPARATOR = 1;
     public static final int TYPE_ITEM_NEED_DOWNLOAD = 2;
@@ -43,6 +49,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
     private List<String> mAvailable = new ArrayList<>();
     private List<ViewItem> mSortedData = new ArrayList<>();
     private TreeSet<Integer> mSectionHeader = new TreeSet<>();
+    private ProgressDialog progressDialog;
 
     public ChooseSourceTranslationAdapter(Context context) {
         mContext = context;
@@ -119,6 +126,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
     private void downloadSourceLanguage(ViewItem item) {
         DownloadSourceLanguageTask task = new DownloadSourceLanguageTask(item.sourceTranslation.projectSlug, item.sourceTranslation.sourceLanguageSlug);
         task.addOnFinishedListener(this);
+        task.addOnProgressListener(this);
         TaskManager.addTask(task, item.sourceTranslation.projectSlug + "-" + item.id);
         TaskManager.groupTask(task, ServerLibraryDetailFragment.DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP);
     }
@@ -130,7 +138,13 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
     public void onTaskFinished(ManagedTask task) {
         DownloadSourceLanguageTask downloadTask = (DownloadSourceLanguageTask) task;
         Library library = App.getLibrary();
+
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+        }
+        
         if(downloadTask.isFinished() && downloadTask.getSuccess()) {
+            boolean databaseChanged = false;
             String sourceLang = downloadTask.getSourceLanguageId();
             String projectId = downloadTask.getProjectId();
             if((sourceLang != null) && (projectId != null)) {
@@ -142,19 +156,78 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
                             Resource resource = library.getResource(item.sourceTranslation);
                             if (resource != null) {
                                 item.downloaded = resource.isDownloaded();
+                                databaseChanged = true;
                             } else {
                                 Logger.e(TAG, "Failed to get resource for " + item.sourceTranslation.getId());
                             }
-                            notifyDataSetChanged();
                             break;
                         }
                     } else {
                         Logger.e(TAG, "Failed to get SourceTranslation for " + item.id);
                     }
-
                 }
             }
+
+            if(databaseChanged) { // refresh list in main loop
+                Handler hand = new Handler(Looper.getMainLooper());
+                hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        notifyDataSetChanged();
+                    }
+                });
+            }
         }
+    }
+
+    @Override
+    public void onTaskProgress(final ManagedTask task, final double progress, final String message, final boolean secondary) {
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                if (task.isFinished()) {
+                    if (progressDialog != null) {
+                        progressDialog.dismiss();
+                    }
+                    return;
+                }
+
+                if (progressDialog == null) {
+                    progressDialog = new ProgressDialog(mContext);
+                    progressDialog.setCancelable(false);
+                    progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                    progressDialog.setCanceledOnTouchOutside(false);
+                    progressDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
+                    progressDialog.setTitle(mContext.getResources().getString(R.string.downloading_languages));
+                    progressDialog.setMessage("");
+                }
+                progressDialog.setMax(task.maxProgress());
+                if (!progressDialog.isShowing()) {
+                    progressDialog.show();
+                }
+                if (progress == -1) {
+                    progressDialog.setIndeterminate(true);
+                    progressDialog.setProgress(progressDialog.getMax());
+                    progressDialog.setProgressNumberFormat(null);
+                    progressDialog.setProgressPercentFormat(null);
+                } else {
+                    progressDialog.setIndeterminate(false);
+                    if(secondary) {
+                        progressDialog.setSecondaryProgress((int) progress);
+                    } else {
+                        progressDialog.setProgress((int) progress);
+                    }
+                    progressDialog.setProgressNumberFormat("%1d/%2d");
+                    progressDialog.setProgressPercentFormat(NumberFormat.getPercentInstance());
+                }
+                if (!message.isEmpty()) {
+                    progressDialog.setMessage(String.format(mContext.getResources().getString(R.string.downloading_source), message));
+                } else {
+                    progressDialog.setMessage(message);
+                }
+            }
+        });
     }
 
     @Override
