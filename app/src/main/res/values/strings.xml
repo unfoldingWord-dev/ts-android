@@ -806,6 +806,16 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="download_latest_apk">Do you want to download this update?</string>
     <string name="updating_projects">Updating projects</string>
     <string name="view_online">View Online</string>
+    <string name="change_detected">Project Change Detected</string>
+    <string name="upload_push_failure">There are changes to this translation on your Door43 account. You must import those changes before uploading.</string>
+    <string name="merge_request">There are changes to your translation of <xliff:g example="Hebrews" id="book">%1$s</xliff:g> in <xliff:g example="English" id="language">%2$s</xliff:g> on your Door43 account. Would you like to import those now?</string>
+    <string name="import_failed_title">Import failed</string>
+    <string name="push_rejected">Upload failed because of changes on Server. Do you want to review conflicts?</string>
+    <string name="backup_rejected">Backup failed because of changes on Server. Do you want to review conflicts?</string>
+    <string name="backup_failed_title">Backup failed</string>
+    <string name="update_failed">Update Failed</string>
+    <string name="success_translation_update">Your translation has been successfully updated.</string>
+    <string name="success_translation_update_with_conflicts">Your translation has been successfully updated.\nSome chunks had conflicts and need review.</string>
     <string name="draft_translation">Draft Level <xliff:g example="3" id="checking_level">%1$d</xliff:g>: <xliff:g example="Pig Latin" id="language">%2$s</xliff:g></string>
     <string name="title_download_source_language">Download from Online</string>
     <string name="download_source_language">Do you want to download \'<xliff:g example="Pig Latin" id="language">%1$s</xliff:g>\' from Online (requires internet)?</string>

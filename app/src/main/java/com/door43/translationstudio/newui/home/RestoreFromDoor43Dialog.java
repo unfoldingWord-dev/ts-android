@@ -44,13 +44,16 @@ import java.util.List;
  * Created by joel on 11/6/2015.
  */
 public class RestoreFromDoor43Dialog extends DialogFragment implements SimpleTaskWatcher.OnFinishedListener {
+    public static final String TAG = RestoreFromDoor43Dialog.class.getSimpleName();
     private static final String STATE_REPOSITORIES = "state_repositories";
+    private static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
     private SimpleTaskWatcher taskWatcher;
     private RestoreFromCloudAdapter adapter;
     private Translator translator;
     private List<Repository> repositories = new ArrayList<>();
     private String cloneSSHUrl;
     private File cloneDestDir;
+    private eDialogShown mDialogShown = eDialogShown.NONE;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -108,6 +111,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements SimpleTas
                 }
                 adapter.setRepositories(repositories);
             }
+            mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
         }
 
         // connect to existing task
@@ -125,6 +129,35 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements SimpleTas
         }
 
         return v;
+    }
+
+    @Override
+    public void onResume() {
+        restoreDialogs();
+        super.onResume();
+    }
+
+    /**
+     * restore the dialogs that were displayed before rotation
+     */
+    private void restoreDialogs() {
+        //recreate dialog last shown
+        switch(mDialogShown) {
+            case RESTORE_FAILED:
+                notifyRestoreFailed();
+                break;
+
+            case AUTH_FAILURE:
+                showAuthFailure();
+                break;
+
+            case NONE:
+                break;
+
+            default:
+                Logger.e(TAG,"Unsupported restore dialog: " + mDialogShown.toString());
+                break;
+        }
     }
 
     @Override
@@ -215,11 +248,13 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements SimpleTas
     }
 
     public void showAuthFailure() {
+        mDialogShown = eDialogShown.AUTH_FAILURE;
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.error).setMessage(R.string.auth_failure_retry)
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
                         RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(true);
                         taskWatcher.watch(keyTask);
                         TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
@@ -228,6 +263,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements SimpleTas
                 .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
                         notifyRestoreFailed();
                     }
                 })
@@ -235,10 +271,16 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements SimpleTas
     }
 
     public void notifyRestoreFailed() {
+        mDialogShown = eDialogShown.RESTORE_FAILED;
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.error)
                 .setMessage(R.string.restore_failed)
-                .setPositiveButton(R.string.dismiss, null)
+                .setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                    }
+                })
                 .show();
     }
 
@@ -250,6 +292,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements SimpleTas
             repoJsonList.add(r.toJSON().toString());
         }
         out.putStringArray(STATE_REPOSITORIES, repoJsonList.toArray(new String[repoJsonList.size()]));
+        out.putInt(STATE_DIALOG_SHOWN, mDialogShown.getValue());
         super.onSaveInstanceState(out);
     }
 
@@ -257,5 +300,35 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements SimpleTas
     public void onDestroy() {
         taskWatcher.stop();
         super.onDestroy();
+    }
+
+    /**
+     * for keeping track which dialog is being shown for orientation changes (not for DialogFragments)
+     */
+    public enum eDialogShown {
+        NONE(0),
+        RESTORE_FAILED(1),
+        AUTH_FAILURE(2),
+        MERGE_FAILED(3),
+        MERGE_CONFLICT(4);
+
+        private int value;
+
+        eDialogShown(int Value) {
+            this.value = Value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public static eDialogShown fromInt(int i) {
+            for (eDialogShown b : eDialogShown.values()) {
+                if (b.getValue() == i) {
+                    return b;
+                }
+            }
+            return null;
+        }
     }
 }
