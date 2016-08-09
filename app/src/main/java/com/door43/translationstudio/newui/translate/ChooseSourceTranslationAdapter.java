@@ -14,13 +14,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.App;
-import com.door43.translationstudio.DeveloperToolsActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.newui.library.ServerLibraryDetailFragment;
-import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
 import com.door43.translationstudio.tasks.DownloadSourceLanguageTask;
 import com.door43.widget.ViewUtil;
 
@@ -68,7 +66,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
     public void addItem(final ViewItem item) {
         if(!mData.containsKey(item.id)) {
             mData.put(item.id, item);
-            if(item.selected) {
+            if(item.selected  && item.downloaded) {
                 mSelected.add(item.id);
             } else {
                 mAvailable.add(item.id);
@@ -142,7 +140,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
         if (progressDialog != null) {
             progressDialog.dismiss();
         }
-        
+
         if(downloadTask.isFinished() && downloadTask.getSuccess()) {
             boolean databaseChanged = false;
             String sourceLang = downloadTask.getSourceLanguageId();
