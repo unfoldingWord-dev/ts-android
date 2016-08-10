@@ -1505,6 +1505,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             } else if(event.getAction() == DragEvent.ACTION_DROP) {
                                 int offset = editText.getOffsetForPosition(event.getX(), event.getY());
                                 CharSequence text = editText.getText();
+
+                                offset = closestSpotForVerseMarker(offset, text);
+
                                 if(offset >= 0) {
                                     // insert the verse at the offset
                                     text = TextUtils.concat(text.subSequence(0, offset), pin.toCharSequence(), text.subSequence(offset, text.length()));
@@ -1583,6 +1586,58 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         } else {
             return "";
         }
+    }
+
+    /**
+     * find closest place to drop verse marker.  Weighted toward beginning of word.
+     * @param offset - initial drop position
+     * @param text - edit text
+     * @return
+     */
+    private int closestSpotForVerseMarker(int offset, CharSequence text) {
+        int charsToWhiteSpace = 0;
+        for (int j = offset; j >= 0; j--) {
+            char c = text.charAt(j);
+            boolean whitespace = isWhitespace(c);
+            if(whitespace) {
+
+                if((j == offset) ||  // if this is already a good spot, then done
+                    (j == offset - 1)) {
+                    return offset;
+                }
+
+                charsToWhiteSpace = j - offset + 1;
+                break;
+            }
+        }
+
+        int limit = offset - charsToWhiteSpace - 1;
+        if(limit > text.length()) {
+            limit = text.length();
+        }
+
+        for (int j = offset + 1; j < limit; j++) {
+            char c = text.charAt(j);
+            boolean whitespace = isWhitespace(c);
+            if(whitespace) {
+                charsToWhiteSpace = j - offset;
+                break;
+            }
+        }
+
+        if(charsToWhiteSpace != 0) {
+            offset += charsToWhiteSpace;
+        }
+        return offset;
+    }
+
+    /**
+     * test if character is whitespace
+     * @param c
+     * @return
+     */
+    private boolean isWhitespace(char c) {
+        return (c ==' ') || (c == '\t') || (c == '\n') || (c == '\r');
     }
 
     /**

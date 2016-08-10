@@ -102,4 +102,7 @@ dependencies {
 //        exclude group: 'com.android.support', module: 'support-annotations'
 //        exclude module: 'recyclerview-v7'
     }
+//    // Optional -- UI testing with UI Automator
+//    androidTestCompile 'com.android.support.test.uiautomator:uiautomator-v18:2.1.1'
+    testCompile 'junit:junit:4.12'
 }
