@@ -185,6 +185,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
                 publishIntent.putExtra(PublishActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
                 publishIntent.putExtra(PublishActivity.EXTRA_CALLING_ACTIVITY, PublishActivity.ACTIVITY_HOME);
                 startActivity(publishIntent);
+                dismiss(); // close dialog so notifications will pass back to HomeActivity
             }
         });
 

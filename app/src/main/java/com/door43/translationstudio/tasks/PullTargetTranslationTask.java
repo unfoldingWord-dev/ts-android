@@ -37,32 +37,24 @@ import java.util.Map;
 public class PullTargetTranslationTask extends ManagedTask {
 
     public static final String TASK_ID = "pull_target_translation_task";
-    private final TargetTranslation targetTranslation;
+    public final TargetTranslation targetTranslation;
     private final MergeStrategy mergeStrategy;
     private String message = "";
     private Status status = Status.UNKNOWN;
     private Map<String, int[][]> conflicts = new HashMap<>();
+    private String sourceURL = null;
 
     /**
-     * todo: eventually we need to support pulling from a particular user.
-     * We may need to create a different task or just pass in the target translation id
+     * do a pull from a specific URL
      * @param targetTranslation
+     * @param mergeStrategy
+     * @param sourceURL
      */
-    public PullTargetTranslationTask(TargetTranslation targetTranslation) {
-        setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
-        this.targetTranslation = targetTranslation;
-        this.mergeStrategy = MergeStrategy.RECURSIVE;
-    }
-
-    /**
-     * todo: eventually we need to support pulling from a particular user.
-     * We may need to create a different task or just pass in the target translation id
-     * @param targetTranslation
-     */
-    public PullTargetTranslationTask(TargetTranslation targetTranslation, MergeStrategy mergeStrategy) {
+    public PullTargetTranslationTask(TargetTranslation targetTranslation, MergeStrategy mergeStrategy, String sourceURL) {
         setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
         this.targetTranslation = targetTranslation;
         this.mergeStrategy = mergeStrategy;
+        this.sourceURL = sourceURL;
     }
 
     @Override
@@ -74,8 +66,12 @@ public class PullTargetTranslationTask extends ManagedTask {
             Profile profile = App.getProfile();
             if (targetTranslation != null && App.isNetworkAvailable() && profile != null && profile.gogsUser != null) {
                 publishProgress(-1, "Downloading updates");
-                String server = App.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, App.context().getResources().getString(R.string.pref_default_git_server));
-                String remote = server + ":" + profile.gogsUser.getUsername() + "/" + this.targetTranslation.getId() + ".git";
+
+                if(sourceURL == null) {
+                    String server = App.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, App.context().getResources().getString(R.string.pref_default_git_server));
+                    sourceURL = server + ":" + profile.gogsUser.getUsername() + "/" + this.targetTranslation.getId() + ".git";
+                }
+
                 try {
                     this.targetTranslation.commitSync();
                 } catch (Exception e) {
@@ -83,7 +79,7 @@ public class PullTargetTranslationTask extends ManagedTask {
                 }
                 Repo repo = this.targetTranslation.getRepo();
                 createBackupBranch(repo);
-                this.message = pull(repo, remote);
+                this.message = pull(repo, sourceURL);
             }
         }
     }
@@ -174,6 +170,7 @@ public class PullTargetTranslationTask extends ManagedTask {
             } else {
                 this.status = Status.UP_TO_DATE;
             }
+
             return "message";
         } catch (TransportException e) {
             Logger.e(this.getClass().getName(), e.getMessage(), e);
@@ -213,10 +210,6 @@ public class PullTargetTranslationTask extends ManagedTask {
 
     public Status getStatus() {
         return status;
-    }
-
-    public Map<String, int[][]> getConflicts() {
-        return conflicts;
     }
 
     public enum Status {
