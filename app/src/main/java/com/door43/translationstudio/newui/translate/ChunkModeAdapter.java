@@ -14,6 +14,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -79,6 +80,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     private ContentValues[] mTabs;
     private TranslationFormat mTargetFormat;
     private SearchFilter mSearchFilter;
+    private CharSequence mSearchString;
 
     public ChunkModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String startingChapterSlug, String startingFrameSlug, boolean openSelectedTarget) {
         mLibrary = App.getLibrary();
@@ -368,6 +370,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                         @Override
                         public void run() {
                             getListener().onSourceTranslationTabClick(sourceTranslationId);
+                            restartSearchFilter();
                         }
                     });
                 }
@@ -1042,6 +1045,14 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     }
 
     /**
+     * restart the filter using the last search settings
+     */
+    public void restartSearchFilter() {
+        Log.d(ChunkModeAdapter.class.getSimpleName(), "restartSearchFilter");
+        ((TranslationSearchFilter) getFilter()).filter(mSearchString);
+    }
+
+    /**
      * Returns the target language filter
      * @return
      */
@@ -1067,6 +1078,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         @Override
         protected FilterResults performFiltering(CharSequence charSequence) {
             FilterResults results = new FilterResults();
+            mSearchString = charSequence;
             if(charSequence == null || charSequence.length() == 0) {
                 // no filter
                 results.values = Arrays.asList(mUnfilteredItems);

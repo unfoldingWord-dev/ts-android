@@ -20,6 +20,7 @@ import android.text.Html;
 import android.text.Selection;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.DragEvent;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -115,6 +116,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private int[] mOpenResourceTab;
     private boolean mAllowFootnote = true;
     private SearchFilter mSearchFilter;
+    private CharSequence mSearchString;
 
 
 //    private boolean onBind = false;
@@ -1203,6 +1205,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         @Override
                         public void run() {
                             getListener().onSourceTranslationTabClick(sourceTranslationId);
+                            restartSearchFilter();
                         }
                     });
                 }
@@ -1950,6 +1953,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
+     * restart the filter using the last search settings
+     */
+    public void restartSearchFilter() {
+        Log.d(ReviewModeAdapter.class.getSimpleName(), "restartSearchFilter");
+        ((TranslationSearchFilter) getFilter()).filter(mSearchString);
+    }
+
+    /**
      * Returns the target language filter
      * @return
      */
@@ -1975,6 +1986,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         @Override
         protected FilterResults performFiltering(CharSequence charSequence) {
             FilterResults results = new FilterResults();
+            mSearchString = charSequence;
             if(charSequence == null || charSequence.length() == 0) {
                 // no filter
                 results.values = Arrays.asList(mUnfilteredItems);
