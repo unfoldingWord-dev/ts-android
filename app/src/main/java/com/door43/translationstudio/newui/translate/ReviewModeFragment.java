@@ -306,12 +306,12 @@ public class ReviewModeFragment extends ViewModeFragment {
     }
 
     /**
-     * start search (filter)
-     * @param searchString
+     * this gets called to start or clear filter
+     * @param searchString - string to filter on null to clear
      * @param searchTarget - if true then search target text, else search source text
      */
-    public void kickOffSearchFilter(String searchString, boolean searchTarget) {
-        Log.d(ReviewModeFragment.class.getSimpleName(),"kickOffSearchFilter: " + searchString);
+    public void setSearchFilter(String searchString, boolean searchTarget) {
+        Log.d(ReviewModeFragment.class.getSimpleName(),"setSearchFilter: " + (searchString != null ? searchString : "null"));
         ReviewModeAdapter adapter = (ReviewModeAdapter) getAdapter();
         if(adapter != null) {
             ((TranslationSearchFilter) adapter.getFilter()).setTargetSearch(searchTarget).filter(searchString);

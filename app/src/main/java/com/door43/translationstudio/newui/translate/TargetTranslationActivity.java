@@ -395,9 +395,12 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
             EditText edit = (EditText) searchPane.findViewById(R.id.search_text);
             if(edit != null) {
-                edit.removeTextChangedListener(mSearchTextWatcher); // remove old listener
+                if(mSearchTextWatcher != null) {
+                    edit.removeTextChangedListener(mSearchTextWatcher); // remove old listener
+                    mSearchTextWatcher = null;
+                }
 
-                if(mSearchString != null) {
+                if(mSearchString != null) { // restore after rotate
                     edit.setText(mSearchString);
                     mSearchString = null;
                 }
@@ -427,6 +430,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                         }
                     };
                     edit.addTextChangedListener(mSearchTextWatcher);
+                } else {
+                    setSearchFilter(null); // clear search filter
                 }
             }
 
@@ -464,7 +469,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      */
     public void onItemSelected(AdapterView<?> parent, View view,
                                int pos, long id) {
-        kickOffSearchFilter();
+        setSearchFilter();
     }
 
     /**
@@ -539,25 +544,25 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     /**
-     * do search with search string
+     * do search with search string in edit control
      */
-    public void kickOffSearchFilter() {
-        kickOffSearchFilter(getSearchText());
+    public void setSearchFilter() {
+        setSearchFilter(getSearchText());
     }
 
     /**
-     * this gets called after one second timer elapses
-     * @param searchString
+     * do search with specific search string or clear search filter
+     * @param searchString - if null or "" then search is cleared
      */
-    public void kickOffSearchFilter(final String searchString) {
-        Log.d(TAG,"kickOffSearchFilter: " + searchString);
+    public void setSearchFilter(final String searchString) {
+        Log.d(TAG,"setSearchFilter: " + searchString);
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
             public void run() {
                 if((mFragment != null) && (mFragment instanceof ViewModeFragment)) {
                     boolean searchTarget = isTranslationSearchSelected();
-                    ((ViewModeFragment) mFragment).kickOffSearchFilter(searchString, searchTarget);
+                    ((ViewModeFragment) mFragment).setSearchFilter(searchString, searchTarget);
                 }
              }
         });
@@ -971,7 +976,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
         @Override
         public void run() {
-             activity.kickOffSearchFilter(searchString.toString());
+             activity.setSearchFilter(searchString.toString());
         }
     }
 }
