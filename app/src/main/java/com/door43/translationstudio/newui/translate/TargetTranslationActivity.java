@@ -358,27 +358,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     /**
      * change state of search bar
-     */
-    private void toggleSearchBar() {
-        // toggle search bar
-        LinearLayout searchPane = (LinearLayout) findViewById(R.id.search_pane);
-        if(searchPane != null) {
-            int visibility = searchPane.getVisibility();
-
-            if(View.GONE == visibility) {
-                mSearchEnabled = false;
-            } else {
-                mSearchEnabled = true;
-            }
-
-            mSearchEnabled = !mSearchEnabled; // toggle state
-
-            setSearchBarVisibility(mSearchEnabled);
-        }
-    }
-
-    /**
-     * change state of search bar
      * @param show - if true set visible
      */
     private void setSearchBarVisibility(boolean show) {
@@ -442,6 +421,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                     @Override
                     public void onClick(View v) {
                         setSearchBarVisibility(false);
+                        setSearchText(null); // clear search string
                     }
                 });
             }

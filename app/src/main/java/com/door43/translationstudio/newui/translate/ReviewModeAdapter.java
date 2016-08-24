@@ -254,6 +254,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         loadTabInfo();
 
         notifyDataSetChanged();
+
+        ((TranslationSearchFilter) getFilter()).filter(mSearchString);  // reset filter since source has changed
     }
 
     @Override
@@ -1205,7 +1207,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         @Override
                         public void run() {
                             getListener().onSourceTranslationTabClick(sourceTranslationId);
-                            restartSearchFilter();
                         }
                     });
                 }
@@ -1953,14 +1954,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     * restart the filter using the last search settings
-     */
-    public void restartSearchFilter() {
-        Log.d(ReviewModeAdapter.class.getSimpleName(), "restartSearchFilter");
-        ((TranslationSearchFilter) getFilter()).filter(mSearchString);
-    }
-
-    /**
      * Returns the target language filter
      * @return
      */
@@ -2015,7 +2008,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             continue;
                         }
 
-                        match = item.bodyTranslation.toLowerCase().contains(matchString);                    }
+                        match = item.bodyTranslation.toLowerCase().contains(matchString);
+                    }
 
                     if(match) {
                         filteredCategories.add(item);

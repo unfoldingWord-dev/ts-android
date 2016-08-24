@@ -200,6 +200,8 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         loadTabInfo();
 
         notifyDataSetChanged();
+
+        ((TranslationSearchFilter) getFilter()).filter(mSearchString);  // reset filter since source has changed
     }
 
     @Override
@@ -370,7 +372,6 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                         @Override
                         public void run() {
                             getListener().onSourceTranslationTabClick(sourceTranslationId);
-                            restartSearchFilter();
                         }
                     });
                 }
@@ -1042,14 +1043,6 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         String complexSlug = chapterSlug + "-" + frameSlug;
         Frame frame = mLibrary.getFrame(mSourceTranslation, chapterSlug, frameSlug);
         return frame;
-    }
-
-    /**
-     * restart the filter using the last search settings
-     */
-    public void restartSearchFilter() {
-        Log.d(ChunkModeAdapter.class.getSimpleName(), "restartSearchFilter");
-        ((TranslationSearchFilter) getFilter()).filter(mSearchString);
     }
 
     /**
