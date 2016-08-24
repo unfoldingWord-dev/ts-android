@@ -1100,7 +1100,8 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                             continue;
                         }
 
-                        match = item.renderedTargetBody.toString().toLowerCase().contains(matchString);                    }
+                        match = item.renderedTargetBody.toString().toLowerCase().contains(matchString);
+                    }
 
                     if(match) {
                         filteredCategories.add(item);

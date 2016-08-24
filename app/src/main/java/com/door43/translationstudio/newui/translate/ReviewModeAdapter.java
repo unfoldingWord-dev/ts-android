@@ -8,6 +8,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
@@ -99,6 +100,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     public static final String REDO = "Redo";
     public static final String OPTIONS = "Options";
     public static final String ISO_DATE_FORMAT = "yyyy-MM-dd HH:mm";
+    public static final int HIGHLIGHT_COLOR = Color.YELLOW;
     private final Library mLibrary;
     private final Translator mTranslator;
     private final Activity mContext;
@@ -1579,6 +1581,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             ClickableRenderingEngine renderer = Clickables.setupRenderingGroup(format, renderingGroup, verseClickListener, noteClickListener, true);
             renderer.setLinebreaksEnabled(true);
             renderer.setPopulateVerseMarkers(frame.getVerseRange());
+            boolean targetSearch = ((SearchFilter) getFilter()).isTargetSearch();
+            if( targetSearch ) {
+                renderingGroup.setSearchString(mSearchString, HIGHLIGHT_COLOR);
+            }
 
         } else {
             // TODO: add note click listener
@@ -1756,6 +1762,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
                 renderingGroup.setLinebreaksEnabled(true);
             }
+
+            boolean targetSearch = ((SearchFilter) getFilter()).isTargetSearch();
+            boolean enableSearch = (targetSearch && editable)  || (!targetSearch && !editable);
+            if( enableSearch ) {
+                renderingGroup.setSearchString(mSearchString, HIGHLIGHT_COLOR);
+            }
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
@@ -1879,6 +1891,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         private ChapterTranslation chapterTranslation;
         private ProjectTranslation projectTranslation;
         private FileHistory fileHistory = null;
+        private boolean mHighlightSource = false;
+        private boolean mHighlightTarget = false;
 
         public ListItem(String frameSlug, String chapterSlug) {
             this.frameSlug = frameSlug;
@@ -1891,6 +1905,41 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         public boolean isChapter() {
             return this.frameSlug == null && this.chapterSlug != null;
+        }
+
+        /**
+         * set the highlighting state for the item
+         */
+        public void clearAllHighLighting() {
+            setHighLighting(false, true);
+            setHighLighting(false, false);
+        }
+
+        /**
+         * set the highlighting state for the item
+         * @param enable
+         * @param target
+         */
+        public void setHighLighting(boolean enable, boolean target) {
+            if(target) {
+                if(!enable) { // disable highlighting
+                    if(mHighlightTarget) {
+                        renderedTargetBody = null; // remove rendered text so will be re-rendered without highlighting
+                    }
+                } else { // enable highlighting
+                    renderedTargetBody = null; // remove rendered text so will be re-rendered with new highlighting
+                }
+                mHighlightTarget = enable;
+            } else { // source
+                if(!enable) { // disable highlighting
+                    if(mHighlightSource) {
+                        renderedSourceBody = null; // remove rendered text so will be re-rendered without highlighting
+                    }
+                } else { // enable highlighting
+                    renderedSourceBody = null; // remove rendered text so will be re-rendered with new highlighting
+                }
+                mHighlightSource = enable;
+            }
         }
 
         /**
@@ -1976,6 +2025,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             return this;
         }
 
+        public boolean isTargetSearch() {
+            return searchTarget;
+        }
+
         @Override
         protected FilterResults performFiltering(CharSequence charSequence) {
             FilterResults results = new FilterResults();
@@ -1984,6 +2037,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 // no filter
                 results.values = Arrays.asList(mUnfilteredItems);
                 results.count = mUnfilteredItems.length;
+                for (ListItem unfilteredItem : mUnfilteredItems) {
+                    unfilteredItem.clearAllHighLighting();
+                }
             } else {
                 // perform filter
                 String matchString = charSequence.toString().toLowerCase();
@@ -2013,6 +2069,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
                     if(match) {
                         filteredCategories.add(item);
+                        item.setHighLighting(true, searchTarget);
+                        item.setHighLighting(false, !searchTarget); // remove searching from opposite pane
+                    } else {
+                        item.clearAllHighLighting(); // if not matched item, remove previous highlighting
                     }
                 }
                 results.values = filteredCategories;

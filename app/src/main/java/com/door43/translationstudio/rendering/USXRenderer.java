@@ -8,6 +8,7 @@ import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.AlignmentSpan;
+import android.text.style.BackgroundColorSpan;
 import android.text.style.StyleSpan;
 
 import com.door43.translationstudio.spannables.USXChar;
@@ -32,6 +33,8 @@ public class USXRenderer extends ClickableRenderingEngine {
     private Span.OnClickListener mVerseListener;
     private boolean mRenderLinebreaks = false;
     private boolean mRenderVerses = true;
+    private String mSearch;
+    private int mHighlightColor = 0;
     private int[] mExpectedVerseRange = new int[0];
     private boolean mSuppressLeadingMajorSectionHeadings = false;
 
@@ -67,6 +70,21 @@ public class USXRenderer extends ClickableRenderingEngine {
      */
     public void setLinebreaksEnabled(boolean enable) {
         mRenderLinebreaks = enable;
+    }
+
+    /**
+     * If set to not null matched strings will be highlighted.
+     *
+     * @param searchString - null is disable
+     * @param highlightColor
+     */
+    public void setSearchString(CharSequence searchString, int highlightColor) {
+        mHighlightColor = highlightColor;
+        if((searchString != null) && (searchString.length() > 0) ) {
+            mSearch = searchString.toString().toLowerCase();
+        } else {
+            mSearch = null;
+        }
     }
 
     /**
@@ -114,6 +132,7 @@ public class USXRenderer extends ClickableRenderingEngine {
         out = renderNote(out);
         out = renderChapterLabel(out);
         out = renderSelah(out);
+        out = renderHighlightSearch(out);
 
         return out;
     }
@@ -182,6 +201,42 @@ public class USXRenderer extends ClickableRenderingEngine {
         out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
         return out;
     }
+
+    /**
+     * Renders section headings.
+     * @param in
+     * @return
+     */
+    public CharSequence renderHighlightSearch(CharSequence in) {
+        CharSequence out = "";
+
+        if(mSearch == null) {
+            return in;
+        }
+
+        String lowerCaseText = in.toString().toLowerCase();
+        int lastIndex = 0;
+
+        while(lastIndex < in.length()) {
+            if(isStopped()) return in;
+
+            int pos = lowerCaseText.indexOf(mSearch, lastIndex);
+            if(pos < 0) {
+                break;
+            }
+
+            SpannableStringBuilder span = new SpannableStringBuilder(in.subSequence(pos, pos + mSearch.length()));
+            span.setSpan(new BackgroundColorSpan(mHighlightColor), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            out = TextUtils.concat(out, in.subSequence(lastIndex, pos), span);
+
+            lastIndex = pos + mSearch.length();
+        }
+
+        out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
+        return out;
+    }
+
     /**
      * Renders major section headings.
      * @param in
