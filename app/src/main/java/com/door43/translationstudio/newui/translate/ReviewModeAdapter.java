@@ -1581,8 +1581,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             ClickableRenderingEngine renderer = Clickables.setupRenderingGroup(format, renderingGroup, verseClickListener, noteClickListener, true);
             renderer.setLinebreaksEnabled(true);
             renderer.setPopulateVerseMarkers(frame.getVerseRange());
-            boolean targetSearch = ((SearchFilter) getFilter()).isTargetSearch();
-            if( targetSearch ) {
+            if( isTargetSearch() ) {
                 renderingGroup.setSearchString(mSearchString, HIGHLIGHT_COLOR);
             }
 
@@ -1763,8 +1762,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 renderingGroup.setLinebreaksEnabled(true);
             }
 
-            boolean targetSearch = ((SearchFilter) getFilter()).isTargetSearch();
-            boolean enableSearch = (targetSearch && editable)  || (!targetSearch && !editable);
+            boolean enableSearch = (isTargetSearch() && editable)  || (!isTargetSearch() && !editable);
             if( enableSearch ) {
                 renderingGroup.setSearchString(mSearchString, HIGHLIGHT_COLOR);
             }
@@ -1908,7 +1906,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
 
         /**
-         * set the highlighting state for the item
+         * clear all the previous highlighting states for the item
          */
         public void clearAllHighLighting() {
             setHighLighting(false, true);
@@ -1916,7 +1914,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
 
         /**
-         * set the highlighting state for the item
+         * set the highlighting state for the item and clearing any old highlighting
          * @param enable
          * @param target
          */
@@ -2000,6 +1998,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 isTranslationFinished = frameTranslation.isFinished();
             }
         }
+    }
+
+    /**
+     * check the filter to see what the last search type was
+     * @return
+     */
+    private boolean isTargetSearch() {
+        return ((SearchFilter) getFilter()).isTargetSearch();
     }
 
     /**

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -64,6 +65,7 @@ import java.util.Map;
  * Created by joel on 9/9/2015.
  */
 public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolder> {
+    public static final int HIGHLIGHT_COLOR = Color.YELLOW;
     private SourceLanguage mSourceLanguage;
     private TargetLanguage mTargetLanguage;
     private final Activity mContext;
@@ -689,7 +691,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
         // render the source frame body
         if(item.renderedSourceBody == null) {
-            item.renderedSourceBody = renderText(frame.body, frame.getFormat());
+            item.renderedSourceBody = renderText(frame.body, frame.getFormat(), !isTargetSearch());
         }
 
         holder.mSourceBody.setText(item.renderedSourceBody);
@@ -707,7 +709,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         mTargetFormat =  mTargetTranslation.getFormat();
         final FrameTranslation frameTranslation = mTargetTranslation.getFrameTranslation(frame);
         if(item.renderedTargetBody == null) {
-            item.renderedTargetBody = renderText(frameTranslation.body, mTargetFormat);
+            item.renderedTargetBody = renderText(frameTranslation.body, mTargetFormat, isTargetSearch());
         }
         if(holder.mTextWatcher != null) {
             holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
@@ -741,7 +743,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
                 String translation = Translator.compileTranslation((Editable)s);
                 mTargetTranslation.applyFrameTranslation(frameTranslation, translation);
-                item.renderedTargetBody = renderText(translation, mTargetFormat);
+                item.renderedTargetBody = renderText(translation, mTargetFormat, isTargetSearch());
             }
 
             @Override
@@ -772,7 +774,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         notifyDataSetChanged();
     }
 
-    private CharSequence renderText(String text, TranslationFormat format) {
+    private CharSequence renderText(String text, TranslationFormat format, boolean enableSearch) {
         RenderingGroup renderingGroup = new RenderingGroup();
         if (Clickables.isClickableFormat(format)) {
             // TODO: add click listeners for verses and notes
@@ -795,7 +797,9 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             };
             ClickableRenderingEngine renderer = Clickables.setupRenderingGroup(format, renderingGroup, null, noteClickListener, true);
             renderer.setVersesEnabled(false);
-
+            if( enableSearch ) {
+                renderingGroup.setSearchString(mSearchString, HIGHLIGHT_COLOR);
+            }
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
@@ -982,6 +986,8 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         private boolean isTargetCardOpen = false;
         private CharSequence renderedSourceBody;
         private CharSequence renderedTargetBody;
+        private boolean mHighlightSource = false;
+        private boolean mHighlightTarget = false;
 
         public ListItem(String frameSlug, String chapterSlug) {
             this.frameSlug = frameSlug;
@@ -1002,6 +1008,41 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
          */
         public boolean isChapter() {
             return this.frameSlug == null && this.chapterSlug != null;
+        }
+
+        /**
+         * clear all the previous highlighting states for the item
+         */
+        public void clearAllHighLighting() {
+            setHighLighting(false, true);
+            setHighLighting(false, false);
+        }
+
+        /**
+         * set the highlighting state for the item and clearing any old highlighting
+         * @param enable
+         * @param target
+         */
+        public void setHighLighting(boolean enable, boolean target) {
+            if(target) {
+                if(!enable) { // disable highlighting
+                    if(mHighlightTarget) {
+                        renderedTargetBody = null; // remove rendered text so will be re-rendered without highlighting
+                    }
+                } else { // enable highlighting
+                    renderedTargetBody = null; // remove rendered text so will be re-rendered with new highlighting
+                }
+                mHighlightTarget = enable;
+            } else { // source
+                if(!enable) { // disable highlighting
+                    if(mHighlightSource) {
+                        renderedSourceBody = null; // remove rendered text so will be re-rendered without highlighting
+                    }
+                } else { // enable highlighting
+                    renderedSourceBody = null; // remove rendered text so will be re-rendered with new highlighting
+                }
+                mHighlightSource = enable;
+            }
         }
 
         /**
@@ -1027,8 +1068,9 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             } else {
                 FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(frame);
                 TranslationFormat targetFormat =  targetTranslation.getFormat();
-                renderedSourceBody = adapter.renderText(frame.body, frame.getFormat());
-                renderedTargetBody = adapter.renderText(frameTranslation.body, targetFormat);
+                boolean targetSearch = adapter.isTargetSearch();
+                renderedSourceBody = adapter.renderText(frame.body, frame.getFormat(),!targetSearch);
+                renderedTargetBody = adapter.renderText(frameTranslation.body, targetFormat, targetSearch);
             }
         }
     }
@@ -1043,6 +1085,14 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         String complexSlug = chapterSlug + "-" + frameSlug;
         Frame frame = mLibrary.getFrame(mSourceTranslation, chapterSlug, frameSlug);
         return frame;
+    }
+
+    /**
+     * check the filter to see what the last search type was
+     * @return
+     */
+    private boolean isTargetSearch() {
+        return ((SearchFilter) getFilter()).isTargetSearch();
     }
 
     /**
@@ -1068,6 +1118,10 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             return this;
         }
 
+        public boolean isTargetSearch() {
+            return searchTarget;
+        }
+
         @Override
         protected FilterResults performFiltering(CharSequence charSequence) {
             FilterResults results = new FilterResults();
@@ -1083,28 +1137,28 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                 for(ListItem item: mUnfilteredItems) {
                     boolean match = false;
 
-                    if(!searchTarget) { // match the source
-                        if (item.renderedSourceBody == null) { // if source hasn't been loaded
+                    if(!searchTarget) { // search the source
+                        if (item.renderedSourceBody == null) { // if source hasn't been rendered
                             item.loadTranslations(mSourceTranslation, mTargetTranslation, mChapters.get(item.chapterSlug), loadFrame(item.chapterSlug, item.frameSlug), ChunkModeAdapter.this);
                         }
-                        if (item.renderedSourceBody == null) { // if still no text, then skip
-                            continue;
+                        if (item.renderedSourceBody != null) {
+                            match = item.renderedSourceBody.toString().toLowerCase().contains(matchString);
                         }
-
-                        match = item.renderedSourceBody.toString().toLowerCase().contains(matchString);
-                    } else { // match target
-                        if (item.renderedTargetBody == null) { // if source hasn't been loaded
+                    } else { // search the target
+                        if (item.renderedTargetBody == null) { // if target hasn't been rendered
                             item.loadTranslations(mSourceTranslation, mTargetTranslation, mChapters.get(item.chapterSlug), loadFrame(item.chapterSlug, item.frameSlug), ChunkModeAdapter.this);
                         }
-                        if (item.renderedTargetBody == null) { // if still no text, then skip
-                            continue;
+                        if (item.renderedTargetBody != null) {
+                            match = item.renderedTargetBody.toString().toLowerCase().contains(matchString);
                         }
-
-                        match = item.renderedTargetBody.toString().toLowerCase().contains(matchString);
                     }
 
                     if(match) {
                         filteredCategories.add(item);
+                        item.setHighLighting(true, searchTarget);
+                        item.setHighLighting(false, !searchTarget); // remove searching from opposite pane
+                    } else {
+                        item.clearAllHighLighting(); // if not matched item, remove previous highlighting
                     }
                 }
                 results.values = filteredCategories;

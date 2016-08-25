@@ -206,7 +206,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mReadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setSearchBarVisibility(false);
+                removeSearchBar();
                 openTranslationMode(TranslationViewMode.READ, null);
 
                 TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
@@ -216,7 +216,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mChunkButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setSearchBarVisibility(false);
+                removeSearchBar();
                 openTranslationMode(TranslationViewMode.CHUNK, null);
 
                 TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
@@ -226,7 +226,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mReviewButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setSearchBarVisibility(false);
+                removeSearchBar();
                 openTranslationMode(TranslationViewMode.REVIEW, null);
 
                 TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
@@ -345,6 +345,14 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         });
     }
 
+    /**
+     * hide search bar and clear search text
+     */
+    private void removeSearchBar() {
+        setSearchBarVisibility(false);
+        setSearchText(null);
+        setSearchFilter(null); // clear search filter
+    }
 
     /**
      * method to see if searching is supported
@@ -420,8 +428,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 close.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        setSearchBarVisibility(false);
-                        setSearchText(null); // clear search string
+                        removeSearchBar();
                     }
                 });
             }
