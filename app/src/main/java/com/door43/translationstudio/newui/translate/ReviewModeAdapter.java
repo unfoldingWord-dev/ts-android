@@ -2047,24 +2047,30 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 for(ListItem item: mUnfilteredItems) {
                     boolean match = false;
 
-                    if(!searchTarget) { // match the source
-                        if (item.bodySource == null) { // if source hasn't been loaded
-                            item.loadTranslations(mSourceTranslation, mTargetTranslation, mChapters.get(item.chapterSlug), loadFrame(item.chapterSlug, item.frameSlug));
-                        }
-                        if (item.bodySource == null) { // if still no text, then skip
-                            continue;
-                        }
+                    if(!searchTarget) { // search the source
+                        if (item.renderedSourceBody != null) { // if source has already been rendered, search that
+                            match = item.renderedSourceBody.toString().toLowerCase().contains(matchString);
 
-                        match = item.bodySource.toLowerCase().contains(matchString);
-                    } else { // match target
-                        if (item.bodyTranslation == null) { // if source hasn't been loaded
-                            item.loadTranslations(mSourceTranslation, mTargetTranslation, mChapters.get(item.chapterSlug), loadFrame(item.chapterSlug, item.frameSlug));
+                        } else { // next best we search source
+                            if (item.bodySource == null) { // if source hasn't been loaded
+                                item.loadTranslations(mSourceTranslation, mTargetTranslation, mChapters.get(item.chapterSlug), loadFrame(item.chapterSlug, item.frameSlug));
+                            }
+                            if (item.bodySource != null) {
+                                match = item.bodySource.toLowerCase().contains(matchString);
+                            }
                         }
-                        if (item.bodyTranslation == null) { // if still no text, then skip
-                            continue;
-                        }
+                    } else { // search the target
+                        if (item.renderedTargetBody != null) { // if target has already been rendered, search that
+                            match = item.renderedTargetBody.toString().toLowerCase().contains(matchString);
 
-                        match = item.bodyTranslation.toLowerCase().contains(matchString);
+                        } else { // next best we search source
+                            if (item.bodyTranslation == null) { // if source hasn't been loaded
+                                item.loadTranslations(mSourceTranslation, mTargetTranslation, mChapters.get(item.chapterSlug), loadFrame(item.chapterSlug, item.frameSlug));
+                            }
+                            if (item.bodyTranslation != null) {
+                                match = item.bodyTranslation.toLowerCase().contains(matchString);
+                            }
+                        }
                     }
 
                     if(match) {
