@@ -19,6 +19,15 @@
         android:layout_gravity="end"
         android:textAlignment="viewEnd" />
 
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@android:style/Widget.ProgressBar.Small"
+        android:layout_gravity="center_vertical"
+        android:layout_marginRight="@dimen/dialog_content_margin"
+        android:layout_marginLeft="@dimen/dialog_content_margin"
+        android:id="@+id/search_progress" />
+
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

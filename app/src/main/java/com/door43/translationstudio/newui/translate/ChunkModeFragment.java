@@ -52,15 +52,16 @@ public class ChunkModeFragment extends ViewModeFragment {
     }
 
     /**
-     * this gets called to start or clear filter
-     * @param searchString - string to filter on null to clear
-     * @param searchTarget - if true then search target text, else search source text
+     * do search with specific search string or clear search filter
+     * @param searchString - if null or "" then search is cleared
+     * @param searchTarget
+     * @param enableBusyIndicator - used for switching busy indicator on/off
      */
-    public void setSearchFilter(String searchString, boolean searchTarget) {
+    public void setSearchFilter(String searchString, boolean searchTarget, OnSetBusyIndicator enableBusyIndicator) {
         Log.d(ChunkModeFragment.class.getSimpleName(),"setSearchFilter: " + (searchString != null ? searchString : "null"));
         ChunkModeAdapter adapter = (ChunkModeAdapter) getAdapter();
         if(adapter != null) {
-            ((TranslationSearchFilter) adapter.getFilter()).setTargetSearch(searchTarget).filter(searchString);
+            adapter.clearScreenAndStartNewSearch(searchString, searchTarget, enableBusyIndicator);
         }
     }
 

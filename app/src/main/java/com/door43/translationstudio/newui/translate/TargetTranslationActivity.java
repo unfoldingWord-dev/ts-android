@@ -28,6 +28,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -80,6 +81,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private SearchTimerTask mSearchTimerTask;
     private Timer mSearchTimer;
     private String mSearchString;
+    private ProgressBar mSearchingSpinner;
 
 
     @Override
@@ -131,6 +133,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             App.setLastViewMode(targetTranslationId, TranslationViewMode.get(viewModeId));
         }
 
+        mSearchingSpinner = (ProgressBar) findViewById(R.id.search_progress);
         mReadButton = (ImageButton) findViewById(R.id.action_read);
         mChunkButton = (ImageButton) findViewById(R.id.action_chunk);
         mReviewButton = (ImageButton) findViewById(R.id.action_review);
@@ -376,7 +379,10 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             int visibility = View.GONE;
             if(show) {
                 visibility = View.VISIBLE;
+            } else {
+                setSearchSpinner(false);
             }
+
             searchPane.setVisibility(visibility);
             mSearchEnabled = show;
 
@@ -444,6 +450,16 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
                 type.setOnItemSelectedListener(this);
             }
+        }
+    }
+
+    /**
+     * sets the visible state of the search spinner
+     * @param displayed
+     */
+    private void setSearchSpinner(boolean displayed) {
+        if(mSearchingSpinner != null) {
+            mSearchingSpinner.setVisibility(displayed ?  View.VISIBLE : View.GONE);
         }
     }
 
@@ -549,7 +565,18 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             public void run() {
                 if((mFragment != null) && (mFragment instanceof ViewModeFragment)) {
                     boolean searchTarget = isTranslationSearchSelected();
-                    ((ViewModeFragment) mFragment).setSearchFilter(searchString, searchTarget);
+
+                    ViewModeFragment.OnSetBusyIndicator onSetBusyIndicator = null;
+                    if( (searchString!= null) && (!searchString.isEmpty())) {
+                        onSetBusyIndicator = new ViewModeFragment.OnSetBusyIndicator() {
+                            @Override
+                            public void onSetBusyIndicator(boolean enable) {
+                                setSearchSpinner(enable);
+                            }
+                        };
+                    }
+
+                    ((ViewModeFragment) mFragment).setSearchFilter(searchString, searchTarget, onSetBusyIndicator);
                 }
              }
         });

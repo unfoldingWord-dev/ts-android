@@ -259,8 +259,10 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     /**
      * do search with specific search string or clear search filter
      * @param searchString - if null or "" then search is cleared
+     * @param searchTarget
+     * @param enableBusyIndicator - used for switching busy indicator on/off
      */
-    public void setSearchFilter(String searchString, boolean searchTarget) {
+    public void setSearchFilter(String searchString, boolean searchTarget, OnSetBusyIndicator enableBusyIndicator) {
         // default is do nothing
     }
 
@@ -458,5 +460,15 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
          * Restarts the timer to auto commit changes
          */
         void restartAutoCommitTimer();
+    }
+
+    public interface OnSetBusyIndicator {
+
+        /**
+         * Called to change busy indicator
+         * @param enable
+         */
+        void onSetBusyIndicator(boolean enable);
+
     }
 }

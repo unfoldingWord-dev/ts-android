@@ -21,7 +21,6 @@ import android.text.Html;
 import android.text.Selection;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.DragEvent;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -119,6 +118,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private boolean mAllowFootnote = true;
     private SearchFilter mSearchFilter;
     private CharSequence mSearchString;
+    private ViewModeFragment.OnSetBusyIndicator mEnableBusyIndicator;
 
 
 //    private boolean onBind = false;
@@ -257,7 +257,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         notifyDataSetChanged();
 
-        ((TranslationSearchFilter) getFilter()).filter(mSearchString);  // reset filter since source has changed
+        clearScreenAndStartNewSearch(mSearchString, isTargetSearch(), mEnableBusyIndicator);
     }
 
     @Override
@@ -2001,11 +2001,57 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
+     * clear the cards displayed since we have new search string
+     * @return
+     */
+    private void clearCardDisplay() {
+        mFilteredItems = new ListItem[0];
+        notifyDataSetChanged();
+    }
+
+    /**
+     * remove displayed cards
+     * @param searchString
+     * @param searchTarget
+     * @param enableBusyIndicator - used for switching busy indicator on/off
+     */
+    public void clearScreenAndStartNewSearch(final CharSequence searchString, final boolean searchTarget, ViewModeFragment.OnSetBusyIndicator enableBusyIndicator) {
+        mEnableBusyIndicator = enableBusyIndicator;
+
+        clearCardDisplay();
+
+        if( (searchString != null) && (searchString.length() > 0)) {
+            setSearchSpinner(true);
+        }
+
+        //start search on delay so cards will clear first
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                ((TranslationSearchFilter) getFilter()).setTargetSearch(searchTarget).filter(searchString);
+            }
+        });
+    }
+
+    /**
+     * remove the search progress from the display
+     */
+    private void setSearchSpinner(boolean enabled) {
+        if(mEnableBusyIndicator != null) {
+            mEnableBusyIndicator.onSetBusyIndicator(enabled);
+        }
+    }
+
+    /**
      * check the filter to see what the last search type was
      * @return
      */
     private boolean isTargetSearch() {
-        return ((SearchFilter) getFilter()).isTargetSearch();
+        if(mSearchFilter != null) {
+            return mSearchFilter.isTargetSearch();
+        }
+        return false;
     }
 
     /**
@@ -2098,6 +2144,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             List<ListItem> filteredLanguages = (List<ListItem>)filterResults.values;
             mFilteredItems = filteredLanguages.toArray(new ListItem[filteredLanguages.size()]);
             notifyDataSetChanged();
+            setSearchSpinner(false);
         }
     }
 }
