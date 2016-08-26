@@ -65,6 +65,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     public static final String STATE_SEARCH_ENABLED = "state_search_enabled";
     public static final int SEARCH_START_DELAY = 1000;
     public static final String STATE_SEARCH_TEXT = "state_search_text";
+    public static final int TRANSLATION_SEARCH_TYPE = 1;
     private Fragment mFragment;
     private SeekBar mSeekBar;
     private ViewGroup mGraduations;
@@ -472,7 +473,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      */
     public void onItemSelected(AdapterView<?> parent, View view,
                                int pos, long id) {
-        setSearchFilter();
+
+        setSearchFilter(getSearchText());  // do search with search string in edit control
     }
 
     /**
@@ -481,14 +483,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      */
     public void onNothingSelected(AdapterView<?> parent) {
         // do nothing
-    }
-
-    /**
-     * see if translation search is selected
-     */
-    private boolean isTranslationSearchSelected() {
-        int position = getSearchTypeSelection();
-        return position == 1;
     }
 
     /**
@@ -546,12 +540,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         }
     }
 
-    /**
-     * do search with search string in edit control
-     */
-    public void setSearchFilter() {
-        setSearchFilter(getSearchText());
-    }
 
     /**
      * do search with specific search string or clear search filter
@@ -564,7 +552,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             @Override
             public void run() {
                 if((mFragment != null) && (mFragment instanceof ViewModeFragment)) {
-                    boolean searchTarget = isTranslationSearchSelected();
+                    boolean searchTarget = getSearchTypeSelection() == TRANSLATION_SEARCH_TYPE;
 
                     ViewModeFragment.OnSetBusyIndicator onSetBusyIndicator = null;
                     if( (searchString!= null) && (!searchString.isEmpty())) {

@@ -2001,15 +2001,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     * clear the cards displayed since we have new search string
-     * @return
-     */
-    private void clearCardDisplay() {
-        mFilteredItems = new ListItem[0];
-        notifyDataSetChanged();
-    }
-
-    /**
      * remove displayed cards
      * @param searchString
      * @param searchTarget
@@ -2018,7 +2009,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     public void clearScreenAndStartNewSearch(final CharSequence searchString, final boolean searchTarget, ViewModeFragment.OnSetBusyIndicator enableBusyIndicator) {
         mEnableBusyIndicator = enableBusyIndicator;
 
-        clearCardDisplay();
+        // clear the cards displayed since we have new search string
+        mFilteredItems = new ListItem[0];
+        notifyDataSetChanged();
 
         if( (searchString != null) && (searchString.length() > 0)) {
             setSearchSpinner(true);

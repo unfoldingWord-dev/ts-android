@@ -15,7 +15,6 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -1083,18 +1082,8 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
      * @return
      */
     private Frame loadFrame(String chapterSlug, String frameSlug) {
-        String complexSlug = chapterSlug + "-" + frameSlug;
         Frame frame = mLibrary.getFrame(mSourceTranslation, chapterSlug, frameSlug);
         return frame;
-    }
-
-    /**
-     * clear the cards displayed since we have new search string
-     * @return
-     */
-    private void clearCardDisplay() {
-        mFilteredItems = new ListItem[0];
-        notifyDataSetChanged();
     }
 
     /**
@@ -1106,7 +1095,9 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     public void clearScreenAndStartNewSearch(final CharSequence searchString, final boolean searchTarget, ViewModeFragment.OnSetBusyIndicator enableBusyIndicator) {
         mEnableBusyIndicator = enableBusyIndicator;
 
-        clearCardDisplay();
+        // clear the cards displayed since we have new search string
+        mFilteredItems = new ListItem[0];
+        notifyDataSetChanged();
 
         if( (searchString != null) && (searchString.length() > 0)) {
             setSearchSpinner(true);
