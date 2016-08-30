@@ -309,13 +309,12 @@ public class ReviewModeFragment extends ViewModeFragment {
      * do search with specific search string or clear search filter
      * @param searchString - if null or "" then search is cleared
      * @param searchTarget
-     * @param enableBusyIndicator - used for switching busy indicator on/off
      */
-    public void setSearchFilter(String searchString, boolean searchTarget, OnSetBusyIndicator enableBusyIndicator) {
+    public void setSearchFilter(String searchString, boolean searchTarget) {
         Log.d(ReviewModeFragment.class.getSimpleName(),"setSearchFilter: " + (searchString != null ? searchString : "null"));
         final ReviewModeAdapter adapter = (ReviewModeAdapter) getAdapter();
         if(adapter != null) {
-            adapter.clearScreenAndStartNewSearch(searchString, searchTarget, enableBusyIndicator);
+            adapter.clearScreenAndStartNewSearch(searchString, searchTarget);
         }
     }
 

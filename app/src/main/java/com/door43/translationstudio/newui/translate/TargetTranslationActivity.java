@@ -554,17 +554,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 if((mFragment != null) && (mFragment instanceof ViewModeFragment)) {
                     boolean searchTarget = getSearchTypeSelection() == TRANSLATION_SEARCH_TYPE;
 
-                    ViewModeFragment.OnSetBusyIndicator onSetBusyIndicator = null;
-                    if( (searchString!= null) && (!searchString.isEmpty())) {
-                        onSetBusyIndicator = new ViewModeFragment.OnSetBusyIndicator() {
-                            @Override
-                            public void onSetBusyIndicator(boolean enable) {
-                                setSearchSpinner(enable);
-                            }
-                        };
-                    }
-
-                    ((ViewModeFragment) mFragment).setSearchFilter(searchString, searchTarget, onSetBusyIndicator);
+                    ((ViewModeFragment) mFragment).setSearchFilter(searchString, searchTarget);
                 }
              }
         });
@@ -846,6 +836,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 }
             }
         }, COMMIT_INTERVAL, COMMIT_INTERVAL);
+    }
+
+    @Override
+    public void onSetBusyIndicator(boolean enable) {
+        setSearchSpinner(enable);
     }
 
     @Override

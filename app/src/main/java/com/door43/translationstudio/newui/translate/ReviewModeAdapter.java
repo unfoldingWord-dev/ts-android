@@ -118,7 +118,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private boolean mAllowFootnote = true;
     private SearchFilter mSearchFilter;
     private CharSequence mSearchString;
-    private ViewModeFragment.OnSetBusyIndicator mEnableBusyIndicator;
 
 
 //    private boolean onBind = false;
@@ -257,7 +256,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         notifyDataSetChanged();
 
-        clearScreenAndStartNewSearch(mSearchString, isTargetSearch(), mEnableBusyIndicator);
+        clearScreenAndStartNewSearch(mSearchString, isTargetSearch());
     }
 
     @Override
@@ -2004,17 +2003,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * remove displayed cards
      * @param searchString
      * @param searchTarget
-     * @param enableBusyIndicator - used for switching busy indicator on/off
      */
-    public void clearScreenAndStartNewSearch(final CharSequence searchString, final boolean searchTarget, ViewModeFragment.OnSetBusyIndicator enableBusyIndicator) {
-        mEnableBusyIndicator = enableBusyIndicator;
+    public void clearScreenAndStartNewSearch(final CharSequence searchString, final boolean searchTarget) {
 
         // clear the cards displayed since we have new search string
         mFilteredItems = new ListItem[0];
         notifyDataSetChanged();
 
         if( (searchString != null) && (searchString.length() > 0)) {
-            setSearchSpinner(true);
+            getListener().onSetBusyIndicator(true);
         }
 
         //start search on delay so cards will clear first
@@ -2025,15 +2022,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 ((TranslationSearchFilter) getFilter()).setTargetSearch(searchTarget).filter(searchString);
             }
         });
-    }
-
-    /**
-     * remove the search progress from the display
-     */
-    private void setSearchSpinner(boolean enabled) {
-        if(mEnableBusyIndicator != null) {
-            mEnableBusyIndicator.onSetBusyIndicator(enabled);
-        }
     }
 
     /**
@@ -2137,7 +2125,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             List<ListItem> filteredLanguages = (List<ListItem>)filterResults.values;
             mFilteredItems = filteredLanguages.toArray(new ListItem[filteredLanguages.size()]);
             notifyDataSetChanged();
-            setSearchSpinner(false);
+            getListener().onSetBusyIndicator(false);
         }
     }
 }

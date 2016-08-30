@@ -82,7 +82,6 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     private TranslationFormat mTargetFormat;
     private SearchFilter mSearchFilter;
     private CharSequence mSearchString;
-    private ViewModeFragment.OnSetBusyIndicator mEnableBusyIndicator;
 
     public ChunkModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String startingChapterSlug, String startingFrameSlug, boolean openSelectedTarget) {
         mLibrary = App.getLibrary();
@@ -203,7 +202,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
         notifyDataSetChanged();
 
-        clearScreenAndStartNewSearch(mSearchString, isTargetSearch(), mEnableBusyIndicator);
+        clearScreenAndStartNewSearch(mSearchString, isTargetSearch());
     }
 
     @Override
@@ -1090,17 +1089,15 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
      * remove displayed cards
      * @param searchString
      * @param searchTarget
-     * @param enableBusyIndicator - used for switching busy indicator on/off
      */
-    public void clearScreenAndStartNewSearch(final CharSequence searchString, final boolean searchTarget, ViewModeFragment.OnSetBusyIndicator enableBusyIndicator) {
-        mEnableBusyIndicator = enableBusyIndicator;
+    public void clearScreenAndStartNewSearch(final CharSequence searchString, final boolean searchTarget) {
 
         // clear the cards displayed since we have new search string
         mFilteredItems = new ListItem[0];
         notifyDataSetChanged();
 
         if( (searchString != null) && (searchString.length() > 0)) {
-            setSearchSpinner(true);
+            getListener().onSetBusyIndicator(true);
         }
 
         //start search on delay so cards will clear first
@@ -1111,15 +1108,6 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                 ((TranslationSearchFilter) getFilter()).setTargetSearch(searchTarget).filter(searchString);
             }
         });
-    }
-
-    /**
-     * remove the search progress from the display
-     */
-    private void setSearchSpinner(boolean enabled) {
-        if(mEnableBusyIndicator != null) {
-            mEnableBusyIndicator.onSetBusyIndicator(enabled);
-        }
     }
 
 
@@ -1211,7 +1199,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             List<ListItem> filteredLanguages = (List<ListItem>)filterResults.values;
             mFilteredItems = filteredLanguages.toArray(new ListItem[filteredLanguages.size()]);
             notifyDataSetChanged();
-            setSearchSpinner(false);
+            getListener().onSetBusyIndicator(false);
         }
     }
 }
