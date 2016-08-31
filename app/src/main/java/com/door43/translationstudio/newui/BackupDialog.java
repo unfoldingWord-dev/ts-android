@@ -99,6 +99,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         Button backupToSDButton = (Button)v.findViewById(R.id.backup_to_sd);
         Button backupToAppButton = (Button)v.findViewById(R.id.backup_to_app);
         Button backupToDeviceButton = (Button)v.findViewById(R.id.backup_to_device);
+        Button exportToPDFButton = (Button)v.findViewById(R.id.export_to_pdf);
 
         final String filename = targetTranslation.getId() + "." + Translator.ARCHIVE_EXTENSION;
 
@@ -147,6 +148,17 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                     ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                     snack.show();
                 }
+            }
+        });
+
+        exportToPDFButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                PrintDialog printDialog = new PrintDialog();
+                Bundle printArgs = new Bundle();
+                printArgs.putString(PrintDialog.ARG_TARGET_TRANSLATION_ID, targetTranslation.getId());
+                printDialog.setArguments(printArgs);
+                showDialogFragment(printDialog, PrintDialog.TAG);
             }
         });
 
