@@ -208,12 +208,11 @@ public class USXRenderer extends ClickableRenderingEngine {
      * @return
      */
     public CharSequence renderHighlightSearch(CharSequence in) {
-        CharSequence out = "";
-
         if(mSearch == null) {
             return in;
         }
 
+        CharSequence out = "";
         String lowerCaseText = in.toString().toLowerCase();
         int lastIndex = 0;
 

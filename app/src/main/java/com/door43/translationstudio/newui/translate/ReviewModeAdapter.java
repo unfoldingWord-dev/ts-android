@@ -1587,6 +1587,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
+            if( isTargetSearch() ) {
+                renderingGroup.setSearchString(mSearchString, HIGHLIGHT_COLOR);
+            }
         }
         if(!text.trim().isEmpty()) {
             renderingGroup.init(text);
@@ -1737,6 +1740,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      */
     private CharSequence renderSourceText(String text, TranslationFormat format, final ViewHolder holder, final ListItem item, final boolean editable) {
         RenderingGroup renderingGroup = new RenderingGroup();
+        boolean enableSearch = (isTargetSearch() && editable)  || (!isTargetSearch() && !editable);
         if (Clickables.isClickableFormat(format)) {
             // TODO: add click listeners for verses
             Span.OnClickListener noteClickListener = new Span.OnClickListener() {
@@ -1761,13 +1765,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 renderingGroup.setLinebreaksEnabled(true);
             }
 
-            boolean enableSearch = (isTargetSearch() && editable)  || (!isTargetSearch() && !editable);
             if( enableSearch ) {
                 renderingGroup.setSearchString(mSearchString, HIGHLIGHT_COLOR);
             }
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
+            if( enableSearch ) {
+                renderingGroup.setSearchString(mSearchString, HIGHLIGHT_COLOR);
+            }
         }
         renderingGroup.init(text);
         return renderingGroup.start();

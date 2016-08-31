@@ -429,7 +429,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     private void renderProjectTitle(final ViewHolder holder, final int position) {
         holder.mSourceTitle.setText("");
         boolean targetSearch = isTargetSearch();
-        CharSequence projectTitle = renderText(mSourceTranslation.getProjectTitle(), TranslationFormat.USFM, !targetSearch);
+        CharSequence projectTitle = renderText(mSourceTranslation.getProjectTitle(), TranslationFormat.DEFAULT, !targetSearch);
         CharSequence targetTitle = renderText(mTargetTranslation.getTargetLanguageName(), mTargetFormat, targetSearch);
         holder.mSourceBody.setText(projectTitle);
         holder.mTargetTitle.setText(targetTitle);
@@ -576,7 +576,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             }
 
             boolean targetSearch = isTargetSearch();
-            item.renderedSourceBody = renderText(item.renderedSourceBody.toString(), TranslationFormat.USFM, !targetSearch);
+            item.renderedSourceBody = renderText(item.renderedSourceBody.toString(), TranslationFormat.DEFAULT, !targetSearch);
             holder.mSourceBody.setText(item.renderedSourceBody);
 
             // target chapter reference
@@ -642,7 +642,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                 item.renderedSourceBody = chapter.reference;
             }
             boolean targetSearch = isTargetSearch();
-            item.renderedSourceBody = renderText(item.renderedSourceBody.toString(), TranslationFormat.USFM, !targetSearch);
+            item.renderedSourceBody = renderText(item.renderedSourceBody.toString(), TranslationFormat.DEFAULT, !targetSearch);
             holder.mSourceBody.setText(item.renderedSourceBody);
 
             // target chapter reference
@@ -699,9 +699,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         Frame frame = mLibrary.getFrame(mSourceTranslation, item.chapterSlug, item.frameSlug);
 
         // render the source frame body
-        if(item.renderedSourceBody == null) {
-            item.renderedSourceBody = renderText(frame.body, frame.getFormat(), !isTargetSearch());
-        }
+        item.renderedSourceBody = renderText(frame.body, frame.getFormat(), !isTargetSearch());
 
         holder.mSourceBody.setText(item.renderedSourceBody);
 
@@ -717,9 +715,8 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         // render the target frame body
         mTargetFormat =  mTargetTranslation.getFormat();
         final FrameTranslation frameTranslation = mTargetTranslation.getFrameTranslation(frame);
-        if(item.renderedTargetBody == null) {
-            item.renderedTargetBody = renderText(frameTranslation.body, mTargetFormat, isTargetSearch());
-        }
+        item.renderedTargetBody = renderText(frameTranslation.body, mTargetFormat, isTargetSearch());
+
         if(holder.mTextWatcher != null) {
             holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
         }
@@ -812,6 +809,9 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
+            if( enableSearch ) {
+                renderingGroup.setSearchString(mSearchString, HIGHLIGHT_COLOR);
+            }
         }
         renderingGroup.init(text);
         return renderingGroup.start();

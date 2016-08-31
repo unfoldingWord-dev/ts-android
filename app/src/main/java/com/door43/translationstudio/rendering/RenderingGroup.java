@@ -41,8 +41,8 @@ public class RenderingGroup {
      */
     public void setSearchString(CharSequence searchString, int highlightColor) {
         for (RenderingEngine engine : mEngines) {
-            if(engine instanceof ClickableRenderingEngine) {
-                ((ClickableRenderingEngine) engine).setSearchString(searchString, highlightColor);
+            if(engine instanceof RenderingEngine) {
+                ((RenderingEngine) engine).setSearchString(searchString, highlightColor);
             }
         }
     }
