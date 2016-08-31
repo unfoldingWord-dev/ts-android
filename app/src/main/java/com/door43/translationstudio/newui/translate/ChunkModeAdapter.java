@@ -428,8 +428,11 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
      */
     private void renderProjectTitle(final ViewHolder holder, final int position) {
         holder.mSourceTitle.setText("");
-        holder.mSourceBody.setText(mSourceTranslation.getProjectTitle());
-        holder.mTargetTitle.setText(mTargetTranslation.getTargetLanguageName());
+        boolean targetSearch = isTargetSearch();
+        CharSequence projectTitle = renderText(mSourceTranslation.getProjectTitle(), TranslationFormat.USFM, !targetSearch);
+        CharSequence targetTitle = renderText(mTargetTranslation.getTargetLanguageName(), mTargetFormat, targetSearch);
+        holder.mSourceBody.setText(projectTitle);
+        holder.mTargetTitle.setText(targetTitle);
         if(holder.mTextWatcher != null) {
             holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
         }
@@ -571,6 +574,9 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             if(item.renderedSourceBody == null) {
                 item.renderedSourceBody = chapter.title;
             }
+
+            boolean targetSearch = isTargetSearch();
+            item.renderedSourceBody = renderText(item.renderedSourceBody.toString(), TranslationFormat.USFM, !targetSearch);
             holder.mSourceBody.setText(item.renderedSourceBody);
 
             // target chapter reference
@@ -581,6 +587,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             if(holder.mTextWatcher != null) {
                 holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
             }
+            item.renderedTargetBody = renderText(item.renderedTargetBody.toString(), mTargetFormat, targetSearch);
             holder.mTargetBody.setText(item.renderedTargetBody);
 
             // target title
@@ -634,6 +641,8 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             if(item.renderedSourceBody == null) {
                 item.renderedSourceBody = chapter.reference;
             }
+            boolean targetSearch = isTargetSearch();
+            item.renderedSourceBody = renderText(item.renderedSourceBody.toString(), TranslationFormat.USFM, !targetSearch);
             holder.mSourceBody.setText(item.renderedSourceBody);
 
             // target chapter reference
@@ -644,6 +653,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             if(holder.mTextWatcher != null) {
                 holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
             }
+            item.renderedTargetBody = renderText(item.renderedTargetBody.toString(), mTargetFormat, targetSearch);
             holder.mTargetBody.setText(item.renderedTargetBody);
 
             // target title
