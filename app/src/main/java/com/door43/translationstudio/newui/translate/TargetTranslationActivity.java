@@ -394,11 +394,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                     mSearchTextWatcher = null;
                 }
 
-                if(mSearchString != null) { // restore after rotate
-                    edit.setText(mSearchString);
-                    mSearchString = null;
-                }
-
                 if(show) {
                     mSearchTextWatcher = new TextWatcher() {
                         @Override
@@ -426,6 +421,14 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                     edit.addTextChangedListener(mSearchTextWatcher);
                 } else {
                     setSearchFilter(null); // clear search filter
+                }
+
+                if(mSearchString != null) { // restore after rotate
+                    edit.setText(mSearchString);
+                    if(show) {
+                        setSearchFilter(mSearchString);
+                    }
+                    mSearchString = null;
                 }
             }
 
@@ -543,10 +546,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     /**
      * do search with specific search string or clear search filter
-     * @param searchString - if null or "" then search is cleared
+     * @param search - if null or "" then search is cleared
      */
-    public void setSearchFilter(final String searchString) {
-        Log.d(TAG,"setSearchFilter: " + searchString);
+    public void setSearchFilter(final String search) {
+        Log.d(TAG,"setSearchFilter: " + search);
+        final String searchString = search; // save in case search string changes before search runs
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
