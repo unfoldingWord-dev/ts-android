@@ -820,4 +820,5 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="export_to_pdf">Export to PDF</string>
     <string name="title_upload_export">Upload/Export</string>
     <string name="title_review">Review</string>
+    <string name="title_book">Book</string>
 </resources>
