@@ -39,12 +39,13 @@
                 android:orientation="horizontal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@color/primary"
                 android:textColor="@color/white"
                 android:textSize="@dimen/title"
                 android:textAllCaps="true"
                 android:text="@string/title_book"
-                />
+                style="@style/Widget.Button.Blue.Small"
+                android:layout_marginLeft="@dimen/dialog_controls_margin"
+                android:layout_marginRight="@dimen/dialog_controls_margin" />
 
             <Button
                 android:layout_weight="1"
@@ -53,12 +54,13 @@
                 android:orientation="horizontal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@color/primary"
                 android:textColor="@color/white"
                 android:textSize="@dimen/title"
                 android:textAllCaps="true"
                 android:text="@string/translators"
-                />
+                android:layout_marginLeft="@dimen/dialog_controls_margin"
+                android:layout_marginRight="@dimen/dialog_controls_margin"
+                style="@style/Widget.Button.Blue.Small" />
 
             <Button
                 android:layout_weight="1"
@@ -67,12 +69,13 @@
                 android:orientation="horizontal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@color/primary"
                 android:textColor="@color/white"
                 android:textSize="@dimen/title"
                 android:textAllCaps="true"
                 android:text="@string/review"
-                />
+                style="@style/Widget.Button.Blue.Small"
+                android:layout_marginLeft="@dimen/dialog_controls_margin"
+                android:layout_marginRight="@dimen/dialog_controls_margin" />
 
             <Button
                 android:layout_weight="1"
@@ -81,12 +84,13 @@
                 android:orientation="horizontal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@color/primary"
                 android:textColor="@color/white"
                 android:textSize="@dimen/title"
                 android:textAllCaps="true"
                 android:text="@string/publish"
-                />
+                style="@style/Widget.Button.Blue.Small"
+                android:layout_marginLeft="@dimen/dialog_controls_margin"
+                android:layout_marginRight="@dimen/dialog_controls_margin" />
 
         </LinearLayout>
 
