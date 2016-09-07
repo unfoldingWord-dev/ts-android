@@ -50,4 +50,11 @@
         android:orderInCategory="300"
         android:icon="@drawable/ic_settings_black_24dp"
         app:showAsAction="never" />
+
+    <item android:id="@+id/action_search"
+        android:title="@string/action_search"
+        android:orderInCategory="250"
+        android:icon="@drawable/ic_search_black_24dp"
+        app:showAsAction="never" />
+
 </menu>

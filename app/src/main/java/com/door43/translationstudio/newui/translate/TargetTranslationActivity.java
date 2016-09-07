@@ -8,19 +8,29 @@ import android.content.Intent;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
+import android.text.Editable;
 import android.text.Layout;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.unfoldingword.tools.logger.Logger;
@@ -42,15 +52,20 @@ import com.door43.widget.VerticalSeekBar;
 import com.door43.widget.ViewUtil;
 import com.door43.translationstudio.newui.BaseActivity;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class TargetTranslationActivity extends BaseActivity implements ViewModeFragment.OnEventListener, FirstTabFragment.OnEventListener {
+public class TargetTranslationActivity extends BaseActivity implements ViewModeFragment.OnEventListener, FirstTabFragment.OnEventListener, Spinner.OnItemSelectedListener {
 
     private static final String TAG = TargetTranslationActivity.class.getSimpleName();
 
     private static final long COMMIT_INTERVAL = 2 * 60 * 1000; // commit changes every 2 minutes
+    public static final String STATE_SEARCH_ENABLED = "state_search_enabled";
+    public static final int SEARCH_START_DELAY = 1000;
+    public static final String STATE_SEARCH_TEXT = "state_search_text";
+    public static final int TRANSLATION_SEARCH_TYPE = 1;
     private Fragment mFragment;
     private SeekBar mSeekBar;
     private ViewGroup mGraduations;
@@ -62,6 +77,13 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private ImageButton mReviewButton;
     private List<SourceTranslation> draftTranslations;
     private ImageButton mMoreButton;
+    private boolean mSearchEnabled = false;
+    private TextWatcher mSearchTextWatcher;
+    private SearchTimerTask mSearchTimerTask;
+    private Timer mSearchTimer;
+    private String mSearchString;
+    private ProgressBar mSearchingSpinner;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,6 +134,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             App.setLastViewMode(targetTranslationId, TranslationViewMode.get(viewModeId));
         }
 
+        mSearchingSpinner = (ProgressBar) findViewById(R.id.search_progress);
         mReadButton = (ImageButton) findViewById(R.id.action_read);
         mChunkButton = (ImageButton) findViewById(R.id.action_chunk);
         mReviewButton = (ImageButton) findViewById(R.id.action_review);
@@ -187,6 +210,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mReadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                removeSearchBar();
                 openTranslationMode(TranslationViewMode.READ, null);
 
                 TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
@@ -196,6 +220,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mChunkButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                removeSearchBar();
                 openTranslationMode(TranslationViewMode.CHUNK, null);
 
                 TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
@@ -205,13 +230,31 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mReviewButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                removeSearchBar();
                 openTranslationMode(TranslationViewMode.REVIEW, null);
 
                 TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
             }
         });
 
+        if(savedInstanceState != null) {
+            mSearchEnabled = savedInstanceState.getBoolean(STATE_SEARCH_ENABLED, false);
+            mSearchString = savedInstanceState.getString(STATE_SEARCH_TEXT, null);
+        }
+
+        setSearchBarVisibility(mSearchEnabled);
+
         restartAutoCommitTimer();
+    }
+
+    public void onSaveInstanceState(Bundle out) {
+        out.putBoolean(STATE_SEARCH_ENABLED, mSearchEnabled);
+        String searchText = getSearchText();
+        if( mSearchEnabled ) {
+            out.putString(STATE_SEARCH_TEXT, searchText);
+        }
+
+        super.onSaveInstanceState(out);
     }
 
     private void buildMenu() {
@@ -225,6 +268,10 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 // display menu item for draft translations
                 MenuItem draftsMenuItem = moreMenu.getMenu().findItem(R.id.action_drafts_available);
                 draftsMenuItem.setVisible(draftIsAvailable() && !targetTranslationHasDraft());
+
+                MenuItem searchMenuItem = moreMenu.getMenu().findItem(R.id.action_search);
+                boolean searchSupported = isSearchSupported();
+                searchMenuItem.setVisible(searchSupported);
 
                 moreMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
@@ -290,12 +337,230 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                                 Intent settingsIntent = new Intent(TargetTranslationActivity.this, SettingsActivity.class);
                                 startActivity(settingsIntent);
                                 return true;
+                            case R.id.action_search:
+                                setSearchBarVisibility(true);
+                                return true;
                         }
                         return false;
                     }
                 });
                 moreMenu.show();
             }
+        });
+    }
+
+    /**
+     * hide search bar and clear search text
+     */
+    private void removeSearchBar() {
+        setSearchBarVisibility(false);
+        setSearchText(null);
+        setSearchFilter(null); // clear search filter
+    }
+
+    /**
+     * method to see if searching is supported
+     */
+    public boolean isSearchSupported() {
+        if(mFragment != null) {
+            return ((ViewModeFragment) mFragment).isSearchSupported();
+        }
+        return false;
+    }
+
+    /**
+     * change state of search bar
+     * @param show - if true set visible
+     */
+    private void setSearchBarVisibility(boolean show) {
+        // toggle search bar
+        LinearLayout searchPane = (LinearLayout) findViewById(R.id.search_pane);
+        if(searchPane != null) {
+
+            int visibility = View.GONE;
+            if(show) {
+                visibility = View.VISIBLE;
+            } else {
+                setSearchSpinner(false);
+            }
+
+            searchPane.setVisibility(visibility);
+            mSearchEnabled = show;
+
+            EditText edit = (EditText) searchPane.findViewById(R.id.search_text);
+            if(edit != null) {
+                if(mSearchTextWatcher != null) {
+                    edit.removeTextChangedListener(mSearchTextWatcher); // remove old listener
+                    mSearchTextWatcher = null;
+                }
+
+                if(show) {
+                    mSearchTextWatcher = new TextWatcher() {
+                        @Override
+                        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                        }
+
+                        @Override
+                        public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                        }
+
+                        @Override
+                        public void afterTextChanged(Editable s) {
+
+                            if(mSearchTimer != null) {
+                                mSearchTimer.cancel();
+                            }
+
+                            mSearchTimer = new Timer();
+                            mSearchTimerTask = new SearchTimerTask(TargetTranslationActivity.this, s);
+                            mSearchTimer.schedule(mSearchTimerTask, SEARCH_START_DELAY);
+                        }
+                    };
+                    edit.addTextChangedListener(mSearchTextWatcher);
+                } else {
+                    setSearchFilter(null); // clear search filter
+                }
+
+                if(mSearchString != null) { // restore after rotate
+                    edit.setText(mSearchString);
+                    if(show) {
+                        setSearchFilter(mSearchString);
+                    }
+                    mSearchString = null;
+                }
+            }
+
+            ImageButton close = (ImageButton) searchPane.findViewById(R.id.close_search);
+            if(close != null) {
+
+                close.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        removeSearchBar();
+                    }
+                });
+            }
+
+            Spinner type = (Spinner) searchPane.findViewById(R.id.search_type);
+            if(type != null) {
+                List<String> types = new ArrayList<String>();
+                types.add(this.getResources().getString(R.string.search_source));
+                types.add(this.getResources().getString(R.string.search_translation));
+                ArrayAdapter<String> typesAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, types);
+                typesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                type.setAdapter(typesAdapter);
+
+                type.setOnItemSelectedListener(this);
+            }
+        }
+    }
+
+    /**
+     * sets the visible state of the search spinner
+     * @param displayed
+     */
+    private void setSearchSpinner(boolean displayed) {
+        if(mSearchingSpinner != null) {
+            mSearchingSpinner.setVisibility(displayed ?  View.VISIBLE : View.GONE);
+        }
+    }
+
+    /**
+     * called if search type is changed
+     * @param parent
+     * @param view
+     * @param pos
+     * @param id
+     */
+    public void onItemSelected(AdapterView<?> parent, View view,
+                               int pos, long id) {
+
+        setSearchFilter(getSearchText());  // do search with search string in edit control
+    }
+
+    /**
+     * called if no search type is selected
+     * @param parent
+     */
+    public void onNothingSelected(AdapterView<?> parent) {
+        // do nothing
+    }
+
+    /**
+     * get the type of search (position)
+     */
+    private int getSearchTypeSelection() {
+        LinearLayout searchPane = (LinearLayout) findViewById(R.id.search_pane);
+        if(searchPane != null) {
+
+            Spinner type = (Spinner) searchPane.findViewById(R.id.search_type);
+            if(type != null) {
+                int pos = type.getSelectedItemPosition();
+                if(pos >= 0) {
+                    return pos;
+                }
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * get search text in search bar
+     */
+    private String getSearchText() {
+        String text = null;
+
+        LinearLayout searchPane = (LinearLayout) findViewById(R.id.search_pane);
+        if(searchPane != null) {
+
+            EditText edit = (EditText) searchPane.findViewById(R.id.search_text);
+            if(edit != null) {
+                text = edit.getText().toString();
+            }
+        }
+        return text;
+    }
+
+    /**
+     * set search text in search bar
+     */
+    private void setSearchText(String text) {
+
+        if(text == null) {
+            text = "";
+        }
+
+        LinearLayout searchPane = (LinearLayout) findViewById(R.id.search_pane);
+        if(searchPane != null) {
+
+            EditText edit = (EditText) searchPane.findViewById(R.id.search_text);
+            if(edit != null) {
+                edit.setText(text);
+            }
+        }
+    }
+
+
+    /**
+     * do search with specific search string or clear search filter
+     * @param search - if null or "" then search is cleared
+     */
+    public void setSearchFilter(final String search) {
+        Log.d(TAG,"setSearchFilter: " + search);
+        final String searchString = search; // save in case search string changes before search runs
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                if((mFragment != null) && (mFragment instanceof ViewModeFragment)) {
+                    boolean searchTarget = getSearchTypeSelection() == TRANSLATION_SEARCH_TYPE;
+
+                    ((ViewModeFragment) mFragment).setSearchFilter(searchString, searchTarget);
+                }
+             }
         });
     }
 
@@ -577,6 +842,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     @Override
+    public void onSetBusyIndicator(boolean enable) {
+        setSearchSpinner(enable);
+    }
+
+    @Override
     public void onHasSourceTranslations() {
         TranslationViewMode viewMode = App.getLastViewMode(mTargetTranslation.getId());
         if (viewMode == TranslationViewMode.READ) {
@@ -691,6 +961,22 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                     .show();
         } else {
             super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    private class SearchTimerTask extends TimerTask {
+
+        private TargetTranslationActivity activity;
+        private Editable searchString;
+
+        public SearchTimerTask(TargetTranslationActivity activity, Editable searchString) {
+            this.activity = activity;
+            this.searchString = searchString;
+        }
+
+        @Override
+        public void run() {
+             activity.setSearchFilter(searchString.toString());
         }
     }
 }
