@@ -100,6 +100,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         Button backupToAppButton = (Button)v.findViewById(R.id.backup_to_app);
         Button backupToDeviceButton = (Button)v.findViewById(R.id.backup_to_device);
         Button exportToPDFButton = (Button)v.findViewById(R.id.export_to_pdf);
+        Button exportToUsfmButton = (Button)v.findViewById(R.id.export_to_usfm);
 
         final String filename = targetTranslation.getId() + "." + Translator.ARCHIVE_EXTENSION;
 
@@ -170,6 +171,13 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                 } else {
                     doSdCardBackup(filename);
                 }
+            }
+        });
+
+        exportToUsfmButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: 9/7/16 add support for export to USFM
             }
         });
 
