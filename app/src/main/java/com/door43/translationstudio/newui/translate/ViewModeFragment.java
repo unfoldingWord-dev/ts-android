@@ -257,6 +257,22 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     /**
+     * do search with specific search string or clear search filter
+     * @param searchString - if null or "" then search is cleared
+     * @param searchTarget
+     */
+    public void setSearchFilter(String searchString, boolean searchTarget) {
+        // default is do nothing
+    }
+
+    /**
+     * method to see if searching is supported
+     */
+    public boolean isSearchSupported() {
+        return false; // default is not supported
+    }
+
+    /**
      * Forces the software keyboard to close
      */
     public void closeKeyboard() {
@@ -412,6 +428,14 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         this.mRememberLastPosition = rememberLastPosition;
     }
 
+    /**
+     * enable/disable the busy indiciator
+     * @param enable
+     */
+    public void onSetBusyIndicator(boolean enable) {
+        mListener.onSetBusyIndicator(enable);
+    }
+
     public interface OnEventListener {
 
         /**
@@ -443,5 +467,11 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
          * Restarts the timer to auto commit changes
          */
         void restartAutoCommitTimer();
+
+        /**
+         * enable/disable busy spinner
+         * @param enable
+         */
+        void onSetBusyIndicator(boolean enable);
     }
 }

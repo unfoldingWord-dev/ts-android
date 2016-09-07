@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
+import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.MotionEvent;
 import android.view.View;
@@ -302,6 +303,26 @@ public class ReviewModeFragment extends ViewModeFragment {
             mScrollingResourcesDrawerContent.addView(view);
         }
 
+    }
+
+    /**
+     * do search with specific search string or clear search filter
+     * @param searchString - if null or "" then search is cleared
+     * @param searchTarget
+     */
+    public void setSearchFilter(String searchString, boolean searchTarget) {
+        Log.d(ReviewModeFragment.class.getSimpleName(),"setSearchFilter: " + (searchString != null ? searchString : "null"));
+        final ReviewModeAdapter adapter = (ReviewModeAdapter) getAdapter();
+        if(adapter != null) {
+            adapter.clearScreenAndStartNewSearch(searchString, searchTarget);
+        }
+    }
+
+    /**
+     * method to see if searching is supported
+     */
+    public boolean isSearchSupported() {
+        return true;
     }
 
     /**

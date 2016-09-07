@@ -816,6 +816,9 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="update_failed">Update Failed</string>
     <string name="success_translation_update">Your translation has been successfully updated.</string>
     <string name="success_translation_update_with_conflicts">Your translation has been successfully updated.\nSome chunks had conflicts and need review.</string>
+    <string name="search_hint">Enter Search String</string>
+    <string name="search_source">Search Source:</string>
+    <string name="search_translation">Search Translation:</string>
     <string name="title_export_usfm">Export to USFM</string>
     <string name="export_usfm_by_chapter">Do you want the USFM output separated into chapters or do you want the whole book as a single file?</string>
     <string name="label_separate">Separate</string>
