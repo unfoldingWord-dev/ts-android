@@ -15,6 +15,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 
+// TODO: 9/6/16  separate UI components from this class and add listener
+
 /**
  * Created by blm on 7/23/16.
  */
@@ -151,7 +153,7 @@ public class ExportUsfm {
      * @return output file
      */
     static private File exportAsUSFM(TargetTranslation targetTranslation, File outputFolder, String zipFileName, boolean separateChapters) throws IOException {
-        File tempDir = new File(App.getTranslator().getLocalCacheDir(), System.currentTimeMillis() + "");
+        File tempDir = new File(App.context().getCacheDir(), System.currentTimeMillis() + "");
         tempDir.mkdirs();
         ChapterTranslation[] chapters = targetTranslation.getChapterTranslations();
         PrintStream ps = null;

@@ -78,7 +78,7 @@ public class Translator {
      * This is where import and export operations can expand files.
      * @return
      */
-    public File getLocalCacheDir() {
+    private File getLocalCacheDir() {
         return new File(mRootDir, "cache");
     }
 
