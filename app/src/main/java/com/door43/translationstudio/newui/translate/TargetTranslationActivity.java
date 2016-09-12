@@ -61,7 +61,6 @@ import java.util.TimerTask;
 
 import it.moondroid.seekbarhint.library.SeekBarHint;
 
-public class TargetTranslationActivity extends BaseActivity implements ViewModeFragment.OnEventListener, FirstTabFragment.OnEventListener {
 public class TargetTranslationActivity extends BaseActivity implements ViewModeFragment.OnEventListener, FirstTabFragment.OnEventListener, Spinner.OnItemSelectedListener {
 
     private static final String TAG = TargetTranslationActivity.class.getSimpleName();
@@ -209,6 +208,13 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             }
         });
 
+        if(savedInstanceState != null) {
+            mSearchEnabled = savedInstanceState.getBoolean(STATE_SEARCH_ENABLED, false);
+            mSearchString = savedInstanceState.getString(STATE_SEARCH_TEXT, null);
+        }
+
+        setSearchBarVisibility(mSearchEnabled);
+
         restartAutoCommitTimer();
     }
 
@@ -278,15 +284,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 }
             });
         }
-
-        if(savedInstanceState != null) {
-            mSearchEnabled = savedInstanceState.getBoolean(STATE_SEARCH_ENABLED, false);
-            mSearchString = savedInstanceState.getString(STATE_SEARCH_TEXT, null);
-        }
-
-        setSearchBarVisibility(mSearchEnabled);
-
-        restartAutoCommitTimer();
     }
 
     /**

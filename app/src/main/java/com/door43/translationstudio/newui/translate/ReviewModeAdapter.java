@@ -343,38 +343,23 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     * get closest chapter for the position
+     * get the chapter for the position, or null if not found
      * @param position
+     * @return
      */
-    public String getNearestChapterID(int position) {
-        if(position < 0) {
-            position = 0;
-        } else if(position >= mListItems.length) {
-            position = mListItems.length - 1;
+    public String getChapterForPosition(int position) {
+        if( (position < 0)
+                || (position >= mFilteredItems.length)) {
+            return null;
         }
 
-        ListItem item;
-        for(int i = position ; i < mListItems.length; i++) { // check later frames to get frame with valid chapter ID
-            item = mListItems[i];
-            if(item.isFrame()) {
-                String chapterSlug = item.chapterSlug;
-                if(chapterSlug != null) {
-                    return chapterSlug;
-                }
-            }
-        }
-        for(int i = position - 1; i >= 0; i--) { // check current frame and previous to get frame with valid chapter ID
-            item = mListItems[i];
-            if(item.isFrame()) {
-                String chapterSlug = item.chapterSlug;
-                if(chapterSlug != null) {
-                    return chapterSlug;
-                }
-            }
+        ListItem item = mFilteredItems[position];
+        String chapterSlug = item.chapterSlug;
+        if(chapterSlug != null) {
+            return chapterSlug;
         }
 
-        String chapterID = Integer.toString(position + 1);
-        return chapterID;
+        return null;
     }
 
     /**
@@ -391,13 +376,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     @Override
-    public Object[] getSections() {
+    public Object[] getSections() { // in our case these are chapters
         makeSureChapterMarkersInitialized();
         return mChapterMarkers;
     }
 
     @Override
-    public int getPositionForSection(int sectionIndex) {
+    public int getPositionForSection(int sectionIndex) { // in our case we are finding where a chapter starts
         makeSureChapterMarkersInitialized();
 
         if( sectionIndex < 0 ) { // limit input range
@@ -414,25 +399,46 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      */
     private void makeSureChapterMarkersInitialized() {
         if(null == mChapterMarkers) {
-            List<String> chapterLists = new ArrayList<>();
+            List<String> chapterMarkers = new ArrayList<>();
             List<Integer> sectionForPosition = new ArrayList<>();
             List<Integer> startPositionForSection = new ArrayList<>();
             int length = getItemCount();
             String lastChapter = "00";
             int currentSection = -1;
             for (int i = 0; i < length; i++) {
-                String chapter = getNearestChapterID(i);
+                String chapter = getChapterForPosition(i);
+                if(chapter == null) {
+                    chapter = lastChapter;
+                    if(chapter.isEmpty()) { //if we haven't seen a chapter marker yet, we will associate it with chapter 1
+                        chapter = "01";
+                    }
+                }
+
                 if(!lastChapter.equals(chapter)) {
-                    chapterLists.add(chapter);
-                    startPositionForSection.add(i);
+                    if(Integer.valueOf(chapter) - Integer.valueOf(lastChapter) == 1) { // make sure we have sequential chapters
+                        chapterMarkers.add(chapter);
+                        startPositionForSection.add(i);
+
+                    } else { // we have skipped over chapters (could be due to string search)
+                        int markerLength = chapter.length();
+                        int startChapter = Integer.valueOf(lastChapter);
+                        int endChapter = Integer.valueOf(chapter);
+                        for(int ch = startChapter + 1; ch <= endChapter; ch++) {
+                            String chapterStr = ("000" + String.valueOf(ch));
+                            chapterStr = chapterStr.substring(chapterStr.length() - markerLength);
+                            chapterMarkers.add(chapterStr);
+                            startPositionForSection.add(i);
+                        }
+                    }
                     lastChapter = chapter;
                     currentSection = Integer.valueOf(chapter) - 1;
                 }
                 sectionForPosition.add(currentSection);
             }
-            mChapterMarkers = chapterLists.toArray(new String[chapterLists.size()]);
-            mStartPositionForSection = startPositionForSection.toArray(new Integer[chapterLists.size()]);
-            mSectionForPosition = sectionForPosition.toArray(new Integer[chapterLists.size()]);
+            mChapterMarkers = chapterMarkers.toArray(new String[chapterMarkers.size()]);
+            mStartPositionForSection = startPositionForSection.toArray(new Integer[startPositionForSection.size()]);
+            mSectionForPosition = sectionForPosition.toArray(new Integer[sectionForPosition.size()]);
+            getListener().onItemCountChanged(length, 0);
         }
     }
 
@@ -2132,6 +2138,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         // clear the cards displayed since we have new search string
         mFilteredItems = new ListItem[0];
+        mChapterMarkers = null;
         notifyDataSetChanged();
 
         if( (searchString != null) && (searchString.length() > 0)) {
@@ -2248,6 +2255,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
             List<ListItem> filteredLanguages = (List<ListItem>)filterResults.values;
             mFilteredItems = filteredLanguages.toArray(new ListItem[filteredLanguages.size()]);
+            mChapterMarkers = null;
             notifyDataSetChanged();
             getListener().onSetBusyIndicator(false);
         }

@@ -144,5 +144,6 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
         void scrollToFrame(String chapterSlug, String frameSlug);
         void restartAutoCommitTimer();
         void onSetBusyIndicator(boolean enable);
+        void onItemCountChanged(int itemCount, int progress);
     }
 }
