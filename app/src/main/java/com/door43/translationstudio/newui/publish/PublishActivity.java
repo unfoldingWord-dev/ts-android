@@ -1,5 +1,7 @@
 package com.door43.translationstudio.newui.publish;
 
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -7,9 +9,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
@@ -18,19 +17,17 @@ import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.newui.BackupDialog;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.widget.ViewUtil;
 
 import java.security.InvalidParameterException;
-import java.util.Locale;
 
 public class PublishActivity extends BaseActivity implements PublishStepFragment.OnEventListener {
 
     public static final int STEP_VALIDATE = 0;
     public static final int STEP_PROFILE = 1;
-    public static final int STEP_REVIEW = 2;
-    public static final int STEP_PUBLISH = 3;
     public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
     public static final String EXTRA_CALLING_ACTIVITY = "extra_calling_activity";
     private static final String STATE_STEP = "state_step";
@@ -127,21 +124,31 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
             }
         });
 
-        Button reviewButton = (Button)findViewById(R.id.review_button);
-        reviewButton.setOnClickListener(new View.OnClickListener() {
+        Button uploadButton = (Button)findViewById(R.id.upload_button);
+        uploadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                goToStep(STEP_REVIEW, false);
+                showBackupDialog();
             }
         });
+    }
 
-        Button publishButton = (Button)findViewById(R.id.publish_button);
-        publishButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                goToStep(STEP_PUBLISH, false);
-            }
-        });
+    /**
+     * display Backup dialog
+     */
+    private void showBackupDialog() {
+        FragmentTransaction backupFt = getFragmentManager().beginTransaction();
+        Fragment backupPrev = getFragmentManager().findFragmentByTag(BackupDialog.TAG);
+        if (backupPrev != null) {
+            backupFt.remove(backupPrev);
+        }
+        backupFt.addToBackStack(null);
+
+        BackupDialog backupDialog = new BackupDialog();
+        Bundle args = new Bundle();
+        args.putString(BackupDialog.ARG_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+        backupDialog.setArguments(args);
+        backupDialog.show(backupFt, BackupDialog.TAG);
     }
 
     @Override
@@ -196,8 +203,10 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
             return;
         }
 
-        if(step > STEP_PUBLISH) {
-            mCurrentStep = STEP_PUBLISH;
+        if(step > STEP_PROFILE) { // if we are ready to upload
+            mCurrentStep = STEP_PROFILE;
+            showBackupDialog();
+            return;
         } else {
             mCurrentStep = step;
         }
@@ -205,12 +214,6 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
         switch(mCurrentStep) {
             case STEP_PROFILE:
                 mFragment = new TranslatorsFragment();
-                break;
-            case STEP_REVIEW:
-                mFragment = new ReviewFragment();
-                break;
-            case STEP_PUBLISH:
-                mFragment = new PublishFragment();
                 break;
             case STEP_VALIDATE:
             default:

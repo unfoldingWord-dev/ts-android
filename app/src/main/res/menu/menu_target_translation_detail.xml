@@ -28,7 +28,7 @@
         app:showAsAction="never" />
 
     <item android:id="@+id/action_backup"
-        android:title="@string/title_upload_export"
+        android:title="@string/menu_upload_export"
         android:orderInCategory="140"
         android:icon="@drawable/ic_file_upload_black_24dp"
         app:showAsAction="never" />

@@ -177,6 +177,18 @@ public class TargetTranslationInfoDialog extends DialogFragment {
             }
         });
 
+        ImageButton publishButton = (ImageButton)v.findViewById(R.id.publish_button);
+        publishButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent publishIntent = new Intent(getActivity(), PublishActivity.class);
+                publishIntent.putExtra(PublishActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                publishIntent.putExtra(PublishActivity.EXTRA_CALLING_ACTIVITY, PublishActivity.ACTIVITY_HOME);
+                startActivity(publishIntent);
+                dismiss(); // close dialog so notifications will pass back to HomeActivity
+            }
+        });
+
         ImageButton printButton = (ImageButton)v.findViewById(R.id.print_button);
         printButton.setOnClickListener(new View.OnClickListener() {
             @Override

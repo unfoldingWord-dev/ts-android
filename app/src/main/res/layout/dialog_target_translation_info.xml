@@ -181,6 +181,12 @@
                     style="@style/Widget.Alert.Button"/>
 
                 <ImageButton
+                    android:id="@+id/publish_button"
+                    android:layout_marginLeft="@dimen/dialog_controls_margin"
+                    android:src="@drawable/ic_cloud_done_black_24dp"
+                    style="@style/Widget.Alert.Button"/>
+
+                <ImageButton
                     android:id="@+id/backup_button"
                     android:layout_marginLeft="@dimen/dialog_controls_margin"
                     android:src="@drawable/ic_file_upload_black_24dp"

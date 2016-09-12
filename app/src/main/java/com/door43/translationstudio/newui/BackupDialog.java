@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.LinearLayout;
 
 import org.unfoldingword.tools.logger.Logger;
 
@@ -64,7 +65,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     private TargetTranslation targetTranslation;
     private SimpleTaskWatcher taskWatcher;
     private boolean settingDeviceAlias = false;
-    private Button mBackupToCloudButton = null;
+    private LinearLayout mBackupToCloudButton = null;
     private eDialogShown mDialogShown = eDialogShown.NONE;
     private String mAccessFile;
     private String mDialogMessage;
@@ -95,12 +96,12 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
 
         targetTranslation.setDefaultContributor(App.getProfile().getNativeSpeaker());
 
-        mBackupToCloudButton = (Button)v.findViewById(R.id.backup_to_cloud);
-        Button backupToSDButton = (Button)v.findViewById(R.id.backup_to_sd);
+        mBackupToCloudButton = (LinearLayout)v.findViewById(R.id.backup_to_cloud);
+        LinearLayout backupToSDButton = (LinearLayout)v.findViewById(R.id.backup_to_sd);
         Button backupToAppButton = (Button)v.findViewById(R.id.backup_to_app);
         Button backupToDeviceButton = (Button)v.findViewById(R.id.backup_to_device);
-        Button exportToPDFButton = (Button)v.findViewById(R.id.export_to_pdf);
-        Button exportToUsfmButton = (Button)v.findViewById(R.id.export_to_usfm);
+        LinearLayout exportToPDFButton = (LinearLayout)v.findViewById(R.id.export_to_pdf);
+        LinearLayout exportToUsfmButton = (LinearLayout)v.findViewById(R.id.export_to_usfm);
 
         final String filename = targetTranslation.getId() + "." + Translator.ARCHIVE_EXTENSION;
 

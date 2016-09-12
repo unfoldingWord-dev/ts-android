@@ -589,7 +589,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="edit">"Edit"</string>
     <string name="share_apk">Share this app</string>
     <string name="send_to">Send To</string>
-    <string name="translators">Translators</string>
+    <string name="translators">Contributors</string>
     <string name="no_backups_online">There are no backups online</string>
     <string name="translation_words_index">Words Index</string>
     <string name="print">Print</string>
@@ -820,8 +820,13 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="search_source">Search Source:</string>
     <string name="search_translation">Search Translation:</string>
     <string name="export_to_usfm">Export to USFM</string>
+    <string name="tip_export_to_usfm">Creates a .usfm file of your project</string>
     <string name="export_to_pdf">Export to PDF</string>
-    <string name="title_upload_export">Upload/Export</string>
+    <string name="tip_export_to_pdf">Creates a .pdf file of your project</string>
+    <string name="title_upload_export">Upload/Export Options</string>
+    <string name="menu_upload_export">Upload/Export</string>
     <string name="title_review">Project Review</string>
-    <string name="title_book">Book</string>
+    <string name="title_book">Project</string>
+    <string name="tip_backup_to_door43">Uploads project to your Door43 Account.\nBy uploading the project to your Door43 account, the content is available to be downloaded by other translators, merged with other projects, or used as an online backup.</string>
+    <string name="tip_backup_to_sd">Creates a copy of your project file</string>
 </resources>
