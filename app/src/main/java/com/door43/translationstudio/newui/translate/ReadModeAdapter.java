@@ -18,7 +18,6 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.SectionIndexer;
 import android.widget.TextView;
 
 import com.door43.translationstudio.App;
@@ -52,7 +51,7 @@ import java.util.List;
 /**
  * Created by joel on 9/9/2015.
  */
-public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder> implements SectionIndexer {
+public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder> {
 
     private final CharSequence[] mRenderedTargetBody;
     private SourceLanguage mSourceLanguage;
@@ -69,7 +68,6 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     private Chapter[] mChapters;
     private int mLayoutBuildNumber = 0;
     private ContentValues[] mTabs;
-    private String[] mChapterMarkers;
 
     public ReadModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId) {
         mLibrary = App.getLibrary();
@@ -182,11 +180,11 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     }
 
     /**
-     * get the chapter ID for the position
+     * get the chapter for the position, or null if not found
      * @param position
+     * @return
      */
-    @Override
-    public String getChapterID(int position) {
+    public String getChapterForPosition(int position) {
         if(position < 0) {
             position = 0;
         } else if(position >= mChapters.length) {
@@ -194,52 +192,6 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         }
         Chapter c = mChapters[position];
         return c.getId();
-    }
-
-    @Override
-    public Object[] getSections() {
-        makeSureChapterMarkersInitialized();
-        return mChapterMarkers;
-    }
-
-    /**
-     * if not yet cached, determine and cache the chapter boundaries
-     */
-    private void makeSureChapterMarkersInitialized() {
-        if(null == mChapterMarkers) {
-            List<String> chapterLists = new ArrayList();
-            for (int i = 0; i < mChapters.length; i++) {
-                Chapter c = mChapters[i];
-                chapterLists.add(c.getId());
-            }
-            mChapterMarkers = chapterLists.toArray(new String[chapterLists.size()]);
-        }
-    }
-
-    @Override
-    public int getPositionForSection(int sectionIndex) {
-        makeSureChapterMarkersInitialized();
-
-        if( sectionIndex < 0 ) { // limit input range
-            sectionIndex = 0;
-        } else if( sectionIndex >= mChapterMarkers.length ) {
-            sectionIndex = mChapterMarkers.length - 1;
-        }
-
-        return sectionIndex;
-    }
-
-    @Override
-    public int getSectionForPosition(int position) {
-        makeSureChapterMarkersInitialized();
-
-        if( position < 0 ) { // limit input range
-            position = 0;
-        } else if( position >= mChapterMarkers.length ) {
-            position = mChapterMarkers.length - 1;
-        }
-
-        return position;
     }
 
     @Override

@@ -34,7 +34,6 @@ import android.widget.Filter;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.SectionIndexer;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -90,7 +89,7 @@ import java.util.regex.Pattern;
 /**
  * Created by joel on 9/18/2015.
  */
-public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHolder> implements SectionIndexer {
+public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHolder> {
     private static final String TAG = ReviewModeAdapter.class.getSimpleName();
 
     private static final int TAB_NOTES = 0;
@@ -117,9 +116,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private ContentValues[] mTabs;
     private int[] mOpenResourceTab;
     private boolean mAllowFootnote = true;
-    private String[] mChapterMarkers;
-    private Integer[] mStartPositionForSection;
-    private Integer[] mSectionForPosition;
     private SearchFilter mSearchFilter;
     private CharSequence mSearchString;
 
@@ -348,121 +344,19 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @return
      */
     public String getChapterForPosition(int position) {
-        if( (position < 0)
-                || (position >= mFilteredItems.length)) {
+        if( (position < 0) || (position >= mFilteredItems.length)) {
             return null;
         }
 
         ListItem item = mFilteredItems[position];
-        String chapterSlug = item.chapterSlug;
-        if(chapterSlug != null) {
-            return chapterSlug;
+        if(item != null) {
+            return item.chapterSlug;
         }
 
         return null;
     }
 
-    /**
-     * get the chapter ID for the position
-     * @param position
-     */
-    @Override
-    public String getChapterID(int position) {
-        int section = getSectionForPosition( position);
-        if(section >= 0) {
-            return mChapterMarkers[section];
-        }
-        return "";
-    }
-
-    @Override
-    public Object[] getSections() { // in our case these are chapters
-        makeSureChapterMarkersInitialized();
-        return mChapterMarkers;
-    }
-
-    @Override
-    public int getPositionForSection(int sectionIndex) { // in our case we are finding where a chapter starts
-        makeSureChapterMarkersInitialized();
-
-        if( sectionIndex < 0 ) { // limit input range
-            sectionIndex = 0;
-        } else if( sectionIndex >= mStartPositionForSection.length ) {
-            sectionIndex = mStartPositionForSection.length - 1;
-        }
-
-        return mStartPositionForSection[sectionIndex];
-    }
-
-    /**
-     * if not yet cached, determine and cache the chapter boundaries
-     */
-    private void makeSureChapterMarkersInitialized() {
-        if(null == mChapterMarkers) {
-            List<String> chapterMarkers = new ArrayList<>();
-            List<Integer> sectionForPosition = new ArrayList<>();
-            List<Integer> startPositionForSection = new ArrayList<>();
-            int length = getItemCount();
-            String lastChapter = "00";
-            int currentSection = -1;
-            for (int i = 0; i < length; i++) {
-                String chapter = getChapterForPosition(i);
-                if(chapter == null) {
-                    chapter = lastChapter;
-                    if(chapter.isEmpty()) { //if we haven't seen a chapter marker yet, we will associate it with chapter 1
-                        chapter = "01";
-                    }
-                }
-
-                if(!lastChapter.equals(chapter)) {
-                    if(Integer.valueOf(chapter) - Integer.valueOf(lastChapter) == 1) { // make sure we have sequential chapters
-                        chapterMarkers.add(chapter);
-                        startPositionForSection.add(i);
-
-                    } else { // we have skipped over chapters (could be due to string search)
-                        int markerLength = chapter.length();
-                        int startChapter = Integer.valueOf(lastChapter);
-                        int endChapter = Integer.valueOf(chapter);
-                        for(int ch = startChapter + 1; ch <= endChapter; ch++) {
-                            String chapterStr = ("000" + String.valueOf(ch));
-                            chapterStr = chapterStr.substring(chapterStr.length() - markerLength);
-                            chapterMarkers.add(chapterStr);
-                            startPositionForSection.add(i);
-                        }
-                    }
-                    lastChapter = chapter;
-                    currentSection = Integer.valueOf(chapter) - 1;
-                }
-                sectionForPosition.add(currentSection);
-            }
-            mChapterMarkers = chapterMarkers.toArray(new String[chapterMarkers.size()]);
-            mStartPositionForSection = startPositionForSection.toArray(new Integer[startPositionForSection.size()]);
-            mSectionForPosition = sectionForPosition.toArray(new Integer[sectionForPosition.size()]);
-            getListener().onItemCountChanged(length, 0);
-        }
-    }
-
-    @Override
-    public int getSectionForPosition(int position) {
-        makeSureChapterMarkersInitialized();
-
-        if( position < 0 ) { // limit input range
-            position = 0;
-        } else if( position >= mSectionForPosition.length ) {
-            position = mSectionForPosition.length - 1;
-        }
-
-        int section = mSectionForPosition[position];
-
-        if( section < 0 ) { // sanity check - limit output range
-            section = 0;
-        } else if( section >= mChapterMarkers.length ) {
-            section = mChapterMarkers.length - 1;
-        }
-        return section;
-    }
-
-    @Override
+     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         holder.currentPosition = position;
         final ListItem item = mFilteredItems[position];
@@ -2138,7 +2032,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         // clear the cards displayed since we have new search string
         mFilteredItems = new ListItem[0];
-        mChapterMarkers = null;
+        resetSectionMarkers();
         notifyDataSetChanged();
 
         if( (searchString != null) && (searchString.length() > 0)) {
@@ -2183,6 +2077,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private class SearchFilter extends TranslationSearchFilter {
 
         private boolean searchTarget = false;
+        CharSequence oldSearch = null;
 
         public SearchFilter setTargetSearch(boolean searchTarget) { // chainable
             this.searchTarget = searchTarget;
@@ -2255,9 +2150,33 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
             List<ListItem> filteredLanguages = (List<ListItem>)filterResults.values;
             mFilteredItems = filteredLanguages.toArray(new ListItem[filteredLanguages.size()]);
-            mChapterMarkers = null;
+            updateChapterMarkers(oldSearch);
+            oldSearch = mSearchString;
             notifyDataSetChanged();
             getListener().onSetBusyIndicator(false);
+        }
+    }
+
+    /**
+     * check to see if search string has changed and needs updating.  Note null string and empty string are treated as the same
+     * @param oldSearch
+     */
+    private void updateChapterMarkers(CharSequence oldSearch) {
+        boolean searchChanged = false;
+        if (oldSearch == null) {
+            if( (mSearchString != null) && (mSearchString.length() > 0) ) {
+                searchChanged = true;
+            }
+        } else  if (mSearchString == null) {
+            if( (oldSearch != null)  && (oldSearch.length() > 0) ) {
+                searchChanged = true;
+            }
+        } else if(!mSearchString.equals(oldSearch)) {
+            searchChanged = true;
+        }
+
+        if(searchChanged) {
+            resetSectionMarkers();
         }
     }
 }

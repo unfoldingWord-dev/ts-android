@@ -769,7 +769,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         final int minimumSteps = 300;
 
         if(itemCount < 1) { // sanity check
-            itemCount = 0;
+            itemCount = 1;
         }
 
         if(itemCount < minimumSteps) {  // increase step size if number of cards is small, this gives more granularity in positioning
