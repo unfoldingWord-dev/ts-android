@@ -274,6 +274,17 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         return mAdapter;
     }
 
+    /**
+     * gets item count of adapter
+     * @return
+     */
+    public int getItemCount() {
+        if(mAdapter != null) {
+            return mAdapter.getItemCount();
+        }
+        return 0;
+    }
+
     @Override
     public void onResume() {
         super.onResume();

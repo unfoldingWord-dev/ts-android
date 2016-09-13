@@ -14,10 +14,8 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.Layout;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -88,8 +86,10 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private String mSearchString;
     private ProgressBar mSearchingSpinner;
 
-    private boolean enableGrids = false;
-    private int seekbarMultiplier = 1; // allows for more granularity in setting position if cards are few
+    private boolean mEnableGrids = false;
+    private int mSeekbarMultiplier = 1; // allows for more granularity in setting position if cards are few
+    private int mOldItemCount = 1; // so we can update the seekbar maximum when item count has changed
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -219,7 +219,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     private void setUpSeekBar() {
-        if(enableGrids) {
+        if(mEnableGrids) {
             mGraduations = (ViewGroup) findViewById(R.id.action_seek_graduations);
         }
         mSeekBar = (SeekBar) findViewById(R.id.action_seek);
@@ -228,15 +228,16 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                progress = handleItemCountIfChanged(progress);
                 int correctedProgress = correctProgress(progress);
                 correctedProgress = limitRange(correctedProgress, 0, mSeekBar.getMax() - 1);
-                int position = correctedProgress / seekbarMultiplier;
+                int position = correctedProgress / mSeekbarMultiplier;
                 int percentage = 0;
 
-                if(seekbarMultiplier > 1) { // if we need some granularity, calculate fractional amount
-                    int fractional = correctedProgress - position * seekbarMultiplier;
+                if(mSeekbarMultiplier > 1) { // if we need some granularity, calculate fractional amount
+                    int fractional = correctedProgress - position * mSeekbarMultiplier;
                     if(fractional != 0) {
-                        percentage = 100 * fractional / seekbarMultiplier;
+                        percentage = 100 * fractional / mSeekbarMultiplier;
                     }
                 }
 
@@ -760,12 +761,55 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     @Override
     public void onScrollProgress(int position) {
+        position = handleItemCountIfChanged(position);
         mSeekBar.setProgress(computeProgressFromPosition(position));
         checkIfCursorStillOnScreen();
     }
 
     @Override
     public void onItemCountChanged(int itemCount, int progress) {
+        itemCount = setSeekbarMax(itemCount);
+        mSeekBar.setProgress((itemCount - progress) * mSeekbarMultiplier);
+        closeKeyboard();
+        setupGraduations();
+    }
+
+    /**
+     * checks to see if item count has changed, if so it rescales the progress value to match the new count
+     * @param progress
+     * @return
+     */
+    private int handleItemCountIfChanged(int progress) {
+        int newItemCount = getItemCount();
+        if( newItemCount != mOldItemCount ) {
+            int oldItemCount = mOldItemCount;
+            if(oldItemCount < 1) {
+                oldItemCount = 1;
+            }
+            int fixedItemCount = setSeekbarMax(newItemCount);
+            int newProgress = (int) ((float) progress / oldItemCount * fixedItemCount);
+            return newProgress;
+        }
+        return progress;
+    }
+
+    /**
+     * get number of items in adapter
+     * @return
+     */
+    private int getItemCount() {
+        if((mFragment != null) && (mFragment instanceof ViewModeFragment)) {
+            return ((ViewModeFragment)mFragment).getItemCount();
+        }
+        return 0;
+    }
+
+    /**
+     * sets seekbar maximum based on item count, and add granularity if item count is small
+     * @param itemCount
+     * @return
+     */
+    private int setSeekbarMax(int itemCount) {
         final int minimumSteps = 300;
 
         if(itemCount < 1) { // sanity check
@@ -773,23 +817,23 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         }
 
         if(itemCount < minimumSteps) {  // increase step size if number of cards is small, this gives more granularity in positioning
-            seekbarMultiplier = (int) (minimumSteps / itemCount) + 1;
+            mSeekbarMultiplier = (int) (minimumSteps / itemCount) + 1;
         } else {
-            seekbarMultiplier = 1;
+            mSeekbarMultiplier = 1;
         }
 
-        mSeekBar.setMax(itemCount * seekbarMultiplier);
-        mSeekBar.setProgress((itemCount - progress) * seekbarMultiplier);
-        closeKeyboard();
-        setupGraduations();
+        mSeekBar.setMax(itemCount * mSeekbarMultiplier);
+        mOldItemCount = itemCount;
+
+        return itemCount;
     }
 
     /**
      * initialize text on graduations if enabled
      */
     private void setupGraduations() {
-        if(enableGrids) {
-            final int numCards = mSeekBar.getMax() / seekbarMultiplier;
+        if(mEnableGrids) {
+            final int numCards = mSeekBar.getMax() / mSeekbarMultiplier;
 
             String maxChapterStr = getChapterID(numCards - 1);
             int maxChapter = Integer.valueOf(maxChapterStr);
@@ -848,7 +892,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     private int computeProgressFromPosition(int position) {
-        int correctedProgress = correctProgress(position * seekbarMultiplier);
+        int correctedProgress = correctProgress(position * mSeekbarMultiplier);
         int progress = limitRange(correctedProgress, 0, mSeekBar.getMax());
         return progress;
     }
@@ -856,7 +900,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private int computePositionFromProgress(int progress) {
         int correctedProgress = correctProgress(progress);
         correctedProgress = limitRange(correctedProgress, 0, mSeekBar.getMax() - 1);
-        int position = correctedProgress / seekbarMultiplier;
+        int position = correctedProgress / mSeekbarMultiplier;
         return position;
     }
 

@@ -2158,7 +2158,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     * check to see if search string has changed and needs updating.  Note null string and empty string are treated as the same
+     * check to see if search string has changed and therefor chapter markers will need updating.  Note null string and empty string are treated as the same
      * @param oldSearch
      */
     private void updateChapterMarkers(CharSequence oldSearch) {
