@@ -820,9 +820,9 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="search_source">Search Source:</string>
     <string name="search_translation">Search Translation:</string>
     <string name="export_to_usfm">Export to USFM</string>
-    <string name="tip_export_to_usfm">Creates a .usfm file of your project</string>
+    <string name="tip_export_to_usfm">Creates a .usfm file of your project or a zip file of the chapters in your project</string>
     <string name="export_to_pdf">Export to PDF</string>
-    <string name="tip_export_to_pdf">Creates a .pdf file of your project</string>
+    <string name="tip_export_to_pdf">Sends a .pdf file of your project</string>
     <string name="title_upload_export">Upload/Export Options</string>
     <string name="menu_upload_export">Upload/Export</string>
     <string name="title_review">Project Review</string>
