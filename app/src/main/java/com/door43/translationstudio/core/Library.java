@@ -396,7 +396,7 @@ public class Library {
     }
 
     /**
-     * Indicates whether the imagery download is complete and extraction was successful.  zip files are ignored since failed download will leave a file there.
+     * Indicates whether the imagery download is complete and extraction was successful.  zip files are ignored since a failed download can leave a zip file there.
      *
      * <p>If any part of the process was not complete, this returns false. This method makes no
      * statement as to the freshness of the information downloaded.</p>
