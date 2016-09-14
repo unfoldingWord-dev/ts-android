@@ -254,7 +254,7 @@ public class PdfPrinter extends PdfPageEventHelper {
                         // TODO: 11/13/2015 insert frame images if we have them.
                         // TODO: 11/13/2015 eventually we need to provide the directory where to find these images which will be downloaded not in assets
                         try {
-                            File imageFile = new File(imagesDir, "360px/" + targetTranslation.getProjectId() + "-" + f.getComplexId() + ".jpg");
+                            File imageFile = new File(imagesDir, targetTranslation.getProjectId() + "-" + f.getComplexId() + ".jpg");
                             if(imageFile.exists()) {
                                 addImage(document, imageFile.getAbsolutePath());
                             }
