@@ -4,8 +4,12 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.support.annotation.Nullable;
 
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.revwalk.RevWalkUtils;
+import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.git.Repo;
+import com.door43.translationstudio.git.TransportCallback;
 import com.door43.translationstudio.util.NumericStringComparator;
 import com.door43.util.FileUtilities;
 import com.door43.util.Manifest;

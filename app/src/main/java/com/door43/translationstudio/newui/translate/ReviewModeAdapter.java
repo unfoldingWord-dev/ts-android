@@ -8,6 +8,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
@@ -29,6 +30,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.Filter;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -76,8 +78,8 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -97,6 +99,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     public static final String REDO = "Redo";
     public static final String OPTIONS = "Options";
     public static final String ISO_DATE_FORMAT = "yyyy-MM-dd HH:mm";
+    public static final int HIGHLIGHT_COLOR = Color.YELLOW;
     private final Library mLibrary;
     private final Translator mTranslator;
     private final Activity mContext;
@@ -106,12 +109,16 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private SourceTranslation mSourceTranslation;
     private SourceLanguage mSourceLanguage;
     private final TargetLanguage mTargetLanguage;
-    private ListItem[] mListItems;
+    private ListItem[] mUnfilteredItems;
+    private ListItem[] mFilteredItems;
     private int mLayoutBuildNumber = 0;
     private boolean mResourcesOpened = false;
     private ContentValues[] mTabs;
     private int[] mOpenResourceTab;
     private boolean mAllowFootnote = true;
+    private SearchFilter mSearchFilter;
+    private CharSequence mSearchString;
+
 
 //    private boolean onBind = false;
 
@@ -170,7 +177,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 listItems.add(new ListItem(frameSlug, c.getId()));
             }
         }
-        mListItems = listItems.toArray(new ListItem[listItems.size()]);
+        mUnfilteredItems = listItems.toArray(new ListItem[listItems.size()]);
+        mFilteredItems = mUnfilteredItems;
         mOpenResourceTab = new int[listItems.size()];
 
         loadTabInfo();
@@ -240,12 +248,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 listItems.add(new ListItem(frameSlug, c.getId()));
             }
         }
-        mListItems = listItems.toArray(new ListItem[listItems.size()]);
+        mUnfilteredItems = listItems.toArray(new ListItem[listItems.size()]);
+        mFilteredItems = mUnfilteredItems;
         mOpenResourceTab = new int[listItems.size()];
 
         loadTabInfo();
 
         notifyDataSetChanged();
+
+        clearScreenAndStartNewSearch(mSearchString, isTargetSearch());
     }
 
     @Override
@@ -273,24 +284,24 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     @Override
     public String getFocusedFrameId(int position) {
-        if(position >= 0 && position < mListItems.length) {
-            return mListItems[position].frameSlug;
+        if(position >= 0 && position < mFilteredItems.length) {
+            return mFilteredItems[position].frameSlug;
         }
         return null;
     }
 
     @Override
     public String getFocusedChapterId(int position) {
-        if(position >= 0 && position < mListItems.length) {
-            return mListItems[position].chapterSlug;
+        if(position >= 0 && position < mFilteredItems.length) {
+            return mFilteredItems[position].chapterSlug;
         }
         return null;
     }
 
     @Override
     public int getItemPosition(String chapterId, String frameId) {
-        for(int i = 0; i < mListItems.length; i ++) {
-            ListItem item = mListItems[i];
+        for(int i = 0; i < mFilteredItems.length; i ++) {
+            ListItem item = mFilteredItems[i];
             if(item.isFrame() && item.chapterSlug.equals(chapterId) && item.frameSlug.equals(frameId)) {
                 return i;
             }
@@ -330,7 +341,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         holder.currentPosition = position;
-        final ListItem item = mListItems[position];
+        final ListItem item = mFilteredItems[position];
 
         // open/close resources
         if(mResourcesOpened) {
@@ -1503,6 +1514,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             } else if(event.getAction() == DragEvent.ACTION_DROP) {
                                 int offset = editText.getOffsetForPosition(event.getX(), event.getY());
                                 CharSequence text = editText.getText();
+
+                                offset = closestSpotForVerseMarker(offset, text);
+
                                 if(offset >= 0) {
                                     // insert the verse at the offset
                                     text = TextUtils.concat(text.subSequence(0, offset), pin.toCharSequence(), text.subSequence(offset, text.length()));
@@ -1570,10 +1584,16 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             ClickableRenderingEngine renderer = Clickables.setupRenderingGroup(format, renderingGroup, verseClickListener, noteClickListener, true);
             renderer.setLinebreaksEnabled(true);
             renderer.setPopulateVerseMarkers(frame.getVerseRange());
+            if( isTargetSearch() ) {
+                renderingGroup.setSearchString(mSearchString, HIGHLIGHT_COLOR);
+            }
 
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
+            if( isTargetSearch() ) {
+                renderingGroup.setSearchString(mSearchString, HIGHLIGHT_COLOR);
+            }
         }
         if(!text.trim().isEmpty()) {
             renderingGroup.init(text);
@@ -1581,6 +1601,58 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         } else {
             return "";
         }
+    }
+
+    /**
+     * find closest place to drop verse marker.  Weighted toward beginning of word.
+     * @param offset - initial drop position
+     * @param text - edit text
+     * @return
+     */
+    private int closestSpotForVerseMarker(int offset, CharSequence text) {
+        int charsToWhiteSpace = 0;
+        for (int j = offset; j >= 0; j--) {
+            char c = text.charAt(j);
+            boolean whitespace = isWhitespace(c);
+            if(whitespace) {
+
+                if((j == offset) ||  // if this is already a good spot, then done
+                    (j == offset - 1)) {
+                    return offset;
+                }
+
+                charsToWhiteSpace = j - offset + 1;
+                break;
+            }
+        }
+
+        int limit = offset - charsToWhiteSpace - 1;
+        if(limit > text.length()) {
+            limit = text.length();
+        }
+
+        for (int j = offset + 1; j < limit; j++) {
+            char c = text.charAt(j);
+            boolean whitespace = isWhitespace(c);
+            if(whitespace) {
+                charsToWhiteSpace = j - offset;
+                break;
+            }
+        }
+
+        if(charsToWhiteSpace != 0) {
+            offset += charsToWhiteSpace;
+        }
+        return offset;
+    }
+
+    /**
+     * test if character is whitespace
+     * @param c
+     * @return
+     */
+    private boolean isWhitespace(char c) {
+        return (c ==' ') || (c == '\t') || (c == '\n') || (c == '\r');
     }
 
     /**
@@ -1672,6 +1744,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      */
     private CharSequence renderSourceText(String text, TranslationFormat format, final ViewHolder holder, final ListItem item, final boolean editable) {
         RenderingGroup renderingGroup = new RenderingGroup();
+        boolean enableSearch = (isTargetSearch() && editable)  || (!isTargetSearch() && !editable);
         if (Clickables.isClickableFormat(format)) {
             // TODO: add click listeners for verses
             Span.OnClickListener noteClickListener = new Span.OnClickListener() {
@@ -1695,9 +1768,16 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
                 renderingGroup.setLinebreaksEnabled(true);
             }
+
+            if( enableSearch ) {
+                renderingGroup.setSearchString(mSearchString, HIGHLIGHT_COLOR);
+            }
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
+            if( enableSearch ) {
+                renderingGroup.setSearchString(mSearchString, HIGHLIGHT_COLOR);
+            }
         }
         renderingGroup.init(text);
         return renderingGroup.start();
@@ -1705,7 +1785,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     @Override
     public int getItemCount() {
-        return mListItems.length;
+        return mFilteredItems.length;
     }
 
     /**
@@ -1818,6 +1898,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         private ChapterTranslation chapterTranslation;
         private ProjectTranslation projectTranslation;
         private FileHistory fileHistory = null;
+        private boolean mHighlightSource = false;
+        private boolean mHighlightTarget = false;
 
         public ListItem(String frameSlug, String chapterSlug) {
             this.frameSlug = frameSlug;
@@ -1830,6 +1912,41 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         public boolean isChapter() {
             return this.frameSlug == null && this.chapterSlug != null;
+        }
+
+        /**
+         * clear all the previous highlighting states for the item
+         */
+        public void clearAllHighLighting() {
+            setHighLighting(false, true);
+            setHighLighting(false, false);
+        }
+
+        /**
+         * set the highlighting state for the item and clearing any old highlighting
+         * @param enable
+         * @param target
+         */
+        public void setHighLighting(boolean enable, boolean target) {
+            if(target) {
+                if(!enable) { // disable highlighting
+                    if(mHighlightTarget) {
+                        renderedTargetBody = null; // remove rendered text so will be re-rendered without highlighting
+                    }
+                } else { // enable highlighting
+                    renderedTargetBody = null; // remove rendered text so will be re-rendered with new highlighting
+                }
+                mHighlightTarget = enable;
+            } else { // source
+                if(!enable) { // disable highlighting
+                    if(mHighlightSource) {
+                        renderedSourceBody = null; // remove rendered text so will be re-rendered without highlighting
+                    }
+                } else { // enable highlighting
+                    renderedSourceBody = null; // remove rendered text so will be re-rendered with new highlighting
+                }
+                mHighlightSource = enable;
+            }
         }
 
         /**
@@ -1889,6 +2006,136 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 bodySource = frame.body;
                 isTranslationFinished = frameTranslation.isFinished();
             }
+        }
+    }
+
+    /**
+     * remove displayed cards
+     * @param searchString
+     * @param searchTarget
+     */
+    public void clearScreenAndStartNewSearch(final CharSequence searchString, final boolean searchTarget) {
+
+        // clear the cards displayed since we have new search string
+        mFilteredItems = new ListItem[0];
+        notifyDataSetChanged();
+
+        if( (searchString != null) && (searchString.length() > 0)) {
+            getListener().onSetBusyIndicator(true);
+        }
+
+        //start search on delay so cards will clear first
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                ((TranslationSearchFilter) getFilter()).setTargetSearch(searchTarget).filter(searchString);
+            }
+        });
+    }
+
+    /**
+     * check the filter to see what the last search type was
+     * @return
+     */
+    private boolean isTargetSearch() {
+        if(mSearchFilter != null) {
+            return mSearchFilter.isTargetSearch();
+        }
+        return false;
+    }
+
+    /**
+     * Returns the target language filter
+     * @return
+     */
+    public Filter getFilter() {
+        if(mSearchFilter == null) {
+            mSearchFilter = new SearchFilter();
+        }
+        return mSearchFilter;
+    }
+
+    /**
+     * class for searching text
+     */
+    private class SearchFilter extends TranslationSearchFilter {
+
+        private boolean searchTarget = false;
+
+        public SearchFilter setTargetSearch(boolean searchTarget) { // chainable
+            this.searchTarget = searchTarget;
+            return this;
+        }
+
+        public boolean isTargetSearch() {
+            return searchTarget;
+        }
+
+        @Override
+        protected FilterResults performFiltering(CharSequence charSequence) {
+            FilterResults results = new FilterResults();
+            mSearchString = charSequence;
+            if(charSequence == null || charSequence.length() == 0) {
+                // no filter
+                results.values = Arrays.asList(mUnfilteredItems);
+                results.count = mUnfilteredItems.length;
+                for (ListItem unfilteredItem : mUnfilteredItems) {
+                    unfilteredItem.clearAllHighLighting();
+                }
+            } else {
+                // perform filter
+                String matchString = charSequence.toString().toLowerCase();
+                List<ListItem> filteredCategories = new ArrayList<>();
+                for(ListItem item: mUnfilteredItems) {
+                    boolean match = false;
+
+                    if(!searchTarget) { // search the source
+                        if (item.renderedSourceBody != null) { // if source has already been rendered, search that
+                            match = item.renderedSourceBody.toString().toLowerCase().contains(matchString);
+
+                        } else { // next best we search source
+                            if (item.bodySource == null) { // if source hasn't been loaded
+                                item.loadTranslations(mSourceTranslation, mTargetTranslation, mChapters.get(item.chapterSlug), loadFrame(item.chapterSlug, item.frameSlug));
+                            }
+                            if (item.bodySource != null) {
+                                match = item.bodySource.toLowerCase().contains(matchString);
+                            }
+                        }
+                    } else { // search the target
+                        if (item.renderedTargetBody != null) { // if target has already been rendered, search that
+                            match = item.renderedTargetBody.toString().toLowerCase().contains(matchString);
+
+                        } else { // next best we search source
+                            if (item.bodyTranslation == null) { // if source hasn't been loaded
+                                item.loadTranslations(mSourceTranslation, mTargetTranslation, mChapters.get(item.chapterSlug), loadFrame(item.chapterSlug, item.frameSlug));
+                            }
+                            if (item.bodyTranslation != null) {
+                                match = item.bodyTranslation.toLowerCase().contains(matchString);
+                            }
+                        }
+                    }
+
+                    if(match) {
+                        filteredCategories.add(item);
+                        item.setHighLighting(true, searchTarget);
+                        item.setHighLighting(false, !searchTarget); // remove searching from opposite pane
+                    } else {
+                        item.clearAllHighLighting(); // if not matched item, remove previous highlighting
+                    }
+                }
+                results.values = filteredCategories;
+                results.count = filteredCategories.size();
+            }
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+            List<ListItem> filteredLanguages = (List<ListItem>)filterResults.values;
+            mFilteredItems = filteredLanguages.toArray(new ListItem[filteredLanguages.size()]);
+            notifyDataSetChanged();
+            getListener().onSetBusyIndicator(false);
         }
     }
 }

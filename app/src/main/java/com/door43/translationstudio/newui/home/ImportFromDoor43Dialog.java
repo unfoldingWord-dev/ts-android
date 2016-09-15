@@ -48,15 +48,21 @@ import java.util.List;
  * Created by joel on 5/10/16.
  */
 public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTaskWatcher.OnFinishedListener {
+    public static final String TAG = ImportFromDoor43Dialog.class.getSimpleName();
+
     private static final String STATE_REPOSITORIES = "state_repositories";
+    private static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
+    public static final String STATE_CLONE_URL = "state_clone_url";
+
     private SimpleTaskWatcher taskWatcher;
     private RestoreFromCloudAdapter adapter;
     private Translator translator;
     private List<Repository> repositories = new ArrayList<>();
-    private String cloneHtmlUrl;
+    private String mCloneHtmlUrl;
     private File cloneDestDir;
     private EditText repoEditText;
     private EditText userEditText;
+    private eDialogShown mDialogShown = eDialogShown.NONE;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
@@ -91,7 +97,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 String userQuery = userEditText.getText().toString();
                 String repoQuery = repoEditText.getText().toString();
 
-                App.closeKeyboard(getActivity());
+                App.closeKeyboard(getActivity()); // this doesn't seem to work here
 
                 Profile profile = App.getProfile();
                 if(profile != null && profile.gogsUser != null) {
@@ -116,8 +122,8 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 Repository repo = adapter.getItem(position);
                 String repoName = repo.getFullName().replace("/", "-");
                 cloneDestDir = new File(App.context().getCacheDir(), repoName + System.currentTimeMillis() + "/");
-                cloneHtmlUrl = repo.getHtmlUrl();
-                CloneRepositoryTask task = new CloneRepositoryTask(cloneHtmlUrl, cloneDestDir);
+                mCloneHtmlUrl = repo.getHtmlUrl();
+                CloneRepositoryTask task = new CloneRepositoryTask(mCloneHtmlUrl, cloneDestDir);
                 taskWatcher.watch(task);
                 TaskManager.addTask(task, CloneRepositoryTask.TASK_ID);
             }
@@ -125,6 +131,9 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
 
         // restore state
         if(savedInstanceState != null) {
+            mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
+            mCloneHtmlUrl = savedInstanceState.getString(STATE_CLONE_URL, null);
+
             String[] repoJsonArray = savedInstanceState.getStringArray(STATE_REPOSITORIES);
             if(repoJsonArray != null) {
                 for (String json : repoJsonArray) {
@@ -150,7 +159,32 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
             taskWatcher.watch(cloneTask);
         }
 
+        restoreDialogs();
         return v;
+    }
+
+    /**
+     * restore the dialogs that were displayed before rotation
+     */
+    private void restoreDialogs() {
+
+        //recreate dialog last shown
+        switch(mDialogShown) {
+            case IMPORT_FAILED:
+                notifyImportFailed();
+                break;
+
+            case AUTH_FAILURE:
+                showAuthFailure();
+                break;
+
+            case NONE:
+                break;
+
+            default:
+                Logger.e(TAG,"Unsupported restore dialog: " + mDialogShown.toString());
+                break;
+        }
     }
 
     @Override
@@ -234,9 +268,9 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
             if(((RegisterSSHKeysTask)task).isSuccess()) {
                 Logger.i(this.getClass().getName(), "SSH keys were registered with the server");
                 // try to clone again
-                CloneRepositoryTask pullTask = new CloneRepositoryTask(cloneHtmlUrl, cloneDestDir);
-                taskWatcher.watch(pullTask);
-                TaskManager.addTask(pullTask, CloneRepositoryTask.TASK_ID);
+                CloneRepositoryTask cloneTask = new CloneRepositoryTask(mCloneHtmlUrl, cloneDestDir);
+                taskWatcher.watch(cloneTask);
+                TaskManager.addTask(cloneTask, CloneRepositoryTask.TASK_ID);
             } else {
                 notifyImportFailed();
             }
@@ -244,11 +278,13 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     }
 
     public void showAuthFailure() {
+        mDialogShown = eDialogShown.AUTH_FAILURE;
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.error).setMessage(R.string.auth_failure_retry)
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
                         RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(true);
                         taskWatcher.watch(keyTask);
                         TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
@@ -257,16 +293,23 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
                         notifyImportFailed();
                     }
                 }).show();
     }
 
     public void notifyImportFailed() {
+        mDialogShown = eDialogShown.IMPORT_FAILED;
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.error)
                 .setMessage(R.string.restore_failed)
-                .setPositiveButton(R.string.dismiss, null)
+                .setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                    }
+                })
                 .show();
     }
 
@@ -277,6 +320,10 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
             repoJsonList.add(r.toJSON().toString());
         }
         out.putStringArray(STATE_REPOSITORIES, repoJsonList.toArray(new String[repoJsonList.size()]));
+        out.putInt(STATE_DIALOG_SHOWN, mDialogShown.getValue());
+        if(mCloneHtmlUrl != null) {
+            out.putString(STATE_CLONE_URL, mCloneHtmlUrl);
+        }
         super.onSaveInstanceState(out);
     }
 
@@ -284,5 +331,33 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     public void onDestroy() {
         taskWatcher.stop();
         super.onDestroy();
+    }
+
+    /**
+     * for keeping track which dialog is being shown for orientation changes (not for DialogFragments)
+     */
+    public enum eDialogShown {
+        NONE(0),
+        IMPORT_FAILED(1),
+        AUTH_FAILURE(2);
+
+        private int _value;
+
+        eDialogShown(int Value) {
+            this._value = Value;
+        }
+
+        public int getValue() {
+            return _value;
+        }
+
+        public static eDialogShown fromInt(int i) {
+            for (eDialogShown b : eDialogShown.values()) {
+                if (b.getValue() == i) {
+                    return b;
+                }
+            }
+            return null;
+        }
     }
 }

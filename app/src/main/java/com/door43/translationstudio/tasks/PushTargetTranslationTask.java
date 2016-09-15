@@ -35,6 +35,7 @@ public class PushTargetTranslationTask extends ManagedTask {
     private final boolean pushTags;
     private Status status = Status.UNKNOWN;
     private String message = "";
+    private PushResult pushRejectedResults;
 
     public PushTargetTranslationTask(TargetTranslation targetTranslation, boolean pushTags) {
         setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
@@ -105,14 +106,42 @@ public class PushTargetTranslationTask extends ManagedTask {
         try {
             Iterable<PushResult> result = pushCommand.call();
             StringBuffer response = new StringBuffer();
+            this.status = Status.OK; // will be OK if no errors are found
             for (PushResult r : result) {
                 Collection<RemoteRefUpdate> updates = r.getRemoteUpdates();
                 for (RemoteRefUpdate update : updates) {
                     response.append(parseRemoteRefUpdate(update, remote));
+                    response.append("\n");
+
+                    RemoteRefUpdate.Status status = update.getStatus();
+                    switch (status) {
+                        case OK:
+                        case UP_TO_DATE:
+                            //no error here
+                            break;
+                        case REJECTED_NONFASTFORWARD:
+                            this.status = Status.REJECTED_NONFASTFORWARD;
+                            break;
+                        case REJECTED_NODELETE:
+                            this.status = Status.REJECTED_NODELETE;
+                            break;
+                        case REJECTED_REMOTE_CHANGED:
+                            this.status = Status.REJECTED_REMOTE_CHANGED;
+                            break;
+                        case REJECTED_OTHER_REASON:
+                            this.status = Status.REJECTED_OTHER_REASON;
+                            break;
+                        default:
+                            this.status = Status.UNKNOWN;
+                            break;
+                    }
                 }
+
+                if(status.isRejected()) {
+                    pushRejectedResults = r; // save rejection data
+                 }
             }
             // give back the response message
-            this.status = Status.OK;
             return response.toString();
         } catch (TransportException e) {
             Logger.e(this.getClass().getName(), e.getMessage(), e);
@@ -153,10 +182,33 @@ public class PushTargetTranslationTask extends ManagedTask {
     }
 
     public enum Status {
-        OK,
-        OUT_OF_MEMORY,
-        AUTH_FAILURE,
-        NO_REMOTE_REPO, UNKNOWN
+        OK(0),
+        OUT_OF_MEMORY(1),
+        AUTH_FAILURE(2),
+        NO_REMOTE_REPO(3),
+        REJECTED_NONFASTFORWARD(4),
+        REJECTED_NODELETE(5),
+        REJECTED_OTHER_REASON(6),
+        REJECTED_REMOTE_CHANGED(7),
+        UNKNOWN(8);
+
+        private int value;
+
+        Status(int Value) {
+            this.value = Value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public boolean isRejected() {
+            return ( (value == REJECTED_NODELETE.getValue())
+                    || (value == REJECTED_NONFASTFORWARD.getValue())
+                    || (value == REJECTED_OTHER_REASON.getValue())
+                    || (value == REJECTED_REMOTE_CHANGED.getValue())
+            );
+        }
     }
 
     /**
