@@ -22,13 +22,13 @@
         app:showAsAction="never" />
 
     <item android:id="@+id/action_publish"
-        android:title="@string/title_upload"
+        android:title="@string/title_review"
         android:orderInCategory="130"
         android:icon="@drawable/ic_cloud_done_black_24dp"
         app:showAsAction="never" />
 
     <item android:id="@+id/action_backup"
-        android:title="@string/backup"
+        android:title="@string/menu_upload_export"
         android:orderInCategory="140"
         android:icon="@drawable/ic_file_upload_black_24dp"
         app:showAsAction="never" />

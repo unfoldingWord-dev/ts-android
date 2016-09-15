@@ -38,6 +38,7 @@ import java.util.Locale;
  */
 public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnFinishedListener, SimpleTaskWatcher.OnCanceledListener {
 
+    public static final String TAG = "printDialog";
     public static final String ARG_TARGET_TRANSLATION_ID = "arg_target_translation_id";
     public static final String STATE_INCLUDE_IMAGES = "include_images";
     public static final String STATE_INCLUDE_INCOMPLETE = "include_incomplete";
