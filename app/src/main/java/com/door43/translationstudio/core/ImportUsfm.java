@@ -32,17 +32,19 @@ import java.util.regex.Pattern;
  */
 public class ImportUsfm {
     public static final String TAG = ImportUsfm.class.getSimpleName();
-    public static final String BOOK_NAME_MARKER = "\\\\toc1\\s([^\\n]*)";
-    private static final Pattern PATTERN_BOOK_NAME_MARKER = Pattern.compile(BOOK_NAME_MARKER);
+    public static final String BOOK_TITLE_MARKER = "\\\\toc1\\s([^\\n]*)";
+    public static final Pattern PATTERN_BOOK_TITLE_MARKER = Pattern.compile(BOOK_TITLE_MARKER);
     public static final String ID_TAG = "\\\\id\\s([^\\n]*)";
-    private static final Pattern ID_TAG_MARKER = Pattern.compile(ID_TAG);
-    public static final String BOOK_SHORT_NAME_MARKER = "\\\\toc3\\s([^\\n]*)";
-    private static final Pattern PATTERN_BOOK_SHORT_NAME_MARKER = Pattern.compile(BOOK_SHORT_NAME_MARKER);
+    public static final Pattern ID_TAG_MARKER = Pattern.compile(ID_TAG);
+    public static final String BOOK_LONG_NAME_MARKER = "\\\\toc2\\s([^\\n]*)";
+    public static final Pattern PATTERN_BOOK_LONG_NAME_MARKER = Pattern.compile(BOOK_LONG_NAME_MARKER);
+    public static final String BOOK_ABBREVIATION_MARKER = "\\\\toc3\\s([^\\n]*)";
+    public static final Pattern PATTERN_BOOK_ABBREVIATION_MARKER = Pattern.compile(BOOK_ABBREVIATION_MARKER);
     public static final String SECTION_MARKER = "\\\\s5([^\\n]*)";
     private static final Pattern PATTERN_SECTION_MARKER = Pattern.compile(SECTION_MARKER);
     public static final String CHAPTER_NUMBER_MARKER = "\\\\c\\s(\\d+(-\\d+)?)\\s";
-    private static final Pattern PATTERN_CHAPTER_NUMBER_MARKER = Pattern.compile(CHAPTER_NUMBER_MARKER);
-    private static final Pattern PATTERN_USFM_VERSE_SPAN = Pattern.compile(USFMVerseSpan.PATTERN);
+    public static final Pattern PATTERN_CHAPTER_NUMBER_MARKER = Pattern.compile(CHAPTER_NUMBER_MARKER);
+    public static final Pattern PATTERN_USFM_VERSE_SPAN = Pattern.compile(USFMVerseSpan.PATTERN);
     public static final int END_MARKER = 999999;
     public static final String FIRST_VERSE = "first_verse";
     public static final String FILE_NAME = "file_name";
@@ -855,8 +857,8 @@ public class ImportUsfm {
     }
 
     private void extractBookID(String book) {
-        mBookName = extractString(book, PATTERN_BOOK_NAME_MARKER);
-        mBookShortName = extractString(book, PATTERN_BOOK_SHORT_NAME_MARKER);
+        mBookName = extractString(book, PATTERN_BOOK_TITLE_MARKER);
+        mBookShortName = extractString(book, PATTERN_BOOK_ABBREVIATION_MARKER);
 
         String idString = extractString(book, ID_TAG_MARKER);
         if (null != idString) {
@@ -1051,7 +1053,7 @@ public class ImportUsfm {
             String chapter0 = "0000".substring(0, chapter1.length()); // match length of chapter 1
             success = saveSection(".", "before", text);
             successOverall = successOverall && success;
-            success = saveSection(".", "title", mBookName);
+            success = saveSection(chapter0, "title", mBookName);
             successOverall = successOverall && success;
         }
         return successOverall;

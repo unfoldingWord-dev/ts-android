@@ -8,6 +8,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
 import android.support.v4.provider.DocumentFile;
@@ -24,6 +26,7 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.ExportUsfm;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
@@ -178,7 +181,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         exportToUsfmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: 9/7/16 add support for export to USFM
+                showExportToUsfmPrompt();
             }
         });
 
@@ -228,42 +231,88 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
       * restore the dialogs that were displayed before rotation
       */
     private void restoreDialogs() {
-        switch(mDialogShown) {
-            case PUSH_REJECTED:
-                showPushRejection(targetTranslation);
-                break;
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() { // wait for backup dialog to be drawn before showing popups
+            @Override
+            public void run() {
+                switch (mDialogShown) {
+                    case PUSH_REJECTED:
+                        showPushRejection(targetTranslation);
+                        break;
 
-            case AUTH_FAILURE:
-                showAuthFailure();
-                break;
+                    case AUTH_FAILURE:
+                        showAuthFailure();
+                        break;
 
-            case BACKUP_FAILED:
-                notifyBackupFailed(targetTranslation);
-                break;
+                    case BACKUP_FAILED:
+                        notifyBackupFailed(targetTranslation);
+                        break;
 
-            case ACCESS_REQUEST:
-                showAccessRequestDialog(mAccessFile);
-                break;
+                    case ACCESS_REQUEST:
+                        showAccessRequestDialog(mAccessFile);
+                        break;
 
-            case SHOW_BACKUP_RESULTS:
-                showBackupResults(mDialogMessage);
-                break;
+                    case SHOW_BACKUP_RESULTS:
+                        showBackupResults(mDialogMessage);
+                        break;
 
-            case SHOW_PUSH_SUCCESS:
-                showPushSuccess(mDialogMessage);
-                break;
+                    case SHOW_PUSH_SUCCESS:
+                        showPushSuccess(mDialogMessage);
+                        break;
 
-            case MERGE_CONFLICT:
-                showMergeConflict(targetTranslation);
-                break;
+                    case MERGE_CONFLICT:
+                        showMergeConflict(targetTranslation);
+                        break;
 
-            case NONE:
-                break;
+                    case EXPORT_TO_USFM_PROMPT:
+                        showExportToUsfmPrompt();
+                        break;
 
-            default:
-                Logger.e(TAG,"Unsupported restore dialog: " + mDialogShown.toString());
-                break;
-        }
+                    case EXPORT_TO_USFM_RESULTS:
+                        showUsfmExportResults(mDialogMessage);
+                        break;
+
+                    case NONE:
+                        break;
+
+                    default:
+                        Logger.e(TAG, "Unsupported restore dialog: " + mDialogShown.toString());
+                        break;
+                }
+            }
+        });
+    }
+
+    /**
+     * display confirmation prompt before USFM export
+     */
+    private void showExportToUsfmPrompt() {
+        mDialogShown = eDialogShown.EXPORT_TO_USFM_PROMPT;
+        ExportUsfm.saveToUsfmWithPrompt(getActivity(), targetTranslation, new ExportUsfm.OnResultsListener() {
+            @Override
+            public void onFinished(ExportUsfm.eResults result, String outputFilePath, String defaultMessage) {
+                mDialogShown = eDialogShown.NONE;
+                if(result != ExportUsfm.eResults.CANCELLED) {
+                    showUsfmExportResults(defaultMessage);
+                }
+            }
+        });
+    }
+
+    /**
+     * show USFM export results
+     * @param message
+     */
+    private void showUsfmExportResults(String message) {
+        mDialogShown = eDialogShown.EXPORT_TO_USFM_RESULTS;
+        mDialogMessage = message;
+
+        ExportUsfm.showResults(getActivity(), message, new ExportUsfm.OnFinishedListener() {
+            @Override
+            public void onFinished() {
+                mDialogShown = eDialogShown.NONE;
+            }
+        });
     }
 
     private void showDoor43LoginDialog() {
@@ -725,7 +774,9 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         ACCESS_REQUEST(4),
         SHOW_BACKUP_RESULTS(5),
         SHOW_PUSH_SUCCESS(6),
-        MERGE_CONFLICT(7);
+        MERGE_CONFLICT(7),
+        EXPORT_TO_USFM_PROMPT(8),
+        EXPORT_TO_USFM_RESULTS(9);
 
         private int value;
 
