@@ -43,7 +43,7 @@ public class DownloadImagesTask extends ManagedTask {
             }
         });
 
-        publishProgress(1f, "");
+        publishProgress(-1, "");
     }
 
     @Override

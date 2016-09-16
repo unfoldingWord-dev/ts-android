@@ -48,7 +48,6 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
     public static final String STATE_INCLUDE_INCOMPLETE = "include_incomplete";
     public static final String DOWNLOAD_IMAGES_TASK_KEY = "download_images_task";
     public static final String DOWNLOAD_IMAGES_TASK_GROUP = "download_images_task";
-    public static final String TAG = PrintDialog.class.getName();
     private Translator translator;
     private TargetTranslation mTargetTranslation;
     private Library library;
@@ -211,8 +210,14 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
 
         if(task instanceof DownloadImagesTask) {
             if (((DownloadImagesTask) task).getSuccess()) {
-                PrintPDFTask printTask = new PrintPDFTask(mTargetTranslation.getId(), mExportFile, includeImages, includeIncompleteFrames);
-                taskWatcher.watch(printTask);
+                final PrintPDFTask printTask = new PrintPDFTask(mTargetTranslation.getId(), mExportFile, includeImages, includeIncompleteFrames);
+                Handler hand = new Handler(Looper.getMainLooper());
+                hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        taskWatcher.watch(printTask);
+                    }
+                });
                 TaskManager.addTask(printTask, PrintPDFTask.TASK_ID);
             } else {
                 // download failed
