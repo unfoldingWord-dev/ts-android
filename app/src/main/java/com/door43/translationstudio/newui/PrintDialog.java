@@ -25,11 +25,15 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.tasks.DownloadImagesTask;
 import com.door43.translationstudio.tasks.PrintPDFTask;
+import com.door43.util.FileUtilities;
+
+import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.io.File;
+import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.Locale;
 
@@ -44,6 +48,7 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
     public static final String STATE_INCLUDE_INCOMPLETE = "include_incomplete";
     public static final String DOWNLOAD_IMAGES_TASK_KEY = "download_images_task";
     public static final String DOWNLOAD_IMAGES_TASK_GROUP = "download_images_task";
+    public static final String TAG = PrintDialog.class.getName();
     private Translator translator;
     private TargetTranslation mTargetTranslation;
     private Library library;
@@ -224,6 +229,17 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
             }
         } else if(task instanceof PrintPDFTask) {
             if(((PrintPDFTask)task).isSuccess()) {
+
+                // copy to downloads folder
+                File downloadsDir = App.getPublicDownloadsDirectory();
+                if(downloadsDir.exists()) {
+                    try {
+                        FileUtilities.copyFile(mExportFile, new File(downloadsDir, mExportFile.getName()));
+                    } catch (IOException e) {
+                        Logger.e(TAG, "Failed to copy the PDF file", e);
+                    }
+                }
+
                 // send to print provider
                 Uri u = FileProvider.getUriForFile(App.context(), "com.door43.translationstudio.fileprovider", mExportFile);
                 Intent i = new Intent(Intent.ACTION_SEND);
