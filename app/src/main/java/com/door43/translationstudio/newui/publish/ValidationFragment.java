@@ -1,10 +1,8 @@
 package com.door43.translationstudio.newui.publish;
 
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -90,28 +88,6 @@ public class ValidationFragment extends PublishStepFragment implements ManagedTa
 
     @Override
     public void onClickNext() {
-        if(mValidationAdapter.getItemCount() > 2) {
-            // when there are more than two items (success card and next button) there were validation issues
-            new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
-                    .setTitle(R.string.dialog_validation_warnings)
-                    .setMessage(R.string.validation_warnings)
-                    .setIcon(R.drawable.ic_report_black_24dp)
-                    .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
-
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            nextStep();
-                        }
-                    })
-                    .setNegativeButton(R.string.title_cancel, null)
-                    .show();
-        } else {
-            nextStep();
-        }
-    }
-
-    private void nextStep() {
-        // TODO: proceed to the next step
         getListener().nextStep();
     }
 

@@ -63,8 +63,9 @@
                     android:focusable="false"
                     android:clickable="false"
                     android:duplicateParentState="true"
-                    android:gravity="center"
-                    android:textSize="@dimen/caption" />
+                    android:gravity="start"
+                    android:textSize="@dimen/caption"
+                    android:layout_marginLeft="@dimen/dialog_content_margin" />
             </LinearLayout>
 
             <LinearLayout
@@ -108,8 +109,9 @@
                     android:focusable="false"
                     android:clickable="false"
                     android:duplicateParentState="true"
-                    android:gravity="center"
-                    android:textSize="@dimen/caption" />
+                    android:gravity="start"
+                    android:textSize="@dimen/caption"
+                    android:layout_marginLeft="@dimen/dialog_content_margin" />
             </LinearLayout>
 
             <LinearLayout
@@ -153,8 +155,9 @@
                     android:focusable="false"
                     android:clickable="false"
                     android:duplicateParentState="true"
-                    android:gravity="center"
-                    android:textSize="@dimen/caption" />
+                    android:gravity="start"
+                    android:textSize="@dimen/caption"
+                    android:layout_marginLeft="@dimen/dialog_content_margin" />
             </LinearLayout>
 
             <LinearLayout
@@ -197,8 +200,9 @@
                     android:focusable="false"
                     android:clickable="false"
                     android:duplicateParentState="true"
-                    android:gravity="center"
-                    android:textSize="@dimen/caption" />
+                    android:gravity="start"
+                    android:textSize="@dimen/caption"
+                    android:layout_marginLeft="@dimen/dialog_content_margin" />
             </LinearLayout>
 
             <LinearLayout
