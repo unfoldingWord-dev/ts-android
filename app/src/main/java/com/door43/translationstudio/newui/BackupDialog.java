@@ -102,7 +102,6 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         mBackupToCloudButton = (LinearLayout)v.findViewById(R.id.backup_to_cloud);
         LinearLayout backupToSDButton = (LinearLayout)v.findViewById(R.id.backup_to_sd);
         Button backupToAppButton = (Button)v.findViewById(R.id.backup_to_app);
-        Button exportUsfmToSD = (Button)v.findViewById(R.id.export_usfm_to_sd);
         Button backupToDeviceButton = (Button)v.findViewById(R.id.backup_to_device);
         LinearLayout exportToPDFButton = (LinearLayout)v.findViewById(R.id.export_to_pdf);
         LinearLayout exportToUsfmButton = (LinearLayout)v.findViewById(R.id.export_to_usfm);
@@ -126,13 +125,6 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             @Override
             public void onClick(View v) {
                 dismiss();
-            }
-        });
-
-        exportUsfmToSD.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showExportToUsfmPrompt();
             }
         });
 
@@ -189,7 +181,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         exportToUsfmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: 9/7/16 add support for export to USFM
+                showExportToUsfmPrompt();
             }
         });
 

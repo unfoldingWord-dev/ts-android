@@ -82,7 +82,7 @@
                 android:focusable="true"
                 android:contextClickable="true"
                 android:layout_marginBottom="@dimen/dialog_controls_margin"
-                android:visibility="gone">
+                android:visibility="visible">
 
 
                 <TextView
