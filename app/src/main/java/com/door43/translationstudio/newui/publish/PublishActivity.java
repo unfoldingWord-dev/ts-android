@@ -106,6 +106,8 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
             }
         }
 
+        selectButtonForCurrentStep();
+
         // add step button listeners
 
         Button validationButton = (Button)findViewById(R.id.validation_button);
@@ -217,9 +219,12 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
                 break;
             case STEP_VALIDATE:
             default:
+                mCurrentStep = STEP_VALIDATE;
                 mFragment = new ValidationFragment();
                 break;
         }
+
+        selectButtonForCurrentStep();
 
         Bundle args = getIntent().getExtras();
         String sourceTranslationId = App.getSelectedSourceTranslationId(mTargetTranslation.getId());
@@ -235,6 +240,30 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
         mFragment.setArguments(args);
         getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
         // TODO: animate
+    }
+
+    /**
+     * select the button for current state
+     */
+    private void selectButtonForCurrentStep() {
+        setButtonSelectionState(R.id.validation_button, mCurrentStep == STEP_VALIDATE);
+        setButtonSelectionState(R.id.profile_button, mCurrentStep == STEP_PROFILE);
+    }
+
+    /**
+     * show which fragment is selected by changeing background color
+     * @param buttonID
+     * @param selected
+     */
+    private void setButtonSelectionState(int buttonID, boolean selected) {
+        Button button = (Button)findViewById(buttonID);
+        if(button != null) {
+            int newResource = R.color.accent;
+            if (selected) {
+                newResource = R.color.accent_dark;
+            }
+            button.setBackgroundResource(newResource);
+        }
     }
 
     public void onSaveInstanceState(Bundle out) {
