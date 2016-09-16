@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.LinearLayout;
 
 import org.unfoldingword.tools.logger.Logger;
 
@@ -64,7 +65,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     private TargetTranslation targetTranslation;
     private SimpleTaskWatcher taskWatcher;
     private boolean settingDeviceAlias = false;
-    private Button mBackupToCloudButton = null;
+    private LinearLayout mBackupToCloudButton = null;
     private eDialogShown mDialogShown = eDialogShown.NONE;
     private String mAccessFile;
     private String mDialogMessage;
@@ -95,10 +96,12 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
 
         targetTranslation.setDefaultContributor(App.getProfile().getNativeSpeaker());
 
-        mBackupToCloudButton = (Button)v.findViewById(R.id.backup_to_cloud);
-        Button backupToSDButton = (Button)v.findViewById(R.id.backup_to_sd);
+        mBackupToCloudButton = (LinearLayout)v.findViewById(R.id.backup_to_cloud);
+        LinearLayout backupToSDButton = (LinearLayout)v.findViewById(R.id.backup_to_sd);
         Button backupToAppButton = (Button)v.findViewById(R.id.backup_to_app);
         Button backupToDeviceButton = (Button)v.findViewById(R.id.backup_to_device);
+        LinearLayout exportToPDFButton = (LinearLayout)v.findViewById(R.id.export_to_pdf);
+        LinearLayout exportToUsfmButton = (LinearLayout)v.findViewById(R.id.export_to_usfm);
 
         final String filename = targetTranslation.getId() + "." + Translator.ARCHIVE_EXTENSION;
 
@@ -150,6 +153,17 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             }
         });
 
+        exportToPDFButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                PrintDialog printDialog = new PrintDialog();
+                Bundle printArgs = new Bundle();
+                printArgs.putString(PrintDialog.ARG_TARGET_TRANSLATION_ID, targetTranslation.getId());
+                printDialog.setArguments(printArgs);
+                showDialogFragment(printDialog, PrintDialog.TAG);
+            }
+        });
+
         backupToSDButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -158,6 +172,13 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                 } else {
                     doSdCardBackup(filename);
                 }
+            }
+        });
+
+        exportToUsfmButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: 9/7/16 add support for export to USFM
             }
         });
 
