@@ -427,16 +427,11 @@ public class PdfPrinter extends PdfPageEventHelper {
         // translate simple html to paragraphs
         String license = App.context().getResources().getString(R.string.license_pdf);
 
+        if(includeMedia) {
+            license += App.context().getResources().getString(R.string.artwork_attribution_pdf);
+        }
+
         license = license.replace("&#8226;", "\u2022");
-//        license = license.replace("<p>", "<br/>");
-//        license = license.replace("</p>", "<br/>");
-//        license = license.replace("<h2>", "<br/>");
-//        license = license.replace("</h2>", "<br/>");
-//        String[] lines = license.split("<br/>");
-//        for (String line : lines) {
-//            Paragraph paragraph = new Paragraph(line, bodyFont);
-//            document.add(paragraph);
-//        }
 
         mCurrentParagraph = null;
         parseHtml( document, license, 0);
