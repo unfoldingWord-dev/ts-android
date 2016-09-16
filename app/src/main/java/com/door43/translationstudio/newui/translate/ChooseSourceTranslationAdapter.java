@@ -1,6 +1,11 @@
 package com.door43.translationstudio.newui.translate;
 
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.os.Handler;
+import android.os.Looper;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,9 +13,20 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.Resource;
+import com.door43.translationstudio.core.SourceTranslation;
+import com.door43.translationstudio.newui.library.ServerLibraryDetailFragment;
+import com.door43.translationstudio.tasks.DownloadSourceLanguageTask;
 import com.door43.widget.ViewUtil;
 
+import org.unfoldingword.tools.logger.Logger;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
+
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,15 +36,18 @@ import java.util.TreeSet;
 /**
  * Created by joel on 9/15/2015.
  */
-public class ChooseSourceTranslationAdapter extends BaseAdapter {
-    public static final int TYPE_ITEM = 0;
+public class ChooseSourceTranslationAdapter extends BaseAdapter  implements ManagedTask.OnFinishedListener,  ManagedTask.OnProgressListener {
+    public static final int TYPE_ITEM_SELECTABLE = 0;
     public static final int TYPE_SEPARATOR = 1;
+    public static final int TYPE_ITEM_NEED_DOWNLOAD = 2;
+    public static final String TAG = ChooseSourceTranslationAdapter.class.getSimpleName();
     private final Context mContext;
     private Map<String, ViewItem> mData = new HashMap<>();
     private List<String> mSelected = new ArrayList<>();
     private List<String> mAvailable = new ArrayList<>();
     private List<ViewItem> mSortedData = new ArrayList<>();
     private TreeSet<Integer> mSectionHeader = new TreeSet<>();
+    private ProgressDialog progressDialog;
 
     public ChooseSourceTranslationAdapter(Context context) {
         mContext = context;
@@ -47,7 +66,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
     public void addItem(final ViewItem item) {
         if(!mData.containsKey(item.id)) {
             mData.put(item.id, item);
-            if(item.selected) {
+            if(item.selected  && item.downloaded) {
                 mSelected.add(item.id);
             } else {
                 mAvailable.add(item.id);
@@ -60,19 +79,180 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         return mSortedData.get(position);
     }
 
+    public void doClickOnItem(int position) {
+        int type = getItemViewType( position);
+        ChooseSourceTranslationAdapter.ViewItem item = getItem(position);
+        switch (type) {
+            case TYPE_ITEM_SELECTABLE:
+                if(item.selected) {
+                    deselect(position);
+                } else {
+                    select(position);
+                }
+                break;
+
+            case TYPE_ITEM_NEED_DOWNLOAD:
+                promptToDownloadSourceLangauge(item);
+                break;
+        }
+    }
+
+    /**
+     * make sure the user is aware that download will use the internet
+     * @param item
+     */
+    private void promptToDownloadSourceLangauge(final ViewItem item) {
+        String format = mContext.getResources().getString(R.string.download_source_language);
+        String message = String.format(format, item.title);
+        new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
+                .setTitle(R.string.title_download_source_language)
+                .setMessage(message)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        downloadSourceLanguage(item);
+                    }
+                })
+                .setNegativeButton(R.string.no, null)
+                .show();
+    }
+
+    /**
+     * initiate download
+     * @param item
+     */
+    private void downloadSourceLanguage(ViewItem item) {
+        DownloadSourceLanguageTask task = new DownloadSourceLanguageTask(item.sourceTranslation.projectSlug, item.sourceTranslation.sourceLanguageSlug);
+        task.addOnFinishedListener(this);
+        task.addOnProgressListener(this);
+        TaskManager.addTask(task, item.sourceTranslation.projectSlug + "-" + item.id);
+        TaskManager.groupTask(task, ServerLibraryDetailFragment.DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP);
+    }
+
+    /**
+     * called when download is finished
+     * @param task
+     */
+    public void onTaskFinished(ManagedTask task) {
+        DownloadSourceLanguageTask downloadTask = (DownloadSourceLanguageTask) task;
+        Library library = App.getLibrary();
+
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+        }
+
+        if(downloadTask.isFinished() && downloadTask.getSuccess()) {
+            boolean databaseChanged = false;
+            String sourceLang = downloadTask.getSourceLanguageId();
+            String projectId = downloadTask.getProjectId();
+            if((sourceLang != null) && (projectId != null)) {
+                // find entry that was changed
+                for (int i = 0; i < getCount(); i++) {
+                    ChooseSourceTranslationAdapter.ViewItem item = getItem(i);
+                    if (item != null) {
+                        if((item.sourceTranslation != null) && sourceLang.equals(item.sourceTranslation.sourceLanguageSlug) && projectId.equals(item.sourceTranslation.projectSlug)) {
+                            Resource resource = library.getResource(item.sourceTranslation);
+                            if (resource != null) {
+                                item.downloaded = resource.isDownloaded();
+                                databaseChanged = true;
+                            } else {
+                                Logger.e(TAG, "Failed to get resource for " + item.sourceTranslation.getId());
+                            }
+                            break;
+                        }
+                    } else {
+                        Logger.e(TAG, "Failed to get SourceTranslation for " + item.id);
+                    }
+                }
+            }
+
+            if(databaseChanged) { // refresh list in main loop
+                Handler hand = new Handler(Looper.getMainLooper());
+                hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        notifyDataSetChanged();
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public void onTaskProgress(final ManagedTask task, final double progress, final String message, final boolean secondary) {
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                if (task.isFinished()) {
+                    if (progressDialog != null) {
+                        progressDialog.dismiss();
+                    }
+                    return;
+                }
+
+                if (progressDialog == null) {
+                    progressDialog = new ProgressDialog(mContext);
+                    progressDialog.setCancelable(false);
+                    progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                    progressDialog.setCanceledOnTouchOutside(false);
+                    progressDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
+                    progressDialog.setTitle(mContext.getResources().getString(R.string.downloading_languages));
+                    progressDialog.setMessage("");
+                }
+                progressDialog.setMax(task.maxProgress());
+                if (!progressDialog.isShowing()) {
+                    progressDialog.show();
+                }
+                if (progress == -1) {
+                    progressDialog.setIndeterminate(true);
+                    progressDialog.setProgress(progressDialog.getMax());
+                    progressDialog.setProgressNumberFormat(null);
+                    progressDialog.setProgressPercentFormat(null);
+                } else {
+                    progressDialog.setIndeterminate(false);
+                    if(secondary) {
+                        progressDialog.setSecondaryProgress((int) progress);
+                    } else {
+                        progressDialog.setProgress((int) progress);
+                    }
+                    progressDialog.setProgressNumberFormat("%1d/%2d");
+                    progressDialog.setProgressPercentFormat(NumberFormat.getPercentInstance());
+                }
+                if (!message.isEmpty()) {
+                    progressDialog.setMessage(String.format(mContext.getResources().getString(R.string.downloading_source), message));
+                } else {
+                    progressDialog.setMessage(message);
+                }
+            }
+        });
+    }
+
     @Override
     public long getItemId(int position) {
         return position;
     }
 
+    public boolean isSelectableItem(int position) {
+        boolean selectable = getItemViewType(position) != ChooseSourceTranslationAdapter.TYPE_SEPARATOR;
+        return selectable;
+    }
+
     @Override
     public int getItemViewType(int position) {
-        return mSectionHeader.contains(position) ? TYPE_SEPARATOR : TYPE_ITEM;
+        int type = mSectionHeader.contains(position) ? TYPE_SEPARATOR : TYPE_ITEM_SELECTABLE;
+        if(type == TYPE_ITEM_SELECTABLE) {
+            ViewItem v = getItem(position);
+            if(!v.downloaded) { // check if we need to download
+                type = TYPE_ITEM_NEED_DOWNLOAD;
+            }
+        }
+        return type;
     }
 
     @Override
     public int getViewTypeCount() {
-        return 2;
+        return 3;
     }
 
     /**
@@ -83,13 +263,13 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         mSectionHeader = new TreeSet<>();
 
         // build list
-        ViewItem selectedHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.selected), null, false);
+        ViewItem selectedHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.selected), null, false, false);
         mSortedData.add(selectedHeader);
         mSectionHeader.add(mSortedData.size() - 1);
         for(String id:mSelected) {
             mSortedData.add(mData.get(id));
         }
-        ViewItem availableHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.available), null, false);
+        ViewItem availableHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.available), null, false, false);
         mSortedData.add(availableHeader);
         mSectionHeader.add(mSortedData.size() - 1);
         for(String id:mAvailable) {
@@ -111,11 +291,17 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
                     holder = new ViewHolder();
                     holder.titleView = (TextView)v;
                     break;
-                case TYPE_ITEM:
+                case TYPE_ITEM_SELECTABLE:
                     v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_select_source_translation_list_item, null);
                     holder = new ViewHolder();
                     holder.titleView = (TextView)v.findViewById(R.id.title);
                     holder.checkboxView = (ImageView) v.findViewById(R.id.checkBoxView);
+                    break;
+                case TYPE_ITEM_NEED_DOWNLOAD:
+                    v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_select_source_translation_list_download_item, null);
+                    holder = new ViewHolder();
+                    holder.titleView = (TextView)v.findViewById(R.id.title);
+                    holder.checkboxView = (ImageView) v.findViewById(R.id.download_resource);
                     break;
             }
             v.setTag(holder);
@@ -124,7 +310,10 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         }
 
         holder.titleView.setText(getItem(position).title);
-        if(rowType == TYPE_ITEM) {
+        if(rowType == TYPE_ITEM_NEED_DOWNLOAD) {
+            holder.checkboxView.setBackgroundResource(R.drawable.ic_file_download_black_24dp);
+            ViewUtil.tintViewDrawable(holder.checkboxView, parent.getContext().getResources().getColor(R.color.accent));
+        } else if(rowType == TYPE_ITEM_SELECTABLE) {
             if (getItem(position).selected) {
                 holder.checkboxView.setBackgroundResource(R.drawable.ic_check_box_black_24dp);
                 ViewUtil.tintViewDrawable(holder.checkboxView, parent.getContext().getResources().getColor(R.color.accent));
@@ -163,12 +352,20 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
     public static class ViewItem {
         public final String title;
         public final String id;
-        public Boolean selected;
+        public final SourceTranslation sourceTranslation;
+        public boolean selected;
+        public boolean downloaded;
 
-        public ViewItem(String title, String id, Boolean selected) {
+        public ViewItem(String title, SourceTranslation sourceTranslation, boolean selected, boolean downloaded) {
             this.title = title;
-            this.id = id;
             this.selected = selected;
+            this.sourceTranslation = sourceTranslation;
+            if(sourceTranslation != null) {
+                this.id = sourceTranslation.getId();
+            } else {
+                this.id = null;
+            }
+            this.downloaded = downloaded;
         }
     }
 }

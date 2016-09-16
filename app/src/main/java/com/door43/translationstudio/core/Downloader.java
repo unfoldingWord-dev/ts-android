@@ -72,22 +72,28 @@ public class Downloader {
             conn.setReadTimeout(5000);
             conn.setConnectTimeout(5000);
 
-            ReadableByteChannel channel = Channels.newChannel(conn.getInputStream());
-            FileOutputStream os = new FileOutputStream(outputFile);
+            FileOutputStream fos = new FileOutputStream(outputFile);
 
-            long listenerInterval = 1048 * 10; // how much must be downloaded before each listener update
-            long bytesRead;
-            long pos = 0;
-            long lastUpdate = 0;
-            do {
-                bytesRead = os.getChannel().transferFrom(channel, pos, expectedSize);
-                pos += bytesRead;
-                if(pos - lastUpdate >= listenerInterval) {
-                    lastUpdate = pos;
-                    listener.onProgress((int) pos, (int) expectedSize);
+            int updateInterval = 1048 * 50; // send an update each time some bytes have been downloaded
+            int updateQueue = 0;
+            int bytesRead = 0;
+
+            InputStream is = new BufferedInputStream(conn.getInputStream());
+            byte[] buffer = new byte[4096];
+            int n = 0;
+            while((n = is.read(buffer)) != -1) {
+                bytesRead += n;
+                updateQueue += n;
+                fos.write(buffer, 0, n);
+
+                // send updates
+                if(updateQueue >= updateInterval) {
+                    updateQueue = 0;
+                    listener.onProgress(bytesRead, (int) expectedSize);
                 }
-            } while (bytesRead > 0);
-            listener.onProgress((int)pos, (int) expectedSize);
+            }
+
+            listener.onProgress(bytesRead, (int) expectedSize);
 
             return true;
         } catch (IOException e) {

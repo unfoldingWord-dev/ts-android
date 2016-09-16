@@ -975,7 +975,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 }
                 break;
         }
-
     }
 
     /**
