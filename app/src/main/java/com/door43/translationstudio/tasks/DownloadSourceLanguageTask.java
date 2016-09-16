@@ -40,6 +40,7 @@ public class DownloadSourceLanguageTask extends ManagedTask {
     public void start() {
         publishProgress(-1, "");
         final Resource[] resources = mLibrary.getResources(mProjectId, mSourceLanguageId);
+
         mSuccess = true;
         for(int i = 0; i < resources.length; i ++) {
             // TODO: hook up progress listener
