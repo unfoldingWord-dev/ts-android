@@ -25,11 +25,15 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.tasks.DownloadImagesTask;
 import com.door43.translationstudio.tasks.PrintPDFTask;
+import com.door43.util.FileUtilities;
+
+import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.io.File;
+import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.Locale;
 
@@ -38,6 +42,7 @@ import java.util.Locale;
  */
 public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnFinishedListener, SimpleTaskWatcher.OnCanceledListener {
 
+    public static final String TAG = "printDialog";
     public static final String ARG_TARGET_TRANSLATION_ID = "arg_target_translation_id";
     public static final String STATE_INCLUDE_IMAGES = "include_images";
     public static final String STATE_INCLUDE_INCOMPLETE = "include_incomplete";
@@ -205,8 +210,14 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
 
         if(task instanceof DownloadImagesTask) {
             if (((DownloadImagesTask) task).getSuccess()) {
-                PrintPDFTask printTask = new PrintPDFTask(mTargetTranslation.getId(), mExportFile, includeImages, includeIncompleteFrames);
-                taskWatcher.watch(printTask);
+                final PrintPDFTask printTask = new PrintPDFTask(mTargetTranslation.getId(), mExportFile, includeImages, includeIncompleteFrames);
+                Handler hand = new Handler(Looper.getMainLooper());
+                hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        taskWatcher.watch(printTask);
+                    }
+                });
                 TaskManager.addTask(printTask, PrintPDFTask.TASK_ID);
             } else {
                 // download failed
@@ -223,6 +234,17 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
             }
         } else if(task instanceof PrintPDFTask) {
             if(((PrintPDFTask)task).isSuccess()) {
+
+                // copy to downloads folder
+                File downloadsDir = App.getPublicDownloadsDirectory();
+                if(downloadsDir.exists()) {
+                    try {
+                        FileUtilities.copyFile(mExportFile, new File(downloadsDir, mExportFile.getName()));
+                    } catch (IOException e) {
+                        Logger.e(TAG, "Failed to copy the PDF file", e);
+                    }
+                }
+
                 // send to print provider
                 Uri u = FileProvider.getUriForFile(App.context(), "com.door43.translationstudio.fileprovider", mExportFile);
                 Intent i = new Intent(Intent.ACTION_SEND);

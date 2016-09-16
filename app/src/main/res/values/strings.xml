@@ -47,7 +47,7 @@
     <!-- Export a project to another app on the device -->
     <string name="backup_to_app">Send to another app</string>
     <!-- Export a project to the sd card -->
-    <string name="backup_to_sd">Backup to SD Card</string>
+    <string name="backup_to_sd">Export Project File</string>
     <string name="export_as_project" translatable="false">@string/app_name</string>
     <string name="export_as_dokuwiki" translatable="false">DokuWiki</string>
     <!-- The translation could not be imported -->
@@ -329,7 +329,7 @@
     <string name="available">Available</string>
     <string name="action_translations">Home</string>
     <string name="publish">Publish</string>
-    <string name="backup">Backup</string>
+    <string name="backup">Upload</string>
     <string name="attached_files">Attached files</string>
     <string name="requires_internet">Requires internet access</string>
     <string name="input_required">Input cannot be empty</string>
@@ -395,7 +395,7 @@
     <string name="long_click_to_drag">Tap and hold to drag</string>
     <string name="feedback">Feedback</string>
     <string name="import_from_sd">Import from SD Card</string>
-    <string name="backup_to_door43">Backup to Door43</string>
+    <string name="backup_to_door43">Upload to Door43</string>
     <string name="translation_export_failed">Translation could not be exported</string>
     <string name="invalid_file">Not a valid file</string>
     <string name="software_licenses" translatable="false">
@@ -589,7 +589,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="edit">"Edit"</string>
     <string name="share_apk">Share this app</string>
     <string name="send_to">Send To</string>
-    <string name="translators">Translators</string>
+    <string name="translators">Contributors</string>
     <string name="no_backups_online">There are no backups online</string>
     <string name="translation_words_index">Words Index</string>
     <string name="print">Print</string>
@@ -786,6 +786,12 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
 <br/><b>Use of trademarks:</b> unfoldingWord is a trademark of Distant Shores Media and may not be included on any derivative works created from this content. Unaltered content from <a href="http://unfoldingword.org" title="http://unfoldingword.org" >http://unfoldingword.org</a> must include the unfoldingWord logo when distributed to others. But if you alter the content in any way, you must remove the unfoldingWord logo before distributing your work.
 </p>]]>
     </string>
+    <string name="artwork_attribution_pdf">
+<![CDATA[
+<p><b>Attribution of artwork:</b> All images used in these stories are © Sweet Publishing (<a href="http://www.sweetpublishing.com" title="www.sweetpublishing.com" >www.sweetpublishing.com</a>) and are made available under a Creative Commons Attribution-Share Alike License (<a href="http://creativecommons.org/licenses/by-sa/3.0" title="http://creativecommons.org/licenses/by-sa/3.0" >http://creativecommons.org/licenses/by-sa/3.0</a>).
+<br/>
+</p>]]>
+    </string>
     <string name="questionnaire_title">Page <xliff:g example="1" id="page_num">%1$d</xliff:g> of <xliff:g example="10" id="page_count">%2$d</xliff:g></string>
     <string name="new_lang_api_upload_failure_title">New Language Error</string>
     <string name="new_lang_api_upload_failure">We could not save the answers to the New Language Questionnaire.  We will try again the next time you</string>
@@ -819,6 +825,19 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="search_hint">Enter Search String</string>
     <string name="search_source">Search Source:</string>
     <string name="search_translation">Search Translation:</string>
+    <string name="tip_export_to_usfm">Creates a .usfm file of your project or a zip file of the chapters in your project</string>
+    <string name="export_to_pdf">Export to PDF</string>
+    <string name="tip_export_to_pdf">Sends a .pdf file of your project</string>
+    <string name="title_upload_export">Upload/Export Options</string>
+    <string name="menu_upload_export">Upload/Export</string>
+    <string name="title_review">Project Review</string>
+    <string name="title_book">Project</string>
+    <string name="tip_backup_to_door43">Uploads project to your Door43 Account.\nBy uploading the project to your Door43 account, the content is available to be downloaded by other translators, merged with other projects, or used as an online backup.</string>
+    <string name="tip_backup_to_sd">Creates a copy of your project file</string>
+    <string name="draft_translation">Draft Level <xliff:g example="3" id="checking_level">%1$d</xliff:g>: <xliff:g example="Pig Latin" id="language">%2$s</xliff:g></string>
+    <string name="title_download_source_language">Download from Online</string>
+    <string name="download_source_language">Do you want to download \'<xliff:g example="Pig Latin" id="language">%1$s</xliff:g>\' from Online (requires internet)?</string>
+    <string name="downloading_source">Downloading source <xliff:g example="en" id="source_language">%1$s</xliff:g></string>
     <string name="title_export_usfm">Export to USFM</string>
     <string name="export_usfm_by_chapter">Do you want the USFM output separated into chapters or do you want the whole book as a single file?</string>
     <string name="label_separate">Separate</string>

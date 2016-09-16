@@ -22,7 +22,7 @@ import java.util.Locale;
  * Created by joel on 8/29/2015.
  */
 public class Library {
-    private static final int MIN_CHECKING_LEVEL = 3; // the minimum level to be considered a source translation
+    public static final int MIN_CHECKING_LEVEL = 3; // the minimum level to be considered a source translation
     private static final String DEFAULT_RESOURCE_SLUG = "ulb";
     private static final String IMAGES_DIR = "images";
     public static final String TAG = Library.class.toString();
@@ -396,7 +396,7 @@ public class Library {
     }
 
     /**
-     * Indicates whether the imagery download is complete and extraction was successful.
+     * Indicates whether the imagery download is complete and extraction was successful.  zip files are ignored since a failed download can leave a zip file there.
      *
      * <p>If any part of the process was not complete, this returns false. This method makes no
      * statement as to the freshness of the information downloaded.</p>
@@ -406,7 +406,15 @@ public class Library {
         String[] names =  getImagesDir().list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
-                return !new File(dir, filename).isDirectory();
+                File testFile = new File(dir, filename);
+                boolean isFile = !testFile.isDirectory();
+                if(isFile) {
+                    String extension = FileUtilities.getExtension(testFile.getName());
+                    if( !"zip".equalsIgnoreCase(extension)) {
+                        return true;
+                    }
+                }
+                return false; // is not an image file
             }
         });
         return names != null && names.length > 0;
@@ -744,6 +752,15 @@ public class Library {
      * @param projectId
      */
     public SourceTranslation[] getSourceTranslations(String projectId) {
+        return getSourceTranslations( projectId, MIN_CHECKING_LEVEL);
+    }
+
+    /**
+     * Returns an array of source translations in a project that have met the minimum checking level
+     * @param projectId
+     * @param checkingLevel - acceptable checking level
+     */
+    public SourceTranslation[] getSourceTranslations(String projectId, int checkingLevel) {
         // TODO: write a query for this
         List<SourceTranslation> sourceTranslations = new ArrayList<>();
         String[] sourceLanguageIds = getActiveIndex().getSourceLanguageSlugs(projectId);
@@ -751,7 +768,7 @@ public class Library {
             String[] resourceIds = getActiveIndex().getResourceSlugs(projectId, sourceLanguageId);
             for(String resourceId:resourceIds) {
                 SourceTranslation sourceTranslation = getSourceTranslation(projectId, sourceLanguageId, resourceId);
-                if(sourceTranslation != null && sourceTranslation.getCheckingLevel() >= MIN_CHECKING_LEVEL) {
+                if(sourceTranslation != null && sourceTranslation.getCheckingLevel() >= checkingLevel) {
                     sourceTranslations.add(sourceTranslation);
                 }
             }
