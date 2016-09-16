@@ -22,7 +22,7 @@ import java.util.Locale;
  * Created by joel on 8/29/2015.
  */
 public class Library {
-    private static final int MIN_CHECKING_LEVEL = 3; // the minimum level to be considered a source translation
+    public static final int MIN_CHECKING_LEVEL = 3; // the minimum level to be considered a source translation
     private static final String DEFAULT_RESOURCE_SLUG = "ulb";
     private static final String IMAGES_DIR = "images";
     public static final String TAG = Library.class.toString();
@@ -752,6 +752,15 @@ public class Library {
      * @param projectId
      */
     public SourceTranslation[] getSourceTranslations(String projectId) {
+        return getSourceTranslations( projectId, MIN_CHECKING_LEVEL);
+    }
+
+    /**
+     * Returns an array of source translations in a project that have met the minimum checking level
+     * @param projectId
+     * @param checkingLevel - acceptable checking level
+     */
+    public SourceTranslation[] getSourceTranslations(String projectId, int checkingLevel) {
         // TODO: write a query for this
         List<SourceTranslation> sourceTranslations = new ArrayList<>();
         String[] sourceLanguageIds = getActiveIndex().getSourceLanguageSlugs(projectId);
@@ -759,7 +768,7 @@ public class Library {
             String[] resourceIds = getActiveIndex().getResourceSlugs(projectId, sourceLanguageId);
             for(String resourceId:resourceIds) {
                 SourceTranslation sourceTranslation = getSourceTranslation(projectId, sourceLanguageId, resourceId);
-                if(sourceTranslation != null && sourceTranslation.getCheckingLevel() >= MIN_CHECKING_LEVEL) {
+                if(sourceTranslation != null && sourceTranslation.getCheckingLevel() >= checkingLevel) {
                     sourceTranslations.add(sourceTranslation);
                 }
             }

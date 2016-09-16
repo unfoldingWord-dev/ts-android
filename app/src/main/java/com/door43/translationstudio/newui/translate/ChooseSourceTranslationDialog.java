@@ -16,9 +16,12 @@ import android.widget.ListView;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
+
+import org.unfoldingword.tools.logger.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,11 +31,14 @@ import java.util.List;
  */
 public class ChooseSourceTranslationDialog extends DialogFragment {
     public static final String ARG_TARGET_TRANSLATION_ID = "arg_target_translation_id";
+    public static final String TAG = ChooseSourceTranslationDialog.class.getSimpleName();
     private Translator mTranslator;
     private TargetTranslation mTargetTranslation;
     private OnClickListener mListener;
     private ChooseSourceTranslationAdapter mAdapter;
     private Library mLibrary;
+    public static final boolean ENABLE_DRAFTS = true;
+    private static final int MIN_CHECKING_LEVEL = 1; // the minimum level to be considered a source translation
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -67,15 +73,28 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
         for(String id:sourceTranslationIds) {
             SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
             if(sourceTranslation != null) {
-                String title = sourceTranslation.getSourceLanguageTitle() + " - " + sourceTranslation.getResourceTitle();
-                mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation.getId(), true));
+                addSourceTranslation(sourceTranslation, true);
             }
         }
+
+        int min_checking = Library.MIN_CHECKING_LEVEL;
+        if(ENABLE_DRAFTS) {
+            min_checking = this.MIN_CHECKING_LEVEL;
+        }
+
         // add available (duplicates are filtered by the adapter)
-        SourceTranslation[] availableSourceTranslations = mLibrary.getSourceTranslations(mTargetTranslation.getProjectId());
+        SourceTranslation[] availableSourceTranslations = mLibrary.getSourceTranslations(mTargetTranslation.getProjectId(), min_checking);
         for(SourceTranslation sourceTranslation:availableSourceTranslations) {
-            String title = sourceTranslation.getSourceLanguageTitle() + " - " + sourceTranslation.getResourceTitle();
-            mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation.getId(), false));
+            addSourceTranslation(sourceTranslation, false);
+        }
+
+        if(ENABLE_DRAFTS) {
+            SourceTranslation[] draftSourceTranslations = mLibrary.getDraftTranslations(mTargetTranslation.getProjectId());
+            for(SourceTranslation sourceTranslation:draftSourceTranslations) {
+                if(sourceTranslation != null && sourceTranslation.getCheckingLevel() >= min_checking) {
+                    addSourceTranslation(sourceTranslation, false);
+                }
+            }
         }
         mAdapter.sort();
 
@@ -84,13 +103,8 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if(mAdapter.getItemViewType(position) == ChooseSourceTranslationAdapter.TYPE_ITEM) {
-                    ChooseSourceTranslationAdapter.ViewItem item = mAdapter.getItem(position);
-                    if(item.selected) {
-                        mAdapter.deselect(position);
-                    } else {
-                        mAdapter.select(position);
-                    }
+                if(mAdapter.isSelectableItem(position)) {
+                    mAdapter.doClickOnItem(position);
                     mAdapter.sort();
                 }
             }
@@ -114,7 +128,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
                 int count = mAdapter.getCount();
                 List<String> sourceTranslationIds = new ArrayList<>();
                 for(int i = 0; i < count; i ++) {
-                    if(mAdapter.getItemViewType(i) == ChooseSourceTranslationAdapter.TYPE_ITEM) {
+                    if(mAdapter.isSelectableItem(i)) {
                         ChooseSourceTranslationAdapter.ViewItem item = mAdapter.getItem(i);
                         if(item.selected) {
                             sourceTranslationIds.add(item.id);
@@ -129,6 +143,29 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
         });
 
         return v;
+    }
+
+    /**
+     * adds this source translation to the adapter
+     * @param sourceTranslation
+     * @param selected
+     */
+    private void addSourceTranslation(SourceTranslation sourceTranslation, boolean selected) {
+        String title = sourceTranslation.getSourceLanguageTitle() + " - " + sourceTranslation.getResourceTitle();
+
+        if(sourceTranslation.getCheckingLevel() < Library.MIN_CHECKING_LEVEL) { // see if draft
+            String format = getActivity().getResources().getString(R.string.draft_translation);
+            String newTitle = String.format(format, sourceTranslation.getCheckingLevel(), title);
+            title = newTitle;
+        }
+
+        Resource resource = mLibrary.getResource( sourceTranslation);
+        if(resource != null) {
+            boolean downloaded = resource.isDownloaded();
+            mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation, selected, downloaded));
+        } else {
+            Logger.e(TAG, "Failed to get resource for " + sourceTranslation.getId());
+        }
     }
 
     /**
