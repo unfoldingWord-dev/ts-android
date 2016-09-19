@@ -41,10 +41,6 @@ public class USXRenderer extends ClickableRenderingEngine {
     public static Pattern beginParagraphPattern =  Pattern.compile(beginParagraphStyle);
     public static String endParagraphStyle = "<\\/para>";
     public static Pattern endParagraphPattern =  Pattern.compile(endParagraphStyle);
-    public static String beginCharacterStyle = "<char\\s+style=\"[\\w\\d]*\"\\s*>";
-    public static Pattern beginCharacterPattern =  Pattern.compile(beginCharacterStyle);
-    public static String endCharacterStyle = "<\\/char>";
-    public static Pattern endCharacterPattern =  Pattern.compile(endCharacterStyle);
 
 
     /**
@@ -138,11 +134,11 @@ public class USXRenderer extends ClickableRenderingEngine {
         out = renderPoeticLine(out);
         out = renderRightAlignedPoeticLine(out);
         out = renderVerse(out);
+        out = renderHighlightSearch(out);
         out = renderNote(out);
         out = renderChapterLabel(out);
         out = renderSelah(out);
         out = renderBrokenMarkers(out);
-        out = renderHighlightSearch(out);
 
         return out;
     }
@@ -469,8 +465,6 @@ public class USXRenderer extends ClickableRenderingEngine {
         CharSequence out = "";
         out = removePattern( in, beginParagraphPattern);
         out = removePattern( out, endParagraphPattern);
-        out = removePattern( out, beginCharacterPattern);
-        out = removePattern( out, endCharacterPattern);
         return out;
     }
 
