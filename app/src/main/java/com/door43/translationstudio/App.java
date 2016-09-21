@@ -257,18 +257,19 @@ public class App extends Application {
     }
 
     /**
-     * Returns an instance of the library
+     * Returns an instance of the door43 client
      * @return
      */
     @Nullable
-    public static Library getLibrary() {
-        // NOTE: rather than keeping the library around we rebuild it so that changes to the user settings will work
+    public static Door43Client getLibrary() {
         String server = sInstance.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, sInstance.getResources().getString(R.string.pref_default_media_server));
         String rootApiUrl = server + sInstance.getResources().getString(R.string.root_catalog_api);
+
         try {
-            return new Library(sInstance, rootApiUrl, new File(getPublicDirectory(), ASSETS_DIR));
+            // TODO: give db path
+            return new Door43Client(sInstance, "index", new File(getPublicDirectory(), ASSETS_DIR));
         } catch (IOException e) {
-            Logger.e(TAG, "Failed to create the library", e);
+            Logger.e(TAG, "Failed to create the door43 client", e);
         }
         return null;
     }
