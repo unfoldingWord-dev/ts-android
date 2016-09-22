@@ -4,7 +4,7 @@ import android.content.Context;
 import android.test.InstrumentationTestCase;
 import android.util.Log;
 
-import com.door43.translationstudio.rendering.USXRenderer;
+import com.door43.translationstudio.rendering.USFMRenderer;
 import com.door43.util.FileUtilities;
 
 import org.unfoldingword.tools.logger.Logger;
@@ -16,9 +16,9 @@ import java.io.InputStream;
 /**
  * Created by blm on 7/25/16.
  */
-public class UsxRendererMergeConflictTest extends InstrumentationTestCase {
+public class UsfmRendererMergeConflictTest extends InstrumentationTestCase {
 
-    public static final String TAG = UsxRendererMergeConflictTest.class.getSimpleName();
+    public static final String TAG = UsfmRendererMergeConflictTest.class.getSimpleName();
     File mTempFolder;
     private Context mTestContext;
     private String mTestText;
@@ -139,16 +139,16 @@ public class UsxRendererMergeConflictTest extends InstrumentationTestCase {
     }
 
     private void doRenderMergeConflicts( String testId) throws IOException {
-        mGroup1Text = doRenderMergeConflict(testId, USXRenderer.MergeHeadPart);
+        mGroup1Text = doRenderMergeConflict(testId, USFMRenderer.MergeHeadPart);
         mExpectedGroup1Text = mExpectedText; // save expected text for this section
-        mGroup2Text = doRenderMergeConflict(testId, USXRenderer.MergeTailPart);
+        mGroup2Text = doRenderMergeConflict(testId, USFMRenderer.MergeTailPart);
         mExpectedGroup2Text = mExpectedText; // save expected text for this section
     }
 
     private void doRenderMergeConflicts(String testTextFile, String expectTextFile ) throws IOException {
-        mGroup1Text = doRenderMergeConflict(USXRenderer.MergeHeadPart, testTextFile, expectTextFile );
+        mGroup1Text = doRenderMergeConflict(USFMRenderer.MergeHeadPart, testTextFile, expectTextFile );
         mExpectedGroup1Text = mExpectedText; // save expected text for this section
-        mGroup2Text = doRenderMergeConflict(USXRenderer.MergeTailPart, testTextFile, expectTextFile );
+        mGroup2Text = doRenderMergeConflict(USFMRenderer.MergeTailPart, testTextFile, expectTextFile );
         mExpectedGroup2Text = mExpectedText; // save expected text for this section
     }
 
@@ -158,7 +158,7 @@ public class UsxRendererMergeConflictTest extends InstrumentationTestCase {
         assertNotNull(mTestText);
         assertFalse(mTestText.isEmpty());
 
-        boolean conflicted = USXRenderer.isMergeConflicted(mTestText);
+        boolean conflicted = USFMRenderer.isMergeConflicted(mTestText);
         return conflicted;
     }
 
@@ -178,7 +178,7 @@ public class UsxRendererMergeConflictTest extends InstrumentationTestCase {
         assertNotNull(mExpectedText);
         assertFalse(mExpectedText.isEmpty());
 
-        String out = (new USXRenderer()).renderMergeConflict(mTestText, sourceGroup).toString();
+        String out = (new USFMRenderer()).renderMergeConflict(mTestText, sourceGroup).toString();
         return out;
     }
 

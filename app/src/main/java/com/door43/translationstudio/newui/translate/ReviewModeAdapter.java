@@ -63,6 +63,7 @@ import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.ClickableRenderingEngine;
+import com.door43.translationstudio.rendering.USFMRenderer;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.USFMNoteSpan;
 import com.door43.translationstudio.spannables.Span;
@@ -100,6 +101,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     public static final String OPTIONS = "Options";
     public static final String ISO_DATE_FORMAT = "yyyy-MM-dd HH:mm";
     public static final int HIGHLIGHT_COLOR = Color.YELLOW;
+    public static final int TYPE_NO_MERGE_CONFLICT = 0;
+    public static final int TYPE_MERGE_CONFLICT = 1;
+    public static final int MERGE_CONFLICT_BACKGROUND_COLOR = R.color.footnote_yellow;
     private final Library mLibrary;
     private final Translator mTranslator;
     private final Activity mContext;
@@ -314,9 +318,38 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         setSourceTranslation(mSourceTranslation.getId());
     }
 
+    public ListItem getItem(int position) {
+        if(position >= 0 && position < mFilteredItems.length) {
+            return mFilteredItems[position];
+        }
+        return null;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        ListItem item = getItem( position );
+        if(item != null) {
+            // fetch translation from disk
+            item.loadTranslations(mSourceTranslation, mTargetTranslation, mChapters.get(item.chapterSlug), loadFrame(item.chapterSlug, item.frameSlug));
+            boolean conflicted = item.isTranslationMergeConflicted;
+            if(conflicted) {
+                return TYPE_MERGE_CONFLICT;
+            }
+        }
+        return TYPE_NO_MERGE_CONFLICT;
+    }
+
     @Override
     public ViewHolder onCreateManagedViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_review_list_item, parent, false);
+        View v;
+        switch (viewType) {
+            case TYPE_MERGE_CONFLICT:
+                v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_review_list_item_merge_conflict, parent, false);
+                break;
+            default:
+                v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_review_list_item, parent, false);
+                break;
+        }
         ViewHolder vh = new ViewHolder(parent.getContext(), v);
         return vh;
     }
@@ -350,9 +383,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             holder.mMainContent.setWeightSum(1f);
         }
 
-        // fetch translation from disk
-        item.loadTranslations(mSourceTranslation, mTargetTranslation, mChapters.get(item.chapterSlug), loadFrame(item.chapterSlug, item.frameSlug));
-
         ViewUtil.makeLinksClickable(holder.mSourceBody);
 
         // render the cards
@@ -365,8 +395,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             holder.mLayoutBuildNumber = mLayoutBuildNumber;
             Typography.format(mContext, holder.mSourceBody, mSourceLanguage.getId(), mSourceLanguage.getDirection());
             Typography.formatSub(mContext, holder.mTargetTitle, mTargetLanguage.getId(), mTargetLanguage.getDirection());
-            Typography.format(mContext, holder.mTargetBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
-            Typography.format(mContext, holder.mTargetEditableBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+            if(!item.isTranslationMergeConflicted) {
+                Typography.format(mContext, holder.mTargetBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+                Typography.format(mContext, holder.mTargetEditableBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+            } else {
+                Typography.format(mContext, holder.mHeadText, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+                Typography.format(mContext, holder.mTailText, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+            }
         }
 //        this.onBind = false;
     }
@@ -480,28 +515,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
         }
 
-        if(item.renderedTargetBody == null) {
-            renderTargetBody(item, holder, frame);
-        }
-
-        // insert rendered text
-        if(item.isEditing) {
-            // editing mode
-            holder.mTargetEditableBody.setText(item.renderedTargetBody);
-        } else {
-            // verse marker mode
-            holder.mTargetBody.setText(item.renderedTargetBody);
-            holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    v.onTouchEvent(event);
-                    v.clearFocus();
-                    return true;
-                }
-            });
-            ViewUtil.makeLinksClickable(holder.mTargetBody);
-        }
-
         // render title
         String targetTitle = "";
         if(item.isChapter()) {
@@ -524,6 +537,39 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             targetTitle = mTargetTranslation.getTargetLanguageName();
         }
         holder.mTargetTitle.setText(targetTitle);
+
+        if(item.isTranslationMergeConflicted) {
+            USFMRenderer renderer = new USFMRenderer();
+            CharSequence head = renderer.renderMergeConflict(item.bodyTranslation, USFMRenderer.MergeHeadPart, MERGE_CONFLICT_BACKGROUND_COLOR);
+            holder.mHeadText.setText(head);
+            CharSequence tail = renderer.renderMergeConflict(item.bodyTranslation, USFMRenderer.MergeTailPart, MERGE_CONFLICT_BACKGROUND_COLOR);
+            holder.mTailText.setText(tail);
+
+            // TODO: 9/22/16 add click action for head and tail text
+            return;
+        }
+
+        if(item.renderedTargetBody == null) {
+            renderTargetBody(item, holder, frame);
+        }
+
+        // insert rendered text
+        if(item.isEditing) {
+            // editing mode
+            holder.mTargetEditableBody.setText(item.renderedTargetBody);
+        } else {
+            // verse marker mode
+            holder.mTargetBody.setText(item.renderedTargetBody);
+            holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    v.onTouchEvent(event);
+                    v.clearFocus();
+                    return true;
+                }
+            });
+            ViewUtil.makeLinksClickable(holder.mTargetBody);
+        }
 
         // set up text watcher
         holder.mEditableTextWatcher = new TextWatcher() {
@@ -1841,6 +1887,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public TextView mSourceBody;
         public int currentResourceTaskId = -1;
         public int currentSourceTaskId = -1;
+        public final TextView mHeadText;
+        public final TextView mTailText;
 
         public ViewHolder(Context context, View v) {
             super(v);
@@ -1865,6 +1913,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             mDoneSwitch = (Switch)v.findViewById(R.id.done_button);
             mTranslationTabs.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
             mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);
+            mHeadText = (TextView)v.findViewById(R.id.merge_head);
+            mTailText = (TextView)v.findViewById(R.id.merge_tail);
         }
 
         /**
@@ -1900,6 +1950,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         private FileHistory fileHistory = null;
         private boolean mHighlightSource = false;
         private boolean mHighlightTarget = false;
+        private boolean isTranslationMergeConflicted = false;
 
         public ListItem(String frameSlug, String chapterSlug) {
             this.frameSlug = frameSlug;
@@ -2005,6 +2056,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 bodyTranslation = frameTranslation.body;
                 bodySource = frame.body;
                 isTranslationFinished = frameTranslation.isFinished();
+            }
+
+            if (bodyTranslation != null) {
+                isTranslationMergeConflicted = USFMRenderer.isMergeConflicted(bodyTranslation);
             }
         }
     }

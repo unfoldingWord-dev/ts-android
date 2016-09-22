@@ -11,6 +11,7 @@ import android.text.style.AlignmentSpan;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.StyleSpan;
 
+import com.door43.translationstudio.R;
 import com.door43.translationstudio.spannables.USFMChar;
 import com.door43.translationstudio.spannables.USFMNoteSpan;
 import com.door43.translationstudio.spannables.Span;
@@ -37,7 +38,10 @@ public class USFMRenderer extends ClickableRenderingEngine {
     private int mHighlightColor = 0;
     private int[] mExpectedVerseRange = new int[0];
     private boolean mSuppressLeadingMajorSectionHeadings = false;
-
+    public static final String MergeConflict =  "(?:<<<<<<< HEAD.*\\n)([^=======]*)(?:=======.*\\n)([^<<<<<<<]+)(?:>>>>>>>.*\\n)";
+    public static Pattern MergeConflictPattern =  Pattern.compile(MergeConflict);
+    public static final int MergeHeadPart = 1;
+    public static final int MergeTailPart = 2;
     /**
      * Creates a new USFM rendering engine without any listeners
      */
@@ -612,6 +616,52 @@ public class USFMRenderer extends ClickableRenderingEngine {
             lastIndex = matcher.end();
         }
 
+        out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
+        return out;
+    }
+
+    /**
+     * Renders all paragraph tags
+     * @param in
+     * @return
+     */
+    static public boolean isMergeConflicted(CharSequence in) {
+        Matcher matcher = MergeConflictPattern.matcher(in);
+        boolean matchFound = matcher.find();
+        return matchFound;
+    }
+
+    /**
+     * Renders merge conflict selecting specific source
+     * @param in
+     * @param sourceGroup
+     * @return
+     */
+    public CharSequence renderMergeConflict(CharSequence in, int sourceGroup) {
+        return renderMergeConflict( in, sourceGroup, R.color.default_background_color);
+    }
+
+    /**
+     * Renders merge conflict selecting specific source and highlighting the changes
+     * @param in
+     * @param sourceGroup
+     * @param highlightColor
+     * @return
+     */
+    public CharSequence renderMergeConflict(CharSequence in, int sourceGroup, int highlightColor) {
+        CharSequence out = "";
+        Matcher matcher = MergeConflictPattern.matcher(in);
+        int lastIndex = 0;
+        while(matcher.find()) {
+            if(isStopped()) return in;
+
+            String groupText = matcher.group(sourceGroup);
+            SpannableStringBuilder span = new SpannableStringBuilder(groupText);
+            span.setSpan(new BackgroundColorSpan(highlightColor), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), span);
+            lastIndex = matcher.end();
+        }
         out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
         return out;
     }

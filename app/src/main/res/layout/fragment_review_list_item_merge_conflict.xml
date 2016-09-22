@@ -140,18 +140,21 @@
                         android:layout_height="wrap_content"
                         android:text="Name"
                         android:ems="10"
-                        android:id="@+id/head"
+                        android:id="@+id/merge_head"
                         android:layout_weight="1"
-                    android:layout_marginTop="@dimen/dialog_controls_margin" />
+                    android:layout_marginTop="@dimen/dialog_controls_margin"
+                    android:background="@color/primary_light"
+                    android:padding="@dimen/dialog_controls_margin" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Name"
                     android:ems="10"
-                    android:id="@+id/tail"
+                    android:id="@+id/merge_tail"
                     android:layout_weight="1"
-                    android:layout_marginTop="@dimen/dialog_controls_margin" />
+                    android:background="@color/lighter_blue"
+                    android:padding="@dimen/dialog_controls_margin" />
 
             </LinearLayout>
 
@@ -160,12 +163,12 @@
                 android:layout_height="wrap_content"
                 android:text="@string/conflict_resolve"
                 android:ems="10"
-                android:padding="@dimen/dialog_controls_margin"
                 android:layout_marginTop="@dimen/dialog_controls_margin"
                 android:background="@color/warning"
                 android:textColor="@color/white"
                 android:layout_marginLeft="@dimen/dialog_controls_margin"
-                android:layout_marginRight="@dimen/dialog_controls_margin" />
+                android:layout_marginRight="@dimen/dialog_controls_margin"
+                android:layout_marginBottom="@dimen/dialog_controls_margin" />
 
         </com.door43.translationstudio.core.LinedLinearLayout>
 
