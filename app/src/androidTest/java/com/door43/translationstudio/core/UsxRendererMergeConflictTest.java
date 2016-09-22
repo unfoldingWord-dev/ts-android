@@ -16,9 +16,9 @@ import java.io.InputStream;
 /**
  * Created by blm on 7/25/16.
  */
-public class UsxRendererTest extends InstrumentationTestCase {
+public class UsxRendererMergeConflictTest extends InstrumentationTestCase {
 
-    public static final String TAG = UsxRendererTest.class.getSimpleName();
+    public static final String TAG = UsxRendererMergeConflictTest.class.getSimpleName();
     File mTempFolder;
     private Context mTestContext;
     private String mTestText;
@@ -42,11 +42,10 @@ public class UsxRendererTest extends InstrumentationTestCase {
 
     public void test01ProcessFullConflict() throws Exception {
         //given
-        String search = null;
         String testId = "render/full_conflict";
 
         //when
-        doRenderMergeConflicts(search, testId);
+        doRenderMergeConflicts(testId);
 
         //then
         verifyRenderText("test01ProcessFullConflict");
@@ -54,14 +53,84 @@ public class UsxRendererTest extends InstrumentationTestCase {
 
     public void test02ProcessTwoConflict() throws Exception {
         //given
-        String search = null;
         String testId = "render/two_conflict";
 
         //when
-        doRenderMergeConflicts(search, testId);
+        doRenderMergeConflicts(testId);
 
         //then
         verifyRenderText("test02ProcessTwoConflict");
+    }
+
+    public void test03ProcessPartialConflict() throws Exception {
+        //given
+        String testId = "render/partial_conflict";
+
+        //when
+        doRenderMergeConflicts(testId);
+
+        //then
+        verifyRenderText("test03ProcessPartialConflict");
+    }
+
+    public void test04ProcessNoConflict() throws Exception {
+        //given
+        String testTextFile = "render/partial_conflict_part1.data";
+        String expectTextFile = "render/partial_conflict_part1.data";
+
+        //when
+        doRenderMergeConflicts(testTextFile, expectTextFile);
+
+        //then
+        verifyRenderText("test04ProcessNoConflict");
+    }
+
+    public void test05DetectTwoMergeConflict() throws Exception {
+        //given
+        String testFile = "render/two_conflict_raw.data";
+        boolean expectedConflict = true;
+
+        //when
+        boolean conflicted = doDetectMergeConflict(testFile);
+
+        //then
+        assertEquals(expectedConflict, conflicted);
+    }
+
+    public void test06DetectFullMergeConflict() throws Exception {
+        //given
+        String testFile = "render/full_conflict_raw.data";
+        boolean expectedConflict = true;
+
+        //when
+        boolean conflicted = doDetectMergeConflict(testFile);
+
+        //then
+        assertEquals(expectedConflict, conflicted);
+    }
+
+    public void test07DetectPartialMergeConflict() throws Exception {
+        //given
+        String testFile = "render/partial_conflict_raw.data";
+        boolean expectedConflict = true;
+
+        //when
+        boolean conflicted = doDetectMergeConflict(testFile);
+
+        //then
+        assertEquals(expectedConflict, conflicted);
+    }
+
+    public void test07DetectNoMergeConflict() throws Exception {
+        //given
+        String testFile = "render/two_conflict_part1.data";
+        boolean expectedConflict = false;
+
+        //when
+        boolean conflicted = doDetectMergeConflict(testFile);
+
+        //then
+        assertEquals(expectedConflict, conflicted);
     }
 
     private void verifyRenderText(String id) {
@@ -69,16 +138,37 @@ public class UsxRendererTest extends InstrumentationTestCase {
         verifyProcessedText(id + ": Tail", mExpectedGroup2Text, mGroup2Text);
     }
 
-    private void doRenderMergeConflicts(String search, String testId) throws IOException {
-        mGroup1Text = doRenderMergeConflict(search, testId, USXRenderer.MergeFirstPart);
+    private void doRenderMergeConflicts( String testId) throws IOException {
+        mGroup1Text = doRenderMergeConflict(testId, USXRenderer.MergeHeadPart);
         mExpectedGroup1Text = mExpectedText; // save expected text for this section
-        mGroup2Text = doRenderMergeConflict(search, testId, USXRenderer.MergeSecondPart);
+        mGroup2Text = doRenderMergeConflict(testId, USXRenderer.MergeTailPart);
         mExpectedGroup2Text = mExpectedText; // save expected text for this section
     }
 
-    private String doRenderMergeConflict(String search, String testId, int sourceGroup) throws IOException {
+    private void doRenderMergeConflicts(String testTextFile, String expectTextFile ) throws IOException {
+        mGroup1Text = doRenderMergeConflict(USXRenderer.MergeHeadPart, testTextFile, expectTextFile );
+        mExpectedGroup1Text = mExpectedText; // save expected text for this section
+        mGroup2Text = doRenderMergeConflict(USXRenderer.MergeTailPart, testTextFile, expectTextFile );
+        mExpectedGroup2Text = mExpectedText; // save expected text for this section
+    }
+
+    private boolean doDetectMergeConflict(String testFile) throws IOException {
+        InputStream testTextStream = mTestContext.getAssets().open(testFile);
+        mTestText = FileUtilities.readStreamToString(testTextStream);
+        assertNotNull(mTestText);
+        assertFalse(mTestText.isEmpty());
+
+        boolean conflicted = USXRenderer.isMergeConflicted(mTestText);
+        return conflicted;
+    }
+
+    private String doRenderMergeConflict(String testId, int sourceGroup) throws IOException {
         String testTextFile = testId+ "_raw.data";
         String expectTextFile = testId+ "_part" + sourceGroup + ".data";
+        return doRenderMergeConflict(sourceGroup, testTextFile, expectTextFile);
+    }
+
+    private String doRenderMergeConflict(int sourceGroup, String testTextFile, String expectTextFile) throws IOException {
         InputStream testTextStream = mTestContext.getAssets().open(testTextFile);
         mTestText = FileUtilities.readStreamToString(testTextStream);
         assertNotNull(mTestText);

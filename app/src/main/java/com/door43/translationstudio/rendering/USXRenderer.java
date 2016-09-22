@@ -39,8 +39,8 @@ public class USXRenderer extends ClickableRenderingEngine {
     private boolean mSuppressLeadingMajorSectionHeadings = false;
     public static final String MergeConflict =  "(?:<<<<<<< HEAD.*\\n)([^=======]*)(?:=======.*\\n)([^<<<<<<<]+)(?:>>>>>>>.*\\n)";
     public static Pattern MergeConflictPattern =  Pattern.compile(MergeConflict);
-    public static final int MergeFirstPart = 1;
-    public static final int MergeSecondPart = 2;
+    public static final int MergeHeadPart = 1;
+    public static final int MergeTailPart = 2;
 
     /**
      * Creates a new usx rendering engine without any listeners
@@ -457,6 +457,18 @@ public class USXRenderer extends ClickableRenderingEngine {
     /**
      * Renders all paragraph tags
      * @param in
+     * @return
+     */
+    static public boolean isMergeConflicted(CharSequence in) {
+        Matcher matcher = MergeConflictPattern.matcher(in);
+        boolean matchFound = matcher.find();
+        return matchFound;
+    }
+
+    /**
+     * Renders merge conflict selecting specific source
+     * @param in
+     * @param sourceGroup
      * @return
      */
     public CharSequence renderMergeConflict(CharSequence in, int sourceGroup) {
