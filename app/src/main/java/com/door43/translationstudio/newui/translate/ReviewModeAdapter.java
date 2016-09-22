@@ -103,7 +103,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     public static final int HIGHLIGHT_COLOR = Color.YELLOW;
     public static final int TYPE_NO_MERGE_CONFLICT = 0;
     public static final int TYPE_MERGE_CONFLICT = 1;
-    public static final int MERGE_CONFLICT_BACKGROUND_COLOR = R.color.footnote_yellow;
+    public static final int MERGE_CONFLICT_BACKGROUND_COLOR = R.color.light_yellow;
     private final Library mLibrary;
     private final Translator mTranslator;
     private final Activity mContext;
@@ -401,6 +401,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             } else {
                 Typography.format(mContext, holder.mHeadText, mTargetLanguage.getId(), mTargetLanguage.getDirection());
                 Typography.format(mContext, holder.mTailText, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+                Typography.format(mContext, holder.mConflictText, mTargetLanguage.getId(), mTargetLanguage.getDirection());
             }
         }
 //        this.onBind = false;
@@ -1889,6 +1890,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public int currentSourceTaskId = -1;
         public final TextView mHeadText;
         public final TextView mTailText;
+        public final TextView mConflictText;
 
         public ViewHolder(Context context, View v) {
             super(v);
@@ -1915,6 +1917,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);
             mHeadText = (TextView)v.findViewById(R.id.merge_head);
             mTailText = (TextView)v.findViewById(R.id.merge_tail);
+            mConflictText = (TextView)v.findViewById(R.id.conflict_label);
         }
 
         /**
