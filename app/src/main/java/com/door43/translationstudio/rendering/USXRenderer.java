@@ -37,6 +37,10 @@ public class USXRenderer extends ClickableRenderingEngine {
     private int mHighlightColor = 0;
     private int[] mExpectedVerseRange = new int[0];
     private boolean mSuppressLeadingMajorSectionHeadings = false;
+    public static final String MergeConflict =  "(?:<<<<<<< HEAD.*\\n)([^=======]*)(?:=======.*\\n)([^<<<<<<<]+)(?:>>>>>>>.*\\n)";
+    public static Pattern MergeConflictPattern =  Pattern.compile(MergeConflict);
+    public static final int MergeFirstPart = 1;
+    public static final int MergeSecondPart = 2;
 
     /**
      * Creates a new usx rendering engine without any listeners
@@ -447,6 +451,28 @@ public class USXRenderer extends ClickableRenderingEngine {
                 }
             }
         }
+        return out;
+    }
+
+    /**
+     * Renders all paragraph tags
+     * @param in
+     * @return
+     */
+    public CharSequence renderMergeConflict(CharSequence in, int sourceGroup) {
+        CharSequence out = "";
+        Matcher matcher = MergeConflictPattern.matcher(in);
+        int lastIndex = 0;
+        while(matcher.find()) {
+            if(isStopped()) return in;
+
+            int count = matcher.groupCount();
+
+            String groupText = matcher.group(sourceGroup);
+            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), groupText);
+            lastIndex = matcher.end();
+        }
+        out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
         return out;
     }
 
