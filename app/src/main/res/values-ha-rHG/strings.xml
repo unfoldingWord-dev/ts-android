@@ -124,7 +124,7 @@
   <string name="languages">Harsuna</string>
   <string name="drafts">Translation Tsararr.</string>
   <string name="use_internet_confirmation">Wannan zai yi amfani da jona to download bayanai daga uwar garken, ci gaba?</string>
-  <string name="update_projects">Ta karshe Projects</string>
+  <string name="update_library">Ta karshe Projects</string>
   <string name="update_projects_description">Duba ku download samuwa updates daga uwar garken</string>
   <string name="action_download_all">Download duk</string>
   <string name="title_activity_project_updates">Aikin Updates</string>

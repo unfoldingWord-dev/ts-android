@@ -3,8 +3,10 @@ package com.door43.translationstudio.newui.home;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,18 +14,17 @@ import android.view.Window;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.NativeSpeaker;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.AppContext;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.newui.PrintDialog;
 import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.newui.BackupDialog;
-import com.door43.util.tasks.ThreadableUI;
+import org.unfoldingword.tools.taskmanager.ThreadableUI;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -44,7 +45,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         View v = inflater.inflate(R.layout.dialog_target_translation_info, container, false);
 
-        mTranslator = AppContext.getTranslator();
+        mTranslator = App.getTranslator();
         Bundle args = getArguments();
         if(args == null || !args.containsKey(ARG_TARGET_TRANSLATION_ID)) {
             dismiss();
@@ -53,11 +54,11 @@ public class TargetTranslationInfoDialog extends DialogFragment {
             mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         }
 
-        final Library library = AppContext.getLibrary();
+        final Library library = App.getLibrary();
 
         TextView title = (TextView)v.findViewById(R.id.title);
         TextView projectTitle = (TextView)v.findViewById(R.id.project_title);
-        SourceLanguage sourceLanguage = library.getPreferredSourceLanguage(mTargetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+        SourceLanguage sourceLanguage = library.getPreferredSourceLanguage(mTargetTranslation.getProjectId(), App.getDeviceLanguageCode());
         if(sourceLanguage != null) {
             title.setText(sourceLanguage.projectTitle + " - " + mTargetTranslation.getTargetLanguageName());
             projectTitle.setText(sourceLanguage.projectTitle + " (" + mTargetTranslation.getProjectId() + ")");
@@ -134,26 +135,26 @@ public class TargetTranslationInfoDialog extends DialogFragment {
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CustomAlertDialog.Create(getActivity())
-                        .setTitle(R.string.label_delete)
-                        .setIcon(R.drawable.ic_delete_black_24dp)
-                        .setMessage(R.string.confirm_delete_target_translation)
-                        .setPositiveButton(R.string.confirm, new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                task.stop();
-                                if(mTargetTranslation != null) {
-                                    mTranslator.deleteTargetTranslation(mTargetTranslation.getId());
-                                    AppContext.clearTargetTranslationSettings(mTargetTranslation.getId());
-                                }
-                                if(mListener != null) {
-                                    mListener.onDeleteTargetTranslation(mTargetTranslation.getId());
-                                }
-                                dismiss();
+            new AlertDialog.Builder(getActivity(),R.style.AppTheme_Dialog)
+                    .setTitle(R.string.label_delete)
+                    .setIcon(R.drawable.ic_delete_black_24dp)
+                    .setMessage(R.string.confirm_delete_target_translation)
+                    .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            task.stop();
+                            if(mTargetTranslation != null) {
+                                mTranslator.deleteTargetTranslation(mTargetTranslation.getId());
+                                App.clearTargetTranslationSettings(mTargetTranslation.getId());
                             }
-                        })
-                        .setNegativeButton(R.string.no, null)
-                        .show("DeleteTrans");
+                            if(mListener != null) {
+                                mListener.onDeleteTargetTranslation(mTargetTranslation.getId());
+                            }
+                            dismiss();
+                        }
+                    })
+                    .setNegativeButton(R.string.no, null)
+                    .show();
             }
         });
 
@@ -184,6 +185,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
                 publishIntent.putExtra(PublishActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
                 publishIntent.putExtra(PublishActivity.EXTRA_CALLING_ACTIVITY, PublishActivity.ACTIVITY_HOME);
                 startActivity(publishIntent);
+                dismiss(); // close dialog so notifications will pass back to HomeActivity
             }
         });
 

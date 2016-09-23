@@ -117,7 +117,7 @@
   <string name="languages">Bahasa</string>
   <string name="drafts">Translation Konsep</string>
   <string name="use_internet_confirmation">Hal ini akan menggunakan koneksi internet Anda untuk men-download informasi dari server, terus?</string>
-  <string name="update_projects">Perbarui Proyek</string>
+  <string name="update_library">Perbarui Proyek</string>
   <string name="update_projects_description">Lihat dan unduh update yang tersedia dari server</string>
   <string name="action_download_all">Unduh semua</string>
   <string name="title_activity_project_updates">Proyek Pembaharuan</string>

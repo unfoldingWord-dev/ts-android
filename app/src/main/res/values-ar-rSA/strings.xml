@@ -117,7 +117,7 @@
   <string name="languages">اللغات</string>
   <string name="drafts">المسودات الترجمة</string>
   <string name="use_internet_confirmation">وهذا استخدام اتصال الإنترنت الخاص بك لتحميل المعلومات من الخادم، هل تستمر؟</string>
-  <string name="update_projects">مشاريع التحديث</string>
+  <string name="update_library">مشاريع التحديث</string>
   <string name="update_projects_description">مشاهدة وتنزيل التحديثات المتوفرة من الخادم</string>
   <string name="action_download_all">تحميل جميع</string>
   <string name="title_activity_project_updates">تحديثات المشروع</string>

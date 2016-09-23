@@ -1,11 +1,11 @@
 package com.door43.translationstudio.core;
 
-import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
+import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
+import com.door43.translationstudio.R;
 import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
-
-import org.apache.commons.io.FileUtils;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -46,7 +46,7 @@ public class Downloader {
             urlConnection.disconnect();
             return response;
         } catch (IOException e) {
-            Logger.e(this.getClass().getName(), "Failed to download file", e);
+            Logger.e(this.getClass().getName(), "Failed to download file " + apiUrl, e);
             return null;
         } finally {
             if(urlConnection != null) {
@@ -72,22 +72,28 @@ public class Downloader {
             conn.setReadTimeout(5000);
             conn.setConnectTimeout(5000);
 
-            ReadableByteChannel channel = Channels.newChannel(conn.getInputStream());
-            FileOutputStream os = new FileOutputStream(outputFile);
+            FileOutputStream fos = new FileOutputStream(outputFile);
 
-            long listenerInterval = 1048 * 10; // how much must be downloaded before each listener update
-            long bytesRead;
-            long pos = 0;
-            long lastUpdate = 0;
-            do {
-                bytesRead = os.getChannel().transferFrom(channel, pos, expectedSize);
-                pos += bytesRead;
-                if(pos - lastUpdate >= listenerInterval) {
-                    lastUpdate = pos;
-                    listener.onProgress((int) pos, (int) expectedSize);
+            int updateInterval = 1048 * 50; // send an update each time some bytes have been downloaded
+            int updateQueue = 0;
+            int bytesRead = 0;
+
+            InputStream is = new BufferedInputStream(conn.getInputStream());
+            byte[] buffer = new byte[4096];
+            int n = 0;
+            while((n = is.read(buffer)) != -1) {
+                bytesRead += n;
+                updateQueue += n;
+                fos.write(buffer, 0, n);
+
+                // send updates
+                if(updateQueue >= updateInterval) {
+                    updateQueue = 0;
+                    listener.onProgress(bytesRead, (int) expectedSize);
                 }
-            } while (bytesRead > 0);
-            listener.onProgress((int)pos, (int) expectedSize);
+            }
+
+            listener.onProgress(bytesRead, (int) expectedSize);
 
             return true;
         } catch (IOException e) {
@@ -99,7 +105,7 @@ public class Downloader {
     /**
      * Downloads the project catalog from the server
      */
-    public boolean downloadProjectList(Indexer targetIndex) {
+    public boolean downloadProjectList(LibraryData targetIndex) {
         String catalog = request(mRootApiUrl);
         if(catalog != null) {
             return targetIndex.indexProjects(catalog);
@@ -113,8 +119,8 @@ public class Downloader {
      * @param targetIndex
      * @return
      */
-    public boolean downloadChunkMarkerList(String projectSlug, Indexer targetIndex) {
-        Project project = targetIndex.getProject(projectSlug);
+    public boolean downloadChunkMarkerList(String projectSlug, LibraryData targetIndex) {
+        Project project = targetIndex.getProject(projectSlug, App.getDeviceLanguageCode());
         if(project != null && project.chunkMarkerCatalog != null
                 && (project.chunkMarkerCatalogLocalDateModified < project.chunkMarkerCatalogServerDateModified
                 || project.chunkMarkerCatalogServerDateModified == 0)) {
@@ -134,8 +140,8 @@ public class Downloader {
      * @param targetIndex
      * @return
      */
-    public boolean downloadSourceLanguageList(String projectSlug, Indexer targetIndex) {
-        Project project = targetIndex.getProject(projectSlug);
+    public boolean downloadSourceLanguageList(String projectSlug, LibraryData targetIndex) {
+        Project project = targetIndex.getProject(projectSlug, App.getDeviceLanguageCode());
         if(project != null && project.sourceLanguageCatalog != null
                 && (project.sourceLanguageCatalogLocalDateModified < project.sourceLanguageCatalogServerDateModified
                 || project.sourceLanguageCatalogServerDateModified == 0)) {
@@ -155,7 +161,7 @@ public class Downloader {
      * @param sourceLanguageSlug
      * @return
      */
-    public boolean downloadResourceList(String projectSlug, String sourceLanguageSlug, Indexer targetIndex) {
+    public boolean downloadResourceList(String projectSlug, String sourceLanguageSlug, LibraryData targetIndex) {
         SourceLanguage sourceLanguage = targetIndex.getSourceLanguage(projectSlug, sourceLanguageSlug);
         if(sourceLanguage != null && sourceLanguage.resourceCatalog != null
                 && (sourceLanguage.resourceCatalogLocalDateModified < sourceLanguage.resourceCatalogServerDateModified
@@ -176,7 +182,7 @@ public class Downloader {
      * @param targetIndex the index into which the source will be downloaded
      * @return
      */
-    public boolean downloadSource(SourceTranslation translation, Indexer targetIndex) {
+    public boolean downloadSource(SourceTranslation translation, LibraryData targetIndex) {
         Resource resource = targetIndex.getResource(translation);
         if(resource != null && resource.getSourceCatalogUrl() != null
                 && (resource.getSourceDateModified() < resource.getSourceServerDateModified()
@@ -198,7 +204,7 @@ public class Downloader {
      * @param targetIndex the index to which the terms will be downloaded
      * @return
      */
-    public boolean downloadWords(SourceTranslation translation, Indexer targetIndex) {
+    public boolean downloadWords(SourceTranslation translation, LibraryData targetIndex) {
         Resource resource = targetIndex.getResource(translation);
         if(resource != null && resource.getWordsCatalogUrl() != null
                 && (resource.getWordsDateModified() < resource.getWordsServerDateModified()
@@ -219,7 +225,7 @@ public class Downloader {
      * @param targetIndex the index to which the term assignments will be downloaded
      * @return
      */
-    public boolean downloadWordAssignments(SourceTranslation translation, Indexer targetIndex) {
+    public boolean downloadWordAssignments(SourceTranslation translation, LibraryData targetIndex) {
         Resource resource = targetIndex.getResource(translation);
         if(resource != null && resource.getWordAssignmentsCatalogUrl() != null
                 && (resource.getWordAssignmentsDateModified() < resource.getWordAssignmentsServerDateModified()
@@ -240,7 +246,7 @@ public class Downloader {
      * @param targetIndex the index to which the notes will be downloaded
      * @return
      */
-    public boolean downloadNotes(SourceTranslation translation, Indexer targetIndex) {
+    public boolean downloadNotes(SourceTranslation translation, LibraryData targetIndex) {
         Resource resource = targetIndex.getResource(translation);
         if(resource != null && resource.getNotesCatalogUrl() != null
                 && (resource.getNotesDateModified() < resource.getNotesServerDateModified()
@@ -261,7 +267,7 @@ public class Downloader {
      * @param targetIndex the index to which the checking questions will be downloaded
      * @return
      */
-    public boolean downloadCheckingQuestions(SourceTranslation translation, Indexer targetIndex) {
+    public boolean downloadCheckingQuestions(SourceTranslation translation, LibraryData targetIndex) {
         Resource resource = targetIndex.getResource(translation);
         if(resource != null && resource.getQuestionsCatalogUrl() != null
                 && (resource.getQuestionsDateModified() < resource.getQuestionsServerDateModified()
@@ -282,7 +288,7 @@ public class Downloader {
 
         String url = Resource.getImagesCatalogUrl();
         String filename = url.replaceAll(".*/", "");
-        File imagesDir = AppContext.getLibrary().getImagesDir();
+        File imagesDir = App.getLibrary().getImagesDir();
         File fullPath = new File(String.format("%s/%s", imagesDir, filename));
         if (!(imagesDir.isDirectory() || imagesDir.mkdirs())) {
             return false;
@@ -302,12 +308,12 @@ public class Downloader {
                     for (File dir:extractedFiles) {
                         if(dir.isDirectory()) {
                             for(File f:dir.listFiles()) {
-                                FileUtils.moveFile(f, new File(imagesDir, f.getName()));
+                                FileUtilities.moveOrCopyQuietly(f, new File(imagesDir, f.getName()));
                             }
                         }
                     }
                 }
-                FileUtils.deleteQuietly(tempDir);
+                FileUtilities.deleteQuietly(tempDir);
             } catch (IOException e) {
                 success = false;
             }
@@ -320,11 +326,53 @@ public class Downloader {
      * @param targetIndex
      * @return
      */
-    public boolean downloadTargetLanguages(Indexer targetIndex) {
+    public boolean downloadTargetLanguages(LibraryData targetIndex) {
         // TODO: 10/19/2015 don't hardcode the url
         String catalog = request("http://td.unfoldingword.org/exports/langnames.json");
         if(catalog != null) {
             return targetIndex.indexTargetLanguages(catalog);
+        }
+        return false;
+    }
+
+    /**
+     * Downloads the target languages from the server
+     * @param targetIndex
+     * @return
+     */
+    public boolean downloadTempTargetLanguages(LibraryData targetIndex) {
+        // TODO: 10/19/2015 this will eventually be pulled from the library data
+        String catalog = request("http://td-demo.unfoldingword.org/api/templanguages/");
+        if(catalog != null) {
+            return targetIndex.indexTempTargetLanguages(catalog);
+        }
+        return false;
+    }
+
+    /**
+     * Downloads the target languages from the server
+     * @param targetIndex
+     * @return
+     */
+    public boolean downloadTempTargetLanguageAssignments(LibraryData targetIndex) {
+        // TODO: 10/19/2015 this will eventually be pulled from the library data
+        String catalog = request("http://td-demo.unfoldingword.org/api/templanguages/assignment/changed/");
+        if(catalog != null) {
+            return targetIndex.indexTempTargetLanguageAssignments(catalog);
+        }
+        return false;
+    }
+
+    /**
+     * Downloads the new language questionnaire from the server
+     * @param targetIndex
+     * @return
+     */
+    public boolean downloadNewLanguageQuestionnaire(LibraryData targetIndex) {
+        // TODO: eventually this will be pulled from the library data
+        String catalog = request(App.context().getResources().getString(R.string.questionnaire_api));
+        if(catalog != null) {
+            return targetIndex.indexQuestionnaire(catalog);
         }
         return false;
     }

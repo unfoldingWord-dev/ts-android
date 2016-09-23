@@ -6,15 +6,14 @@ import android.content.pm.PackageInfo;
 import android.net.Uri;
 import android.text.TextUtils;
 
-import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
+import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.spannables.USFMVerseSpan;
+import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,17 +32,19 @@ import java.util.regex.Pattern;
  */
 public class ImportUsfm {
     public static final String TAG = ImportUsfm.class.getSimpleName();
-    public static final String BOOK_NAME_MARKER = "\\\\toc1\\s([^\\n]*)";
-    private static final Pattern PATTERN_BOOK_NAME_MARKER = Pattern.compile(BOOK_NAME_MARKER);
+    public static final String BOOK_TITLE_MARKER = "\\\\toc1\\s([^\\n]*)";
+    public static final Pattern PATTERN_BOOK_TITLE_MARKER = Pattern.compile(BOOK_TITLE_MARKER);
     public static final String ID_TAG = "\\\\id\\s([^\\n]*)";
-    private static final Pattern ID_TAG_MARKER = Pattern.compile(ID_TAG);
-    public static final String BOOK_SHORT_NAME_MARKER = "\\\\toc3\\s([^\\n]*)";
-    private static final Pattern PATTERN_BOOK_SHORT_NAME_MARKER = Pattern.compile(BOOK_SHORT_NAME_MARKER);
+    public static final Pattern ID_TAG_MARKER = Pattern.compile(ID_TAG);
+    public static final String BOOK_LONG_NAME_MARKER = "\\\\toc2\\s([^\\n]*)";
+    public static final Pattern PATTERN_BOOK_LONG_NAME_MARKER = Pattern.compile(BOOK_LONG_NAME_MARKER);
+    public static final String BOOK_ABBREVIATION_MARKER = "\\\\toc3\\s([^\\n]*)";
+    public static final Pattern PATTERN_BOOK_ABBREVIATION_MARKER = Pattern.compile(BOOK_ABBREVIATION_MARKER);
     public static final String SECTION_MARKER = "\\\\s5([^\\n]*)";
     private static final Pattern PATTERN_SECTION_MARKER = Pattern.compile(SECTION_MARKER);
     public static final String CHAPTER_NUMBER_MARKER = "\\\\c\\s(\\d+(-\\d+)?)\\s";
-    private static final Pattern PATTERN_CHAPTER_NUMBER_MARKER = Pattern.compile(CHAPTER_NUMBER_MARKER);
-    private static final Pattern PATTERN_USFM_VERSE_SPAN = Pattern.compile(USFMVerseSpan.PATTERN);
+    public static final Pattern PATTERN_CHAPTER_NUMBER_MARKER = Pattern.compile(CHAPTER_NUMBER_MARKER);
+    public static final Pattern PATTERN_USFM_VERSE_SPAN = Pattern.compile(USFMVerseSpan.PATTERN);
     public static final int END_MARKER = 999999;
     public static final String FIRST_VERSE = "first_verse";
     public static final String FILE_NAME = "file_name";
@@ -565,7 +566,7 @@ public class ImportUsfm {
         }
 
         try {
-            String ext = FilenameUtils.getExtension(file.toString());
+            String ext = FileUtilities.getExtension(file.toString());
             boolean zip = "zip".equalsIgnoreCase(ext);
             if (!zip) {
                 success = processBook(file);
@@ -599,12 +600,12 @@ public class ImportUsfm {
         String path = uri.toString();
 
         try {
-            String ext = FilenameUtils.getExtension(path);
+            String ext = FileUtilities.getExtension(path);
             boolean zip = "zip".equalsIgnoreCase(ext);
 
-            InputStream usfmStream = AppContext.context().getContentResolver().openInputStream(uri);
+            InputStream usfmStream = App.context().getContentResolver().openInputStream(uri);
             if (!zip) {
-                String text = IOUtils.toString(usfmStream, "UTF-8");
+                String text = FileUtilities.readStreamToString(usfmStream);
                 success = processBook(text, uri.toString());
             } else {
                 success = readZipStream(usfmStream);
@@ -627,13 +628,13 @@ public class ImportUsfm {
     public boolean readResourceFile(Context context, String fileName) {
         boolean success = true;
         updateStatus(R.string.initializing_import);
-        String ext = FilenameUtils.getExtension(fileName).toLowerCase();
+        String ext = FileUtilities.getExtension(fileName).toLowerCase();
         boolean zip = "zip".equals(ext);
 
         try {
             InputStream usfmStream = context.getAssets().open(fileName);
             if (!zip) {
-                String text = IOUtils.toString(usfmStream, "UTF-8");
+                String text = FileUtilities.readStreamToString(usfmStream);
                 success = processBook(text, fileName);
             } else {
                 success = readZipStream(usfmStream);
@@ -677,7 +678,7 @@ public class ImportUsfm {
 
             for (int i = 1; i <= mChapters.length; i++) { // get file names for chunks
                 String chapterId = getChapterFolderName(i + "");
-                String[] chapterFrameSlugs = AppContext.getLibrary().getFrameSlugs(sourceTranslation, chapterId);
+                String[] chapterFrameSlugs = App.getLibrary().getFrameSlugs(sourceTranslation, chapterId);
                 JSONArray verseBreaks = getVerseBreaksObj(i + "");
                 for (int j = 0; j < verseBreaks.length(); j++) {
                     JSONObject chunk = verseBreaks.getJSONObject(j);
@@ -722,7 +723,7 @@ public class ImportUsfm {
     private boolean processBook(File file) {
         boolean success;
         try {
-            String book = FileUtils.readFileToString(file);
+            String book = FileUtilities.readFileToString(file);
             success = processBook(book, file.toString());
         } catch (Exception e) {
             Logger.e(TAG, "error reading book " + file.toString(), e);
@@ -795,7 +796,7 @@ public class ImportUsfm {
                 mBookName = mBookShortName;
             }
 
-            ChunkMarker[] markers = AppContext.getLibrary().getChunkMarkers(mBookShortName);
+            ChunkMarker[] markers = App.getLibrary().getChunkMarkers(mBookShortName);
             boolean haveChunksList = markers.length > 0;
 
             if (!haveChunksList) { // no chunk list
@@ -805,8 +806,8 @@ public class ImportUsfm {
                 addBookMissingName(mBookName, mBookShortName, book);
                 return promptForName;
             } else { // has chunks
-                SourceTranslation sourceTranslation = AppContext.getLibrary().getSourceTranslation(mBookShortName, "en", "ulb");
-                mChapters = AppContext.getLibrary().getChapters(sourceTranslation);
+                SourceTranslation sourceTranslation = App.getLibrary().getSourceTranslation(mBookShortName, "en", "ulb");
+                mChapters = App.getLibrary().getChapters(sourceTranslation);
 
                 mChunks = new HashMap<>(); // clear old map
                 addChunks(mBookShortName, markers, sourceTranslation);
@@ -856,8 +857,8 @@ public class ImportUsfm {
     }
 
     private void extractBookID(String book) {
-        mBookName = extractString(book, PATTERN_BOOK_NAME_MARKER);
-        mBookShortName = extractString(book, PATTERN_BOOK_SHORT_NAME_MARKER);
+        mBookName = extractString(book, PATTERN_BOOK_TITLE_MARKER);
+        mBookShortName = extractString(book, PATTERN_BOOK_ABBREVIATION_MARKER);
 
         String idString = extractString(book, ID_TAG_MARKER);
         if (null != idString) {
@@ -877,11 +878,11 @@ public class ImportUsfm {
         PackageInfo pInfo;
         TargetTranslation targetTranslation;
         try {
-            Context context = AppContext.context();
+            Context context = App.context();
             pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
             String projectId = mBookShortName;
             String resourceSlug = Resource.REGULAR_SLUG;
-            targetTranslation = TargetTranslation.create(context, AppContext.getProfile().getNativeSpeaker(), TranslationFormat.USFM, mTargetLanguage, projectId, TranslationType.TEXT, resourceSlug, pInfo, mProjectFolder);
+            targetTranslation = TargetTranslation.create(context, App.getProfile().getNativeSpeaker(), TranslationFormat.USFM, mTargetLanguage, projectId, TranslationType.TEXT, resourceSlug, pInfo, mProjectFolder);
 
         } catch (Exception e) {
             addError(R.string.file_write_error);
@@ -1052,7 +1053,7 @@ public class ImportUsfm {
             String chapter0 = "0000".substring(0, chapter1.length()); // match length of chapter 1
             success = saveSection(".", "before", text);
             successOverall = successOverall && success;
-            success = saveSection(".", "title", mBookName);
+            success = saveSection(chapter0, "title", mBookName);
             successOverall = successOverall && success;
         }
         return successOverall;
@@ -1314,9 +1315,9 @@ public class ImportUsfm {
         File chapterFolder = new File(mProjectFolder, chapter);
         try {
             String cleanChunk = removePattern(section, PATTERN_SECTION_MARKER);
-            FileUtils.forceMkdir(chapterFolder);
+            FileUtilities.forceMkdir(chapterFolder);
             File output = new File(chapterFolder, fileName + ".txt");
-            FileUtils.write(output, cleanChunk);
+            FileUtilities.writeStringToFile(output, cleanChunk);
             return true;
         } catch (Exception e) {
             Logger.e(TAG, "error parsing chapter " + mChapter, e);
@@ -1485,7 +1486,7 @@ public class ImportUsfm {
      * create the necessary temp folders for unzipped source and output
      */
     private void createTempFolders() {
-        mTempDir = new File(AppContext.context().getCacheDir(), System.currentTimeMillis() + "");
+        mTempDir = new File(App.context().getCacheDir(), System.currentTimeMillis() + "");
         mTempDir.mkdirs();
         mTempSrce = new File(mTempDir, "source");
         mTempSrce.mkdirs();
@@ -1497,7 +1498,7 @@ public class ImportUsfm {
      * cleanup working directory and values
      */
     public void cleanup() {
-        FileUtils.deleteQuietly(mTempDir);
+        FileUtilities.deleteQuietly(mTempDir);
         mTempDir = null;
         mTempSrce = null;
         mTempOutput = null;

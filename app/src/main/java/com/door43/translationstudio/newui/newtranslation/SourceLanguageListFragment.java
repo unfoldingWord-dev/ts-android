@@ -8,13 +8,13 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.BaseFragment;
-import com.door43.translationstudio.AppContext;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +37,7 @@ public class SourceLanguageListFragment extends BaseFragment implements Searchab
 
         Bundle args = getArguments();
         String projectId = args.getString(ARG_PROJECT_ID);
-        mLibrary = AppContext.getLibrary();
+        mLibrary = App.getLibrary();
 
         ListView list = (ListView) rootView.findViewById(R.id.list);
 

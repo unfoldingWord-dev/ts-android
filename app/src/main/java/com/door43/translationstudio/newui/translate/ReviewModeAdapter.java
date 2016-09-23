@@ -6,14 +6,18 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
+import android.text.Html;
 import android.text.Selection;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -26,13 +30,16 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.Filter;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.ChapterTranslation;
@@ -52,18 +59,19 @@ import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
-import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.rendering.ClickableRenderingEngine;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.USFMNoteSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.USFMVerseSpan;
 import com.door43.translationstudio.spannables.VerseSpan;
-import com.door43.util.tasks.ThreadableUI;
+
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
+import org.unfoldingword.tools.taskmanager.ThreadableUI;
 import com.door43.widget.ViewUtil;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -71,8 +79,10 @@ import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -89,6 +99,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     public static final String REDO = "Redo";
     public static final String OPTIONS = "Options";
     public static final String ISO_DATE_FORMAT = "yyyy-MM-dd HH:mm";
+    public static final int HIGHLIGHT_COLOR = Color.YELLOW;
     private final Library mLibrary;
     private final Translator mTranslator;
     private final Activity mContext;
@@ -98,26 +109,30 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private SourceTranslation mSourceTranslation;
     private SourceLanguage mSourceLanguage;
     private final TargetLanguage mTargetLanguage;
-    private ListItem[] mListItems;
+    private ListItem[] mUnfilteredItems;
+    private ListItem[] mFilteredItems;
     private int mLayoutBuildNumber = 0;
     private boolean mResourcesOpened = false;
     private ContentValues[] mTabs;
     private int[] mOpenResourceTab;
     private boolean mAllowFootnote = true;
+    private SearchFilter mSearchFilter;
+    private CharSequence mSearchString;
+
 
 //    private boolean onBind = false;
 
     public ReviewModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String startingChapterSlug, String startingFrameSlug, boolean resourcesOpened) {
 
-        mLibrary = AppContext.getLibrary();
-        mTranslator = AppContext.getTranslator();
+        mLibrary = App.getLibrary();
+        mTranslator = App.getTranslator();
         mContext = context;
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
         boolean usfm = mTargetTranslation.getFormat() == TranslationFormat.USFM;
         mAllowFootnote = usfm;
         mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectSlug, mSourceTranslation.sourceLanguageSlug);
-        mTargetLanguage = mLibrary.getTargetLanguage(mTargetTranslation.getTargetLanguageId());
+        mTargetLanguage = mLibrary.getTargetLanguage(mTargetTranslation);
         mResourcesOpened = resourcesOpened;
 
         Chapter[] chapters = mLibrary.getChapters(mSourceTranslation);
@@ -162,7 +177,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 listItems.add(new ListItem(frameSlug, c.getId()));
             }
         }
-        mListItems = listItems.toArray(new ListItem[listItems.size()]);
+        mUnfilteredItems = listItems.toArray(new ListItem[listItems.size()]);
+        mFilteredItems = mUnfilteredItems;
         mOpenResourceTab = new int[listItems.size()];
 
         loadTabInfo();
@@ -179,7 +195,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      */
     private void loadTabInfo() {
         List<ContentValues> tabContents = new ArrayList<>();
-        String[] sourceTranslationIds = AppContext.getOpenSourceTranslationIds(mTargetTranslation.getId());
+        String[] sourceTranslationIds = App.getOpenSourceTranslationIds(mTargetTranslation.getId());
         for(String id:sourceTranslationIds) {
             SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
             if(sourceTranslation != null) {
@@ -232,12 +248,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 listItems.add(new ListItem(frameSlug, c.getId()));
             }
         }
-        mListItems = listItems.toArray(new ListItem[listItems.size()]);
+        mUnfilteredItems = listItems.toArray(new ListItem[listItems.size()]);
+        mFilteredItems = mUnfilteredItems;
         mOpenResourceTab = new int[listItems.size()];
 
         loadTabInfo();
 
         notifyDataSetChanged();
+
+        clearScreenAndStartNewSearch(mSearchString, isTargetSearch());
     }
 
     @Override
@@ -265,24 +284,24 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     @Override
     public String getFocusedFrameId(int position) {
-        if(position >= 0 && position < mListItems.length) {
-            return mListItems[position].frameSlug;
+        if(position >= 0 && position < mFilteredItems.length) {
+            return mFilteredItems[position].frameSlug;
         }
         return null;
     }
 
     @Override
     public String getFocusedChapterId(int position) {
-        if(position >= 0 && position < mListItems.length) {
-            return mListItems[position].chapterSlug;
+        if(position >= 0 && position < mFilteredItems.length) {
+            return mFilteredItems[position].chapterSlug;
         }
         return null;
     }
 
     @Override
     public int getItemPosition(String chapterId, String frameId) {
-        for(int i = 0; i < mListItems.length; i ++) {
-            ListItem item = mListItems[i];
+        for(int i = 0; i < mFilteredItems.length; i ++) {
+            ListItem item = mFilteredItems[i];
             if(item.isFrame() && item.chapterSlug.equals(chapterId) && item.frameSlug.equals(frameId)) {
                 return i;
             }
@@ -319,11 +338,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
     }
 
-
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
-//        this.onBind = true;
-        final ListItem item = mListItems[position];
+        holder.currentPosition = position;
+        final ListItem item = mFilteredItems[position];
 
         // open/close resources
         if(mResourcesOpened) {
@@ -360,7 +378,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @return
      */
     private static TranslationNote[] getPreferredNotes(SourceTranslation sourceTranslation, Frame frame) {
-        Library library = AppContext.getLibrary();
+        Library library = App.getLibrary();
         TranslationNote[] notes = library.getTranslationNotes(sourceTranslation, frame.getChapterId(), frame.getId());
         if(notes.length == 0 && !sourceTranslation.sourceLanguageSlug.equals("en")) {
             SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
@@ -377,7 +395,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @return
      */
     private static TranslationWord[] getPreferredWords(SourceTranslation sourceTranslation, Frame frame) {
-        Library library = AppContext.getLibrary();
+        Library library = App.getLibrary();
         TranslationWord[] words = library.getTranslationWords(sourceTranslation, frame.getChapterId(), frame.getId());
         if(words.length == 0 && !sourceTranslation.sourceLanguageSlug.equals("en")) {
             SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
@@ -395,7 +413,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @return
      */
     private static CheckingQuestion[] getPreferredQuestions(SourceTranslation sourceTranslation, String chapterId, String frameId) {
-        Library library = AppContext.getLibrary();
+        Library library = App.getLibrary();
         CheckingQuestion[] questions = library.getCheckingQuestions(sourceTranslation, chapterId, frameId);
         if(questions.length == 0 && !sourceTranslation.sourceLanguageSlug.equals("en")) {
             SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
@@ -404,12 +422,43 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         return questions;
     }
 
-    private void renderSourceCard(int position, final ListItem item, ViewHolder holder) {
+    private void renderSourceCard(final int position, final ListItem item, final ViewHolder holder) {
         // render
+        ManagedTask oldTask = TaskManager.getTask(holder.currentSourceTaskId);
+        TaskManager.cancelTask(oldTask);
         if(item.renderedSourceBody == null) {
-            item.renderedSourceBody = renderSourceText(item.bodySource, mSourceTranslation.getFormat(), holder, item, false);
+            holder.mSourceBody.setText("");
+            ManagedTask task = new ManagedTask() {
+                @Override
+                public void start() {
+                    if(interrupted()) return;
+                    CharSequence text = renderSourceText(item.bodySource, mSourceTranslation.getFormat(), holder, item, false);
+                    if(interrupted()) return;
+                    setResult(text);
+                }
+            };
+            task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
+                @Override
+                public void onTaskFinished(ManagedTask task) {
+                    CharSequence data = (CharSequence)task.getResult();
+                    if(!task.isCanceled() && data != null && position == holder.currentPosition) {
+                        item.renderedSourceBody = data;
+                        Handler hand = new Handler(Looper.getMainLooper());
+                        hand.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                holder.mSourceBody.setText(item.renderedSourceBody);
+                            }
+                        });
+                    } else if (data != null && position == holder.currentPosition){
+                        item.renderedSourceBody = data;
+                    }
+                }
+            });
+            holder.currentSourceTaskId = TaskManager.addTask(task);
+        } else {
+            holder.mSourceBody.setText(item.renderedSourceBody);
         }
-        holder.mSourceBody.setText(item.renderedSourceBody);
     }
 
     private void renderTargetCard(int position, final ListItem item, final ViewHolder holder) {
@@ -600,24 +649,24 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     String newBody = Translator.compileTranslation(changes);
                     item.bodyTranslation = newBody;
 
-                    CustomAlertDialog.Create(mContext)
+                    new AlertDialog.Builder(mContext,R.style.AppTheme_Dialog)
                             .setTitle(R.string.chunk_checklist_title)
-                            .setMessageHtml(R.string.chunk_checklist_body)
-                            .setPositiveButton(R.string.confirm, new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            boolean success = onConfirmChunk(item, chapter, frame, mTargetTranslation.getFormat());
-                                            holder.mDoneSwitch.setChecked(success);
-                                        }
-                                    }
-                            )
-                            .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
+                            .setMessage(Html.fromHtml(mContext.getString(R.string.chunk_checklist_body)))
+                            .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                                 @Override
-                                public void onClick(View v) {
+                                public void onClick(DialogInterface dialog, int which) {
+                                        boolean success = onConfirmChunk(item, chapter, frame, mTargetTranslation.getFormat());
+                                        holder.mDoneSwitch.setChecked(success);
+                                    }
+                                }
+                            )
+                            .setNegativeButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
                                     holder.mDoneSwitch.setChecked(false); // force back off if not accepted
                                 }
                             })
-                            .show("Chunk2");
+                            .show();
 
                 } else { // done button checked off
 
@@ -743,13 +792,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 footnoteText.setText(initialNote);
 
                 // pop up note prompt
-                final CustomAlertDialog dialog = CustomAlertDialog.Create(mContext);
-                dialog.setTitle(R.string.title_add_footnote)
-                        .setAutoDismiss(false)
-                        .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
+                new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
+                        .setTitle(R.string.title_add_footnote)
+                        .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(View v) {
-
+                            public void onClick(DialogInterface dialog, int which) {
                                 CharSequence footnote = footnoteText.getText();
                                 boolean validated = verifyAndReplaceFootnote(footnote, original, footnotePos, footnoteEndPos, holder, item, editText);
                                 if(validated) {
@@ -757,14 +804,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                 }
                             }
                         })
-                        .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
+                        .setNegativeButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(View v) {
-                                dialog.dismiss();
+                            public void onClick(DialogInterface dialog, int which) {
+                               dialog.dismiss();
                             }
                         })
                         .setView(footnoteFragment)
-                        .show("add-footnote");
+                        .show();
+
             }
         }
     }
@@ -796,11 +844,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param messageID
      */
     private void warnDialog(int titleID, int messageID) {
-        final CustomAlertDialog dialog = CustomAlertDialog.Create(mContext);
-        dialog.setTitle(titleID)
-                .setMessage(messageID)
-                .setPositiveButton(R.string.dismiss, null)
-                .show("warn-dialog");
+        new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
+            .setTitle(titleID)
+            .setMessage(messageID)
+            .setPositiveButton(R.string.dismiss, null)
+            .show();
     }
 
     /**
@@ -1199,81 +1247,121 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             return;
         }
 
-        Frame  frame = loadFrame(item.chapterSlug, item.frameSlug);
+        final Frame  frame = loadFrame(item.chapterSlug, item.frameSlug);
 
-        // resource tabs
-        final TranslationNote[] notes = getPreferredNotes(mSourceTranslation, frame);
-        if(notes.length > 0) {
-            TabLayout.Tab tab = holder.mResourceTabs.newTab();
-            tab.setText(R.string.label_translation_notes);
-            tab.setTag(TAB_NOTES);
-            holder.mResourceTabs.addTab(tab);
-            if(mOpenResourceTab[position] == TAB_NOTES) {
-                tab.select();
-            }
-        }
-        final TranslationWord[] words = getPreferredWords(mSourceTranslation, frame);
-        if(words.length > 0) {
-            TabLayout.Tab tab = holder.mResourceTabs.newTab();
-            tab.setText(R.string.translation_words);
-            tab.setTag(TAB_WORDS);
-            holder.mResourceTabs.addTab(tab);
-            if(mOpenResourceTab[position] == TAB_WORDS) {
-                tab.select();
-            }
-        }
-        final CheckingQuestion[] questions = getPreferredQuestions(mSourceTranslation, frame.getChapterId(), frame.getId());
-        if(questions.length > 0) {
-            TabLayout.Tab tab = holder.mResourceTabs.newTab();
-            tab.setText(R.string.questions);
-            tab.setTag(TAB_QUESTIONS);
-            holder.mResourceTabs.addTab(tab);
-            if(mOpenResourceTab[position] == TAB_QUESTIONS) {
-                tab.select();
-            }
-        }
+        // clear resource card
+        renderResources(holder, position, new TranslationNote[0], new TranslationWord[0], new CheckingQuestion[0]);
 
-        // select default tab. first notes, then words, then questions
-        if(mOpenResourceTab[position] == TAB_NOTES && notes.length == 0) {
-            mOpenResourceTab[position] = TAB_WORDS;
-        }
-        if(mOpenResourceTab[position] == TAB_WORDS && words.length == 0) {
-            mOpenResourceTab[position] = TAB_QUESTIONS;
-        }
-
-        holder.mResourceTabs.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+        // prepare task to load resources
+        ManagedTask oldTask = TaskManager.getTask(holder.currentResourceTaskId);
+        TaskManager.cancelTask(oldTask);
+        ManagedTask task = new ManagedTask() {
             @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                if ((int) tab.getTag() == TAB_NOTES && mOpenResourceTab[position] != TAB_NOTES) {
-                    mOpenResourceTab[position] = TAB_NOTES;
-                    // render notes
-                    renderResources(holder, position, notes, words, questions);
-                } else if ((int) tab.getTag() == TAB_WORDS && mOpenResourceTab[position] != TAB_WORDS) {
-                    mOpenResourceTab[position] = TAB_WORDS;
-                    // render words
-                    renderResources(holder, position, notes, words, questions);
-                } else if ((int) tab.getTag() == TAB_QUESTIONS && mOpenResourceTab[position] != TAB_QUESTIONS) {
-                    mOpenResourceTab[position] = TAB_QUESTIONS;
-                    // render questions
-                    renderResources(holder, position, notes, words, questions);
+            public void start() {
+                if(interrupted()) return;
+                TranslationNote[] notes = getPreferredNotes(mSourceTranslation, frame);
+                if(interrupted()) return;
+                TranslationWord[] words = getPreferredWords(mSourceTranslation, frame);
+                if(interrupted()) return;
+                CheckingQuestion[] questions = getPreferredQuestions(mSourceTranslation, frame.getChapterId(), frame.getId());
+                if(interrupted()) return;
+                Map<String, Object> result = new HashMap<>();
+                result.put("notes", notes);
+                result.put("words", words);
+                result.put("questions", questions);
+                setResult(result);
+            }
+        };
+        task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
+            @Override
+            public void onTaskFinished(ManagedTask task) {
+                Map<String, Object> data = (Map<String, Object>)task.getResult();
+                if(!task.isCanceled() && data != null && position == holder.currentPosition) {
+                    final TranslationNote[] notes = (TranslationNote[]) data.get("notes");
+                    final TranslationWord[] words = (TranslationWord[]) data.get("words");
+                    final CheckingQuestion[] questions = (CheckingQuestion[]) data.get("questions");
+
+                    Handler hand = new Handler(Looper.getMainLooper());
+                    hand.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            holder.mResourceTabs.setOnTabSelectedListener(null);
+                            holder.mResourceTabs.removeAllTabs();
+                            if(notes.length > 0) {
+                                TabLayout.Tab tab = holder.mResourceTabs.newTab();
+                                tab.setText(R.string.label_translation_notes);
+                                tab.setTag(TAB_NOTES);
+                                holder.mResourceTabs.addTab(tab);
+                                if(mOpenResourceTab[position] == TAB_NOTES) {
+                                    tab.select();
+                                }
+                            }
+                            if(words.length > 0) {
+                                TabLayout.Tab tab = holder.mResourceTabs.newTab();
+                                tab.setText(R.string.translation_words);
+                                tab.setTag(TAB_WORDS);
+                                holder.mResourceTabs.addTab(tab);
+                                if(mOpenResourceTab[position] == TAB_WORDS) {
+                                    tab.select();
+                                }
+                            }
+                            if(questions.length > 0) {
+                                TabLayout.Tab tab = holder.mResourceTabs.newTab();
+                                tab.setText(R.string.questions);
+                                tab.setTag(TAB_QUESTIONS);
+                                holder.mResourceTabs.addTab(tab);
+                                if(mOpenResourceTab[position] == TAB_QUESTIONS) {
+                                    tab.select();
+                                }
+                            }
+
+                            // select default tab. first notes, then words, then questions
+                            if(mOpenResourceTab[position] == TAB_NOTES && notes.length == 0) {
+                                mOpenResourceTab[position] = TAB_WORDS;
+                            }
+                            if(mOpenResourceTab[position] == TAB_WORDS && words.length == 0) {
+                                mOpenResourceTab[position] = TAB_QUESTIONS;
+                            }
+
+                            // resource list
+                            if(notes.length > 0 || words.length > 0 || questions.length > 0) {
+                                renderResources(holder, position, notes, words, questions);
+                            }
+
+                            holder.mResourceTabs.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+                                @Override
+                                public void onTabSelected(TabLayout.Tab tab) {
+                                    if ((int) tab.getTag() == TAB_NOTES && mOpenResourceTab[position] != TAB_NOTES) {
+                                        mOpenResourceTab[position] = TAB_NOTES;
+                                        // render notes
+                                        renderResources(holder, position, notes, words, questions);
+                                    } else if ((int) tab.getTag() == TAB_WORDS && mOpenResourceTab[position] != TAB_WORDS) {
+                                        mOpenResourceTab[position] = TAB_WORDS;
+                                        // render words
+                                        renderResources(holder, position, notes, words, questions);
+                                    } else if ((int) tab.getTag() == TAB_QUESTIONS && mOpenResourceTab[position] != TAB_QUESTIONS) {
+                                        mOpenResourceTab[position] = TAB_QUESTIONS;
+                                        // render questions
+                                        renderResources(holder, position, notes, words, questions);
+                                    }
+                                }
+
+                                @Override
+                                public void onTabUnselected(TabLayout.Tab tab) {
+
+                                }
+
+                                @Override
+                                public void onTabReselected(TabLayout.Tab tab) {
+
+                                }
+                            });
+                        }
+                    });
                 }
             }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
         });
-
-        // resource list
-        if(notes.length > 0 || words.length > 0 || questions.length > 0) {
-            renderResources(holder, position, notes, words, questions);
-        }
+        holder.currentResourceTaskId = TaskManager.addTask(task);
 
         // tap to open resources
         if(!mResourcesOpened) {
@@ -1390,7 +1478,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     final VerseSpan pin = ((VerseSpan) span);
 
                     // create drag shadow
-                    LayoutInflater inflater = (LayoutInflater)AppContext.context().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    LayoutInflater inflater = (LayoutInflater) App.context().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                     FrameLayout verseLayout = (FrameLayout)inflater.inflate(R.layout.fragment_verse_marker, null);
                     TextView verseTitle = (TextView)verseLayout.findViewById(R.id.verse);
                     if(pin.getEndVerseNumber() > 0) {
@@ -1416,12 +1504,19 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             if (event.getAction() == DragEvent.ACTION_DRAG_STARTED) {
                                 // delete old span
                                 int[] spanRange = (int[])event.getLocalState();
-                                CharSequence in = editText.getText();
-                                CharSequence out = TextUtils.concat(in.subSequence(0, spanRange[0]), in.subSequence(spanRange[1], in.length()));
-                                editText.setText(out);
+                                if((spanRange != null) && (spanRange.length >= 2) ) {
+                                    CharSequence in = editText.getText();
+                                    if( (spanRange[0] < in.length()) && spanRange[1] < in.length()) {
+                                        CharSequence out = TextUtils.concat(in.subSequence(0, spanRange[0]), in.subSequence(spanRange[1], in.length()));
+                                        editText.setText(out);
+                                    }
+                                }
                             } else if(event.getAction() == DragEvent.ACTION_DROP) {
                                 int offset = editText.getOffsetForPosition(event.getX(), event.getY());
                                 CharSequence text = editText.getText();
+
+                                offset = closestSpotForVerseMarker(offset, text);
+
                                 if(offset >= 0) {
                                     // insert the verse at the offset
                                     text = TextUtils.concat(text.subSequence(0, offset), pin.toCharSequence(), text.subSequence(offset, text.length()));
@@ -1489,10 +1584,16 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             ClickableRenderingEngine renderer = Clickables.setupRenderingGroup(format, renderingGroup, verseClickListener, noteClickListener, true);
             renderer.setLinebreaksEnabled(true);
             renderer.setPopulateVerseMarkers(frame.getVerseRange());
+            if( isTargetSearch() ) {
+                renderingGroup.setSearchString(mSearchString, HIGHLIGHT_COLOR);
+            }
 
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
+            if( isTargetSearch() ) {
+                renderingGroup.setSearchString(mSearchString, HIGHLIGHT_COLOR);
+            }
         }
         if(!text.trim().isEmpty()) {
             renderingGroup.init(text);
@@ -1500,6 +1601,58 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         } else {
             return "";
         }
+    }
+
+    /**
+     * find closest place to drop verse marker.  Weighted toward beginning of word.
+     * @param offset - initial drop position
+     * @param text - edit text
+     * @return
+     */
+    private int closestSpotForVerseMarker(int offset, CharSequence text) {
+        int charsToWhiteSpace = 0;
+        for (int j = offset; j >= 0; j--) {
+            char c = text.charAt(j);
+            boolean whitespace = isWhitespace(c);
+            if(whitespace) {
+
+                if((j == offset) ||  // if this is already a good spot, then done
+                    (j == offset - 1)) {
+                    return offset;
+                }
+
+                charsToWhiteSpace = j - offset + 1;
+                break;
+            }
+        }
+
+        int limit = offset - charsToWhiteSpace - 1;
+        if(limit > text.length()) {
+            limit = text.length();
+        }
+
+        for (int j = offset + 1; j < limit; j++) {
+            char c = text.charAt(j);
+            boolean whitespace = isWhitespace(c);
+            if(whitespace) {
+                charsToWhiteSpace = j - offset;
+                break;
+            }
+        }
+
+        if(charsToWhiteSpace != 0) {
+            offset += charsToWhiteSpace;
+        }
+        return offset;
+    }
+
+    /**
+     * test if character is whitespace
+     * @param c
+     * @return
+     */
+    private boolean isWhitespace(char c) {
+        return (c ==' ') || (c == '\t') || (c == '\n') || (c == '\r');
     }
 
     /**
@@ -1518,26 +1671,27 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
         CharSequence message = span.getNotes();
 
-        CustomAlertDialog dlg = CustomAlertDialog.Create(mContext);
-        dlg.setTitle(title)
-           .setMessage(message)
-           .setPositiveButton(R.string.dismiss, null);
         if(editable && !item.isTranslationFinished) {
-            dlg.setNeutralButton(R.string.edit, new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    editFootnote(span.getNotes(), holder, item, start, end);
-                }
-            });
 
-            dlg.setNegativeButton(R.string.label_delete, new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    deleteFootnote(span.getNotes(), holder, item, start, end);
-                }
-            });
+            new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
+                    .setTitle(title)
+                    .setMessage(message)
+                    .setPositiveButton(R.string.dismiss, null)
+                    .setNeutralButton(R.string.edit, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            editFootnote(span.getNotes(), holder, item, start, end);
+                        }
+                    })
+
+                    .setNegativeButton(R.string.label_delete, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            deleteFootnote(span.getNotes(), holder, item, start, end);
+                        }
+                    })
+                    .show();
         }
-        dlg.show("viewNote");
     }
 
     /**
@@ -1552,18 +1706,17 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         final EditText editText = getEditText(holder, item);
         final CharSequence original = editText.getText();
 
-        // pop up delete prompt
-        final CustomAlertDialog dialog = CustomAlertDialog.Create(mContext);
-        dialog.setTitle(R.string.footnote_confirm_delete)
+        new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
+                .setTitle(R.string.footnote_confirm_delete)
                 .setMessage(note)
-                .setPositiveButton(R.string.label_delete, new View.OnClickListener() {
+                .setPositiveButton(R.string.label_delete, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         placeFootnote(null, original, start, end, holder, item, editText);
                     }
                 })
                 .setNegativeButton(R.string.title_cancel, null)
-                .show("add-footnote");
+                .show();
     }
 
     /**
@@ -1591,6 +1744,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      */
     private CharSequence renderSourceText(String text, TranslationFormat format, final ViewHolder holder, final ListItem item, final boolean editable) {
         RenderingGroup renderingGroup = new RenderingGroup();
+        boolean enableSearch = (isTargetSearch() && editable)  || (!isTargetSearch() && !editable);
         if (Clickables.isClickableFormat(format)) {
             // TODO: add click listeners for verses
             Span.OnClickListener noteClickListener = new Span.OnClickListener() {
@@ -1614,9 +1768,16 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
                 renderingGroup.setLinebreaksEnabled(true);
             }
+
+            if( enableSearch ) {
+                renderingGroup.setSearchString(mSearchString, HIGHLIGHT_COLOR);
+            }
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
+            if( enableSearch ) {
+                renderingGroup.setSearchString(mSearchString, HIGHLIGHT_COLOR);
+            }
         }
         renderingGroup.init(text);
         return renderingGroup.start();
@@ -1624,7 +1785,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     @Override
     public int getItemCount() {
-        return mListItems.length;
+        return mFilteredItems.length;
     }
 
     /**
@@ -1656,6 +1817,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        public int currentPosition = -1;
         public final ImageButton mAddNoteButton;
         public final ImageButton mUndoButton;
         public final ImageButton mRedoButton;
@@ -1677,6 +1839,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public final TabLayout mTranslationTabs;
         public final ImageButton mNewTabButton;
         public TextView mSourceBody;
+        public int currentResourceTaskId = -1;
+        public int currentSourceTaskId = -1;
 
         public ViewHolder(Context context, View v) {
             super(v);
@@ -1734,6 +1898,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         private ChapterTranslation chapterTranslation;
         private ProjectTranslation projectTranslation;
         private FileHistory fileHistory = null;
+        private boolean mHighlightSource = false;
+        private boolean mHighlightTarget = false;
 
         public ListItem(String frameSlug, String chapterSlug) {
             this.frameSlug = frameSlug;
@@ -1746,6 +1912,41 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         public boolean isChapter() {
             return this.frameSlug == null && this.chapterSlug != null;
+        }
+
+        /**
+         * clear all the previous highlighting states for the item
+         */
+        public void clearAllHighLighting() {
+            setHighLighting(false, true);
+            setHighLighting(false, false);
+        }
+
+        /**
+         * set the highlighting state for the item and clearing any old highlighting
+         * @param enable
+         * @param target
+         */
+        public void setHighLighting(boolean enable, boolean target) {
+            if(target) {
+                if(!enable) { // disable highlighting
+                    if(mHighlightTarget) {
+                        renderedTargetBody = null; // remove rendered text so will be re-rendered without highlighting
+                    }
+                } else { // enable highlighting
+                    renderedTargetBody = null; // remove rendered text so will be re-rendered with new highlighting
+                }
+                mHighlightTarget = enable;
+            } else { // source
+                if(!enable) { // disable highlighting
+                    if(mHighlightSource) {
+                        renderedSourceBody = null; // remove rendered text so will be re-rendered without highlighting
+                    }
+                } else { // enable highlighting
+                    renderedSourceBody = null; // remove rendered text so will be re-rendered with new highlighting
+                }
+                mHighlightSource = enable;
+            }
         }
 
         /**
@@ -1805,6 +2006,136 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 bodySource = frame.body;
                 isTranslationFinished = frameTranslation.isFinished();
             }
+        }
+    }
+
+    /**
+     * remove displayed cards
+     * @param searchString
+     * @param searchTarget
+     */
+    public void clearScreenAndStartNewSearch(final CharSequence searchString, final boolean searchTarget) {
+
+        // clear the cards displayed since we have new search string
+        mFilteredItems = new ListItem[0];
+        notifyDataSetChanged();
+
+        if( (searchString != null) && (searchString.length() > 0)) {
+            getListener().onSetBusyIndicator(true);
+        }
+
+        //start search on delay so cards will clear first
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                ((TranslationSearchFilter) getFilter()).setTargetSearch(searchTarget).filter(searchString);
+            }
+        });
+    }
+
+    /**
+     * check the filter to see what the last search type was
+     * @return
+     */
+    private boolean isTargetSearch() {
+        if(mSearchFilter != null) {
+            return mSearchFilter.isTargetSearch();
+        }
+        return false;
+    }
+
+    /**
+     * Returns the target language filter
+     * @return
+     */
+    public Filter getFilter() {
+        if(mSearchFilter == null) {
+            mSearchFilter = new SearchFilter();
+        }
+        return mSearchFilter;
+    }
+
+    /**
+     * class for searching text
+     */
+    private class SearchFilter extends TranslationSearchFilter {
+
+        private boolean searchTarget = false;
+
+        public SearchFilter setTargetSearch(boolean searchTarget) { // chainable
+            this.searchTarget = searchTarget;
+            return this;
+        }
+
+        public boolean isTargetSearch() {
+            return searchTarget;
+        }
+
+        @Override
+        protected FilterResults performFiltering(CharSequence charSequence) {
+            FilterResults results = new FilterResults();
+            mSearchString = charSequence;
+            if(charSequence == null || charSequence.length() == 0) {
+                // no filter
+                results.values = Arrays.asList(mUnfilteredItems);
+                results.count = mUnfilteredItems.length;
+                for (ListItem unfilteredItem : mUnfilteredItems) {
+                    unfilteredItem.clearAllHighLighting();
+                }
+            } else {
+                // perform filter
+                String matchString = charSequence.toString().toLowerCase();
+                List<ListItem> filteredCategories = new ArrayList<>();
+                for(ListItem item: mUnfilteredItems) {
+                    boolean match = false;
+
+                    if(!searchTarget) { // search the source
+                        if (item.renderedSourceBody != null) { // if source has already been rendered, search that
+                            match = item.renderedSourceBody.toString().toLowerCase().contains(matchString);
+
+                        } else { // next best we search source
+                            if (item.bodySource == null) { // if source hasn't been loaded
+                                item.loadTranslations(mSourceTranslation, mTargetTranslation, mChapters.get(item.chapterSlug), loadFrame(item.chapterSlug, item.frameSlug));
+                            }
+                            if (item.bodySource != null) {
+                                match = item.bodySource.toLowerCase().contains(matchString);
+                            }
+                        }
+                    } else { // search the target
+                        if (item.renderedTargetBody != null) { // if target has already been rendered, search that
+                            match = item.renderedTargetBody.toString().toLowerCase().contains(matchString);
+
+                        } else { // next best we search source
+                            if (item.bodyTranslation == null) { // if source hasn't been loaded
+                                item.loadTranslations(mSourceTranslation, mTargetTranslation, mChapters.get(item.chapterSlug), loadFrame(item.chapterSlug, item.frameSlug));
+                            }
+                            if (item.bodyTranslation != null) {
+                                match = item.bodyTranslation.toLowerCase().contains(matchString);
+                            }
+                        }
+                    }
+
+                    if(match) {
+                        filteredCategories.add(item);
+                        item.setHighLighting(true, searchTarget);
+                        item.setHighLighting(false, !searchTarget); // remove searching from opposite pane
+                    } else {
+                        item.clearAllHighLighting(); // if not matched item, remove previous highlighting
+                    }
+                }
+                results.values = filteredCategories;
+                results.count = filteredCategories.size();
+            }
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+            List<ListItem> filteredLanguages = (List<ListItem>)filterResults.values;
+            mFilteredItems = filteredLanguages.toArray(new ListItem[filteredLanguages.size()]);
+            notifyDataSetChanged();
+            getListener().onSetBusyIndicator(false);
         }
     }
 }

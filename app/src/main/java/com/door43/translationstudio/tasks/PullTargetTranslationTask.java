@@ -2,9 +2,9 @@ package com.door43.translationstudio.tasks;
 
 import android.os.Process;
 
-import com.door43.tools.reporting.FileUtils;
-import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
+import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Profile;
@@ -12,7 +12,7 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.TransportCallback;
 import com.door43.util.Manifest;
-import com.door43.util.tasks.ManagedTask;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.CreateBranchCommand;
@@ -21,9 +21,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.PullResult;
-import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.errors.NoRemoteRepositoryException;
 import org.eclipse.jgit.lib.ProgressMonitor;
@@ -39,49 +37,50 @@ import java.util.Map;
 public class PullTargetTranslationTask extends ManagedTask {
 
     public static final String TASK_ID = "pull_target_translation_task";
-    private final TargetTranslation targetTranslation;
+    public final TargetTranslation targetTranslation;
     private final MergeStrategy mergeStrategy;
     private String message = "";
     private Status status = Status.UNKNOWN;
     private Map<String, int[][]> conflicts = new HashMap<>();
+    private String sourceURL = null;
 
     /**
-     * todo: eventually we need to support pulling from a particular user.
-     * We may need to create a different task or just pass in the target translation id
+     * do a pull from a specific URL
      * @param targetTranslation
+     * @param mergeStrategy
+     * @param sourceURL
      */
-    public PullTargetTranslationTask(TargetTranslation targetTranslation) {
-        setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
-        this.targetTranslation = targetTranslation;
-        this.mergeStrategy = MergeStrategy.RECURSIVE;
-    }
-
-    /**
-     * todo: eventually we need to support pulling from a particular user.
-     * We may need to create a different task or just pass in the target translation id
-     * @param targetTranslation
-     */
-    public PullTargetTranslationTask(TargetTranslation targetTranslation, MergeStrategy mergeStrategy) {
+    public PullTargetTranslationTask(TargetTranslation targetTranslation, MergeStrategy mergeStrategy, String sourceURL) {
         setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
         this.targetTranslation = targetTranslation;
         this.mergeStrategy = mergeStrategy;
+        this.sourceURL = sourceURL;
     }
 
     @Override
     public void start() {
-        Profile profile = AppContext.getProfile();
-        if(targetTranslation != null && AppContext.context().isNetworkAvailable() && profile != null && profile.gogsUser != null) {
-            publishProgress(-1, "Downloading updates");
-            String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
-            String remote = server + ":" + profile.gogsUser.getUsername() + "/" + this.targetTranslation.getId() + ".git";
-            try {
-                this.targetTranslation.commitSync();
-            } catch (Exception e) {
-                Logger.w(this.getClass().getName(), "Failed to commit the target translation " + targetTranslation.getId(), e);
+        if(App.isNetworkAvailable()) {
+            // submit new language requests
+            delegate(new SubmitNewLanguageRequestsTask());
+
+            Profile profile = App.getProfile();
+            if (targetTranslation != null && App.isNetworkAvailable() && profile != null && profile.gogsUser != null) {
+                publishProgress(-1, "Downloading updates");
+
+                if(sourceURL == null) {
+                    String server = App.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, App.context().getResources().getString(R.string.pref_default_git_server));
+                    sourceURL = server + ":" + profile.gogsUser.getUsername() + "/" + this.targetTranslation.getId() + ".git";
+                }
+
+                try {
+                    this.targetTranslation.commitSync();
+                } catch (Exception e) {
+                    Logger.w(this.getClass().getName(), "Failed to commit the target translation " + targetTranslation.getId(), e);
+                }
+                Repo repo = this.targetTranslation.getRepo();
+                createBackupBranch(repo);
+                this.message = pull(repo, sourceURL);
             }
-            Repo repo = this.targetTranslation.getRepo();
-            createBackupBranch(repo);
-            this.message = pull(repo, remote);
         }
     }
 
@@ -171,6 +170,7 @@ public class PullTargetTranslationTask extends ManagedTask {
             } else {
                 this.status = Status.UP_TO_DATE;
             }
+
             return "message";
         } catch (TransportException e) {
             Logger.e(this.getClass().getName(), e.getMessage(), e);
@@ -210,10 +210,6 @@ public class PullTargetTranslationTask extends ManagedTask {
 
     public Status getStatus() {
         return status;
-    }
-
-    public Map<String, int[][]> getConflicts() {
-        return conflicts;
     }
 
     public enum Status {

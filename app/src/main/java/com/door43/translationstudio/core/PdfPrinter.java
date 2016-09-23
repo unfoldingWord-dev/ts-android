@@ -4,7 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.USFMVerseSpan;
@@ -112,7 +112,7 @@ public class PdfPrinter extends PdfPageEventHelper {
     }
 
     private void addTOC(Document document) throws DocumentException {
-        String toc = AppContext.context().getResources().getString(R.string.table_of_contents);
+        String toc = App.context().getResources().getString(R.string.table_of_contents);
         com.itextpdf.text.Chapter intro = new com.itextpdf.text.Chapter(new Paragraph(toc, chapterFont), 0);
         intro.setNumberDepth(0);
         document.add(intro);
@@ -254,7 +254,7 @@ public class PdfPrinter extends PdfPageEventHelper {
                         // TODO: 11/13/2015 insert frame images if we have them.
                         // TODO: 11/13/2015 eventually we need to provide the directory where to find these images which will be downloaded not in assets
                         try {
-                            File imageFile = new File(imagesDir, "360px/" + targetTranslation.getProjectId() + "-" + f.getComplexId() + ".jpg");
+                            File imageFile = new File(imagesDir, targetTranslation.getProjectId() + "-" + f.getComplexId() + ".jpg");
                             if(imageFile.exists()) {
                                 addImage(document, imageFile.getAbsolutePath());
                             }
@@ -425,18 +425,13 @@ public class PdfPrinter extends PdfPageEventHelper {
         document.add(chapter);
 
         // translate simple html to paragraphs
-        String license = AppContext.context().getResources().getString(R.string.license_pdf);
+        String license = App.context().getResources().getString(R.string.license_pdf);
+
+        if(includeMedia) {
+            license += App.context().getResources().getString(R.string.artwork_attribution_pdf);
+        }
 
         license = license.replace("&#8226;", "\u2022");
-//        license = license.replace("<p>", "<br/>");
-//        license = license.replace("</p>", "<br/>");
-//        license = license.replace("<h2>", "<br/>");
-//        license = license.replace("</h2>", "<br/>");
-//        String[] lines = license.split("<br/>");
-//        for (String line : lines) {
-//            Paragraph paragraph = new Paragraph(line, bodyFont);
-//            document.add(paragraph);
-//        }
 
         mCurrentParagraph = null;
         parseHtml( document, license, 0);

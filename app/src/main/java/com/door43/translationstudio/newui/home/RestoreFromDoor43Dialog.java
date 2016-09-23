@@ -1,10 +1,12 @@
 package com.door43.translationstudio.newui.home;
 
 import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,22 +15,22 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
-import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
+import org.unfoldingword.tools.logger.Logger;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.CloneRepositoryTask;
 import com.door43.translationstudio.tasks.GetUserRepositoriesTask;
 import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
-import com.door43.util.tasks.GenericTaskWatcher;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
+
+import com.door43.util.FileUtilities;
 import com.door43.widget.ViewUtil;
 
-import org.apache.commons.io.FileUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.unfoldingword.gogsclient.Repository;
@@ -41,23 +43,26 @@ import java.util.List;
 /**
  * Created by joel on 11/6/2015.
  */
-public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTaskWatcher.OnFinishedListener {
+public class RestoreFromDoor43Dialog extends DialogFragment implements SimpleTaskWatcher.OnFinishedListener {
+    public static final String TAG = RestoreFromDoor43Dialog.class.getSimpleName();
     private static final String STATE_REPOSITORIES = "state_repositories";
-    private GenericTaskWatcher taskWatcher;
+    private static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
+    private SimpleTaskWatcher taskWatcher;
     private RestoreFromCloudAdapter adapter;
     private Translator translator;
     private List<Repository> repositories = new ArrayList<>();
     private String cloneSSHUrl;
     private File cloneDestDir;
+    private eDialogShown mDialogShown = eDialogShown.NONE;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         View v = inflater.inflate(R.layout.dialog_restore_from_door43, container, false);
 
-        this.taskWatcher = new GenericTaskWatcher(getActivity(), R.string.loading);
+        this.taskWatcher = new SimpleTaskWatcher(getActivity(), R.string.loading);
         this.taskWatcher.setOnFinishedListener(this);
 
-        this.translator = AppContext.getTranslator();
+        this.translator = App.getTranslator();
 
         Button dismissButton = (Button) v.findViewById(R.id.dismiss_button);
         dismissButton.setOnClickListener(new View.OnClickListener() {
@@ -82,7 +87,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Repository repo = adapter.getItem(position);
                 String repoName = repo.getFullName().replace("/", "-");
-                cloneDestDir = new File(AppContext.context().getCacheDir(), repoName + System.currentTimeMillis() + "/");
+                cloneDestDir = new File(App.context().getCacheDir(), repoName + System.currentTimeMillis() + "/");
                 cloneSSHUrl = repo.getSshUrl();
                 CloneRepositoryTask task = new CloneRepositoryTask(cloneSSHUrl, cloneDestDir);
                 taskWatcher.watch(task);
@@ -106,6 +111,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
                 }
                 adapter.setRepositories(repositories);
             }
+            mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
         }
 
         // connect to existing task
@@ -123,6 +129,35 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
         }
 
         return v;
+    }
+
+    @Override
+    public void onResume() {
+        restoreDialogs();
+        super.onResume();
+    }
+
+    /**
+     * restore the dialogs that were displayed before rotation
+     */
+    private void restoreDialogs() {
+        //recreate dialog last shown
+        switch(mDialogShown) {
+            case RESTORE_FAILED:
+                notifyRestoreFailed();
+                break;
+
+            case AUTH_FAILURE:
+                showAuthFailure();
+                break;
+
+            case NONE:
+                break;
+
+            default:
+                Logger.e(TAG,"Unsupported restore dialog: " + mDialogShown.toString());
+                break;
+        }
     }
 
     @Override
@@ -149,7 +184,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
                         // create orphaned backup of existing target translation
                         if (existingTargetTranslation != null) {
                             try {
-                                AppContext.backupTargetTranslation(existingTargetTranslation, true);
+                                App.backupTargetTranslation(existingTargetTranslation, true);
                             } catch (Exception e) {
                                 Logger.e(this.getClass().getName(), "Failed to backup the target translation", e);
                             }
@@ -168,7 +203,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
                         notifyRestoreFailed();
                         restoreFailed = true;
                     }
-                    FileUtils.deleteQuietly(tempPath);
+                    FileUtilities.deleteQuietly(tempPath);
 
                     if(!restoreFailed) {
                         Handler hand = new Handler(Looper.getMainLooper());
@@ -187,7 +222,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
                 } else if(status == CloneRepositoryTask.Status.AUTH_FAILURE) {
                     Logger.i(this.getClass().getName(), "Authentication failed");
                     // if we have already tried ask the user if they would like to try again
-                    if(AppContext.context().hasSSHKeys()) {
+                    if(App.hasSSHKeys()) {
                         showAuthFailure();
                         return;
                     }
@@ -213,31 +248,40 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
     }
 
     public void showAuthFailure() {
-        CustomAlertDialog.Create(getActivity())
+        mDialogShown = eDialogShown.AUTH_FAILURE;
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.error).setMessage(R.string.auth_failure_retry)
-                .setPositiveButton(R.string.yes, new View.OnClickListener() {
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
                         RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(true);
                         taskWatcher.watch(keyTask);
                         TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
                     }
                 })
-                .setNegativeButton(R.string.no, new View.OnClickListener() {
+                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
                         notifyRestoreFailed();
                     }
                 })
-                .show("auth-failed");
+                .show();
     }
 
     public void notifyRestoreFailed() {
-        CustomAlertDialog.Create(getActivity())
+        mDialogShown = eDialogShown.RESTORE_FAILED;
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.error)
                 .setMessage(R.string.restore_failed)
-                .setPositiveButton(R.string.dismiss, null)
-                .show("publish-failed");
+                .setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                    }
+                })
+                .show();
     }
 
 
@@ -248,6 +292,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
             repoJsonList.add(r.toJSON().toString());
         }
         out.putStringArray(STATE_REPOSITORIES, repoJsonList.toArray(new String[repoJsonList.size()]));
+        out.putInt(STATE_DIALOG_SHOWN, mDialogShown.getValue());
         super.onSaveInstanceState(out);
     }
 
@@ -255,5 +300,35 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements GenericTa
     public void onDestroy() {
         taskWatcher.stop();
         super.onDestroy();
+    }
+
+    /**
+     * for keeping track which dialog is being shown for orientation changes (not for DialogFragments)
+     */
+    public enum eDialogShown {
+        NONE(0),
+        RESTORE_FAILED(1),
+        AUTH_FAILURE(2),
+        MERGE_FAILED(3),
+        MERGE_CONFLICT(4);
+
+        private int value;
+
+        eDialogShown(int Value) {
+            this.value = Value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public static eDialogShown fromInt(int i) {
+            for (eDialogShown b : eDialogShown.values()) {
+                if (b.getValue() == i) {
+                    return b;
+                }
+            }
+            return null;
+        }
     }
 }

@@ -12,10 +12,19 @@
         <include layout="@layout/toolbar_translator_sidebar" />
 
         <LinearLayout
-            android:id="@+id/fragment_container"
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent">
+
+            <include layout="@layout/search_pane" />
+
+            <LinearLayout
+                android:id="@+id/fragment_container"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+        </LinearLayout>
 
     </LinearLayout>
 

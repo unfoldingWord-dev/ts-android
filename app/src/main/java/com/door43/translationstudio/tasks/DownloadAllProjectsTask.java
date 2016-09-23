@@ -1,9 +1,11 @@
 package com.door43.translationstudio.tasks;
 
-import com.door43.tools.reporting.Logger;
+import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.AppContext;
-import com.door43.util.tasks.ManagedTask;
+
+import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 /**
  * This task downloads a all of the projects
@@ -21,7 +23,7 @@ public class DownloadAllProjectsTask extends ManagedTask {
         // download projects
         publishProgress(-1, "");
 
-        Library library = AppContext.getLibrary();
+        Library library = App.getLibrary();
         try {
             library.downloadAllProjects(new Library.OnProgressListener() {
                 @Override

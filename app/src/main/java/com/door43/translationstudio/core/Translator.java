@@ -5,23 +5,18 @@ import android.content.pm.PackageInfo;
 import android.text.Editable;
 import android.text.SpannedString;
 
-import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
+import org.unfoldingword.tools.logger.Logger;
+
 import com.door43.translationstudio.rendering.USXtoUSFMConverter;
 import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,8 +24,6 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by joel on 8/29/2015.
@@ -234,7 +227,7 @@ public class Translator {
         } catch (Exception e) {
             throw e;
         } finally {
-            IOUtils.closeQuietly(out);
+            FileUtilities.closeQuietly(out);
         }
     }
 
@@ -244,7 +237,7 @@ public class Translator {
      * @param out
      */
     public void exportArchive(TargetTranslation targetTranslation, OutputStream out, String fileName) throws Exception {
-        if(!FilenameUtils.getExtension(fileName).toLowerCase().equals(ARCHIVE_EXTENSION)) {
+        if(!FileUtilities.getExtension(fileName).toLowerCase().equals(ARCHIVE_EXTENSION)) {
             throw new Exception("Output file must have '" + ARCHIVE_EXTENSION + "' extension");
         }
         if(targetTranslation == null) {
@@ -259,13 +252,13 @@ public class Translator {
             tempCache.mkdirs();
             File manifestFile = new File(tempCache, "manifest.json");
             manifestFile.createNewFile();
-            FileUtils.write(manifestFile, manifestJson.toString());
+            FileUtilities.writeStringToFile(manifestFile, manifestJson.toString());
             Zip.zipToStream(new File[]{manifestFile, targetTranslation.getPath()}, out);
         } catch (Exception e) {
             throw e;
         } finally {
-            IOUtils.closeQuietly(out);
-            FileUtils.deleteQuietly(tempCache);
+            FileUtilities.closeQuietly(out);
+            FileUtilities.deleteQuietly(tempCache);
         }
     }
 
@@ -340,7 +333,7 @@ public class Translator {
         } catch (Exception e) {
             throw e;
         } finally {
-            IOUtils.closeQuietly(in);
+            FileUtilities.closeQuietly(in);
         }
     }
 
@@ -390,7 +383,7 @@ public class Translator {
                     }  else {
                         // import new translation
                         FileUtilities.safeDelete(localDir); // in case local was an invalid target translation
-                        FileUtils.moveDirectory(newDir, localDir);
+                        FileUtilities.moveOrCopyQuietly(newDir, localDir);
                     }
                     // update the generator info. TRICKY: we re-open to get the updated manifest.
                     TargetTranslation.updateGenerator(mContext, TargetTranslation.open(localDir));
@@ -401,8 +394,8 @@ public class Translator {
         } catch (Exception e) {
             throw e;
         } finally {
-            IOUtils.closeQuietly(in);
-            FileUtils.deleteQuietly(archiveDir);
+            FileUtilities.closeQuietly(in);
+            FileUtilities.deleteQuietly(archiveDir);
         }
 
         return importedSlugs.toArray(new String[importedSlugs.size()]);
@@ -420,7 +413,7 @@ public class Translator {
         File pdf = printer.print();
         if(pdf.exists()) {
             outputFile.delete();
-            FileUtils.moveFile(pdf, outputFile);
+            FileUtilities.moveOrCopyQuietly(pdf, outputFile);
         }
 
 //        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -430,237 +423,7 @@ public class Translator {
 //        }
     }
 
-    /**
-     * Exports a target translation as a single DokuWiki file
-     * @param targetTranslation
-     * @return
-     */
-    @Deprecated
-    public void exportDokuWiki(TargetTranslation targetTranslation, File outputFile) throws IOException {
-        File tempDir = new File(getLocalCacheDir(), System.currentTimeMillis() + "");
-        tempDir.mkdirs();
-        ChapterTranslation[] chapters = targetTranslation.getChapterTranslations();
-        for(ChapterTranslation chapter:chapters) {
-            // TRICKY: the translation format doesn't matter for exporting
-            FrameTranslation[] frames = targetTranslation.getFrameTranslations(chapter.getId(), TranslationFormat.DEFAULT);
-            if(frames.length == 0) continue;
-
-            // compile translation
-            File chapterFile = new File(tempDir, chapter.getId() + ".txt");
-            chapterFile.createNewFile();
-            PrintStream ps = new PrintStream(chapterFile);
-
-            // language
-            ps.print("//");
-            ps.print(targetTranslation.getTargetLanguageName());
-            ps.println("//");
-            ps.println();
-
-            // project
-            ps.print("//");
-            ps.print(targetTranslation.getProjectId());
-            ps.println("//");
-            ps.println();
-
-            // chapter title
-            ps.print("======");
-            ps.print(chapter.title.trim());
-            ps.println("======");
-            ps.println();
-
-            // frames
-            for(FrameTranslation frame:frames) {
-                // image
-                ps.print("{{");
-                // TODO: the api version and image dimensions should be placed in the user preferences
-                String apiVersion = "1";
-                // TODO: for now all images use the english versions
-                String languageCode = "en"; // eventually we should use: getSelectedTargetLanguage().getId()
-                ps.print("https://api.unfoldingword.org/" + targetTranslation.getProjectId() + "/jpg/" + apiVersion + "/" + languageCode + "/360px/" + targetTranslation.getProjectId() + "-" + languageCode + "-" + chapter.getId() + "-" + frame.getId() + ".jpg");
-                ps.println("}}");
-                ps.println();
-
-                // convert tags
-                String text = frame.body.trim();
-
-                // TODO: convert usx tags to USFM
-
-                // text
-                ps.println(text);
-                ps.println();
-            }
-
-            // chapter reference
-            ps.print("//");
-            ps.print(chapter.reference.trim());
-            ps.println("//");
-            ps.close();
-        }
-        File[] chapterFiles = tempDir.listFiles();
-        if(chapterFiles != null && chapterFiles.length > 0) {
-            try {
-                Zip.zip(chapterFiles, outputFile);
-            } catch (IOException e) {
-                FileUtils.deleteQuietly(tempDir);
-                throw (e);
-            }
-        }
-        FileUtils.deleteQuietly(tempDir);
-    }
-
-    /**
-     * Imports a DokuWiki file and converts it into a target translation
-     * @param file
-     * @return
-     */
-    @Deprecated
-    public TargetTranslation importDokuWiki(Library library, File file) throws IOException {
-        List<TargetTranslation> targetTranslations = new ArrayList<>();
-        TargetTranslation targetTranslation = null;
-        if(file.exists() && file.isFile()) {
-            StringBuilder frameBuffer = new StringBuilder();
-            String line, chapterId = "", frameId = "", chapterTitle = "";
-            Pattern pattern = Pattern.compile("-(\\d\\d)-(\\d\\d)\\.jpg");
-            TargetLanguage targetLanguage = null;
-            Project project = null;
-
-            BufferedReader br = new BufferedReader(new FileReader(file));
-
-            while ((line = br.readLine()) != null) {
-                line = line.trim();
-                if(line.length() >= 4 && line.substring(0, 2).equals("//")) {
-                    line = line.substring(2, line.length() - 2).trim();
-                    if(targetLanguage == null) {
-                        // retrieve the translation language
-                        targetLanguage = library.findTargetLanguageByName(line);
-                        if(targetLanguage == null) return null;
-                    } else if(project == null) {
-                        // retrieve project
-                        project = library.getProject(line, "en");
-                        if(project == null) return null;
-                        // create target translation
-                        TranslationFormat format;
-                        if(project.getId() == "obs") {
-                            format = TranslationFormat.MARKDOWN;
-                        } else {
-                            format = TranslationFormat.USFM;
-                        }
-                        File targetTranslationDir = new File(mRootDir, TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), project.getId(), TranslationType.TEXT, Resource.REGULAR_SLUG));
-                        try {
-                            PackageInfo pInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
-                            // TRICKY: android only supports creating regular text translations
-                            targetTranslation = TargetTranslation.create(this.mContext, AppContext.getProfile().getNativeSpeaker(), format, targetLanguage, project.getId(), TranslationType.TEXT, Resource.REGULAR_SLUG, pInfo, targetTranslationDir);
-                        } catch (Exception e) {
-                            Logger.e(Translator.class.getName(), "Failed to create target translation from DokuWiki", e);
-                        }
-                    } else if (!chapterId.isEmpty() && !frameId.isEmpty()) {
-                        // retrieve chapter reference (end of chapter) and write chapter
-                        ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(chapterId);
-                        targetTranslation.applyChapterTitleTranslation(chapterTranslation, chapterTitle);
-                        targetTranslation.applyChapterReferenceTranslation(chapterTranslation, line);
-
-                        // save the last frame of the chapter
-                        if (frameBuffer.length() > 0) {
-                            FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(chapterId, frameId, TranslationFormat.DEFAULT);
-                            targetTranslation.applyFrameTranslation(frameTranslation, frameBuffer.toString().trim());
-                        }
-
-                        chapterId = "";
-                        frameId = "";
-                        frameBuffer.setLength(0);
-
-                        targetTranslations.add(targetTranslation);
-                    } else {
-                        // start loading a new translation
-                        project = null;
-                        chapterId = "";
-                        frameId = "";
-                        chapterTitle = "";
-                        frameBuffer.setLength(0);
-                        targetTranslation = null;
-
-                        // retrieve the translation language
-                        targetLanguage = library.findTargetLanguageByName(line);
-                        if(targetLanguage == null) return null;
-                    }
-                } else if(line.length() >= 12 && line.substring(0, 6).equals("======")) {
-                    // start of a new chapter
-                    chapterTitle = line.substring(6, line.length() - 6).trim(); // this is saved at the end of the chapter
-                } else if(line.length() >= 4 && line.substring(0, 2).equals("{{")) {
-                    // save the previous frame
-                    if(project != null && !chapterId.isEmpty() && !frameId.isEmpty() && frameBuffer.length() > 0) {
-                        FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(chapterId, frameId, TranslationFormat.DEFAULT);
-                        targetTranslation.applyFrameTranslation(frameTranslation, frameBuffer.toString().trim());
-                    }
-
-                    // image tag. We use this to get the frame number for the following text.
-                    Matcher matcher = pattern.matcher(line);
-                    while(matcher.find()) {
-                        chapterId = matcher.group(1);
-                        frameId = matcher.group(2);
-                    }
-                    // clear the frame buffer
-                    frameBuffer.setLength(0);
-                } else {
-                    // frame translation
-                    frameBuffer.append(line);
-                    frameBuffer.append('\n');
-                }
-            }
-            return targetTranslation;
-        }
-        return null;
-    }
-
-    /**
-     * Imports a DokuWiki zip archive
-     * @param archive
-     * @return
-     */
-    @Deprecated
-    public boolean importDokuWikiArchive(Library library, File archive) throws IOException {
-        String[] name = archive.getName().split("\\.");
-        Boolean success = true;
-        if(archive.exists() && archive.isFile() && name[name.length - 1].equals("zip")) {
-            File tempDir = new File(getLocalCacheDir() + "/" + System.currentTimeMillis());
-            tempDir.mkdirs();
-            Zip.unzip(archive, tempDir);
-
-            File[] files = tempDir.listFiles();
-            if(files.length > 0) {
-                // fix legacy DokuWiki export (contained root directory in archive)
-                File realPath = tempDir;
-                if(files.length == 1 && files[0].isDirectory()) {
-                    realPath = files[0];
-                    files = files[0].listFiles();
-                    if(files.length == 0) {
-                        FileUtilities.deleteRecursive(tempDir);
-                        return false;
-                    }
-                }
-
-                // ensure this is not a legacy project archive
-                File gitDir = new File(realPath, ".git");
-                if(gitDir.exists() && gitDir.isDirectory()) {
-                    FileUtilities.deleteRecursive(tempDir);
-                    // We no longer support legacy archives. If you need it look in the history for projects.Sharing.prepareLegacyArchiveImport
-                    return false;
-                }
-
-                // begin import
-                for(File f:files) {
-                    TargetTranslation targetTranslation = importDokuWiki(library, f);
-                    if(targetTranslation == null) {
-                        success = false;
-                    }
-                }
-            }
-            FileUtilities.deleteRecursive(tempDir);
-        }
-        return success;
-    }
-
-    /**
+     /**
      * This will move a target translation into the root dir.
      * Any existing target translation will be replaced
      * @param tempTargetTranslation
@@ -670,7 +433,22 @@ public class Translator {
         if(tempTargetTranslation != null) {
             File destDir = new File(mRootDir, tempTargetTranslation.getId());
             FileUtilities.safeDelete(destDir);
-            FileUtils.moveDirectory(tempTargetTranslation.getPath(), destDir);
+            FileUtilities.moveOrCopyQuietly(tempTargetTranslation.getPath(), destDir);
         }
+    }
+
+    /**
+     * Ensures the name of the target translation directory matches the target translation id and corrects it if not
+     * If the destination already exists the file path will not be changed
+     * @param tt
+     */
+    public boolean normalizePath(TargetTranslation tt) {
+        if(!tt.getPath().getName().equals(tt.getId())) {
+            File dest = new File(tt.getPath().getParentFile(), tt.getId());
+            if(!dest.exists()) {
+                return FileUtilities.moveOrCopyQuietly(tt.getPath(), dest);
+            }
+        }
+        return false;
     }
 }

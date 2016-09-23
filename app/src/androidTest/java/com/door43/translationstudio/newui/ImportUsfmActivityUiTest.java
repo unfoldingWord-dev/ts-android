@@ -1,6 +1,5 @@
 package com.door43.translationstudio.newui;
 
-import org.apache.commons.io.FileUtils;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.junit.After;
@@ -8,6 +7,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.unfoldingword.tools.logger.Logger;
 
 
 import android.app.Activity;
@@ -25,10 +25,11 @@ import android.support.v7.widget.Toolbar;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.view.View;
 
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.tasks.UploadCrashReportTask;
+import com.door43.util.FileUtilities;
 
 
 import java.io.File;
@@ -39,6 +40,7 @@ import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isAssignableFrom;
 import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static junit.framework.Assert.assertTrue;
@@ -65,16 +67,16 @@ public class ImportUsfmActivityUiTest {
     @Before
     public void setUp() {
         mTestContext = InstrumentationRegistry.getContext();
-        UploadCrashReportTask.archiveErrorLogs();
-        if(AppContext.getProfile() == null) { // make sure this is initialized
-            AppContext.setProfile(new Profile("testing"));
+        Logger.flush();
+        if(App.getProfile() == null) { // make sure this is initialized
+            App.setProfile(new Profile("testing"));
         }
     }
 
     @After
     public void tearDown() {
         if(mTempDir != null) {
-            FileUtils.deleteQuietly(mTempDir);
+            FileUtilities.deleteQuietly(mTempDir);
             mTempDir = null;
             mTestFile = null;
         }
@@ -117,7 +119,7 @@ public class ImportUsfmActivityUiTest {
 
         //when
         thenShouldShowMissingBookNameDialog();
-        onView(withId(R.id.positiveButton)).perform(click());
+        onView(withText(R.string.label_continue)).perform(click());
         clickOnViewText("Bible: NT");
         clickOnViewText("Mark");
 
@@ -144,7 +146,7 @@ public class ImportUsfmActivityUiTest {
         matchSummaryDialog(R.string.title_processing_usfm_summary, "jud", true);
 
         //when
-        onView(withId(R.id.positiveButton)).perform(click());
+        onView(withText(R.string.label_continue)).perform(click());
 
         //then
         boolean seen2 = waitWhileDisplayed(R.string.importing_usfm);
@@ -211,7 +213,7 @@ public class ImportUsfmActivityUiTest {
         int matchTitle = success ? R.string.title_import_usfm_results : R.string.title_import_usfm_error;
         int matchText = success ? R.string.import_usfm_success : R.string.import_usfm_failed;
         thenShouldHaveDialogTitle( matchTitle );
-        onView(withId(R.id.dialog_content)).check(matches(withText(matchText)));
+        onView((withText(matchText))).check(matches(isDisplayed()));
     }
 
     /**
@@ -219,12 +221,13 @@ public class ImportUsfmActivityUiTest {
      * @param noErrors
      */
     private void checkForImportErrors(boolean noErrors) {
-        String matchText = AppContext.context().getResources().getString(R.string.no_error);
-        Matcher<View> viewMatcher = withText(containsString(matchText));
-        if(!noErrors) {
-            viewMatcher = not(viewMatcher);
+        String dialogTitle;
+        if(noErrors) {
+            dialogTitle = App.context().getResources().getString(R.string.title_processing_usfm_summary);
+        } else {
+            dialogTitle = App.context().getResources().getString(R.string.title_import_usfm_error);
         }
-        onView(withId(R.id.dialog_content)).check(matches(viewMatcher));
+        onView(withText(dialogTitle)).check(matches(isDisplayed()));
     }
 
     /**
@@ -232,9 +235,9 @@ public class ImportUsfmActivityUiTest {
      * @param book
      */
     private void shouldHaveFoundBook(String book) {
-        String format = AppContext.context().getResources().getString(R.string.found_book);
+        String format = App.context().getResources().getString(R.string.found_book);
         String matchText = String.format(format, book);
-        onView(withId(R.id.dialog_content)).check(matches(withText(containsString(matchText))));
+        onView(withText(containsString(matchText))).check(matches(isDisplayed())); // dialog open
     }
 
     protected void thenShouldShowMissingBookNameDialog() {
@@ -242,15 +245,15 @@ public class ImportUsfmActivityUiTest {
     }
 
     protected void thenShouldHaveDialogTitle(int title) {
-        String titleStr = AppContext.context().getResources().getString(title);
-        for(int i = 0; i < 40; i++) { // wait until displayed
-            try {
-                onView(withId(R.id.dialog_title)).check(matches(withText(titleStr)));
-                break;
-            } catch (Exception e) {
-            }
-        }
-        onView(withId(R.id.dialog_title)).check(matches(withText(titleStr)));
+        String titleStr = App.context().getResources().getString(title);
+//        for(int i = 0; i < 40; i++) { // wait until displayed
+//            try {
+//                onView(withId(R.id.dialog_title)).check(matches(withText(titleStr)));
+//                break;
+//            } catch (Exception e) {
+//            }
+//        }
+        onView(withText(titleStr)).check(matches(isDisplayed())); // dialog displayed
     }
 
     /**
@@ -259,7 +262,7 @@ public class ImportUsfmActivityUiTest {
      * @return
      */
     private boolean waitWhileDisplayed(int resource) {
-        String text = AppContext.context().getResources().getString(resource);
+        String text = App.context().getResources().getString(resource);
         return waitWhileDisplayed(text);
     }
 
@@ -292,7 +295,7 @@ public class ImportUsfmActivityUiTest {
      * @param displayed
      */
     private void checkDisplayState(int resource, boolean displayed) {
-        String text = AppContext.context().getResources().getString(resource);
+        String text = App.context().getResources().getString(resource);
         checkDisplayState(text, displayed);
     }
 
@@ -320,12 +323,12 @@ public class ImportUsfmActivityUiTest {
         Intent intent = new Intent();
         Resources testRes = mTestContext.getResources();
 
-        mTempDir = new File(AppContext.context().getCacheDir(), System.currentTimeMillis() + "");
+        mTempDir = new File(App.context().getCacheDir(), System.currentTimeMillis() + "");
         mTempDir.mkdirs();
 
         InputStream usfmStream = mTestContext.getAssets().open(fileName);
         mTestFile = new File(mTempDir, "testFile.usfm");
-        FileUtils.copyInputStreamToFile(usfmStream, mTestFile);
+        FileUtilities.copyInputStreamToFile(usfmStream, mTestFile);
 
         intent.putExtra(ImportUsfmActivity.EXTRA_USFM_IMPORT_FILE, mTestFile);
         return intent;
@@ -364,7 +367,7 @@ public class ImportUsfmActivityUiTest {
      */
     private static ViewInteraction matchToolbarTitle(
             int resource) {
-        String title = AppContext.context().getResources().getString(resource);
+        String title = App.context().getResources().getString(resource);
         return matchToolbarTitle(title);
     }
 

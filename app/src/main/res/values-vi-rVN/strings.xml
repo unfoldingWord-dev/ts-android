@@ -117,7 +117,7 @@
   <string name="languages">Ngôn ngữ</string>
   <string name="drafts">Dịch nháp</string>
   <string name="use_internet_confirmation">Điều này sẽ sử dụng kết nối internet của bạn để tải thông tin từ các máy chủ, tiếp tục không?</string>
-  <string name="update_projects">Dự án cập nhật</string>
+  <string name="update_library">Dự án cập nhật</string>
   <string name="update_projects_description">Xem và tải về các bản cập nhật có sẵn từ máy chủ</string>
   <string name="action_download_all">Tải về tất cả</string>
   <string name="title_activity_project_updates">Dự án cập nhật</string>

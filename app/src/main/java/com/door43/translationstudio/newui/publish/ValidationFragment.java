@@ -1,7 +1,5 @@
 package com.door43.translationstudio.newui.publish;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -14,11 +12,9 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
 import com.door43.translationstudio.tasks.ValidationTask;
-import com.door43.util.DummyDialogListener;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.security.InvalidParameterException;
 
@@ -71,7 +67,7 @@ public class ValidationFragment extends PublishStepFragment implements ManagedTa
     }
 
     @Override
-    public void onFinished(final ManagedTask task) {
+    public void onTaskFinished(final ManagedTask task) {
         TaskManager.clearTask(task);
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
@@ -92,26 +88,6 @@ public class ValidationFragment extends PublishStepFragment implements ManagedTa
 
     @Override
     public void onClickNext() {
-        if(mValidationAdapter.getItemCount() > 2) {
-            // when there are more than two items (success card and next button) there were validation issues
-            CustomAlertDialog.Create(getActivity())
-                    .setTitle(R.string.dialog_validation_warnings)
-                    .setMessage(R.string.validation_warnings)
-                    .setIcon(R.drawable.ic_report_black_24dp)
-                    .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            nextStep();
-                        }
-                    })
-                    .setNegativeButton(R.string.title_cancel, null).show("ValidWarn");
-        } else {
-            nextStep();
-        }
-    }
-
-    private void nextStep() {
-        // TODO: proceed to the next step
         getListener().nextStep();
     }
 

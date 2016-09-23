@@ -117,7 +117,7 @@
   <string name="languages">ভাষা</string>
   <string name="drafts">অনুবাদ খসড়া</string>
   <string name="use_internet_confirmation">এই সার্ভার থেকে তথ্য ডাউনলোড করতে আপনার ইন্টারনেট সংযোগ ব্যবহার করা হবে, অবিরত?</string>
-  <string name="update_projects">আপডেট প্রকল্প</string>
+  <string name="update_library">আপডেট প্রকল্প</string>
   <string name="update_projects_description">সার্ভার থেকে দেখুন এবং ডাউনলোড উপলব্ধ আপডেট</string>
   <string name="action_download_all">সমস্ত ডাউনলোড করুন</string>
   <string name="title_activity_project_updates">প্রকল্প আপডেট</string>

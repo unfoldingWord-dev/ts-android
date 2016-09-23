@@ -1,25 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:background="@color/white"
-    android:orientation="vertical"
     android:minWidth="@dimen/dialog_min_width"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true">
 
-    <LinearLayout
-        android:orientation="vertical"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/dialog_content_margin">
-        <TextView
+        android:layout_height="match_parent"
+        android:layout_above="@+id/linearLayout6"
+        android:layout_alignParentTop="true">
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Open Bible Stories - Afaraf"
-            android:layout_marginBottom="@dimen/dialog_content_margin"
-            android:textColor="@color/dark_primary_text"
-            android:textSize="@dimen/headline"
-            android:id="@+id/title" />
+            android:layout_margin="@dimen/dialog_content_margin">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Open Bible Stories - Afaraf"
+                android:layout_marginBottom="@dimen/dialog_content_margin"
+                android:textColor="@color/dark_primary_text"
+                android:textSize="@dimen/headline"
+                android:id="@+id/title" />
 
             <LinearLayout
                 android:orientation="vertical"
@@ -138,48 +142,56 @@
                         android:text="Not Published"/>
                 </LinearLayout>
             </LinearLayout>
-    </LinearLayout>
-
+        </LinearLayout>
+    </ScrollView>
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="1px"
-        android:background="@color/list_separator"/>
-
-    <LinearLayout
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/dialog_controls_margin">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-            <ImageButton
-                android:id="@+id/delete_button"
-                android:src="@drawable/ic_delete_black_24dp"
-                style="@style/Widget.Alert.Button"/>
-        </LinearLayout>
+        android:layout_alignParentBottom="true"
+        android:id="@+id/linearLayout6">
         <LinearLayout
             android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:background="@color/list_separator"/>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="right|end">
-            <ImageButton
-                android:id="@+id/print_button"
-                android:layout_marginLeft="@dimen/dialog_controls_margin"
-                android:src="@drawable/ic_print_black_24dp"
-                style="@style/Widget.Alert.Button"/>
+            android:padding="@dimen/dialog_controls_margin">
 
-            <ImageButton
-                android:id="@+id/publish_button"
-                android:layout_marginLeft="@dimen/dialog_controls_margin"
-                android:src="@drawable/ic_cloud_done_black_24dp"
-                style="@style/Widget.Alert.Button"/>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <ImageButton
+                    android:id="@+id/delete_button"
+                    android:src="@drawable/ic_delete_black_24dp"
+                    style="@style/Widget.Alert.Button"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="right|end">
 
-            <ImageButton
-                android:id="@+id/backup_button"
-                android:layout_marginLeft="@dimen/dialog_controls_margin"
-                android:src="@drawable/ic_file_upload_black_24dp"
-                style="@style/Widget.Alert.Button"/>
+                <ImageButton
+                    android:id="@+id/print_button"
+                    android:layout_marginLeft="@dimen/dialog_controls_margin"
+                    android:src="@drawable/ic_print_black_24dp"
+                    style="@style/Widget.Alert.Button"/>
+
+                <ImageButton
+                    android:id="@+id/publish_button"
+                    android:layout_marginLeft="@dimen/dialog_controls_margin"
+                    android:src="@drawable/ic_cloud_done_black_24dp"
+                    style="@style/Widget.Alert.Button"/>
+
+                <ImageButton
+                    android:id="@+id/backup_button"
+                    android:layout_marginLeft="@dimen/dialog_controls_margin"
+                    android:src="@drawable/ic_file_upload_black_24dp"
+                    style="@style/Widget.Alert.Button"/>
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</RelativeLayout>

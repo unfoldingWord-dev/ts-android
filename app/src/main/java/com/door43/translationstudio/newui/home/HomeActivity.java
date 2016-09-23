@@ -3,6 +3,7 @@ package com.door43.translationstudio.newui.home;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.ContentResolver;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
@@ -13,54 +14,64 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.os.Bundle;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.AlertDialog;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 
-import com.door43.tools.reporting.Logger;
+import org.eclipse.jgit.merge.MergeStrategy;
+import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.ProfileActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
+
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.dialogs.CustomAlertDialog;
+import com.door43.translationstudio.newui.Door43LoginDialog;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
 import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
-import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.tasks.ExamineImportsForCollisionsTask;
 import com.door43.translationstudio.tasks.ImportProjectsTask;
-import com.door43.util.tasks.GenericTaskWatcher;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
+
+import com.door43.translationstudio.tasks.PullTargetTranslationTask;
+import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
+import com.door43.util.FileUtilities;
 import com.door43.widget.ViewUtil;
 
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.util.Locale;
 
-public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnFinishedListener, WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
-    private static final int REQUEST_CODE_STORAGE_ACCESS = 42;
+public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFinishedListener, WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
     private static final int NEW_TARGET_TRANSLATION_REQUEST = 1;
+    public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
     public static final String TAG = HomeActivity.class.getSimpleName();
     private Library mLibrary;
     private Translator mTranslator;
     private Fragment mFragment;
-    private boolean mUsfmImport = false;
-    private GenericTaskWatcher taskWatcher;
+    private SimpleTaskWatcher taskWatcher;
     private ExamineImportsForCollisionsTask mExamineTask;
+    private eDialogShown mDialogShown = eDialogShown.NONE;
+    private String mTargetTranslationWithUpdates;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
+        taskWatcher = new SimpleTaskWatcher(this, R.string.loading);
+        taskWatcher.setOnFinishedListener(this);
 
         FloatingActionButton addTranslationButton = (FloatingActionButton) findViewById(R.id.addTargetTranslationButton);
         addTranslationButton.setOnClickListener(new View.OnClickListener() {
@@ -70,8 +81,8 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
             }
         });
 
-        mLibrary = AppContext.getLibrary();
-        mTranslator = AppContext.getTranslator();
+        mLibrary = App.getLibrary();
+        mTranslator = App.getTranslator();
 
         if(findViewById(R.id.fragment_container) != null) {
             if(savedInstanceState != null) {
@@ -105,36 +116,19 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
                                 openLibrary();
                                 return true;
                             case R.id.action_import:
-                                FragmentTransaction backupFt = getFragmentManager().beginTransaction();
-                                Fragment backupPrev = getFragmentManager().findFragmentByTag(ImportDialog.TAG);
-                                if (backupPrev != null) {
-                                    backupFt.remove(backupPrev);
-                                }
-                                backupFt.addToBackStack(null);
-
                                 ImportDialog importDialog = new ImportDialog();
-                                importDialog.show(backupFt, ImportDialog.TAG);
+                                showDialogFragment(importDialog, ImportDialog.TAG);
                                 return true;
                             case R.id.action_feedback:
-                                FragmentTransaction ft = getFragmentManager().beginTransaction();
-                                Fragment prev = getFragmentManager().findFragmentByTag("bugDialog");
-                                if (prev != null) {
-                                    ft.remove(prev);
-                                }
-                                ft.addToBackStack(null);
-
                                 FeedbackDialog dialog = new FeedbackDialog();
-                                dialog.show(ft, "bugDialog");
-
-//                                CustomAlertDialog.test(HomeActivity.this);
-
+                                showDialogFragment(dialog, "feedback-dialog");
                                 return true;
                             case R.id.action_share_apk:
                                 try {
                                     PackageInfo pinfo = getPackageManager().getPackageInfo(getPackageName(), 0);
                                     File apkFile = new File(pinfo.applicationInfo.publicSourceDir);
-                                    File exportFile = new File(AppContext.getSharingDir(), pinfo.applicationInfo.loadLabel(getPackageManager()) + "_" + pinfo.versionName + ".apk");
-                                    FileUtils.copyFile(apkFile, exportFile);
+                                    File exportFile = new File(App.getSharingDir(), pinfo.applicationInfo.loadLabel(getPackageManager()) + "_" + pinfo.versionName + ".apk");
+                                    FileUtilities.copyFile(apkFile, exportFile);
                                     if (exportFile.exists()) {
                                         Uri u = FileProvider.getUriForFile(HomeActivity.this, "com.door43.translationstudio.fileprovider", exportFile);
                                         Intent i = new Intent(Intent.ACTION_SEND);
@@ -148,7 +142,7 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
                                 }
                                 return true;
                             case R.id.action_log_out:
-                                AppContext.setProfile(null);
+                                App.setProfile(null);
                                 Intent logoutIntent = new Intent(HomeActivity.this, ProfileActivity.class);
                                 startActivity(logoutIntent);
                                 finish();
@@ -192,11 +186,104 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
                 onItemClick(targetTranslation);
                 return;
             }
+        } else {
+            mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
         }
     }
 
+
     @Override
-    public void onFinished(ManagedTask task) {
+    public void onResume() {
+        super.onResume();
+        App.setLastFocusTargetTranslation(null);
+
+        int numTranslations = mTranslator.getTargetTranslations().length;
+        if(numTranslations > 0 && mFragment instanceof WelcomeFragment) {
+            // display target translations list
+            mFragment = new TargetTranslationListFragment();
+            mFragment.setArguments(getIntent().getExtras());
+            getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
+
+            // load list after fragment created
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    ((TargetTranslationListFragment) mFragment).reloadList();
+                }
+            });
+
+        } else if(numTranslations == 0 && mFragment instanceof TargetTranslationListFragment) {
+            // display welcome screen
+            mFragment = new WelcomeFragment();
+            mFragment.setArguments(getIntent().getExtras());
+            getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
+        } else if(numTranslations > 0 && mFragment instanceof TargetTranslationListFragment) {
+            // reload list
+            ((TargetTranslationListFragment)mFragment).reloadList();
+        }
+
+        // re-connect to tasks
+        PullTargetTranslationTask pullTask = (PullTargetTranslationTask) TaskManager.getTask(PullTargetTranslationTask.TASK_ID);
+        if(pullTask != null) {
+            taskWatcher.watch(pullTask);
+            TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
+        }
+
+        mTargetTranslationWithUpdates = App.getNotifyTargetTranslationWithUpdates();
+        if(mTargetTranslationWithUpdates != null && pullTask == null) {
+            showTranslationUpdatePrompt(mTargetTranslationWithUpdates);
+        }
+
+        restoreDialogs();
+    }
+
+   /**
+     * restore the dialogs that were displayed before rotation
+     */
+    private void restoreDialogs() {
+        switch(mDialogShown) {
+            case IMPORT_VERIFICATION:
+                displayImportVerification();
+                break;
+
+            case OPEN_LIBRARY:
+                openLibrary();
+                break;
+
+            case NONE:
+                break;
+
+            default:
+                Logger.e(TAG,"Unsupported restore dialog: " + mDialogShown.toString());
+                break;
+        }
+    }
+
+    /**
+     * this is to fix old method which when called in onResume() would create a
+     * second dialog overlaying the first.  The first was actually not removed.
+     * Doing a commit after the remove() and starting a second FragmentTransaction
+     * seems to fix the duplicate dialog bug.
+     *
+     * @param dialog
+     * @param tag
+     */
+    private void showDialogFragment(android.app.DialogFragment dialog, String tag) {
+        FragmentTransaction backupFt = getFragmentManager().beginTransaction();
+        Fragment backupPrev = getFragmentManager().findFragmentByTag(tag);
+        if (backupPrev != null) {
+            backupFt.remove(backupPrev);
+            backupFt.commit(); // apply the remove
+            backupFt = getFragmentManager().beginTransaction(); // start a new transaction
+        }
+        backupFt.addToBackStack(null);
+
+        dialog.show(backupFt, tag);
+    }
+
+    @Override
+    public void onFinished(final ManagedTask task) {
         taskWatcher.stop();
         if (task instanceof ExamineImportsForCollisionsTask) {
             final ExamineImportsForCollisionsTask examineTask = (ExamineImportsForCollisionsTask) task;
@@ -228,33 +315,108 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
                 }
             });
             mExamineTask.cleanup();
+        } else if (task instanceof PullTargetTranslationTask) {
+            PullTargetTranslationTask.Status status = ((PullTargetTranslationTask)task).getStatus();
+            if(status == PullTargetTranslationTask.Status.UP_TO_DATE || status == PullTargetTranslationTask.Status.UNKNOWN) {
+                new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                        .setTitle(R.string.success)
+                        .setMessage(R.string.success_translation_update)
+                        .setPositiveButton(R.string.dismiss, null)
+                        .show();
+            } else if (status == PullTargetTranslationTask.Status.AUTH_FAILURE) {
+                // regenerate ssh keys
+                // if we have already tried ask the user if they would like to try again
+                if(App.context().hasSSHKeys()) {
+                    showAuthFailure();
+                    return;
+                }
+
+                RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(false);
+                taskWatcher.watch(keyTask);
+                TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
+            } else if (status == PullTargetTranslationTask.Status.MERGE_CONFLICTS) {
+                new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                        .setTitle(R.string.success)
+                        .setMessage(R.string.success_translation_update_with_conflicts)
+                        .setNeutralButton(R.string.review, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Intent intent = new Intent(HomeActivity.this, TargetTranslationActivity.class);
+                                intent.putExtra(App.EXTRA_TARGET_TRANSLATION_ID, ((PullTargetTranslationTask)task).targetTranslation.getId());
+                                startActivity(intent);
+                            }
+                        })
+                        .show();
+            } else {
+                notifyTranslationUpdateFailed();
+            }
+            App.setNotifyTargetTranslationWithUpdates(null);
+        } else if (task instanceof RegisterSSHKeysTask) {
+            if (((RegisterSSHKeysTask) task).isSuccess()) {
+                Logger.i(this.getClass().getName(), "SSH keys were registered with the server");
+                // try to pull again
+                downloadTargetTranslationUpdates(mTargetTranslationWithUpdates);
+            } else {
+                notifyTranslationUpdateFailed();
+            }
         }
+    }
+
+    public void showAuthFailure() {
+        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                .setTitle(R.string.error).setMessage(R.string.auth_failure_retry)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                        RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(true);
+                        taskWatcher.watch(keyTask);
+                        TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
+                    }
+                })
+                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                        notifyTranslationUpdateFailed();
+                    }
+                }).show();
+    }
+
+    private void notifyTranslationUpdateFailed() {
+        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                .setTitle(R.string.error)
+                .setMessage(R.string.update_failed)
+                .setNeutralButton(R.string.dismiss, null)
+                .show();
     }
 
     /**
      * display the final import Results.
      */
     private void showImportResults(String projectPath, String projectNames, boolean success) {
-        final CustomAlertDialog dlg = CustomAlertDialog.Create(this);
+        mDialogShown = eDialogShown.IMPORT_RESULTS;
         String message;
         if(success) {
-            String format = AppContext.context().getResources().getString(R.string.import_project_success);
+            String format = App.context().getResources().getString(R.string.import_project_success);
             message = String.format(format, projectNames, projectPath);
         } else {
-            String format = AppContext.context().getResources().getString(R.string.import_failed);
+            String format = App.context().getResources().getString(R.string.import_failed);
             message = format + "\n" + projectPath;
         }
 
-        dlg.setTitle(success ? R.string.title_import_Success : R.string.title_import_Failed)
+        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                .setTitle(success ? R.string.title_import_Success : R.string.title_import_Failed)
                 .setMessage(message)
-                .setPositiveButton(R.string.label_ok, new View.OnClickListener() {
+                .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
                         mExamineTask.cleanup();
                         HomeActivity.this.finish();
                     }
                 })
-                .show("USFMImportResults2");
+                .show();
     }
 
     /**
@@ -265,11 +427,6 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
      * @throws Exception
      */
     private void importFromUri(ContentResolver resolver, Uri contentUri) {
-        if(null == taskWatcher) {
-            taskWatcher = new GenericTaskWatcher(this, R.string.import_project);
-            taskWatcher.setOnFinishedListener(this);
-        }
-
         mExamineTask = new ExamineImportsForCollisionsTask(resolver, contentUri);
         taskWatcher.watch(mExamineTask);
         TaskManager.addTask(mExamineTask, ExamineImportsForCollisionsTask.TASK_ID);
@@ -279,34 +436,37 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
      * show dialog to verify that we want to import, restore or cancel.
      */
     private void displayImportVerification() {
-        final CustomAlertDialog dlg = CustomAlertDialog.Create(this);
-        dlg.setTitle(R.string.label_import)
+        mDialogShown = eDialogShown.IMPORT_VERIFICATION;
+        AlertDialog.Builder dlg = new AlertDialog.Builder(this,R.style.AppTheme_Dialog);
+            dlg.setTitle(R.string.label_import)
                 .setMessage(String.format(getResources().getString(R.string.confirm_import_target_translation), mExamineTask.mProjectsFound))
-                .setNegativeButton(R.string.title_cancel, new View.OnClickListener() {
+                .setNegativeButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
                         mExamineTask.cleanup();
                         HomeActivity.this.finish();
                     }
                 })
-                .setPositiveButton(R.string.label_restore, new View.OnClickListener() {
+                .setPositiveButton(R.string.label_restore, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
                         doArchiveImport(true);
                     }
                 });
 
         if(mExamineTask.mAlreadyPresent) { // add merge option
-            dlg.setNeutralButton(R.string.label_import, new View.OnClickListener() {
+            dlg.setNeutralButton(R.string.label_import, new DialogInterface.OnClickListener() {
                 @Override
-                public void onClick(View v) {
+                public void onClick(DialogInterface dialog, int which) {
+                    mDialogShown = eDialogShown.NONE;
                     doArchiveImport(false);
-                    dlg.dismiss();
+                    dialog.dismiss();
                 }
             });
         }
-
-        dlg.show("confirm_import");
+        dlg.show();
     }
 
     /**
@@ -323,51 +483,26 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
      * Triggers the process of opening the server library
      */
     private void openLibrary() {
-        CustomAlertDialog.Create(HomeActivity.this)
-            .setTitle(R.string.update_projects)
-            .setIcon(R.drawable.ic_local_library_black_24dp)
-            .setMessage(R.string.use_internet_confirmation)
-            .setPositiveButton(R.string.yes, new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(HomeActivity.this, ServerLibraryActivity.class);
-                    startActivity(intent);
-                }
-            })
-            .setNegativeButton(R.string.no, null)
-            .show("UpdateLib");
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        AppContext.setLastFocusTargetTranslation(null);
-
-        int numTranslations = mTranslator.getTargetTranslations().length;
-        if(numTranslations > 0 && mFragment instanceof WelcomeFragment) {
-            // display target translations list
-            mFragment = new TargetTranslationListFragment();
-            mFragment.setArguments(getIntent().getExtras());
-            getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
-
-            // load list after fragment created
-            Handler hand = new Handler(Looper.getMainLooper());
-            hand.post(new Runnable() {
+        mDialogShown = eDialogShown.OPEN_LIBRARY;
+        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                .setTitle(R.string.update_library)
+                .setIcon(R.drawable.ic_local_library_black_24dp)
+                .setMessage(R.string.use_internet_confirmation)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
-                    public void run() {
-                            ((TargetTranslationListFragment) mFragment).reloadList();
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                        Intent intent = new Intent(HomeActivity.this, ServerLibraryActivity.class);
+                        startActivity(intent);
                     }
-               });
-
-        } else if(numTranslations == 0 && mFragment instanceof TargetTranslationListFragment) {
-            // display welcome screen
-            mFragment = new WelcomeFragment();
-            mFragment.setArguments(getIntent().getExtras());
-            getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
-        } else if(numTranslations > 0 && mFragment instanceof TargetTranslationListFragment) {
-            // reload list
-            ((TargetTranslationListFragment)mFragment).reloadList();
-        }
+                })
+                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                    }
+                })
+                .show();
     }
 
     /**
@@ -376,7 +511,7 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
      */
     @Nullable
     private TargetTranslation getLastOpened() {
-        String lastTarget = AppContext.getLastFocusTargetTranslation();
+        String lastTarget = App.getLastFocusTargetTranslation();
         if (lastTarget != null) {
             TargetTranslation targetTranslation = mTranslator.getTargetTranslation(lastTarget);
             if (targetTranslation != null) {
@@ -389,16 +524,16 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
     @Override
     public void onBackPressed() {
         // display confirmation before closing the app
-        CustomAlertDialog.Create(this)
+        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                 .setMessage(R.string.exit_confirmation)
-                .setPositiveButton(R.string.yes, new View.OnClickListener() {
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(DialogInterface dialog, int which) {
                         HomeActivity.super.onBackPressed();
                     }
                 })
                 .setNegativeButton(R.string.no, null)
-                .show("ExitConfirm");
+                .show();
     }
 
     @Override
@@ -415,14 +550,14 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
                 }
 
                 Intent intent = new Intent(HomeActivity.this, TargetTranslationActivity.class);
-                intent.putExtra(AppContext.EXTRA_TARGET_TRANSLATION_ID, data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID));
+                intent.putExtra(App.EXTRA_TARGET_TRANSLATION_ID, data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID));
                 startActivity(intent);
             } else if( NewTargetTranslationActivity.RESULT_DUPLICATE == resultCode ) {
                 // display duplicate notice to user
                 String targetTranslationId = data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID);
                 TargetTranslation existingTranslation = mTranslator.getTargetTranslation(targetTranslationId);
                 if(existingTranslation != null) {
-                    Project project = mLibrary.getProject(existingTranslation.getProjectId(), Locale.getDefault().getLanguage());
+                    Project project = mLibrary.getProject(existingTranslation.getProjectId(), App.getDeviceLanguageCode());
                     Snackbar snack = Snackbar.make(findViewById(android.R.id.content), String.format(getResources().getString(R.string.duplicate_target_translation), project.name, existingTranslation.getTargetLanguageName()), Snackbar.LENGTH_LONG);
                     ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                     snack.show();
@@ -432,6 +567,72 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
                 ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                 snack.show();
             }
+        }
+    }
+
+    /**
+     * prompt user that project has changed
+     * @param targetTranslationId
+     */
+    public void showTranslationUpdatePrompt(final String targetTranslationId) {
+        TargetTranslation targetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
+        if(targetTranslation == null) {
+            Logger.e(TAG, "invalid target translation id:" + targetTranslationId);
+            return;
+        }
+
+        String projectID = targetTranslation.getProjectId();
+        Project project = App.getLibrary().getProject(projectID, targetTranslation.getTargetLanguageName());
+        if(project == null) {
+            Logger.e(TAG, "invalid project id:" + projectID);
+            return;
+        }
+
+        String message = String.format(getResources().getString(R.string.merge_request),
+                project.name, targetTranslation.getTargetLanguageName());
+
+        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                .setTitle(R.string.change_detected)
+                .setMessage(message)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                        downloadTargetTranslationUpdates(targetTranslationId);
+                    }
+                })
+                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        App.setNotifyTargetTranslationWithUpdates(null);
+                        mDialogShown = eDialogShown.NONE;
+                    }
+                })
+                .show();
+    }
+
+    /**
+     * Updates a single target translation
+     * @param targetTranslationId
+     */
+    private void downloadTargetTranslationUpdates(String targetTranslationId) {
+        if(App.isNetworkAvailable()) {
+            if (App.getProfile().gogsUser == null) {
+                Door43LoginDialog dialog = new Door43LoginDialog();
+                showDialogFragment(dialog, Door43LoginDialog.TAG);
+                return;
+            }
+
+            PullTargetTranslationTask task = new PullTargetTranslationTask(
+                    mTranslator.getTargetTranslation(targetTranslationId),
+                    MergeStrategy.RECURSIVE,
+                    null);
+            taskWatcher.watch(task);
+            TaskManager.addTask(task, PullTargetTranslationTask.TASK_ID);
+        } else {
+            Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.internet_not_available, Snackbar.LENGTH_LONG);
+            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+            snack.show();
         }
     }
 
@@ -455,12 +656,25 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
 
     @Override
     public void onItemClick(TargetTranslation targetTranslation) {
-        // validate project (make sure it was downloaded)
-        Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
-        TargetLanguage targetLanguage = AppContext.getLibrary().getTargetLanguage(targetTranslation.getTargetLanguageId());
+        // validate project and target language
 
-        if(project == null || targetLanguage == null || !AppContext.getLibrary().projectHasSource(project.getId())) {
+        Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), "en");
+        TargetLanguage language = App.getLibrary().getTargetLanguage(targetTranslation);
+        if(project == null || !App.getLibrary().projectHasSource(project.getId())) {
+            // validate project source exists
             Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.missing_project, Snackbar.LENGTH_LONG);
+            snack.setAction(R.string.download, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    openLibrary();
+                }
+            });
+            snack.setActionTextColor(getResources().getColor(R.color.light_primary_text));
+            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+            snack.show();
+        } else if(language == null) {
+            // validate target language exists
+            Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.missing_language, Snackbar.LENGTH_LONG);
             snack.setAction(R.string.download, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -472,7 +686,7 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
             snack.show();
         } else {
             Intent intent = new Intent(HomeActivity.this, TargetTranslationActivity.class);
-            intent.putExtra(AppContext.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
+            intent.putExtra(App.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
             startActivity(intent);
         }
     }
@@ -480,4 +694,38 @@ public class HomeActivity extends BaseActivity implements GenericTaskWatcher.OnF
     public void notifyDatasetChanged() {
         onResume();
     }
-}
+
+    @Override
+    public void onSaveInstanceState(Bundle out) {
+        out.putInt(STATE_DIALOG_SHOWN, mDialogShown.getValue());
+        super.onSaveInstanceState(out);
+    }
+
+    /**
+     * for keeping track if dialog is being shown for orientation changes
+     */
+    public enum eDialogShown {
+        NONE(0),
+        IMPORT_VERIFICATION(2),
+        OPEN_LIBRARY(3),
+        IMPORT_RESULTS(4);
+
+        private int _value;
+
+        eDialogShown(int Value) {
+            this._value = Value;
+        }
+
+        public int getValue() {
+            return _value;
+        }
+
+        public static eDialogShown fromInt(int i) {
+            for (eDialogShown b : eDialogShown.values()) {
+                if (b.getValue() == i) {
+                    return b;
+                }
+            }
+            return null;
+        }
+    }}

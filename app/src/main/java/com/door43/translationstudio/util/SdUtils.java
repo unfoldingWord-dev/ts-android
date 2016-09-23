@@ -9,16 +9,15 @@ import android.os.Environment;
 import android.support.v4.os.EnvironmentCompat;
 import android.support.v4.provider.DocumentFile;
 
-import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.AppContext;
-import com.door43.translationstudio.SettingsActivity;
-import com.door43.util.StorageUtils;
+import org.unfoldingword.tools.logger.Logger;
 
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
+import com.door43.translationstudio.App;
+import com.door43.translationstudio.SettingsActivity;
+import com.door43.util.FileUtilities;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -32,7 +31,7 @@ import java.util.List;
  */
 public class SdUtils {
     public static final String DOWNLOAD_FOLDER = "/Download";
-    public static final String DOWNLOAD_TRANSLATION_STUDIO_FOLDER = DOWNLOAD_FOLDER + "/" + AppContext.TRANSLATION_STUDIO;
+    public static final String DOWNLOAD_TRANSLATION_STUDIO_FOLDER = DOWNLOAD_FOLDER + "/" + App.PUBLIC_DATA_DIR;
     private static String sdCardPath = "";
     private static boolean alreadyReadSdCardDirectory = false;
     private static String verifiedSdCardPath = "";
@@ -194,8 +193,8 @@ public class SdUtils {
 
     private static void storeSdCardAccess(Uri sdUri, int flags) {
         String uriStr = (null == sdUri) ? null : sdUri.toString();
-        AppContext.setUserString(SettingsActivity.KEY_SDCARD_ACCESS_URI, uriStr);
-        AppContext.setUserString(SettingsActivity.KEY_SDCARD_ACCESS_FLAGS, String.valueOf(flags));
+        App.setUserString(SettingsActivity.KEY_SDCARD_ACCESS_URI, uriStr);
+        App.setUserString(SettingsActivity.KEY_SDCARD_ACCESS_FLAGS, String.valueOf(flags));
         Logger.i(SdUtils.class.getName(), "URI = " + sdUri);
         verifiedSdCardPath = ""; // reset persisted path to SD card, will need to find it again
     }
@@ -206,8 +205,8 @@ public class SdUtils {
      */
     public static boolean restoreSdCardWriteAccess() {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            String flagStr = AppContext.getUserString(SettingsActivity.KEY_SDCARD_ACCESS_FLAGS, null);
-            String path = AppContext.getUserString(SettingsActivity.KEY_SDCARD_ACCESS_URI, null);
+            String flagStr = App.getUserString(SettingsActivity.KEY_SDCARD_ACCESS_FLAGS, null);
+            String path = App.getUserString(SettingsActivity.KEY_SDCARD_ACCESS_URI, null);
             if ((path != null) && (flagStr != null)) {
 
                 Integer flags = Integer.parseInt(flagStr);
@@ -225,8 +224,8 @@ public class SdUtils {
             Logger.i(SdUtils.class.getName(), "Apply permissions to URI '" + sdUri.toString() + "' flags: " + flags);
             int takeFlags = flags
                     & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            AppContext.context().grantUriPermission(AppContext.context().getPackageName(), sdUri, takeFlags); //TODO 12/22/2015 need to find way to remove this warning
-            AppContext.context().getContentResolver().takePersistableUriPermission(sdUri, takeFlags);
+            App.context().grantUriPermission(App.context().getPackageName(), sdUri, takeFlags); //TODO 12/22/2015 need to find way to remove this warning
+            App.context().getContentResolver().takePersistableUriPermission(sdUri, takeFlags);
             return true;
         }
         return false;
@@ -237,7 +236,7 @@ public class SdUtils {
      * @return
      */
     public static String getSdCardAccessUriStr() {
-        String path = AppContext.getUserString(SettingsActivity.KEY_SDCARD_ACCESS_URI, null);
+        String path = App.getUserString(SettingsActivity.KEY_SDCARD_ACCESS_URI, null);
         return path;
     }
 
@@ -481,14 +480,18 @@ public class SdUtils {
         OutputStream fout = null;
 
         try {
-            fout = AppContext.context().getContentResolver().openOutputStream(document.getUri());
+            fout = App.context().getContentResolver().openOutputStream(document.getUri());
             fout.write(data.getBytes());
             fout.close();
         } catch (Exception e) {
             Logger.i(SdUtils.class.getName(), "Could not write to folder");
             success = false; // write failed
         } finally {
-            IOUtils.closeQuietly(fout);
+            try {
+                fout.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         return success;
@@ -507,7 +510,7 @@ public class SdUtils {
         }
 
         Uri sdCardFolderUri = Uri.parse(sdCardFolderUriStr);
-        DocumentFile document = DocumentFile.fromTreeUri(AppContext.context(), sdCardFolderUri);
+        DocumentFile document = DocumentFile.fromTreeUri(App.context(), sdCardFolderUri);
         DocumentFile subDocument = documentFileMkdirs(document, subFolderName);
         if ( (subDocument != null) && subDocument.isDirectory() && subDocument.canWrite() ) {
             return subDocument;
@@ -637,7 +640,7 @@ public class SdUtils {
 
             DocumentFile[] files = document.listFiles();
             for(DocumentFile file: files) {
-                String ext = FilenameUtils.getExtension(file.getName());
+                String ext = FileUtilities.getExtension(file.getName());
                 if(ext != null) {
                     if (ext.toLowerCase().equals(extension)) {
                         if ((file != null) && file.canRead()) {
