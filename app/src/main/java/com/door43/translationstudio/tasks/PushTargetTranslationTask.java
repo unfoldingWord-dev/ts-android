@@ -32,15 +32,13 @@ public class PushTargetTranslationTask extends ManagedTask {
 
     public static final String TASK_ID = "push_target_translation_task";
     private final TargetTranslation targetTranslation;
-    private final boolean pushTags;
     private Status status = Status.UNKNOWN;
     private String message = "";
     private PushResult pushRejectedResults;
 
-    public PushTargetTranslationTask(TargetTranslation targetTranslation, boolean pushTags) {
+    public PushTargetTranslationTask(TargetTranslation targetTranslation) {
         setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
         this.targetTranslation = targetTranslation;
-        this.pushTags = pushTags;
     }
 
     @Override
@@ -97,11 +95,8 @@ public class PushTargetTranslationTask extends ManagedTask {
                         return false;
                     }
                 })
-                .setForce(false)
-                .setPushAll();
-        if(this.pushTags) {
-            pushCommand.setPushTags();
-        }
+                .setPushTags()
+                .setForce(false);
 
         try {
             Iterable<PushResult> result = pushCommand.call();
