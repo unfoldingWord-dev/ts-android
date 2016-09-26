@@ -19,8 +19,12 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.Html;
 import android.text.Selection;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import android.view.DragEvent;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -122,9 +126,17 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private boolean mAllowFootnote = true;
     private SearchFilter mSearchFilter;
     private CharSequence mSearchString;
-
-
+    private int mMarginInitialLeft = 0;
+    private boolean mMergeHeadSelected = false;
+    private boolean mMergeTailSelected = false;
 //    private boolean onBind = false;
+
+    enum DisplayState {
+        NORMAL,
+        SELECTED,
+        DESELECTED
+    }
+
 
     public ReviewModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String startingChapterSlug, String startingFrameSlug, boolean resourcesOpened) {
 
@@ -540,13 +552,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mTargetTitle.setText(targetTitle);
 
         if(item.isTranslationMergeConflicted) {
-            USFMRenderer renderer = new USFMRenderer();
-            CharSequence head = renderer.renderMergeConflict(item.bodyTranslation, USFMRenderer.MergeHeadPart, MERGE_CONFLICT_BACKGROUND_COLOR);
-            holder.mHeadText.setText(head);
-            CharSequence tail = renderer.renderMergeConflict(item.bodyTranslation, USFMRenderer.MergeTailPart, MERGE_CONFLICT_BACKGROUND_COLOR);
-            holder.mTailText.setText(tail);
-
-            // TODO: 9/22/16 add click action for head and tail text
+            renderTargetMergeConflictCard(item, holder);
             return;
         }
 
@@ -736,6 +742,116 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
             }
         });
+    }
+
+    /**
+     * initialize the target card for displaying and resolving merge conflicts
+     * @param item
+     * @param holder
+     */
+    private void renderTargetMergeConflictCard(ListItem item, final ViewHolder holder) {
+        USFMRenderer renderer = new USFMRenderer();
+        final CharSequence head = renderer.renderMergeConflict(item.bodyTranslation, USFMRenderer.MergeHeadPart, MERGE_CONFLICT_BACKGROUND_COLOR);
+        final CharSequence tail = renderer.renderMergeConflict(item.bodyTranslation, USFMRenderer.MergeTailPart, MERGE_CONFLICT_BACKGROUND_COLOR);
+        mMarginInitialLeft = leftMargin(holder.mHeadText);
+        displayMergeConflictSelectionState(false, false, holder, head, tail);
+
+        holder.mHeadText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                displayMergeConflictSelectionState(true, false, holder, head, tail);
+            }
+        });
+
+        holder.mTailText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                displayMergeConflictSelectionState(false, true, holder, head, tail);
+            }
+        });
+
+    }
+
+    /**
+     * get the left margin for view
+     * @param v
+     * @return
+     */
+    private int leftMargin(View v) {
+        ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+        int lm = p.leftMargin;
+        return lm;
+    }
+
+    /**
+     * set merge conflict selection state
+     * @param selectHead
+     * @param selectTail
+     * @param holder
+     * @param headText
+     * @param tailText
+     */
+    private void displayMergeConflictSelectionState(boolean selectHead, boolean selectTail, ViewHolder holder, CharSequence headText, CharSequence tailText) {
+        mMergeHeadSelected = selectHead;
+        mMergeTailSelected = selectTail;
+
+        if(mMergeHeadSelected || mMergeTailSelected) {
+            if(mMergeHeadSelected) {
+                displayMergeSelectionState(DisplayState.SELECTED, holder.mHeadText, headText);
+                displayMergeSelectionState(DisplayState.DESELECTED, holder.mTailText, tailText);
+            }
+            else {
+                displayMergeSelectionState(DisplayState.DESELECTED, holder.mHeadText, headText);
+                displayMergeSelectionState(DisplayState.SELECTED, holder.mTailText, tailText);
+            }
+
+        } else {
+            displayMergeSelectionState(DisplayState.NORMAL, holder.mHeadText, headText);
+            displayMergeSelectionState(DisplayState.NORMAL, holder.mTailText, tailText);
+        }
+    }
+
+    /**
+     * display the selection state for card
+     * @param state
+     */
+    private void displayMergeSelectionState(DisplayState state, TextView view, CharSequence text) {
+
+        SpannableStringBuilder span;
+
+        switch (state) {
+            case SELECTED:
+                setLeftRightMargins( view, 0);
+                span = new SpannableStringBuilder(text);
+                span.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                view.setText(span);
+                break;
+
+            case DESELECTED:
+                setLeftRightMargins( view, 2 * mMarginInitialLeft);
+                span = new SpannableStringBuilder(text);
+                span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_disabled_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                view.setText(span);
+                break;
+
+            case NORMAL:
+            default:
+                setLeftRightMargins( view, mMarginInitialLeft);
+                view.setText(text);
+                break;
+        }
+    }
+
+    /**
+     * change left and right margins to emphasize/de-emphasize
+     * @param view
+     * @param newValue
+     */
+    private void setLeftRightMargins(View view, int newValue) {
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+        params.leftMargin = newValue;
+        params.rightMargin = newValue;
+        view.requestLayout();
     }
 
     private void prepareTranslationUI(final ViewHolder holder, ListItem item) {

@@ -146,7 +146,9 @@
                     android:background="@color/head_background"
                     android:padding="@dimen/dialog_controls_margin"
                     android:textIsSelectable="false"
-                    android:editable="false" />
+                    android:editable="false"
+                    android:layout_marginLeft="@dimen/dialog_controls_margin"
+                    android:layout_marginRight="@dimen/dialog_controls_margin" />
 
                 <EditText
                     android:layout_width="match_parent"
@@ -158,7 +160,9 @@
                     android:background="@color/tail_background"
                     android:padding="@dimen/dialog_controls_margin"
                     android:textIsSelectable="false"
-                    android:editable="false" />
+                    android:editable="false"
+                    android:layout_marginLeft="@dimen/dialog_controls_margin"
+                    android:layout_marginRight="@dimen/dialog_controls_margin" />
 
             </LinearLayout>
 
