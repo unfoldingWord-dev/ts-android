@@ -32,6 +32,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Filter;
@@ -65,9 +66,9 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.DefaultRenderer;
+import com.door43.translationstudio.rendering.MergeConflictHandler;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.ClickableRenderingEngine;
-import com.door43.translationstudio.rendering.USFMRenderer;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.USFMNoteSpan;
 import com.door43.translationstudio.spannables.Span;
@@ -126,9 +127,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private boolean mAllowFootnote = true;
     private SearchFilter mSearchFilter;
     private CharSequence mSearchString;
-    private int mMarginInitialLeft = 0;
     private boolean mMergeHeadSelected = false;
     private boolean mMergeTailSelected = false;
+    private float mInitialTextSize = 0;
+    private int mMarginInitialLeft = 0;
 //    private boolean onBind = false;
 
     enum DisplayState {
@@ -750,11 +752,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param holder
      */
     private void renderTargetMergeConflictCard(ListItem item, final ViewHolder holder) {
-        USFMRenderer renderer = new USFMRenderer();
-        final CharSequence head = renderer.renderMergeConflict(item.bodyTranslation, USFMRenderer.MergeHeadPart, MERGE_CONFLICT_BACKGROUND_COLOR);
-        final CharSequence tail = renderer.renderMergeConflict(item.bodyTranslation, USFMRenderer.MergeTailPart, MERGE_CONFLICT_BACKGROUND_COLOR);
+        MergeConflictHandler renderer = new MergeConflictHandler();
+        final CharSequence head = renderer.renderMergeConflict(item.bodyTranslation, MergeConflictHandler.MergeHeadPart, MERGE_CONFLICT_BACKGROUND_COLOR);
+        final CharSequence tail = renderer.renderMergeConflict(item.bodyTranslation, MergeConflictHandler.MergeTailPart, MERGE_CONFLICT_BACKGROUND_COLOR);
         mMarginInitialLeft = leftMargin(holder.mHeadText);
+        mInitialTextSize = holder.mHeadText.getTextSize();
         displayMergeConflictSelectionState(false, false, holder, head, tail);
+        holder.mConflictText.setVisibility(View.VISIBLE);
+        holder.mButtonBar.setVisibility(View.GONE);
 
         holder.mHeadText.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -770,6 +775,19 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         });
 
+        holder.mCancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                displayMergeConflictSelectionState(false, false, holder, head, tail);
+            }
+        });
+
+        holder.mConfirmButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: 9/26/16 add selection logic
+            }
+        });
     }
 
     /**
@@ -799,15 +817,20 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             if(mMergeHeadSelected) {
                 displayMergeSelectionState(DisplayState.SELECTED, holder.mHeadText, headText);
                 displayMergeSelectionState(DisplayState.DESELECTED, holder.mTailText, tailText);
-            }
-            else {
+                holder.mConflictText.setVisibility(View.GONE);
+                holder.mButtonBar.setVisibility(View.VISIBLE);
+            } else {
                 displayMergeSelectionState(DisplayState.DESELECTED, holder.mHeadText, headText);
                 displayMergeSelectionState(DisplayState.SELECTED, holder.mTailText, tailText);
+                holder.mConflictText.setVisibility(View.GONE);
+                holder.mButtonBar.setVisibility(View.VISIBLE);
             }
 
         } else {
             displayMergeSelectionState(DisplayState.NORMAL, holder.mHeadText, headText);
             displayMergeSelectionState(DisplayState.NORMAL, holder.mTailText, tailText);
+            holder.mConflictText.setVisibility(View.VISIBLE);
+            holder.mButtonBar.setVisibility(View.GONE);
         }
     }
 
@@ -821,23 +844,28 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         switch (state) {
             case SELECTED:
-                setLeftRightMargins( view, 0);
+                setLeftRightMargins( view, 0); // shrink margins to emphasize
                 span = new SpannableStringBuilder(text);
+                // bold text to emphasize
                 span.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 view.setText(span);
+                view.setTextSize(mInitialTextSize * 1.1f); // grow text to emphasize
                 break;
 
             case DESELECTED:
-                setLeftRightMargins( view, 2 * mMarginInitialLeft);
+                setLeftRightMargins( view, 2 * mMarginInitialLeft); // grow margins to de-emphasize
                 span = new SpannableStringBuilder(text);
+                // gray out text to de-emphasize
                 span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_disabled_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 view.setText(span);
+                view.setTextSize(mInitialTextSize * 0.9f); // shrink text to de-emphasize
                 break;
 
             case NORMAL:
             default:
-                setLeftRightMargins( view, mMarginInitialLeft);
-                view.setText(text);
+                setLeftRightMargins( view, mMarginInitialLeft); // restore original margins
+                view.setText(text); // remove text emphasis
+                view.setTextSize(mInitialTextSize); // restore initial test size
                 break;
         }
     }
@@ -847,7 +875,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param view
      * @param newValue
      */
-    private void setLeftRightMargins(View view, int newValue) {
+    private void setLeftRightMargins(TextView view, int newValue) {
         ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
         params.leftMargin = newValue;
         params.rightMargin = newValue;
@@ -2007,6 +2035,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public final TextView mHeadText;
         public final TextView mTailText;
         public final TextView mConflictText;
+        public final LinearLayout mButtonBar;
+        public final Button mCancelButton;
+        public final Button mConfirmButton;
 
         public ViewHolder(Context context, View v) {
             super(v);
@@ -2034,6 +2065,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             mHeadText = (TextView)v.findViewById(R.id.merge_head);
             mTailText = (TextView)v.findViewById(R.id.merge_tail);
             mConflictText = (TextView)v.findViewById(R.id.conflict_label);
+            mButtonBar = (LinearLayout)v.findViewById(R.id.button_bar);
+            mCancelButton = (Button) v.findViewById(R.id.cancel_button);
+            mConfirmButton = (Button)v.findViewById(R.id.confirm_button);
         }
 
         /**
@@ -2178,7 +2212,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
 
             if (bodyTranslation != null) {
-                isTranslationMergeConflicted = USFMRenderer.isMergeConflicted(bodyTranslation);
+                isTranslationMergeConflicted = MergeConflictHandler.isMergeConflicted(bodyTranslation);
             }
         }
     }
