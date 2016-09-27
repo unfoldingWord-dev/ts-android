@@ -212,7 +212,10 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
             mSectionMarkers = chapterMarkers.toArray(new String[chapterMarkers.size()]);
             mStartPositionForSection = startPositionForSection.toArray(new Integer[startPositionForSection.size()]);
             mSectionForPosition = sectionForPosition.toArray(new Integer[sectionForPosition.size()]);
-            getListener().onItemCountChanged(getItemCount(), 0);
+            OnEventListener listener = getListener();
+            if(listener != null) {
+                listener.onItemCountChanged(getItemCount(), 0);
+            }
         }
     }
 
