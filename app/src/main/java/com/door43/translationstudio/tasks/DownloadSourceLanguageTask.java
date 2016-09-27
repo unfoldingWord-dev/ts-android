@@ -5,6 +5,7 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceTranslation;
 
+import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 /**
@@ -40,6 +41,12 @@ public class DownloadSourceLanguageTask extends ManagedTask {
     public void start() {
         publishProgress(-1, "");
         final Resource[] resources = mLibrary.getResources(mProjectId, mSourceLanguageId);
+
+        if((resources == null) || (resources.length == 0)) {
+            Logger.e(DownloadSourceLanguageTask.class.getSimpleName(),"Could not find resources for project " + mProjectId + " and source language " + mSourceLanguageId);
+            mSuccess = false;
+            return;
+        }
 
         mSuccess = true;
         for(int i = 0; i < resources.length; i ++) {

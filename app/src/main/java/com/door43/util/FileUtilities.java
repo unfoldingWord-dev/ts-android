@@ -197,6 +197,8 @@ public class FileUtilities {
                 } catch (IOException e) {
                     Logger.e(FileUtilities.class.getName(), "Failed to copy the file", e);
                 }
+            } else {
+                return true; // successful move
             }
         }
         return false;

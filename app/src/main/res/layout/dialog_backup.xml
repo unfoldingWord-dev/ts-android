@@ -82,7 +82,7 @@
                 android:focusable="true"
                 android:contextClickable="true"
                 android:layout_marginBottom="@dimen/dialog_controls_margin"
-                android:visibility="gone">
+                android:visibility="visible">
 
 
                 <TextView
@@ -204,6 +204,24 @@
                     android:textSize="@dimen/caption"
                     android:layout_marginLeft="@dimen/dialog_content_margin" />
             </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="1px"
+                android:background="@color/list_separator"/>
+
+            <Button
+                android:id="@+id/export_usfm_to_sd"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/export_to_usfm"
+                android:drawableLeft="@drawable/ic_phone_android_secondary_24dp"
+                android:drawableStart="@drawable/ic_phone_android_secondary_24dp"
+                android:gravity="left|center_vertical"
+                android:drawablePadding="10dp"
+                android:textColor="@color/dark_primary_text"
+                android:textAllCaps="false"
+                style="@style/Widget.Button.Secondary" />
 
             <LinearLayout
                 android:layout_width="match_parent"

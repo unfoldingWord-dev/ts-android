@@ -146,18 +146,14 @@ public class LibraryStraightThroughTest {
         }
     }
 
-    //disabled since this was failing - will be replaced soon with resource container
+    /**
+     * it should return a single questionnaire
+     */
 
-//    /**
-//     * it should return a single questionnaire
-//     */
+    // remove broken test - this is going away
 //    @Test
 //    public void getQuestionaire() {
-//        //get valid questionnaire id
-//        Questionnaire [] questionnaires = mLibrary.getQuestionnaires();
-//        long id = questionnaires[0].dbId;
-//
-//        assertNotNull(mLibrary.getQuestionnaire(id));
+//        assertNotNull(mLibrary.getQuestionnaire(0));
 //    }
 
     /**

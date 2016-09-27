@@ -37,7 +37,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
     private OnClickListener mListener;
     private ChooseSourceTranslationAdapter mAdapter;
     private Library mLibrary;
-    public static final boolean ENABLE_DRAFTS = true;
+    public static final boolean ENABLE_DRAFTS = false;
     private static final int MIN_CHECKING_LEVEL = 1; // the minimum level to be considered a source translation
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
