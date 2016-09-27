@@ -554,7 +554,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mTargetTitle.setText(targetTitle);
 
         if(item.isTranslationMergeConflicted) {
-            renderTargetMergeConflictCard(item, holder);
+            renderTargetMergeConflictCard(holder, item, chapter, frame);
             return;
         }
 
@@ -724,26 +724,35 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             .show();
 
                 } else { // done button checked off
-
-                    boolean opened;
-                    if (item.isChapterReference) {
-                        opened = mTargetTranslation.reopenChapterReference(chapter);
-                    } else if (item.isChapterTitle) {
-                        opened = mTargetTranslation.reopenChapterTitle(chapter);
-                    } else if (item.isProjectTitle) {
-                        opened = mTargetTranslation.openProjectTitle();
-                    } else {
-                        opened = mTargetTranslation.reopenFrame(frame);
-                    }
-                    if (opened) {
-                        item.renderedTargetBody = null;
-                        notifyDataSetChanged();
-                    } else {
-                        // TODO: 10/27/2015 notify user the frame could not be completed.
-                    }
+                    reOpenItem(item, chapter, frame);
                 }
             }
         });
+    }
+
+    /**
+     * mark item as not done
+     * @param item
+     * @param chapter
+     * @param frame
+     */
+    private void reOpenItem(ListItem item, Chapter chapter, Frame frame) {
+        boolean opened;
+        if (item.isChapterReference) {
+            opened = mTargetTranslation.reopenChapterReference(chapter);
+        } else if (item.isChapterTitle) {
+            opened = mTargetTranslation.reopenChapterTitle(chapter);
+        } else if (item.isProjectTitle) {
+            opened = mTargetTranslation.openProjectTitle();
+        } else {
+            opened = mTargetTranslation.reopenFrame(frame);
+        }
+        if (opened) {
+            item.renderedTargetBody = null;
+            notifyDataSetChanged();
+        } else {
+            // TODO: 10/27/2015 notify user the frame could not be completed.
+        }
     }
 
     /**
@@ -751,7 +760,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param item
      * @param holder
      */
-    private void renderTargetMergeConflictCard(ListItem item, final ViewHolder holder) {
+    private void renderTargetMergeConflictCard(final ViewHolder holder, final ListItem item, final Chapter chapter, final Frame frame) {
         MergeConflictHandler renderer = new MergeConflictHandler();
         final CharSequence head = renderer.renderMergeConflict(item.bodyTranslation, MergeConflictHandler.MergeHeadPart, MERGE_CONFLICT_BACKGROUND_COLOR);
         final CharSequence tail = renderer.renderMergeConflict(item.bodyTranslation, MergeConflictHandler.MergeTailPart, MERGE_CONFLICT_BACKGROUND_COLOR);
@@ -785,7 +794,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mConfirmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: 9/26/16 add selection logic
+                CharSequence selectedText = mMergeHeadSelected ? head : tail;
+                applyNewCompiledText(selectedText.toString(), holder, item);
+                reOpenItem( item, chapter, frame);
+                notifyDataSetChanged();
             }
         });
     }
@@ -1082,10 +1094,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     * save changed text
+     * save changed text to item,  first see if it needs to be compiled
      * @param s A string or editable
      * @param item
-     * @return
+     * @param holder
+     * @param item
+     * * @return
      */
     private String applyChangedText(CharSequence s, ViewHolder holder, ListItem item) {
         String translation;
@@ -1095,13 +1109,24 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             translation = s.toString();
         }
 
+        applyNewCompiledText(translation, holder, item);
+        return translation;
+    }
+
+    /**
+     *  save new text to item
+     * @param translation
+     * @param holder
+     * @param item
+     */
+    private void applyNewCompiledText(String translation, ViewHolder holder, ListItem item) {
         if (item.isChapterReference) {
             mTargetTranslation.applyChapterReferenceTranslation(item.chapterTranslation, translation);
         } else if (item.isChapterTitle) {
             mTargetTranslation.applyChapterTitleTranslation(item.chapterTranslation, translation);
         } else if (item.isProjectTitle) {
             try {
-                mTargetTranslation.applyProjectTitleTranslation(s.toString());
+                mTargetTranslation.applyProjectTitleTranslation(translation);
             } catch (IOException e) {
                 Logger.e(ReviewModeAdapter.class.getName(), "Failed to save the project title translation", e);
             }
@@ -1109,7 +1134,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             mTargetTranslation.applyFrameTranslation(item.frameTranslation, translation);
         }
         item.renderedTargetBody = renderSourceText(translation, item.translationFormat, holder, item, true);
-        return translation;
     }
 
     /**
