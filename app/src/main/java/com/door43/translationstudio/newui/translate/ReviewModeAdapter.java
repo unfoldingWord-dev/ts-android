@@ -762,44 +762,63 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      */
     private void renderTargetMergeConflictCard(final ViewHolder holder, final ListItem item, final Chapter chapter, final Frame frame) {
         MergeConflictHandler renderer = new MergeConflictHandler();
-        final CharSequence head = renderer.renderMergeConflict(item.bodyTranslation, MergeConflictHandler.MergeHeadPart, MERGE_CONFLICT_BACKGROUND_COLOR);
-        final CharSequence tail = renderer.renderMergeConflict(item.bodyTranslation, MergeConflictHandler.MergeTailPart, MERGE_CONFLICT_BACKGROUND_COLOR);
-        mMarginInitialLeft = leftMargin(holder.mHeadText);
-        mInitialTextSize = holder.mHeadText.getTextSize();
-        displayMergeConflictSelectionState(false, false, holder, head, tail);
+        final CharSequence headText = renderer.renderMergeConflict(item.bodyTranslation, MergeConflictHandler.MergeHeadPart, MERGE_CONFLICT_BACKGROUND_COLOR);
+        final CharSequence tailText = renderer.renderMergeConflict(item.bodyTranslation, MergeConflictHandler.MergeTailPart, MERGE_CONFLICT_BACKGROUND_COLOR);
+        if(mInitialTextSize == 0) {
+            mMarginInitialLeft = leftMargin(holder.mHeadText);
+            mInitialTextSize = holder.mHeadText.getTextSize();
+        }
+        displayMergeConflictSelectionState(false, false, holder, headText, tailText);
         holder.mConflictText.setVisibility(View.VISIBLE);
         holder.mButtonBar.setVisibility(View.GONE);
 
         holder.mHeadText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                displayMergeConflictSelectionState(true, false, holder, head, tail);
+                displayMergeConflictSelectionState(true, false, holder, headText, tailText);
             }
         });
 
         holder.mTailText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                displayMergeConflictSelectionState(false, true, holder, head, tail);
+                displayMergeConflictSelectionState(false, true, holder, headText, tailText);
             }
         });
 
         holder.mCancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                displayMergeConflictSelectionState(false, false, holder, head, tail);
+                displayMergeConflictSelectionState(false, false, holder, headText, tailText);
             }
         });
 
         holder.mConfirmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CharSequence selectedText = mMergeHeadSelected ? head : tail;
+                CharSequence selectedText = mMergeHeadSelected ? headText : tailText;
                 applyNewCompiledText(selectedText.toString(), holder, item);
                 reOpenItem( item, chapter, frame);
                 notifyDataSetChanged();
             }
         });
+
+        holder.mUndoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                undoTextInTarget(holder, item);
+            }
+        });
+        holder.mRedoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                redoTextInTarget(holder, item);
+            }
+        });
+
+        prepareUndoRedoUI(holder, item);
+        holder.mUndoButton.setVisibility(View.GONE);
+        holder.mRedoButton.setVisibility(View.GONE);
     }
 
     /**
@@ -896,39 +915,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     private void prepareTranslationUI(final ViewHolder holder, ListItem item) {
         if(item.isEditing) {
-            final FileHistory history = item.getFileHistory(mTargetTranslation);
-            ThreadableUI thread = new ThreadableUI(mContext) {
-                @Override
-                public void onStop() {
-
-                }
-
-                @Override
-                public void run() {
-                    try {
-                        history.loadCommits();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (GitAPIException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                @Override
-                public void onPostExecute() {
-                    if(history.hasNext()) {
-                        holder.mRedoButton.setVisibility(View.VISIBLE);
-                    } else {
-                        holder.mRedoButton.setVisibility(View.GONE);
-                    }
-                    if(history.hasPrevious()) {
-                        holder.mUndoButton.setVisibility(View.VISIBLE);
-                    } else {
-                        holder.mUndoButton.setVisibility(View.GONE);
-                    }
-                }
-            };
-            thread.start();
+            prepareUndoRedoUI(holder, item);
 
             boolean allowFootnote = mAllowFootnote && item.isFrame();
             holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
@@ -949,6 +936,47 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             holder.mTargetEditableBody.setEnableLines(false);
             holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         }
+    }
+
+    /**
+     * check history to see if we should show undo/redo buttons
+     * @param holder
+     * @param item
+     */
+    private void prepareUndoRedoUI(final ViewHolder holder, ListItem item) {
+        final FileHistory history = item.getFileHistory(mTargetTranslation);
+        ThreadableUI thread = new ThreadableUI(mContext) {
+            @Override
+            public void onStop() {
+
+            }
+
+            @Override
+            public void run() {
+                try {
+                    history.loadCommits();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (GitAPIException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onPostExecute() {
+                if(history.hasNext()) {
+                    holder.mRedoButton.setVisibility(View.VISIBLE);
+                } else {
+                    holder.mRedoButton.setVisibility(View.GONE);
+                }
+                if(history.hasPrevious()) {
+                    holder.mUndoButton.setVisibility(View.VISIBLE);
+                } else {
+                    holder.mUndoButton.setVisibility(View.GONE);
+                }
+            }
+        };
+        thread.start();
     }
 
     private void renderTargetBody(ListItem item, ViewHolder holder, Frame frame) {
@@ -1120,6 +1148,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param item
      */
     private void applyNewCompiledText(String translation, ViewHolder holder, ListItem item) {
+        item.changeBodyTranslation(translation);
         if (item.isChapterReference) {
             mTargetTranslation.applyChapterReferenceTranslation(item.chapterTranslation, translation);
         } else if (item.isChapterTitle) {
@@ -1180,9 +1209,17 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             // TRICKY: prevent history from getting rolled back soon after the user views it
                             restartAutoCommitTimer();
                             applyChangedText(text, holder, item);
-                            holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
-                            holder.mTargetEditableBody.setText(item.renderedTargetBody);
-                            holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
+                            if(holder.mTargetEditableBody != null) {
+                                holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
+                                holder.mTargetEditableBody.setText(item.renderedTargetBody);
+                                holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
+
+                                if(item.isTranslationMergeConflicted) {  // see if we pulled a merge conflict item
+                                    notifyDataSetChanged();
+                                }
+                            } else { // we were displaying merge conflict
+                                notifyDataSetChanged();
+                            }
                         }
                     }
                 } catch (IOException e) {
@@ -1235,9 +1272,17 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             // TRICKY: prevent history from getting rolled back soon after the user views it
                             restartAutoCommitTimer();
                             applyChangedText(text, holder, item);
-                            holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
-                            holder.mTargetEditableBody.setText(item.renderedTargetBody);
-                            holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
+                            if(holder.mTargetEditableBody != null) {
+                                holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
+                                holder.mTargetEditableBody.setText(item.renderedTargetBody);
+                                holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
+
+                                if(item.isTranslationMergeConflicted) {  // see if we pulled a merge conflict item
+                                    notifyDataSetChanged();
+                                }
+                            } else { // we were displaying merge conflict
+                                notifyDataSetChanged();
+                            }
                         }
                     }
                 } catch (IOException e) {
@@ -2235,9 +2280,23 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 isTranslationFinished = frameTranslation.isFinished();
             }
 
+            updateMergeConflicted();
+        }
+
+        /**
+         * recheck if merge is conflict
+         */
+        private void updateMergeConflicted() {
             if (bodyTranslation != null) {
                 isTranslationMergeConflicted = MergeConflictHandler.isMergeConflicted(bodyTranslation);
+            } else {
+                isTranslationMergeConflicted = false;
             }
+        }
+
+        public void changeBodyTranslation(String text) {
+            bodyTranslation = text;
+            updateMergeConflicted();
         }
     }
 
