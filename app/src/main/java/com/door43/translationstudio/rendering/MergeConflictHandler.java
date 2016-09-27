@@ -123,21 +123,24 @@ public class MergeConflictHandler {
 
     static private foundRange findFirst(CharSequence in, int startPos, Pattern pattern) {
         Matcher matcher = pattern.matcher(in);
-        if(matcher.find(startPos)) {
+        if (matcher.find(startPos)) {
             return new foundRange(matcher);
         }
         return null;
     }
 
     /**
-      * Detects merge conflict tags
-      * @param in
-      * @return
-      */
-    static public boolean isMergeConflicted(CharSequence in) {
-        Matcher matcher = MergeConflictPatternHead.matcher(in);
-        boolean matchFound = matcher.find();
-        return matchFound;
+     * Detects merge conflict tags
+     * @param text
+     * @return
+     */
+    static public boolean isMergeConflicted(CharSequence text) {
+        if(text != null) {
+            Matcher matcher = MergeConflictPatternHead.matcher(text);
+            boolean matchFound = matcher.find();
+            return matchFound;
+        }
+        return false;
     }
 
     static public class foundRange {

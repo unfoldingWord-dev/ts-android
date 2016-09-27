@@ -764,7 +764,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         MergeConflictHandler renderer = new MergeConflictHandler();
         final CharSequence headText = renderer.renderMergeConflict(item.bodyTranslation, MergeConflictHandler.MergeHeadPart, MERGE_CONFLICT_BACKGROUND_COLOR);
         final CharSequence tailText = renderer.renderMergeConflict(item.bodyTranslation, MergeConflictHandler.MergeTailPart, MERGE_CONFLICT_BACKGROUND_COLOR);
-        if(mInitialTextSize == 0) {
+        if(mInitialTextSize == 0) { // see if we need to initialize values
             mMarginInitialLeft = leftMargin(holder.mHeadText);
             mInitialTextSize = holder.mHeadText.getTextSize();
         }
@@ -2280,13 +2280,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 isTranslationFinished = frameTranslation.isFinished();
             }
 
-            updateMergeConflicted();
+            updateMergeConflict();
         }
 
         /**
          * recheck if merge is conflict
          */
-        private void updateMergeConflicted() {
+        private void updateMergeConflict() {
             if (bodyTranslation != null) {
                 isTranslationMergeConflicted = MergeConflictHandler.isMergeConflicted(bodyTranslation);
             } else {
@@ -2296,7 +2296,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         public void changeBodyTranslation(String text) {
             bodyTranslation = text;
-            updateMergeConflicted();
+            updateMergeConflict();
         }
     }
 
