@@ -764,6 +764,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         MergeConflictHandler renderer = new MergeConflictHandler();
         final CharSequence headText = renderer.renderMergeConflict(item.bodyTranslation, MergeConflictHandler.MergeHeadPart, MERGE_CONFLICT_BACKGROUND_COLOR);
         final CharSequence tailText = renderer.renderMergeConflict(item.bodyTranslation, MergeConflictHandler.MergeTailPart, MERGE_CONFLICT_BACKGROUND_COLOR);
+        Typography.formatSub(mContext, holder.mHeadText, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+        Typography.formatSub(mContext, holder.mTailText, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+
         if(mInitialTextSize == 0) { // see if we need to initialize values
             mMarginInitialLeft = leftMargin(holder.mHeadText);
             mInitialTextSize = holder.mHeadText.getTextSize();
@@ -878,25 +881,25 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 setLeftRightMargins( view, 0); // shrink margins to emphasize
                 span = new SpannableStringBuilder(text);
                 // bold text to emphasize
+                view.setTextSize(mInitialTextSize); // grow text to emphasize
                 span.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 view.setText(span);
-                view.setTextSize(mInitialTextSize * 1.1f); // grow text to emphasize
                 break;
 
             case DESELECTED:
                 setLeftRightMargins( view, 2 * mMarginInitialLeft); // grow margins to de-emphasize
                 span = new SpannableStringBuilder(text);
                 // gray out text to de-emphasize
+                view.setTextSize(mInitialTextSize * 0.9f); // shrink text to de-emphasize
                 span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_disabled_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 view.setText(span);
-                view.setTextSize(mInitialTextSize * 0.9f); // shrink text to de-emphasize
                 break;
 
             case NORMAL:
             default:
                 setLeftRightMargins( view, mMarginInitialLeft); // restore original margins
+                view.setTextSize(mInitialTextSize * 0.9f); // restore initial test size
                 view.setText(text); // remove text emphasis
-                view.setTextSize(mInitialTextSize); // restore initial test size
                 break;
         }
     }
