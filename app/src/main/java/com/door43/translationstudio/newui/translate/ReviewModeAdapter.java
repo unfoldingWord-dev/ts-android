@@ -1951,6 +1951,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         }
                     })
                     .show();
+
+        } else {
+
+            new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
+                    .setTitle(title)
+                    .setMessage(message)
+                    .setPositiveButton(R.string.dismiss, null)
+                    .show();
         }
     }
 
