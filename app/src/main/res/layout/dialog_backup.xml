@@ -117,8 +117,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="1px"
-                android:background="@color/list_separator"
-                android:visibility="gone" />
+                android:background="@color/list_separator" />
 
             <LinearLayout
                 android:id="@+id/export_to_pdf"
