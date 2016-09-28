@@ -2,6 +2,7 @@ package com.door43.translationstudio.newui.home;
 
 import android.app.DialogFragment;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -23,7 +24,9 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
+import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.tasks.AdvancedGogsRepoSearchTask;
 import com.door43.translationstudio.tasks.CloneRepositoryTask;
 import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
@@ -53,6 +56,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     private static final String STATE_REPOSITORIES = "state_repositories";
     private static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
     public static final String STATE_CLONE_URL = "state_clone_url";
+    public static final String STATE_TARGET_TRANSLATION = "state_target_translation";
 
     private SimpleTaskWatcher taskWatcher;
     private RestoreFromCloudAdapter adapter;
@@ -63,6 +67,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     private EditText repoEditText;
     private EditText userEditText;
     private eDialogShown mDialogShown = eDialogShown.NONE;
+    private TargetTranslation mTargetTranslation;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
@@ -133,6 +138,10 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         if(savedInstanceState != null) {
             mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
             mCloneHtmlUrl = savedInstanceState.getString(STATE_CLONE_URL, null);
+            String targetTranslationId = savedInstanceState.getString(STATE_TARGET_TRANSLATION, null);
+            if(targetTranslationId != null) {
+                mTargetTranslation = App.getTranslator().getTargetTranslation(targetTranslationId);
+            }
 
             String[] repoJsonArray = savedInstanceState.getStringArray(STATE_REPOSITORIES);
             if(repoJsonArray != null) {
@@ -178,6 +187,10 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 showAuthFailure();
                 break;
 
+            case MERGE_CONFLICT:
+                showMergeConflict(mTargetTranslation);
+                break;
+
             case NONE:
                 break;
 
@@ -211,7 +224,10 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                         if (existingTargetTranslation != null) {
                             // merge target translation
                             try {
-                                existingTargetTranslation.merge(tempPath);
+                                boolean success = existingTargetTranslation.merge(tempPath);
+                                if(!success) {
+                                   showMergeConflict(existingTargetTranslation);
+                                }
                             } catch (Exception e) {
                                 Logger.e(this.getClass().getName(), "Failed to merge the target translation", e);
                                 notifyImportFailed();
@@ -277,6 +293,33 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         }
     }
 
+    public void showMergeConflict(TargetTranslation targetTranslation) {
+        mDialogShown = eDialogShown.MERGE_CONFLICT;
+        mTargetTranslation = targetTranslation;
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                .setTitle(R.string.error).setMessage(R.string.auth_failure_retry)
+                .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        doManualMerge();
+                    }
+                }).show();
+    }
+
+    private void doManualMerge() {
+        // ask parent activity to navigate to a new activity
+        Intent intent = new Intent(getActivity(), TargetTranslationActivity.class);
+        Bundle args = new Bundle();
+        args.putString(App.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+        // TODO: 4/20/16 it would be nice to navigate directly to the first conflict
+//                args.putString(App.EXTRA_CHAPTER_ID, chapterId);
+//                args.putString(App.EXTRA_FRAME_ID, frameId);
+        args.putString(App.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
+        intent.putExtras(args);
+        startActivity(intent);
+        getActivity().finish();
+    }
+
     public void showAuthFailure() {
         mDialogShown = eDialogShown.AUTH_FAILURE;
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
@@ -324,6 +367,12 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         if(mCloneHtmlUrl != null) {
             out.putString(STATE_CLONE_URL, mCloneHtmlUrl);
         }
+
+        if(mTargetTranslation != null) {
+            String targetTranslationId = mTargetTranslation.getId();
+            out.putString(STATE_TARGET_TRANSLATION, targetTranslationId);
+        }
+
         super.onSaveInstanceState(out);
     }
 
@@ -339,7 +388,8 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     public enum eDialogShown {
         NONE(0),
         IMPORT_FAILED(1),
-        AUTH_FAILURE(2);
+        AUTH_FAILURE(2),
+        MERGE_CONFLICT(3);
 
         private int _value;
 
