@@ -297,7 +297,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         mDialogShown = eDialogShown.MERGE_CONFLICT;
         mTargetTranslation = targetTranslation;
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
-                .setTitle(R.string.error).setMessage(R.string.auth_failure_retry)
+                .setTitle(R.string.merge_conflict_title).setMessage(R.string.import_merge_conflict)
                 .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -317,7 +317,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         args.putString(App.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
         intent.putExtras(args);
         startActivity(intent);
-        getActivity().finish();
+        dismiss();
     }
 
     public void showAuthFailure() {
