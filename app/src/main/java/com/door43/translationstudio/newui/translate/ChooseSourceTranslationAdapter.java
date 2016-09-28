@@ -106,6 +106,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
         } else {
             select(position);
         }
+        sort();
     }
 
     /**
@@ -279,7 +280,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
 
     @Override
     public int getViewTypeCount() {
-        return 3;
+        return 4;
     }
 
     /**

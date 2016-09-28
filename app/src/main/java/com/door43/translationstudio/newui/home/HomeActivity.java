@@ -660,7 +660,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
 
         Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), "en");
         TargetLanguage language = App.getLibrary().getTargetLanguage(targetTranslation);
-        if(project == null || !App.getLibrary().projectHasSource(project.getId())) {
+        if(project == null) {
             // validate project source exists
             Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.missing_project, Snackbar.LENGTH_LONG);
             snack.setAction(R.string.download, new View.OnClickListener() {

@@ -105,7 +105,6 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if(mAdapter.isSelectableItem(position)) {
                     mAdapter.doClickOnItem(position);
-                    mAdapter.sort();
                 }
             }
         });
