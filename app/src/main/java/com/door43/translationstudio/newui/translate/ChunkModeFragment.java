@@ -63,11 +63,4 @@ public class ChunkModeFragment extends ViewModeFragment {
             adapter.clearScreenAndStartNewSearch(searchString, searchTarget);
         }
     }
-
-    /**
-     * method to see if searching is supported
-     */
-    public boolean isSearchSupported() {
-        return true;
-    }
 }

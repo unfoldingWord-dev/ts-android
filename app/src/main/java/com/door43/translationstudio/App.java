@@ -14,6 +14,7 @@ import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
@@ -762,6 +763,28 @@ public class App extends Application {
      */
     public static String getUserString(String preferenceKey, int defaultResource) {
         return getUserString(preferenceKey, sInstance.getResources().getString(defaultResource));
+    }
+
+    /**
+     * shows the keyboard in the given activity and view
+     * @param activity
+     * @param view
+     */
+    public static void showKeyboard(Activity activity, View view) {
+        if(activity != null) {
+            if (activity.getCurrentFocus() != null) {
+                try {
+                    InputMethodManager mgr = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    mgr.showSoftInput(view, InputMethodManager.SHOW_FORCED);
+                } catch (Exception e) {
+                }
+            } else {
+                try {
+                    activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+                } catch (Exception e) {
+                }
+            }
+        }
     }
 
     /**

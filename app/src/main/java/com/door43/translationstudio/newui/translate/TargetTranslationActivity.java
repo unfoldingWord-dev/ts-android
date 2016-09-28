@@ -362,7 +362,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      * method to see if searching is supported
      */
     public boolean isSearchSupported() {
-        if(mFragment != null) {
+        if(mFragment instanceof ViewModeFragment) {
             return ((ViewModeFragment) mFragment).isSearchSupported();
         }
         return false;
@@ -418,7 +418,13 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                             mSearchTimer.schedule(mSearchTimerTask, SEARCH_START_DELAY);
                         }
                     };
+
                     edit.addTextChangedListener(mSearchTextWatcher);
+
+                    edit.setFocusableInTouchMode(true);
+                    if(edit.requestFocus()) {
+                        App.showKeyboard(TargetTranslationActivity.this, edit);
+                    }
                 } else {
                     setSearchFilter(null); // clear search filter
                 }
