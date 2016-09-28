@@ -40,6 +40,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
     public static final int TYPE_ITEM_SELECTABLE = 0;
     public static final int TYPE_SEPARATOR = 1;
     public static final int TYPE_ITEM_NEED_DOWNLOAD = 2;
+    public static final int TYPE_ITEM_SELECTABLE_UPDATABLE = 3;
     public static final String TAG = ChooseSourceTranslationAdapter.class.getSimpleName();
     private final Context mContext;
     private Map<String, ViewItem> mData = new HashMap<>();
@@ -84,16 +85,26 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
         ChooseSourceTranslationAdapter.ViewItem item = getItem(position);
         switch (type) {
             case TYPE_ITEM_SELECTABLE:
-                if(item.selected) {
-                    deselect(position);
-                } else {
-                    select(position);
-                }
+                toggleSelection(item, position);
                 break;
 
             case TYPE_ITEM_NEED_DOWNLOAD:
-                promptToDownloadSourceLangauge(item);
+            case TYPE_ITEM_SELECTABLE_UPDATABLE:
+                promptToDownloadSourceLanguage(item, position);
                 break;
+        }
+    }
+
+    /**
+     * toggle selection state for item
+     * @param item
+     * @param position
+     */
+    private void toggleSelection(ViewItem item, int position) {
+        if(item.selected) {
+            deselect(position);
+        } else {
+            select(position);
         }
     }
 
@@ -101,8 +112,14 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
      * make sure the user is aware that download will use the internet
      * @param item
      */
-    private void promptToDownloadSourceLangauge(final ViewItem item) {
-        String format = mContext.getResources().getString(R.string.download_source_language);
+    private void promptToDownloadSourceLanguage(final ViewItem item, final int position) {
+        final boolean hasUpdate = item.hasUpdates;
+        String format;
+        if(hasUpdate) {
+            format = mContext.getResources().getString(R.string.update_source_language);
+        } else {
+            format = mContext.getResources().getString(R.string.download_source_language);
+        }
         String message = String.format(format, item.title);
         new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
                 .setTitle(R.string.title_download_source_language)
@@ -113,7 +130,14 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
                         downloadSourceLanguage(item);
                     }
                 })
-                .setNegativeButton(R.string.no, null)
+                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if(hasUpdate) {
+                            toggleSelection(item, position);
+                        }
+                    }
+                })
                 .show();
     }
 
@@ -154,6 +178,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
                             Resource resource = library.getResource(item.sourceTranslation);
                             if (resource != null) {
                                 item.downloaded = resource.isDownloaded();
+                                item.hasUpdates = resource.hasUpdates();
                                 databaseChanged = true;
                             } else {
                                 Logger.e(TAG, "Failed to get resource for " + item.sourceTranslation.getId());
@@ -245,6 +270,8 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
             ViewItem v = getItem(position);
             if(!v.downloaded) { // check if we need to download
                 type = TYPE_ITEM_NEED_DOWNLOAD;
+            } else if(v.hasUpdates) {
+                type = TYPE_ITEM_SELECTABLE_UPDATABLE;
             }
         }
         return type;
@@ -263,13 +290,13 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
         mSectionHeader = new TreeSet<>();
 
         // build list
-        ViewItem selectedHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.selected), null, false, false);
+        ViewItem selectedHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.selected), null, false, false, false);
         mSortedData.add(selectedHeader);
         mSectionHeader.add(mSortedData.size() - 1);
         for(String id:mSelected) {
             mSortedData.add(mData.get(id));
         }
-        ViewItem availableHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.available), null, false, false);
+        ViewItem availableHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.available), null, false, false, false);
         mSortedData.add(availableHeader);
         mSectionHeader.add(mSortedData.size() - 1);
         for(String id:mAvailable) {
@@ -297,11 +324,18 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
                     holder.titleView = (TextView)v.findViewById(R.id.title);
                     holder.checkboxView = (ImageView) v.findViewById(R.id.checkBoxView);
                     break;
+                case TYPE_ITEM_SELECTABLE_UPDATABLE:
+                    v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_select_source_translation_list_updatable_item, null);
+                    holder = new ViewHolder();
+                    holder.titleView = (TextView)v.findViewById(R.id.title);
+                    holder.checkboxView = (ImageView) v.findViewById(R.id.checkBoxView);
+                    holder.downloadView = (ImageView) v.findViewById(R.id.download_resource);
+                    break;
                 case TYPE_ITEM_NEED_DOWNLOAD:
                     v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_select_source_translation_list_download_item, null);
                     holder = new ViewHolder();
                     holder.titleView = (TextView)v.findViewById(R.id.title);
-                    holder.checkboxView = (ImageView) v.findViewById(R.id.download_resource);
+                    holder.downloadView = (ImageView) v.findViewById(R.id.download_resource);
                     break;
             }
             v.setTag(holder);
@@ -310,10 +344,16 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
         }
 
         holder.titleView.setText(getItem(position).title);
-        if(rowType == TYPE_ITEM_NEED_DOWNLOAD) {
-            holder.checkboxView.setBackgroundResource(R.drawable.ic_file_download_black_24dp);
-            ViewUtil.tintViewDrawable(holder.checkboxView, parent.getContext().getResources().getColor(R.color.accent));
-        } else if(rowType == TYPE_ITEM_SELECTABLE) {
+        if( (rowType == TYPE_ITEM_NEED_DOWNLOAD) || (rowType == TYPE_ITEM_SELECTABLE_UPDATABLE)) {
+            if(rowType == TYPE_ITEM_NEED_DOWNLOAD) {
+                holder.downloadView.setBackgroundResource(R.drawable.ic_file_download_black_24dp);
+            } else {
+                holder.downloadView.setBackgroundResource(R.drawable.ic_refresh_black_24dp);
+            }
+            ViewUtil.tintViewDrawable(holder.downloadView, parent.getContext().getResources().getColor(R.color.accent));
+        }
+
+        if((rowType == TYPE_ITEM_SELECTABLE) || (rowType == TYPE_ITEM_SELECTABLE_UPDATABLE)){
             if (getItem(position).selected) {
                 holder.checkboxView.setBackgroundResource(R.drawable.ic_check_box_black_24dp);
                 ViewUtil.tintViewDrawable(holder.checkboxView, parent.getContext().getResources().getColor(R.color.accent));
@@ -347,6 +387,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
     public static class ViewHolder {
         public TextView titleView;
         public ImageView checkboxView;
+        public ImageView downloadView;
     }
 
     public static class ViewItem {
@@ -355,8 +396,9 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
         public final SourceTranslation sourceTranslation;
         public boolean selected;
         public boolean downloaded;
+        public boolean hasUpdates;
 
-        public ViewItem(String title, SourceTranslation sourceTranslation, boolean selected, boolean downloaded) {
+        public ViewItem(String title, SourceTranslation sourceTranslation, boolean selected, boolean downloaded, boolean hasUpdates) {
             this.title = title;
             this.selected = selected;
             this.sourceTranslation = sourceTranslation;
@@ -366,6 +408,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
                 this.id = null;
             }
             this.downloaded = downloaded;
+            this.hasUpdates = hasUpdates;
         }
     }
 }
