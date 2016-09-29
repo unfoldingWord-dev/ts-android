@@ -238,23 +238,6 @@ public class Library {
     }
 
     /**
-     * Returns the new target language questionnaire
-     * @return
-     */
-    public Questionnaire[] getQuestionnaires() {
-        return libraryData.getQuestionnaires();
-    }
-
-    /**
-     * Returns the questionnaire
-     * @param id
-     * @return
-     */
-    public Questionnaire getQuestionnaire(long id) {
-        return libraryData.getQuestionnaireByTdId(id);
-    }
-
-    /**
      * Returns an array of chunk markers for the project
      * @param projectSlug
      * @return

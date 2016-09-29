@@ -14,7 +14,6 @@ import com.door43.translationstudio.core.LibraryData;
 import com.door43.translationstudio.core.NativeSpeaker;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.ProjectCategory;
-import com.door43.translationstudio.core.Questionnaire;
 import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
@@ -128,14 +127,6 @@ public class LibraryStraightThroughTest {
     public void getTargetLanguage() {
         TargetLanguage targetLanguage = mLibrary.getTargetLanguage("en");
         assertEquals("en", targetLanguage.getId());
-    }
-
-    /**
-     * it should return a single questionnaire
-     */
-    @Test
-    public void getQuestionaire() {
-        assertNotNull(mLibrary.getQuestionnaire(0));
     }
 
     /**

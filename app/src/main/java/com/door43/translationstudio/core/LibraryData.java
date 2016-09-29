@@ -3217,57 +3217,6 @@ public class LibraryData {
     }
 
     /**
-     * Returns an array of new language questionnaires
-     * @return
-     */
-    public Questionnaire[] getQuestionnaires() {
-        List<Questionnaire> questionnaires = new ArrayList<>();
-        Cursor cursor = this.database.rawQuery("SELECT `id`, `questionnaire_td_id`," +
-                " `language_slug`, `language_name`, `language_direction`" +
-                " FROM `questionnaire`", null);
-        cursor.moveToFirst();
-        while(!cursor.isAfterLast()) {
-            Questionnaire questionnaire = new Questionnaire(cursor.getLong(1), cursor.getString(2), cursor.getString(3), LanguageDirection.get(cursor.getString(4)));
-            questionnaire.setDBId(cursor.getLong(0));
-            questionnaires.add(questionnaire);
-            cursor.moveToNext();
-        }
-        cursor.close();
-
-        for(Questionnaire q:questionnaires) {
-            q.loadQuestions(getQuestionnaireQuestions(q.dbId));
-            q.loadDataFields(getQuestionnaireDataFields(q.dbId));
-        }
-
-        return questionnaires.toArray(new Questionnaire[questionnaires.size()]);
-    }
-
-    /**
-     * Returns a questionnaire
-     * @return
-     */
-    public Questionnaire getQuestionnaireByTdId(long tDId) {
-        Questionnaire questionnaire = null;
-        Cursor cursor = this.database.rawQuery("SELECT `id`, `questionnaire_td_id`," +
-                " `language_slug`, `language_name`, `language_direction`" +
-                " FROM `questionnaire`" +
-                " WHERE `questionnaire_td_id`=" + tDId, null);
-        cursor.moveToFirst();
-        if(!cursor.isAfterLast()) {
-            questionnaire = new Questionnaire(cursor.getLong(1), cursor.getString(2), cursor.getString(3), LanguageDirection.get(cursor.getString(4)));
-            questionnaire.setDBId(cursor.getLong(0));
-        }
-        cursor.close();
-
-        if(questionnaire != null) {
-            questionnaire.loadQuestions(getQuestionnaireQuestions(questionnaire.dbId));
-            questionnaire.loadDataFields(getQuestionnaireDataFields(questionnaire.dbId));
-        }
-
-        return questionnaire;
-    }
-
-    /**
      * Returns an array of data fields in the questionnaire
      * @param questionnaireId
      * @return
