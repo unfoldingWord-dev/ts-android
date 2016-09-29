@@ -18,6 +18,7 @@ import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.App;
 
 import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.CategoryEntry;
 
 import java.util.Locale;
 
@@ -45,17 +46,17 @@ public class ProjectListFragment extends BaseFragment implements Searchable {
         // TODO: set up update button
 
         ListView list = (ListView) rootView.findViewById(R.id.list);
-        mAdapter = new ProjectCategoryAdapter(mLibrary.getProjectCategories(App.getDeviceLanguageCode()));
+        mAdapter = new ProjectCategoryAdapter(mLibrary.index().getProjectCategories(0, App.getDeviceLanguageCode(), null));
         list.setAdapter(mAdapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ProjectCategory category = mAdapter.getItem(position);
-                if (category.isProject()) {
-                    mListener.onItemClick(category.projectId);
+                CategoryEntry category = mAdapter.getItem(position);
+                if (category.entryType == CategoryEntry.Type.PROJECT) {
+                    mListener.onItemClick(category.slug);
                 } else {
                     // TODO: we need to display another back arrow to back up a level in the categories
-                    mAdapter.changeData(mLibrary.getProjectCategories(category));
+                    mAdapter.changeData(mLibrary.index().getProjectCategories(category.id, App.getDeviceLanguageCode(), null));
 
                     updateIcon.setVisibility(View.GONE);
                 }
