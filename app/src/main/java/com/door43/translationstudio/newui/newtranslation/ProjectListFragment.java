@@ -12,11 +12,12 @@ import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.ProjectCategory;
 import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.App;
+
+import org.unfoldingword.door43client.Door43Client;
 
 import java.util.Locale;
 
@@ -25,7 +26,7 @@ import java.util.Locale;
  */
 public class ProjectListFragment extends BaseFragment implements Searchable {
     private OnItemClickListener mListener;
-    private Library mLibrary;
+    private Door43Client mLibrary;
     private ProjectCategoryAdapter mAdapter;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

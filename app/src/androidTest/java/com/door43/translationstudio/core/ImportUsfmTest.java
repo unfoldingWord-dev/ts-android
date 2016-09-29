@@ -10,6 +10,7 @@ import com.door43.util.FileUtilities;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.tools.logger.Logger;
 
 import java.io.File;
@@ -31,7 +32,7 @@ public class ImportUsfmTest extends InstrumentationTestCase {
     private ImportUsfm mUsfm;
     private Context mTestContext;
     private Context mAppContext;
-    private Library mLibrary;
+    private Door43Client mLibrary;
 
     @Override
     public void setUp() throws Exception {

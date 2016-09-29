@@ -19,7 +19,6 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.tasks.CalculateTargetTranslationProgressTask;
 
 import org.unfoldingword.door43client.Door43Client;
-import org.unfoldingword.door43client.models.Project;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.widget.ViewUtil;

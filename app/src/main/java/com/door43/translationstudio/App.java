@@ -23,7 +23,6 @@ import org.unfoldingword.tools.logger.LogLevel;
 import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.core.ArchiveDetails;
 import com.door43.translationstudio.core.LanguageDirection;
-import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.NewLanguageRequest;
 import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.TargetTranslation;
@@ -78,6 +77,7 @@ public class App extends Application {
     private static final String SELECTED_SOURCE_TRANSLATION = "selected_source_translation_";
     private static final String LAST_CHECKED_SERVER_FOR_UPDATES = "last_checked_server_for_updates";
     private static final String ASSETS_DIR = "assets";
+    public static final int MIN_CHECKING_LEVEL = 3;
     private static ImageLoader mImageLoader;
     private static App sInstance;
     private static String targetTranslationWithUpdates = null;

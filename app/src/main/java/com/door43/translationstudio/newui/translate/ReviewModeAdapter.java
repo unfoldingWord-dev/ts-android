@@ -49,7 +49,6 @@ import com.door43.translationstudio.core.FileHistory;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.LanguageDirection;
-import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.LinedEditText;
 import com.door43.translationstudio.core.ProjectTranslation;
 import com.door43.translationstudio.core.TranslationNote;
@@ -381,7 +380,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @return
      */
     private static TranslationNote[] getPreferredNotes(SourceTranslation sourceTranslation, Frame frame) {
-        Library library = App.getLibrary();
+        Door43Client library = App.getLibrary();
         TranslationNote[] notes = library.getTranslationNotes(sourceTranslation, frame.getChapterId(), frame.getId());
         if(notes.length == 0 && !sourceTranslation.sourceLanguageSlug.equals("en")) {
             SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
@@ -398,7 +397,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @return
      */
     private static TranslationWord[] getPreferredWords(SourceTranslation sourceTranslation, Frame frame) {
-        Library library = App.getLibrary();
+        Door43Client library = App.getLibrary();
         TranslationWord[] words = library.getTranslationWords(sourceTranslation, frame.getChapterId(), frame.getId());
         if(words.length == 0 && !sourceTranslation.sourceLanguageSlug.equals("en")) {
             SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
@@ -416,7 +415,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @return
      */
     private static CheckingQuestion[] getPreferredQuestions(SourceTranslation sourceTranslation, String chapterId, String frameId) {
-        Library library = App.getLibrary();
+        Door43Client library = App.getLibrary();
         CheckingQuestion[] questions = library.getCheckingQuestions(sourceTranslation, chapterId, frameId);
         if(questions.length == 0 && !sourceTranslation.sourceLanguageSlug.equals("en")) {
             SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");

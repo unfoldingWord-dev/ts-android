@@ -13,8 +13,9 @@ import android.widget.TextView;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.ArchiveDetails;
-import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Util;
+
+import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.tools.taskmanager.ThreadableUI;
 
 import java.text.DateFormat;
@@ -34,7 +35,7 @@ public class DocumentFileBrowserAdapter extends BaseAdapter {
     private int mSelectedPosition = -1;
 
     public void loadFiles(Context context, List<DocumentFileItem> files) {
-        final Library library = App.getLibrary();
+        final Door43Client library = App.getLibrary();
         mFiles = files;
         new ThreadableUI(context) {
 

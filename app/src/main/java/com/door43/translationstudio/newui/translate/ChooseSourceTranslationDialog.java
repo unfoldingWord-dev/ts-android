@@ -15,12 +15,12 @@ import android.widget.ListView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 
+import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.tools.logger.Logger;
 
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
     private TargetTranslation mTargetTranslation;
     private OnClickListener mListener;
     private ChooseSourceTranslationAdapter mAdapter;
-    private Library mLibrary;
+    private Door43Client mLibrary;
     public static final boolean ENABLE_DRAFTS = true;
     private static final int MIN_CHECKING_LEVEL = 1; // the minimum level to be considered a source translation
 
@@ -77,7 +77,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
             }
         }
 
-        int min_checking = Library.MIN_CHECKING_LEVEL;
+        int min_checking = App.MIN_CHECKING_LEVEL;
         if(ENABLE_DRAFTS) {
             min_checking = this.MIN_CHECKING_LEVEL;
         }
@@ -153,7 +153,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
     private void addSourceTranslation(SourceTranslation sourceTranslation, boolean selected) {
         String title = sourceTranslation.getSourceLanguageTitle() + " - " + sourceTranslation.getResourceTitle();
 
-        if(sourceTranslation.getCheckingLevel() < Library.MIN_CHECKING_LEVEL) { // see if draft
+        if(sourceTranslation.getCheckingLevel() < App.MIN_CHECKING_LEVEL) { // see if draft
             String format = getActivity().getResources().getString(R.string.draft_translation);
             String newTitle = String.format(format, sourceTranslation.getCheckingLevel(), title);
             title = newTitle;

@@ -15,13 +15,13 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.newui.library.ServerLibraryDetailFragment;
 import com.door43.translationstudio.tasks.DownloadSourceLanguageTask;
 import com.door43.widget.ViewUtil;
 
+import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
@@ -135,7 +135,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
      */
     public void onTaskFinished(ManagedTask task) {
         DownloadSourceLanguageTask downloadTask = (DownloadSourceLanguageTask) task;
-        Library library = App.getLibrary();
+        Door43Client library = App.getLibrary();
 
         if (progressDialog != null) {
             progressDialog.dismiss();

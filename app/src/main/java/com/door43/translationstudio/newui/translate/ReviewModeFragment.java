@@ -26,7 +26,6 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.CheckingQuestion;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.LanguageDirection;
-import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TranslationArticle;
 import com.door43.translationstudio.core.TranslationNote;
@@ -185,7 +184,7 @@ public class ReviewModeFragment extends ViewModeFragment {
         if(mResourcesDrawerContent != null) {
             mResourcesDrawerContent.setVisibility(View.VISIBLE);
 //            mCloseResourcesDrawerButton.setText(getActivity().getResources().getString(R.string.translation_words_index));
-            Library library = App.getLibrary();
+            Door43Client library = App.getLibrary();
             ListView list = (ListView) getActivity().getLayoutInflater().inflate(R.layout.fragment_words_index_list, null);
             mResourcesDrawerContent.removeAllViews();
             mResourcesDrawerContent.addView(list);
@@ -229,7 +228,7 @@ public class ReviewModeFragment extends ViewModeFragment {
 //            TextView title = (TextView)view.findViewById(R.id.title);
 //            TextView descriptionView = (TextView)view.findViewById(R.id.description);
 
-            final Library library = App.getLibrary();
+            final Door43Client library = App.getLibrary();
             final SourceTranslation sourceTranslation = getSourceTranslation();
             LinkToHtmlRenderer renderer = new LinkToHtmlRenderer(new LinkToHtmlRenderer.OnPreprocessLink() {
                 @Override
@@ -670,7 +669,7 @@ public class ReviewModeFragment extends ViewModeFragment {
      * @return
      */
     private static TranslationNote getPreferredNote(SourceTranslation sourceTranslation, String chapterId, String frameId, String noteId) {
-        Library library = App.getLibrary();
+        Door43Client library = App.getLibrary();
         TranslationNote note = library.getTranslationNote(sourceTranslation, chapterId, frameId, noteId);
         if(note == null && !sourceTranslation.sourceLanguageSlug.equals("en")) {
             SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
@@ -686,7 +685,7 @@ public class ReviewModeFragment extends ViewModeFragment {
      * @return
      */
     private static TranslationWord getPreferredWord(SourceTranslation sourceTranslation, String wordId) {
-        Library library = App.getLibrary();
+        Door43Client library = App.getLibrary();
         TranslationWord word = library.getTranslationWord(sourceTranslation, wordId);
         if(word == null && !sourceTranslation.sourceLanguageSlug.equals("en")) {
             SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
@@ -704,7 +703,7 @@ public class ReviewModeFragment extends ViewModeFragment {
      * @return
      */
     private static CheckingQuestion getPreferredQuestion(SourceTranslation sourceTranslation, String chapterId, String frameId, String questionId) {
-        Library library = App.getLibrary();
+        Door43Client library = App.getLibrary();
         CheckingQuestion question = library.getCheckingQuestion(sourceTranslation, chapterId, frameId, questionId);
         if(question == null && !sourceTranslation.sourceLanguageSlug.equals("en")) {
             SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
@@ -722,7 +721,7 @@ public class ReviewModeFragment extends ViewModeFragment {
      * @param articleId  @return
      */
     private static TranslationArticle getPreferredTranslationArticle(SourceTranslation sourceTranslation, String volume, String manual, String articleId) {
-        Library library = App.getLibrary();
+        Door43Client library = App.getLibrary();
         TranslationArticle article = library.getTranslationArticle(sourceTranslation, volume, manual, articleId);
         if(article == null && !sourceTranslation.sourceLanguageSlug.equals("en")) {
             SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");

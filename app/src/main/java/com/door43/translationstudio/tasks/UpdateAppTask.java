@@ -12,7 +12,6 @@ import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
-import com.door43.translationstudio.core.LibraryData;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.util.FileUtilities;
@@ -107,7 +106,7 @@ public class UpdateAppTask extends ManagedTask {
 
         // this should always be the latest version in which the library was updated
         if(lastVersion < 141) {
-            App.context().deleteDatabase(LibraryData.DATABASE_NAME);
+            App.deleteLibrary();
         }
     }
 

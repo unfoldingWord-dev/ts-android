@@ -10,6 +10,7 @@ import com.door43.util.Manifest;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.tools.logger.Logger;
 
 import java.io.File;
@@ -563,7 +564,7 @@ public class TargetTranslationMigrator {
      */
     private static boolean migrateChunkChanges(File targetTranslationDir)  {
         // TRICKY: calling the App here is bad practice, but we'll deprecate this soon anyway.
-        final Library library = App.getLibrary();
+        final Door43Client library = App.getLibrary();
         final SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(targetTranslationDir.getName(), "en");
         if(sourceTranslation == null) {
             // if there is no source we are done
@@ -591,7 +592,7 @@ public class TargetTranslationMigrator {
      * @param chapterDir
      * @return
      */
-    private static boolean mergeInvalidChunksInChapter(final Library library, File manifestFile, final SourceTranslation sourceTranslation, final File chapterDir) {
+    private static boolean mergeInvalidChunksInChapter(final Door43Client library, File manifestFile, final SourceTranslation sourceTranslation, final File chapterDir) {
         JSONObject manifest;
         try {
             manifest = new JSONObject(FileUtilities.readFileToString(manifestFile));

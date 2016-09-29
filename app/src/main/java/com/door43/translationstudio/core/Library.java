@@ -7,11 +7,9 @@ import org.unfoldingword.tools.logger.Logger;
 
 import org.unfoldingword.door43client.models.TargetLanguage;
 
-import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -25,16 +23,15 @@ import java.util.List;
  */
 @Deprecated
 public class Library {
-    public static final int MIN_CHECKING_LEVEL = 3; // the minimum level to be considered a source translation
+    private static final int MIN_CHECKING_LEVEL = 3; // the minimum level to be considered a source translation
     private static final String DEFAULT_RESOURCE_SLUG = "ulb";
     private static final String IMAGES_DIR = "images";
-    public static final String TAG = Library.class.toString();
+    private static final String TAG = "Library";//Library.class.toString();
 //    private static final String IMAGES_DOWNLOADED_TAG = "images_downloaded_and_extracted";
-    private final LibraryData libraryData;
+//    private LibraryData libraryData;
 //    public static String DATABASE_NAME = "app";
     private final Context mContext;
     private final File mAssetsDir;
-    private Downloader mDownloader;
 //    private static LibrarySQLiteHelper appIndexHelper;
 
     /**
@@ -47,580 +44,11 @@ public class Library {
     public Library(Context context, String rootApiUrl, File assetsDir) throws IOException {
 //        initalizeHelpers(context);
         mContext = context;
-        libraryData = new LibraryData(context);
-        mDownloader = null; //new Downloader(rootApiUrl);
+//        libraryData = new LibraryData(context);
+//        mDownloader = null; //new Downloader(rootApiUrl);
         mAssetsDir = assetsDir;
     }
-//
-//    /**
-//     * Initializes the static index sqlite helpers
-//     * @param context
-//     */
-//    private synchronized static void initalizeHelpers(Context context) throws IOException {
-//        if(appIndexHelper == null) {
-//            appIndexHelper = new LibrarySQLiteHelper(context, "schema.sqlite", DATABASE_NAME);
-//        }
-//    }
 
-    /**
-     * Deletes the index and rebuilds it from scratch
-     * This will result in a completely empty index.
-     */
-    public void delete() {
-        libraryData.delete();
-        libraryData.rebuild();
-    }
-
-    /**
-     * Returns the directory where project images are stored.
-     * Images are stored within project directories and named with the complex frame id
-     * examples:
-     * "obs/01-01.jpg" frame image
-     * "obs/01.jpg" chapter image
-     * "obs/icon.jpg" project icon
-     * @return
-     */
-    public File getImagesDir() {
-        File file = new File(mAssetsDir, IMAGES_DIR);
-        file.mkdirs();
-        return file;
-    }
-
-    /**
-     * Imports the default index and languages into the library
-     *
-     * @param index the default application sqlite index
-     *
-     */
-    public void deploy(File index) throws Exception {
-        libraryData.deploy(index);
-    }
-
-    /**
-     * Returns the active index.
-     * This allows us to switch between the app index and the server index
-     *
-     * @return
-     */
-    private LibraryData getActiveIndex() {
-        return libraryData;
-    }
-
-    /**
-     * Checks if the library exists
-     * @return
-     */
-    public boolean exists() {
-        return libraryData.getProjectSlugs().length > 0;
-    }
-
-    /**
-     * Downloads the chunk markers for this project from the server
-     * @param projectSlug
-     */
-    private void downloadChunkMarkerList(String projectSlug) {
-        mDownloader.downloadChunkMarkerList(projectSlug, libraryData);
-    }
-
-    /**
-     * Downloads the source language catalog from the server
-     * @param projectId
-     */
-    private void downloadSourceLanguageList(String projectId) {
-        if(mDownloader.downloadSourceLanguageList(projectId, libraryData)) {
-            for(String sourceLanguageId: libraryData.getSourceLanguageSlugs(projectId)) {
-                mDownloader.downloadResourceList(projectId, sourceLanguageId, libraryData);
-            }
-        }
-    }
-
-    /**
-     * Returns a list of updates that are available on the server
-     * @param listener an optional progress listener
-     * @return
-     */
-    public LibraryUpdates checkServerForUpdates(OnProgressListener listener) {
-        libraryData.beginTransaction();
-        if(mDownloader.downloadProjectList(libraryData)) {
-            String[] projectIds = libraryData.getProjectSlugs();
-            for (int i = 0; i < projectIds.length; i ++) {
-                String projectId = projectIds[i];
-                downloadChunkMarkerList(projectId);
-                downloadSourceLanguageList(projectId);
-                if(listener != null) {
-                    if(!listener.onProgress((i + 1), projectIds.length)) {
-                        break;
-                    }
-                }
-            }
-        }
-        if(listener != null) {
-            listener.onIndeterminate();
-        }
-        libraryData.endTransaction(true);
-        return getAvailableUpdates();
-    }
-
-    /**
-     * Generates the available library updates from the server and app index.
-     * The network is not used durring this operation.
-     * Only projects with downloaded source are considered eligible for updates.
-     * @return
-     */
-    public LibraryUpdates getAvailableUpdates() {
-        LibraryUpdates updates = new LibraryUpdates();
-        SourceTranslation[] sourceTranslations = libraryData.getSourceTranslationsWithUpdates();
-        for(SourceTranslation sourceTranslation:sourceTranslations) {
-            updates.addUpdate(sourceTranslation);
-        }
-        return updates;
-    }
-
-    /**
-     * Downloads the target languages from the server
-     * @return
-     */
-    public boolean downloadTargetLanguages() {
-        libraryData.beginTransaction();
-        boolean success = mDownloader.downloadTargetLanguages(libraryData);
-        libraryData.endTransaction(success);
-        return success;
-    }
-
-    /**
-     * Downloads the temp target languages from the server
-     * @return
-     */
-    public boolean downloadTempTargetLanguages() {
-        libraryData.beginTransaction();
-        boolean success = mDownloader.downloadTempTargetLanguages(libraryData);
-        libraryData.endTransaction(success);
-        return success;
-    }
-
-    /**
-     * Downloads the temp target languages from the server
-     * @return
-     */
-    public boolean downloadTempTargetLanguageAssignments() {
-        libraryData.beginTransaction();
-        boolean success = mDownloader.downloadTempTargetLanguageAssignments(libraryData);
-        libraryData.endTransaction(success);
-        return success;
-    }
-
-    /**
-     * Adds a temporary target language to the library
-     * @param tempTargetLanguage
-     * @return
-     */
-    public boolean addTempTargetLanguage(TargetLanguage tempTargetLanguage) {
-        libraryData.addTempTargetLanguage(tempTargetLanguage);
-        return true;
-    }
-
-    /**
-     * Removes temp target language from database
-     * This is a utility method for unit tests
-     * @param languageCode
-     */
-    public void deleteTempTargetLanguage(String languageCode) {
-        libraryData.deleteTempTargetLanguage(languageCode);
-    }
-
-    /**
-     * Downloads the new language questionnaire from the server
-     * @return
-     */
-    public boolean downloadNewLanguageQuestionnaire() {
-        libraryData.beginTransaction();
-        libraryData.deleteQuestionnaires();
-        boolean success = mDownloader.downloadNewLanguageQuestionnaire(libraryData);
-        libraryData.endTransaction(success);
-        return success;
-    }
-
-    /**
-     * Returns an array of chunk markers for the project
-     * @param projectSlug
-     * @return
-     */
-    public ChunkMarker[] getChunkMarkers(String projectSlug) {
-        return libraryData.getChunkMarkers(projectSlug);
-    }
-
-    /**
-     * Downloads all of the projects from the server
-     *
-     * @param projectProgressListener
-     * @param sourceTranslationListener
-     * @return
-     */
-    public Boolean downloadAllProjects(OnProgressListener projectProgressListener, OnProgressListener sourceTranslationListener) {
-        boolean success = true;
-        int currentProject = 1;
-        int numProjects = libraryData.getProjectSlugs().length;
-
-        // download
-        libraryData.beginTransaction();
-        for (String projectId : libraryData.getProjectSlugs()) {
-            for (String sourceLanguageId : libraryData.getSourceLanguageSlugs(projectId)) {
-                for(String resourceId : libraryData.getResourceSlugs(projectId, sourceLanguageId)) {
-                    SourceTranslation sourceTranslation = SourceTranslation.simple(projectId, sourceLanguageId, resourceId);
-
-                    // only download resources that meet the minimum checking level or have been downloaded before
-                    Resource resource = getResource(sourceTranslation);
-                    if(resource != null && resource.getCheckingLevel() < MIN_CHECKING_LEVEL) {
-                        continue;
-                    }
-
-                    boolean downloadSuccess = startSourceTranslationDownload(sourceTranslation, sourceTranslationListener);
-                    if(!downloadSuccess) {
-                        Logger.w(TAG, "Failed to download " + sourceTranslation.getId());
-                        success = false;
-                    }
-                }
-            }
-            if(projectProgressListener != null) {
-                if(!projectProgressListener.onProgress(currentProject, numProjects)) {
-                    break;
-                }
-                currentProject ++;
-            }
-        }
-        libraryData.endTransaction(success);
-        return success;
-    }
-
-    /**
-     * Downloads a source translation from the server
-     * @param translation
-     * @param listener
-     * @return
-     */
-    public Boolean downloadSourceTranslation(SourceTranslation translation, OnProgressListener listener) {
-        libraryData.beginTransaction();
-        boolean success = startSourceTranslationDownload(translation, listener);
-        libraryData.endTransaction(success);
-        return success;
-    }
-
-    /**
-     * begins downloading a source translation.
-     * This will not start any transactions so it is safe to place in a transaction along with other queries
-     * This method cannot be interrupted by the thread in order to maintain data integrity
-     * @param sourceTranslation
-     * @return
-     */
-    private Boolean startSourceTranslationDownload(SourceTranslation sourceTranslation, OnProgressListener listener) {
-        boolean success = true;
-        // source
-        if(mDownloader.downloadSource(sourceTranslation, libraryData)) {
-            libraryData.markSourceCatalogUpToDate(sourceTranslation);
-        } else {
-            success = false;
-        }
-        if(listener != null) {
-            listener.onProgress(1, 6);
-        }
-
-        // words
-        if(mDownloader.downloadWords(sourceTranslation, libraryData)) {
-            libraryData.markWordsCatalogUpToDate(sourceTranslation);
-        }
-        if(listener != null) {
-            listener.onProgress(2, 6);
-        }
-
-        // word assignments
-        if(mDownloader.downloadWordAssignments(sourceTranslation, libraryData)) {
-            libraryData.markWordAssignmentsCatalogUpToDate(sourceTranslation);
-        }
-        if(listener != null) {
-            listener.onProgress(3, 6);
-        }
-
-        // notes
-        if(mDownloader.downloadNotes(sourceTranslation, libraryData)) {
-            libraryData.markNotesCatalogUpToDate(sourceTranslation);
-        }
-        if(listener != null) {
-            listener.onProgress(4, 6);
-        }
-
-        // questions
-        if(mDownloader.downloadCheckingQuestions(sourceTranslation, libraryData)) {
-            libraryData.markQuestionsCatalogUpToDate(sourceTranslation);
-        }
-        if(listener != null) {
-            listener.onProgress(5, 6);
-        }
-
-        if(listener != null) {
-            listener.onProgress(6, 6);
-        }
-
-        // TODO: 4/5/2016 eventually ta
-
-
-        // Images are not downloaded here; rather, fetched on demand since they're large.
-
-        return success;
-    }
-
-    /**
-     * Downloads images from the server
-     * @param listener
-     * @return
-     */
-    public Boolean downloadImages(OnProgressListener listener) {
-        boolean success = mDownloader.downloadImages(listener);
-        if(!success) {
-            FileUtilities.deleteQuietly(getImagesDir());
-        }
-        return success;
-    }
-
-    /**
-     * Indicates whether the imagery download is complete and extraction was successful.  zip files are ignored since a failed download can leave a zip file there.
-     *
-     * <p>If any part of the process was not complete, this returns false. This method makes no
-     * statement as to the freshness of the information downloaded.</p>
-     * @return true if the download is complete
-     */
-    public boolean hasImages() {
-        String[] names =  getImagesDir().list(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String filename) {
-                File testFile = new File(dir, filename);
-                boolean isFile = !testFile.isDirectory();
-                if(isFile) {
-                    String extension = FileUtilities.getExtension(testFile.getName());
-                    if( !"zip".equalsIgnoreCase(extension)) {
-                        return true;
-                    }
-                }
-                return false; // is not an image file
-            }
-        });
-        return names != null && names.length > 0;
-    }
-
-    /**
-     * Exports the library in a zip archive
-     * @param destDir the directory where the library will be exported
-     * @return the path to the exported file
-     */
-    @Nullable
-    public File export(File destDir) {
-        SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
-        String date = s.format(new Date());
-        File destFile = new File(destDir, "library_" + date + ".zip");
-        destDir.mkdirs();
-        try {
-            destFile.createNewFile();
-            Zip.zip(mContext.getDatabasePath(getActiveIndex().getIndexId()).getPath(), destFile.getPath());
-        } catch (IOException e) {
-            Logger.e(TAG, "Failed to export the library", e);
-            return null;
-        }
-        return destFile;
-    }
-
-    /**
-     * Returns an array of target languages
-     * @return
-     */
-    public TargetLanguage[] getTargetLanguages() {
-        return getActiveIndex().getTargetLanguages();
-    }
-
-    /**
-     * Returns an array of projects
-     *
-     * @param sourceLanguageSlug the preferred language in which the project names will be returned. The default is english
-     * @return
-     */
-    public Project[] getProjects(String sourceLanguageSlug) {
-        return libraryData.getProjects(sourceLanguageSlug);
-    }
-
-    /**
-     * Returns a list of project categories
-     * Only projects with source are included
-     *
-     * @param languageId the preferred language in which the category names will be returned. The default is english
-     * @return
-     */
-    public ProjectCategory[] getProjectCategories(String languageId) {
-        return getProjectCategories(new ProjectCategory(null, null, null, languageId, 0l));
-    }
-
-    /**
-     * Returns a list of project categories beneath the given category
-     * Only projects with source are included
-     *
-     * @param parentCategory
-     * @return
-     */
-    public ProjectCategory[] getProjectCategories(ProjectCategory parentCategory) {
-        return libraryData.getCategoryBranch(parentCategory.sourcelanguageId, parentCategory.parentCategoryId);
-    }
-
-    /**
-     * Returns an array of resources for the source language
-     * @param projectSlug
-     * @param sourceLanguageSlug
-     * @return
-     */
-    public Resource[] getResources(String projectSlug, String sourceLanguageSlug) {
-        return getActiveIndex().getResources(projectSlug, sourceLanguageSlug);
-    }
-
-    /**
-     * Returns a resource
-     * @param sourceTranslation
-     * @return
-     */
-    public Resource getResource(SourceTranslation sourceTranslation) {
-        return getActiveIndex().getResource(SourceTranslation.simple(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug));
-    }
-
-    /**
-     * Returns the project with the information provided in the preferred source language
-     * If the source language does not exist it will use the default language
-     *
-     * @param projectId
-     * @param languageId the language in which the project information should be returned
-     * @return
-     */
-    public Project getProject(String projectId, String languageId) {
-        return getActiveIndex().getProject(projectId, languageId);
-    }
-
-    /**
-     * Returns an array of chapters for the source translation
-     * @param sourceTranslation
-     * @return
-     */
-    public Chapter[] getChapters(SourceTranslation sourceTranslation) {
-        return getActiveIndex().getChapters(sourceTranslation);
-    }
-
-    /**
-     * Returns a single chapter
-     * @param sourceTranslation
-     * @param chapterId
-     * @return
-     */
-    @Nullable
-    public Chapter getChapter(SourceTranslation sourceTranslation, String chapterId) {
-        return getActiveIndex().getChapter(sourceTranslation, chapterId);
-    }
-
-    /**
-     * Returns an array of frames in the chapter
-     * @param sourceTranslation
-     * @param chapterSlug
-     * @return
-     */
-    public Frame[] getFrames(SourceTranslation sourceTranslation, String chapterSlug) {
-        List<Frame> frames = new ArrayList<>(Arrays.asList(getActiveIndex().getFrames(sourceTranslation, chapterSlug)));
-
-        if(frames.size() > 0) {
-            // TRICKY: a bug in the v2 api gives the last frame in the last chapter and id of 00 which messes up the sorting
-            Frame firstFrame = frames.get(0);
-            if (Integer.parseInt(firstFrame.getId()) == 0) {
-                frames.remove(0);
-                frames.add(firstFrame);
-            }
-            return frames.toArray(new Frame[frames.size()]);
-        } else {
-            return new Frame[0];
-        }
-    }
-
-    /**
-     * Returns an array of frame slugs
-     * @param sourceTranslation
-     * @param chapterSlug
-     * @return
-     */
-    public String[] getFrameSlugs(SourceTranslation sourceTranslation, String chapterSlug) {
-        List<String> frameSlugs = new ArrayList<>(Arrays.asList(getActiveIndex().getFrameSlugs(sourceTranslation, chapterSlug)));
-
-        if(frameSlugs.size() > 0) {
-            // TRICKY: a bug in the v2 api gives the last frame in the last chapter and id of 00 which messes up the sorting
-            String firstFrame = frameSlugs.get(0);
-            if (Integer.parseInt(firstFrame) == 0) {
-                frameSlugs.remove(0);
-                frameSlugs.add(firstFrame);
-            }
-            return frameSlugs.toArray(new String[frameSlugs.size()]);
-        } else {
-            return new String[0];
-        }
-    }
-
-    /**
-     * Returns a single frame
-     * @param sourceTranslation
-     * @param chapterId
-     * @param frameId
-     * @return
-     */
-    @Nullable
-    public Frame getFrame(SourceTranslation sourceTranslation, String chapterId, String frameId) {
-        if(frameId == null || chapterId == null) {
-            return null;
-        }
-        return getActiveIndex().getFrame(sourceTranslation, chapterId, frameId);
-    }
-
-    /**
-     * Searches for target languages by name
-     * @param name
-     * @return
-     */
-    public TargetLanguage[] findTargetLanguage(String name) {
-        if(name != null) {
-            return getActiveIndex().findTargetLanguage(name);
-        } else {
-            return new TargetLanguage[0];
-        }
-    }
-
-    /**
-     * Returns a single target language
-     * @param targetLanguageId
-     * @return
-     */
-    public TargetLanguage getTargetLanguage(String targetLanguageId) {
-        return getActiveIndex().getTargetLanguage(targetLanguageId);
-    }
-
-    /**
-     * Returns the target language used in the target translation.
-     * This target language may not exist in the db, in which case the information in the target
-     * translation will be used to create the target language.
-     * @param targetTranslation
-     * @return
-     */
-    @Nullable
-    @Deprecated
-    public TargetLanguage getTargetLanguage(TargetTranslation targetTranslation) {
-        // if this is
-        TargetLanguage language = null;
-        if(targetTranslation != null) {
-            language = getTargetLanguage(targetTranslation.getTargetLanguageId());
-            if (language == null && !targetTranslation.getTargetLanguageId().isEmpty()) {
-                String name = targetTranslation.getTargetLanguageName().isEmpty() ? targetTranslation.getTargetLanguageId() : targetTranslation.getTargetLanguageName();
-                LanguageDirection direction = targetTranslation.getTargetLanguageDirection() == null ? LanguageDirection.LeftToRight : targetTranslation.getTargetLanguageDirection();
-                language = new TargetLanguage(targetTranslation.getTargetLanguageId(), name, "", direction);
-            }
-        }
-        return language;
-    }
 
     /**
      * Returns the source translation by it's id
@@ -647,7 +75,7 @@ public class Library {
      */
     @Nullable
     public SourceTranslation getSourceTranslation(String projectSlug, String sourceLanguageSlug, String resourceSlug) {
-        return getActiveIndex().getSourceTranslation(projectSlug, sourceLanguageSlug, resourceSlug);
+        return libraryData.getSourceTranslation(projectSlug, sourceLanguageSlug, resourceSlug);
     }
 
     /**
@@ -688,9 +116,9 @@ public class Library {
     public SourceTranslation[] getSourceTranslations(String projectId, int checkingLevel) {
         // TODO: write a query for this
         List<SourceTranslation> sourceTranslations = new ArrayList<>();
-        String[] sourceLanguageIds = getActiveIndex().getSourceLanguageSlugs(projectId);
+        String[] sourceLanguageIds = libraryData.getSourceLanguageSlugs(projectId);
         for(String sourceLanguageId:sourceLanguageIds) {
-            String[] resourceIds = getActiveIndex().getResourceSlugs(projectId, sourceLanguageId);
+            String[] resourceIds = libraryData.getResourceSlugs(projectId, sourceLanguageId);
             for(String resourceId:resourceIds) {
                 SourceTranslation sourceTranslation = getSourceTranslation(projectId, sourceLanguageId, resourceId);
                 if(sourceTranslation != null && sourceTranslation.getCheckingLevel() >= checkingLevel) {
@@ -708,7 +136,7 @@ public class Library {
      */
     public SourceTranslation[] getDraftTranslations(String projectId) {
         List<SourceTranslation> draftTranslations = new ArrayList<>();
-        String[] sourceLanguageIds = getActiveIndex().getSourceLanguageSlugs(projectId);
+        String[] sourceLanguageIds = libraryData.getSourceLanguageSlugs(projectId);
         for(String sourceLanguageId:sourceLanguageIds) {
             draftTranslations.addAll(getDraftTranslations(projectId, sourceLanguageId));
         }
@@ -724,7 +152,7 @@ public class Library {
      */
     public List<SourceTranslation> getDraftTranslations(String projectId, String sourceLanguageId) {
         List<SourceTranslation> draftTranslations = new ArrayList<>();
-        String[] resourceIds = getActiveIndex().getResourceSlugs(projectId, sourceLanguageId);
+        String[] resourceIds = libraryData.getResourceSlugs(projectId, sourceLanguageId);
         for(String resourceId:resourceIds) {
             SourceTranslation sourceTranslation = getDraftTranslation(projectId, sourceLanguageId, resourceId);
             if(sourceTranslation != null) {
@@ -785,7 +213,7 @@ public class Library {
      * @return
      */
     public TranslationNote getTranslationNote(SourceTranslation sourceTranslation, String chapterId, String frameId, String translationNoteId) {
-        return getActiveIndex().getNote(sourceTranslation, chapterId, frameId, translationNoteId);
+        return libraryData.getNote(sourceTranslation, chapterId, frameId, translationNoteId);
     }
 
     /**
@@ -794,7 +222,7 @@ public class Library {
      * @return
      */
     public TranslationWord[] getTranslationWords(SourceTranslation sourceTranslation) {
-        return getActiveIndex().getWords(sourceTranslation);
+        return libraryData.getWords(sourceTranslation);
     }
 
     /**
@@ -805,7 +233,7 @@ public class Library {
      * @return
      */
     public TranslationWord[] getTranslationWords(SourceTranslation sourceTranslation, String chapterId, String frameId) {
-        return getActiveIndex().getWordsForFrame(sourceTranslation, chapterId, frameId);
+        return libraryData.getWordsForFrame(sourceTranslation, chapterId, frameId);
     }
 
     /**
@@ -815,7 +243,7 @@ public class Library {
      * @return
      */
     public TranslationWord getTranslationWord(SourceTranslation sourceTranslation, String translationWordId) {
-        return getActiveIndex().getWord(sourceTranslation, translationWordId);
+        return libraryData.getWord(sourceTranslation, translationWordId);
     }
 
     /**
@@ -825,7 +253,7 @@ public class Library {
      *@param manual @return
      */
     public TranslationArticle getTranslationArticle(SourceTranslation sourceTranslation, String volume, String manual, String articleId) {
-        return getActiveIndex().getTranslationArticle(sourceTranslation, volume, manual, articleId);
+        return libraryData.getTranslationArticle(sourceTranslation, volume, manual, articleId);
     }
 
     /**
@@ -836,7 +264,7 @@ public class Library {
      * @return
      */
     public CheckingQuestion[] getCheckingQuestions(SourceTranslation sourceTranslation, String chapterId, String frameId) {
-        return getActiveIndex().getCheckingQuestions(sourceTranslation, chapterId, frameId);
+        return libraryData.getCheckingQuestions(sourceTranslation, chapterId, frameId);
     }
 
     /**
@@ -848,7 +276,7 @@ public class Library {
      * @return
      */
     public CheckingQuestion getCheckingQuestion(SourceTranslation sourceTranslation, String chapterId, String frameId, String checkingQuestionId) {
-        return getActiveIndex().getCheckingQuestion(sourceTranslation, chapterId, frameId, checkingQuestionId);
+        return libraryData.getCheckingQuestion(sourceTranslation, chapterId, frameId, checkingQuestionId);
     }
 
     /**
@@ -858,7 +286,7 @@ public class Library {
      * @return
      */
     public boolean projectHasSource(String projectId) {
-        String[] sourceLanguageIds = getActiveIndex().getSourceLanguageSlugs(projectId);
+        String[] sourceLanguageIds = libraryData.getSourceLanguageSlugs(projectId);
         for(String sourceLanguageId:sourceLanguageIds) {
             if(sourceLanguageHasSource(projectId, sourceLanguageId)) {
                 return true;
@@ -874,7 +302,7 @@ public class Library {
      * @return
      */
     public boolean sourceLanguageHasSource(String projectId, String sourceLanguageId) {
-        String[] resourceIds = getActiveIndex().getResourceSlugs(projectId, sourceLanguageId);
+        String[] resourceIds = libraryData.getResourceSlugs(projectId, sourceLanguageId);
         for(String resourceId:resourceIds) {
             if(sourceTranslationHasSource(SourceTranslation.simple(projectId, sourceLanguageId, resourceId))) {
                 return true;
@@ -889,7 +317,7 @@ public class Library {
      * @return
      */
     public boolean sourceTranslationHasSource(SourceTranslation sourceTranslation) {
-        return getActiveIndex().getChapterSlugs(sourceTranslation).length > 0;
+        return libraryData.getChapterSlugs(sourceTranslation).length > 0;
     }
 
     /**
@@ -975,9 +403,9 @@ public class Library {
      * @deprecated you probably shouldn't use this method
      */
     public boolean manuallyIndexTranslationAcademy(SourceTranslation sourceTranslation, String catalog) {
-        getActiveIndex().beginTransaction();
-        boolean success = getActiveIndex().indexTranslationAcademy(sourceTranslation, catalog);
-        getActiveIndex().endTransaction(success);
+        libraryData.beginTransaction();
+        boolean success = libraryData.indexTranslationAcademy(sourceTranslation, catalog);
+        libraryData.endTransaction(success);
         return success;
     }
 
@@ -988,14 +416,14 @@ public class Library {
      * @deprecated you probably shouldn't use this method
      */
     public boolean manuallyInjectChunkMarkerCatalogUrl() {
-        getActiveIndex().beginTransaction();
+        libraryData.beginTransaction();
         boolean success = false;
         try {
-            success = getActiveIndex().manuallyInjectChunkMarkerUrls();
+            success = libraryData.manuallyInjectChunkMarkerUrls();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        getActiveIndex().endTransaction(success);
+        libraryData.endTransaction(success);
         return success;
     }
 
@@ -1012,7 +440,7 @@ public class Library {
      * @return
      */
     public TargetLanguage getApprovedTargetLanguage(String tempLanguageCode) {
-        return getActiveIndex().getApprovedTargetLanguage(tempLanguageCode);
+        return libraryData.getApprovedTargetLanguage(tempLanguageCode);
     }
 
     /**

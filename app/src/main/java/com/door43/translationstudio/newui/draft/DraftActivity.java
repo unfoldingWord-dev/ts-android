@@ -12,7 +12,6 @@ import android.view.View;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
@@ -61,7 +60,7 @@ public class DraftActivity extends BaseActivity implements SimpleTaskWatcher.OnF
             if(mTargetTranslation != null) {
                 List<Resource> resources = mLibrary.index().getResources(mTargetTranslation.getTargetLanguageId(), mTargetTranslation.getProjectId());
                 for(Resource r:resources) {
-                    if(Integer.parseInt(r.checkingLevel) < Library.MIN_CHECKING_LEVEL) {
+                    if(Integer.parseInt(r.checkingLevel) < App.MIN_CHECKING_LEVEL) {
                         try {
                             draftTranslations.add(mLibrary.open(mTargetTranslation.getTargetLanguageId(), mTargetTranslation.getProjectId(), r.slug));
                         } catch (Exception e) {

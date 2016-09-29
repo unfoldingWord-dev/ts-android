@@ -20,13 +20,14 @@ import android.view.View;
 import android.widget.ListView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.tasks.CheckForLibraryUpdatesTask;
 import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
 import com.door43.translationstudio.tasks.DownloadUpdatesTask;
 import com.door43.translationstudio.App;
+
+import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.widget.ViewUtil;
@@ -79,7 +80,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
             TaskManager.addTask(getUpdatesTask, CheckForLibraryUpdatesTask.TASK_ID);
         } else {
             // populated cached data
-            Library serverLibrary = App.getLibrary();
+            Door43Client serverLibrary = App.getLibrary();
             Project[] projects = serverLibrary.getProjects(App.getDeviceLanguageCode());
             mListFragment.setData(serverLibrary.getAvailableUpdates(), projects);
 
@@ -325,7 +326,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
             @Override
             public void run() {
                 invalidateOptionsMenu();
-                Library serverLibrary = App.getLibrary();
+                Door43Client serverLibrary = App.getLibrary();
                 Project[] projects = serverLibrary.getProjects(App.getDeviceLanguageCode());
                 mListFragment.setData(serverLibrary.getAvailableUpdates(), projects);
 

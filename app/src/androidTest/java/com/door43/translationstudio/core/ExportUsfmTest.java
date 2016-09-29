@@ -7,6 +7,7 @@ import com.door43.translationstudio.App;
 import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
+import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.tools.logger.Logger;
 
 import java.io.File;
@@ -27,7 +28,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
     private Context mTestContext;
     private Context mAppContext;
     private TargetLanguage mTargetLanguage;
-    private Library mLibrary;
+    private Door43Client mLibrary;
     private ImportUsfm mUsfm;
     private File mOutputFolder;
     private TargetTranslation mTargetTranslation;

@@ -12,10 +12,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.LibraryUpdates;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.App;
+
+import org.unfoldingword.door43client.Door43Client;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,7 +27,7 @@ import java.util.List;
  */
 public class ServerLibraryAdapter extends BaseAdapter {
     private final Activity mContext;
-    private final Library mLibrary;
+    private final Door43Client mLibrary;
     private int mSelectedIndex = -1;
     private boolean mSearching = false;
     private boolean[] mHasSource;

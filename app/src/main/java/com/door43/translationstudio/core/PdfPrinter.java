@@ -18,6 +18,8 @@ import com.itextpdf.text.pdf.PdfTemplate;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.text.pdf.draw.VerticalPositionMark;
 
+import org.unfoldingword.door43client.Door43Client;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -44,7 +46,7 @@ public class PdfPrinter extends PdfPageEventHelper {
     private final Font subFont;
     private final Font headingFont;
     private final TranslationFormat format;
-    private final Library library;
+    private final Door43Client library;
     private final SourceTranslation sourceTranslation;
     private final Font superScriptFont;
     private final BaseFont baseFont;
@@ -58,7 +60,7 @@ public class PdfPrinter extends PdfPageEventHelper {
     private Paragraph mCurrentParagraph;
 
 
-    public PdfPrinter(Context context, Library library, TargetTranslation targetTranslation, TranslationFormat format, String fontPath, File imagesDir) throws IOException, DocumentException {
+    public PdfPrinter(Context context, Door43Client library, TargetTranslation targetTranslation, TranslationFormat format, String fontPath, File imagesDir) throws IOException, DocumentException {
         this.targetTranslation = targetTranslation;
         this.context = context;
         this.format = format;

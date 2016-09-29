@@ -10,8 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.unfoldingword.door43client.Door43Client;
-import org.unfoldingword.door43client.models.*;
-import org.unfoldingword.door43client.models.Project;
+import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.door43client.models.TargetLanguage;
 
 import java.io.File;

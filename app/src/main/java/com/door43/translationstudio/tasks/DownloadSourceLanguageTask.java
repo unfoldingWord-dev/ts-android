@@ -1,22 +1,23 @@
 package com.door43.translationstudio.tasks;
 
 import com.door43.translationstudio.App;
-import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceTranslation;
 
+import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 /**
  * This task downloads the source language data from the server.
  */
+@Deprecated
 public class DownloadSourceLanguageTask extends ManagedTask {
 
     public static final String TASK_ID = "download_source_language_id";
 
     private final String mProjectId;
     private final String mSourceLanguageId;
-    private final Library mLibrary;
+    private final Door43Client mLibrary;
     private int mMaxProgress = 1;
     private boolean mSuccess;
     private int mTaskProgress = 0;
@@ -39,30 +40,30 @@ public class DownloadSourceLanguageTask extends ManagedTask {
     @Override
     public void start() {
         publishProgress(-1, "");
-        final Resource[] resources = mLibrary.getResources(mProjectId, mSourceLanguageId);
-
-        mSuccess = true;
-        for(int i = 0; i < resources.length; i ++) {
-            // TODO: hook up progress listener
-            boolean status = mLibrary.downloadSourceTranslation(SourceTranslation.simple(mProjectId, mSourceLanguageId, resources[i].getId()), new Library.OnProgressListener() {
-                @Override
-                public boolean onProgress(int progress, int max) {
-                    mMaxProgress = resources.length * max;
-                    mTaskProgress ++;
-                    publishProgress(mTaskProgress, "");
-                    return !isCanceled();
-                }
-
-                @Override
-                public boolean onIndeterminate() {
-                    publishProgress(-1, "");
-                    return !isCanceled();
-                }
-            });
-            if(!status) {
-                mSuccess = status;
-            }
-        }
+//        final Resource[] resources = mLibrary.getResources(mProjectId, mSourceLanguageId);
+//
+//        mSuccess = true;
+//        for(int i = 0; i < resources.length; i ++) {
+//            // TODO: hook up progress listener
+//            boolean status = mLibrary.downloadSourceTranslation(SourceTranslation.simple(mProjectId, mSourceLanguageId, resources[i].getId()), new Library.OnProgressListener() {
+//                @Override
+//                public boolean onProgress(int progress, int max) {
+//                    mMaxProgress = resources.length * max;
+//                    mTaskProgress ++;
+//                    publishProgress(mTaskProgress, "");
+//                    return !isCanceled();
+//                }
+//
+//                @Override
+//                public boolean onIndeterminate() {
+//                    publishProgress(-1, "");
+//                    return !isCanceled();
+//                }
+//            });
+//            if(!status) {
+//                mSuccess = status;
+//            }
+//        }
     }
 
     @Override
