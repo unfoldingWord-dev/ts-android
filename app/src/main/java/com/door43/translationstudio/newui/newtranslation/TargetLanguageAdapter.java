@@ -8,7 +8,8 @@ import android.widget.Filter;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.TargetLanguage;
+
+import org.unfoldingword.door43client.models.TargetLanguage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -125,7 +126,7 @@ public class TargetLanguageAdapter extends BaseAdapter {
                 List<TargetLanguage> filteredCategories = new ArrayList<>();
                 for(TargetLanguage language:mTargetLanguages) {
                     // match the target language id
-                    boolean match = language.getId().toLowerCase().startsWith(charSequence.toString().toLowerCase());
+                    boolean match = language.slug.toLowerCase().startsWith(charSequence.toString().toLowerCase());
                     if(!match) {
                         if (language.name.toLowerCase().contains(charSequence.toString().toLowerCase())) {
                             // match the target language name
@@ -162,8 +163,8 @@ public class TargetLanguageAdapter extends BaseAdapter {
         Collections.sort(languages, new Comparator<TargetLanguage>() {
             @Override
             public int compare(TargetLanguage lhs, TargetLanguage rhs) {
-                String lhId = lhs.getId();
-                String rhId = rhs.getId();
+                String lhId = lhs.slug;
+                String rhId = rhs.slug;
                 // give priority to matches with the reference
                 if(lhId.toLowerCase().startsWith(referenceId.toString().toLowerCase())) {
                     lhId = "!!" + lhId;

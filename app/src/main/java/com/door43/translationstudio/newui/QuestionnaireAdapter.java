@@ -22,8 +22,9 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.QuestionnairePage;
-import com.door43.translationstudio.core.QuestionnaireQuestion;
 import com.door43.widget.ViewUtil;
+
+import org.unfoldingword.door43client.models.Question;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -132,9 +133,9 @@ public class QuestionnaireAdapter extends RecyclerView.Adapter<QuestionnaireAdap
 
     @Override
     public int getItemViewType(int position) {
-        if(page.getQuestion(position).type == QuestionnaireQuestion.InputType.Boolean) {
+        if(page.getQuestion(position).inputType == Question.InputType.Boolean) {
             return TYPE_BOOLEAN;
-        } else if(page.getQuestion(position).type == QuestionnaireQuestion.InputType.String) {
+        } else if(page.getQuestion(position).inputType == Question.InputType.String) {
             return TYPE_STRING;
         }
         return -1;
@@ -146,12 +147,12 @@ public class QuestionnaireAdapter extends RecyclerView.Adapter<QuestionnaireAdap
      * @param position
      */
     public void onBindBooleanQuestion(BooleanViewHolder holder, int position) {
-        final QuestionnaireQuestion question = page.getQuestion(position);
-        holder.question.setText(question.question);
-        holder.question.setHint(question.helpText);
+        final Question question = page.getQuestion(position);
+        holder.question.setText(question.text);
+        holder.question.setHint(question.help);
         holder.radioGroup.setOnCheckedChangeListener(null);
 
-        holder.setRequired(question.required);
+        holder.setRequired(question.isRequired);
 
         String answerString = getQuestionAnswer(question);
         boolean answer = Boolean.parseBoolean(answerString);
@@ -189,12 +190,12 @@ public class QuestionnaireAdapter extends RecyclerView.Adapter<QuestionnaireAdap
      * @param position
      */
     public void onBindStringQuestion(StringViewHolder holder, int position) {
-        final QuestionnaireQuestion question = page.getQuestion(position);
-        holder.question.setText(question.question);
-        holder.answer.setHint(question.helpText);
+        final Question question = page.getQuestion(position);
+        holder.question.setText(question.text);
+        holder.answer.setHint(question.help);
         holder.answer.removeTextChangedListener(holder.textWatcher);
 
-        holder.setRequired(question.required);
+        holder.setRequired(question.isRequired);
 
         String answer = getQuestionAnswer(question);
         holder.answer.setText(answer);
@@ -231,7 +232,7 @@ public class QuestionnaireAdapter extends RecyclerView.Adapter<QuestionnaireAdap
      * @param question
      * @param answer
      */
-    private boolean saveAnswer(QuestionnaireQuestion question, String answer) {
+    private boolean saveAnswer(Question question, String answer) {
         if(onEventListener != null) {
             onEventListener.onAnswerChanged(question, answer);
             return true;
@@ -252,7 +253,7 @@ public class QuestionnaireAdapter extends RecyclerView.Adapter<QuestionnaireAdap
             @Override
             public void run() {
                 for(ViewHolder vh:viewHolders) {
-                    QuestionnaireQuestion question = page.getQuestion(vh.currentPosition);
+                    Question question = page.getQuestion(vh.currentPosition);
                     if(isQuestionEnabled(question)) {
                         vh.enable();
                     } else {
@@ -268,11 +269,11 @@ public class QuestionnaireAdapter extends RecyclerView.Adapter<QuestionnaireAdap
      * @param question
      * @return
      */
-    private boolean isQuestionEnabled(QuestionnaireQuestion question) {
+    private boolean isQuestionEnabled(Question question) {
         if(question != null) {
-            return question.reliantQuestionId < 0
-                    || (isAnswerAffirmative(page.getQuestionById(question.reliantQuestionId))
-                    && isQuestionEnabled(page.getQuestionById(question.reliantQuestionId)));
+            return question.dependsOn <= 0
+                    || (isAnswerAffirmative(page.getQuestionById(question.dependsOn))
+                    && isQuestionEnabled(page.getQuestionById(question.dependsOn)));
         }
         return false;
     }
@@ -283,11 +284,11 @@ public class QuestionnaireAdapter extends RecyclerView.Adapter<QuestionnaireAdap
      * @param question
      * @return
      */
-    private boolean isAnswerAffirmative(QuestionnaireQuestion question) {
+    private boolean isAnswerAffirmative(Question question) {
         if(question != null) {
             String answer = getQuestionAnswer(question);
             if(answer != null && !answer.isEmpty()) {
-                if (question.type == QuestionnaireQuestion.InputType.Boolean) {
+                if (question.inputType == Question.InputType.Boolean) {
                     return Boolean.parseBoolean(answer);
                 } else {
                     return true;
@@ -302,7 +303,7 @@ public class QuestionnaireAdapter extends RecyclerView.Adapter<QuestionnaireAdap
      * @param question
      * @return
      */
-    private String getQuestionAnswer(QuestionnaireQuestion question) {
+    private String getQuestionAnswer(Question question) {
         if(question != null && onEventListener != null) {
             return onEventListener.onGetAnswer(question);
         }
@@ -459,7 +460,7 @@ public class QuestionnaireAdapter extends RecyclerView.Adapter<QuestionnaireAdap
      * The interface by which answers are sent/received
      */
     public interface OnEventListener {
-        String onGetAnswer(QuestionnaireQuestion question);
-        void onAnswerChanged(QuestionnaireQuestion question, String answer);
+        String onGetAnswer(Question question);
+        void onAnswerChanged(Question question, String answer);
     }
 }

@@ -11,8 +11,9 @@ import android.widget.ListView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.newui.newtranslation.TargetLanguageAdapter;
+
+import org.unfoldingword.door43client.models.TargetLanguage;
 
 /**
  * Created by joel on 6/9/16.
