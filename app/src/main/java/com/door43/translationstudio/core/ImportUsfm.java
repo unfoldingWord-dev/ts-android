@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.unfoldingword.door43client.models.TargetLanguage;
+
 /**
  * For processing USFM input file or zip files into importable package.
  */
@@ -250,7 +252,7 @@ public class ImportUsfm {
                     getOptInteger(json,"CurrentBook"),
                     getOptString(json,"BookName"),
                     getOptString(json,"BookShortName"),
-                    TargetLanguage.generate(getOptJsonObject(json,"TargetLanguage")),
+                    TargetLanguage.fromJSON(getOptJsonObject(json,"TargetLanguage")),
                     getOptBoolean(json,"Success"),
                     getOptInteger(json,"CurrentChapter"),
                     getOptInteger(json,"ChaperCount"),
@@ -378,7 +380,7 @@ public class ImportUsfm {
     public String getLanguageTitle() {
         String format;
         format = mContext.getResources().getString(R.string.selected_language);
-        String language = String.format(format, mTargetLanguage.getId() + " - " + mTargetLanguage.name);
+        String language = String.format(format, mTargetLanguage.slug + " - " + mTargetLanguage.name);
         return language;
     }
 

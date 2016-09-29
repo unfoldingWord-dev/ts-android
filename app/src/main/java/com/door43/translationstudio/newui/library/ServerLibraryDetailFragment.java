@@ -17,9 +17,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.Project;
-import com.door43.translationstudio.core.SourceLanguage;
+import com.door43.translationstudio.core.LanguageDirection;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Typography;
@@ -27,14 +25,18 @@ import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.tasks.DownloadProjectImageTask;
 import com.door43.translationstudio.tasks.DownloadSourceLanguageTask;
 import com.door43.translationstudio.App;
+
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
+
+import org.unfoldingword.door43client.models.SourceLanguage;
 
 public class ServerLibraryDetailFragment extends BaseFragment implements ManagedTask.OnFinishedListener {
     public static final String ARG_PROJECT_ID = "item_id";
@@ -44,7 +46,7 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
     public static final String DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP = "download_source_language_task";
     private Project mProject;
     private String mImagePath;
-    private Library mServerLibrary;
+    private Door43Client mServerLibrary;
     private ViewHolder mHolder;
     private String mSelectedTab = TAB_SOURCE_LANGUAGES;
     private OnEventListener mListener;
@@ -57,7 +59,7 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
 
         if (getArguments().containsKey(ARG_PROJECT_ID)) {
             String projectId = getArguments().getString(ARG_PROJECT_ID);
-            mProject = mServerLibrary.getProject(projectId, App.getDeviceLanguageCode());
+            mProject = mServerLibrary.index().getProject(App.getDeviceLanguageCode(), projectId);
             // TODO: handle null project
 
         }
@@ -137,9 +139,9 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
 
 
             // fonts
-            SourceLanguage fontSourceLanguage = mServerLibrary.getSourceLanguage(mProject.getId(), mProject.sourceLanguageId);
-            Typography.formatSub(getActivity(), mHolder.mProjectDescription, fontSourceLanguage.getId(), fontSourceLanguage.getDirection());
-            Typography.formatTitle(getActivity(), mHolder.mProjectTitle, fontSourceLanguage.getId(), fontSourceLanguage.getDirection());
+            SourceLanguage fontSourceLanguage = mServerLibrary.index().getSourceLanguage(mProject.languageSlug);
+            Typography.formatSub(getActivity(), mHolder.mProjectDescription, fontSourceLanguage.slug, LanguageDirection.get(fontSourceLanguage.direction));
+            Typography.formatTitle(getActivity(), mHolder.mProjectTitle, fontSourceLanguage.slug, LanguageDirection.get(fontSourceLanguage.direction));
 
             // custom project icon
             if (mImagePath == null) {
@@ -279,10 +281,10 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
         SourceTranslation[] sourceTranslations = mServerLibrary.getSourceTranslations(mProject.getId());
         Map<String, SourceLanguage> sourceLanguages = new HashMap<>();
         for(SourceTranslation sourceTranslation:sourceTranslations) {
-            SourceLanguage sourceLanguage = mServerLibrary.getSourceLanguage(mProject.getId(), sourceTranslation.sourceLanguageSlug);
+            SourceLanguage sourceLanguage = mServerLibrary.index().getSourceLanguage(sourceTranslation.sourceLanguageSlug);
             // TRICKY: a source language could be represented several times due to multiple resources
-            if(!sourceLanguages.containsKey(sourceLanguage.getId())) {
-                sourceLanguages.put(sourceLanguage.getId(), sourceLanguage);
+            if(!sourceLanguages.containsKey(sourceLanguage.slug)) {
+                sourceLanguages.put(sourceLanguage.slug, sourceLanguage);
             }
         }
         return new ArrayList(sourceLanguages.values());
@@ -298,10 +300,10 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
         SourceTranslation[] draftTranslations = mServerLibrary.getDraftTranslations(mProject.getId());
         Map<String, SourceLanguage> draftLanguages = new HashMap<>();
         for(SourceTranslation draftTranslation:draftTranslations) {
-            SourceLanguage sourceLanguage = mServerLibrary.getSourceLanguage(mProject.getId(), draftTranslation.sourceLanguageSlug);
+            SourceLanguage sourceLanguage = mServerLibrary.index().getSourceLanguage(draftTranslation.sourceLanguageSlug);
             // TRICKY: a source language could be represented several times due to multiple resources
-            if(!draftLanguages.containsKey(sourceLanguage.getId())) {
-                draftLanguages.put(sourceLanguage.getId(), sourceLanguage);
+            if(!draftLanguages.containsKey(sourceLanguage.slug)) {
+                draftLanguages.put(sourceLanguage.slug, sourceLanguage);
             }
         }
         return new ArrayList<>(draftLanguages.values());

@@ -25,8 +25,8 @@ import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.CheckingQuestion;
 import com.door43.translationstudio.core.Frame;
+import com.door43.translationstudio.core.LanguageDirection;
 import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TranslationArticle;
 import com.door43.translationstudio.core.TranslationNote;
@@ -42,6 +42,9 @@ import com.door43.translationstudio.spannables.Span;
 import org.apmem.tools.layouts.FlowLayout;
 import org.sufficientlysecure.htmltextview.HtmlTextView;
 import org.sufficientlysecure.htmltextview.LocalLinkMovementMethod;
+
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.SourceLanguage;
 
 /**
  * Created by joel on 9/8/2015.
@@ -333,9 +336,9 @@ public class ReviewModeFragment extends ViewModeFragment {
         mTranslationWordId = translationWordId;
         mTranslationNoteId = null;
 
-        final Library library = App.getLibrary();
+        final Door43Client library = App.getLibrary();
         final SourceTranslation sourceTranslation = getSourceTranslation();
-        SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug);
+        SourceLanguage sourceLanguage = library.index().getSourceLanguage(sourceTranslation.sourceLanguageSlug);
         TranslationWord word = getPreferredWord(sourceTranslation, translationWordId);
         if(mResourcesDrawerContent != null) {
             mResourcesDrawerContent.setVisibility(View.GONE);
@@ -365,7 +368,7 @@ public class ReviewModeFragment extends ViewModeFragment {
 
             wordTitle.setText(word.getTerm());
             descriptionTitle.setText(word.getDefinitionTitle());
-            Typography.formatTitle(getActivity(), descriptionTitle, sourceLanguage.getId(), sourceLanguage.getDirection());
+            Typography.formatTitle(getActivity(), descriptionTitle, sourceLanguage.slug, LanguageDirection.get(sourceLanguage.direction));
             HtmlRenderer renderer = new HtmlRenderer(new HtmlRenderer.OnPreprocessLink() {
                 @Override
                 public boolean onPreprocess(Span span) {
@@ -409,7 +412,7 @@ public class ReviewModeFragment extends ViewModeFragment {
             });
             descriptionView.setText(renderer.render(word.getDefinition()));
             descriptionView.setMovementMethod(LocalLinkMovementMethod.getInstance());
-            Typography.formatSub(getActivity(), descriptionView, sourceLanguage.getId(), sourceLanguage.getDirection());
+            Typography.formatSub(getActivity(), descriptionView, sourceLanguage.slug, LanguageDirection.get(sourceLanguage.direction));
 
             seeAlsoView.removeAllViews();
             for(int i = 0; i < word.getSeeAlso().length; i ++) {
@@ -423,7 +426,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                             onTranslationWordClick(relatedWord.getId(), mResourcesDrawer.getLayoutParams().width);
                         }
                     });
-                    Typography.formatSub(getActivity(), button, sourceLanguage.getId(), sourceLanguage.getDirection());
+                    Typography.formatSub(getActivity(), button, sourceLanguage.slug, LanguageDirection.get(sourceLanguage.direction));
                     seeAlsoView.addView(button);
                 }
             }
@@ -432,7 +435,7 @@ public class ReviewModeFragment extends ViewModeFragment {
             } else {
                 seeAlsoTitle.setVisibility(View.GONE);
             }
-            Typography.formatTitle(getActivity(), seeAlsoTitle, sourceLanguage.getId(), sourceLanguage.getDirection());
+            Typography.formatTitle(getActivity(), seeAlsoTitle, sourceLanguage.slug, LanguageDirection.get(sourceLanguage.direction));
 
             examplesView.removeAllViews();
             for(final TranslationWord.Example example:word.getExamples()) {
@@ -448,8 +451,8 @@ public class ReviewModeFragment extends ViewModeFragment {
                         scrollToFrame(example.getChapterId(), example.getFrameId());
                     }
                 });
-                Typography.formatSub(getActivity(), referenceView, sourceLanguage.getId(), sourceLanguage.getDirection());
-                Typography.formatSub(getActivity(), passageView, sourceLanguage.getId(), sourceLanguage.getDirection());
+                Typography.formatSub(getActivity(), referenceView, sourceLanguage.slug, LanguageDirection.get(sourceLanguage.direction));
+                Typography.formatSub(getActivity(), passageView, sourceLanguage.slug, LanguageDirection.get(sourceLanguage.direction));
                 examplesView.addView(exampleView);
             }
             if(word.getExamples().length > 0) {
@@ -457,7 +460,7 @@ public class ReviewModeFragment extends ViewModeFragment {
             } else {
                 examplesTitle.setVisibility(View.GONE);
             }
-            Typography.formatTitle(getActivity(), examplesTitle, sourceLanguage.getId(), sourceLanguage.getDirection());
+            Typography.formatTitle(getActivity(), examplesTitle, sourceLanguage.slug, LanguageDirection.get(sourceLanguage.direction));
 
             mScrollingResourcesDrawerContent.removeAllViews();
             mScrollingResourcesDrawerContent.addView(view);
@@ -474,7 +477,7 @@ public class ReviewModeFragment extends ViewModeFragment {
         mFrameId = frameId;
         mChapterId = chapterId;
 
-        final Library library = App.getLibrary();
+        final Door43Client library = App.getLibrary();
         final SourceTranslation sourceTranslation = getSourceTranslation();
         TranslationNote note = getPreferredNote(sourceTranslation, chapterId, frameId, noteId);
         if(mResourcesDrawerContent != null) {
@@ -540,11 +543,11 @@ public class ReviewModeFragment extends ViewModeFragment {
             });
 
             title.setText(note.getTitle());
-            SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug);
-            Typography.format(getActivity(), title, sourceLanguage.getId(), sourceLanguage.getDirection());
+            SourceLanguage sourceLanguage = library.index().getSourceLanguage(sourceTranslation.sourceLanguageSlug);
+            Typography.format(getActivity(), title, sourceLanguage.slug, LanguageDirection.get(sourceLanguage.direction));
 
             descriptionView.setText(renderer.render(note.getBody()));
-            Typography.formatSub(getActivity(), descriptionView, sourceLanguage.getId(), sourceLanguage.getDirection());
+            Typography.formatSub(getActivity(), descriptionView, sourceLanguage.slug, LanguageDirection.get(sourceLanguage.direction));
             descriptionView.setMovementMethod(LocalLinkMovementMethod.getInstance());
 
             mScrollingResourcesDrawerContent.removeAllViews();
@@ -563,10 +566,10 @@ public class ReviewModeFragment extends ViewModeFragment {
         mFrameId = frameId;
         mChapterId = chapterId;
 
-        final Library library = App.getLibrary();
+        final Door43Client library = App.getLibrary();
         SourceTranslation sourceTranslation = getSourceTranslation();
         CheckingQuestion question = getPreferredQuestion(sourceTranslation, chapterId, frameId, questionId);
-        SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug);
+        SourceLanguage sourceLanguage = library.index().getSourceLanguage(sourceTranslation.sourceLanguageSlug);
         if(mResourcesDrawerContent != null && question != null) {
             mResourcesDrawerContent.setVisibility(View.GONE);
         }

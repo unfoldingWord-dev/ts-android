@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.unfoldingword.door43client.models.TargetLanguage;
+import org.unfoldingword.door43client.models.SourceLanguage;
 
 /**
  * Created by joel on 8/26/2015.
@@ -366,14 +368,14 @@ public class LibraryData {
             for (int i = 0; i < items.length(); i++) {
                 try {
                     JSONObject item = items.getJSONObject(i);
-                    SourceLanguage sourceLanguage = SourceLanguage.generate(item);
+                    SourceLanguage sourceLanguage = SourceLanguage.fromJSON(item);
                     if (sourceLanguage != null) {
                         JSONArray categoriesJson = item.getJSONObject("project").getJSONArray("meta");
                         List<String> categoryNames = new ArrayList<>();
                         for(int j = 0; j < categoriesJson.length(); j ++) {
                             categoryNames.add(categoriesJson.getString(j));
                         }
-                        addSourceLanguage(sourceLanguage.getId(),
+                        addSourceLanguage(sourceLanguage.slug,
                                 projectId, sourceLanguage.name, sourceLanguage.projectTitle,
                                 sourceLanguage.projectDescription,
                                 sourceLanguage.getDirection().toString(), sourceLanguage.dateModified,

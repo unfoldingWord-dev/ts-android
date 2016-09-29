@@ -37,6 +37,7 @@ import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
@@ -47,11 +48,11 @@ import com.door43.translationstudio.core.CheckingQuestion;
 import com.door43.translationstudio.core.FileHistory;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
+import com.door43.translationstudio.core.LanguageDirection;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.LinedEditText;
 import com.door43.translationstudio.core.ProjectTranslation;
 import com.door43.translationstudio.core.TranslationNote;
-import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
@@ -86,6 +87,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.unfoldingword.door43client.models.SourceLanguage;
+
 /**
  * Created by joel on 9/18/2015.
  */
@@ -100,7 +103,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     public static final String OPTIONS = "Options";
     public static final String ISO_DATE_FORMAT = "yyyy-MM-dd HH:mm";
     public static final int HIGHLIGHT_COLOR = Color.YELLOW;
-    private final Library mLibrary;
+    private final Door43Client mLibrary;
     private final Translator mTranslator;
     private final Activity mContext;
     private final TargetTranslation mTargetTranslation;
@@ -131,7 +134,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
         boolean usfm = mTargetTranslation.getFormat() == TranslationFormat.USFM;
         mAllowFootnote = usfm;
-        mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectSlug, mSourceTranslation.sourceLanguageSlug);
+        mSourceLanguage = mLibrary.index().getSourceLanguage(mSourceTranslation.sourceLanguageSlug);
         mTargetLanguage = App.languageFromTargetTranslation(mTargetTranslation);
         mResourcesOpened = resourcesOpened;
 
@@ -216,7 +219,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     @Override
     void setSourceTranslation(String sourceTranslationId) {
         mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
-        mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectSlug, mSourceTranslation.sourceLanguageSlug);
+        mSourceLanguage = mLibrary.index().getSourceLanguage(mSourceTranslation.sourceLanguageSlug);
 
         Chapter[] chapters = mLibrary.getChapters(mSourceTranslation);
         List<ListItem> listItems = new ArrayList<>();
@@ -363,7 +366,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // set up fonts
         if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
             holder.mLayoutBuildNumber = mLayoutBuildNumber;
-            Typography.format(mContext, holder.mSourceBody, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+            Typography.format(mContext, holder.mSourceBody, mSourceLanguage.slug, LanguageDirection.get(mSourceLanguage.direction));
             Typography.formatSub(mContext, holder.mTargetTitle, mTargetLanguage.getId(), mTargetLanguage.getDirection());
             Typography.format(mContext, holder.mTargetBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
             Typography.format(mContext, holder.mTargetEditableBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
@@ -1412,7 +1415,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         }
                     }
                 });
-                Typography.formatSub(mContext, noteView, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+                Typography.formatSub(mContext, noteView, mSourceLanguage.slug, LanguageDirection.get(mSourceLanguage.direction));
                 holder.mResourceList.addView(noteView);
             }
         } else if(mOpenResourceTab[position] == TAB_WORDS) {
@@ -1428,7 +1431,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         }
                     }
                 });
-                Typography.formatSub(mContext, wordView, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+                Typography.formatSub(mContext, wordView, mSourceLanguage.slug, LanguageDirection.get(mSourceLanguage.direction));
                 holder.mResourceList.addView(wordView);
             }
         } else if(mOpenResourceTab[position] == TAB_QUESTIONS) {
@@ -1444,7 +1447,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         }
                     }
                 });
-                Typography.formatSub(mContext, questionView, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+                Typography.formatSub(mContext, questionView, mSourceLanguage.slug, LanguageDirection.get(mSourceLanguage.direction));
                 holder.mResourceList.addView(questionView);
             }
         }

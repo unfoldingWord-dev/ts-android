@@ -25,8 +25,8 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.FrameTranslation;
+import com.door43.translationstudio.core.LanguageDirection;
 import com.door43.translationstudio.core.ProjectTranslation;
-import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Frame;
@@ -47,6 +47,8 @@ import com.door43.widget.ViewUtil;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.SourceLanguage;
 
 /**
  * Created by joel on 9/9/2015.
@@ -63,7 +65,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     private static final int TOP_ELEVATION = 3;
     private final TargetTranslation mTargetTranslation;
     private SourceTranslation mSourceTranslation;
-    private final Library mLibrary;
+    private final Door43Client mLibrary;
     private final Translator mTranslator;
     private Chapter[] mChapters;
     private int mLayoutBuildNumber = 0;
@@ -75,7 +77,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         mContext = context;
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
-        mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectSlug, mSourceTranslation.sourceLanguageSlug);
+        mSourceLanguage = mLibrary.index().getSourceLanguage(mSourceTranslation.sourceLanguageSlug);
         mTargetLanguage = App.languageFromTargetTranslation(mTargetTranslation);
 
         mChapters = mLibrary.getChapters(mSourceTranslation);
@@ -102,7 +104,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
      */
     public void setSourceTranslation(String sourceTranslationId) {
         mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
-        mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectSlug, mSourceTranslation.sourceLanguageSlug);
+        mSourceLanguage = mLibrary.index().getSourceLanguage(mSourceTranslation.sourceLanguageSlug);
 
         mChapters = mLibrary.getChapters(mSourceTranslation);
         mTargetStateOpen = new boolean[mChapters.length];
@@ -427,9 +429,9 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         // set up fonts
         if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
             holder.mLayoutBuildNumber = mLayoutBuildNumber;
-            Typography.formatTitle(mContext, holder.mSourceHeading, mSourceLanguage.getId(), mSourceLanguage.getDirection());
-            Typography.formatTitle(mContext, holder.mSourceTitle, mSourceLanguage.getId(), mSourceLanguage.getDirection());
-            Typography.format(mContext, holder.mSourceBody, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+            Typography.formatTitle(mContext, holder.mSourceHeading, mSourceLanguage.slug, LanguageDirection.get(mSourceLanguage.direction));
+            Typography.formatTitle(mContext, holder.mSourceTitle, mSourceLanguage.slug, LanguageDirection.get(mSourceLanguage.direction));
+            Typography.format(mContext, holder.mSourceBody, mSourceLanguage.slug, LanguageDirection.get(mSourceLanguage.direction));
             Typography.formatTitle(mContext, holder.mTargetTitle, mTargetLanguage.getId(), mTargetLanguage.getDirection());
             Typography.format(mContext, holder.mTargetBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
         }

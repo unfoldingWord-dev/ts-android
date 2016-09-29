@@ -27,6 +27,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
@@ -34,9 +35,9 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.FrameTranslation;
+import com.door43.translationstudio.core.LanguageDirection;
 import com.door43.translationstudio.core.LinedEditText;
 import com.door43.translationstudio.core.ProjectTranslation;
-import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Frame;
@@ -60,6 +61,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.unfoldingword.door43client.models.SourceLanguage;
+
 /**
  * Created by joel on 9/9/2015.
  */
@@ -72,7 +75,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     private static final int TOP_ELEVATION = 3;
     private final TargetTranslation mTargetTranslation;
     private SourceTranslation mSourceTranslation;
-    private final Library mLibrary;
+    private final Door43Client mLibrary;
     private final Translator mTranslator;
     private ListItem[] mUnfilteredItems;
     private ListItem[] mFilteredItems;
@@ -89,7 +92,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         mContext = context;
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
-        mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectSlug, mSourceTranslation.sourceLanguageSlug);
+        mSourceLanguage = mLibrary.index().getSourceLanguage(mSourceTranslation.sourceLanguageSlug);
         mTargetLanguage = App.languageFromTargetTranslation(mTargetTranslation);
 
         Chapter[] chapters = mLibrary.getChapters(mSourceTranslation);
@@ -164,7 +167,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
      */
     public void setSourceTranslation(String sourceTranslationId) {
         mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
-        mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectSlug, mSourceTranslation.sourceLanguageSlug);
+        mSourceLanguage = mLibrary.index().getSourceLanguage(mSourceTranslation.sourceLanguageSlug);
         mChapters = new HashMap<>();
 
         Chapter[] chapters = mLibrary.getChapters(mSourceTranslation);
@@ -401,8 +404,8 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         // set up fonts
         if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
             holder.mLayoutBuildNumber = mLayoutBuildNumber;
-            Typography.formatSub(mContext, holder.mSourceTitle, mSourceLanguage.getId(), mSourceLanguage.getDirection());
-            Typography.format(mContext, holder.mSourceBody, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+            Typography.formatSub(mContext, holder.mSourceTitle, mSourceLanguage.slug, LanguageDirection.get(mSourceLanguage.direction));
+            Typography.format(mContext, holder.mSourceBody, mSourceLanguage.slug, LanguageDirection.get(mSourceLanguage.direction));
             Typography.formatSub(mContext, holder.mTargetTitle, mTargetLanguage.getId(), mTargetLanguage.getDirection());
             Typography.format(mContext, holder.mTargetBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
         }

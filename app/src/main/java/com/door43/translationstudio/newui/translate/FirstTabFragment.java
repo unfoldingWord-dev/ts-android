@@ -11,12 +11,15 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.resourcecontainer.Project;
+import org.unfoldingword.resourcecontainer.Resource;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
@@ -24,8 +27,12 @@ import com.door43.translationstudio.newui.BaseFragment;
 
 import org.json.JSONException;
 
+import java.io.IOException;
 import java.security.InvalidParameterException;
+import java.util.List;
 import java.util.Locale;
+
+import org.unfoldingword.door43client.models.SourceLanguage;
 
 /**
  * Created by joel on 9/14/2015.
@@ -33,7 +40,7 @@ import java.util.Locale;
 public class FirstTabFragment extends BaseFragment implements ChooseSourceTranslationDialog.OnClickListener {
 
     private Translator mTranslator;
-    private Library mLibrary;
+    private Door43Client mLibrary;
     private OnEventListener mListener;
 
     @Override
@@ -53,8 +60,21 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
         ImageButton newTabButton = (ImageButton) rootView.findViewById(R.id.newTabButton);
         LinearLayout secondaryNewTabButton = (LinearLayout) rootView.findViewById(R.id.secondaryNewTabButton);
         TextView translationTitle = (TextView) rootView.findViewById(R.id.source_translation_title);
-        SourceLanguage sourceLanguage = mLibrary.getPreferredSourceLanguage(targetTranslation.getProjectId(), App.getDeviceLanguageCode());
-        translationTitle.setText(sourceLanguage.projectTitle + " - " + targetTranslation.getTargetLanguageName());
+        Project p = mLibrary.index().getProject(App.getDeviceLanguageCode(), targetTranslation.getProjectId(), true);
+        List<Resource> resources = mLibrary.index().getResources(p.languageSlug, p.slug);
+        ResourceContainer  resourceContainer = null;
+        try {
+            resourceContainer = mLibrary.open(p.languageSlug, p.slug, resources.get(0).slug);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+//        SourceLanguage sourceLanguage = mLibrary.getPreferredSourceLanguage(targetTranslation.getProjectId(), App.getDeviceLanguageCode());
+        try {
+            translationTitle.setText(resourceContainer.readChunk("front", "title") + " - " + targetTranslation.getTargetLanguageName());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         View.OnClickListener clickListener = new View.OnClickListener() {
             @Override

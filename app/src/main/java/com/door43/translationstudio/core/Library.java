@@ -465,46 +465,6 @@ public class Library {
     }
 
     /**
-     * Returns the preferred source language if it exists
-     *
-     * If the source language does not exist it will default to english.
-     * If english does not exist it will return the first available source language (this happens in the query)
-     *
-     * @param projectId
-     * @param sourceLanguageSlug
-     * @return null if no source langauges exist for the project
-     */
-    @Nullable
-    public SourceLanguage getPreferredSourceLanguage(String projectId, String sourceLanguageSlug) {
-        // preferred language
-        SourceLanguage sourceLanguage = getActiveIndex().getSourceLanguage(projectId, sourceLanguageSlug);
-        // try to use default (en)
-        if (sourceLanguage == null || (!sourceLanguage.slug.equals(sourceLanguageSlug) && !sourceLanguageSlug.equals("en"))) {
-            sourceLanguage = getActiveIndex().getSourceLanguage(projectId, "en");
-        }
-        return sourceLanguage;
-    }
-
-    /**
-     * Returns an array of source languages for the project
-     * @param projectSlug the id of the project who's source languages will be returned
-     * @return
-     */
-    public SourceLanguage[] getSourceLanguages(String projectSlug) {
-        return getActiveIndex().getSourceLanguages(projectSlug);
-    }
-
-    /**
-     * Returns a source language in the project
-     * @param projectId
-     * @param sourceLanguageId
-     * @return
-     */
-    public SourceLanguage getSourceLanguage(String projectId, String sourceLanguageId) {
-        return getActiveIndex().getSourceLanguage(projectId, sourceLanguageId);
-    }
-
-    /**
      * Returns an array of resources for the source language
      * @param projectSlug
      * @param sourceLanguageSlug
@@ -533,29 +493,6 @@ public class Library {
      */
     public Project getProject(String projectId, String languageId) {
         return getActiveIndex().getProject(projectId, languageId);
-    }
-
-    /**
-     * Calculates the progress of a target translation.
-     * This can take some time so don't run this on the main thread
-     * @param targetTranslation
-     * @return
-     */
-    public float getTranslationProgress(TargetTranslation targetTranslation) {
-        int numFinishedItems = targetTranslation.numFinished();
-        SourceLanguage sourceLanguage = getPreferredSourceLanguage(targetTranslation.getProjectId(), "en"); // the language does not matter
-        if(sourceLanguage != null) {
-            SourceTranslation sourceTranslation = getDefaultSourceTranslation(targetTranslation.getProjectId(), sourceLanguage.getId());
-            int numAvailableTranslations = libraryData.numTranslatable(sourceTranslation);
-            if (numAvailableTranslations > 0) {
-                return (float) numFinishedItems / (float) numAvailableTranslations;
-            } else {
-                return 0;
-            }
-        } else {
-            Logger.w(TAG, "Cannot get progress of " + targetTranslation.getId() + " because a source language does not exist");
-            return 0;
-        }
     }
 
     /**

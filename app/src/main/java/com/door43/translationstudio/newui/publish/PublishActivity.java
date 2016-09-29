@@ -13,7 +13,6 @@ import android.widget.Button;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
@@ -23,6 +22,13 @@ import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.widget.ViewUtil;
 
 import java.security.InvalidParameterException;
+import java.util.List;
+
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.SourceLanguage;
+import org.unfoldingword.resourcecontainer.Project;
+import org.unfoldingword.resourcecontainer.Resource;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 
 public class PublishActivity extends BaseActivity implements PublishStepFragment.OnEventListener {
 
@@ -82,14 +88,22 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
                 String sourceTranslationId = App.getSelectedSourceTranslationId(targetTranslationId);
                 if(sourceTranslationId == null) {
                     // use the default target translation if they have not chosen one.
-                    Library library = App.getLibrary();
-                    SourceLanguage sourceLanguage = library.getPreferredSourceLanguage(mTargetTranslation.getProjectId(), App.getDeviceLanguageCode());
-                    if(sourceLanguage != null) {
-                        SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(mTargetTranslation.getProjectId(), sourceLanguage.getId());
-                        if (sourceTranslation != null) {
-                            sourceTranslationId = sourceTranslation.getId();
-                        }
+                    Door43Client library = App.getLibrary();
+                    Project p = library.index().getProject(App.getDeviceLanguageCode(), mTargetTranslation.getProjectId(), true);
+                    List<Resource> resources = library.index().getResources(p.languageSlug, p.slug);
+                    ResourceContainer resourceContainer = null;
+                    try {
+                        resourceContainer = library.open(p.languageSlug, p.slug, resources.get(0).slug);
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
+//                    SourceLanguage sourceLanguage = library.getPreferredSourceLanguage(mTargetTranslation.getProjectId(), App.getDeviceLanguageCode());
+//                    if(res != null) {
+//                        SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(mTargetTranslation.getProjectId(), sourceLanguage.slug);
+                        if (resourceContainer != null) {
+                            sourceTranslationId = resourceContainer.slug;
+                        }
+//                    }
                 }
                 if(sourceTranslationId != null) {
                     args.putSerializable(PublishStepFragment.ARG_SOURCE_TRANSLATION_ID, sourceTranslationId);
@@ -230,9 +244,16 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
         String sourceTranslationId = App.getSelectedSourceTranslationId(mTargetTranslation.getId());
         // TRICKY: if the user has not chosen a source translation (this is an empty translation) the id will be null
         if(sourceTranslationId == null) {
-            SourceTranslation sourceTranslation = App.getLibrary().getDefaultSourceTranslation(mTargetTranslation.getProjectId(), App.getDeviceLanguageCode());
-            if(sourceTranslation != null) {
-                sourceTranslationId = sourceTranslation.getId();
+            Project p = App.getLibrary().index().getProject(App.getDeviceLanguageCode(), mTargetTranslation.getProjectId(), true);
+            List<Resource> resources = App.getLibrary().index().getResources(p.languageSlug, p.slug);
+            ResourceContainer resourceContainer = null;
+            try {
+                resourceContainer = App.getLibrary().open(p.languageSlug, p.slug, resources.get(0).slug);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if(resourceContainer != null) {
+                sourceTranslationId = resourceContainer.slug;
             }
         }
         args.putSerializable(PublishStepFragment.ARG_SOURCE_TRANSLATION_ID, sourceTranslationId);

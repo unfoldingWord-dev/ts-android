@@ -11,10 +11,12 @@ import android.widget.ListView;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.BaseFragment;
+
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.SourceLanguage;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +30,7 @@ import java.util.Map;
 public class SourceLanguageListFragment extends BaseFragment implements Searchable{
 
     public static final String ARG_PROJECT_ID = "extra_project_id";
-    private Library mLibrary;
+    private Door43Client mLibrary;
     private SourceLanguageAdapter mAdapter;
     private OnItemClickListener mListener;
 
@@ -46,10 +48,10 @@ public class SourceLanguageListFragment extends BaseFragment implements Searchab
         SourceTranslation[] sourceTranslations = mLibrary.getSourceTranslations(projectId);
         Map<String, SourceLanguage> sourceLanguages = new HashMap<>();
         for(SourceTranslation sourceTranslation:sourceTranslations) {
-            SourceLanguage sourceLanguage = mLibrary.getSourceLanguage(projectId, sourceTranslation.sourceLanguageSlug);
+            SourceLanguage sourceLanguage = mLibrary.index().getSourceLanguage(sourceTranslation.sourceLanguageSlug);
             // TRICKY: a source language could be represented several times due to multiple resources
-            if(!sourceLanguages.containsKey(sourceLanguage.getId())) {
-                sourceLanguages.put(sourceLanguage.getId(), sourceLanguage);
+            if(!sourceLanguages.containsKey(sourceLanguage.slug)) {
+                sourceLanguages.put(sourceLanguage.slug, sourceLanguage);
             }
         }
         mAdapter = new SourceLanguageAdapter(sourceLanguages.values().toArray(new SourceLanguage[sourceLanguages.size()]));
