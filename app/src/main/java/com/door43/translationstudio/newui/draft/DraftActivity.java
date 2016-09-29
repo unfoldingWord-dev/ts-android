@@ -18,6 +18,10 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.tasks.ImportDraftTask;
+
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.Resource;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
@@ -32,12 +36,12 @@ public class DraftActivity extends BaseActivity implements SimpleTaskWatcher.OnF
     public static final String EXTRA_TARGET_TRANSLATION_ID = "target_translation_id";
     private TargetTranslation mTargetTranslation;
     private Translator mTranslator;
-    private Library mLibrary;
+    private Door43Client mLibrary;
     private RecyclerView mRecylerView;
     private LinearLayoutManager mLayoutManager;
     private DraftAdapter mAdapter;
     private SimpleTaskWatcher taskWatcher;
-    private SourceTranslation mDraftTranslation;
+    private ResourceContainer mDraftTranslation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,13 +53,22 @@ public class DraftActivity extends BaseActivity implements SimpleTaskWatcher.OnF
         mLibrary = App.getLibrary();
 
         // validate parameters
-        List<SourceTranslation> draftTranslations = new ArrayList<>();
+        List<ResourceContainer> draftTranslations = new ArrayList<>();
         Bundle extras = getIntent().getExtras();
         if(extras != null) {
             String targetTranslationId = extras.getString(EXTRA_TARGET_TRANSLATION_ID, null);
             mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
             if(mTargetTranslation != null) {
-                draftTranslations = mLibrary.getDraftTranslations(mTargetTranslation.getProjectId(), mTargetTranslation.getTargetLanguageId());
+                List<Resource> resources = mLibrary.index().getResources(mTargetTranslation.getTargetLanguageId(), mTargetTranslation.getProjectId());
+                for(Resource r:resources) {
+                    if(Integer.parseInt(r.checkingLevel) < Library.MIN_CHECKING_LEVEL) {
+                        try {
+                            draftTranslations.add(mLibrary.open(mTargetTranslation.getTargetLanguageId(), mTargetTranslation.getProjectId(), r.slug));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
             } else {
                 throw new InvalidParameterException("a valid target translation id is required");
             }
@@ -69,6 +82,7 @@ public class DraftActivity extends BaseActivity implements SimpleTaskWatcher.OnF
         }
 
         // TODO: 1/20/2016 eventually users will be forced to define which resource they are translating into as well. When that happens we'll know which draft to choose
+        // Right now users will not be able to choose between several different resources if they exist.
         mDraftTranslation = draftTranslations.get(0);
 
         mRecylerView = (RecyclerView)findViewById(R.id.recycler_view);

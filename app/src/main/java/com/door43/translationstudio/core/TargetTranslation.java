@@ -7,6 +7,8 @@ import android.support.annotation.Nullable;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.revwalk.RevWalkUtils;
 import org.eclipse.jgit.revwalk.filter.RevFilter;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
+import org.unfoldingword.door43client.models.TargetLanguage;
 import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.TransportCallback;
@@ -346,7 +348,7 @@ public class TargetTranslation {
         generatorJson.put(FIELD_MANIFEST_BUILD, packageInfo.versionCode);
         manifest.put(FIELD_MANIFEST_GENERATOR, generatorJson);
         manifest.put(FIELD_MANIFEST_PACKAGE_VERSION, PACKAGE_VERSION);
-        manifest.put(FIELD_MANIFEST_TARGET_LANGUAGE, targetLanguage.toJson());
+        manifest.put(FIELD_MANIFEST_TARGET_LANGUAGE, targetLanguage.toJSON());
         manifest.put(FIELD_MANIFEST_FORMAT, translationFormat);
         JSONObject resourceJson = new JSONObject();
         resourceJson.put(FIELD_MANIFEST_ID, resourceSlug);
@@ -1164,12 +1166,12 @@ public class TargetTranslation {
      * Sets the draft that is a parent of this target translation
      * @param draftTranslation
      */
-    public void setParentDraft(SourceTranslation draftTranslation) {
+    public void setParentDraft(ResourceContainer draftTranslation) {
         JSONObject draftStatus = new JSONObject();
         try {
-            draftStatus.put("resource_id", draftTranslation.resourceSlug);
-            draftStatus.put("checking_level", draftTranslation.getCheckingLevel());
-            draftStatus.put("version", draftTranslation.getVersion());
+            draftStatus.put("resource_id", draftTranslation.resource.slug);
+            draftStatus.put("checking_level", draftTranslation.resource.checkingLevel);
+            draftStatus.put("version", draftTranslation.resource.version);
             // TODO: 3/2/2016 need to update resource object to collect all info from api so we can include more detail here
             manifest.put(FIELD_PARENT_DRAFT, draftStatus);
         } catch (JSONException e) {
@@ -1306,11 +1308,11 @@ public class TargetTranslation {
         JSONObject languageJson = this.manifest.getJSONObject("target_language");
         try {
             languageJson.put("name", targetLanguage.name);
-            languageJson.put("direction", targetLanguage.direction.getLabel());
-            languageJson.put("id", targetLanguage.getId());
+            languageJson.put("direction", targetLanguage.direction);
+            languageJson.put("id", targetLanguage.slug);
             this.manifest.put("target_language", languageJson);
-            this.targetLanguageDirection = targetLanguage.direction;
-            this.targetLanguageId = targetLanguage.getId();
+            this.targetLanguageDirection = LanguageDirection.get(targetLanguage.direction);
+            this.targetLanguageId = targetLanguage.slug;
             this.targetLanguageName = targetLanguage.name;
         } catch (JSONException e) {
             e.printStackTrace();
@@ -1318,7 +1320,7 @@ public class TargetTranslation {
     }
 
     public TargetLanguage getTargetLanguage() {
-        return new TargetLanguage(targetLanguageId, targetLanguageName, targetLanguageRegion, targetLanguageDirection);
+        return new TargetLanguage(targetLanguageId, targetLanguageName, "", targetLanguageDirection.toString(), targetLanguageRegion, false);
     }
 
     public enum PublishStatus {

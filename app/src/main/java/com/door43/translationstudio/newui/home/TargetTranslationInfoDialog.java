@@ -66,7 +66,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
         TextView title = (TextView)v.findViewById(R.id.title);
         TextView projectTitle = (TextView)v.findViewById(R.id.project_title);
         Project p = library.index().getProject(App.getDeviceLanguageCode(), mTargetTranslation.getProjectId(), true);
-        SourceLanguage sourceLanguage = library.index().getSourceLanguage(p._dbInfo.relatedSlugs.get("source_language_slug"));
+        SourceLanguage sourceLanguage = library.index().getSourceLanguage(p._dbInfo().relatedSlugs.get("source_language_slug"));
         List<Resource> resources = library.index().getResources(sourceLanguage.slug, p.slug);
         ResourceContainer resourceContainer;
         try {

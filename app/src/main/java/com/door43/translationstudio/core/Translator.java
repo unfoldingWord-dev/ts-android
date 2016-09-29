@@ -5,6 +5,9 @@ import android.content.pm.PackageInfo;
 import android.text.Editable;
 import android.text.SpannedString;
 
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.TargetLanguage;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.rendering.USXtoUSFMConverter;
@@ -100,7 +103,7 @@ public class Translator {
             translationFormat = TranslationFormat.MARKDOWN;
         }
 
-        String targetTranslationId = TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), projectSlug, translationType, resourceSlug);
+        String targetTranslationId = TargetTranslation.generateTargetTranslationId(targetLanguage.slug, projectSlug, translationType, resourceSlug);
         TargetTranslation targetTranslation = getTargetTranslation(targetTranslationId);
         if(targetTranslation == null) {
             File targetTranslationDir = new File(this.mRootDir, targetTranslationId);
@@ -270,16 +273,17 @@ public class Translator {
      * @param library
      * @return
      */
-    public TargetTranslation importDraftTranslation(NativeSpeaker nativeSpeaker, SourceTranslation draftTranslation, Library library) {
-        TargetLanguage targetLanguage = library.getTargetLanguage(draftTranslation.sourceLanguageSlug);
+    public TargetTranslation importDraftTranslation(NativeSpeaker nativeSpeaker, ResourceContainer draftTranslation, Door43Client library) {
+        TargetLanguage targetLanguage = library.index().getTargetLanguage(draftTranslation.language.slug);
         // TRICKY: for now android only supports "regular" or "obs" "text" translations
         // TODO: we should technically check if the project contains more than one resource when determining if it needs a regular slug or not.
-        String resourceSlug = draftTranslation.projectSlug.equals("obs") ? "obs" : Resource.REGULAR_SLUG;
+        String resourceSlug = draftTranslation.project.slug.equals("obs") ? "obs" : Resource.REGULAR_SLUG;
 
-        TargetTranslation t = createTargetTranslation(nativeSpeaker, targetLanguage, draftTranslation.projectSlug, TranslationType.TEXT, resourceSlug, draftTranslation.getFormat());
+        TranslationFormat format = TranslationFormat.parse(draftTranslation.contentMimeType);
+        TargetTranslation t = createTargetTranslation(nativeSpeaker, targetLanguage, draftTranslation.project.slug, TranslationType.TEXT, resourceSlug, format);
 
         // convert legacy usx format to usfm
-        boolean convertToUSFM = draftTranslation.getFormat() == TranslationFormat.USX;
+        boolean convertToUSFM = format == TranslationFormat.USX;
 
         try {
             if (t != null) {
@@ -287,14 +291,15 @@ public class Translator {
                 t.commitSync();
 
                 // begin import
-                t.applyProjectTitleTranslation(draftTranslation.getProjectTitle());
-                for(Chapter c:library.getChapters(draftTranslation)) {
-                    ChapterTranslation ct = t.getChapterTranslation(c.getId());
-                    t.applyChapterTitleTranslation(ct, c.title);
-                    t.applyChapterReferenceTranslation(ct, c.reference);
-                    for(Frame f:library.getFrames(draftTranslation, c.getId())) {
-                        String text = convertToUSFM ? USXtoUSFMConverter.doConversion(f.body).toString() : f.body;
-                        t.applyFrameTranslation(t.getFrameTranslation(f), text);
+                t.applyProjectTitleTranslation(draftTranslation.readChunk("front", "title"));
+                for(String cSlug:draftTranslation.chapters()) {
+                    ChapterTranslation ct = t.getChapterTranslation(cSlug);
+                    t.applyChapterTitleTranslation(ct, draftTranslation.readChunk(cSlug, "title"));
+                    t.applyChapterReferenceTranslation(ct, draftTranslation.readChunk(cSlug, "reference"));
+                    for(String fSlug:draftTranslation.chunks(cSlug)) {
+                        String body = draftTranslation.readChunk(cSlug, fSlug);
+                        String text = convertToUSFM ? USXtoUSFMConverter.doConversion(body).toString() : body;
+                        t.applyFrameTranslation(t.getFrameTranslation(cSlug, fSlug, format), text);
                     }
                 }
                 // TODO: 3/23/2016 also import the front and back matter along with project title

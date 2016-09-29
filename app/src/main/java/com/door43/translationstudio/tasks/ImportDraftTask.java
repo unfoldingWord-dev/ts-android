@@ -4,6 +4,8 @@ import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
+
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 /**
@@ -13,10 +15,10 @@ import org.unfoldingword.tools.taskmanager.ManagedTask;
 public class ImportDraftTask extends ManagedTask {
 
     public static final String TASK_ID = "import_draft";
-    private final SourceTranslation draftTranslation;
+    private final ResourceContainer draftTranslation;
     private TargetTranslation targetTranslation;
 
-    public ImportDraftTask(SourceTranslation draftTranslation) {
+    public ImportDraftTask(ResourceContainer draftTranslation) {
         this.draftTranslation = draftTranslation;
     }
 
