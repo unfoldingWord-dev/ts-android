@@ -11,12 +11,12 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 
+import org.unfoldingword.door43client.models.Question;
 import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.QuestionnairePage;
-import com.door43.translationstudio.core.QuestionnaireQuestion;
-import com.door43.translationstudio.core.Questionnaire;
+import com.door43.translationstudio.core.QuestionnairePager;
 
 /**
  * Activity for presenting a questionnaire to the user
@@ -29,7 +29,7 @@ public abstract class QuestionnaireActivity extends BaseActivity implements Ques
 
     private int mCurrentPage = 0;
     private boolean mQuestionnaireFinished = false;
-    private Questionnaire mQuestionnaire;
+    private QuestionnairePager mPager;
     private RecyclerView mRecyclerView;
     private QuestionnaireAdapter mAdapter;
     private CardView mPreviousButton;
@@ -45,8 +45,8 @@ public abstract class QuestionnaireActivity extends BaseActivity implements Ques
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        mQuestionnaire = getQuestionnaire();
-        if(mQuestionnaire == null) {
+        mPager = getQuestionnaire();
+        if(mPager == null) {
             Logger.e(this.getClass().getName(), "Cannot begin the questionnaire because no questionnaire was found.");
             return;
         }
@@ -78,14 +78,14 @@ public abstract class QuestionnaireActivity extends BaseActivity implements Ques
             @Override
             public void onClick(View v) {
                 // validate page completion
-                QuestionnairePage page = mQuestionnaire.getPage(mCurrentPage);
+                QuestionnairePage page = mPager.getPage(mCurrentPage);
                 if(page != null) {
-                    for (QuestionnaireQuestion q :page.getQuestions()) {
+                    for (Question q :page.getQuestions()) {
                         String answer = onGetAnswer(q);
-                        if(q.required && (answer == null || answer.isEmpty())) {
+                        if(q.isRequired && (answer == null || answer.isEmpty())) {
                             new AlertDialog.Builder(QuestionnaireActivity.this, R.style.AppTheme_Dialog)
                                     .setTitle(R.string.missing_question_answer)
-                                    .setMessage(q.question)
+                                    .setMessage(q.text)
                                     .setPositiveButton(R.string.dismiss, null)
                                     .show();
                             return;
@@ -122,7 +122,7 @@ public abstract class QuestionnaireActivity extends BaseActivity implements Ques
      * Returns the questionnaire to be used
      * @return
      */
-    protected abstract Questionnaire getQuestionnaire();
+    protected abstract QuestionnairePager getQuestionnaire();
 
     /**
      * Called when the user navigates to the next page of questions
@@ -157,8 +157,8 @@ public abstract class QuestionnaireActivity extends BaseActivity implements Ques
         mRecyclerView.scrollToPosition(0);
 
         boolean animateRight = page > mCurrentPage;
-        if(page >= mQuestionnaire.getNumPages()) {
-            mCurrentPage = mQuestionnaire.getNumPages() - 1;
+        if(page >= mPager.size()) {
+            mCurrentPage = mPager.size() - 1;
         } else if(page < 0) {
             mCurrentPage = 0;
         } else {
@@ -166,17 +166,17 @@ public abstract class QuestionnaireActivity extends BaseActivity implements Ques
         }
 
         String titleFormat = getResources().getString(R.string.questionnaire_title);
-        String title = String.format(titleFormat, mCurrentPage + 1, mQuestionnaire.getNumPages());
+        String title = String.format(titleFormat, mCurrentPage + 1, mPager.size());
         setTitle(title);
-        mAdapter.setPage(mQuestionnaire.getPage(mCurrentPage), animateRight);
+        mAdapter.setPage(mPager.getPage(mCurrentPage), animateRight);
 
         // update controls
         mPreviousButton.setVisibility(View.GONE);
         mDoneButton.setVisibility(View.GONE);
         mNextButton.setVisibility(View.GONE);
-        if(mCurrentPage == 0 && mQuestionnaire.getNumPages() > 1) {
+        if(mCurrentPage == 0 && mPager.size() > 1) {
             mNextButton.setVisibility(View.VISIBLE);
-        } else if(mCurrentPage == mQuestionnaire.getNumPages() - 1) {
+        } else if(mCurrentPage == mPager.size() - 1) {
             mPreviousButton.setVisibility(View.VISIBLE);
             mDoneButton.setVisibility(View.VISIBLE);
         } else {

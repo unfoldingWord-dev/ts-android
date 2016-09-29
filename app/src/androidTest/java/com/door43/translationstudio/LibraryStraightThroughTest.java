@@ -131,18 +131,6 @@ public class LibraryStraightThroughTest {
     }
 
     /**
-     * it should return all the questionnaires
-     */
-    @Test
-    public void getQuestionaires() {
-        Questionnaire [] questionnaires = mLibrary.getQuestionnaires();
-        assertTrue(questionnaires.length > 0);
-        for(Questionnaire q:questionnaires) {
-            Log.e(TAG, "questionaire: "+q.dbId);
-        }
-    }
-
-    /**
      * it should return a single questionnaire
      */
     @Test

@@ -7,6 +7,9 @@ import android.support.annotation.Nullable;
 import org.unfoldingword.tools.logger.Logger;
 import com.door43.util.Security;
 
+import org.unfoldingword.door43client.models.Questionnaire;
+import org.unfoldingword.door43client.models.TargetLanguage;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -61,7 +64,7 @@ public class NewLanguageRequest {
         String hash = Security.sha1(uniqueString);
         String languageCode  = LANGUAGE_PREFIX + hash.substring(0, 6);
 
-        return new NewLanguageRequest(UUID.randomUUID().toString(), languageCode, questionnaire.door43Id, app, requester, questionnaire.dataFields);
+        return new NewLanguageRequest(UUID.randomUUID().toString(), languageCode, questionnaire.tdId, app, requester, questionnaire.dataFields);
     }
 
     /**
@@ -210,6 +213,6 @@ public class NewLanguageRequest {
             direction = isLeftToRight ? LanguageDirection.LeftToRight : LanguageDirection.RightToLeft;
         }
 
-        return new TargetLanguage(this.tempLanguageCode, name, region, direction);
+        return new TargetLanguage(this.tempLanguageCode, name, "", direction.toString(), region, false);
     }
 }

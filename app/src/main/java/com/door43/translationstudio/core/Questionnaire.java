@@ -23,6 +23,7 @@ public class Questionnaire {
     public final String languageSlug;
     public final String languageName;
     public final LanguageDirection languageDirection;
+
     private final static int QUESTIONS_PER_PAGE = 3;
     private List<QuestionnairePage> pages = new ArrayList<>();
     public Map<String, Long> dataFields = new HashMap<>();

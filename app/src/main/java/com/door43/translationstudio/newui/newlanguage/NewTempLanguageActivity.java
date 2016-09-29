@@ -9,12 +9,16 @@ import android.support.design.widget.Snackbar;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NewLanguageRequest;
-import com.door43.translationstudio.core.Questionnaire;
 import com.door43.translationstudio.core.QuestionnairePage;
-import com.door43.translationstudio.core.QuestionnaireQuestion;
-import com.door43.translationstudio.core.TargetLanguage;
+import com.door43.translationstudio.core.QuestionnairePager;
 import com.door43.translationstudio.newui.QuestionnaireActivity;
 import com.door43.widget.ViewUtil;
+
+import org.unfoldingword.door43client.models.Question;
+import org.unfoldingword.door43client.models.Questionnaire;
+import org.unfoldingword.door43client.models.TargetLanguage;
+
+import java.util.List;
 
 /**
  * Created by joel on 6/8/16.
@@ -26,15 +30,15 @@ public class NewTempLanguageActivity extends QuestionnaireActivity implements La
     public static final int RESULT_MISSING_QUESTIONNAIRE = 0;
     public static final int RESULT_USE_EXISTING_LANGUAGE = 1;
     private NewLanguageRequest request = null;
-    private Questionnaire questionnaire;
+    private QuestionnairePager questionnairePager;
     private LanguageSuggestionsDialog languageSuggestionsDialog = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.questionnaire = getQuestionnaire();
+        this.questionnairePager = getQuestionnaire();
 
-        if(questionnaire != null) {
+        if(questionnairePager != null) {
             // TRICKY: the profile can be null when running unit tests
             String translatorName = App.getProfile() != null ? App.getProfile().getFullName() : "unknown";
             if (savedInstanceState != null) {
@@ -45,13 +49,13 @@ public class NewTempLanguageActivity extends QuestionnaireActivity implements La
                     snack.show();
 
                     // restart
-                    request = NewLanguageRequest.newInstance(this, questionnaire, "android", translatorName);
+                    request = NewLanguageRequest.newInstance(this, questionnairePager, "android", translatorName);
                     restartQuestionnaire();
                     return;
                 }
             } else {
                 // begin
-                request = NewLanguageRequest.newInstance(this, questionnaire, "android", translatorName);
+                request = NewLanguageRequest.newInstance(this, questionnairePager, "android", translatorName);
             }
         } else {
             // missing questionnaire
@@ -69,11 +73,11 @@ public class NewTempLanguageActivity extends QuestionnaireActivity implements La
     }
 
     @Override
-    protected Questionnaire getQuestionnaire() {
+    protected QuestionnairePager getQuestionnaire() {
         // TRICKY: for now we only have one questionnaire
-        Questionnaire[] questionnaires = App.getLibrary().getQuestionnaires();
-        if(questionnaires.length > 0) {
-            return questionnaires[0];
+        List<Questionnaire> questionnaires = App.getLibrary().index().getQuestionnaires();
+        if(questionnaires.size() > 0) {
+            return new QuestionnairePager(questionnaires.get(0));
         }
         return null;
     }
@@ -81,10 +85,10 @@ public class NewTempLanguageActivity extends QuestionnaireActivity implements La
     @Override
     protected boolean onLeavePage(QuestionnairePage page) {
         // check for a matching language that already exists
-        if(questionnaire.dataFields.containsKey("ln")) {
-            QuestionnaireQuestion q = page.getQuestionById(questionnaire.dataFields.get("ln"));
+        if(questionnairePager.hasDataField("ln")) {
+            Question q = page.getQuestionById(questionnairePager.getDataField("ln"));
             if(q != null) {
-                String answer = request.getAnswer(q.id);
+                String answer = request.getAnswer(q.tdId);
                 if (answer != null) {
                     TargetLanguage[] languages = App.getLibrary().findTargetLanguage(answer.trim());
                     if (languages.length > 0) {
@@ -111,17 +115,17 @@ public class NewTempLanguageActivity extends QuestionnaireActivity implements La
     }
 
     @Override
-    public String onGetAnswer(QuestionnaireQuestion question) {
+    public String onGetAnswer(Question question) {
         if(request != null) {
-            return request.getAnswer(question.id);
+            return request.getAnswer(question.tdId);
         }
         return null;
     }
 
     @Override
-    public void onAnswerChanged(QuestionnaireQuestion question, String answer) {
+    public void onAnswerChanged(Question question, String answer) {
         if(request != null) {
-            request.setAnswer(question.id, answer);
+            request.setAnswer(question.tdId, answer);
         }
     }
 
@@ -151,7 +155,7 @@ public class NewTempLanguageActivity extends QuestionnaireActivity implements La
     public void onAcceptLanguageSuggestion(TargetLanguage language) {
         Intent data = new Intent();
         data.putExtra(EXTRA_RESULT_CODE, RESULT_USE_EXISTING_LANGUAGE);
-        data.putExtra(EXTRA_LANGUAGE_ID, language.getId());
+        data.putExtra(EXTRA_LANGUAGE_ID, language.slug);
         setResult(RESULT_FIRST_USER, data);
         finish();
     }
