@@ -24,7 +24,6 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.ImportUsfm;
 import com.door43.translationstudio.core.MissingNameItem;
-import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
@@ -36,6 +35,7 @@ import com.door43.util.FileUtilities;
 import java.io.File;
 import java.io.Serializable;
 
+import org.unfoldingword.door43client.models.TargetLanguage;
 
 /**
  * Handles the workflow UI for importing a USFM file.

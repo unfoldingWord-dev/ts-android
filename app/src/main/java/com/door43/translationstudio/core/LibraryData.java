@@ -991,9 +991,9 @@ public class LibraryData {
         for (int i = 0; i < items.length(); i ++) {
             try {
                 JSONObject item = items.getJSONObject(i);
-                TargetLanguage targetLanguage = TargetLanguage.generate(item);
+                TargetLanguage targetLanguage = TargetLanguage.fromJSON(item);
                 if(targetLanguage != null) {
-                    addTargetLanguage(targetLanguage.getId(), targetLanguage.getDirection().toString(), targetLanguage.name, targetLanguage.region);
+                    addTargetLanguage(targetLanguage.slug, targetLanguage.direction, targetLanguage.name, targetLanguage.region);
                 }
                 this.database.yieldIfContendedSafely();
             } catch (JSONException e) {
@@ -1052,7 +1052,7 @@ public class LibraryData {
         for (int i = 0; i < items.length(); i ++) {
             try {
                 JSONObject item = items.getJSONObject(i);
-                TargetLanguage targetLanguage = TargetLanguage.generate(item);
+                TargetLanguage targetLanguage = TargetLanguage.fromJSON(item);
                 if(targetLanguage != null) {
                     addTempTargetLanguage(targetLanguage);
                 }

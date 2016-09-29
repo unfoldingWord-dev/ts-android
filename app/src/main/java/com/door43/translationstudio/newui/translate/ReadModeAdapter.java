@@ -27,10 +27,8 @@ import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.LanguageDirection;
 import com.door43.translationstudio.core.ProjectTranslation;
-import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Frame;
-import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
@@ -49,6 +47,8 @@ import java.util.List;
 
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.SourceLanguage;
+import org.unfoldingword.door43client.models.TargetLanguage;
+
 
 /**
  * Created by joel on 9/9/2015.
@@ -429,11 +429,12 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         // set up fonts
         if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
             holder.mLayoutBuildNumber = mLayoutBuildNumber;
+
             Typography.formatTitle(mContext, holder.mSourceHeading, mSourceLanguage.slug, LanguageDirection.get(mSourceLanguage.direction));
             Typography.formatTitle(mContext, holder.mSourceTitle, mSourceLanguage.slug, LanguageDirection.get(mSourceLanguage.direction));
             Typography.format(mContext, holder.mSourceBody, mSourceLanguage.slug, LanguageDirection.get(mSourceLanguage.direction));
-            Typography.formatTitle(mContext, holder.mTargetTitle, mTargetLanguage.getId(), mTargetLanguage.getDirection());
-            Typography.format(mContext, holder.mTargetBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+            Typography.formatTitle(mContext, holder.mTargetTitle, mTargetLanguage.slug, LanguageDirection.get(mTargetLanguage.direction));
+            Typography.format(mContext, holder.mTargetBody, mTargetLanguage.slug, LanguageDirection.get(mTargetLanguage.direction));
         }
     }
 

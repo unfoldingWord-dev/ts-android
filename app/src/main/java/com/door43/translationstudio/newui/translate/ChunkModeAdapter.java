@@ -38,7 +38,6 @@ import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.LanguageDirection;
 import com.door43.translationstudio.core.LinedEditText;
 import com.door43.translationstudio.core.ProjectTranslation;
-import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.Library;
@@ -62,6 +61,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.unfoldingword.door43client.models.SourceLanguage;
+import org.unfoldingword.door43client.models.TargetLanguage;
 
 /**
  * Created by joel on 9/9/2015.
@@ -404,10 +404,11 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         // set up fonts
         if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
             holder.mLayoutBuildNumber = mLayoutBuildNumber;
+
             Typography.formatSub(mContext, holder.mSourceTitle, mSourceLanguage.slug, LanguageDirection.get(mSourceLanguage.direction));
             Typography.format(mContext, holder.mSourceBody, mSourceLanguage.slug, LanguageDirection.get(mSourceLanguage.direction));
-            Typography.formatSub(mContext, holder.mTargetTitle, mTargetLanguage.getId(), mTargetLanguage.getDirection());
-            Typography.format(mContext, holder.mTargetBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+            Typography.formatSub(mContext, holder.mTargetTitle, mTargetLanguage.slug, LanguageDirection.get(mTargetLanguage.direction));
+            Typography.format(mContext, holder.mTargetBody, mTargetLanguage.slug, LanguageDirection.get(mTargetLanguage.direction));
         }
 
         ViewUtil.makeLinksClickable(holder.mSourceBody);

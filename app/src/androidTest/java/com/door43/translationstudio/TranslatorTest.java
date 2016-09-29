@@ -7,12 +7,13 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.NativeSpeaker;
 import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceTranslation;
-import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.Translator;
 import com.door43.util.FileUtilities;
+
+import org.unfoldingword.door43client.models.TargetLanguage;
 
 import java.io.File;
 
@@ -57,9 +58,9 @@ public class TranslatorTest extends InstrumentationTestCase {
     public void test03GetTargetTranslation() throws Exception {
         TargetLanguage[] targetLanguages = library.getTargetLanguages();
         TargetLanguage targetLanguage = targetLanguages[0];
-        TargetTranslation targetTranslation = mTranslator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), "obs", TranslationType.TEXT, Resource.REGULAR_SLUG));
+        TargetTranslation targetTranslation = mTranslator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(targetLanguage.slug, "obs", TranslationType.TEXT, Resource.REGULAR_SLUG));
         assertEquals("obs", targetTranslation.getProjectId());
-        assertEquals(targetLanguage.getId(), targetTranslation.getTargetLanguageId());
+        assertEquals(targetLanguage.slug, targetTranslation.getTargetLanguageId());
         assertEquals(targetLanguage.name, targetTranslation.getTargetLanguageName());
 
         TargetTranslation sameTargetTranslation = mTranslator.getTargetTranslation(targetTranslation.getId());
@@ -69,7 +70,7 @@ public class TranslatorTest extends InstrumentationTestCase {
     public void test04DeleteTargetTranslation() throws Exception {
         TargetLanguage[] targetLanguages = library.getTargetLanguages();
         TargetLanguage targetLanguage = targetLanguages[0];
-        TargetTranslation targetTranslation = mTranslator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), "obs", TranslationType.TEXT, Resource.REGULAR_SLUG));
+        TargetTranslation targetTranslation = mTranslator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(targetLanguage.slug, "obs", TranslationType.TEXT, Resource.REGULAR_SLUG));
         TargetTranslation[] targetTranslations = mTranslator.getTargetTranslations();
 
         mTranslator.deleteTargetTranslation(targetTranslation.getId());
@@ -84,7 +85,7 @@ public class TranslatorTest extends InstrumentationTestCase {
     public void test05AddSourceTranslation() throws Exception {
         TargetLanguage[] targetLanguages = library.getTargetLanguages();
         TargetLanguage targetLanguage = targetLanguages[1];
-        TargetTranslation targetTranslation = mTranslator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), "obs", TranslationType.TEXT, Resource.REGULAR_SLUG));
+        TargetTranslation targetTranslation = mTranslator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(targetLanguage.slug, "obs", TranslationType.TEXT, Resource.REGULAR_SLUG));
 
         SourceTranslation[] sourceTranslations = library.getSourceTranslations(targetTranslation.getProjectId());
 
@@ -105,7 +106,7 @@ public class TranslatorTest extends InstrumentationTestCase {
     public void test06RemoveSourceTranslation() throws Exception {
         TargetLanguage[] targetLanguages = library.getTargetLanguages();
         TargetLanguage targetLanguage = targetLanguages[1];
-        TargetTranslation targetTranslation = mTranslator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), "obs", TranslationType.TEXT, Resource.REGULAR_SLUG));
+        TargetTranslation targetTranslation = mTranslator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(targetLanguage.slug, "obs", TranslationType.TEXT, Resource.REGULAR_SLUG));
 
         String selectedSourceTranslationId = App.getSelectedSourceTranslationId(targetTranslation.getId());
         String[] sourceTranslationIds = App.getOpenSourceTranslationIds(targetTranslation.getId());
@@ -135,7 +136,7 @@ public class TranslatorTest extends InstrumentationTestCase {
     public void test07SetSelectedSourceTranslation() throws Exception {
         TargetLanguage[] targetLanguages = library.getTargetLanguages();
         TargetLanguage targetLanguage = targetLanguages[1];
-        TargetTranslation targetTranslation = mTranslator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(targetLanguage.getId(), "obs", TranslationType.TEXT, Resource.REGULAR_SLUG));
+        TargetTranslation targetTranslation = mTranslator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(targetLanguage.slug, "obs", TranslationType.TEXT, Resource.REGULAR_SLUG));
 
         String selectedSourceTranslationid = App.getSelectedSourceTranslationId(targetTranslation.getId());
         assertNull(selectedSourceTranslationid);
