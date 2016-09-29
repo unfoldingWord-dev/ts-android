@@ -45,7 +45,7 @@ public class Library {
 //        initalizeHelpers(context);
         mContext = context;
         libraryData = new LibraryData(context);
-        mDownloader = new Downloader(rootApiUrl);
+        mDownloader = null; //new Downloader(rootApiUrl);
         mAssetsDir = assetsDir;
     }
 //

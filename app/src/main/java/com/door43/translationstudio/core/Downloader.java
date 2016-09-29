@@ -1,90 +1,12 @@
 package com.door43.translationstudio.core;
 
-import java.io.File;
-
 
 /**
  * Created by joel on 8/27/2015.
  */
 public class Downloader {
-    private final String mRootApiUrl;
 
-    public Downloader(String apiUrl) {
-        mRootApiUrl = apiUrl;
-    }
-
-    /**
-     * Downloads content from a url and returns it as a string
-     * @param apiUrl the url from which the content will be downloaded
-     * @return
-     */
-    private String request(String apiUrl) {
-//        HttpURLConnection urlConnection = null;
-//        try {
-//            URL url = new URL(apiUrl);
-//            urlConnection = (HttpURLConnection) url.openConnection();
-//            urlConnection.setReadTimeout(5000);
-//            urlConnection.setReadTimeout(5000);
-//            InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-//            String response = FileUtilities.readStreamToString(in);
-//            urlConnection.disconnect();
-//            return response;
-//        } catch (IOException e) {
-//            Logger.e(this.getClass().getName(), "Failed to download file " + apiUrl, e);
-//            return null;
-//        } finally {
-//            if(urlConnection != null) {
-//                urlConnection.disconnect();
-//            }
-//        }
-    }
-
-    private boolean requestToFile(String apiUrl, File outputFile, long expectedSize, Library.OnProgressListener listener) {
-//        if(apiUrl.trim().isEmpty()) {
-//            return false;
-//        }
-//        URL url;
-//        try {
-//            url = new URL(apiUrl);
-//        } catch (MalformedURLException e) {
-//            e.printStackTrace();
-//            return false;
-//        }
-//
-//        try {
-//            URLConnection conn = url.openConnection();
-//            conn.setReadTimeout(5000);
-//            conn.setConnectTimeout(5000);
-//
-//            FileOutputStream fos = new FileOutputStream(outputFile);
-//
-//            int updateInterval = 1048 * 50; // send an update each time some bytes have been downloaded
-//            int updateQueue = 0;
-//            int bytesRead = 0;
-//
-//            InputStream is = new BufferedInputStream(conn.getInputStream());
-//            byte[] buffer = new byte[4096];
-//            int n = 0;
-//            while((n = is.read(buffer)) != -1) {
-//                bytesRead += n;
-//                updateQueue += n;
-//                fos.write(buffer, 0, n);
-//
-//                // send updates
-//                if(updateQueue >= updateInterval) {
-//                    updateQueue = 0;
-//                    listener.onProgress(bytesRead, (int) expectedSize);
-//                }
-//            }
-//
-//            listener.onProgress(bytesRead, (int) expectedSize);
-//
-//            return true;
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            return false;
-//        }
-        return true;
+    public Downloader(String apiUrl){
     }
 
     /**
