@@ -1,11 +1,12 @@
 package com.door43.translationstudio.tasks;
 
 import com.door43.translationstudio.App;
-import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceTranslation;
 
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
+
+import org.unfoldingword.resourcecontainer.Resource;
 
 /**
  * This task downloads the source language data from the server.

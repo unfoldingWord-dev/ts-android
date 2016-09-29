@@ -24,9 +24,10 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.unfoldingword.resourcecontainer.Resource;
 
 /**
  * Created by joel on 8/29/2015.

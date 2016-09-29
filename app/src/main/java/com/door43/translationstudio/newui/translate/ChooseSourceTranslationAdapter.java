@@ -15,7 +15,6 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.newui.library.ServerLibraryDetailFragment;
 import com.door43.translationstudio.tasks.DownloadSourceLanguageTask;
@@ -32,6 +31,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+
+import org.unfoldingword.resourcecontainer.Resource;
 
 /**
  * Created by joel on 9/15/2015.

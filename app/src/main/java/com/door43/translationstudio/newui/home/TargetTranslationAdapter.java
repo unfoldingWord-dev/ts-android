@@ -14,11 +14,11 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.tasks.CalculateTargetTranslationProgressTask;
 
 import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.widget.ViewUtil;
@@ -27,8 +27,9 @@ import com.filippudak.ProgressPieView.ProgressPieView;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
+
+import org.unfoldingword.resourcecontainer.Resource;
 
 /**
  * Created by joel on 9/3/2015.

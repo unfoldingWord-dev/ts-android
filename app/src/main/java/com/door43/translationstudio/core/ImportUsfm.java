@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.unfoldingword.door43client.models.TargetLanguage;
+import org.unfoldingword.resourcecontainer.Resource;
 
 /**
  * For processing USFM input file or zip files into importable package.

@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import org.unfoldingword.resourcecontainer.Resource;
 
 /**
  * Created by joel on 8/29/2015.
