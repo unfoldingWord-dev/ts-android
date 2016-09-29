@@ -29,6 +29,8 @@ import java.util.Map;
 import org.unfoldingword.door43client.models.TargetLanguage;
 import org.unfoldingword.door43client.models.SourceLanguage;
 
+import org.unfoldingword.resourcecontainer.Resource;
+
 /**
  * Created by joel on 8/26/2015.
  * TODO: we might make this static in the library as well

@@ -16,7 +16,6 @@ import android.widget.ListView;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
@@ -25,6 +24,8 @@ import org.unfoldingword.tools.logger.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.unfoldingword.resourcecontainer.Resource;
 
 /**
  * Created by joel on 9/15/2015.

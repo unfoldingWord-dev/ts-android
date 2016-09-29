@@ -2,10 +2,11 @@ package com.door43.translationstudio.tasks;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceTranslation;
 
 import org.unfoldingword.tools.taskmanager.ManagedTask;
+
+import org.unfoldingword.resourcecontainer.Resource;
 
 /**
  * This task downloads the source language data from the server.
@@ -44,7 +45,7 @@ public class DownloadSourceLanguageTask extends ManagedTask {
         mSuccess = true;
         for(int i = 0; i < resources.length; i ++) {
             // TODO: hook up progress listener
-            boolean status = mLibrary.downloadSourceTranslation(SourceTranslation.simple(mProjectId, mSourceLanguageId, resources[i].getId()), new Library.OnProgressListener() {
+            boolean status = mLibrary.downloadSourceTranslation(SourceTranslation.simple(mProjectId, mSourceLanguageId, resources[i].slug), new Library.OnProgressListener() {
                 @Override
                 public boolean onProgress(int progress, int max) {
                     mMaxProgress = resources.length * max;
