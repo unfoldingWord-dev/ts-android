@@ -1,8 +1,9 @@
 package com.door43.translationstudio.newui.publish;
 
-import com.door43.translationstudio.core.SourceLanguage;
-import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TranslationFormat;
+
+import org.unfoldingword.door43client.models.SourceLanguage;
+import org.unfoldingword.door43client.models.TargetLanguage;
 
 /**
  * A thin wrapper to represent a validation set on a translation

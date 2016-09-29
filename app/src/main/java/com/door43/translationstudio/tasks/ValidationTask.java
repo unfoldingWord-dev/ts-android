@@ -27,7 +27,7 @@ import java.util.List;
 
 /**
  * Performs the validation on a target translation.
- * This process should occure before a target translation is published.
+ * This process should occur before a target translation is published.
  */
 public class ValidationTask extends ManagedTask {
     public static final String TASK_ID = "validation_task";
@@ -99,9 +99,13 @@ public class ValidationTask extends ManagedTask {
                 }
             }
 
-            if((chapterSlug.reference != null) && (!chapterSlug.reference.isEmpty()) && !chapterTranslation.isReferenceFinished()) {
+            if(chunks.contains("reference") && !chapterTranslation.isReferenceFinished()) {
                 chapterIsValid = false;
-                frameValidations.add(ValidationItem.generateInvalidFrame(chapterSlug.reference, sourceLanguage, chapterTranslation.reference, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapterSlug.getId(), "00"));
+                try {
+                    frameValidations.add(ValidationItem.generateInvalidFrame(container.readChunk(chapterSlug, "title"), sourceLanguage, chapterTranslation.reference, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapterSlug, "00"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
             for(int j = 0; j < chunks.size(); j ++) {
@@ -168,7 +172,8 @@ public class ValidationTask extends ManagedTask {
                         if (!Frame.getStartVerse(chunkText, format).equals(Frame.getEndVerse(chunkText, format))) {
                             frameTitle += "-" + Frame.getEndVerse(chunkText, format);
                         }
-                        frameValidations.add(ValidationItem.generateInvalidFrame(frameTitle, sourceLanguage, frameTranslation.body, targetLanguage, frameTranslation.getFormat(), mTargetTranslationId, chapterSlug.getId(), chunkSlug.getId()));
+                        frameValidations.add(ValidationItem.generateInvalidFrame(frameTitle, sourceLanguage, frameTranslation.body,
+                                targetLanguage, frameTranslation.getFormat(), mTargetTranslationId, chapterSlug.getId(), chunkSlug.getId()));
                     }
                 }
 
