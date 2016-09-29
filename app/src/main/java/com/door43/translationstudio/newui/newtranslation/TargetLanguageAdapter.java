@@ -84,7 +84,7 @@ public class TargetLanguageAdapter extends BaseAdapter {
 
         // render view
         holder.mLanguageView.setText(getItem(position).name);
-        holder.mCodeView.setText(getItem(position).code);
+        holder.mCodeView.setText(getItem(position).slug);
 
         return v;
     }

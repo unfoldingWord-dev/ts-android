@@ -20,10 +20,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import org.unfoldingword.tools.logger.Logger;
-import com.door43.translationstudio.core.Project;
-import com.door43.translationstudio.core.Resource;
-import com.door43.translationstudio.core.SourceTranslation;
-import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.dialogs.ErrorLogDialog;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.tasks.CheckForLibraryUpdatesTask;
@@ -37,7 +33,6 @@ import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 
@@ -154,15 +149,6 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                 dialog.show(ft, "dialog");
             }
         }));
-        mDeveloperTools.add(new ToolItem("Expire library data", "Resets the modified date of indexed library data", R.drawable.ic_history_black_24dp, new ToolItem.ToolAction() {
-            @Override
-            public void run() {
-                App.getLibrary().setExpired();
-                Snackbar snack = Snackbar.make(findViewById(android.R.id.content), "The resources have been expired", Snackbar.LENGTH_LONG);
-                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                snack.show();
-            }
-        }));
         mDeveloperTools.add(new ToolItem("Download library data", "Re-downloads the library data from the api and indexes it", R.drawable.ic_local_library_black_24dp, new ToolItem.ToolAction() {
             @Override
             public void run() {
@@ -184,65 +170,6 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                         .show();
             }
         }));
-        mDeveloperTools.add(new ToolItem("Index tA", "(Hack) Indexes the bundled tA json", R.drawable.ic_local_library_black_24dp, new ToolItem.ToolAction() {
-            @Override
-            public void run() {
-                ManagedTask task = new ManagedTask() {
-                    @Override
-                    public void start() {
-                        publishProgress(-1, "Indexing tA...");
-                        Project[] projects = App.getLibrary().getProjects("en");
-                        String catalog = null;
-                        try {
-                            catalog = Util.readStream(getAssets().open("ta.json"));
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        if(catalog != null) {
-                            for (Project p : projects) {
-                                Resource[] resources = App.getLibrary().getResources(p.getId(), "en");
-                                for (Resource r : resources) {
-                                    SourceTranslation sourceTranslation = SourceTranslation.simple(p.getId(), "en", r.getId());
-                                    App.getLibrary().manuallyIndexTranslationAcademy(sourceTranslation, catalog);
-                                }
-                            }
-                        }
-                    }
-                };
-                task.addOnProgressListener(DeveloperToolsActivity.this);
-                task.addOnFinishedListener(DeveloperToolsActivity.this);
-                TaskManager.addTask(task, TASK_INDEX_TA);
-            }
-        }));
-        mDeveloperTools.add(new ToolItem("Index Chunk Markers", "(Hack) Injects the chunk marker catalog url into the database and runs the update check", R.drawable.ic_local_library_black_24dp, new ToolItem.ToolAction() {
-            @Override
-            public void run() {
-                // manually inject chunk marker details into db
-                App.getLibrary().manuallyInjectChunkMarkerCatalogUrl();
-
-                // run update check to index the chunk markers
-                CheckForLibraryUpdatesTask task = new CheckForLibraryUpdatesTask();
-                task.addOnProgressListener(DeveloperToolsActivity.this);
-                task.addOnFinishedListener(DeveloperToolsActivity.this);
-                TaskManager.addTask(task, TASK_INDEX_CHUNK_MARKERS);
-            }
-        }));
-        mDeveloperTools.add(new ToolItem("Export Library", "Zips up the library data so you can share it with another device", R.drawable.ic_share_black_24dp, new ToolItem.ToolAction() {
-            @Override
-            public void run() {
-                ManagedTask task = new ManagedTask() {
-                    @Override
-                    public void start() {
-                        publishProgress(-1, "Exporting library...");
-                        File archive = App.getLibrary().export(new File(getCacheDir(), "sharing/"));
-                        this.setResult(archive);
-                    }
-                };
-                task.addOnProgressListener(DeveloperToolsActivity.this);
-                task.addOnFinishedListener(DeveloperToolsActivity.this);
-                TaskManager.addTask(task, TASK_EXPORT_LIBRARY);
-            }
-        }));
         mDeveloperTools.add(new ToolItem("Simulate crash", "", R.drawable.ic_warning_black_24dp, new ToolItem.ToolAction() {
             @Override
             public void run() {
@@ -252,7 +179,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
         mDeveloperTools.add(new ToolItem("Delete Library", "Deletes the entire library database so it can be rebuilt from scratch", R.drawable.ic_delete_black_24dp, new ToolItem.ToolAction() {
             @Override
             public void run() {
-                App.getLibrary().delete();
+                App.deleteLibrary();
                 Snackbar snack = Snackbar.make(findViewById(android.R.id.content), "The library content was deleted", Snackbar.LENGTH_LONG);
                 ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                 snack.show();

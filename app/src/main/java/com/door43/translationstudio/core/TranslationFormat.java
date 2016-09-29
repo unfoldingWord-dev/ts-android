@@ -6,6 +6,7 @@ package com.door43.translationstudio.core;
 public enum TranslationFormat {
     USFM("usfm"),
     MARKDOWN("markdown"),
+    UNKNOWN("txt"),
     @Deprecated
     DEFAULT("default"),
     @Deprecated
@@ -40,5 +41,17 @@ public enum TranslationFormat {
             }
         }
         return null;
+    }
+
+    public static TranslationFormat parse(String mimeType) {
+        switch(mimeType) {
+            case "text/usfm":
+                return USFM;
+            case "text/markdown":
+                return MARKDOWN;
+            default:
+                // you are crazy!!!
+                return UNKNOWN;
+        }
     }
 }

@@ -3344,7 +3344,7 @@ public class LibraryData {
      */
     public long addTempTargetLanguage(TargetLanguage tempTargetLanguage) {
         ContentValues values = new ContentValues();
-        values.put("slug", tempTargetLanguage.code);
+        values.put("slug", tempTargetLanguage.slug);
         values.put("name", tempTargetLanguage.name);
         values.put("direction", tempTargetLanguage.direction.getLabel());
         values.put("region", tempTargetLanguage.region);

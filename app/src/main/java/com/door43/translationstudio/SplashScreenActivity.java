@@ -121,7 +121,7 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
         });
 
         if(task instanceof UpdateAppTask) {
-            if(!App.getLibrary().exists()) {
+            if(!App.isLibraryDeployed()) {
                 InitializeLibraryTask libraryTask = new InitializeLibraryTask();
                 libraryTask.addOnFinishedListener(this);
                 libraryTask.addOnStartListener(this);

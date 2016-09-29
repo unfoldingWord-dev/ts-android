@@ -11,7 +11,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 
 import org.unfoldingword.tools.logger.Logger;
 
@@ -37,7 +36,6 @@ import com.door43.widget.ViewUtil;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.Locale;
 
 public class NewTargetTranslationActivity extends BaseActivity implements TargetLanguageListFragment.OnItemClickListener, ProjectListFragment.OnItemClickListener {
 
@@ -132,7 +130,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                     .setNeutralButton(R.string.copy, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            StringUtilities.copyToClipboard(NewTargetTranslationActivity.this, language.code);
+                            StringUtilities.copyToClipboard(NewTargetTranslationActivity.this, language.slug);
                             Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.copied_to_clipboard, Snackbar.LENGTH_SHORT);
                             ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                             snack.show();

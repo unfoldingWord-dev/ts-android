@@ -6,9 +6,8 @@ import org.json.JSONObject;
 /**
  * Represents a language from which a project is translated
  */
-public class SourceLanguage implements Comparable {
-    public final String code;
-    public final String name;
+@Deprecated
+public class SourceLanguage extends org.unfoldingword.door43client.models.SourceLanguage {
     public final LanguageDirection direction;
     public final int dateModified;
     public final String projectTitle;
@@ -17,9 +16,9 @@ public class SourceLanguage implements Comparable {
     public final int resourceCatalogLocalDateModified;
     public final int resourceCatalogServerDateModified;
 
-    public SourceLanguage(String code, String name, int dateModified, LanguageDirection direction, String projectTitle, String projectDescription, String resourceCatalog, int resourceCatalogLocalDateModified, int resourceCatalogServerDateModified) {
-        this.code = code;
-        this.name = name;
+    public SourceLanguage(String slug, String name, int dateModified, LanguageDirection direction, String projectTitle, String projectDescription, String resourceCatalog, int resourceCatalogLocalDateModified, int resourceCatalogServerDateModified) {
+        super(slug, name, direction.toString());
+
         this.dateModified = dateModified;
         this.direction = direction;
         this.projectTitle = projectTitle;
@@ -30,7 +29,7 @@ public class SourceLanguage implements Comparable {
     }
 
     public String getId() {
-        return code;
+        return slug;
     }
 
     public LanguageDirection getDirection() {
@@ -64,11 +63,5 @@ public class SourceLanguage implements Comparable {
                 resourceCatalog,
                 0,
                 resourceModified);
-    }
-
-    @Override
-    public int compareTo(Object another) {
-        String anotherCode = ((SourceLanguage)another).getId();
-        return code.compareToIgnoreCase(anotherCode);
     }
 }

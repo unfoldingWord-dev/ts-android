@@ -6,25 +6,17 @@ import org.json.JSONObject;
 /**
  * Represents a language to which a project is translated
  */
-public class TargetLanguage implements Comparable {
+@Deprecated
+public class TargetLanguage extends org.unfoldingword.door43client.models.TargetLanguage {
 
     public final LanguageDirection direction;
-    public final String region;
-    public final String name;
-    public final String code;
 
     /**
      * Returns the language code for the target language
      * @return
      */
     public String getId() {
-        return code;
-    }
-
-    @Override
-    public int compareTo(Object another) {
-        String anotherCode = ((TargetLanguage)another).getId();
-        return code.compareToIgnoreCase(anotherCode);
+        return slug;
     }
 
     /**
@@ -37,15 +29,13 @@ public class TargetLanguage implements Comparable {
         JSONObject json = new JSONObject();
         json.put("direction", this.direction.toString());
         json.put("region", this.region);
-        json.put("id", this.code);
+        json.put("id", this.slug);
         json.put("name", this.name);
         return json;
     }
 
-    public TargetLanguage (String code, String name, String region, LanguageDirection direction) {
-        this.code = code;
-        this.name = name;
-        this.region = region;
+    public TargetLanguage (String slug, String name, String region, LanguageDirection direction) {
+        super(slug, name, "", direction.toString(), region, false);
         this.direction = direction;
     }
 
@@ -75,7 +65,7 @@ public class TargetLanguage implements Comparable {
         try {
             JSONObject json = new JSONObject();
             json.put("ld", this.direction.toString());
-            json.put("lc", this.code);
+            json.put("lc", this.slug);
             json.put("ln", this.name);
             json.put("lr", this.region);
             return json;

@@ -127,32 +127,34 @@ public class Frame {
      * Returns the formatted beginning verse in this frame.
      * @return
      */
-    public String getStartVerse() {
-        if(Clickables.isClickableFormat(mFormat)) {
+    public static String getStartVerse(String text, TranslationFormat format) {
+//        if(Clickables.isClickableFormat(mFormat)) {
             // get verse range
-            int[] verses = getVerseRange();
-            if(verses.length > 0) {
-                return verses[0] + "";
-            }
+        int[] verses = getVerseRange(text, format);
+        if(verses.length > 0) {
+            return verses[0] + "";
         }
-        return Integer.parseInt(mId) + "";
+        return "";
+//        }
+//        return Integer.parseInt(mId) + "";
     }
 
     /**
      * Returns the formatted ending verse for this frame.
      * @return
      */
-    public String getEndVerse() {
-        if(Clickables.isClickableFormat(mFormat)) {
+    public static String getEndVerse(String text, TranslationFormat format) {
+//        if(Clickables.isClickableFormat(mFormat)) {
             // get verse range
-            int[] verses = getVerseRange();
-            if(verses.length == 1) {
-                return verses[0] + "";
-            } else if(verses.length == 2) {
-                return verses[1] + "";
-            }
+        int[] verses = getVerseRange(text, format);
+        if(verses.length == 1) {
+            return verses[0] + "";
+        } else if(verses.length == 2) {
+            return verses[1] + "";
         }
-        return Integer.parseInt(mId) + "";
+        return "";
+//        }
+//        return Integer.parseInt(mId) + "";
     }
 
     /**

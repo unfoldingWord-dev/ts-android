@@ -24,7 +24,6 @@ import com.door43.translationstudio.core.TranslationArticle;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.TranslationNote;
 import com.door43.translationstudio.core.TranslationType;
-import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.core.Translator;
 import com.door43.util.FileUtilities;
 
@@ -33,12 +32,9 @@ import static org.hamcrest.Matchers.is;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.spongycastle.asn1.x509.Target;
-import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -98,11 +94,11 @@ public class LibraryStraightThroughTest {
     public void getTempTargetLanguage() {
         TargetLanguage t = new TargetLanguage("qaa-x-cheeseburger", "testString", "usa", LanguageDirection.LeftToRight);
 
-        mLibrary.deleteTempTargetLanguage(t.code);
-        assertNull(mLibrary.getTempTargetLanguage(t.code));
+        mLibrary.deleteTempTargetLanguage(t.slug);
+        assertNull(mLibrary.getTempTargetLanguage(t.slug));
 
         mLibrary.addTempTargetLanguage(t);
-        assertNotNull(mLibrary.getTempTargetLanguage(t.code));
+        assertNotNull(mLibrary.getTempTargetLanguage(t.slug));
     }
 
     /**

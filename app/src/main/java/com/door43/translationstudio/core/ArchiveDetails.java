@@ -9,6 +9,10 @@ import com.door43.util.Zip;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.*;
+import org.unfoldingword.door43client.models.Project;
+import org.unfoldingword.door43client.models.TargetLanguage;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,7 +48,7 @@ public class ArchiveDetails {
      * @return
      * @throws Exception
      */
-    public static ArchiveDetails newInstance(InputStream archiveStream, String preferredLocale, Library library) throws Exception {
+    public static ArchiveDetails newInstance(InputStream archiveStream, String preferredLocale, Door43Client library) throws Exception {
         if(archiveStream != null) {
             File tempFile = File.createTempFile("targettranslation", "." + Translator.ARCHIVE_EXTENSION);
             FileUtilities.copyInputStreamToFile(archiveStream, tempFile);
@@ -72,7 +76,7 @@ public class ArchiveDetails {
      * @return
      * @throws IOException
      */
-    public static ArchiveDetails newInstance(File archive, String preferredLocale, Library library) throws Exception {
+    public static ArchiveDetails newInstance(File archive, String preferredLocale, Door43Client library) throws Exception {
         if(archive != null && archive.exists()) {
             String rawManifest = Zip.read(archive, MANIFEST_JSON);
             if(rawManifest != null) {
@@ -99,7 +103,7 @@ public class ArchiveDetails {
      * @return
      * @throws IOException
      */
-    public static ArchiveDetails newInstance(Context context, DocumentFile archive, String preferredLocale, Library library) throws Exception {
+    public static ArchiveDetails newInstance(Context context, DocumentFile archive, String preferredLocale, Door43Client library) throws Exception {
         if(archive != null && archive.exists()) {
             InputStream ais = context.getContentResolver().openInputStream(archive.getUri());
             String rawManifest = Zip.readInputStream(ais, MANIFEST_JSON);
@@ -125,7 +129,7 @@ public class ArchiveDetails {
         return null;
     }
 
-    private static ArchiveDetails parseV2Manifest(InputStream ais, JSONObject archiveManifest, String preferredLocale, Library library) throws JSONException, IOException {
+    private static ArchiveDetails parseV2Manifest(InputStream ais, JSONObject archiveManifest, String preferredLocale, Door43Client library) throws JSONException, IOException {
         List<TargetTranslationDetails> targetDetails = new ArrayList<>();
         long timestamp = archiveManifest.getLong("timestamp");
         JSONArray translationsJson = archiveManifest.getJSONArray("target_translations");
@@ -150,7 +154,7 @@ public class ArchiveDetails {
                     if (targetLangaugeDirection == null) {
                         targetLangaugeDirection = LanguageDirection.LeftToRight;
                     }
-                    TargetLanguage tl = library.getTargetLanguage(targetLanguageSlug);
+                    TargetLanguage tl = library.index().getTargetLanguage(targetLanguageSlug);
                     if (tl != null) {
                         targetLanguageName = tl.name;
                     } else {
@@ -160,7 +164,7 @@ public class ArchiveDetails {
                     // get project
                     String projectName = null;
                     String projectSlug = projectJson.getString("id");
-                    Project project = library.getProject(projectSlug, preferredLocale);
+                    Project project = library.index().getProject(preferredLocale, projectSlug);
                     if (project != null) {
                         projectName = project.name;
                     } else {

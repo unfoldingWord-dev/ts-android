@@ -6,13 +6,10 @@ import org.json.JSONObject;
 /**
  * Created by joel on 8/29/2015.
  */
-public class Project {
+@Deprecated
+public class Project extends org.unfoldingword.door43client.models.Project {
     public final int dateModified;
-    public final String description;
-    public final String name;
     public final String sourceLanguageId;
-    public final int sort;
-    private String mId;
     public final String sourceLanguageCatalog;
     public final int sourceLanguageCatalogLocalDateModified;
     public final int sourceLanguageCatalogServerDateModified;
@@ -33,13 +30,11 @@ public class Project {
     public Project(String projectId, String sourceLanguageId, String name, String description, int dateModified, int sort,
                    String sourceLanguageCatalog, int sourceLanguageCatalogLocalDateModified, int sourceLanguageCatalogServerDateModified,
                    String chunkMarkerCatalog, int chunkMarkerCatalogLocalDateModified, int chunkMarkerCatalogServerDateModified) {
-        mId = projectId;
-        this.name = name;
-        this.description = description;
+        super(projectId, name, description, "", sort, "");
+
         this.dateModified = dateModified;
         this.sourceLanguageId = sourceLanguageId;
         this.sourceLanguageCatalog = sourceLanguageCatalog;
-        this.sort = sort;
         this.sourceLanguageCatalogLocalDateModified = sourceLanguageCatalogLocalDateModified;
         this.sourceLanguageCatalogServerDateModified = sourceLanguageCatalogServerDateModified;
         this.chunkMarkerCatalog = chunkMarkerCatalog;
@@ -52,7 +47,7 @@ public class Project {
      * @return
      */
     public String getId() {
-        return mId;
+        return slug;
     }
 
     /**

@@ -68,14 +68,14 @@ public class App extends Application {
     public static final String TAG = "App";
 
     private static final String PREFERENCES_NAME = "com.door43.translationstudio.general";
-//    private static final String DEFAULT_LIBRARY_ZIP = "library.zip";
+    private static final String DEFAULT_LIBRARY_ZIP = "library.zip";
     private static final String LAST_VIEW_MODE = "last_view_mode_";
     private static final String LAST_FOCUS_CHAPTER = "last_focus_chapter_";
     private static final String LAST_FOCUS_FRAME = "last_focus_frame_";
     private static final String OPEN_SOURCE_TRANSLATIONS = "open_source_translations_";
     private static final String SELECTED_SOURCE_TRANSLATION = "selected_source_translation_";
     private static final String LAST_CHECKED_SERVER_FOR_UPDATES = "last_checked_server_for_updates";
-//    private static final String ASSETS_DIR = "assets";
+    private static final String ASSETS_DIR = "assets";
     private static ImageLoader mImageLoader;
     private static App sInstance;
     private static String targetTranslationWithUpdates = null;
@@ -85,8 +85,8 @@ public class App extends Application {
         super.onCreate();
         sInstance = this;
 
-        File crashDir = new File(publicDir(), "crashes");
-        Logger.registerGlobalExceptionHandler(crashDir);
+        File dir = new File(App.publicDir(), "crashes");
+        Logger.registerGlobalExceptionHandler(dir);
 
         // configure logger
         int minLogLevel = Integer.parseInt(getUserPreferences().getString(SettingsActivity.KEY_PREF_LOGGING_LEVEL, getResources().getString(R.string.pref_default_logging_level)));
@@ -291,11 +291,12 @@ public class App extends Application {
      */
     @Nullable
     public static Door43Client getLibrary() {
-        String server = getPref(SettingsActivity.KEY_PREF_MEDIA_SERVER, getRes(R.string.pref_default_media_server));
-        String rootApiUrl = server + getRes(R.string.root_catalog_api);
+        // TODO: 9/28/16 put this where we perform the update
+//        String server = getPref(SettingsActivity.KEY_PREF_MEDIA_SERVER, getRes(R.string.pref_default_media_server));
+//        String rootApiUrl = server + getRes(R.string.root_catalog_api);
 
         try {
-            return new Door43Client(sInstance, new File(databaseDir(), "index.sqlite"), new File(publicDir(), "resource_containers"));
+            return new Door43Client(sInstance, dbFile(), containersDir());
         } catch (IOException e) {
             Logger.e(TAG, "Failed to initialize the door43 client", e);
         }
@@ -321,6 +322,22 @@ public class App extends Application {
     }
 
     /**
+     * The index (database) file
+     * @return
+     */
+    private static File dbFile() {
+        return new File(databaseDir(), "index.sqlite");
+    }
+
+    /**
+     * The directory where all source resource containers will be stored
+     * @return
+     */
+    private static File containersDir() {
+        return new File(publicDir(), "resource_containers");
+    }
+
+    /**
      * Deploys the default index and resource containers.
      *
      * @throws Exception
@@ -329,14 +346,12 @@ public class App extends Application {
         // copy index
         URL indexURL = sInstance.getClassLoader().getResource("index.sqlite");
         File indexFile = new File(indexURL.getPath());
-        File dbFile = new File(databaseDir(), "index.sqlite");
-        Util.writeStream(new FileInputStream(indexFile), dbFile);
+        Util.writeStream(new FileInputStream(indexFile), dbFile());
 
         // extract resource containers
         URL containersURL = sInstance.getClassLoader().getResource("containers.zip");
         File containersFile = new File(containersURL.getPath());
-        File containerDir = new File(publicDir(), "resource_containers");
-        Zip.unzip(containersFile, containerDir);
+        Zip.unzip(containersFile, containersDir());
 
 //        File dbFile = new File(databaseDir(), "index.sqlite");
 //        Util.writeStream(sInstance.getAssets().open(DEFAULT_LIBRARY_ZIP), dbFile);
@@ -348,6 +363,23 @@ public class App extends Application {
 
         // clean up
 //        FileUtilities.deleteQuietly(containersZip);
+    }
+
+    /**
+     * Check if the default index and resource containers have been deployed
+     * @return
+     */
+    public static boolean isLibraryDeployed() {
+        return dbFile().exists() && dbFile().isFile() && containersDir().exists() && containersDir().isDirectory();
+    }
+
+    /**
+     * Nuke all the things!
+     * ... or just the source content
+     */
+    public static void deleteLibrary() {
+        FileUtilities.deleteQuietly(dbFile());
+        FileUtilities.deleteQuietly(containersDir());
     }
 
     /**
@@ -902,7 +934,7 @@ public class App extends Application {
             try {
                 FileUtilities.writeStringToFile(requestFile, request.toJson());
                 return getLibrary().index().addTempTargetLanguage(request.getTempTargetLanguage());
-            } catch (IOException e) {
+            } catch (Exception e) {
                 Logger.e(App.class.getName(), "Failed to save the new langauge request", e);
             }
         }

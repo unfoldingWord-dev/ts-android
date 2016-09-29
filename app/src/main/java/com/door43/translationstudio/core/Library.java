@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Created by joel on 8/29/2015.
@@ -496,7 +495,7 @@ public class Library {
         // preferred language
         SourceLanguage sourceLanguage = getActiveIndex().getSourceLanguage(projectId, sourceLanguageSlug);
         // try to use default (en)
-        if (sourceLanguage == null || (!sourceLanguage.code.equals(sourceLanguageSlug) && !sourceLanguageSlug.equals("en"))) {
+        if (sourceLanguage == null || (!sourceLanguage.slug.equals(sourceLanguageSlug) && !sourceLanguageSlug.equals("en"))) {
             sourceLanguage = getActiveIndex().getSourceLanguage(projectId, "en");
         }
         return sourceLanguage;
