@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 
+import org.unfoldingword.door43client.models.TargetLanguage;
+
 /**
  * Created by joel on 11/4/2015.
  */
@@ -110,7 +112,7 @@ public class TargetTranslationMigrator {
                         TargetLanguage originalTargetLanguage = tt.getTargetLanguage();
                         tt.changeTargetLanguage(approvedTargetLanguage);
                         if(App.getTranslator().normalizePath(tt)) {
-                            Logger.i(TAG, "Migrated target langauge of target translation " + tt.getId() + " to " + approvedTargetLanguage.getId());
+                            Logger.i(TAG, "Migrated target langauge of target translation " + tt.getId() + " to " + approvedTargetLanguage.slug);
                         } else {
                             // revert if normalization failed
                             tt.changeTargetLanguage(originalTargetLanguage);
@@ -147,8 +149,10 @@ public class TargetTranslationMigrator {
                         Logger.i(TAG, "Importing missing language code " + tt.getTargetLanguageId() + " from " + tt.getId());
                         TargetLanguage tempLanguage = new TargetLanguage(tt.getTargetLanguageId(),
                                 tt.getTargetLanguageName(),
+                                "",
+                                tt.getTargetLanguageDirection().toString(),
                                 tt.getTargetLanguageRegion(),
-                                tt.getTargetLanguageDirection());
+                                false);
                         App.getLibrary().addTempTargetLanguage(tempLanguage);
                     }
                 }

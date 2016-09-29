@@ -5,6 +5,8 @@ import android.support.annotation.Nullable;
 
 import org.unfoldingword.tools.logger.Logger;
 
+import org.unfoldingword.door43client.models.TargetLanguage;
+
 import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+
 
 /**
  * Created by joel on 8/29/2015.

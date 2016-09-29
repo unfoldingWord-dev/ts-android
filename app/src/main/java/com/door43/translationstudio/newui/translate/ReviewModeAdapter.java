@@ -53,7 +53,6 @@ import com.door43.translationstudio.core.ProjectTranslation;
 import com.door43.translationstudio.core.TranslationNote;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
-import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.TranslationWord;
@@ -85,6 +84,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.unfoldingword.door43client.models.TargetLanguage;
 
 /**
  * Created by joel on 9/18/2015.
@@ -364,9 +365,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
             holder.mLayoutBuildNumber = mLayoutBuildNumber;
             Typography.format(mContext, holder.mSourceBody, mSourceLanguage.getId(), mSourceLanguage.getDirection());
-            Typography.formatSub(mContext, holder.mTargetTitle, mTargetLanguage.getId(), mTargetLanguage.getDirection());
-            Typography.format(mContext, holder.mTargetBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
-            Typography.format(mContext, holder.mTargetEditableBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+            Typography.formatSub(mContext, holder.mTargetTitle, mTargetLanguage.slug, mTargetLanguage.direction);
+            Typography.format(mContext, holder.mTargetBody, mTargetLanguage.slug, mTargetLanguage.direction);
+            Typography.format(mContext, holder.mTargetEditableBody, mTargetLanguage.slug, mTargetLanguage.direction);
         }
 //        this.onBind = false;
     }

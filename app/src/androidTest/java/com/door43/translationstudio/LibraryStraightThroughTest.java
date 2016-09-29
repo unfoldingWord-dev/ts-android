@@ -4,30 +4,24 @@ package com.door43.translationstudio;
 import android.util.Log;
 
 import com.door43.translationstudio.core.Chapter;
-import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.CheckingQuestion;
 import com.door43.translationstudio.core.ChunkMarker;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.LanguageDirection;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.LibraryData;
-import com.door43.translationstudio.core.NativeSpeaker;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.ProjectCategory;
-import com.door43.translationstudio.core.Questionnaire;
 import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
-import com.door43.translationstudio.core.TargetLanguage;
-import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationArticle;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.TranslationNote;
-import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.Translator;
 import com.door43.util.FileUtilities;
 
-import static org.hamcrest.Matchers.is;
+import org.unfoldingword.door43client.models.TargetLanguage;
 
 import org.junit.After;
 import org.junit.Before;
@@ -92,7 +86,7 @@ public class LibraryStraightThroughTest {
      */
     @Test
     public void getTempTargetLanguage() {
-        TargetLanguage t = new TargetLanguage("qaa-x-cheeseburger", "testString", "usa", LanguageDirection.LeftToRight);
+        TargetLanguage t = new TargetLanguage("qaa-x-cheeseburger", "testString", "", LanguageDirection.RightToLeft.toString(), "usa", false);
 
         mLibrary.deleteTempTargetLanguage(t.slug);
         assertNull(mLibrary.getTempTargetLanguage(t.slug));
@@ -127,7 +121,7 @@ public class LibraryStraightThroughTest {
     @Test
     public void getTargetLanguage() {
         TargetLanguage targetLanguage = mLibrary.getTargetLanguage("en");
-        assertEquals("en", targetLanguage.getId());
+        assertEquals("en", targetLanguage.slug);
     }
 
     /**

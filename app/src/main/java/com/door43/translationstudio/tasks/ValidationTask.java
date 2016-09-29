@@ -102,7 +102,7 @@ public class ValidationTask extends ManagedTask {
             if(chunks.contains("reference") && !chapterTranslation.isReferenceFinished()) {
                 chapterIsValid = false;
                 try {
-                    frameValidations.add(ValidationItem.generateInvalidFrame(container.readChunk(chapterSlug, "title"), sourceLanguage, chapterTranslation.reference, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapterSlug, "00"));
+                    frameValidations.add(ValidationItem.generateInvalidFrame(container.readChunk(chapterSlug, "reference"), sourceLanguage, chapterTranslation.reference, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapterSlug, "00"));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -173,7 +173,7 @@ public class ValidationTask extends ManagedTask {
                             frameTitle += "-" + Frame.getEndVerse(chunkText, format);
                         }
                         frameValidations.add(ValidationItem.generateInvalidFrame(frameTitle, sourceLanguage, frameTranslation.body,
-                                targetLanguage, frameTranslation.getFormat(), mTargetTranslationId, chapterSlug.getId(), chunkSlug.getId()));
+                                targetLanguage, frameTranslation.getFormat(), mTargetTranslationId, chapterSlug, chunkSlug));
                     }
                 }
 
@@ -196,7 +196,7 @@ public class ValidationTask extends ManagedTask {
                         chapterValidations.add(ValidationItem.generateValidGroup(chapterTitle, sourceLanguage, true));
                     } else {
                         String lastValidChapter = chapters[lastValidChapterIndex];
-                        String chapterTitle  = projectTitle + " " + Integer.parseInt(lastValidChapter.getId());
+                        String chapterTitle  = projectTitle + " " + Integer.parseInt(lastValidChapter);
                         chapterValidations.add(ValidationItem.generateValidGroup(chapterTitle, sourceLanguage, false));
                     }
                     lastValidChapterIndex = -1;
