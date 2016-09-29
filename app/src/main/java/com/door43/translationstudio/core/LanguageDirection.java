@@ -3,6 +3,7 @@ package com.door43.translationstudio.core;
 /**
  * Specifies the direction in which a language is read
  */
+@Deprecated
 public enum LanguageDirection {
     LeftToRight("ltr"),
     RightToLeft("rtl");

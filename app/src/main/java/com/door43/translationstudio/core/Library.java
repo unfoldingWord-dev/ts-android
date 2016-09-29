@@ -20,6 +20,7 @@ import java.util.List;
 /**
  * Created by joel on 8/29/2015.
  */
+@Deprecated
 public class Library {
     public static final int MIN_CHECKING_LEVEL = 3; // the minimum level to be considered a source translation
     private static final String DEFAULT_RESOURCE_SLUG = "ulb";
@@ -683,7 +684,9 @@ public class Library {
      * @return
      */
     @Nullable
+    @Deprecated
     public TargetLanguage getTargetLanguage(TargetTranslation targetTranslation) {
+        // if this is
         TargetLanguage language = null;
         if(targetTranslation != null) {
             language = getTargetLanguage(targetTranslation.getTargetLanguageId());

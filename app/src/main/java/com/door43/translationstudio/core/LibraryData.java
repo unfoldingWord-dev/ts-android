@@ -31,6 +31,7 @@ import java.util.Map;
  * Created by joel on 8/26/2015.
  * TODO: we might make this static in the library as well
  */
+@Deprecated
 public class LibraryData {
     private static LibrarySQLiteHelper librarySQLiteHelper;
     public final static String DATABASE_NAME = "library";

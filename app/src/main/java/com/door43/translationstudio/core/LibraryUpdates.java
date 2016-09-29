@@ -10,6 +10,7 @@ import java.util.Set;
 /**
  * Represents a set of updates available for the library
  */
+@Deprecated
 public class LibraryUpdates implements Serializable {
     private static final long serialVersionUID = 0L;
     private Map<String, Map<String, List<String>>> mUpdates;

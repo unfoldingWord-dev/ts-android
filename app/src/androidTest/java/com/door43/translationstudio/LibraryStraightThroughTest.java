@@ -227,18 +227,18 @@ public class LibraryStraightThroughTest {
         assertNotNull(mLibrary.getResource(anotherSourceTranslation));
     }
 
-    /**
-     * it should return positive progress on a translation
-     */
-    @Test
-    public void getTranslationProgress() {
-        TargetLanguage targetLanguage = mLibrary.getTargetLanguage("en");
-        TargetTranslation targetTranslation = mTranslator.createTargetTranslation(new NativeSpeaker("demo speaker"), targetLanguage, "obs", TranslationType.TEXT, Resource.REGULAR_SLUG, TranslationFormat.USFM);
-        ChapterTranslation ct = targetTranslation.getChapterTranslation("01");
-        targetTranslation.applyChapterTitleTranslation(ct, "Some chapter title");
-        targetTranslation.finishChapterTitle(new Chapter("", "", "01"));
-        assertTrue(mLibrary.getTranslationProgress(targetTranslation) > 0);
-    }
+//    /**
+//     * it should return positive progress on a translation
+//     */
+//    @Test
+//    public void getTranslationProgress() {
+//        TargetLanguage targetLanguage = mLibrary.getTargetLanguage("en");
+//        TargetTranslation targetTranslation = mTranslator.createTargetTranslation(new NativeSpeaker("demo speaker"), targetLanguage, "obs", TranslationType.TEXT, Resource.REGULAR_SLUG, TranslationFormat.USFM);
+//        ChapterTranslation ct = targetTranslation.getChapterTranslation("01");
+//        targetTranslation.applyChapterTitleTranslation(ct, "Some chapter title");
+//        targetTranslation.finishChapterTitle(new Chapter("", "", "01"));
+//        assertTrue(mLibrary.getTranslationProgress(targetTranslation) > 0);
+//    }
 
     /**
      * it should return all the chapters in a source translation

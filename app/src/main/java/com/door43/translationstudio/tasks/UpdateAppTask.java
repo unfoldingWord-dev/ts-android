@@ -69,7 +69,7 @@ public class UpdateAppTask extends ManagedTask {
             }
         }
 
-        if(!App.getLibrary().exists()) {
+        if(!App.isLibraryDeployed()) {
             try {
                 App.deployDefaultLibrary();
             } catch (Exception e) {

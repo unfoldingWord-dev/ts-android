@@ -14,11 +14,12 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.tasks.CalculateTargetTranslationProgressTask;
+
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.Project;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.widget.ViewUtil;
@@ -87,7 +88,7 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
         }
 
         final TargetTranslation targetTranslation = getItem(position);
-        final Library library = App.getLibrary();
+        final Door43Client library = App.getLibrary();
         holder.currentTargetTranslation = targetTranslation;
         holder.mProgressView.setVisibility(View.INVISIBLE);
 
@@ -110,7 +111,7 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
         }
 
         // render view
-        Project project = library.getProject(targetTranslation.getProjectId(), App.getDeviceLanguageCode());
+        Project project = library.index().getProject(App.getDeviceLanguageCode(), targetTranslation.getProjectId(), true);
         if(project != null) {
             if(!targetTranslation.getResourceSlug().equals(Resource.REGULAR_SLUG) && !targetTranslation.getResourceSlug().equals("obs")) {
                 // display the resource type if not a regular resource e.g. this is for a gateway language

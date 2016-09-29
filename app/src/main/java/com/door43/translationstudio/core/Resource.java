@@ -6,6 +6,7 @@ import org.json.JSONObject;
 /**
  * Created by joel on 9/10/2015.
  */
+@Deprecated
 public class Resource {
     public static final String REGULAR_SLUG = "reg";
     private final int mCheckingLevel;

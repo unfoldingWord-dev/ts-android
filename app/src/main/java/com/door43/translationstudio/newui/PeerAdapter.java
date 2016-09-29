@@ -1,4 +1,4 @@
-package com.door43.translationstudio.device2device;
+package com.door43.translationstudio.newui;
 
 import android.content.Context;
 import android.view.LayoutInflater;

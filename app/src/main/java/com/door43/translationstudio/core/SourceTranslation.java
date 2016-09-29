@@ -6,6 +6,7 @@ import org.json.JSONObject;
 /**
  * Represents a single source translation.
  */
+@Deprecated
 public class SourceTranslation {
     public final String projectSlug;
     public final String sourceLanguageSlug;

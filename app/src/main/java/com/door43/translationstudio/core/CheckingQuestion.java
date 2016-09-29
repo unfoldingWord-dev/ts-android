@@ -10,6 +10,7 @@ import java.util.List;
 /**
  * Represents a checking question for a frame
  */
+@Deprecated
 public class CheckingQuestion {
 
     private final Reference[] mReferences;

@@ -164,7 +164,7 @@ public class ArchiveDetails {
                     // get project
                     String projectName = null;
                     String projectSlug = projectJson.getString("id");
-                    Project project = library.index().getProject(preferredLocale, projectSlug);
+                    Project project = library.index().getProject(preferredLocale, projectSlug, true);
                     if (project != null) {
                         projectName = project.name;
                     } else {

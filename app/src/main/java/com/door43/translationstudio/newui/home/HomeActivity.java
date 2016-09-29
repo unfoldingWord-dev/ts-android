@@ -21,6 +21,9 @@ import android.widget.ImageButton;
 import android.widget.PopupMenu;
 
 import org.eclipse.jgit.merge.MergeStrategy;
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.Project;
+import org.unfoldingword.door43client.models.TargetLanguage;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
@@ -28,9 +31,7 @@ import com.door43.translationstudio.ProfileActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 
-import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.Project;
-import com.door43.translationstudio.core.TargetLanguage;
+import com.door43.translationstudio.core.LanguageDirection;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.Door43LoginDialog;
@@ -57,7 +58,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     private static final int NEW_TARGET_TRANSLATION_REQUEST = 1;
     public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
     public static final String TAG = HomeActivity.class.getSimpleName();
-    private Library mLibrary;
+    private Door43Client mLibrary;
     private Translator mTranslator;
     private Fragment mFragment;
     private SimpleTaskWatcher taskWatcher;
@@ -557,7 +558,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 String targetTranslationId = data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID);
                 TargetTranslation existingTranslation = mTranslator.getTargetTranslation(targetTranslationId);
                 if(existingTranslation != null) {
-                    Project project = mLibrary.getProject(existingTranslation.getProjectId(), App.getDeviceLanguageCode());
+                    Project project = mLibrary.index().getProject(App.getDeviceLanguageCode(), existingTranslation.getProjectId(), true);
                     Snackbar snack = Snackbar.make(findViewById(android.R.id.content), String.format(getResources().getString(R.string.duplicate_target_translation), project.name, existingTranslation.getTargetLanguageName()), Snackbar.LENGTH_LONG);
                     ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                     snack.show();
@@ -582,7 +583,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         }
 
         String projectID = targetTranslation.getProjectId();
-        Project project = App.getLibrary().getProject(projectID, targetTranslation.getTargetLanguageName());
+        Project project = App.getLibrary().index().getProject(targetTranslation.getTargetLanguageName(), projectID, true);
         if(project == null) {
             Logger.e(TAG, "invalid project id:" + projectID);
             return;
@@ -658,9 +659,10 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     public void onItemClick(TargetTranslation targetTranslation) {
         // validate project and target language
 
-        Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), "en");
-        TargetLanguage language = App.getLibrary().getTargetLanguage(targetTranslation);
-        if(project == null || !App.getLibrary().projectHasSource(project.getId())) {
+        Project project = App.getLibrary().index().getProject("en", targetTranslation.getProjectId(), true);
+        TargetLanguage language = App.languageFromTargetTranslation(targetTranslation);
+
+        if(project == null) {
             // validate project source exists
             Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.missing_project, Snackbar.LENGTH_LONG);
             snack.setAction(R.string.download, new View.OnClickListener() {

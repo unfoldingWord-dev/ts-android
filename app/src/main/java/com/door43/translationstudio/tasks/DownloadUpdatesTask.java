@@ -3,6 +3,8 @@ package com.door43.translationstudio.tasks;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.LibraryUpdates;
+
+import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 /**

@@ -1,4 +1,4 @@
-package com.door43.translationstudio.device2device;
+package com.door43.translationstudio.service;
 
 /**
  * Created by joel on 1/14/2015.

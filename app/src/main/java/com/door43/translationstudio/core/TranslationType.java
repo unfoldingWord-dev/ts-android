@@ -3,6 +3,7 @@ package com.door43.translationstudio.core;
 /**
  * Represents different translation types
  */
+@Deprecated
 public enum TranslationType {
     TEXT("text", "Text"),
     TRANSLATION_NOTE("tn", "Notes"),

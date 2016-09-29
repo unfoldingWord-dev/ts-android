@@ -16,6 +16,7 @@ import java.util.Map;
 /**
  * Questionnaires contain a series of questions grouped by page that must be answered by the user
  */
+@Deprecated
 public class Questionnaire {
     public long dbId;
     public final long door43Id;

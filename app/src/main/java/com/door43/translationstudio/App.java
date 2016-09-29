@@ -18,9 +18,11 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
 import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.TargetLanguage;
 import org.unfoldingword.tools.logger.LogLevel;
 import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.core.ArchiveDetails;
+import com.door43.translationstudio.core.LanguageDirection;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.NewLanguageRequest;
 import com.door43.translationstudio.core.Profile;
@@ -135,6 +137,30 @@ public class App extends Application {
     public static String getDeviceLanguageCode() {
         String code = Locale.getDefault().getLanguage();
         return code.replaceAll("[\\_-]$", "");
+    }
+
+    /**
+     * A temporary utility to retrive the target language used in a target translation.
+     * if the language does not exist it will be added as a temporary language if possible
+     * @param t
+     * @return
+     */
+    @Deprecated
+    public static TargetLanguage languageFromTargetTranslation(TargetTranslation t) {
+        Door43Client library = getLibrary();
+        TargetLanguage l = library.index().getTargetLanguage(t.getTargetLanguageId());
+        if(l == null && t.getTargetLanguageId().isEmpty()) {
+            String name = t.getTargetLanguageName().isEmpty() ? t.getTargetLanguageId() : t.getTargetLanguageName();
+            LanguageDirection direction = t.getTargetLanguageDirection() == null ? LanguageDirection.LeftToRight : t.getTargetLanguageDirection();
+            l = new TargetLanguage(t.getTargetLanguageId(), name, "", direction.toString(), "unknown", false);
+            try {
+                library.index().addTempTargetLanguage(l);
+            } catch (Exception e) {
+                l = null;
+                e.printStackTrace();
+            }
+        }
+        return l;
     }
 
     /**

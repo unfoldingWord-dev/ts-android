@@ -90,7 +90,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
         mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectSlug, mSourceTranslation.sourceLanguageSlug);
-        mTargetLanguage = mLibrary.getTargetLanguage(mTargetTranslation);
+        mTargetLanguage = App.languageFromTargetTranslation(mTargetTranslation);
 
         Chapter[] chapters = mLibrary.getChapters(mSourceTranslation);
         List<ListItem> listItems = new ArrayList<>();

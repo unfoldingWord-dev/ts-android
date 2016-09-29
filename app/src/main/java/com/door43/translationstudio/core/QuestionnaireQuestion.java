@@ -9,6 +9,7 @@ import org.json.JSONObject;
 /**
  * Represents a single question in a questionnaire
  */
+@Deprecated
 public class QuestionnaireQuestion {
     public long id;
     public String question;

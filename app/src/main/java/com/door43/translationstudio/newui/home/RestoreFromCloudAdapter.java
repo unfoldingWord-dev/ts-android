@@ -9,11 +9,11 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.Project;
-import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.Project;
+import org.unfoldingword.door43client.models.TargetLanguage;
 import org.unfoldingword.gogsclient.Repository;
 
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ import java.util.Locale;
 public class RestoreFromCloudAdapter extends BaseAdapter {
 
     private List<Repository> repositories = new ArrayList<>();
-    private final Library library;
+    private final Door43Client library;
 
     public RestoreFromCloudAdapter() {
         this.library = App.getLibrary();
@@ -105,13 +105,13 @@ public class RestoreFromCloudAdapter extends BaseAdapter {
                     String projectSlug = TargetTranslation.getProjectSlugFromId(targetTranslationSlug);
                     String targetLanguageSlug = TargetTranslation.getTargetLanguageSlugFromId(targetTranslationSlug);
 
-                    Project p = library.getProject(projectSlug, App.getDeviceLanguageCode());
+                    Project p = library.index().getProject(App.getDeviceLanguageCode(), projectSlug, true);
                     if (p != null) {
                         projectName.setText(p.name);
                     } else {
                         projectName.setText(targetTranslationSlug);
                     }
-                    TargetLanguage tl = library.getTargetLanguage(targetLanguageSlug);
+                    TargetLanguage tl = library.index().getTargetLanguage(targetLanguageSlug);
                     if (tl != null) {
                         targetLanguageName.setText(tl.name);
                     } else {

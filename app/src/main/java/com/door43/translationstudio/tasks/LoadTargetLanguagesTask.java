@@ -13,6 +13,6 @@ public class LoadTargetLanguagesTask extends ManagedTask {
 
     @Override
     public void start() {
-        App.getLibrary().getTargetLanguages();
+        App.getLibrary().index().getTargetLanguages();
     }
 }

@@ -20,15 +20,15 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.device2device.PeerAdapter;
 import com.door43.translationstudio.network.Peer;
 import com.door43.translationstudio.newui.home.HomeActivity;
 import com.door43.translationstudio.service.BroadcastListenerService;
@@ -41,11 +41,11 @@ import com.door43.util.RSAEncryption;
 import org.json.JSONException;
 
 import java.io.File;
+import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
-import java.util.Locale;
 
 /**
  * Created by joel on 11/19/2015.
@@ -188,9 +188,23 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
 
         if(operationMode == MODE_SERVER) {
             title.setText(getResources().getString(R.string.backup_to_friend));
-            SourceTranslation sourceTranslation = App.getLibrary().getDefaultSourceTranslation(targetTranslation.getProjectId(), App.getDeviceLanguageCode());
-            if(sourceTranslation != null) {
-                subTitle.setText(sourceTranslation.getProjectTitle() + " - " + targetTranslation.getTargetLanguageName());
+            String[] sourceTranslationSlugs = App.getOpenSourceTranslationIds(targetTranslationSlug);
+            String sourceLanguageSlug = "en";
+            if(sourceTranslationSlugs.length > 0) {
+                sourceLanguageSlug = SourceTranslation.getSourceLanguageIdFromId(sourceTranslationSlugs[0]);
+            }
+            ResourceContainer resourceContainer = null;//.getDefaultSourceTranslation(targetTranslation.getProjectId(), App.getDeviceLanguageCode());
+            try {
+                resourceContainer = App.getLibrary().open(sourceLanguageSlug, targetTranslation.getProjectId(), targetTranslation.getResourceSlug());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if(resourceContainer != null) {
+                try {
+                    subTitle.setText(resourceContainer.readChunk("front", "title") + " - " + targetTranslation.getTargetLanguageName());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             } else {
                 Logger.w(this.getClass().getName(), "Could not find a default source translation for " + targetTranslation.getProjectId());
                 subTitle.setText(targetTranslation.getProjectId() + " - " + targetTranslation.getTargetLanguageName());
@@ -209,7 +223,12 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
                 final Peer peer = adapter.getItem(position);
                 if(operationMode == MODE_SERVER) {
                     // offer target translation to the client
-                    serverService.offerTargetTranslation(peer, targetTranslationSlug);
+                    String[] sourceTranslationSlugs = App.getOpenSourceTranslationIds(targetTranslationSlug);
+                    String sourceLanguageSlug = "en";
+                    if(sourceTranslationSlugs.length > 0) {
+                        sourceLanguageSlug = SourceTranslation.getSourceLanguageIdFromId(sourceTranslationSlugs[0]);
+                    }
+                    serverService.offerTargetTranslation(peer, sourceLanguageSlug, targetTranslationSlug);
                 } else if(operationMode == MODE_CLIENT) {
                     // TODO: 12/1/2015 eventually provide a ui for viewing multiple different requests from this peer
                     // display request user
@@ -526,10 +545,11 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
     public void onReceivedTargetTranslations(Peer server, String[] targetTranslations) {
         // build name list
         Translator translator = App.getTranslator();
-        Library library = App.getLibrary();
+        Door43Client library = App.getLibrary();
         String targetTranslationNames = "";
         for(String targetTranslationSlug:targetTranslations) {
             TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationSlug);
+            // TODO: 9/28/16 we need to add getProjectSourceLanguages to the module.
             SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(targetTranslation.getProjectId(), App.getDeviceLanguageCode());
             targetTranslationNames += sourceTranslation.getProjectTitle() + " - " + targetTranslation.getTargetLanguageName() + ", ";
         }

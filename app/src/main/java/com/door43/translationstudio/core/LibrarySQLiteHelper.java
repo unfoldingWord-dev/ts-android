@@ -16,6 +16,7 @@ import java.util.List;
 /**
  * Created by joel on 10/1/2015.
  */
+@Deprecated
 public class LibrarySQLiteHelper extends SQLiteOpenHelper{
     private static final int DATABASE_VERSION = 6;
     private final String databaseName;
