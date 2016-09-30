@@ -49,7 +49,36 @@
                 android:inputType="textNoSuggestions|text|textMultiLine"
                 android:focusableInTouchMode="true"
                 android:background="@null"
-                android:textColor="@color/dark_primary_text"/>
+                android:textColor="@color/dark_primary_text"
+                android:visibility="visible" />
+
+            <FrameLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/card_margin"
+                android:id="@+id/conflict_frame"
+                android:visibility="gone"
+                android:paddingBottom="@dimen/dialog_content_margin"
+                android:paddingTop="@dimen/dialog_content_margin">
+
+                <Button
+                    android:text="@string/conflict_exists"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/stacked_card_margin"
+                    android:layout_marginRight="@dimen/stacked_card_margin"
+                    android:layout_gravity="center_vertical|center_horizontal"
+                    android:paddingLeft="@dimen/dialog_controls_margin"
+                    android:paddingRight="@dimen/dialog_controls_margin"
+                    android:visibility="gone"
+                    android:id="@+id/conflict_button"
+                    style="@style/Widget.Alert.Button"
+                    android:background="@color/warning"
+                    android:textSize="@dimen/title"
+                    android:textColor="@color/light_primary_text"/>
+
+            </FrameLayout>
 
         </com.door43.translationstudio.core.LinedLinearLayout>
     </android.support.v7.widget.CardView>

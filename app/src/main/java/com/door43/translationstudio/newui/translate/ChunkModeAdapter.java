@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.TabLayout;
@@ -21,8 +22,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Filter;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -43,11 +46,13 @@ import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.rendering.ClickableRenderingEngine;
 import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.DefaultRenderer;
+import com.door43.translationstudio.rendering.MergeConflictHandler;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.Span;
@@ -253,7 +258,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         int cardMargin = mContext.getResources().getDimensionPixelSize(R.dimen.card_margin);
         int stackedCardMargin = mContext.getResources().getDimensionPixelSize(R.dimen.stacked_card_margin);
-        ListItem item = mFilteredItems[position];
+        final ListItem item = mFilteredItems[position];
         if(item.isTargetCardOpen) {
             // target on top
             // elevation takes precedence for API 21+
@@ -418,6 +423,37 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             renderProjectTitle(holder, position);
         } else {
             renderFrame(holder, position);
+        }
+
+        //////
+        // set up card UI for merge conflicts
+
+        if(item.renderedTargetBody == null) {
+            item.loadTranslations(mSourceTranslation, mTargetTranslation, mChapters.get(item.chapterSlug), loadFrame(item.chapterSlug, item.frameSlug), this);
+        }
+
+        Button conflictButton = (Button)holder.mTargetCard.findViewById(R.id.conflict_button);
+        FrameLayout conflictButtonFrame = (FrameLayout)holder.mTargetCard.findViewById(R.id.conflict_frame);
+        if((conflictButton != null) &&(conflictButtonFrame != null)) {
+            if (item.isTranslationMergeConflicted) {
+                conflictButton.setVisibility(View.VISIBLE);
+                conflictButtonFrame.setVisibility(View.VISIBLE);
+                holder.mTargetBody.setVisibility(View.GONE);
+                conflictButton.setOnClickListener(new View.OnClickListener() {
+                                                      @Override
+                                                      public void onClick(View v) {
+                                                          Bundle args = new Bundle();
+                                                          args.putBoolean(ChunkModeFragment.EXTRA_TARGET_OPEN, true);
+                                                          args.putString(App.EXTRA_CHAPTER_ID, item.chapterSlug);
+                                                          args.putString(App.EXTRA_FRAME_ID, item.frameSlug);
+                                                          getListener().openTranslationMode(TranslationViewMode.REVIEW, args);
+                                                      }
+                                                  }
+                );
+            } else {
+                conflictButtonFrame.setVisibility(View.GONE);
+                holder.mTargetBody.setVisibility(View.VISIBLE);
+            }
         }
     }
 
@@ -587,6 +623,8 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             if(holder.mTextWatcher != null) {
                 holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
             }
+
+            item.testForMergeConflict(item.renderedTargetBody.toString());
             item.renderedTargetBody = renderText(item.renderedTargetBody.toString(), mTargetFormat, targetSearch);
             holder.mTargetBody.setText(item.renderedTargetBody);
 
@@ -653,6 +691,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             if(holder.mTextWatcher != null) {
                 holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
             }
+            item.testForMergeConflict(item.renderedTargetBody.toString());
             item.renderedTargetBody = renderText(item.renderedTargetBody.toString(), mTargetFormat, targetSearch);
             holder.mTargetBody.setText(item.renderedTargetBody);
 
@@ -715,6 +754,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         // render the target frame body
         mTargetFormat =  mTargetTranslation.getFormat();
         final FrameTranslation frameTranslation = mTargetTranslation.getFrameTranslation(frame);
+        item.testForMergeConflict(frameTranslation.body);
         item.renderedTargetBody = renderText(frameTranslation.body, mTargetFormat, isTargetSearch());
 
         if(holder.mTextWatcher != null) {
@@ -997,6 +1037,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         private CharSequence renderedTargetBody;
         private boolean mHighlightSource = false;
         private boolean mHighlightTarget = false;
+        private boolean isTranslationMergeConflicted = false;
 
         public ListItem(String frameSlug, String chapterSlug) {
             this.frameSlug = frameSlug;
@@ -1066,21 +1107,40 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                 if (isChapterTitle) {
                     renderedTargetBody = chapterTranslation.title;
                     renderedSourceBody = chapter.title;
+                    updateMergeConflict(chapterTranslation.title);
                 } else {
                     renderedTargetBody = chapterTranslation.reference;
                     renderedSourceBody = chapter.reference;
+                    updateMergeConflict(chapterTranslation.reference);
                 }
             } else if(isProjectTitle) {
                 ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
                 renderedTargetBody = projectTranslation.getTitle();
                 renderedSourceBody = sourceTranslation.getProjectTitle();
+                updateMergeConflict(projectTranslation.getTitle());
             } else {
                 FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(frame);
                 TranslationFormat targetFormat =  targetTranslation.getFormat();
                 boolean targetSearch = adapter.isTargetSearch();
                 renderedSourceBody = adapter.renderText(frame.body, frame.getFormat(),!targetSearch);
                 renderedTargetBody = adapter.renderText(frameTranslation.body, targetFormat, targetSearch);
+                updateMergeConflict(frameTranslation.body);
             }
+        }
+
+        /**
+         * recheck if merge is conflict
+         */
+        private void updateMergeConflict(String bodyTranslation) {
+            if (bodyTranslation != null) {
+                isTranslationMergeConflicted = MergeConflictHandler.isMergeConflicted(bodyTranslation);
+            } else {
+                isTranslationMergeConflicted = false;
+            }
+        }
+
+        public void testForMergeConflict(String text) {
+            updateMergeConflict(text);
         }
     }
 
