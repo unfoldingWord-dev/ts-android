@@ -21,7 +21,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -313,9 +312,9 @@ public class Translator {
     /**
      * Imports a tstudio archive, uses default of merge, not overwrite
      * @param file
-     * @return an array of target translation slugs that were successfully imported
+     * @return ImportResults object
      */
-    public String[] importArchive(File file) throws Exception {
+    public ImportResults importArchive(File file) throws Exception {
         return importArchive( file, false);
     }
 
@@ -323,9 +322,9 @@ public class Translator {
     * Imports a tstudio archive
     * @param file
     * @param overwrite - if true then local changes are clobbered
-    * @return an array of target translation slugs that were successfully imported
+    * @return ImportResults object
     */
-    public String[] importArchive(File file, boolean overwrite) throws Exception {
+    public ImportResults importArchive(File file, boolean overwrite) throws Exception {
         FileInputStream in = null;
         try {
             in = new FileInputStream(file);
@@ -340,9 +339,9 @@ public class Translator {
     /**
      * Imports a tstudio archive from an input stream, uses default of merge, not overwrite
      * @param in
-     * @return an array of target translation slugs that were successfully imported
+     * @return ImportResults object
      */
-    public String[] importArchive(InputStream in) throws Exception {
+    public ImportResults importArchive(InputStream in) throws Exception {
         return importArchive( in, false);
     }
 
@@ -350,11 +349,12 @@ public class Translator {
      * Imports a tstudio archive from an input stream
      * @param in
      * @param overwrite - if true then local changes are clobbered
-     * @return an array of target translation slugs that were successfully imported
+     * @return ImportResults object
      */
-    public String[] importArchive(InputStream in, boolean overwrite) throws Exception {
+    public ImportResults importArchive(InputStream in, boolean overwrite) throws Exception {
         File archiveDir = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
-        List<String> importedSlugs = new ArrayList<>();
+        String importedSlug = null;
+        boolean mergeConflict = false;
         try {
             archiveDir.mkdirs();
             Zip.unzipFromStream(in, archiveDir);
@@ -375,7 +375,10 @@ public class Translator {
 
                         // merge translations
                         try {
-                            localTargetTranslation.merge(newDir);
+                            boolean mergeSuccess = localTargetTranslation.merge(newDir);
+                            if(!mergeSuccess) {
+                                mergeConflict = true;
+                            }
                         } catch(Exception e) {
                             e.printStackTrace();
                             continue;
@@ -388,7 +391,7 @@ public class Translator {
                     // update the generator info. TRICKY: we re-open to get the updated manifest.
                     TargetTranslation.updateGenerator(mContext, TargetTranslation.open(localDir));
 
-                    importedSlugs.add(targetTranslationId);
+                    importedSlug = targetTranslationId;
                 }
             }
         } catch (Exception e) {
@@ -398,7 +401,27 @@ public class Translator {
             FileUtilities.deleteQuietly(archiveDir);
         }
 
-        return importedSlugs.toArray(new String[importedSlugs.size()]);
+        return new ImportResults(importedSlug, mergeConflict);
+    }
+
+    /**
+     * returns the import results which includes:
+     *   the target translation slug that was successfully imported
+     *   a flag indicating a merge conflict
+     */
+    public class ImportResults {
+        public final String importedSlug;
+        public final boolean mergeConflict;
+
+        ImportResults(String importedSlug, boolean mergeConflict) {
+            this.importedSlug = importedSlug;
+            this.mergeConflict = mergeConflict;
+        }
+
+        public boolean isSuccess() {
+            boolean success = (importedSlug != null) && (!importedSlug.isEmpty());
+            return success;
+        }
     }
 
     /**

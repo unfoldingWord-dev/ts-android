@@ -294,6 +294,10 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         }
     }
 
+    /**
+     * let user know there was a merge conflict
+     * @param targetTranslation
+     */
     public void showMergeConflict(TargetTranslation targetTranslation) {
         mDialogShown = eDialogShown.MERGE_CONFLICT;
         mTargetTranslation = targetTranslation;
@@ -302,21 +306,25 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
                         doManualMerge();
                     }
                 }).show();
     }
 
+    /**
+     * open review mode to let user resolve conflict
+     */
     private void doManualMerge() {
         // ask parent activity to navigate to a new activity
         Intent intent = new Intent(getActivity(), TargetTranslationActivity.class);
         Bundle args = new Bundle();
         args.putString(App.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
 
-        MergeConflictHandler.cardLocation location = MergeConflictHandler.findFirstMergeConflict( mTargetTranslation.getId());
+        MergeConflictHandler.CardLocation location = MergeConflictHandler.findFirstMergeConflict( mTargetTranslation.getId());
         if(location != null) {
-                args.putString(App.EXTRA_CHAPTER_ID, location.chapterID);
-                args.putString(App.EXTRA_FRAME_ID, location.frameID);
+            args.putString(App.EXTRA_CHAPTER_ID, location.chapterID);
+            args.putString(App.EXTRA_FRAME_ID, location.frameID);
         }
 
         args.putString(App.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());

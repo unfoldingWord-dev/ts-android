@@ -27,10 +27,13 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.device2device.PeerAdapter;
 import com.door43.translationstudio.network.Peer;
 import com.door43.translationstudio.newui.home.HomeActivity;
+import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
+import com.door43.translationstudio.rendering.MergeConflictHandler;
 import com.door43.translationstudio.service.BroadcastListenerService;
 import com.door43.translationstudio.service.BroadcastService;
 import com.door43.translationstudio.service.ClientService;
@@ -45,12 +48,13 @@ import java.security.InvalidParameterException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
-import java.util.Locale;
 
 /**
  * Created by joel on 11/19/2015.
  */
 public class ShareWithPeerDialog extends DialogFragment implements ServerService.OnServerEventListener, BroadcastListenerService.Callbacks, ClientService.OnClientEventListener {
+    public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
+    public static final String STATE_DIALOG_TRANSLATION_ID = "state_dialog_translationID";
     // TODO: 11/30/2015 get port from settings
     private static final int PORT_CLIENT_UDP = 9939;
     private static final int REFRESH_FREQUENCY = 2000;
@@ -58,9 +62,12 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
     public static final int MODE_CLIENT = 0;
     public static final int MODE_SERVER = 1;
     public static final String ARG_DEVICE_ALIAS = "arg_device_alias";
+    public static final String TAG = ShareWithPeerDialog.class.getSimpleName();
     private PeerAdapter adapter;
     public static final String ARG_OPERATION_MODE = "arg_operation_mode";
     public static final String ARG_TARGET_TRANSLATION = "arg_target_translation";
+    private eDialogShown mDialogShown = eDialogShown.NONE;
+    private String mTargetTranslationID;
 
     private ClientService clientService;
     private ServiceConnection clientConnection = new ServiceConnection() {
@@ -290,7 +297,31 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
             }
         });
 
+        if(savedInstanceState != null) {
+            mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
+            mTargetTranslationID = savedInstanceState.getString(STATE_DIALOG_TRANSLATION_ID, null);
+        }
+
+        restoreDialogs();
         return v;
+    }
+
+    /**
+     * restore the dialogs that were displayed before rotation
+     */
+    private void restoreDialogs() {
+        switch(mDialogShown) {
+            case MERGE_CONFLICT:
+                showMergeConflict(mTargetTranslationID);
+                break;
+
+            case NONE:
+                break;
+
+            default:
+                Logger.e(TAG,"Unsupported restore dialog: " + mDialogShown.toString());
+                break;
+        }
     }
 
     @Override
@@ -368,6 +399,8 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
     @Override
     public void onSaveInstanceState(Bundle out) {
         shutDownServices = false;
+        out.putInt(STATE_DIALOG_SHOWN, mDialogShown.getValue());
+        out.putString(STATE_DIALOG_TRANSLATION_ID, mTargetTranslationID);
         super.onSaveInstanceState(out);
     }
 
@@ -523,32 +556,69 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
     }
 
     @Override
-    public void onReceivedTargetTranslations(Peer server, String[] targetTranslations) {
+    public void onReceivedTargetTranslations(Peer server, final Translator.ImportResults importResults) {
         // build name list
         Translator translator = App.getTranslator();
         Library library = App.getLibrary();
-        String targetTranslationNames = "";
-        for(String targetTranslationSlug:targetTranslations) {
+        String targetTranslationName = "";
+        if(importResults.isSuccess()) {
+            String targetTranslationSlug = importResults.importedSlug;
             TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationSlug);
             SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(targetTranslation.getProjectId(), App.getDeviceLanguageCode());
-            targetTranslationNames += sourceTranslation.getProjectTitle() + " - " + targetTranslation.getTargetLanguageName() + ", ";
+            targetTranslationName = sourceTranslation.getProjectTitle() + " - " + targetTranslation.getTargetLanguageName();
         }
-        final String names = targetTranslationNames.trim().replaceAll(",$", "");
+        final String name = targetTranslationName;
 
         // notify user
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
             public void run() {
-                new AlertDialog.Builder(getActivity(),R.style.AppTheme_Dialog)
-                        .setTitle(R.string.success)
-                        .setMessage(String.format(getResources().getString(R.string.success_import_target_translation), names))
-                        .setPositiveButton(R.string.dismiss, null)
-                        .show();
-                // TODO: 12/1/2015 this is a bad hack
-                ((HomeActivity) getActivity()).notifyDatasetChanged();
+                if(importResults.isSuccess() && importResults.mergeConflict) {
+                    showMergeConflict(importResults.importedSlug);
+                } else {
+                    new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                            .setTitle(R.string.success)
+                            .setMessage(String.format(getResources().getString(R.string.success_import_target_translation), name))
+                            .setPositiveButton(R.string.dismiss, null)
+                            .show();
+                    // TODO: 12/1/2015 this is a bad hack
+                    ((HomeActivity) getActivity()).notifyDatasetChanged();
+                }
             }
         });
+    }
+
+    public void showMergeConflict(String targetTranslationID) {
+        mDialogShown = eDialogShown.MERGE_CONFLICT;
+        mTargetTranslationID = targetTranslationID;
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                .setTitle(R.string.merge_conflict_title).setMessage(R.string.import_merge_conflict)
+                .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                        doManualMerge();
+                    }
+                }).show();
+    }
+
+    private void doManualMerge() {
+        // ask parent activity to navigate to a new activity
+        Intent intent = new Intent(getActivity(), TargetTranslationActivity.class);
+        Bundle args = new Bundle();
+        args.putString(App.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslationID);
+
+        MergeConflictHandler.CardLocation location = MergeConflictHandler.findFirstMergeConflict( mTargetTranslationID );
+        if(location != null) {
+            args.putString(App.EXTRA_CHAPTER_ID, location.chapterID);
+            args.putString(App.EXTRA_FRAME_ID, location.frameID);
+        }
+
+        args.putString(App.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
+        intent.putExtras(args);
+        startActivity(intent);
+        dismiss();
     }
 
     @Override
@@ -563,4 +633,33 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
             }
         });
     }
+
+
+    /**
+     * for keeping track which dialog is being shown for orientation changes (not for DialogFragments)
+     */
+    public enum eDialogShown {
+        NONE(0),
+        MERGE_CONFLICT(1);
+
+        private int value;
+
+        eDialogShown(int Value) {
+            this.value = Value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public static eDialogShown fromInt(int i) {
+            for (eDialogShown b : eDialogShown.values()) {
+                if (b.getValue() == i) {
+                    return b;
+                }
+            }
+            return null;
+        }
+    }
+
 }

@@ -13,15 +13,10 @@ import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.ProjectTranslation;
-import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
-import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.newui.publish.ValidationItem;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,14 +58,14 @@ public class MergeConflictHandler {
         int lastIndex = 0;
         while(matcher.find(lastIndex)) {
             int firstSectionStart = matcher.end();
-            foundRange middleMatcher = findNestedSection( in, firstSectionStart, MergeConflictPatternMiddle);
+            FoundRange middleMatcher = findNestedSection( in, firstSectionStart, MergeConflictPatternMiddle);
             if(middleMatcher == null) {
                 break;
             }
             int firstSectionEnd = middleMatcher.start;
 
             int secondSectionStart = middleMatcher.end;
-            foundRange endMatcher = findNestedSection( in, secondSectionStart, MergeConflictPatternEnd);
+            FoundRange endMatcher = findNestedSection( in, secondSectionStart, MergeConflictPatternEnd);
             int secondSectionEnd;
             int endSection;
             if(endMatcher == null) {
@@ -103,7 +98,7 @@ public class MergeConflictHandler {
      * @param targetTranslationId
      * @return
      */
-    static public cardLocation findFirstMergeConflict(String targetTranslationId) {
+    static public CardLocation findFirstMergeConflict(String targetTranslationId) {
         Library library = App.getLibrary();
         Translator translator = App.getTranslator();
 
@@ -120,7 +115,7 @@ public class MergeConflictHandler {
         if(projectTitle != null) {
             ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
             if(isMergeConflicted(projectTranslation.getTitle())) {
-                return new cardLocation("00","00");
+                return new CardLocation("00","00");
             }
         }
 
@@ -134,14 +129,14 @@ public class MergeConflictHandler {
             boolean isInvalidChapterTitle = (chapter.title != null) && (!chapter.title.isEmpty());
             if(!isInvalidChapterTitle) {
                 if(MergeConflictHandler.isMergeConflicted(chapterTranslation.title)) {
-                    return new cardLocation(chapterStr, "00");
+                    return new CardLocation(chapterStr, "00");
                 }
             }
 
             boolean isInvalidRef = (chapter.reference != null) && (!chapter.reference.isEmpty());
             if(!isInvalidRef) {
                 if(MergeConflictHandler.isMergeConflicted(chapterTranslation.reference)) {
-                    return new cardLocation(chapterStr, "00");
+                    return new CardLocation(chapterStr, "00");
                 }
             }
 
@@ -151,7 +146,7 @@ public class MergeConflictHandler {
                 if(isValidFrame) {
                     FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(frame);
                     if(MergeConflictHandler.isMergeConflicted(frameTranslation.body)) {
-                        return new cardLocation(chapterStr, frame.getId());
+                        return new CardLocation(chapterStr, frame.getId());
                     }
                 }
             }
@@ -164,12 +159,12 @@ public class MergeConflictHandler {
      * @param in
      * @return
      */
-    static private foundRange findNestedSection(CharSequence in, int startPos, Pattern pattern) {
-        foundRange matcher = findFirst(in, startPos, pattern);
+    static private FoundRange findNestedSection(CharSequence in, int startPos, Pattern pattern) {
+        FoundRange matcher = findFirst(in, startPos, pattern);
         if(matcher != null) {
             int newStartPos = startPos;
             while(true) {
-                foundRange nestedMatcher = findFirst(in, newStartPos, MergeConflictPatternHead);
+                FoundRange nestedMatcher = findFirst(in, newStartPos, MergeConflictPatternHead);
                 if( nestedMatcher == null) { // if no more nesting found
                     return matcher;
                 } else {
@@ -178,15 +173,15 @@ public class MergeConflictHandler {
                     }
 
                     //find the end of nesting
-                    foundRange endNested = findNestedSection(in, nestedMatcher.end, MergeConflictPatternEnd);
+                    FoundRange endNested = findNestedSection(in, nestedMatcher.end, MergeConflictPatternEnd);
                     if (endNested == null) { // if no end found
-                        return new foundRange(matcher.start, in.length());
+                        return new FoundRange(matcher.start, in.length());
                     }
 
                     newStartPos = endNested.end;
-                    foundRange endMatcher = findFirst(in, endNested.end, pattern); // try again to find pattern
+                    FoundRange endMatcher = findFirst(in, endNested.end, pattern); // try again to find pattern
                     if(endMatcher == null) {
-                        return new foundRange(matcher.start, in.length());
+                        return new FoundRange(matcher.start, in.length());
                     }
 
                     matcher = endMatcher;
@@ -197,10 +192,10 @@ public class MergeConflictHandler {
         return null;
     }
 
-    static private foundRange findFirst(CharSequence in, int startPos, Pattern pattern) {
+    static private FoundRange findFirst(CharSequence in, int startPos, Pattern pattern) {
         Matcher matcher = pattern.matcher(in);
         if (matcher.find(startPos)) {
-            return new foundRange(matcher);
+            return new FoundRange(matcher);
         }
         return null;
     }
@@ -219,16 +214,16 @@ public class MergeConflictHandler {
         return false;
     }
 
-    static public class foundRange {
+    static public class FoundRange {
         public final int start;
         public final int end;
 
-        foundRange(int start, int end) {
+        FoundRange(int start, int end) {
             this.start = start;
             this.end = end;
         }
 
-        foundRange(Matcher matcher) {
+        FoundRange(Matcher matcher) {
             if(matcher == null) {
                 this.start = -1;
                 this.end = -1;
@@ -239,11 +234,11 @@ public class MergeConflictHandler {
         }
     }
 
-    static public class cardLocation {
+    static public class CardLocation {
         public final String chapterID;
         public final String frameID;
 
-        cardLocation(String chapterID, String frameID) {
+        CardLocation(String chapterID, String frameID) {
             this.chapterID = chapterID;
             this.frameID = frameID;
         }
