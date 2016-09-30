@@ -9,7 +9,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.ProjectCategory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,17 +16,19 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.unfoldingword.door43client.models.CategoryEntry;
+
 /**
  * Created by joel on 9/4/2015.
  */
 public class ProjectCategoryAdapter extends BaseAdapter {
-    private ProjectCategory[] mCategories;
-    private ProjectCategory[] mFilteredCategories;
+    private CategoryEntry[] mCategories;
+    private CategoryEntry[] mFilteredCategories;
     private ProjectCategoryFilter mProjectFilter;
 
-    public ProjectCategoryAdapter(ProjectCategory[] categories) {
-        List<ProjectCategory> categoriesList = Arrays.asList(categories);
-        mCategories = categoriesList.toArray(new ProjectCategory[categoriesList.size()]);
+    public ProjectCategoryAdapter(CategoryEntry[] categories) {
+        List<CategoryEntry> categoriesList = Arrays.asList(categories);
+        mCategories = categoriesList.toArray(new CategoryEntry[categoriesList.size()]);
         mFilteredCategories = mCategories;
     }
 
@@ -41,7 +42,7 @@ public class ProjectCategoryAdapter extends BaseAdapter {
     }
 
     @Override
-    public ProjectCategory getItem(int position) {
+    public CategoryEntry getItem(int position) {
         return mFilteredCategories[position];
     }
 
@@ -63,8 +64,8 @@ public class ProjectCategoryAdapter extends BaseAdapter {
         }
 
         // render view
-        holder.mProjectView.setText(getItem(position).title);
-        if(getItem(position).isProject()) {
+        holder.mProjectView.setText(getItem(position).name);
+        if(getItem(position).entryType == CategoryEntry.Type.PROJECT) {
             holder.mMoreImage.setVisibility(View.GONE);
         } else {
             holder.mMoreImage.setVisibility(View.VISIBLE);
@@ -78,7 +79,7 @@ public class ProjectCategoryAdapter extends BaseAdapter {
      * Updates the data set
      * @param categories
      */
-    public void changeData(ProjectCategory[] categories) {
+    public void changeData(CategoryEntry[] categories) {
         mCategories = categories;
         mFilteredCategories = categories;
         notifyDataSetChanged();
@@ -122,20 +123,20 @@ public class ProjectCategoryAdapter extends BaseAdapter {
                 results.count = mCategories.length;
             } else {
                 // perform filter
-                List<ProjectCategory> filteredCategories = new ArrayList<>();
-                for(ProjectCategory category:mCategories) {
+                List<CategoryEntry> filteredCategories = new ArrayList<>();
+                for(CategoryEntry category:mCategories) {
                     boolean match = false;
-                    if(category.isProject()) {
+                    if(category.entryType == CategoryEntry.Type.PROJECT) {
                         // match the project id
-                        match = category.projectId.toLowerCase().startsWith(charSequence.toString().toLowerCase());
+                        match = category.slug.toLowerCase().startsWith(charSequence.toString().toLowerCase());
                     }
                     if(!match) {
-                        String[] categoryComponents = category.getId().split("-");
-                        String[] titleComponents = category.title.split(" ");
-                        if (category.title.toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
+                        String[] categoryComponents = category.slug.split("-");
+                        String[] titleComponents = category.name.split(" ");
+                        if (category.name.toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
                             // match the project title in any language
                             match = true;
-                        } else if (category.sourcelanguageId.toLowerCase().startsWith(charSequence.toString().toLowerCase())) {// || l.getName().toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
+                        } else if (category.sourceLanguageSlug.toLowerCase().startsWith(charSequence.toString().toLowerCase())) {// || l.getName().toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
                             // match the language id or name
                             match = true;
                         } else {
@@ -169,11 +170,11 @@ public class ProjectCategoryAdapter extends BaseAdapter {
 
         @Override
         protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-            List<ProjectCategory> filteredProjects = ((List<ProjectCategory>) filterResults.values);
+            List<CategoryEntry> filteredProjects = ((List<CategoryEntry>) filterResults.values);
             if(filteredProjects != null) {
-                mFilteredCategories = filteredProjects.toArray(new ProjectCategory[filterResults.count]);
+                mFilteredCategories = filteredProjects.toArray(new CategoryEntry[filterResults.count]);
             } else {
-                mFilteredCategories = new ProjectCategory[0];
+                mFilteredCategories = new CategoryEntry[0];
             }
             notifyDataSetChanged();
         }
@@ -184,12 +185,12 @@ public class ProjectCategoryAdapter extends BaseAdapter {
      * @param categories
      * @param referenceId categories are sorted according to the reference id
      */
-    private static void sortProjectCategories(List<ProjectCategory> categories, final CharSequence referenceId) {
-        Collections.sort(categories, new Comparator<ProjectCategory>() {
+    private static void sortProjectCategories(List<CategoryEntry> categories, final CharSequence referenceId) {
+        Collections.sort(categories, new Comparator<CategoryEntry>() {
             @Override
-            public int compare(ProjectCategory lhs, ProjectCategory rhs) {
-                String lhId = lhs.projectId;
-                String rhId = rhs.projectId;
+            public int compare(CategoryEntry lhs, CategoryEntry rhs) {
+                String lhId = lhs.slug;
+                String rhId = rhs.slug;
                 // give priority to matches with the reference
                 if (lhId.startsWith(referenceId.toString().toLowerCase())) {
                     lhId = "!" + lhId;
