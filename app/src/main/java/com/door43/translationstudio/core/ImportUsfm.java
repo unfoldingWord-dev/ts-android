@@ -6,6 +6,7 @@ import android.content.pm.PackageInfo;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import org.unfoldingword.door43client.models.TargetLanguage;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;

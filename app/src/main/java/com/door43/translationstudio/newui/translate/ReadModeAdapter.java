@@ -48,6 +48,7 @@ import java.util.List;
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.SourceLanguage;
 import org.unfoldingword.door43client.models.TargetLanguage;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 
 
 /**
@@ -64,10 +65,10 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     private static final int BOTTOM_ELEVATION = 2;
     private static final int TOP_ELEVATION = 3;
     private final TargetTranslation mTargetTranslation;
-    private SourceTranslation mSourceTranslation;
+    private ResourceContainer mResourceContainer;
     private final Door43Client mLibrary;
     private final Translator mTranslator;
-    private Chapter[] mChapters;
+    private String[] mChapters;
     private int mLayoutBuildNumber = 0;
     private ContentValues[] mTabs;
 
@@ -76,16 +77,23 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         mTranslator = App.getTranslator();
         mContext = context;
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
-        mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
-        mSourceLanguage = mLibrary.index().getSourceLanguage(mSourceTranslation.sourceLanguageSlug);
+
+        try {
+            mResourceContainer = mLibrary.open(SourceTranslation.getSourceLanguageIdFromId(sourceTranslationId),
+                    SourceTranslation.getProjectIdFromId(sourceTranslationId),
+                    SourceTranslation.getResourceIdFromId(sourceTranslationId));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        mSourceLanguage = mLibrary.index().getSourceLanguage(mResourceContainer.language.slug);
         mTargetLanguage = App.languageFromTargetTranslation(mTargetTranslation);
 
-        mChapters = mLibrary.getChapters(mSourceTranslation);
+        mChapters = mResourceContainer.chapters();
         if(chapterId != null) {
             // identify starting selection
             for (int i = 0; i < mChapters.length; i ++) {
-                Chapter c = mChapters[i];
-                if (c.getId().equals(chapterId)) {
+                String cSlug = mChapters[i];
+                if (cSlug.equals(chapterId)) {
                     setListStartPosition(i);
                     break;
                 }
@@ -103,10 +111,17 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
      * @param sourceTranslationId
      */
     public void setSourceTranslation(String sourceTranslationId) {
-        mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
-        mSourceLanguage = mLibrary.index().getSourceLanguage(mSourceTranslation.sourceLanguageSlug);
+        try {
+            mResourceContainer = mLibrary.open(SourceTranslation.getSourceLanguageIdFromId(sourceTranslationId),
+                    SourceTranslation.getProjectIdFromId(sourceTranslationId),
+                    SourceTranslation.getResourceIdFromId(sourceTranslationId));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        mChapters = mLibrary.getChapters(mSourceTranslation);
+        mSourceLanguage = mLibrary.index().getSourceLanguage(mResourceContainer.language.slug);
+
+        mChapters = mResourceContainer.chapters();
         mTargetStateOpen = new boolean[mChapters.length];
         mRenderedSourceBody = new CharSequence[mChapters.length];
 
@@ -128,7 +143,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     @Override
     public String getFocusedChapterId(int position) {
         if(position >= 0 && position < mChapters.length) {
-            return mChapters[position].getId();
+            return mChapters[position];
         } else {
             return null;
         }
@@ -137,8 +152,8 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     @Override
     public int getItemPosition(String chapterId, String frameId) {
         for(int i = 0; i < mChapters.length; i ++) {
-            Chapter chapter = mChapters[i];
-            if(chapter.getId().equals(chapterId)) {
+            String slug = mChapters[i];
+            if(slug.equals(chapterId)) {
                 return i;
             }
         }
@@ -147,7 +162,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
 
     @Override
     public void reload() {
-        setSourceTranslation(mSourceTranslation.getId());
+        setSourceTranslation(mResourceContainer.slug);
     }
 
 
@@ -251,8 +266,8 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
 
         // render the source chapter body
         if(mRenderedSourceBody[position] == null) {
-            String chapterBody = mLibrary.getChapterBody(mSourceTranslation, chapter.getId());
-            TranslationFormat bodyFormat = mLibrary.getChapterBodyFormat(mSourceTranslation, chapter.getId());
+            String chapterBody = mLibrary.getChapterBody(mResourceContainer, chapter.getId());
+            TranslationFormat bodyFormat = mLibrary.getChapterBodyFormat(mResourceContainer, chapter.getId());
             RenderingGroup sourceRendering = new RenderingGroup();
             if (Clickables.isClickableFormat(bodyFormat)) {
                 // TODO: add click listeners
@@ -293,7 +308,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         ViewUtil.makeLinksClickable(holder.mSourceBody);
         String chapterTitle = chapter.title;
         if(chapter.title.isEmpty()) {
-            chapterTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
+            chapterTitle = mResourceContainer.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
         }
         holder.mSourceTitle.setText(chapterTitle);
 
@@ -301,7 +316,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         if(mRenderedTargetBody[position] == null) {
             TranslationFormat bodyFormat = mTargetTranslation.getFormat();
             String chapterBody = "";
-            String[] frameSlugs = mLibrary.getFrameSlugs(mSourceTranslation, chapter.getId());
+            String[] frameSlugs = mLibrary.getFrameSlugs(mResourceContainer, chapter.getId());
             for (String frameSlug : frameSlugs) {
                 Frame simpleFrame = new Frame(frameSlug, chapter.getId(), null, bodyFormat, null);
                 FrameTranslation frameTranslation = mTargetTranslation.getFrameTranslation(simpleFrame);
@@ -375,7 +390,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         }
 
         if (targetCardTitle.isEmpty()) { // fall back to project source title
-            targetCardTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
+            targetCardTitle = mResourceContainer.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
         }
 
         holder.mTargetTitle.setText(targetCardTitle + " - " + mTargetLanguage.name);
@@ -393,7 +408,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         // select correct tab
         for(int i = 0; i < holder.mTabLayout.getTabCount(); i ++) {
             TabLayout.Tab tab = holder.mTabLayout.getTabAt(i);
-            if(tab.getTag().equals(mSourceTranslation.getId())) {
+            if(tab.getTag().equals(mResourceContainer.getId())) {
                 tab.select();
                 break;
             }

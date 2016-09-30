@@ -1180,22 +1180,6 @@ public class TargetTranslation {
     }
 
     /**
-     * Returns the draft translation that is a parent of this target translation.
-     */
-    public SourceTranslation getParentDraft () {
-        try {
-            JSONObject parentDraftStatus = manifest.getJSONObject(FIELD_PARENT_DRAFT);
-            if(Manifest.valueExists(parentDraftStatus, "resource_id")) {
-                // TODO: it would be handy to include the version of the actual parent draft so we can see if the one pulled has updates
-                return SourceTranslation.simple(getProjectId(), getTargetLanguageId(), parentDraftStatus.getString("resource_id"));
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    /**
      * Merges a local repository into this one
      * @param newDir
      * @return boolean false if there were merge conflicts

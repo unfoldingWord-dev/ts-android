@@ -6,6 +6,7 @@ import org.unfoldingword.tools.taskmanager.ManagedTask;
 /**
  * Downloads a project icon from the server or loads it from the cache
  */
+@Deprecated
 public class DownloadProjectImageTask extends ManagedTask {
     private final Project mProject;
     private String mImagPath;

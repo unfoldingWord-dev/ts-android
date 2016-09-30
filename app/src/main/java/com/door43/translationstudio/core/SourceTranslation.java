@@ -1,8 +1,5 @@
 package com.door43.translationstudio.core;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 /**
  * Represents a single source translation.
  */

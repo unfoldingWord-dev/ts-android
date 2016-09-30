@@ -33,6 +33,8 @@ import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import org.unfoldingword.resourcecontainer.Resource;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
@@ -569,25 +571,14 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      * @return
      */
     private boolean targetTranslationHasDraft() {
-        return mTargetTranslation.getParentDraft() != null;
-        // TODO: 1/20/2016 once users are forced to specify a resource they are translating into we'll use this to check
-//        if(mTargetTranslation.getParentDraft() != null) {
-//            // check for matching resource
-//            if(mTargetTranslation.resourceSlug.equals(mTargetTranslation.getParentDraft().resourceSlug)) {
-//                return true;
-//            } else {
-//                // check for second best
-//                if (draftTranslations == null) {
-//                    draftTranslations = App.getLibrary().getDraftTranslations(mTargetTranslation.getProjectId(), mTargetTranslation.getTargetLanguageId());
-//                }
-//                for (SourceTranslation st : draftTranslations) {
-//                    if (st.resourceSlug.equals(mTargetTranslation.getParentDraft().resourceSlug)) {
-//                        return true;
-//                    }
-//                }
-//            }
+        // TODO: in order to property determine this we need to look in the resource container for the source translation info
+//        try {
+//            Resource resource = App.getLibrary().index().getResource(mTargetTranslation.getTargetLanguageId(), mTargetTranslation.getProjectId(), mTargetTranslation.getResourceSlug());
+//            return resource != null;
+//        } catch (Exception e) {
+//            e.printStackTrace();
 //        }
-//        return false;
+        return false;
     }
 
     /**
@@ -596,22 +587,19 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      * @return
      */
     private boolean draftIsAvailable() {
-        if(draftTranslations == null) {
-            draftTranslations = App.getLibrary().getDraftTranslations(mTargetTranslation.getProjectId(), mTargetTranslation.getTargetLanguageId());
-        }
-        for(SourceTranslation st:draftTranslations) {
-            if(App.getLibrary().sourceTranslationHasSource(st)) {
-                return true;
+        try {
+            if(!mTargetTranslation.getResourceSlug().equals(Resource.REGULAR_SLUG)) {
+                // non-regular translations must have an exact match
+                Resource resource = App.getLibrary().index().getResource(mTargetTranslation.getTargetLanguageId(), mTargetTranslation.getProjectId(), mTargetTranslation.getResourceSlug());
+                return resource != null;
+            } else {
+                List<Resource> resources = App.getLibrary().index().getResources(mTargetTranslation.getTargetLanguageId(), mTargetTranslation.getProjectId());
+                return resources.size() > 0;
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return false;
-        // TODO: 1/20/2016 once users are forced to specify a resource they are translating into we'll use this to check
-//        for(SourceTranslation st:draftTranslations) {
-//            if(st.resourceSlug.equals(mTargetTranslation.resourceSlug) && App.getLibrary().sourceTranslationHasSource(st)) {
-//                return true;
-//            }
-//        }
-//        return false;
     }
 
     @Override
