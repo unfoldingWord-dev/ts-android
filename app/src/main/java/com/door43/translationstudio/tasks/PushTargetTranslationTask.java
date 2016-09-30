@@ -2,6 +2,7 @@ package com.door43.translationstudio.tasks;
 
 import android.os.Process;
 
+import org.eclipse.jgit.transport.RefSpec;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
@@ -32,15 +33,13 @@ public class PushTargetTranslationTask extends ManagedTask {
 
     public static final String TASK_ID = "push_target_translation_task";
     private final TargetTranslation targetTranslation;
-    private final boolean pushTags;
     private Status status = Status.UNKNOWN;
     private String message = "";
     private PushResult pushRejectedResults;
 
-    public PushTargetTranslationTask(TargetTranslation targetTranslation, boolean pushTags) {
+    public PushTargetTranslationTask(TargetTranslation targetTranslation) {
         setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
         this.targetTranslation = targetTranslation;
-        this.pushTags = pushTags;
     }
 
     @Override
@@ -67,6 +66,9 @@ public class PushTargetTranslationTask extends ManagedTask {
         } catch (IOException e1) {
             return null;
         }
+
+        RefSpec spec = new RefSpec("refs/heads/master");
+
         // TODO: we might want to get some progress feedback for the user
         PushCommand pushCommand = git.push()
                 .setTransportConfigCallback(new TransportCallback())
@@ -97,11 +99,9 @@ public class PushTargetTranslationTask extends ManagedTask {
                         return false;
                     }
                 })
+                .setPushTags()
                 .setForce(false)
-                .setPushAll();
-        if(this.pushTags) {
-            pushCommand.setPushTags();
-        }
+                .setRefSpecs(spec);
 
         try {
             Iterable<PushResult> result = pushCommand.call();

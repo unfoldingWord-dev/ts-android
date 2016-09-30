@@ -15,6 +15,7 @@ import android.support.v4.content.FileProvider;
 import android.support.v4.provider.DocumentFile;
 import android.support.v7.app.AlertDialog;
 import android.text.Html;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,6 +51,7 @@ import org.eclipse.jgit.merge.MergeStrategy;
 
 import java.io.File;
 import java.io.OutputStream;
+import java.net.URL;
 import java.security.InvalidParameterException;
 
 /**
@@ -501,7 +503,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                     || status == PullTargetTranslationTask.Status.UNKNOWN) {
                 Logger.i(this.getClass().getName(), "Changes on the server were synced with " + targetTranslation.getId());
 
-                PushTargetTranslationTask pushtask = new PushTargetTranslationTask(targetTranslation, false);
+                PushTargetTranslationTask pushtask = new PushTargetTranslationTask(targetTranslation);
                 taskWatcher.watch(pushtask);
                 TaskManager.addTask(pushtask, PushTargetTranslationTask.TASK_ID);
             } else if(status == PullTargetTranslationTask.Status.AUTH_FAILURE) {
@@ -564,13 +566,20 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     private void showPushSuccess(final String message) {
         mDialogShown = eDialogShown.SHOW_PUSH_SUCCESS;
         mDialogMessage = message;
+        final Uri url = Uri.parse("https://door43.org/u/" + App.getProfile().gogsUser.getUsername() + "/" + targetTranslation.getId());
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                 .setTitle(R.string.success)
                 .setMessage(R.string.project_uploaded)
-                .setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+                .setNegativeButton(R.string.dismiss, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mDialogShown = eDialogShown.NONE;
+                    }
+                })
+                .setPositiveButton(R.string.view_online, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        startActivity(new Intent(Intent.ACTION_VIEW, url));
                     }
                 })
                 .setNeutralButton(R.string.label_details, new DialogInterface.OnClickListener() {
@@ -579,7 +588,13 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                             .setTitle(R.string.project_uploaded)
                             .setMessage(message)
-                            .setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+                            .setPositiveButton(R.string.view_online, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    startActivity(new Intent(Intent.ACTION_VIEW, url));
+                                }
+                            })
+                            .setNeutralButton(R.string.dismiss, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     mDialogShown = eDialogShown.NONE;

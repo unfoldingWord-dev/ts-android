@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -31,6 +32,7 @@ import org.json.JSONException;
  */
 public abstract class ViewModeFragment extends BaseFragment implements ViewModeAdapter.OnEventListener, ChooseSourceTranslationDialog.OnClickListener {
 
+    public static final String TAG = ViewModeFragment.class.getSimpleName();
     private RecyclerView mRecyclerView;
     private LinearLayoutManager mLayoutManager;
     private ViewModeAdapter mAdapter;
@@ -106,7 +108,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
                 }
             });
 
-            mListener.onItemCountChanged(mAdapter.getItemCount(), 0);
+            onItemCountChanged(mAdapter.getItemCount(), 0);
 
             mAdapter.setOnClickListener(this);
 
@@ -157,6 +159,30 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         onPrepareView(rootView);
 
         return rootView;
+    }
+
+    /**
+     * Called when the number of items in the fragment adapter changes
+     * @param itemCount
+     * @param progress
+     */
+    public void onItemCountChanged(int itemCount, int progress) {
+        if(mListener != null) {
+            mListener.onItemCountChanged(itemCount, progress);
+        }
+    }
+
+    /**
+     * get the chapter ID for the position
+     * @param position
+     */
+    public String getChapterID(int position) {
+        if(mAdapter != null) {
+            return mAdapter.getChapterID(position);
+        }
+
+        String chapterID = Integer.toString(position + 1);
+        return chapterID;
     }
 
     /**
@@ -248,6 +274,17 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         return mAdapter;
     }
 
+    /**
+     * gets item count of adapter
+     * @return
+     */
+    public int getItemCount() {
+        if(mAdapter != null) {
+            return mAdapter.getItemCount();
+        }
+        return 0;
+    }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -315,10 +352,47 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     /**
      * Called when the scroll progress manually changes
      * @param scrollProgress
+     * @param percent - percentage to scroll within card
      */
-    public void onScrollProgressUpdate(int scrollProgress) {
+    public void onScrollProgressUpdate(int scrollProgress, int percent) {
         mFingerScroll = false;
-        mRecyclerView.scrollToPosition(scrollProgress);
+        if(percent == 0) {
+            mRecyclerView.scrollToPosition(scrollProgress);
+        } else {
+            fineScrollToPosition(scrollProgress, percent);
+        }
+    }
+
+    /**
+     * makes sure view is visible, plus it scrolls down proportionally in view
+     * @param position
+     * @param percent - percentage to scroll within card
+     * @return
+     */
+    private void fineScrollToPosition(int position, int percent) {
+
+        mRecyclerView.scrollToPosition(position); // do coarse adjustment
+
+        View visibleChild = mRecyclerView.getChildAt(0);
+        if (visibleChild == null) {
+            return;
+        }
+
+        RecyclerView.ViewHolder holder = mRecyclerView.getChildViewHolder(visibleChild);
+        if(holder == null) {
+            return;
+        }
+
+        int itemHeight = holder.itemView.getHeight();
+        int offset = (int) (percent * itemHeight / 100);
+
+        LinearLayoutManager layoutManager = (LinearLayoutManager) mRecyclerView.getLayoutManager();
+        layoutManager.scrollToPositionWithOffset(position, -offset);
+        return;
+    }
+
+    public void setScrollProgress(int position) {
+        // TODO: 6/28/16 update scrollbar
     }
 
     @Override
