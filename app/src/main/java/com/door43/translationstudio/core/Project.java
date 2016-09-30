@@ -7,7 +7,7 @@ import org.json.JSONObject;
  * Created by joel on 8/29/2015.
  */
 @Deprecated
-public class Project extends org.unfoldingword.door43client.models.Project {
+public class Project extends org.unfoldingword.resourcecontainer.Project {
     public final int dateModified;
     public final String sourceLanguageId;
     public final String sourceLanguageCatalog;
@@ -30,7 +30,8 @@ public class Project extends org.unfoldingword.door43client.models.Project {
     public Project(String projectId, String sourceLanguageId, String name, String description, int dateModified, int sort,
                    String sourceLanguageCatalog, int sourceLanguageCatalogLocalDateModified, int sourceLanguageCatalogServerDateModified,
                    String chunkMarkerCatalog, int chunkMarkerCatalogLocalDateModified, int chunkMarkerCatalogServerDateModified) {
-        super(projectId, name, description, "", sort, "");
+        super(projectId, name, sort);
+        this.description = description;
 
         this.dateModified = dateModified;
         this.sourceLanguageId = sourceLanguageId;

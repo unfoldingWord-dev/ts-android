@@ -66,11 +66,7 @@ public class ValidationTask extends ManagedTask {
             return;
         }
         String projectTitle = "";
-        try {
-            projectTitle = container.readChunk("front", "title");
-        } catch (IOException e) {
-            Logger.e("ValidationTask", "Failed to read the project title", e);
-        }
+        projectTitle = container.readChunk("front", "title");
         SourceLanguage sourceLanguage = library.index().getSourceLanguage(languageSlug);
         String[] chapters = container.chapters();
 
@@ -92,32 +88,19 @@ public class ValidationTask extends ManagedTask {
             ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(chapterSlug);
             if(chunks.contains("title") && !chapterTranslation.isTitleFinished()) {
                 chapterIsValid = false;
-                try {
-                    frameValidations.add(ValidationItem.generateInvalidFrame(container.readChunk(chapterSlug, "title"), sourceLanguage, chapterTranslation.title, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapterSlug, "00"));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                frameValidations.add(ValidationItem.generateInvalidFrame(container.readChunk(chapterSlug, "title"), sourceLanguage, chapterTranslation.title, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapterSlug, "00"));
             }
 
             if(chunks.contains("reference") && !chapterTranslation.isReferenceFinished()) {
                 chapterIsValid = false;
-                try {
                     frameValidations.add(ValidationItem.generateInvalidFrame(container.readChunk(chapterSlug, "reference"), sourceLanguage, chapterTranslation.reference, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapterSlug, "00"));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }
 
             for(int j = 0; j < chunks.size(); j ++) {
                 String chunkSlug = chunks.get(j);
                 FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(chapterSlug, chunkSlug, format);
                 String chunkText;
-                try {
-                    chunkText = container.readChunk(chapterSlug, chunkSlug);
-                } catch (IOException e) {
-                    Logger.e("ValidationTask", "Failed to read the chunk text", e);
-                    continue;
-                }
+                chunkText = container.readChunk(chapterSlug, chunkSlug);
                 // TODO: also validate the checking questions
                 if(lastValidFrameIndex == -1 && (frameTranslation.isFinished() || chunkText.isEmpty())) {
                     // start new valid range
@@ -132,28 +115,16 @@ public class ValidationTask extends ManagedTask {
                         if(lastValidFrameIndex < previousFrameIndex) {
                             // range
                             String previousFrame = "";
-                            try {
-                                previousFrame = container.readChunk(chapterSlug, chunks.get(previousFrameIndex));
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+                            previousFrame = container.readChunk(chapterSlug, chunks.get(previousFrameIndex));
                             String lastValidText = "";
-                            try {
-                                lastValidText = container.readChunk(chapterSlug, chunks.get(lastValidFrameIndex));
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+                            lastValidText = container.readChunk(chapterSlug, chunks.get(lastValidFrameIndex));
                             String frameTitle = projectTitle + " " + Integer.parseInt(chapterSlug);
                             frameTitle += ":" + Frame.getStartVerse(lastValidText, format) + "-" + Frame.getEndVerse(previousFrame, format);
                             frameValidations.add(ValidationItem.generateValidFrame(frameTitle, sourceLanguage, true));
                         } else {
                             String lastValidFrame = chunks.get(lastValidFrameIndex);
                             String lastValidText = "";
-                            try {
-                                lastValidText = container.readChunk(chapterSlug, chunks.get(lastValidFrameIndex));
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+                            lastValidText = container.readChunk(chapterSlug, chunks.get(lastValidFrameIndex));
                             String frameTitle = projectTitle + " " + Integer.parseInt(chapterSlug);
                             frameTitle += ":" + Frame.getStartVerse(lastValidText, format);
                             if(!Frame.getStartVerse(lastValidText, format).equals(Frame.getEndVerse(lastValidText, format))) {
@@ -205,11 +176,7 @@ public class ValidationTask extends ManagedTask {
                 // add invalid chapter
                 if(!chapterIsValid) {
                     String chapterTitle = "";
-                    try {
-                        chapterTitle = container.readChunk(chapterSlug, "title");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    chapterTitle = container.readChunk(chapterSlug, "title");
                     if (chapterTitle.isEmpty()) {
                         chapterTitle = projectTitle + " " + Integer.parseInt(chapterSlug);
                     }

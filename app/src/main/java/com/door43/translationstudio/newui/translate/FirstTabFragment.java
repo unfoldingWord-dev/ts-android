@@ -19,19 +19,14 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.BaseFragment;
 
 import org.json.JSONException;
 
-import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.List;
-import java.util.Locale;
-
-import org.unfoldingword.door43client.models.SourceLanguage;
 
 /**
  * Created by joel on 9/14/2015.
@@ -69,11 +64,7 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
         }
 
 //        SourceLanguage sourceLanguage = mLibrary.getPreferredSourceLanguage(targetTranslation.getProjectId(), App.getDeviceLanguageCode());
-        try {
-            translationTitle.setText(resourceContainer.readChunk("front", "title") + " - " + targetTranslation.getTargetLanguageName());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        translationTitle.setText(resourceContainer.readChunk("front", "title") + " - " + targetTranslation.getTargetLanguageName());
 
         View.OnClickListener clickListener = new View.OnClickListener() {
             @Override
@@ -124,7 +115,7 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
 
     @Override
     public void onConfirmTabsDialog(String targetTranslationId, String[] sourceTranslationIds) {
-        String[] oldSourceTranslationIds = App.getOpenSourceTranslationIds(targetTranslationId);
+        String[] oldSourceTranslationIds = App.getSelectedSourceTranslations(targetTranslationId);
         for(String id:oldSourceTranslationIds) {
             App.removeOpenSourceTranslation(targetTranslationId, id);
         }
@@ -132,15 +123,20 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
         if(sourceTranslationIds.length > 0) {
             // save open source language tabs
             for(String id:sourceTranslationIds) {
-                SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
-                if(sourceTranslation != null) {
-                    App.addOpenSourceTranslation(targetTranslationId, sourceTranslation.getId());
+                ResourceContainer resourceContainer = null;
+                try {
+                    resourceContainer = mLibrary.open(id);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                if(resourceContainer != null) {
+                    App.addOpenSourceTranslation(targetTranslationId, resourceContainer.slug);
                     TargetTranslation targetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
                     if (targetTranslation != null) {
                         try {
-                            targetTranslation.addSourceTranslation(sourceTranslation);
+                            targetTranslation.addSourceTranslation(resourceContainer);
                         } catch (JSONException e) {
-                            Logger.e(this.getClass().getName(), "Failed to record source translation (" + sourceTranslation.getId() + ") usage in the target translation " + targetTranslation.getId(), e);
+                            Logger.e(this.getClass().getName(), "Failed to record source translation (" + resourceContainer.slug + ") usage in the target translation " + targetTranslation.getId(), e);
                         }
                     }
                 }

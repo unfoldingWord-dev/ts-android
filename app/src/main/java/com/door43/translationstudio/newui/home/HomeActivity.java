@@ -22,8 +22,8 @@ import android.widget.PopupMenu;
 
 import org.eclipse.jgit.merge.MergeStrategy;
 import org.unfoldingword.door43client.Door43Client;
-import org.unfoldingword.door43client.models.Project;
 import org.unfoldingword.door43client.models.TargetLanguage;
+import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;

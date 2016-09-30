@@ -430,27 +430,27 @@ public class TargetTranslation {
      * Adds a source translation to the list of used sources
      * This is used for tracking what source translations are used to create a target translation
      *
-     * @param sourceTranslation
+     * @param resourceContainer
      * @throws JSONException
      */
-    public void addSourceTranslation(SourceTranslation sourceTranslation) throws JSONException {
+    public void addSourceTranslation(ResourceContainer resourceContainer) throws JSONException {
         JSONArray sourceTranslationsJson = manifest.getJSONArray(FIELD_SOURCE_TRANSLATIONS);
         // check for duplicate
         boolean foundDuplicate = false;
         for(int i = 0; i < sourceTranslationsJson.length(); i ++) {
             JSONObject obj = sourceTranslationsJson.getJSONObject(i);
-            if(obj.getString("language_id").equals(sourceTranslation.sourceLanguageSlug) && obj.getString("resource_id").equals(sourceTranslation.resourceSlug)) {
+            if(obj.getString("language_id").equals(resourceContainer.language.slug) && obj.getString("resource_id").equals(resourceContainer.resource.slug)) {
                 foundDuplicate = true;
                 break;
             }
         }
         if(!foundDuplicate) {
             JSONObject translationJson = new JSONObject();
-            translationJson.put("language_id", sourceTranslation.sourceLanguageSlug);
-            translationJson.put("resource_id", sourceTranslation.resourceSlug);
-            translationJson.put("checking_level", sourceTranslation.getCheckingLevel());
-            translationJson.put("date_modified", sourceTranslation.getDateModified());
-            translationJson.put("version", sourceTranslation.getVersion());
+            translationJson.put("language_id", resourceContainer.language.slug);
+            translationJson.put("resource_id", resourceContainer.resource.slug);
+            translationJson.put("checking_level", resourceContainer.resource.checkingLevel);
+            translationJson.put("date_modified", resourceContainer.modifiedAt);
+            translationJson.put("version", resourceContainer.resource.version);
             sourceTranslationsJson.put(translationJson);
             manifest.put(FIELD_SOURCE_TRANSLATIONS, sourceTranslationsJson);
         }

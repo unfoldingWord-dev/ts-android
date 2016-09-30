@@ -41,7 +41,6 @@ import com.door43.util.RSAEncryption;
 import org.json.JSONException;
 
 import java.io.File;
-import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -188,7 +187,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
 
         if(operationMode == MODE_SERVER) {
             title.setText(getResources().getString(R.string.backup_to_friend));
-            String[] sourceTranslationSlugs = App.getOpenSourceTranslationIds(targetTranslationSlug);
+            String[] sourceTranslationSlugs = App.getSelectedSourceTranslations(targetTranslationSlug);
             String sourceLanguageSlug = "en";
             if(sourceTranslationSlugs.length > 0) {
                 sourceLanguageSlug = SourceTranslation.getSourceLanguageIdFromId(sourceTranslationSlugs[0]);
@@ -200,11 +199,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
                 e.printStackTrace();
             }
             if(resourceContainer != null) {
-                try {
-                    subTitle.setText(resourceContainer.readChunk("front", "title") + " - " + targetTranslation.getTargetLanguageName());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                subTitle.setText(resourceContainer.readChunk("front", "title") + " - " + targetTranslation.getTargetLanguageName());
             } else {
                 Logger.w(this.getClass().getName(), "Could not find a default source translation for " + targetTranslation.getProjectId());
                 subTitle.setText(targetTranslation.getProjectId() + " - " + targetTranslation.getTargetLanguageName());
@@ -223,7 +218,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
                 final Peer peer = adapter.getItem(position);
                 if(operationMode == MODE_SERVER) {
                     // offer target translation to the client
-                    String[] sourceTranslationSlugs = App.getOpenSourceTranslationIds(targetTranslationSlug);
+                    String[] sourceTranslationSlugs = App.getSelectedSourceTranslations(targetTranslationSlug);
                     String sourceLanguageSlug = "en";
                     if(sourceTranslationSlugs.length > 0) {
                         sourceLanguageSlug = SourceTranslation.getSourceLanguageIdFromId(sourceTranslationSlugs[0]);

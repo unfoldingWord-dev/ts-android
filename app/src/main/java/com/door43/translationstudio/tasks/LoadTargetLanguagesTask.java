@@ -11,6 +11,7 @@ import org.unfoldingword.tools.taskmanager.ManagedTask;
 public class LoadTargetLanguagesTask extends ManagedTask {
     public static final String TASK_ID = "load_target_languages";
 
+    // TODO: 9/30/16 this task has no purpose anymore
     @Override
     public void start() {
         App.getLibrary().index().getTargetLanguages();

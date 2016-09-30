@@ -20,6 +20,8 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 
 import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.SourceLanguage;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import java.util.ArrayList;
@@ -39,7 +41,6 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
     private ChooseSourceTranslationAdapter mAdapter;
     private Door43Client mLibrary;
     public static final boolean ENABLE_DRAFTS = false;
-    private static final int MIN_CHECKING_LEVEL = 1; // the minimum level to be considered a source translation
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -69,22 +70,25 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
         // TODO: set up search
 
         mAdapter = new ChooseSourceTranslationAdapter(getActivity());
-        // add selected
-        String[] sourceTranslationIds = App.getOpenSourceTranslationIds(mTargetTranslation.getId());
-        for(String id:sourceTranslationIds) {
-            SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
-            if(sourceTranslation != null) {
-                addSourceTranslation(sourceTranslation, true);
+
+        // add selected source translations
+        String[] sourceTranslationSlugs = App.getSelectedSourceTranslations(mTargetTranslation.getId());
+        for(String slug:sourceTranslationSlugs) {
+            ResourceContainer resourceContainer = null;
+            try {
+                resourceContainer = mLibrary.open(slug);
+                addSourceTranslation(resourceContainer, true);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 
-        int min_checking = App.MIN_CHECKING_LEVEL;
-        if(ENABLE_DRAFTS) {
-            min_checking = this.MIN_CHECKING_LEVEL;
-        }
-
-        // add available (duplicates are filtered by the adapter)
-        SourceTranslation[] availableSourceTranslations = mLibrary.getSourceTranslations(mTargetTranslation.getProjectId(), min_checking);
+        // add available source translations (duplicates are filtered by the adapter)
+//        List<SourceLanguage> sourceLanguages = mLibrary.index().getSourceLanguages(mTargetTranslation.getProjectId());
+//        for(SourceLanguage l:sourceLanguages) {
+//            List<Resource> resources = mLibrary.index().getResources(l.slug, mTargetTranslation.getProjectId());
+//        }
+        SourceTranslation[] availableSourceTranslations = mLibrary.getSourceTranslations(mTargetTranslation.getProjectId(), App.MIN_CHECKING_LEVEL);
         for(SourceTranslation sourceTranslation:availableSourceTranslations) {
             addSourceTranslation(sourceTranslation, false);
         }
@@ -148,24 +152,24 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
 
     /**
      * adds this source translation to the adapter
-     * @param sourceTranslation
+     * @param resourceContainer
      * @param selected
      */
-    private void addSourceTranslation(SourceTranslation sourceTranslation, boolean selected) {
-        String title = sourceTranslation.getSourceLanguageTitle() + " - " + sourceTranslation.getResourceTitle();
+    private void addSourceTranslation(ResourceContainer resourceContainer, boolean selected) {
+        String title = resourceContainer.language.name + " - " + resourceContainer.resource.name;
 
-        if(sourceTranslation.getCheckingLevel() < App.MIN_CHECKING_LEVEL) { // see if draft
+        if(Integer.parseInt(resourceContainer.resource.checkingLevel) < App.MIN_CHECKING_LEVEL) { // see if draft
             String format = getActivity().getResources().getString(R.string.draft_translation);
-            String newTitle = String.format(format, sourceTranslation.getCheckingLevel(), title);
+            String newTitle = String.format(format, resourceContainer.resource.checkingLevel, title);
             title = newTitle;
         }
 
-        Resource resource = mLibrary.getResource( sourceTranslation);
+        Resource resource = mLibrary.index().getResource(resourceContainer.language.slug, resourceContainer.project.slug, resourceContainer.resource.slug);
         if(resource != null) {
             boolean downloaded = resource.isDownloaded();
-            mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation, selected, downloaded));
+            mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, resourceContainer, selected, downloaded));
         } else {
-            Logger.e(TAG, "Failed to get resource for " + sourceTranslation.getId());
+            Logger.e(TAG, "Failed to get resource for " + resourceContainer.getId());
         }
     }
 

@@ -109,11 +109,7 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
         }
 //        SourceLanguage sourceLanguage = library.getPreferredSourceLanguage(mTargetTranslation.getProjectId(), App.getDeviceLanguageCode());
         if(resourceContainer != null) {
-            try {
-                projectTitle.setText(resourceContainer.readChunk("front", "title") + " - " + mTargetTranslation.getTargetLanguageName());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            projectTitle.setText(resourceContainer.readChunk("front", "title") + " - " + mTargetTranslation.getTargetLanguageName());
         } else {
             projectTitle.setText(mTargetTranslation.getProjectId() + " - " + mTargetTranslation.getTargetLanguageName());
         }

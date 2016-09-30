@@ -24,9 +24,9 @@ import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.newui.BackupDialog;
 
 import org.unfoldingword.door43client.Door43Client;
-import org.unfoldingword.door43client.models.Project;
-import org.unfoldingword.door43client.models.Resource;
 import org.unfoldingword.door43client.models.SourceLanguage;
+import org.unfoldingword.resourcecontainer.Project;
+import org.unfoldingword.resourcecontainer.Resource;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ThreadableUI;
@@ -66,7 +66,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
         TextView title = (TextView)v.findViewById(R.id.title);
         TextView projectTitle = (TextView)v.findViewById(R.id.project_title);
         Project p = library.index().getProject(App.getDeviceLanguageCode(), mTargetTranslation.getProjectId(), true);
-        SourceLanguage sourceLanguage = library.index().getSourceLanguage(p._dbInfo().relatedSlugs.get("source_language_slug"));
+        SourceLanguage sourceLanguage = library.index().getSourceLanguage(p.languageSlug);
         List<Resource> resources = library.index().getResources(sourceLanguage.slug, p.slug);
         ResourceContainer resourceContainer;
         try {
@@ -77,11 +77,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
             return v;
         }
         String projectTitleString = null;
-        try {
-            projectTitleString = resourceContainer.readChunk("front", "title");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        projectTitleString = resourceContainer.readChunk("front", "title");
         if(projectTitleString != null) {
             title.setText(projectTitleString + " - " + mTargetTranslation.getTargetLanguageName());
             projectTitle.setText(projectTitleString + " (" + mTargetTranslation.getProjectId() + ")");

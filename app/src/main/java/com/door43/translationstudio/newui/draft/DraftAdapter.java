@@ -121,11 +121,7 @@ public class DraftAdapter extends RecyclerView.Adapter<DraftAdapter.ViewHolder> 
         if(mRenderedDraftBody[position] == null) {
             String chapterBody = "";
             for (String chunk:mDraftTranslation.chunks(chapterSlug)) {
-                try {
-                    chapterBody += mDraftTranslation.readChunk(chapterSlug, chunk);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                chapterBody += mDraftTranslation.readChunk(chapterSlug, chunk);
             }
 //            String chapterBody = getChapterBody(mDraftTranslation, chapterSlug.getId());/
             TranslationFormat bodyFormat = null;// mLibrary.getChapterBodyFormat(mDraftTranslation, chapterSlug.getId());
@@ -173,17 +169,9 @@ public class DraftAdapter extends RecyclerView.Adapter<DraftAdapter.ViewHolder> 
         holder.mSourceBody.setText(mRenderedDraftBody[position]);
         ViewUtil.makeLinksClickable(holder.mSourceBody);
         String chapterTitle = null;//chapterSlug.title;
-        try {
-            chapterTitle = mDraftTranslation.readChunk(chapterSlug, "title");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        chapterTitle = mDraftTranslation.readChunk(chapterSlug, "title");
         if(chapterTitle == null) {
-            try {
-                chapterTitle = mDraftTranslation.readChunk("front", "title") + " " + Integer.parseInt(chapterSlug);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            chapterTitle = mDraftTranslation.readChunk("front", "title") + " " + Integer.parseInt(chapterSlug);
         }
         holder.mSourceTitle.setText(chapterTitle);
 

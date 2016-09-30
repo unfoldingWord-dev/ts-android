@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -426,7 +425,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
 
     @Override
     public void onConfirmTabsDialog(String targetTranslationId, String[] sourceTranslationIds) {
-        String[] oldSourceTranslationIds = App.getOpenSourceTranslationIds(targetTranslationId);
+        String[] oldSourceTranslationIds = App.getSelectedSourceTranslations(targetTranslationId);
         for(String id:oldSourceTranslationIds) {
             App.removeOpenSourceTranslation(targetTranslationId, id);
         }

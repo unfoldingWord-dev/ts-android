@@ -22,7 +22,6 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.LanguageDirection;
@@ -178,18 +177,24 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
      */
     private void loadTabInfo() {
         List<ContentValues> tabContents = new ArrayList<>();
-        String[] sourceTranslationIds = App.getOpenSourceTranslationIds(mTargetTranslation.getId());
+        String[] sourceTranslationIds = App.getSelectedSourceTranslations(mTargetTranslation.getId());
         for(String id:sourceTranslationIds) {
-            SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
-            if(sourceTranslation != null) {
+            ResourceContainer resourceContainer = null;
+            try {
+                resourceContainer = mLibrary.open(id);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if(resourceContainer != null) {
                 ContentValues values = new ContentValues();
+                values.put("title", resourceContainer.language.name + " " + resourceContainer.resource.slug.toUpperCase());
                 // include the resource id if there are more than one
-                if(mLibrary.getResources(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug).length > 1) {
-                    values.put("title", sourceTranslation.getSourceLanguageTitle() + " " + sourceTranslation.resourceSlug.toUpperCase());
-                } else {
-                    values.put("title", sourceTranslation.getSourceLanguageTitle());
-                }
-                values.put("tag", sourceTranslation.getId());
+//                if(mLibrary.getResources(resourceContainer.projectSlug, resourceContainer.sourceLanguageSlug).length > 1) {
+//                    values.put("title", resourceContainer.getSourceLanguageTitle() + " " + resourceContainer.resourceSlug.toUpperCase());
+//                } else {
+//                    values.put("title", resourceContainer.getSourceLanguageTitle());
+//                }
+                values.put("tag", resourceContainer.slug);
                 tabContents.add(values);
             }
         }
@@ -207,8 +212,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         } else if(position >= mChapters.length) {
             position = mChapters.length - 1;
         }
-        Chapter c = mChapters[position];
-        return c.getId();
+        return mChapters[position];
     }
 
     @Override
@@ -277,12 +281,12 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
             }
         });
 
-        final Chapter chapter = mChapters[position];
+        final String chapterSlug = mChapters[position];
 
         // render the source chapter body
         if(mRenderedSourceBody[position] == null) {
-            String chapterBody = mLibrary.getChapterBody(mResourceContainer, chapter.getId());
-            TranslationFormat bodyFormat = mLibrary.getChapterBodyFormat(mResourceContainer, chapter.getId());
+            String chapterBody = mResourceContainer.readChunk(chapterSlug, ""); //mLibrary.getChapterBody(mResourceContainer, chapter.getId());
+            TranslationFormat bodyFormat = TranslationFormat.parse(mResourceContainer.contentMimeType);// mLibrary.getChapterBodyFormat(mResourceContainer, chapterSlug);
             RenderingGroup sourceRendering = new RenderingGroup();
             if (Clickables.isClickableFormat(bodyFormat)) {
                 // TODO: add click listeners
@@ -321,9 +325,9 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
 
         holder.mSourceBody.setText(mRenderedSourceBody[position]);
         ViewUtil.makeLinksClickable(holder.mSourceBody);
-        String chapterTitle = chapter.title;
-        if(chapter.title.isEmpty()) {
-            chapterTitle = mResourceContainer.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
+        String chapterTitle = mResourceContainer.readChunk(chapterSlug, "title");
+        if(chapterTitle.isEmpty()) {
+            chapterTitle = mResourceContainer.readChunk("front", "title") + " " + Integer.parseInt(chapterSlug);
         }
         holder.mSourceTitle.setText(chapterTitle);
 
@@ -331,9 +335,9 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         if(mRenderedTargetBody[position] == null) {
             TranslationFormat bodyFormat = mTargetTranslation.getFormat();
             String chapterBody = "";
-            String[] frameSlugs = mLibrary.getFrameSlugs(mResourceContainer, chapter.getId());
+            String[] frameSlugs = mResourceContainer.chunks(chapterSlug);
             for (String frameSlug : frameSlugs) {
-                Frame simpleFrame = new Frame(frameSlug, chapter.getId(), null, bodyFormat, null);
+                Frame simpleFrame = new Frame(frameSlug, chapterSlug, null, bodyFormat, null);
                 FrameTranslation frameTranslation = mTargetTranslation.getFrameTranslation(simpleFrame);
                 chapterBody += " " + frameTranslation.body;
             }
@@ -357,7 +361,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
                 public boolean onSingleTapUp(MotionEvent e) {
                     Bundle args = new Bundle();
                     args.putBoolean(ChunkModeFragment.EXTRA_TARGET_OPEN, true);
-                    args.putString(App.EXTRA_CHAPTER_ID, chapter.getId());
+                    args.putString(App.EXTRA_CHAPTER_ID, chapterSlug);
                     getListener().openTranslationMode(TranslationViewMode.CHUNK, args);
                     return true;
                 }
@@ -386,13 +390,13 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         String targetCardTitle = "";
 
         // look for translated chapter title first
-        final ChapterTranslation chapterTranslation = mTargetTranslation.getChapterTranslation(chapter);
+        final ChapterTranslation chapterTranslation = mTargetTranslation.getChapterTranslation(chapterSlug);
         if(null != chapterTranslation) {
             targetCardTitle = chapterTranslation.title;
         }
 
         if (targetCardTitle.isEmpty() && !chapterTitle.isEmpty()) { // if no target chapter title translation, fall back to source chapter title
-            if(!chapter.title.isEmpty()) {
+            if(!chapterTitle.isEmpty()) {
                 targetCardTitle = chapterTitle;
             }
         }
@@ -400,12 +404,12 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         if (targetCardTitle.isEmpty()) { // if no chapter titles, fall back to project title, try translated title first
             ProjectTranslation projTrans = mTargetTranslation.getProjectTranslation();
             if(!projTrans.getTitle().isEmpty()) {
-                targetCardTitle = projTrans.getTitle() + " " + Integer.parseInt(chapter.getId());
+                targetCardTitle = projTrans.getTitle() + " " + Integer.parseInt(chapterSlug);
             }
         }
 
         if (targetCardTitle.isEmpty()) { // fall back to project source title
-            targetCardTitle = mResourceContainer.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
+            targetCardTitle = mResourceContainer.readChunk("front", "title") + " " + Integer.parseInt(chapterSlug);
         }
 
         holder.mTargetTitle.setText(targetCardTitle + " - " + mTargetLanguage.name);
@@ -423,7 +427,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         // select correct tab
         for(int i = 0; i < holder.mTabLayout.getTabCount(); i ++) {
             TabLayout.Tab tab = holder.mTabLayout.getTabAt(i);
-            if(tab.getTag().equals(mResourceContainer.getId())) {
+            if(tab.getTag().equals(mResourceContainer.slug)) {
                 tab.select();
                 break;
             }

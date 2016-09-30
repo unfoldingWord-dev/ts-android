@@ -103,9 +103,13 @@ public class UpdateAppTask extends ManagedTask {
             // TRICKY: this was the old name of the database
             App.context().deleteDatabase("app");
         }
+        if(lastVersion < 142) {
+            // TRICKY: this was another old name of the database
+            App.context().deleteDatabase("library");
+        }
 
         // this should always be the latest version in which the library was updated
-        if(lastVersion < 141) {
+        if(lastVersion < 142) {
             App.deleteLibrary();
         }
     }

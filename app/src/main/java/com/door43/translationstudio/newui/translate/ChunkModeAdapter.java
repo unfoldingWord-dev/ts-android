@@ -142,7 +142,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
      */
     private void loadTabInfo() {
         List<ContentValues> tabContents = new ArrayList<>();
-        String[] sourceTranslationIds = App.getOpenSourceTranslationIds(mTargetTranslation.getId());
+        String[] sourceTranslationIds = App.getSelectedSourceTranslations(mTargetTranslation.getId());
         for(String id:sourceTranslationIds) {
             SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
             if(sourceTranslation != null) {

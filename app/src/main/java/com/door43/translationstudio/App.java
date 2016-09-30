@@ -69,14 +69,14 @@ public class App extends Application {
     public static final String TAG = "App";
 
     private static final String PREFERENCES_NAME = "com.door43.translationstudio.general";
-    private static final String DEFAULT_LIBRARY_ZIP = "library.zip";
+//    private static final String DEFAULT_LIBRARY_ZIP = "library.zip";
     private static final String LAST_VIEW_MODE = "last_view_mode_";
     private static final String LAST_FOCUS_CHAPTER = "last_focus_chapter_";
     private static final String LAST_FOCUS_FRAME = "last_focus_frame_";
     private static final String OPEN_SOURCE_TRANSLATIONS = "open_source_translations_";
     private static final String SELECTED_SOURCE_TRANSLATION = "selected_source_translation_";
     private static final String LAST_CHECKED_SERVER_FOR_UPDATES = "last_checked_server_for_updates";
-    private static final String ASSETS_DIR = "assets";
+//    private static final String ASSETS_DIR = "assets";
     public static final int MIN_CHECKING_LEVEL = 3;
     private static ImageLoader mImageLoader;
     private static App sInstance;
@@ -640,7 +640,7 @@ public class App extends Application {
         if(sourceTranslationId != null && !sourceTranslationId.isEmpty()) {
             SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = prefs.edit();
-            String[] sourceTranslationIds = getOpenSourceTranslationIds(targetTranslationId);
+            String[] sourceTranslationIds = getSelectedSourceTranslations(targetTranslationId);
             String newIdSet = "";
             for (String id : sourceTranslationIds) {
                 if (!id.equals(sourceTranslationId)) {
@@ -662,7 +662,7 @@ public class App extends Application {
         if(sourceTranslationId != null && !sourceTranslationId.isEmpty()) {
             SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = prefs.edit();
-            String[] sourceTranslationIds = getOpenSourceTranslationIds(targetTranslationId);
+            String[] sourceTranslationIds = getSelectedSourceTranslations(targetTranslationId);
             String newIdSet = "";
             for (String id : sourceTranslationIds) {
                 if (!id.equals(sourceTranslationId)) {
@@ -686,7 +686,7 @@ public class App extends Application {
      * @param targetTranslationId
      * @return
      */
-    public static String[] getOpenSourceTranslationIds(String targetTranslationId) {
+    public static String[] getSelectedSourceTranslations(String targetTranslationId) {
         SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         String idSet = prefs.getString(OPEN_SOURCE_TRANSLATIONS + targetTranslationId, "").trim();
         if(idSet.isEmpty()) {
@@ -723,7 +723,7 @@ public class App extends Application {
         String selectedSourceTranslationId = prefs.getString(SELECTED_SOURCE_TRANSLATION + targetTranslationId, null);
         if(selectedSourceTranslationId == null || selectedSourceTranslationId.isEmpty()) {
             // default to first tab
-            String[] openSourceTranslationIds = getOpenSourceTranslationIds(targetTranslationId);
+            String[] openSourceTranslationIds = getSelectedSourceTranslations(targetTranslationId);
             if(openSourceTranslationIds.length > 0) {
                 selectedSourceTranslationId = openSourceTranslationIds[0];
                 setSelectedSourceTranslation(targetTranslationId, selectedSourceTranslationId);

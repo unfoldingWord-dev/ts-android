@@ -5,13 +5,9 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 
 import org.unfoldingword.door43client.Door43Client;
-import org.unfoldingword.door43client.models.Project;
-import org.unfoldingword.door43client.models.Resource;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
-
-import java.util.List;
 
 /**
  * Created by joel on 5/20/16.
@@ -30,7 +26,7 @@ public class CalculateTargetTranslationProgressTask extends ManagedTask {
 
     @Override
     public void start() {
-        String[] sourceTranslationIds = App.getOpenSourceTranslationIds(targetTranslation.getId());
+        String[] sourceTranslationIds = App.getSelectedSourceTranslations(targetTranslation.getId());
         if(sourceTranslationIds.length > 0) {
             String languageSlug = SourceTranslation.getSourceLanguageIdFromId(sourceTranslationIds[0]);
             String projectSlug = SourceTranslation.getProjectIdFromId(sourceTranslationIds[0]);
