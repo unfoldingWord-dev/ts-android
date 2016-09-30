@@ -27,6 +27,7 @@ import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
+import com.door43.translationstudio.rendering.MergeConflictHandler;
 import com.door43.translationstudio.tasks.AdvancedGogsRepoSearchTask;
 import com.door43.translationstudio.tasks.CloneRepositoryTask;
 import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
@@ -311,9 +312,13 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         Intent intent = new Intent(getActivity(), TargetTranslationActivity.class);
         Bundle args = new Bundle();
         args.putString(App.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
-        // TODO: 4/20/16 it would be nice to navigate directly to the first conflict
-//                args.putString(App.EXTRA_CHAPTER_ID, chapterId);
-//                args.putString(App.EXTRA_FRAME_ID, frameId);
+
+        MergeConflictHandler.cardLocation location = MergeConflictHandler.findFirstMergeConflict( mTargetTranslation.getId());
+        if(location != null) {
+                args.putString(App.EXTRA_CHAPTER_ID, location.chapterID);
+                args.putString(App.EXTRA_FRAME_ID, location.frameID);
+        }
+        
         args.putString(App.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
         intent.putExtras(args);
         startActivity(intent);

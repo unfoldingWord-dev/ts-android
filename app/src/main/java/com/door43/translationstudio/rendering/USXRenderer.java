@@ -289,7 +289,7 @@ public class USXRenderer extends ClickableRenderingEngine {
         out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
         return out;
     }
-    
+
     /**
      * Strips out new lines and replaces them with a single space
      * @param in

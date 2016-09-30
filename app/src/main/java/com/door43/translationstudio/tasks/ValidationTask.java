@@ -76,20 +76,20 @@ public class ValidationTask extends ManagedTask {
             List<ValidationItem> frameValidations = new ArrayList<>();
 
             ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(chapter.getId());
-            boolean isInvalidChapterTitle = (chapter.title != null) && (!chapter.title.isEmpty()) && !chapterTranslation.isTitleFinished();
-            if(!isInvalidChapterTitle && MergeConflictHandler.isMergeConflicted(chapter.title)) {
-                isInvalidChapterTitle = true;
+            boolean isUnfinishedChapterTitle = (chapter.title != null) && (!chapter.title.isEmpty()) && !chapterTranslation.isTitleFinished();
+            if(!isUnfinishedChapterTitle && MergeConflictHandler.isMergeConflicted(chapter.title)) {
+                isUnfinishedChapterTitle = true;
             }
-            if(isInvalidChapterTitle) {
+            if(isUnfinishedChapterTitle) {
                 chapterIsValid = false;
                 frameValidations.add(ValidationItem.generateInvalidFrame(chapter.title, sourceLanguage, chapterTranslation.title, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapter.getId(), "00"));
             }
 
-            boolean isInvalidRef = (chapter.reference != null) && (!chapter.reference.isEmpty()) && !chapterTranslation.isReferenceFinished();
-            if(!isInvalidRef && MergeConflictHandler.isMergeConflicted(chapter.reference)) {
-                isInvalidRef = true;
+            boolean isUnfinishedRef = (chapter.reference != null) && (!chapter.reference.isEmpty()) && !chapterTranslation.isReferenceFinished();
+            if(!isUnfinishedRef && MergeConflictHandler.isMergeConflicted(chapter.reference)) {
+                isUnfinishedRef = true;
             }
-            if(isInvalidRef) {
+            if(isUnfinishedRef) {
                 chapterIsValid = false;
                 frameValidations.add(ValidationItem.generateInvalidFrame(chapter.reference, sourceLanguage, chapterTranslation.reference, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapter.getId(), "00"));
             }
@@ -98,18 +98,18 @@ public class ValidationTask extends ManagedTask {
                 Frame frame = frames[j];
                 FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(frame);
                 // TODO: also validate the checking questions
-                boolean isValidFrame = frameTranslation.isFinished() || frame.body.isEmpty();
-                if(isValidFrame && MergeConflictHandler.isMergeConflicted(frame.body)) {
-                    isValidFrame = false;
+                boolean isFinishedFrame = frameTranslation.isFinished() || frame.body.isEmpty();
+                if(isFinishedFrame && MergeConflictHandler.isMergeConflicted(frame.body)) {
+                    isFinishedFrame = false;
                 }
-                if(lastValidFrameIndex == -1 && isValidFrame) {
+                if(lastValidFrameIndex == -1 && isFinishedFrame) {
                     // start new valid range
                     lastValidFrameIndex = j;
-                } else if(!isValidFrame || (isValidFrame && (j == frames.length - 1))){
+                } else if(!isFinishedFrame || (isFinishedFrame && (j == frames.length - 1))){
                     // close valid range
                     if(lastValidFrameIndex > -1) {
                         int previousFrameIndex = j - 1;
-                        if(isValidFrame) {
+                        if(isFinishedFrame) {
                             previousFrameIndex = j;
                         }
                         if(lastValidFrameIndex < previousFrameIndex) {
@@ -132,7 +132,7 @@ public class ValidationTask extends ManagedTask {
                     }
 
                     // add invalid frame
-                    if(!isValidFrame) {
+                    if(!isFinishedFrame) {
                         chapterIsValid = false;
                         String frameTitle = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
                         frameTitle += ":" + frame.getStartVerse();

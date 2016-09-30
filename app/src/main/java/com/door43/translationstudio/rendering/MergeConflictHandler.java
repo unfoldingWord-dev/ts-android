@@ -5,8 +5,23 @@ import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.BackgroundColorSpan;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.Chapter;
+import com.door43.translationstudio.core.ChapterTranslation;
+import com.door43.translationstudio.core.Frame;
+import com.door43.translationstudio.core.FrameTranslation;
+import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.ProjectTranslation;
+import com.door43.translationstudio.core.SourceLanguage;
+import com.door43.translationstudio.core.SourceTranslation;
+import com.door43.translationstudio.core.TargetLanguage;
+import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.newui.publish.ValidationItem;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -81,6 +96,73 @@ public class MergeConflictHandler {
         }
         out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
         return out;
+    }
+
+    /**
+     * search for first merge conflict
+     * @param targetTranslationId
+     * @return
+     */
+    static public cardLocation findFirstMergeConflict(String targetTranslationId) {
+        Library library = App.getLibrary();
+        Translator translator = App.getTranslator();
+
+        TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationId);
+        TargetLanguage targetLanguage = library.getTargetLanguage(targetTranslation.getTargetLanguageId());
+        SourceTranslation[] sourceTranslations = library.getSourceTranslations(targetTranslation.getProjectId());
+        if(sourceTranslations.length <= 0) {
+            return null;
+        }
+        SourceTranslation sourceTranslation = sourceTranslations[0];
+        SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug);
+        Chapter[] chapters = library.getChapters(sourceTranslation);
+
+        // validate chapters
+        int lastValidChapterIndex = -1;
+        List<ValidationItem> chapterValidations = new ArrayList<>();
+
+        //check for project title
+        String projectTitle = sourceTranslation.getProjectTitle();
+        if(projectTitle != null) {
+            ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
+            if(isMergeConflicted(projectTranslation.getTitle())) {
+                return new cardLocation("00","00");
+            }
+        }
+
+        for(int i = 0; i < chapters.length; i ++) {
+            Chapter chapter = chapters[i];
+            String chapterStr = chapter.getId();
+
+            Frame[] frames = library.getFrames(sourceTranslation, chapter.getId());
+
+            // validate frames
+            int lastValidFrameIndex = -1;
+            boolean chapterIsValid = true;
+            List<ValidationItem> frameValidations = new ArrayList<>();
+
+            ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(chapter.getId());
+            boolean isInvalidChapterTitle = (chapter.title != null) && (!chapter.title.isEmpty());
+            if(!isInvalidChapterTitle && MergeConflictHandler.isMergeConflicted(chapter.title)) {
+                return new cardLocation(chapterStr,"00");
+            }
+
+            boolean isInvalidRef = (chapter.reference != null) && (!chapter.reference.isEmpty());
+            if(!isInvalidRef && MergeConflictHandler.isMergeConflicted(chapter.reference)) {
+                return new cardLocation(chapterStr,"00");
+            }
+
+            for(int j = 0; j < frames.length; j ++) {
+                Frame frame = frames[j];
+                FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(frame);
+                // TODO: also validate the checking questions
+                boolean isValidFrame = (frame.body != null) && !frame.body.isEmpty();
+                if(isValidFrame && MergeConflictHandler.isMergeConflicted(frame.body)) {
+                    return new cardLocation(chapterStr,frame.getId());
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -160,6 +242,16 @@ public class MergeConflictHandler {
                 this.start = matcher.start();
                 this.end = matcher.end();
             }
+        }
+    }
+
+    static public class cardLocation {
+        public final String chapterID;
+        public final String frameID;
+
+        cardLocation(String chapterID, String frameID) {
+            this.chapterID = chapterID;
+            this.frameID = frameID;
         }
     }
 }
