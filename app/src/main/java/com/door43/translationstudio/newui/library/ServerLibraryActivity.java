@@ -16,11 +16,9 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ListView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.tasks.CheckForLibraryUpdatesTask;
 import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
@@ -33,7 +31,8 @@ import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.widget.ViewUtil;
 
 import java.text.NumberFormat;
-import java.util.Locale;
+
+import org.unfoldingword.resourcecontainer.Project;
 
 public class ServerLibraryActivity extends BaseActivity implements ServerLibraryDetailFragment.OnEventListener, ServerLibraryFragment.OnClickListener, ManagedTask.OnFinishedListener, ManagedTask.OnProgressListener, DialogInterface.OnCancelListener {
 

@@ -15,6 +15,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import org.unfoldingword.resourcecontainer.Project;
+
 // TODO: 9/6/16  separate UI components from this class and add listener
 
 /**
