@@ -881,7 +881,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 setLeftRightMargins( view, 0); // shrink margins to emphasize
                 span = new SpannableStringBuilder(text);
                 // bold text to emphasize
-                view.setTextSize(mInitialTextSize); // grow text to emphasize
+                view.setTextSize(mInitialTextSize * 0.9f); // grow text to emphasize
                 span.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 view.setText(span);
                 break;
@@ -890,7 +890,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 setLeftRightMargins( view, 2 * mMarginInitialLeft); // grow margins to de-emphasize
                 span = new SpannableStringBuilder(text);
                 // gray out text to de-emphasize
-                view.setTextSize(mInitialTextSize * 0.9f); // shrink text to de-emphasize
+                view.setTextSize(mInitialTextSize * 0.7f); // shrink text to de-emphasize
                 span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_disabled_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 view.setText(span);
                 break;
@@ -898,7 +898,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             case NORMAL:
             default:
                 setLeftRightMargins( view, mMarginInitialLeft); // restore original margins
-                view.setTextSize(mInitialTextSize * 0.9f); // restore initial test size
+                view.setTextSize(mInitialTextSize * 0.8f); // restore initial test size
                 view.setText(text); // remove text emphasis
                 break;
         }

@@ -108,18 +108,12 @@ public class MergeConflictHandler {
         Translator translator = App.getTranslator();
 
         TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationId);
-        TargetLanguage targetLanguage = library.getTargetLanguage(targetTranslation.getTargetLanguageId());
         SourceTranslation[] sourceTranslations = library.getSourceTranslations(targetTranslation.getProjectId());
         if(sourceTranslations.length <= 0) {
             return null;
         }
         SourceTranslation sourceTranslation = sourceTranslations[0];
-        SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug);
         Chapter[] chapters = library.getChapters(sourceTranslation);
-
-        // validate chapters
-        int lastValidChapterIndex = -1;
-        List<ValidationItem> chapterValidations = new ArrayList<>();
 
         //check for project title
         String projectTitle = sourceTranslation.getProjectTitle();
@@ -136,29 +130,29 @@ public class MergeConflictHandler {
 
             Frame[] frames = library.getFrames(sourceTranslation, chapter.getId());
 
-            // validate frames
-            int lastValidFrameIndex = -1;
-            boolean chapterIsValid = true;
-            List<ValidationItem> frameValidations = new ArrayList<>();
-
             ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(chapter.getId());
             boolean isInvalidChapterTitle = (chapter.title != null) && (!chapter.title.isEmpty());
-            if(!isInvalidChapterTitle && MergeConflictHandler.isMergeConflicted(chapter.title)) {
-                return new cardLocation(chapterStr,"00");
+            if(!isInvalidChapterTitle) {
+                if(MergeConflictHandler.isMergeConflicted(chapterTranslation.title)) {
+                    return new cardLocation(chapterStr, "00");
+                }
             }
 
             boolean isInvalidRef = (chapter.reference != null) && (!chapter.reference.isEmpty());
-            if(!isInvalidRef && MergeConflictHandler.isMergeConflicted(chapter.reference)) {
-                return new cardLocation(chapterStr,"00");
+            if(!isInvalidRef) {
+                if(MergeConflictHandler.isMergeConflicted(chapterTranslation.reference)) {
+                    return new cardLocation(chapterStr, "00");
+                }
             }
 
             for(int j = 0; j < frames.length; j ++) {
                 Frame frame = frames[j];
-                FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(frame);
-                // TODO: also validate the checking questions
                 boolean isValidFrame = (frame.body != null) && !frame.body.isEmpty();
-                if(isValidFrame && MergeConflictHandler.isMergeConflicted(frame.body)) {
-                    return new cardLocation(chapterStr,frame.getId());
+                if(isValidFrame) {
+                    FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(frame);
+                    if(MergeConflictHandler.isMergeConflicted(frameTranslation.body)) {
+                        return new cardLocation(chapterStr, frame.getId());
+                    }
                 }
             }
         }
@@ -217,7 +211,7 @@ public class MergeConflictHandler {
      * @return
      */
     static public boolean isMergeConflicted(CharSequence text) {
-        if(text != null) {
+        if((text != null) && (text.length() > 0) ) {
             Matcher matcher = MergeConflictPatternHead.matcher(text);
             boolean matchFound = matcher.find();
             return matchFound;

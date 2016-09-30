@@ -318,7 +318,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                 args.putString(App.EXTRA_CHAPTER_ID, location.chapterID);
                 args.putString(App.EXTRA_FRAME_ID, location.frameID);
         }
-        
+
         args.putString(App.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
         intent.putExtras(args);
         startActivity(intent);

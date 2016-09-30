@@ -56,8 +56,10 @@ public class ValidationTask extends ManagedTask {
         if(projectTitle != null) {
             ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
             boolean isFinished = projectTranslation.isTitleFinished();
-            if(isFinished && MergeConflictHandler.isMergeConflicted(projectTranslation.getTitle())) {
-                isFinished = false;
+            if(isFinished) {
+                if(MergeConflictHandler.isMergeConflicted(projectTranslation.getTitle())) {
+                    isFinished = false;
+                }
             }
             if(!isFinished) {
                 mValidations.add(ValidationItem.generateInvalidGroup(projectTitle, sourceLanguage));
@@ -77,8 +79,10 @@ public class ValidationTask extends ManagedTask {
 
             ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(chapter.getId());
             boolean isUnfinishedChapterTitle = (chapter.title != null) && (!chapter.title.isEmpty()) && !chapterTranslation.isTitleFinished();
-            if(!isUnfinishedChapterTitle && MergeConflictHandler.isMergeConflicted(chapter.title)) {
-                isUnfinishedChapterTitle = true;
+            if(!isUnfinishedChapterTitle) {
+                if(MergeConflictHandler.isMergeConflicted(chapterTranslation.title)) {
+                    isUnfinishedChapterTitle = true;
+                }
             }
             if(isUnfinishedChapterTitle) {
                 chapterIsValid = false;
@@ -86,8 +90,10 @@ public class ValidationTask extends ManagedTask {
             }
 
             boolean isUnfinishedRef = (chapter.reference != null) && (!chapter.reference.isEmpty()) && !chapterTranslation.isReferenceFinished();
-            if(!isUnfinishedRef && MergeConflictHandler.isMergeConflicted(chapter.reference)) {
-                isUnfinishedRef = true;
+            if(!isUnfinishedRef) {
+                if(MergeConflictHandler.isMergeConflicted(chapterTranslation.reference)) {
+                    isUnfinishedRef = true;
+                }
             }
             if(isUnfinishedRef) {
                 chapterIsValid = false;
@@ -99,8 +105,10 @@ public class ValidationTask extends ManagedTask {
                 FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(frame);
                 // TODO: also validate the checking questions
                 boolean isFinishedFrame = frameTranslation.isFinished() || frame.body.isEmpty();
-                if(isFinishedFrame && MergeConflictHandler.isMergeConflicted(frame.body)) {
-                    isFinishedFrame = false;
+                if(isFinishedFrame) {
+                    if(MergeConflictHandler.isMergeConflicted(frameTranslation.body)) {
+                        isFinishedFrame = false;
+                    }
                 }
                 if(lastValidFrameIndex == -1 && isFinishedFrame) {
                     // start new valid range
