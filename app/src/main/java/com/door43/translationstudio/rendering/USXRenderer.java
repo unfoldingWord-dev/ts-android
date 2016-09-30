@@ -37,6 +37,11 @@ public class USXRenderer extends ClickableRenderingEngine {
     private int mHighlightColor = 0;
     private int[] mExpectedVerseRange = new int[0];
     private boolean mSuppressLeadingMajorSectionHeadings = false;
+    public static String beginParagraphStyle = "<para\\s+style=\"[\\w\\d]*\"\\s*>";
+    public static Pattern beginParagraphPattern =  Pattern.compile(beginParagraphStyle);
+    public static String endParagraphStyle = "<\\/para>";
+    public static Pattern endParagraphPattern =  Pattern.compile(endParagraphStyle);
+
 
     /**
      * Creates a new usx rendering engine without any listeners
@@ -129,10 +134,11 @@ public class USXRenderer extends ClickableRenderingEngine {
         out = renderPoeticLine(out);
         out = renderRightAlignedPoeticLine(out);
         out = renderVerse(out);
+        out = renderHighlightSearch(out);
         out = renderNote(out);
         out = renderChapterLabel(out);
         out = renderSelah(out);
-        out = renderHighlightSearch(out);
+        out = renderBrokenMarkers(out);
 
         return out;
     }
@@ -447,6 +453,37 @@ public class USXRenderer extends ClickableRenderingEngine {
                 }
             }
         }
+        return out;
+    }
+
+    /**
+     * Renders all paragraph tags
+     * @param in
+     * @return
+     */
+    public CharSequence renderBrokenMarkers(CharSequence in) {
+        CharSequence out = "";
+        out = removePattern( in, beginParagraphPattern);
+        out = removePattern( out, endParagraphPattern);
+        return out;
+    }
+
+    /**
+     * Renders all paragraph tags
+     * @param in
+     * @return
+     */
+    public CharSequence removePattern(CharSequence in, Pattern pattern) {
+        Matcher matcher = pattern.matcher(in);
+        CharSequence out = "";
+        int lastIndex = 0;
+        while(matcher.find()) {
+            if(isStopped()) return in;
+
+            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()));
+            lastIndex = matcher.end();
+        }
+        out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
         return out;
     }
 
