@@ -12,7 +12,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.ProjectCategory;
 import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.App;
@@ -20,7 +19,6 @@ import com.door43.translationstudio.App;
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.CategoryEntry;
 
-import java.util.Locale;
 
 /**
  * Created by joel on 9/4/2015.
