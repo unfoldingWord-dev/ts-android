@@ -11,8 +11,6 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Chapter;
-import com.door43.translationstudio.core.LanguageDirection;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.rendering.ClickableRenderingEngine;
@@ -178,9 +176,9 @@ public class DraftAdapter extends RecyclerView.Adapter<DraftAdapter.ViewHolder> 
         // set up fonts
         if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
             holder.mLayoutBuildNumber = mLayoutBuildNumber;
-            Typography.formatTitle(mContext, holder.mSourceHeading, mSourceLanguage.slug, LanguageDirection.get(mSourceLanguage.direction));
-            Typography.formatTitle(mContext, holder.mSourceTitle, mSourceLanguage.slug, LanguageDirection.get(mSourceLanguage.direction));
-            Typography.format(mContext, holder.mSourceBody, mSourceLanguage.slug, LanguageDirection.get(mSourceLanguage.direction));
+            Typography.formatTitle(mContext, holder.mSourceHeading, mSourceLanguage.slug, mSourceLanguage.direction);
+            Typography.formatTitle(mContext, holder.mSourceTitle, mSourceLanguage.slug, mSourceLanguage.direction);
+            Typography.format(mContext, holder.mSourceBody, mSourceLanguage.slug, mSourceLanguage.direction);
         }
     }
 

@@ -17,7 +17,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.LanguageDirection;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Typography;
@@ -140,8 +139,8 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
 
             // fonts
             SourceLanguage fontSourceLanguage = mServerLibrary.index().getSourceLanguage(mProject.languageSlug);
-            Typography.formatSub(getActivity(), mHolder.mProjectDescription, fontSourceLanguage.slug, LanguageDirection.get(fontSourceLanguage.direction));
-            Typography.formatTitle(getActivity(), mHolder.mProjectTitle, fontSourceLanguage.slug, LanguageDirection.get(fontSourceLanguage.direction));
+            Typography.formatSub(getActivity(), mHolder.mProjectDescription, fontSourceLanguage.slug, fontSourceLanguage.direction);
+            Typography.formatTitle(getActivity(), mHolder.mProjectTitle, fontSourceLanguage.slug, fontSourceLanguage.direction);
 
             // custom project icon
             if (mImagePath == null) {

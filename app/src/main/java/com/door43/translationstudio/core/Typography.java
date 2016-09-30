@@ -24,7 +24,7 @@ public class Typography {
      * @param langaugeCode the spoken language of the text
      * @param direction the reading direction of the text
      */
-    public static void format(Context context, TextView view, String langaugeCode, LanguageDirection direction) {
+    public static void format(Context context, TextView view, String langaugeCode, String direction) {
         Typeface typeface = getTypeface(context, langaugeCode, direction);
         float fontSize = getFontSize(context);
 
@@ -38,11 +38,11 @@ public class Typography {
      *
      * @param context
      * @param view
-     * @param langaugeCode the spoken language of the text
+     * @param languageCode the spoken language of the text
      * @param direction the reading direction of the text
      */
-    public static void formatTitle(Context context, TextView view, String langaugeCode, LanguageDirection direction) {
-        Typeface typeface = getTypeface(context, langaugeCode, direction);
+    public static void formatTitle(Context context, TextView view, String languageCode, String direction) {
+        Typeface typeface = getTypeface(context, languageCode, direction);
         float fontSize = getFontSize(context) * 1.3f;
 
         view.setTypeface(typeface, Typeface.BOLD);
@@ -58,7 +58,7 @@ public class Typography {
      * @param langaugeCode the spoken language of the text
      * @param direction the reading direction of the text
      */
-    public static void formatSub(Context context, TextView view, String langaugeCode, LanguageDirection direction) {
+    public static void formatSub(Context context, TextView view, String langaugeCode, String direction) {
         Typeface typeface = getTypeface(context, langaugeCode, direction);
         float fontSize = getFontSize(context) * .7f;
 
@@ -107,7 +107,7 @@ public class Typography {
      * @param direction the reading direction
      * @return
      */
-    public static Typeface getTypeface(Context context, String languageCode, LanguageDirection direction) {
+    public static Typeface getTypeface(Context context, String languageCode, String direction) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String fontName = prefs.getString(SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE, context.getResources().getString(R.string.pref_default_translation_typeface));
 

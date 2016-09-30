@@ -8,9 +8,10 @@ import android.widget.ListView;
 
 import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.core.LibraryUpdates;
-import com.door43.translationstudio.core.Project;
 
 import java.util.List;
+
+import org.unfoldingword.resourcecontainer.Project;
 
 /**
  * A list fragment representing a list of Projects. This fragment
@@ -150,7 +151,7 @@ public class ServerLibraryFragment extends ListFragment {
             mAdapter.setSelected(ListView.INVALID_POSITION);
         }
         mActivatedPosition = position;
-        mOnClickListener.onProjectSelected(mAdapter.getItem(position).getId());
+        mOnClickListener.onProjectSelected(mAdapter.getItem(position).slug);
     }
 
     @Override

@@ -4,14 +4,10 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.support.annotation.Nullable;
 
-import org.eclipse.jgit.revwalk.RevWalk;
-import org.eclipse.jgit.revwalk.RevWalkUtils;
-import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.door43client.models.TargetLanguage;
 import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.git.Repo;
-import com.door43.translationstudio.git.TransportCallback;
 import com.door43.translationstudio.util.NumericStringComparator;
 import com.door43.util.FileUtilities;
 import com.door43.util.Manifest;
@@ -83,7 +79,7 @@ public class TargetTranslation {
     private final Manifest manifest;
     private String targetLanguageId;
     private String targetLanguageName;
-    private LanguageDirection targetLanguageDirection;
+    private String targetLanguageDirection;
     private final String projectId;
     private final String projectName;
     private final TranslationType translationType;
@@ -108,7 +104,7 @@ public class TargetTranslation {
         JSONObject targetLanguageJson = this.manifest.getJSONObject(FIELD_MANIFEST_TARGET_LANGUAGE);
         this.targetLanguageId = targetLanguageJson.getString(FIELD_MANIFEST_ID);
         this.targetLanguageName = Manifest.valueExists(targetLanguageJson, FIELD_MANIFEST_NAME) ? targetLanguageJson.getString(FIELD_MANIFEST_NAME) : this.targetLanguageId.toUpperCase();
-        this.targetLanguageDirection = LanguageDirection.get(targetLanguageJson.getString("direction"));
+        this.targetLanguageDirection = targetLanguageJson.getString("direction");
         if(targetLanguageJson.has("region")) {
             this.targetLanguageRegion = targetLanguageJson.getString("region");
         }
@@ -185,7 +181,7 @@ public class TargetTranslation {
      * Returns the language direction of the target language
      * @return
      */
-    public LanguageDirection getTargetLanguageDirection() {
+    public String getTargetLanguageDirection() {
         return targetLanguageDirection;
     }
 
@@ -1295,7 +1291,7 @@ public class TargetTranslation {
             languageJson.put("direction", targetLanguage.direction);
             languageJson.put("id", targetLanguage.slug);
             this.manifest.put("target_language", languageJson);
-            this.targetLanguageDirection = LanguageDirection.get(targetLanguage.direction);
+            this.targetLanguageDirection = targetLanguage.direction;
             this.targetLanguageId = targetLanguage.slug;
             this.targetLanguageName = targetLanguage.name;
         } catch (JSONException e) {
@@ -1304,7 +1300,7 @@ public class TargetTranslation {
     }
 
     public TargetLanguage getTargetLanguage() {
-        return new TargetLanguage(targetLanguageId, targetLanguageName, "", targetLanguageDirection.toString(), targetLanguageRegion, false);
+        return new TargetLanguage(targetLanguageId, targetLanguageName, "", targetLanguageDirection, targetLanguageRegion, false);
     }
 
     public enum PublishStatus {

@@ -149,9 +149,9 @@ public class ArchiveDetails {
                     // get target language
                     String targetLanguageName = null;
                     String targetLanguageSlug = targetLanguageJson.getString("id");
-                    LanguageDirection targetLangaugeDirection = LanguageDirection.get(targetLanguageJson.getString("direction"));
-                    if (targetLangaugeDirection == null) {
-                        targetLangaugeDirection = LanguageDirection.LeftToRight;
+                    String targetLanguageDirection = targetLanguageJson.getString("direction");
+                    if (targetLanguageDirection == null) {
+                        targetLanguageDirection = "ltr";
                     }
                     TargetLanguage tl = library.index().getTargetLanguage(targetLanguageSlug);
                     if (tl != null) {
@@ -188,7 +188,7 @@ public class ArchiveDetails {
                     // build id
                     String targetTranslationId = TargetTranslation.generateTargetTranslationId(targetLanguageSlug, projectSlug, translationType, resourceSlug);
 
-                    targetDetails.add(new TargetTranslationDetails(targetTranslationId, targetLanguageSlug, targetLanguageName, projectSlug, projectName, targetLangaugeDirection, commit));
+                    targetDetails.add(new TargetTranslationDetails(targetTranslationId, targetLanguageSlug, targetLanguageName, projectSlug, projectName, targetLanguageDirection, commit));
                 }
             }
         }
@@ -213,7 +213,7 @@ public class ArchiveDetails {
         public final String projectSlug;
         public final String targetLanguageSlug;
         public final String projectName;
-        public final LanguageDirection direction;
+        public final String direction;
         public final String commitHash;
 
         /**
@@ -224,7 +224,7 @@ public class ArchiveDetails {
          * @param projectSlug
          * @param projectName
          */
-        private TargetTranslationDetails(String targetTranslationSlug, String targetLanguageSlug, String targetLanguageName, String projectSlug, String projectName, LanguageDirection direction, String commitHash) {
+        private TargetTranslationDetails(String targetTranslationSlug, String targetLanguageSlug, String targetLanguageName, String projectSlug, String projectName, String direction, String commitHash) {
             this.targetTranslationSlug = targetTranslationSlug;
             this.targetLanguageName = targetLanguageName;
             this.projectSlug = projectSlug;

@@ -48,7 +48,6 @@ import com.door43.translationstudio.core.CheckingQuestion;
 import com.door43.translationstudio.core.FileHistory;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
-import com.door43.translationstudio.core.LanguageDirection;
 import com.door43.translationstudio.core.LinedEditText;
 import com.door43.translationstudio.core.ProjectTranslation;
 import com.door43.translationstudio.core.TranslationNote;
@@ -383,10 +382,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // set up fonts
         if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
             holder.mLayoutBuildNumber = mLayoutBuildNumber;
-            Typography.format(mContext, holder.mSourceBody, mSourceLanguage.slug, LanguageDirection.get(mSourceLanguage.direction));
-            Typography.formatSub(mContext, holder.mTargetTitle, mTargetLanguage.slug, LanguageDirection.get(mTargetLanguage.direction));
-            Typography.format(mContext, holder.mTargetBody, mTargetLanguage.slug, LanguageDirection.get(mTargetLanguage.direction));
-            Typography.format(mContext, holder.mTargetEditableBody, mTargetLanguage.slug, LanguageDirection.get(mTargetLanguage.direction));
+            Typography.format(mContext, holder.mSourceBody, mSourceLanguage.slug, mSourceLanguage.direction);
+            Typography.formatSub(mContext, holder.mTargetTitle, mTargetLanguage.slug, mTargetLanguage.direction);
+            Typography.format(mContext, holder.mTargetBody, mTargetLanguage.slug, mTargetLanguage.direction);
+            Typography.format(mContext, holder.mTargetEditableBody, mTargetLanguage.slug, mTargetLanguage.direction);
         }
 //        this.onBind = false;
     }
@@ -1432,7 +1431,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         }
                     }
                 });
-                Typography.formatSub(mContext, noteView, mSourceLanguage.slug, LanguageDirection.get(mSourceLanguage.direction));
+                Typography.formatSub(mContext, noteView, mSourceLanguage.slug, mSourceLanguage.direction);
                 holder.mResourceList.addView(noteView);
             }
         } else if(mOpenResourceTab[position] == TAB_WORDS) {
@@ -1448,7 +1447,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         }
                     }
                 });
-                Typography.formatSub(mContext, wordView, mSourceLanguage.slug, LanguageDirection.get(mSourceLanguage.direction));
+                Typography.formatSub(mContext, wordView, mSourceLanguage.slug, mSourceLanguage.direction);
                 holder.mResourceList.addView(wordView);
             }
         } else if(mOpenResourceTab[position] == TAB_QUESTIONS) {
@@ -1464,7 +1463,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         }
                     }
                 });
-                Typography.formatSub(mContext, questionView, mSourceLanguage.slug, LanguageDirection.get(mSourceLanguage.direction));
+                Typography.formatSub(mContext, questionView, mSourceLanguage.slug, mSourceLanguage.direction);
                 holder.mResourceList.addView(questionView);
             }
         }

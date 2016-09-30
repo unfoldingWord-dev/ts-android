@@ -30,6 +30,8 @@ import java.util.regex.Pattern;
 
 import org.unfoldingword.resourcecontainer.Resource;
 
+import org.unfoldingword.door43client.models.ChunkMarker;
+
 /**
  * For processing USFM input file or zip files into importable package.
  */
@@ -662,8 +664,8 @@ public class ImportUsfm {
         try {
             for (ChunkMarker chunkMarker : chunks) {
 
-                String chapter = chunkMarker.chapterSlug;
-                String firstverse = chunkMarker.firstVerseSlug;
+                String chapter = chunkMarker.chapter;
+                String firstVerse = chunkMarker.verse;
 
                 JSONArray verses = null;
                 if (mChunks.containsKey(chapter)) {
@@ -674,7 +676,7 @@ public class ImportUsfm {
                 }
 
                 JSONObject chunk = new JSONObject();
-                chunk.put(FIRST_VERSE, firstverse);
+                chunk.put(FIRST_VERSE, firstVerse);
 //                chunk.put(FILE_NAME, firstverse); // default to the same, later cleanup
                 verses.put(chunk);
             }
@@ -792,7 +794,7 @@ public class ImportUsfm {
             }
 
             mTempDest = new File(mTempOutput, mBookShortName);
-            mProjectFolder = new File(mTempDest, mBookShortName + "-" + mTargetLanguage.getId());
+            mProjectFolder = new File(mTempDest, mBookShortName + "-" + mTargetLanguage.slug);
 
             if (isMissing(mBookName)) {
                 addError(R.string.missing_book_name);
@@ -892,7 +894,6 @@ public class ImportUsfm {
             Logger.e(TAG, "failed to build manifest", e);
             return false;
         }
-
         return true;
     }
 

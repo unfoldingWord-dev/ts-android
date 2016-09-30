@@ -28,7 +28,6 @@ import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.ExportUsfm;
-import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
@@ -53,6 +52,8 @@ import java.io.File;
 import java.io.OutputStream;
 import java.net.URL;
 import java.security.InvalidParameterException;
+
+import org.unfoldingword.resourcecontainer.Project;
 
 /**
  * Created by joel on 10/5/2015.

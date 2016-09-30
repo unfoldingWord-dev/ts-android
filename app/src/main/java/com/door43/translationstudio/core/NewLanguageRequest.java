@@ -200,7 +200,7 @@ public class NewLanguageRequest {
     public TargetLanguage getTempTargetLanguage() {
         String name = this.tempLanguageCode;
         String region = "unknown";
-        LanguageDirection direction = LanguageDirection.LeftToRight;
+        String direction = "ltr";
 
         if(this.dataFields.containsKey("ln")) {
             name = this.getAnswer(this.dataFields.get("ln"));
@@ -210,7 +210,7 @@ public class NewLanguageRequest {
         }
         if(this.dataFields.containsKey("ld")) {
             Boolean isLeftToRight = Boolean.parseBoolean(this.getAnswer(this.dataFields.get("ld")));
-            direction = isLeftToRight ? LanguageDirection.LeftToRight : LanguageDirection.RightToLeft;
+            direction = isLeftToRight ? "ltr" : "rtl";
         }
 
         return new TargetLanguage(this.tempLanguageCode, name, "", direction.toString(), region, false);
