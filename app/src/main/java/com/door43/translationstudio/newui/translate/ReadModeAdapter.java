@@ -179,6 +179,21 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         mTabs = tabContents.toArray(new ContentValues[tabContents.size()]);
     }
 
+    /**
+     * get the chapter for the position, or null if not found
+     * @param position
+     * @return
+     */
+    public String getChapterForPosition(int position) {
+        if(position < 0) {
+            position = 0;
+        } else if(position >= mChapters.length) {
+            position = mChapters.length - 1;
+        }
+        Chapter c = mChapters[position];
+        return c.getId();
+    }
+
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         int cardMargin = mContext.getResources().getDimensionPixelSize(R.dimen.card_margin);

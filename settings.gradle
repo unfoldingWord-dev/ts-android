@@ -1,1 +1,1 @@
-include ':app', ':html-textview'
+include ':app', ':html-textview', ':seekbarhint'
