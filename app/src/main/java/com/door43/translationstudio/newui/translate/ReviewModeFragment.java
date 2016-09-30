@@ -25,7 +25,6 @@ import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.CheckingQuestion;
 import com.door43.translationstudio.core.Frame;
-import com.door43.translationstudio.core.LanguageDirection;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TranslationArticle;
 import com.door43.translationstudio.core.TranslationNote;
@@ -367,7 +366,7 @@ public class ReviewModeFragment extends ViewModeFragment {
 
             wordTitle.setText(word.getTerm());
             descriptionTitle.setText(word.getDefinitionTitle());
-            Typography.formatTitle(getActivity(), descriptionTitle, sourceLanguage.slug, LanguageDirection.get(sourceLanguage.direction));
+            Typography.formatTitle(getActivity(), descriptionTitle, sourceLanguage.slug, sourceLanguage.direction);
             HtmlRenderer renderer = new HtmlRenderer(new HtmlRenderer.OnPreprocessLink() {
                 @Override
                 public boolean onPreprocess(Span span) {
@@ -411,7 +410,7 @@ public class ReviewModeFragment extends ViewModeFragment {
             });
             descriptionView.setText(renderer.render(word.getDefinition()));
             descriptionView.setMovementMethod(LocalLinkMovementMethod.getInstance());
-            Typography.formatSub(getActivity(), descriptionView, sourceLanguage.slug, LanguageDirection.get(sourceLanguage.direction));
+            Typography.formatSub(getActivity(), descriptionView, sourceLanguage.slug, sourceLanguage.direction);
 
             seeAlsoView.removeAllViews();
             for(int i = 0; i < word.getSeeAlso().length; i ++) {
@@ -425,7 +424,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                             onTranslationWordClick(relatedWord.getId(), mResourcesDrawer.getLayoutParams().width);
                         }
                     });
-                    Typography.formatSub(getActivity(), button, sourceLanguage.slug, LanguageDirection.get(sourceLanguage.direction));
+                    Typography.formatSub(getActivity(), button, sourceLanguage.slug, sourceLanguage.direction);
                     seeAlsoView.addView(button);
                 }
             }
@@ -434,7 +433,7 @@ public class ReviewModeFragment extends ViewModeFragment {
             } else {
                 seeAlsoTitle.setVisibility(View.GONE);
             }
-            Typography.formatTitle(getActivity(), seeAlsoTitle, sourceLanguage.slug, LanguageDirection.get(sourceLanguage.direction));
+            Typography.formatTitle(getActivity(), seeAlsoTitle, sourceLanguage.slug, sourceLanguage.direction);
 
             examplesView.removeAllViews();
             for(final TranslationWord.Example example:word.getExamples()) {
@@ -450,8 +449,8 @@ public class ReviewModeFragment extends ViewModeFragment {
                         scrollToFrame(example.getChapterId(), example.getFrameId());
                     }
                 });
-                Typography.formatSub(getActivity(), referenceView, sourceLanguage.slug, LanguageDirection.get(sourceLanguage.direction));
-                Typography.formatSub(getActivity(), passageView, sourceLanguage.slug, LanguageDirection.get(sourceLanguage.direction));
+                Typography.formatSub(getActivity(), referenceView, sourceLanguage.slug, sourceLanguage.direction);
+                Typography.formatSub(getActivity(), passageView, sourceLanguage.slug, sourceLanguage.direction);
                 examplesView.addView(exampleView);
             }
             if(word.getExamples().length > 0) {
@@ -459,7 +458,7 @@ public class ReviewModeFragment extends ViewModeFragment {
             } else {
                 examplesTitle.setVisibility(View.GONE);
             }
-            Typography.formatTitle(getActivity(), examplesTitle, sourceLanguage.slug, LanguageDirection.get(sourceLanguage.direction));
+            Typography.formatTitle(getActivity(), examplesTitle, sourceLanguage.slug, sourceLanguage.direction);
 
             mScrollingResourcesDrawerContent.removeAllViews();
             mScrollingResourcesDrawerContent.addView(view);
@@ -543,10 +542,10 @@ public class ReviewModeFragment extends ViewModeFragment {
 
             title.setText(note.getTitle());
             SourceLanguage sourceLanguage = library.index().getSourceLanguage(sourceTranslation.sourceLanguageSlug);
-            Typography.format(getActivity(), title, sourceLanguage.slug, LanguageDirection.get(sourceLanguage.direction));
+            Typography.format(getActivity(), title, sourceLanguage.slug, sourceLanguage.direction);
 
             descriptionView.setText(renderer.render(note.getBody()));
-            Typography.formatSub(getActivity(), descriptionView, sourceLanguage.slug, LanguageDirection.get(sourceLanguage.direction));
+            Typography.formatSub(getActivity(), descriptionView, sourceLanguage.slug, sourceLanguage.direction);
             descriptionView.setMovementMethod(LocalLinkMovementMethod.getInstance());
 
             mScrollingResourcesDrawerContent.removeAllViews();
@@ -580,13 +579,13 @@ public class ReviewModeFragment extends ViewModeFragment {
 //            mCloseResourcesDrawerButton.setText(question.getQuestion());
 
             TextView questionTitle = (TextView)view.findViewById(R.id.question_title);
-            Typography.formatTitle(getActivity(), questionTitle, sourceLanguage.getId(), sourceLanguage.direction);
+            Typography.formatTitle(getActivity(), questionTitle, sourceLanguage.slug, sourceLanguage.direction);
             TextView questionView = (TextView)view.findViewById(R.id.question);
             TextView answerTitle = (TextView)view.findViewById(R.id.answer_title);
-            Typography.formatTitle(getActivity(), answerTitle, sourceLanguage.getId(), sourceLanguage.direction);
+            Typography.formatTitle(getActivity(), answerTitle, sourceLanguage.slug, sourceLanguage.direction);
             TextView answerView = (TextView)view.findViewById(R.id.answer);
             TextView referencesTitle = (TextView)view.findViewById(R.id.references_title);
-            Typography.formatTitle(getActivity(), referencesTitle, sourceLanguage.getId(), sourceLanguage.direction);
+            Typography.formatTitle(getActivity(), referencesTitle, sourceLanguage.slug, sourceLanguage.direction);
             LinearLayout referencesLayout = (LinearLayout)view.findViewById(R.id.references);
 
             referencesLayout.removeAllViews();
@@ -594,7 +593,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                 TextView referenceView = (TextView) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_reference_item, null);
                 Frame frame = library.getFrame(sourceTranslation, reference.getChapterId(), reference.getFrameId());
                 referenceView.setText(sourceTranslation.getProjectTitle() + " " + Integer.parseInt(reference.getChapterId()) + ":" + frame.getTitle());
-                Typography.formatSub(getActivity(), referenceView, sourceLanguage.getId(), sourceLanguage.direction);
+                Typography.formatSub(getActivity(), referenceView, sourceLanguage.slug, sourceLanguage.direction);
                 referenceView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -605,9 +604,9 @@ public class ReviewModeFragment extends ViewModeFragment {
             }
 
             questionView.setText(question.getQuestion());
-            Typography.formatSub(getActivity(), questionView, sourceLanguage.getId(), sourceLanguage.getDirection());
+            Typography.formatSub(getActivity(), questionView, sourceLanguage.slug, sourceLanguage.direction);
             answerView.setText(question.getAnswer());
-            Typography.formatSub(getActivity(), answerView, sourceLanguage.getId(), sourceLanguage.getDirection());
+            Typography.formatSub(getActivity(), answerView, sourceLanguage.slug, sourceLanguage.direction);
 
             mScrollingResourcesDrawerContent.removeAllViews();
             mScrollingResourcesDrawerContent.addView(view);

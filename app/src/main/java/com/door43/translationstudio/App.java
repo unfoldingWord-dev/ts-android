@@ -22,7 +22,6 @@ import org.unfoldingword.door43client.models.TargetLanguage;
 import org.unfoldingword.tools.logger.LogLevel;
 import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.core.ArchiveDetails;
-import com.door43.translationstudio.core.LanguageDirection;
 import com.door43.translationstudio.core.NewLanguageRequest;
 import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.TargetTranslation;
@@ -151,8 +150,8 @@ public class App extends Application {
         TargetLanguage l = library.index().getTargetLanguage(t.getTargetLanguageId());
         if(l == null && t.getTargetLanguageId().isEmpty()) {
             String name = t.getTargetLanguageName().isEmpty() ? t.getTargetLanguageId() : t.getTargetLanguageName();
-            LanguageDirection direction = t.getTargetLanguageDirection() == null ? LanguageDirection.LeftToRight : t.getTargetLanguageDirection();
-            l = new TargetLanguage(t.getTargetLanguageId(), name, "", direction.toString(), "unknown", false);
+            String direction = t.getTargetLanguageDirection() == null ? "ltr" : t.getTargetLanguageDirection();
+            l = new TargetLanguage(t.getTargetLanguageId(), name, "", direction, "unknown", false);
             try {
                 library.index().addTempTargetLanguage(l);
             } catch (Exception e) {
