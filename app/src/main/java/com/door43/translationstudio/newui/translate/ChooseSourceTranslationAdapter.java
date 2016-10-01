@@ -162,10 +162,6 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
         DownloadSourceLanguageTask downloadTask = (DownloadSourceLanguageTask) task;
         Library library = App.getLibrary();
 
-        if (progressDialog != null) {
-            progressDialog.dismiss();
-        }
-
         if(downloadTask.isFinished() && downloadTask.getSuccess()) {
             boolean databaseChanged = false;
             String sourceLang = downloadTask.getSourceLanguageId();
@@ -175,21 +171,29 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
                 for (int i = 0; i < getCount(); i++) {
                     ChooseSourceTranslationAdapter.ViewItem item = getItem(i);
                     if (item != null) {
-                        if((item.sourceTranslation != null) && sourceLang.equals(item.sourceTranslation.sourceLanguageSlug) && projectId.equals(item.sourceTranslation.projectSlug)) {
+                        if( item.sourceTranslation != null ) {
                             Resource resource = library.getResource(item.sourceTranslation);
                             if (resource != null) {
-                                item.downloaded = resource.isDownloaded();
-                                item.hasUpdates = resource.hasUpdates();
-                                databaseChanged = true;
+                                if(item.downloaded != resource.isDownloaded()) {
+                                    item.downloaded = resource.isDownloaded();
+                                    databaseChanged = true;
+                                }
+                                if(item.hasUpdates != resource.hasUpdates()) {
+                                    item.hasUpdates = resource.hasUpdates();
+                                    databaseChanged = true;
+                                }
                             } else {
                                 Logger.e(TAG, "Failed to get resource for " + item.sourceTranslation.getId());
                             }
-                            break;
                         }
                     } else {
                         Logger.e(TAG, "Failed to get SourceTranslation for " + item.id);
                     }
                 }
+            }
+
+            if (progressDialog != null) {
+                progressDialog.dismiss();
             }
 
             if(databaseChanged) { // refresh list in main loop

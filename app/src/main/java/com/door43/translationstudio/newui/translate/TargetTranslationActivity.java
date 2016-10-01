@@ -362,7 +362,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      * method to see if searching is supported
      */
     public boolean isSearchSupported() {
-        if(mFragment != null) {
+        if(mFragment instanceof ViewModeFragment) {
             return ((ViewModeFragment) mFragment).isSearchSupported();
         }
         return false;
