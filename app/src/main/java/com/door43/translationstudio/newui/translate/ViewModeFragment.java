@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
@@ -25,6 +26,8 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.BaseFragment;
 
 import org.json.JSONException;
+
+import java.util.List;
 
 /**
  * Created by joel on 9/18/2015.
@@ -74,8 +77,15 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         // check if we have draft source
         String draftTranslationId = args.getString(App.EXTRA_SOURCE_DRAFT_TRANSLATION_ID, null);
         if(null != draftTranslationId) {
-            SourceTranslation sourceTranslation = mLibrary.getDraftTranslation(draftTranslationId);
-            mSourceTranslationId = sourceTranslation.getId();
+            try {
+                ResourceContainer rc = mLibrary.open(draftTranslationId);
+                mSourceTranslationId = rc.slug;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+//
+//            SourceTranslation sourceTranslation = mLibrary.getDraftTranslation(draftTranslationId);
+//            mSourceTranslationId = sourceTranslation.getId();
         } else {
             // open selected tab
             mSourceTranslationId = App.getSelectedSourceTranslationId(targetTranslationId);
@@ -203,11 +213,17 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     /**
-     * Returns the currently selected source translation
+     * Returns the currently selected resource container
      * @return
      */
-    protected SourceTranslation getSourceTranslation() {
-        return mLibrary.getSourceTranslation(mSourceTranslationId);
+    protected ResourceContainer getSelectedResourceContainer() {
+        try {
+            return mLibrary.open(mSourceTranslationId);
+        } catch (Exception e) {
+            // We perform checks when loading so this should never happen
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
@@ -424,26 +440,29 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     @Override
-    public void onConfirmTabsDialog(String targetTranslationId, String[] sourceTranslationIds) {
+    public void onConfirmTabsDialog(String targetTranslationId, List<String> sourceTranslationIds) {
         String[] oldSourceTranslationIds = App.getSelectedSourceTranslations(targetTranslationId);
         for(String id:oldSourceTranslationIds) {
             App.removeOpenSourceTranslation(targetTranslationId, id);
         }
 
-        if(sourceTranslationIds.length > 0) {
+        if(sourceTranslationIds.size() > 0) {
             // save open source language tabs
-            for(String id:sourceTranslationIds) {
-                SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
-                if(sourceTranslation != null) {
-                    App.addOpenSourceTranslation(targetTranslationId, sourceTranslation.getId());
+            for(String slug:sourceTranslationIds) {
+                ResourceContainer rc = null;
+                try {
+                    rc = mLibrary.open(slug);
+                    App.addOpenSourceTranslation(targetTranslationId, slug);
                     TargetTranslation targetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
                     if (targetTranslation != null) {
                         try {
-                            targetTranslation.addSourceTranslation(sourceTranslation);
+                            targetTranslation.addSourceTranslation(rc);
                         } catch (JSONException e) {
-                            Logger.e(this.getClass().getName(), "Failed to record source translation (" + sourceTranslation.getId() + ") usage in the target translation " + targetTranslation.getId(), e);
+                            Logger.e(this.getClass().getName(), "Failed to record source translation (" + slug + ") usage in the target translation " + targetTranslation.getId(), e);
                         }
                     }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
             String selectedSourceTranslationId = App.getSelectedSourceTranslationId(targetTranslationId);

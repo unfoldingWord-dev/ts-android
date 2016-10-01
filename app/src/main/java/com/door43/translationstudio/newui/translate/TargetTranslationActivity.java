@@ -34,6 +34,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.unfoldingword.resourcecontainer.Resource;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
@@ -111,11 +112,13 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
         // open used source translations by default
         if(App.getSelectedSourceTranslations(mTargetTranslation.getId()).length == 0) {
-            String[] slugs = mTargetTranslation.getSourceTranslations();
-            for (String slug : slugs) {
-                SourceTranslation sourceTranslation = App.getLibrary().getSourceTranslation(slug);
-                if(sourceTranslation != null) {
-                    App.addOpenSourceTranslation(mTargetTranslation.getId(), sourceTranslation.getId());
+            String[] resourceContainerSlugs = mTargetTranslation.getSourceTranslations();
+            for (String slug : resourceContainerSlugs) {
+                try {
+                    ResourceContainer rc = App.getLibrary().open(slug);
+                    App.addOpenSourceTranslation(mTargetTranslation.getId(), rc.slug);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }

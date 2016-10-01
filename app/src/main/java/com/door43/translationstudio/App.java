@@ -18,12 +18,16 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
 import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.SourceLanguage;
 import org.unfoldingword.door43client.models.TargetLanguage;
+import org.unfoldingword.resourcecontainer.Project;
+import org.unfoldingword.resourcecontainer.Resource;
 import org.unfoldingword.tools.logger.LogLevel;
 import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.core.ArchiveDetails;
 import com.door43.translationstudio.core.NewLanguageRequest;
 import com.door43.translationstudio.core.Profile;
+import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
@@ -326,6 +330,48 @@ public class App extends Application {
             Logger.e(TAG, "Failed to initialize the door43 client", e);
         }
         return null;
+    }
+
+    /**
+     * Returns a list of source translations for the project that have met the minimum checking level
+     * @param projectSlug
+     * @return
+     */
+    public static List<SourceTranslation> getSourceTranslations(String projectSlug) {
+        List<SourceTranslation> translations = new ArrayList<>();
+        Door43Client library = getLibrary();
+        List<SourceLanguage> languages = library.index().getSourceLanguages(projectSlug);
+        for(SourceLanguage l:languages) {
+            List<Resource> resources = library.index().getResources(l.slug, projectSlug);
+            Project p = library.index().getProject(l.slug, projectSlug);
+            for(Resource r:resources) {
+                if(Integer.parseInt(r.checkingLevel) >= MIN_CHECKING_LEVEL) {
+                    translations.add(new SourceTranslation(l, p, r));
+                }
+            }
+        }
+        return translations;
+    }
+
+    /**
+     * Returns a list of source translations for the project that have not yet reached the minimum checking level
+     * @param projectSlug
+     * @return
+     */
+    public static List<SourceTranslation> getDraftTranslations(String projectSlug) {
+        List<SourceTranslation> translations = new ArrayList<>();
+        Door43Client library = getLibrary();
+        List<SourceLanguage> languages = library.index().getSourceLanguages(projectSlug);
+        for(SourceLanguage l:languages) {
+            List<Resource> resources = library.index().getResources(l.slug, projectSlug);
+            Project p = library.index().getProject(l.slug, projectSlug);
+            for(Resource r:resources) {
+                if(Integer.parseInt(r.checkingLevel) < MIN_CHECKING_LEVEL) {
+                    translations.add(new SourceTranslation(l, p, r));
+                }
+            }
+        }
+        return translations;
     }
 
     /**

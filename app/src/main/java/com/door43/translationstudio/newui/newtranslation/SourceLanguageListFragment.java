@@ -47,7 +47,7 @@ public class SourceLanguageListFragment extends BaseFragment implements Searchab
         SourceTranslation[] sourceTranslations = mLibrary.getSourceTranslations(projectId);
         Map<String, SourceLanguage> sourceLanguages = new HashMap<>();
         for(SourceTranslation sourceTranslation:sourceTranslations) {
-            SourceLanguage sourceLanguage = mLibrary.index().getSourceLanguage(sourceTranslation.sourceLanguageSlug);
+            SourceLanguage sourceLanguage = mLibrary.index().getSourceLanguage(sourceTranslation.language.slug);
             // TRICKY: a source language could be represented several times due to multiple resources
             if(!sourceLanguages.containsKey(sourceLanguage.slug)) {
                 sourceLanguages.put(sourceLanguage.slug, sourceLanguage);

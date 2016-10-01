@@ -17,11 +17,10 @@ import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.newui.library.ServerLibraryDetailFragment;
-import com.door43.translationstudio.tasks.DownloadSourceLanguageTask;
+import com.door43.translationstudio.tasks.DownloadResourceContainerTask;
 import com.door43.widget.ViewUtil;
 
 import org.unfoldingword.door43client.Door43Client;
-import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
@@ -31,8 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
-
-import org.unfoldingword.resourcecontainer.Resource;
 
 /**
  * Created by joel on 9/15/2015.
@@ -80,9 +77,9 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
         return mSortedData.get(position);
     }
 
-    public void doClickOnItem(int position) {
+    public void doClickOnItem(final int position) {
         int type = getItemViewType( position);
-        ChooseSourceTranslationAdapter.ViewItem item = getItem(position);
+        final ViewItem item = getItem(position);
         switch (type) {
             case TYPE_ITEM_SELECTABLE:
                 if(item.selected) {
@@ -93,41 +90,26 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
                 break;
 
             case TYPE_ITEM_NEED_DOWNLOAD:
-                promptToDownloadSourceLangauge(item);
+                String format = mContext.getResources().getString(R.string.download_source_language);
+                String message = String.format(format, item.title);
+                new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
+                        .setTitle(R.string.title_download_source_language)
+                        .setMessage(message)
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                DownloadResourceContainerTask task = new DownloadResourceContainerTask(item.sourceTranslation);
+                                task.TAG = position;
+                                task.addOnFinishedListener(ChooseSourceTranslationAdapter.this);
+                                task.addOnProgressListener(ChooseSourceTranslationAdapter.this);
+                                TaskManager.addTask(task, item.sourceTranslation.resourceContainerSlug);
+                                TaskManager.groupTask(task, ServerLibraryDetailFragment.DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP);
+                            }
+                        })
+                        .setNegativeButton(R.string.no, null)
+                        .show();
                 break;
         }
-    }
-
-    /**
-     * make sure the user is aware that download will use the internet
-     * @param item
-     */
-    private void promptToDownloadSourceLangauge(final ViewItem item) {
-        String format = mContext.getResources().getString(R.string.download_source_language);
-        String message = String.format(format, item.title);
-        new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
-                .setTitle(R.string.title_download_source_language)
-                .setMessage(message)
-                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        downloadSourceLanguage(item);
-                    }
-                })
-                .setNegativeButton(R.string.no, null)
-                .show();
-    }
-
-    /**
-     * initiate download
-     * @param item
-     */
-    private void downloadSourceLanguage(ViewItem item) {
-        DownloadSourceLanguageTask task = new DownloadSourceLanguageTask(item.sourceTranslation.projectSlug, item.sourceTranslation.sourceLanguageSlug);
-        task.addOnFinishedListener(this);
-        task.addOnProgressListener(this);
-        TaskManager.addTask(task, item.sourceTranslation.projectSlug + "-" + item.id);
-        TaskManager.groupTask(task, ServerLibraryDetailFragment.DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP);
     }
 
     /**
@@ -135,47 +117,26 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
      * @param task
      */
     public void onTaskFinished(ManagedTask task) {
-        DownloadSourceLanguageTask downloadTask = (DownloadSourceLanguageTask) task;
-        Door43Client library = App.getLibrary();
+        DownloadResourceContainerTask downloadTask = (DownloadResourceContainerTask) task;
 
         if (progressDialog != null) {
             progressDialog.dismiss();
         }
 
-        if(downloadTask.isFinished() && downloadTask.getSuccess()) {
-            boolean databaseChanged = false;
-            String sourceLang = downloadTask.getSourceLanguageId();
-            String projectId = downloadTask.getProjectId();
-            if((sourceLang != null) && (projectId != null)) {
-                // find entry that was changed
-                for (int i = 0; i < getCount(); i++) {
-                    ChooseSourceTranslationAdapter.ViewItem item = getItem(i);
-                    if (item != null) {
-                        if((item.sourceTranslation != null) && sourceLang.equals(item.sourceTranslation.sourceLanguageSlug) && projectId.equals(item.sourceTranslation.projectSlug)) {
-                            Resource resource = library.getResource(item.sourceTranslation);
-                            if (resource != null) {
-                                item.downloaded = resource.isDownloaded();
-                                databaseChanged = true;
-                            } else {
-                                Logger.e(TAG, "Failed to get resource for " + item.sourceTranslation.getId());
-                            }
-                            break;
-                        }
-                    } else {
-                        Logger.e(TAG, "Failed to get SourceTranslation for " + item.id);
-                    }
-                }
+        if(downloadTask.isFinished() && downloadTask.success()) {
+
+            if(downloadTask.TAG >= 0 && downloadTask.TAG < getCount()) {
+                ViewItem item = getItem(downloadTask.TAG);
+                item.downloaded = true;
             }
 
-            if(databaseChanged) { // refresh list in main loop
-                Handler hand = new Handler(Looper.getMainLooper());
-                hand.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        notifyDataSetChanged();
-                    }
-                });
-            }
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    notifyDataSetChanged();
+                }
+            });
         }
     }
 
@@ -362,7 +323,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
             this.selected = selected;
             this.sourceTranslation = sourceTranslation;
             if(sourceTranslation != null) {
-                this.id = sourceTranslation.getId();
+                this.id = sourceTranslation.resourceContainerSlug;
             } else {
                 this.id = null;
             }

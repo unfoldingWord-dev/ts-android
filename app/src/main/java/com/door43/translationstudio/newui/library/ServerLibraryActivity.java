@@ -31,6 +31,7 @@ import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.widget.ViewUtil;
 
 import java.text.NumberFormat;
+import java.util.List;
 
 import org.unfoldingword.resourcecontainer.Project;
 
@@ -80,7 +81,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
         } else {
             // populated cached data
             Door43Client serverLibrary = App.getLibrary();
-            Project[] projects = serverLibrary.getProjects(App.getDeviceLanguageCode());
+            List<Project> projects = serverLibrary.index().getProjects(App.getDeviceLanguageCode());
             mListFragment.setData(serverLibrary.getAvailableUpdates(), projects);
 
             // connect to tasks
@@ -326,7 +327,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
             public void run() {
                 invalidateOptionsMenu();
                 Door43Client serverLibrary = App.getLibrary();
-                Project[] projects = serverLibrary.getProjects(App.getDeviceLanguageCode());
+                List<Project> projects = serverLibrary.index().getProjects(App.getDeviceLanguageCode(), true);
                 mListFragment.setData(serverLibrary.getAvailableUpdates(), projects);
 
                 if(mProgressDialog != null && mProgressDialog.isShowing()) {

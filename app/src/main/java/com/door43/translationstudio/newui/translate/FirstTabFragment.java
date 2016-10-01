@@ -114,31 +114,29 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
     }
 
     @Override
-    public void onConfirmTabsDialog(String targetTranslationId, String[] sourceTranslationIds) {
+    public void onConfirmTabsDialog(String targetTranslationId, List<String> sourceTranslationIds) {
         String[] oldSourceTranslationIds = App.getSelectedSourceTranslations(targetTranslationId);
         for(String id:oldSourceTranslationIds) {
             App.removeOpenSourceTranslation(targetTranslationId, id);
         }
 
-        if(sourceTranslationIds.length > 0) {
+        if(sourceTranslationIds.size() > 0) {
             // save open source language tabs
-            for(String id:sourceTranslationIds) {
-                ResourceContainer resourceContainer = null;
+            for(String slug:sourceTranslationIds) {
+                ResourceContainer rc = null;
                 try {
-                    resourceContainer = mLibrary.open(id);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                if(resourceContainer != null) {
-                    App.addOpenSourceTranslation(targetTranslationId, resourceContainer.slug);
+                    rc = mLibrary.open(slug);
+                    App.addOpenSourceTranslation(targetTranslationId, slug);
                     TargetTranslation targetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
                     if (targetTranslation != null) {
                         try {
-                            targetTranslation.addSourceTranslation(resourceContainer);
+                            targetTranslation.addSourceTranslation(rc);
                         } catch (JSONException e) {
-                            Logger.e(this.getClass().getName(), "Failed to record source translation (" + resourceContainer.slug + ") usage in the target translation " + targetTranslation.getId(), e);
+                            Logger.e(this.getClass().getName(), "Failed to record source translation (" + slug + ") usage in the target translation " + targetTranslation.getId(), e);
                         }
                     }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
 

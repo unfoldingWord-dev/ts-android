@@ -88,7 +88,7 @@ public class ServerLibraryAdapter extends BaseAdapter {
         // indicate downloaded
         if(!mIsProcessed[position]) {
             mIsProcessed[position] = true;
-            mHasSource[position] = mLibrary.projectHasSource(getItem(position).getId());
+            mHasSource[position] = mLibrary.projectHasSource(getItem(position).slug);
         }
         if(mHasSource[position]) {
             if(mSelectedIndex == position) {
@@ -101,7 +101,7 @@ public class ServerLibraryAdapter extends BaseAdapter {
         }
 
         // indicate updates
-        if(mHasSource[position] && mUpdates.hasProjectUpdate(getItem(position).getId())) {
+        if(mHasSource[position] && mUpdates.hasProjectUpdate(getItem(position).slug)) {
             if(mSelectedIndex == position) {
                 holder.mStatus.setBackgroundResource(R.drawable.ic_refresh_white_24dp);
             } else {

@@ -27,6 +27,7 @@ import com.door43.translationstudio.core.CheckingQuestion;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TranslationArticle;
+import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.TranslationNote;
 import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.core.Typography;
@@ -43,6 +44,7 @@ import org.sufficientlysecure.htmltextview.LocalLinkMovementMethod;
 
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.SourceLanguage;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 
 /**
  * Created by joel on 9/8/2015.
@@ -188,14 +190,14 @@ public class ReviewModeFragment extends ViewModeFragment {
             mResourcesDrawerContent.removeAllViews();
             mResourcesDrawerContent.addView(list);
             ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), R.layout.list_clickable_text);
-            TranslationWord[] words = library.getTranslationWords(getSourceTranslation());
-            if(words.length == 0) {
-                words = library.getTranslationWords(library.getDefaultSourceTranslation(getSourceTranslation().projectSlug, "en"));
-            }
-            for(TranslationWord word:words) {
-                adapter.add(word.getTerm());
-            }
-            final TranslationWord[] staticWords = words;
+//            TranslationWord[] words = library.getTranslationWords(getSelectedResourceContainer());
+//            if(words.length == 0) {
+//                words = library.getTranslationWords(library.getDefaultSourceTranslation(getSelectedResourceContainer().projectSlug, "en"));
+//            }
+//            for(TranslationWord word:words) {
+//                adapter.add(word.getTerm());
+//            }
+            final TranslationWord[] staticWords = new TranslationWord[0];// words;
             list.setAdapter(adapter);
             list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
@@ -214,7 +216,7 @@ public class ReviewModeFragment extends ViewModeFragment {
      * @param slug
      */
     private void renderTranslationArticle(String volume, String manual, String slug) {
-        TranslationArticle article = getPreferredTranslationArticle(getSourceTranslation(), volume, manual, slug);
+        TranslationArticle article = getPreferredTranslationArticle(getSelectedResourceContainer(), volume, manual, slug);
         if(mResourcesDrawerContent != null) {
             mResourcesDrawerContent.setVisibility(View.GONE);
         }
@@ -227,14 +229,13 @@ public class ReviewModeFragment extends ViewModeFragment {
 //            TextView title = (TextView)view.findViewById(R.id.title);
 //            TextView descriptionView = (TextView)view.findViewById(R.id.description);
 
-            final Door43Client library = App.getLibrary();
-            final SourceTranslation sourceTranslation = getSourceTranslation();
+            final ResourceContainer resourceContainer = getSelectedResourceContainer();
             LinkToHtmlRenderer renderer = new LinkToHtmlRenderer(new LinkToHtmlRenderer.OnPreprocessLink() {
                 @Override
                 public boolean onPreprocess(Span span) {
                     if(span instanceof ArticleLinkSpan) {
                         ArticleLinkSpan link = ((ArticleLinkSpan)span);
-                        TranslationArticle article = getPreferredTranslationArticle(sourceTranslation, link.getVolume(), link.getManual(), link.getId());
+                        TranslationArticle article = getPreferredTranslationArticle(resourceContainer, link.getVolume(), link.getManual(), link.getId());
                         if(article != null) {
                             link.setTitle(article.getTitle());
                         } else {
@@ -242,10 +243,12 @@ public class ReviewModeFragment extends ViewModeFragment {
                         }
                     } else if(span instanceof PassageLinkSpan) {
                         PassageLinkSpan link = (PassageLinkSpan)span;
-                        Frame frame = library.getFrame(sourceTranslation, link.getChapterId(), link.getFrameId());
-                        String title = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(link.getChapterId()) + ":" + frame.getTitle();
+                        String text = resourceContainer.readChunk(link.getChapterId(), link.getFrameId());
+
+//                        Frame frame = library.getFrame(resourceContainer, link.getChapterId(), link.getFrameId());
+                        String title = resourceContainer.readChunk("front", "title") + " " + Integer.parseInt(link.getChapterId()) + ":" + Frame.parseVerseTitle(text, TranslationFormat.parse(resourceContainer.contentMimeType));
                         link.setTitle(title);
-                        return library.getFrame(sourceTranslation, link.getChapterId(), link.getFrameId()) != null;
+                        return !resourceContainer.readChunk(link.getChapterId(), link.getFrameId()).isEmpty();
                     }
                     return true;
                 }
@@ -335,9 +338,9 @@ public class ReviewModeFragment extends ViewModeFragment {
         mTranslationNoteId = null;
 
         final Door43Client library = App.getLibrary();
-        final SourceTranslation sourceTranslation = getSourceTranslation();
-        SourceLanguage sourceLanguage = library.index().getSourceLanguage(sourceTranslation.sourceLanguageSlug);
-        TranslationWord word = getPreferredWord(sourceTranslation, translationWordId);
+        final ResourceContainer rc = getSelectedResourceContainer();
+//        SourceLanguage sourceLanguage = library.index().getSourceLanguage(sourceTranslation.sourceLanguageSlug);
+        TranslationWord word = null;//getPreferredWord(sourceTranslation, translationWordId);
         if(mResourcesDrawerContent != null) {
             mResourcesDrawerContent.setVisibility(View.GONE);
         }
@@ -366,24 +369,25 @@ public class ReviewModeFragment extends ViewModeFragment {
 
             wordTitle.setText(word.getTerm());
             descriptionTitle.setText(word.getDefinitionTitle());
-            Typography.formatTitle(getActivity(), descriptionTitle, sourceLanguage.slug, sourceLanguage.direction);
+            Typography.formatTitle(getActivity(), descriptionTitle, rc.language.slug, rc.language.direction);
             HtmlRenderer renderer = new HtmlRenderer(new HtmlRenderer.OnPreprocessLink() {
                 @Override
                 public boolean onPreprocess(Span span) {
                     if(span instanceof ArticleLinkSpan) {
                         ArticleLinkSpan link = ((ArticleLinkSpan)span);
-                        TranslationArticle article = getPreferredTranslationArticle(sourceTranslation, link.getVolume(), link.getManual(), link.getId());
+                        TranslationArticle article = getPreferredTranslationArticle(rc, link.getVolume(), link.getManual(), link.getId());
                         if(article != null) {
                             link.setTitle(article.getTitle());
                         } else {
                             return false;
                         }
                     } else if(span instanceof PassageLinkSpan) {
-                        PassageLinkSpan link = (PassageLinkSpan)span;
-                        Frame frame = library.getFrame(sourceTranslation, link.getChapterId(), link.getFrameId());
-                        String title = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(link.getChapterId()) + ":" + frame.getTitle();
-                        link.setTitle(title);
-                        return library.getFrame(sourceTranslation, link.getChapterId(), link.getFrameId()) != null;
+//                        PassageLinkSpan link = (PassageLinkSpan)span;
+//                        Frame frame = library.getFrame(rc, link.getChapterId(), link.getFrameId());
+//                        String title = rc.getProjectTitle() + " " + Integer.parseInt(link.getChapterId()) + ":" + frame.getTitle();
+//                        link.setTitle(title);
+//                        return library.getFrame(rc, link.getChapterId(), link.getFrameId()) != null;
+                        return false;
                     }
                     return true;
                 }
@@ -410,11 +414,11 @@ public class ReviewModeFragment extends ViewModeFragment {
             });
             descriptionView.setText(renderer.render(word.getDefinition()));
             descriptionView.setMovementMethod(LocalLinkMovementMethod.getInstance());
-            Typography.formatSub(getActivity(), descriptionView, sourceLanguage.slug, sourceLanguage.direction);
+            Typography.formatSub(getActivity(), descriptionView, rc.language.slug, rc.language.direction);
 
             seeAlsoView.removeAllViews();
             for(int i = 0; i < word.getSeeAlso().length; i ++) {
-                final TranslationWord relatedWord = getPreferredWord(sourceTranslation, word.getSeeAlso()[i]);
+                final TranslationWord relatedWord = null;//getPreferredWord(rc, word.getSeeAlso()[i]);
                 if(relatedWord != null) {
                     Button button = new Button(new ContextThemeWrapper(getActivity(), R.style.Widget_Button_Tag), null, R.style.Widget_Button_Tag);
                     button.setText(relatedWord.getTerm());
@@ -424,7 +428,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                             onTranslationWordClick(relatedWord.getId(), mResourcesDrawer.getLayoutParams().width);
                         }
                     });
-                    Typography.formatSub(getActivity(), button, sourceLanguage.slug, sourceLanguage.direction);
+                    Typography.formatSub(getActivity(), button, rc.language.slug, rc.language.direction);
                     seeAlsoView.addView(button);
                 }
             }
@@ -433,15 +437,15 @@ public class ReviewModeFragment extends ViewModeFragment {
             } else {
                 seeAlsoTitle.setVisibility(View.GONE);
             }
-            Typography.formatTitle(getActivity(), seeAlsoTitle, sourceLanguage.slug, sourceLanguage.direction);
+            Typography.formatTitle(getActivity(), seeAlsoTitle, rc.language.slug, rc.language.direction);
 
             examplesView.removeAllViews();
             for(final TranslationWord.Example example:word.getExamples()) {
                 LinearLayout exampleView = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_example_item, null);
                 TextView referenceView = (TextView)exampleView.findViewById(R.id.reference);
                 HtmlTextView passageView = (HtmlTextView)exampleView.findViewById(R.id.passage);
-                Frame frame = library.getFrame(sourceTranslation, example.getChapterId(), example.getFrameId());
-                referenceView.setText(sourceTranslation.getProjectTitle() + " " + Integer.parseInt(example.getChapterId()) + ":" + frame.getTitle());
+//                Frame frame = library.getFrame(rc, example.getChapterId(), example.getFrameId());
+//                referenceView.setText(rc.getProjectTitle() + " " + Integer.parseInt(example.getChapterId()) + ":" + frame.getTitle());
                 passageView.setHtmlFromString(example.getPassage(), true);
                 exampleView.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -449,8 +453,8 @@ public class ReviewModeFragment extends ViewModeFragment {
                         scrollToFrame(example.getChapterId(), example.getFrameId());
                     }
                 });
-                Typography.formatSub(getActivity(), referenceView, sourceLanguage.slug, sourceLanguage.direction);
-                Typography.formatSub(getActivity(), passageView, sourceLanguage.slug, sourceLanguage.direction);
+                Typography.formatSub(getActivity(), referenceView, rc.language.slug, rc.language.direction);
+                Typography.formatSub(getActivity(), passageView, rc.language.slug, rc.language.direction);
                 examplesView.addView(exampleView);
             }
             if(word.getExamples().length > 0) {
@@ -458,7 +462,7 @@ public class ReviewModeFragment extends ViewModeFragment {
             } else {
                 examplesTitle.setVisibility(View.GONE);
             }
-            Typography.formatTitle(getActivity(), examplesTitle, sourceLanguage.slug, sourceLanguage.direction);
+            Typography.formatTitle(getActivity(), examplesTitle, rc.language.slug, rc.language.direction);
 
             mScrollingResourcesDrawerContent.removeAllViews();
             mScrollingResourcesDrawerContent.addView(view);
@@ -476,8 +480,8 @@ public class ReviewModeFragment extends ViewModeFragment {
         mChapterId = chapterId;
 
         final Door43Client library = App.getLibrary();
-        final SourceTranslation sourceTranslation = getSourceTranslation();
-        TranslationNote note = getPreferredNote(sourceTranslation, chapterId, frameId, noteId);
+        final ResourceContainer sourceTranslation = getSelectedResourceContainer();
+        TranslationNote note = null;//getPreferredNote(sourceTranslation, chapterId, frameId, noteId);
         if(mResourcesDrawerContent != null) {
             mResourcesDrawerContent.setVisibility(View.GONE);
         }
@@ -506,12 +510,13 @@ public class ReviewModeFragment extends ViewModeFragment {
                         PassageLinkSpan link = (PassageLinkSpan)span;
                         String chapterID = link.getChapterId();
                         // TODO: 3/30/2016 rather than assuming passage links are always referring to the current source translation we need to support links to other source translations
-                        Frame frame = library.getFrame(sourceTranslation, chapterID, link.getFrameId());
+                        Frame frame = null;//library.getFrame(sourceTranslation, chapterID, link.getFrameId());
                         if(frame != null) {
-                            String chapter = (chapterID != null) ? String.valueOf(Integer.parseInt(chapterID)) : ""; // handle null chapter ID
-                            String title = sourceTranslation.getProjectTitle() + " " + chapter + ":" + frame.getTitle();
-                            link.setTitle(title);
-                            return library.getFrame(sourceTranslation, chapterID, link.getFrameId()) != null;
+//                            String chapter = (chapterID != null) ? String.valueOf(Integer.parseInt(chapterID)) : ""; // handle null chapter ID
+//                            String title = sourceTranslation.getProjectTitle() + " " + chapter + ":" + frame.getTitle();
+//                            link.setTitle(title);
+//                            return library.getFrame(sourceTranslation, chapterID, link.getFrameId()) != null;
+                            return false;
                         } else {
                             return false;
                         }
@@ -541,7 +546,7 @@ public class ReviewModeFragment extends ViewModeFragment {
             });
 
             title.setText(note.getTitle());
-            SourceLanguage sourceLanguage = library.index().getSourceLanguage(sourceTranslation.sourceLanguageSlug);
+            SourceLanguage sourceLanguage = library.index().getSourceLanguage(sourceTranslation.language.slug);
             Typography.format(getActivity(), title, sourceLanguage.slug, sourceLanguage.direction);
 
             descriptionView.setText(renderer.render(note.getBody()));
@@ -565,9 +570,9 @@ public class ReviewModeFragment extends ViewModeFragment {
         mChapterId = chapterId;
 
         final Door43Client library = App.getLibrary();
-        SourceTranslation sourceTranslation = getSourceTranslation();
-        CheckingQuestion question = getPreferredQuestion(sourceTranslation, chapterId, frameId, questionId);
-        SourceLanguage sourceLanguage = library.index().getSourceLanguage(sourceTranslation.sourceLanguageSlug);
+        ResourceContainer sourceTranslation = getSelectedResourceContainer();
+        CheckingQuestion question = null;//getPreferredQuestion(sourceTranslation, chapterId, frameId, questionId);
+        SourceLanguage sourceLanguage = library.index().getSourceLanguage(sourceTranslation.language.slug);
         if(mResourcesDrawerContent != null && question != null) {
             mResourcesDrawerContent.setVisibility(View.GONE);
         }
@@ -591,8 +596,8 @@ public class ReviewModeFragment extends ViewModeFragment {
             referencesLayout.removeAllViews();
             for(final CheckingQuestion.Reference reference:question.getReferences()) {
                 TextView referenceView = (TextView) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_reference_item, null);
-                Frame frame = library.getFrame(sourceTranslation, reference.getChapterId(), reference.getFrameId());
-                referenceView.setText(sourceTranslation.getProjectTitle() + " " + Integer.parseInt(reference.getChapterId()) + ":" + frame.getTitle());
+//                Frame frame = library.getFrame(sourceTranslation, reference.getChapterId(), reference.getFrameId());
+//                referenceView.setText(sourceTranslation.getProjectTitle() + " " + Integer.parseInt(reference.getChapterId()) + ":" + frame.getTitle());
                 Typography.formatSub(getActivity(), referenceView, sourceLanguage.slug, sourceLanguage.direction);
                 referenceView.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -669,10 +674,10 @@ public class ReviewModeFragment extends ViewModeFragment {
      */
     private static TranslationNote getPreferredNote(SourceTranslation sourceTranslation, String chapterId, String frameId, String noteId) {
         Door43Client library = App.getLibrary();
-        TranslationNote note = library.getTranslationNote(sourceTranslation, chapterId, frameId, noteId);
-        if(note == null && !sourceTranslation.sourceLanguageSlug.equals("en")) {
-            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
-            note = library.getTranslationNote(defaultSourceTranslation, chapterId, frameId, noteId);
+        TranslationNote note = null;//library.getTranslationNote(sourceTranslation, chapterId, frameId, noteId);
+        if(note == null && !sourceTranslation.language.slug.equals("en")) {
+//            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
+//            note = library.getTranslationNote(defaultSourceTranslation, chapterId, frameId, noteId);
         }
         return note;
     }
@@ -685,10 +690,10 @@ public class ReviewModeFragment extends ViewModeFragment {
      */
     private static TranslationWord getPreferredWord(SourceTranslation sourceTranslation, String wordId) {
         Door43Client library = App.getLibrary();
-        TranslationWord word = library.getTranslationWord(sourceTranslation, wordId);
-        if(word == null && !sourceTranslation.sourceLanguageSlug.equals("en")) {
-            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
-            word = library.getTranslationWord(defaultSourceTranslation, wordId);
+        TranslationWord word = null;//library.getTranslationWord(sourceTranslation, wordId);
+        if(word == null && !sourceTranslation.language.slug.equals("en")) {
+//            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
+//            word = library.getTranslationWord(defaultSourceTranslation, wordId);
         }
         return word;
     }
@@ -703,10 +708,10 @@ public class ReviewModeFragment extends ViewModeFragment {
      */
     private static CheckingQuestion getPreferredQuestion(SourceTranslation sourceTranslation, String chapterId, String frameId, String questionId) {
         Door43Client library = App.getLibrary();
-        CheckingQuestion question = library.getCheckingQuestion(sourceTranslation, chapterId, frameId, questionId);
-        if(question == null && !sourceTranslation.sourceLanguageSlug.equals("en")) {
-            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
-            question = library.getCheckingQuestion(defaultSourceTranslation, chapterId, frameId, questionId);
+        CheckingQuestion question = null;//library.getCheckingQuestion(sourceTranslation, chapterId, frameId, questionId);
+        if(question == null && !sourceTranslation.language.slug.equals("en")) {
+//            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
+//            question = library.getCheckingQuestion(defaultSourceTranslation, chapterId, frameId, questionId);
         }
         return question;
     }
@@ -714,18 +719,18 @@ public class ReviewModeFragment extends ViewModeFragment {
     /**
      * Returns the preferred translation academy
      * if none exist in the source language it will return the english version.
-     * @param sourceTranslation
+     * @param resourceContainer
      * @param volume
      *@param manual
      * @param articleId  @return
      */
-    private static TranslationArticle getPreferredTranslationArticle(SourceTranslation sourceTranslation, String volume, String manual, String articleId) {
-        Door43Client library = App.getLibrary();
-        TranslationArticle article = library.getTranslationArticle(sourceTranslation, volume, manual, articleId);
-        if(article == null && !sourceTranslation.sourceLanguageSlug.equals("en")) {
-            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
-            article = library.getTranslationArticle(defaultSourceTranslation, volume, manual, articleId);
-        }
-        return article;
+    private static TranslationArticle getPreferredTranslationArticle(ResourceContainer resourceContainer, String volume, String manual, String articleId) {
+//        Door43Client library = App.getLibrary();
+//        TranslationArticle article = library.getTranslationArticle(resourceContainer, volume, manual, articleId);
+//        if(article == null && !resourceContainer.sourceLanguageSlug.equals("en")) {
+//            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(resourceContainer.projectSlug, "en");
+//            article = library.getTranslationArticle(defaultSourceTranslation, volume, manual, articleId);
+//        }
+        return null;//article;
     }
 }

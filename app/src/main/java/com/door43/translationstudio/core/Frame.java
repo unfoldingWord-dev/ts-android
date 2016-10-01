@@ -125,6 +125,24 @@ public class Frame {
     }
 
     /**
+     * Parses the text for the verse title
+     * e.g. 1-5
+     * @param text
+     * @param format
+     * @return
+     */
+    public static String parseVerseTitle(String text, TranslationFormat format) {
+        String title = "";
+        int[] verses = getVerseRange(text, format);
+        if(verses.length == 1) {
+            title = verses[0] + "";
+        } else if(verses.length == 2) {
+            title = verses[0] + "-" + verses[1];
+        }
+        return title;
+    }
+
+    /**
      * Returns the formatted beginning verse in this frame.
      * @return
      */

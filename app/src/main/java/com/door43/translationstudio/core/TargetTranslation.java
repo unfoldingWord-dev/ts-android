@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.support.annotation.Nullable;
 
+import org.unfoldingword.resourcecontainer.ContainerTools;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.door43client.models.TargetLanguage;
 import org.unfoldingword.tools.logger.Logger;
@@ -468,8 +469,8 @@ public class TargetTranslation {
                 String sourceLanguageSlug = obj.getString("language_id");
                 String resourceSlug = obj.getString("resource_id");
 
-                SourceTranslation sourceTranslation =  SourceTranslation.simple(this.projectId, sourceLanguageSlug, resourceSlug);
-                sources.add(sourceTranslation.getId());
+                String containerSlug = ContainerTools.makeSlug(sourceLanguageSlug, this.projectId, resourceSlug);
+                sources.add(containerSlug);
             }
 
             return sources.toArray(new String[sources.size()]);
@@ -813,24 +814,24 @@ public class TargetTranslation {
 
     /**
      * Marks the translation of a chapter title as complete
-     * @param chapter
+     * @param chapterSlug
      * @return returns true if the translation actually exists and the update was successful
      */
-    public boolean finishChapterTitle(Chapter chapter) {
-        File file = getChapterTitleFile(chapter.getId());
+    public boolean finishChapterTitle(String chapterSlug) {
+        File file = getChapterTitleFile(chapterSlug);
         if(file.exists()) {
-            return closeChunk(chapter.getId() + "-title");
+            return closeChunk(chapterSlug + "-title");
         }
         return false;
     }
 
     /**
      * Marks the translation of a chapter title as not complete
-     * @param chapter
+     * @param chapterSlug
      * @return
      */
-    public boolean reopenChapterTitle(Chapter chapter) {
-        return openChunk(chapter.getId() + "-title");
+    public boolean reopenChapterTitle(String chapterSlug) {
+        return openChunk(chapterSlug + "-title");
     }
 
     /**
@@ -844,24 +845,24 @@ public class TargetTranslation {
 
     /**
      * Marks the translation of a chapter title as complete
-     * @param chapter
+     * @param chapterSlug
      * @return returns true if the translation actually exists and the update was successful
      */
-    public boolean finishChapterReference(Chapter chapter) {
-        File file = getChapterReferenceFile(chapter.getId());
+    public boolean finishChapterReference(String chapterSlug) {
+        File file = getChapterReferenceFile(chapterSlug);
         if(file.exists()) {
-            return closeChunk(chapter.getId() + "-reference");
+            return closeChunk(chapterSlug + "-reference");
         }
         return false;
     }
 
     /**
      * Marks the translation of a chapter title as not complete
-     * @param chapter
+     * @param chapterSlug
      * @return
      */
-    public boolean reopenChapterReference(Chapter chapter) {
-        return openChunk(chapter.getId() + "-reference");
+    public boolean reopenChapterReference(String chapterSlug) {
+        return openChunk(chapterSlug + "-reference");
     }
 
     /**
@@ -875,24 +876,26 @@ public class TargetTranslation {
 
     /**
      * Marks the translation of a frame as complete
-     * @param frame
+     * @param chapterSlug
+     * @param chunkSlug
      * @return returns true if the translation actually exists and the update was successful
      */
-    public boolean finishFrame(Frame frame) {
-        File file = getFrameFile(frame.getChapterId(), frame.getId());
+    public boolean finishFrame(String chapterSlug, String chunkSlug) {
+        File file = getFrameFile(chapterSlug, chunkSlug);
         if(file.exists()) {
-            return closeChunk(frame.getComplexId());
+            return closeChunk(chapterSlug + "-" + chunkSlug);
         }
         return false;
     }
 
     /**
      * Marks the translation of a frame as not complete
-     * @param frame
+     * @param chapterSlug
+     * @param chunkSlug
      * @return
      */
-    public boolean reopenFrame(Frame frame) {
-        return openChunk(frame.getComplexId());
+    public boolean reopenFrame(String chapterSlug, String chunkSlug) {
+        return openChunk(chapterSlug + "-" + chunkSlug);
     }
 
     /**

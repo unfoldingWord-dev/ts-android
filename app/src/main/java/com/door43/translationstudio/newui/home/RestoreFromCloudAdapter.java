@@ -12,13 +12,12 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TargetTranslation;
 
 import org.unfoldingword.door43client.Door43Client;
-import org.unfoldingword.door43client.models.Project;
 import org.unfoldingword.door43client.models.TargetLanguage;
 import org.unfoldingword.gogsclient.Repository;
+import org.unfoldingword.resourcecontainer.Project;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Created by joel on 11/6/2015.

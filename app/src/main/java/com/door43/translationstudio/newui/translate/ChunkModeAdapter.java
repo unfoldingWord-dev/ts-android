@@ -90,7 +90,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         mContext = context;
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
-        mSourceLanguage = mLibrary.index().getSourceLanguage(mSourceTranslation.sourceLanguageSlug);
+        mSourceLanguage = mLibrary.index().getSourceLanguage(mSourceTranslation.language.slug);
         mTargetLanguage = App.languageFromTargetTranslation(mTargetTranslation);
 
         Chapter[] chapters = mLibrary.getChapters(mSourceTranslation);
@@ -147,12 +147,12 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             if(sourceTranslation != null) {
                 ContentValues values = new ContentValues();
                 // include the resource id if there are more than one
-                if(mLibrary.getResources(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug).length > 1) {
-                    values.put("title", sourceTranslation.getSourceLanguageTitle() + " " + sourceTranslation.resourceSlug.toUpperCase());
+                if(mLibrary.index().getResources(sourceTranslation.language.slug, sourceTranslation.project.slug).size() > 1) {
+                    values.put("title", sourceTranslation.language.name + " " + sourceTranslation.resource.slug.toUpperCase());
                 } else {
-                    values.put("title", sourceTranslation.getSourceLanguageTitle());
+                    values.put("title", sourceTranslation.language.name);
                 }
-                values.put("tag", sourceTranslation.getId());
+                values.put("tag", sourceTranslation.resourceContainerSlug);
                 tabContents.add(values);
             }
         }
@@ -164,8 +164,8 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
      * @param sourceTranslationId
      */
     public void setSourceTranslation(String sourceTranslationId) {
-        mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
-        mSourceLanguage = mLibrary.index().getSourceLanguage(mSourceTranslation.sourceLanguageSlug);
+        mSourceTranslation = mLibrary.open(sourceTranslationId);
+        mSourceLanguage = mLibrary.index().getSourceLanguage(mSourceTranslation.language.slug);
         mChapters = new HashMap<>();
 
         Chapter[] chapters = mLibrary.getChapters(mSourceTranslation);
@@ -240,7 +240,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
     @Override
     public void reload() {
-        setSourceTranslation(mSourceTranslation.getId());
+        setSourceTranslation(mSourceTranslation.resourceContainerSlug);
     }
 
     @Override
@@ -375,7 +375,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         // select correct tab
         for(int i = 0; i < holder.mTabLayout.getTabCount(); i ++) {
             TabLayout.Tab tab = holder.mTabLayout.getTabAt(i);
-            if(tab.getTag().equals(mSourceTranslation.getId())) {
+            if(tab.getTag().equals(mSourceTranslation.resourceContainerSlug)) {
                 tab.select();
                 break;
             }
@@ -449,7 +449,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     private void renderProjectTitle(final ViewHolder holder, final int position) {
         holder.mSourceTitle.setText("");
         boolean targetSearch = isTargetSearch();
-        CharSequence projectTitle = renderText(mSourceTranslation.getProjectTitle(), TranslationFormat.DEFAULT, !targetSearch);
+        CharSequence projectTitle = renderText(mSourceTranslation.project.name, TranslationFormat.DEFAULT, !targetSearch);
         CharSequence targetTitle = renderText(mTargetTranslation.getTargetLanguageName(), mTargetFormat, targetSearch);
         holder.mSourceBody.setText(projectTitle);
         holder.mTargetTitle.setText(targetTitle);
@@ -587,7 +587,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         Chapter chapter = mChapters.get(chapterId);
         if(chapter != null) {
             // source title
-            String sourceChapterTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
+            String sourceChapterTitle = mSourceTranslation.project.name + " " + Integer.parseInt(chapter.getId());
             holder.mSourceTitle.setText(sourceChapterTitle);
 
             // source chapter title
@@ -654,7 +654,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         Chapter chapter = mChapters.get(chapterId);
         if(chapter != null) {
             // source title
-            String sourceChapterTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
+            String sourceChapterTitle = mSourceTranslation.project.name + " " + Integer.parseInt(chapter.getId());
             holder.mSourceTitle.setText(sourceChapterTitle);
 
             // source chapter reference
@@ -727,7 +727,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         Chapter chapter = mChapters.get(frame.getChapterId());
         String sourceChapterTitle = chapter.title;
         if(chapter.title.isEmpty()) {
-            sourceChapterTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
+            sourceChapterTitle = mSourceTranslation.project.name + " " + Integer.parseInt(chapter.getId());
         }
         sourceChapterTitle += ":" + frame.getTitle();
         holder.mSourceTitle.setText(sourceChapterTitle);
@@ -1093,7 +1093,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             } else if(isProjectTitle) {
                 ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
                 renderedTargetBody = projectTranslation.getTitle();
-                renderedSourceBody = sourceTranslation.getProjectTitle();
+                renderedSourceBody = sourceTranslation.project.name;
             } else {
                 FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(frame);
                 TranslationFormat targetFormat =  targetTranslation.getFormat();
