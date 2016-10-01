@@ -6,13 +6,13 @@ import android.util.Log;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.SettingsActivity;
-import com.door43.translationstudio.core.CheckingQuestion;
-import com.door43.translationstudio.core.Downloader;
-import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.LibraryData;
-import com.door43.translationstudio.core.SourceTranslation;
-import com.door43.translationstudio.core.TranslationWord;
+//import com.door43.translationstudio.SettingsActivity;
+//import com.door43.translationstudio.core.CheckingQuestion;
+//import com.door43.translationstudio.core.Downloader;
+//import com.door43.translationstudio.core.Library;
+//import com.door43.translationstudio.core.LibraryData;
+//import com.door43.translationstudio.core.SourceTranslation;
+//import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.newui.library.ServerLibraryDetailFragment;
 import com.door43.translationstudio.tasks.DownloadSourceLanguageTask;
 
@@ -28,17 +28,17 @@ import java.util.concurrent.TimeUnit;
 @MediumTest
 public class DownloaderSourceLanguageTaskTest extends InstrumentationTestCase  implements ManagedTask.OnFinishedListener,  ManagedTask.OnProgressListener {
 
-    private Downloader mDownloader;
-    private LibraryData mIndex;
+//    private Downloader mDownloader;
+//    private LibraryData mIndex;
     private boolean success = false;
     private int progressCount = 0;
     private final CountDownLatch signal = new CountDownLatch(1);
 
     @Override
     protected void setUp() throws Exception {
-        mIndex = new LibraryData(App.context());
-        String server = App.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, App.context().getResources().getString(R.string.pref_default_media_server));
-        mDownloader = new Downloader(server + App.context().getResources().getString(R.string.root_catalog_api));
+//        mIndex = new LibraryData(App.context());
+//        String server = App.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, App.context().getResources().getString(R.string.pref_default_media_server));
+//        mDownloader = new Downloader(server + App.context().getResources().getString(R.string.root_catalog_api));
     }
 
     public void test01DownloadSourceValid() {

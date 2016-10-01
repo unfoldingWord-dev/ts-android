@@ -41,7 +41,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         Logger.flush();
         mTestContext = getInstrumentation().getContext();
         mAppContext = App.context();
-        mTargetLanguage = mLibrary.getTargetLanguage("aae");
+        mTargetLanguage = mLibrary.index().getTargetLanguage("aae");
     }
 
     @Override
