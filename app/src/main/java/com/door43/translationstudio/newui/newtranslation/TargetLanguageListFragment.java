@@ -30,7 +30,7 @@ public class TargetLanguageListFragment extends BaseFragment implements Searchab
         View rootView = inflater.inflate(R.layout.fragment_language_list, container, false);
 
         ListView list = (ListView) rootView.findViewById(R.id.list);
-        mAdapter = new TargetLanguageAdapter(App.getLibrary().getTargetLanguages());
+        mAdapter = new TargetLanguageAdapter(App.getLibrary().index().getTargetLanguages());
         list.setAdapter(mAdapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

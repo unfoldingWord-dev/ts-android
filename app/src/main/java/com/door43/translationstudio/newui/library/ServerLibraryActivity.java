@@ -82,7 +82,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
             // populated cached data
             Door43Client serverLibrary = App.getLibrary();
             List<Project> projects = serverLibrary.index().getProjects(App.getDeviceLanguageCode());
-            mListFragment.setData(serverLibrary.getAvailableUpdates(), projects);
+//            mListFragment.setData(serverLibrary.getAvailableUpdates(), projects);
 
             // connect to tasks
             DownloadAllProjectsTask downloadAllTask = (DownloadAllProjectsTask)TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
@@ -191,11 +191,11 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
         });
         searchViewAction.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         // display download updates
-        if(App.getLibrary().getAvailableUpdates().numSourceTranslationUpdates() > 0) {
-            menu.findItem(R.id.action_download_updates).setVisible(true);
-        } else {
-            menu.findItem(R.id.action_download_updates).setVisible(false);
-        }
+//        if(App.getLibrary().getAvailableUpdates().numSourceTranslationUpdates() > 0) {
+//            menu.findItem(R.id.action_download_updates).setVisible(true);
+//        } else {
+//            menu.findItem(R.id.action_download_updates).setVisible(false);
+//        }
         return true;
     }
 
@@ -236,10 +236,10 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                                 DownloadUpdatesTask task = (DownloadUpdatesTask)TaskManager.getTask(DownloadUpdatesTask.TASK_ID);
                                 if(task == null) {
                                     // start new task
-                                    task = new DownloadUpdatesTask(App.getLibrary().getAvailableUpdates());
-                                    task.addOnProgressListener(ServerLibraryActivity.this);
-                                    task.addOnFinishedListener(ServerLibraryActivity.this);
-                                    TaskManager.addTask(task, DownloadUpdatesTask.TASK_ID);
+//                                    task = new DownloadUpdatesTask(App.getLibrary().getAvailableUpdates());
+//                                    task.addOnProgressListener(ServerLibraryActivity.this);
+//                                    task.addOnFinishedListener(ServerLibraryActivity.this);
+//                                    TaskManager.addTask(task, DownloadUpdatesTask.TASK_ID);
                                 } else {
                                     connectDownloadTasks();
                                 }
@@ -328,7 +328,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                 invalidateOptionsMenu();
                 Door43Client serverLibrary = App.getLibrary();
                 List<Project> projects = serverLibrary.index().getProjects(App.getDeviceLanguageCode(), true);
-                mListFragment.setData(serverLibrary.getAvailableUpdates(), projects);
+//                mListFragment.setData(serverLibrary.getAvailableUpdates(), projects);
 
                 if(mProgressDialog != null && mProgressDialog.isShowing()) {
                     mProgressDialog.dismiss();

@@ -12,6 +12,7 @@ import android.support.v7.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import org.json.JSONException;
 import org.unfoldingword.door43client.models.Questionnaire;
 import org.unfoldingword.door43client.models.SourceLanguage;
 import org.unfoldingword.door43client.models.TargetLanguage;
@@ -302,7 +303,12 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
         outState.putSerializable(STATE_TARGET_TRANSLATION_ID, mNewTargetTranslationId);
         outState.putBoolean(STATE_NEW_LANGUAGE, createdNewLanguage);
         if(mSelectedTargetLanguage != null) {
-            JSONObject targetLanguageJson = mSelectedTargetLanguage.toApiFormatJson();
+            JSONObject targetLanguageJson = null;
+            try {
+                targetLanguageJson = mSelectedTargetLanguage.toJSON();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
             if(targetLanguageJson != null) {
                 outState.putString(STATE_TARGET_LANGUAGE, targetLanguageJson.toString());
             }

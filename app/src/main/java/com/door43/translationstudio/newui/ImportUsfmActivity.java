@@ -625,7 +625,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         if (savedInstanceState != null) {
             String targetLanguageId = savedInstanceState.getString(STATE_TARGET_LANGUAGE_ID, null);
             if (targetLanguageId != null) {
-                mTargetLanguage = App.getLibrary().getTargetLanguage(targetLanguageId);
+                mTargetLanguage = App.getLibrary().index().getTargetLanguage(targetLanguageId);
             }
 
             mCurrentState = eImportState.fromInt(savedInstanceState.getInt(STATE_CURRENT_STATE, eImportState.needLanguage.getValue()));
@@ -763,7 +763,7 @@ public class ImportUsfmActivity extends BaseActivity implements TargetLanguageLi
         outState.putInt(STATE_CURRENT_STATE, currentState.getValue());
 
         if (mTargetLanguage != null) {
-            outState.putString(STATE_TARGET_LANGUAGE_ID, mTargetLanguage.getId());
+            outState.putString(STATE_TARGET_LANGUAGE_ID, mTargetLanguage.slug);
         } else {
             outState.remove(STATE_TARGET_LANGUAGE_ID);
         }

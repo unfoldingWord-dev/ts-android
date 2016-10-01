@@ -11,6 +11,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.resourcecontainer.Resource;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import java.io.File;
@@ -18,8 +20,11 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
+import java.util.List;
 
 import org.unfoldingword.door43client.models.TargetLanguage;
+
+import org.unfoldingword.resourcecontainer.Project;
 
 /**
  * Created by joel on 11/4/2015.
@@ -102,7 +107,7 @@ public class TargetTranslationMigrator {
             if(tt != null) {
                 NewLanguageRequest newRequest = tt.getNewLanguageRequest();
                 if(newRequest != null) {
-                    TargetLanguage approvedTargetLanguage = App.getLibrary().getApprovedTargetLanguage(newRequest.tempLanguageCode);
+                    TargetLanguage approvedTargetLanguage = App.getLibrary().index().getApprovedTargetLanguage(newRequest.tempLanguageCode);
                     if(approvedTargetLanguage != null) {
                         // this language request has already been approved so let's migrate it
                         try {
@@ -145,7 +150,7 @@ public class TargetTranslationMigrator {
                     }
                 } else {
                     // make missing language codes usable even if we can't find the new language request
-                    TargetLanguage tl = App.getLibrary().getTargetLanguage(tt.getTargetLanguageId());
+                    TargetLanguage tl = App.getLibrary().index().getTargetLanguage(tt.getTargetLanguageId());
                     if(tl == null) {
                         Logger.i(TAG, "Importing missing language code " + tt.getTargetLanguageId() + " from " + tt.getId());
                         TargetLanguage tempLanguage = new TargetLanguage(tt.getTargetLanguageId(),
@@ -154,7 +159,11 @@ public class TargetTranslationMigrator {
                                 tt.getTargetLanguageDirection().toString(),
                                 tt.getTargetLanguageRegion(),
                                 false);
-                        App.getLibrary().addTempTargetLanguage(tempLanguage);
+                        try {
+                            App.getLibrary().index().addTempTargetLanguage(tempLanguage);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
@@ -565,9 +574,13 @@ public class TargetTranslationMigrator {
     private static boolean migrateChunkChanges(File targetTranslationDir)  {
         // TRICKY: calling the App here is bad practice, but we'll deprecate this soon anyway.
         final Door43Client library = App.getLibrary();
-        final SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(targetTranslationDir.getName(), "en");
-        if(sourceTranslation == null) {
-            // if there is no source we are done
+        Project p =  library.index().getProject("en", targetTranslationDir.getName(), true);
+        List<Resource> resources = library.index().getResources(p.languageSlug, p.slug);
+        final ResourceContainer resourceContainer;
+        try {
+            resourceContainer = library.open(p.languageSlug, p.slug, resources.get(0).slug);
+        } catch (Exception e) {
+            e.printStackTrace();
             return true;
         }
         File[] chapterDirs = targetTranslationDir.listFiles(new FileFilter() {
@@ -577,7 +590,7 @@ public class TargetTranslationMigrator {
             }
         });
         for(File cDir:chapterDirs) {
-            mergeInvalidChunksInChapter(library, new File(targetTranslationDir, "manifest.json"), sourceTranslation, cDir);
+            mergeInvalidChunksInChapter(library, new File(targetTranslationDir, "manifest.json"), resourceContainer, cDir);
         }
         return true;
     }
@@ -588,11 +601,11 @@ public class TargetTranslationMigrator {
      * translators to review the changes.
      * @param library
      * @param manifestFile
-     * @param sourceTranslation
+     * @param resourceContainer
      * @param chapterDir
      * @return
      */
-    private static boolean mergeInvalidChunksInChapter(final Door43Client library, File manifestFile, final SourceTranslation sourceTranslation, final File chapterDir) {
+    private static boolean mergeInvalidChunksInChapter(final Door43Client library, File manifestFile, final ResourceContainer resourceContainer, final File chapterDir) {
         JSONObject manifest;
         try {
             manifest = new JSONObject(FileUtilities.readFileToString(manifestFile));
@@ -613,14 +626,14 @@ public class TargetTranslationMigrator {
         String chapterId = chapterDir.getName();
         for(File frameFile:frameFiles) {
             String frameId = frameFile.getName();
-            Frame frame = library.getFrame(sourceTranslation, chapterId, frameId);
+            String chunkText = resourceContainer.readChunk(chapterId, frameId);
             String frameBody = "";
             try {
                 frameBody = FileUtilities.readFileToString(frameFile).trim();
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            if(frame != null) {
+            if(!chunkText.isEmpty()) {
                 lastValidFrameFile =  frameFile;
                 // merge invalid frames into the existing frame
                 if(!invalidChunks.isEmpty()) {

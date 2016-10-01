@@ -26,9 +26,8 @@ public class ProjectCategoryAdapter extends BaseAdapter {
     private CategoryEntry[] mFilteredCategories;
     private ProjectCategoryFilter mProjectFilter;
 
-    public ProjectCategoryAdapter(CategoryEntry[] categories) {
-        List<CategoryEntry> categoriesList = Arrays.asList(categories);
-        mCategories = categoriesList.toArray(new CategoryEntry[categoriesList.size()]);
+    public ProjectCategoryAdapter(List<CategoryEntry> categories) {
+        mCategories = categories.toArray(new CategoryEntry[categories.size()]);
         mFilteredCategories = mCategories;
     }
 
@@ -79,9 +78,9 @@ public class ProjectCategoryAdapter extends BaseAdapter {
      * Updates the data set
      * @param categories
      */
-    public void changeData(CategoryEntry[] categories) {
-        mCategories = categories;
-        mFilteredCategories = categories;
+    public void changeData(List<CategoryEntry> categories) {
+        mCategories = categories.toArray(new CategoryEntry[categories.size()]);
+        mFilteredCategories = mCategories;
         notifyDataSetChanged();
     }
 

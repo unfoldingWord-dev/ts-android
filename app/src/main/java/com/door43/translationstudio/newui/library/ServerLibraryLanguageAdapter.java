@@ -82,7 +82,7 @@ public class ServerLibraryLanguageAdapter extends BaseAdapter {
         }
 
         // icon
-        boolean isDownloaded = App.getLibrary().sourceLanguageHasSource(mProjectId, item.sourceLanguage.slug);
+        boolean isDownloaded = false;//App.getLibrary().sourceLanguageHasSource(mProjectId, item.sourceLanguage.slug);
         if(isDownloaded) {
             holder.mStatus.setBackgroundResource(R.drawable.ic_bookmark_black_24dp);
         } else {

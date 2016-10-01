@@ -680,7 +680,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     }
 
     private void showFeedbackDialog(TargetTranslation targetTranslation) {
-        Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), "en");
+        Project project = App.getLibrary().index().getProject("en", targetTranslation.getProjectId(), true);
 
         // open bug report dialog
         FeedbackDialog feedbackDialog = new FeedbackDialog();

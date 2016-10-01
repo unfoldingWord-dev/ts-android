@@ -145,7 +145,7 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
             public void onClick(View v) {
                 includeImages = includeImagesCheckBox.isChecked();
                 includeIncompleteFrames = includeIncompleteCheckBox.isChecked();
-                if(includeImages && !App.getLibrary().hasImages()) {
+                if(includeImages && !App.hasImages()) {
                     new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                             .setTitle(R.string.use_internet_confirmation)
                             .setMessage(R.string.image_large_download)

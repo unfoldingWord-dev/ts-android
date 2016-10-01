@@ -84,6 +84,11 @@ public class App extends Application {
     private static ImageLoader mImageLoader;
     private static App sInstance;
     private static String targetTranslationWithUpdates = null;
+    private static File imagesDir;
+
+    public static File getImagesDir() {
+        return imagesDir;
+    }
 
     @Override
     public void onCreate() {
@@ -1023,5 +1028,9 @@ public class App extends Application {
                 FileUtilities.safeDelete(requestFile);
             }
         }
+    }
+
+    public static boolean hasImages() {
+        return false;
     }
 }

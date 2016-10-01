@@ -90,8 +90,8 @@ public class NewTempLanguageActivity extends QuestionnaireActivity implements La
             if(q != null) {
                 String answer = request.getAnswer(q.tdId);
                 if (answer != null) {
-                    TargetLanguage[] languages = App.getLibrary().findTargetLanguage(answer.trim());
-                    if (languages.length > 0) {
+                    List<TargetLanguage> languages = App.getLibrary().index().findTargetLanguage(answer.trim());
+                    if (languages.size() > 0) {
                         App.closeKeyboard(this);
                         FragmentTransaction ft = getFragmentManager().beginTransaction();
                         Fragment prev = getFragmentManager().findFragmentByTag(LanguageSuggestionsDialog.TAG);

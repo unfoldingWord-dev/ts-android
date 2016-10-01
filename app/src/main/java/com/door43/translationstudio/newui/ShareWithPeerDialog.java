@@ -545,8 +545,8 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
         for(String targetTranslationSlug:targetTranslations) {
             TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationSlug);
             // TODO: 9/28/16 we need to add getProjectSourceLanguages to the module.
-            SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(targetTranslation.getProjectId(), App.getDeviceLanguageCode());
-            targetTranslationNames += sourceTranslation.project.name + " - " + targetTranslation.getTargetLanguageName() + ", ";
+//            SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(targetTranslation.getProjectId(), App.getDeviceLanguageCode());
+//            targetTranslationNames += sourceTranslation.project.name + " - " + targetTranslation.getTargetLanguageName() + ", ";
         }
         final String names = targetTranslationNames.trim().replaceAll(",$", "");
 

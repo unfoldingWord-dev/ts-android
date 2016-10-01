@@ -88,13 +88,13 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
 
         if(mHolder != null) {
             // project info
-            mHolder.mDateModified.setText("v. " + mProject.dateModified);
+//            mHolder.mDateModified.setText("v. " + mProject.dateModified);
             mHolder.mProjectTitle.setText(mProject.name);
             mHolder.mProjectDescription.setText(mProject.description);
             mHolder.mIcon.setBackgroundResource(R.drawable.ic_library_books_black_24dp);
 
             // delete project
-            if (App.getLibrary().projectHasSource(mProject.slug)) {
+            if (false) {///App.getLibrary().projectHasSource(mProject.slug)) {
                 mHolder.mDeleteButton.setVisibility(View.VISIBLE);
                 mHolder.mDeleteButton.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -123,7 +123,7 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
                                     .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
-                                            App.getLibrary().deleteProject(mProject.slug);
+//                                            App.getLibrary().deleteProject(mProject.slug);
                                             mListener.onProjectDeleted(mProject.slug);
                                         }
                                     })
@@ -191,9 +191,9 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
                 public void onTabSelected(TabLayout.Tab tab) {
                     mSelectedTab = (String) tab.getTag();
                     if(mSelectedTab.equals(TAB_DRAFT_LANGUAGES)) {
-                        mHolder.mAdapter.changeDataSet(mProject.slug, mServerLibrary.getAvailableUpdates(), draftLanguages);
+//                        mHolder.mAdapter.changeDataSet(mProject.slug, mServerLibrary.getAvailableUpdates(), draftLanguages);
                     } else {
-                        mHolder.mAdapter.changeDataSet(mProject.slug, mServerLibrary.getAvailableUpdates(), sourceLanguages);
+//                        mHolder.mAdapter.changeDataSet(mProject.slug, mServerLibrary.getAvailableUpdates(), sourceLanguages);
                     }
                 }
 
@@ -210,9 +210,9 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
 
             // load languages
             if(mSelectedTab.equals(TAB_DRAFT_LANGUAGES)) {
-                mHolder.mAdapter.changeDataSet(mProject.slug, mServerLibrary.getAvailableUpdates(), draftLanguages);
+//                mHolder.mAdapter.changeDataSet(mProject.slug, mServerLibrary.getAvailableUpdates(), draftLanguages);
             } else {
-                mHolder.mAdapter.changeDataSet(mProject.slug, mServerLibrary.getAvailableUpdates(), sourceLanguages);
+//                mHolder.mAdapter.changeDataSet(mProject.slug, mServerLibrary.getAvailableUpdates(), sourceLanguages);
             }
 
             // list
@@ -224,7 +224,7 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
                     // ignore clicks if a task is already running.
                     DownloadSourceLanguageTask task = (DownloadSourceLanguageTask)TaskManager.getTask(mProject.slug + "-" + item.sourceLanguage.slug);
                     if(task == null || task.isFinished()) {
-                        boolean isDownloaded = App.getLibrary().sourceLanguageHasSource(mProject.slug, item.sourceLanguage.slug);
+                        boolean isDownloaded = false;//App.getLibrary().sourceLanguageHasSource(mProject.slug, item.sourceLanguage.slug);
                         if (!isDownloaded) {
                             // just download the update
                             task = new DownloadSourceLanguageTask(mProject.slug, item.sourceLanguage.slug);

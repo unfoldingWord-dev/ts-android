@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import org.unfoldingword.door43client.models.TargetLanguage;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
@@ -184,7 +185,7 @@ public class ImportUsfm {
             json.putOpt("ImportProjects", toJsonFileArray(mImportProjects));
             json.putOpt("Errors", toJsonStringArray(mErrors));
             json.putOpt("FoundBooks", toJsonStringArray(mFoundBooks));
-            json.putOpt("TargetLanguage", mTargetLanguage.toApiFormatJson());
+            json.putOpt("TargetLanguage", mTargetLanguage.toJSON());
             json.putOpt("CurrentBook", mCurrentBook);
             json.putOpt("Success", mProcessSuccess);
             json.putOpt("MissingNames", MissingNameItem.toJsonArray(mBooksMissingNames));
@@ -683,7 +684,7 @@ public class ImportUsfm {
 
             for (int i = 1; i <= mChapters.length; i++) { // get file names for chunks
                 String chapterId = getChapterFolderName(i + "");
-                String[] chapterFrameSlugs = App.getLibrary().getFrameSlugs(sourceTranslation, chapterId);
+                String[] chapterFrameSlugs = new String[0]; //App.getLibrary().getFrameSlugs(sourceTranslation, chapterId);
                 JSONArray verseBreaks = getVerseBreaksObj(i + "");
                 for (int j = 0; j < verseBreaks.length(); j++) {
                     JSONObject chunk = verseBreaks.getJSONObject(j);
@@ -801,8 +802,8 @@ public class ImportUsfm {
                 mBookName = mBookShortName;
             }
 
-            ChunkMarker[] markers = App.getLibrary().getChunkMarkers(mBookShortName);
-            boolean haveChunksList = markers.length > 0;
+            List<ChunkMarker> markers = App.getLibrary().index().getChunkMarkers(mBookShortName, "en-US");
+            boolean haveChunksList = markers.size() > 0;
 
             if (!haveChunksList) { // no chunk list
                 // TODO: 4/13/16 add support for processing by sections
@@ -811,11 +812,11 @@ public class ImportUsfm {
                 addBookMissingName(mBookName, mBookShortName, book);
                 return promptForName;
             } else { // has chunks
-                SourceTranslation sourceTranslation = App.getLibrary().getSourceTranslation(mBookShortName, "en", "ulb");
-                mChapters = App.getLibrary().getChapters(sourceTranslation);
+                ResourceContainer resourceContainer = App.getLibrary().open("en", mBookShortName, "ulb");
+                mChapters = null;//resourceContainer.chapters();
 
                 mChunks = new HashMap<>(); // clear old map
-                addChunks(mBookShortName, markers, sourceTranslation);
+                //addChunks(mBookShortName, markers, resourceContainer);
                 mChaperCount = mChunks.size();
 
                 success = extractChaptersFromBook(book);

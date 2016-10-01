@@ -25,11 +25,10 @@ public class TargetLanguageAdapter extends BaseAdapter {
     private TargetLanguage[] mFilteredTargetLanguages;
     private TargetLanguageFilter mTargetLanguageFilter;
 
-    public TargetLanguageAdapter(TargetLanguage[] targetLanguages) {
+    public TargetLanguageAdapter(List<TargetLanguage> targetLanguages) {
         if(targetLanguages != null) {
-            List<TargetLanguage> targetLanguagesList = Arrays.asList(targetLanguages);
-            Collections.sort(targetLanguagesList);
-            mTargetLanguages = targetLanguagesList.toArray(new TargetLanguage[targetLanguagesList.size()]);
+            Collections.sort(targetLanguages);
+            mTargetLanguages = targetLanguages.toArray(new TargetLanguage[targetLanguages.size()]);
             mFilteredTargetLanguages = mTargetLanguages;
         }
     }
@@ -39,15 +38,12 @@ public class TargetLanguageAdapter extends BaseAdapter {
      * @param targetLanguages
      * @param sorted
      */
-    public TargetLanguageAdapter(TargetLanguage[] targetLanguages, boolean sorted) {
+    public TargetLanguageAdapter(List<TargetLanguage> targetLanguages, boolean sorted) {
         if(targetLanguages != null) {
             if(sorted) {
-                List<TargetLanguage> targetLanguagesList = Arrays.asList(targetLanguages);
-                Collections.sort(targetLanguagesList);
-                mTargetLanguages = targetLanguagesList.toArray(new TargetLanguage[targetLanguagesList.size()]);
-            } else {
-                mTargetLanguages = targetLanguages;
+                Collections.sort(targetLanguages);
             }
+            targetLanguages.toArray(new TargetLanguage[targetLanguages.size()]);
             mFilteredTargetLanguages = mTargetLanguages;
         }
     }

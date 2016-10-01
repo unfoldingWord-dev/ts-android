@@ -15,6 +15,8 @@ import com.door43.translationstudio.newui.newtranslation.TargetLanguageAdapter;
 
 import org.unfoldingword.door43client.models.TargetLanguage;
 
+import java.util.List;
+
 /**
  * Created by joel on 6/9/16.
  */
@@ -24,7 +26,7 @@ public class LanguageSuggestionsDialog extends DialogFragment {
     public static final String ARG_LANGUAGE_QUERY = "language_query";
     private OnClickListener listener = null;
     private TargetLanguageAdapter adapter;
-    private TargetLanguage[] targetLanguages;
+    private List<TargetLanguage> targetLanguages;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -33,7 +35,7 @@ public class LanguageSuggestionsDialog extends DialogFragment {
 
         Bundle args = getArguments();
         if(args != null) {
-            targetLanguages = App.getLibrary().findTargetLanguage(args.getString(ARG_LANGUAGE_QUERY));
+            targetLanguages = App.getLibrary().index().findTargetLanguage(args.getString(ARG_LANGUAGE_QUERY));
         } else {
             dismiss();
             return v;
