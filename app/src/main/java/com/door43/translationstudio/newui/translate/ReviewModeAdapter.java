@@ -843,10 +843,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         item.targetText = Translator.compileTranslation(editText.getText()); // get XML for footnote
         mTargetTranslation.applyFrameTranslation(item.ft, item.targetText); // save change
 
-        String frame = null;
-        if(item.isFrame()) {
-            frame  = loadFrame(item.chapterSlug, item.chunkSlug);
-        }
+//        String frame = null;
+//        if(item.isFrame()) {
+//            frame  = loadFrame(item.chapterSlug, item.chunkSlug);
+//        }
 
         renderTargetBody(item, holder); // generate spannable again adding
         editText.setText(item.renderedTargetText);
