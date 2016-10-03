@@ -6,7 +6,6 @@ import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 
 import com.door43.translationstudio.App;
-import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.Frame;
@@ -32,42 +31,89 @@ public class MergeConflictHandler {
     public static Pattern MergeConflictPatternMiddle =  Pattern.compile(MergeConflictMiddle);
     public static final String MergeConflictEnd =  "(?:>>>>>>>.*\\n)";
     public static Pattern MergeConflictPatternEnd =  Pattern.compile(MergeConflictEnd);
-    public static final int MergeHeadPart = 1;
-    public static final int MergeTailPart = 2;
+    public static final int MERGE_HEAD_PART = 1;
+    public static final int MERGE_TAIL_PART = 2;
+    private boolean mNested = false;
+    private boolean mNestedHead = false;
+    private boolean mNestedTail = false;
+    private CharSequence mHeadText;
+    private CharSequence mTailText;
+    private boolean mFullBlockMergeConflict = false;
 
     /**
-     * Renders merge conflict selecting specific source
-     * @param in
+     * if the merge conflict covers the whole string
+     * @return
+     */
+    public boolean isFullBlockMergeConflict() {
+        return mFullBlockMergeConflict;
+    }
+
+    /**
+     * check if text part has nested merge conflicts
      * @param sourceGroup
      * @return
      */
-    static public CharSequence renderMergeConflict(CharSequence in, int sourceGroup) {
-        return renderMergeConflict( in, sourceGroup, R.color.default_background_color);
+    public boolean isNested(int sourceGroup) {
+        if(sourceGroup == MERGE_HEAD_PART) {
+            return mNestedHead;
+        } else {
+            return mNestedTail;
+        }
+    }
+
+    /**
+     * get text part discovered during renderMergeConflict()
+     * @param sourceGroup
+     * @return
+     */
+    public CharSequence getConflictPart(int sourceGroup) {
+        if(sourceGroup == MERGE_HEAD_PART) {
+            return mHeadText;
+        } else {
+            return mTailText;
+        }
     }
 
     /**
      * Renders merge conflict selecting specific source and highlighting the changes
      * @param in
-     * @param sourceGroup
-     * @param highlightColor
+     * @param mergeConflictColor
      * @return
      */
-    static public CharSequence renderMergeConflict(CharSequence in, int sourceGroup, int highlightColor) {
-        CharSequence out = "";
+    public void renderMergeConflict(CharSequence in, int mergeConflictColor) {
+        mHeadText = "";
+        mTailText = "";
         Matcher matcher = MergeConflictPatternHead.matcher(in);
         int lastIndex = 0;
+        int sectionStart = -1;
+        mNestedHead = mNestedTail = mNested = false;
+        mFullBlockMergeConflict = false;
         while(matcher.find(lastIndex)) {
+            if(sectionStart < 0) {
+                sectionStart = matcher.start();
+            }
+
+            mNested = false;
             int firstSectionStart = matcher.end();
-            FoundRange middleMatcher = findNestedSection( in, firstSectionStart, MergeConflictPatternMiddle);
+            FoundRange middleMatcher = findNextDivision( in, firstSectionStart, MergeConflictPatternMiddle);
             if(middleMatcher == null) {
                 break;
             }
             int firstSectionEnd = middleMatcher.start;
+            if(mNested) {
+                mNestedHead = true;
+            }
 
+            mNested = false;
             int secondSectionStart = middleMatcher.end;
-            FoundRange endMatcher = findNestedSection( in, secondSectionStart, MergeConflictPatternEnd);
+            FoundRange endMatcher = findNextDivision( in, secondSectionStart, MergeConflictPatternEnd);
             int secondSectionEnd;
             int endSection;
+
+            if(mNested) {
+                mNestedTail = true;
+            }
+
             if(endMatcher == null) {
                 secondSectionEnd = in.length();
                 endSection = secondSectionEnd;
@@ -76,21 +122,31 @@ public class MergeConflictHandler {
                 endSection = endMatcher.end;
             }
 
-            String groupText;
-            if(sourceGroup == MergeHeadPart) {
-                groupText = in.subSequence(firstSectionStart, firstSectionEnd).toString();
-            } else  {
-                groupText = in.subSequence(secondSectionStart, secondSectionEnd).toString();
-            }
+            CharSequence previousText = in.subSequence(lastIndex, matcher.start());
 
-            SpannableStringBuilder span = new SpannableStringBuilder(groupText);
-            span.setSpan(new ForegroundColorSpan(highlightColor), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            // add head text
+            String headText = in.subSequence(firstSectionStart, firstSectionEnd).toString();
+            SpannableStringBuilder span = new SpannableStringBuilder(headText);
+            span.setSpan(new ForegroundColorSpan(mergeConflictColor), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            mHeadText = TextUtils.concat(mHeadText, previousText, span);
 
-            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), span);
+            // add tail text
+            String endText = in.subSequence(secondSectionStart, secondSectionEnd).toString();
+            span = new SpannableStringBuilder(endText);
+            span.setSpan(new ForegroundColorSpan(mergeConflictColor), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            mTailText = TextUtils.concat(mTailText, previousText, span);
+
             lastIndex = endSection;
         }
-        out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
-        return out;
+
+        CharSequence remainingText = in.subSequence(lastIndex, in.length());
+        mHeadText = TextUtils.concat(mHeadText, remainingText);
+        mTailText = TextUtils.concat(mTailText, remainingText);
+
+        if( (sectionStart == 0)
+                && (lastIndex >= in.length())) {
+            mFullBlockMergeConflict = true;
+        }
     }
 
     /**
@@ -159,7 +215,7 @@ public class MergeConflictHandler {
      * @param in
      * @return
      */
-    static private FoundRange findNestedSection(CharSequence in, int startPos, Pattern pattern) {
+    private FoundRange findNextDivision(CharSequence in, int startPos, Pattern pattern) {
         FoundRange matcher = findFirst(in, startPos, pattern);
         if(matcher != null) {
             int newStartPos = startPos;
@@ -172,8 +228,10 @@ public class MergeConflictHandler {
                         return matcher;
                     }
 
+                    mNested = true;
+
                     //find the end of nesting
-                    FoundRange endNested = findNestedSection(in, nestedMatcher.end, MergeConflictPatternEnd);
+                    FoundRange endNested = findNextDivision(in, nestedMatcher.end, MergeConflictPatternEnd);
                     if (endNested == null) { // if no end found
                         return new FoundRange(matcher.start, in.length());
                     }

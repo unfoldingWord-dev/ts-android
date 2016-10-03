@@ -781,8 +781,22 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param holder
      */
     private void renderTargetMergeConflictCard(final ViewHolder holder, final ListItem item, final Chapter chapter, final Frame frame) {
-        item.headText = getMergeText(item.bodyTranslation, true);
-        item.tailText = getMergeText(item.bodyTranslation, false);
+
+        MergeConflictHandler renderer = new MergeConflictHandler();
+        int mergeConflictColor = mContext.getResources().getColor(MERGE_CONFLICT_COLOR);
+        renderer.renderMergeConflict(item.bodyTranslation, mergeConflictColor);
+        item.headText = renderer.getConflictPart(MergeConflictHandler.MERGE_HEAD_PART);
+        item.tailText = renderer.getConflictPart(MergeConflictHandler.MERGE_TAIL_PART);
+        item.mFullMergeConflict = renderer.isFullBlockMergeConflict();
+        if(item.mFullMergeConflict) { // if whole string is different, no need to highlight differing lines, so change to regular text color
+            SpannableStringBuilder span = new SpannableStringBuilder(item.headText);
+            span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_primary_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            item.headText = span;
+
+            span = new SpannableStringBuilder(item.tailText);
+            span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_primary_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            item.tailText = span;
+        }
 
         Typography.formatSub(mContext, holder.mHeadText, mSourceLanguage.getId(), mSourceLanguage.getDirection());
         Typography.formatSub(mContext, holder.mTailText, mSourceLanguage.getId(), mSourceLanguage.getDirection());
@@ -853,10 +867,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private CharSequence getMergeText(CharSequence text, boolean getHead) {
         MergeConflictHandler renderer = new MergeConflictHandler();
         int mergeConflictColor = mContext.getResources().getColor(MERGE_CONFLICT_COLOR);
+        renderer.renderMergeConflict(text, mergeConflictColor);
         if(getHead) {
-            return renderer.renderMergeConflict(text, MergeConflictHandler.MergeHeadPart, mergeConflictColor);
+            return renderer.getConflictPart(MergeConflictHandler.MERGE_HEAD_PART);
         } else {
-            return renderer.renderMergeConflict(text, MergeConflictHandler.MergeTailPart, mergeConflictColor);
+            return renderer.getConflictPart(MergeConflictHandler.MERGE_TAIL_PART);
         }
     }
 
@@ -904,9 +919,16 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     private CharSequence formatDeselected(ListItem item, boolean getHead) {
-        SpannableStringBuilder span = new SpannableStringBuilder(item.bodyTranslation);
-        span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_disabled_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        return getMergeText(span, getHead);
+        if(item.mFullMergeConflict) { // gray out everyithing
+            CharSequence text = getHead ? item.headText : item.tailText;
+            SpannableStringBuilder span = new SpannableStringBuilder(text);
+            span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_disabled_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            return span;
+        } else { // partial merge conflict, so set text gray and then highlight differing merge text
+            SpannableStringBuilder span = new SpannableStringBuilder(item.bodyTranslation);
+            span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_disabled_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            return getMergeText(span, getHead);
+        }
     }
 
     /**
@@ -2225,6 +2247,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         private boolean isTranslationMergeConflicted = false;
         private CharSequence headText;
         private CharSequence tailText;
+        private boolean mFullMergeConflict = false;
 
 
         public ListItem(String frameSlug, String chapterSlug) {
