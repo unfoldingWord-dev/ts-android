@@ -106,9 +106,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     public static final String OPTIONS = "Options";
     public static final String ISO_DATE_FORMAT = "yyyy-MM-dd HH:mm";
     public static final int HIGHLIGHT_COLOR = Color.YELLOW;
-    public static final int TYPE_NO_MERGE_CONFLICT = 0;
-    public static final int TYPE_MERGE_CONFLICT = 1;
-    public static final int MERGE_CONFLICT_BACKGROUND_COLOR = R.color.light_yellow;
+    private static final int TYPE_NO_MERGE_CONFLICT = 0;
+    private static final int TYPE_MERGE_CONFLICT = 1;
+    public static final int MERGE_CONFLICT_COLOR = R.color.warning;
+    private static final boolean GET_HEAD = true;
+    private static final boolean GET_TAIL = false;
     private final Library mLibrary;
     private final Translator mTranslator;
     private final Activity mContext;
@@ -779,9 +781,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param holder
      */
     private void renderTargetMergeConflictCard(final ViewHolder holder, final ListItem item, final Chapter chapter, final Frame frame) {
-        MergeConflictHandler renderer = new MergeConflictHandler();
-        final CharSequence headText = renderer.renderMergeConflict(item.bodyTranslation, MergeConflictHandler.MergeHeadPart, MERGE_CONFLICT_BACKGROUND_COLOR);
-        final CharSequence tailText = renderer.renderMergeConflict(item.bodyTranslation, MergeConflictHandler.MergeTailPart, MERGE_CONFLICT_BACKGROUND_COLOR);
+        item.headText = getMergeText(item.bodyTranslation, true);
+        item.tailText = getMergeText(item.bodyTranslation, false);
+
         Typography.formatSub(mContext, holder.mHeadText, mSourceLanguage.getId(), mSourceLanguage.getDirection());
         Typography.formatSub(mContext, holder.mTailText, mSourceLanguage.getId(), mSourceLanguage.getDirection());
 
@@ -789,35 +791,35 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             mMarginInitialLeft = leftMargin(holder.mHeadText);
             mInitialTextSize = holder.mHeadText.getTextSize();
         }
-        displayMergeConflictSelectionState(false, false, holder, headText, tailText);
+        displayMergeConflictSelectionState(false, false, holder, item);
         holder.mConflictText.setVisibility(View.VISIBLE);
         holder.mButtonBar.setVisibility(View.GONE);
 
         holder.mHeadText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                displayMergeConflictSelectionState(true, false, holder, headText, tailText);
+                displayMergeConflictSelectionState(true, false, holder, item);
             }
         });
 
         holder.mTailText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                displayMergeConflictSelectionState(false, true, holder, headText, tailText);
+                displayMergeConflictSelectionState(false, true, holder, item);
             }
         });
 
         holder.mCancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                displayMergeConflictSelectionState(false, false, holder, headText, tailText);
+                displayMergeConflictSelectionState(false, false, holder, item);
             }
         });
 
         holder.mConfirmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CharSequence selectedText = mMergeHeadSelected ? headText : tailText;
+                CharSequence selectedText = mMergeHeadSelected ? item.headText : item.tailText;
                 applyNewCompiledText(selectedText.toString(), holder, item);
                 reOpenItem( item, chapter, frame);
                 notifyDataSetChanged();
@@ -843,6 +845,22 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
+     * get either the head or tail merge text with highlighting
+     * @param text
+     * @param getHead
+     * @return
+     */
+    private CharSequence getMergeText(CharSequence text, boolean getHead) {
+        MergeConflictHandler renderer = new MergeConflictHandler();
+        int mergeConflictColor = mContext.getResources().getColor(MERGE_CONFLICT_COLOR);
+        if(getHead) {
+            return renderer.renderMergeConflict(text, MergeConflictHandler.MergeHeadPart, mergeConflictColor);
+        } else {
+            return renderer.renderMergeConflict(text, MergeConflictHandler.MergeTailPart, mergeConflictColor);
+        }
+    }
+
+    /**
      * get the left margin for view
      * @param v
      * @return
@@ -858,32 +876,37 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param selectHead
      * @param selectTail
      * @param holder
-     * @param headText
-     * @param tailText
+     * @param item
      */
-    private void displayMergeConflictSelectionState(boolean selectHead, boolean selectTail, ViewHolder holder, CharSequence headText, CharSequence tailText) {
+    private void displayMergeConflictSelectionState(boolean selectHead, boolean selectTail, ViewHolder holder, ListItem item) {
         mMergeHeadSelected = selectHead;
         mMergeTailSelected = selectTail;
 
         if(mMergeHeadSelected || mMergeTailSelected) {
             if(mMergeHeadSelected) {
-                displayMergeSelectionState(DisplayState.SELECTED, holder.mHeadText, headText);
-                displayMergeSelectionState(DisplayState.DESELECTED, holder.mTailText, tailText);
+                displayMergeSelectionState(DisplayState.SELECTED, holder.mHeadText, item.headText);
+                displayMergeSelectionState(DisplayState.DESELECTED, holder.mTailText, formatDeselected(item, GET_TAIL));
                 holder.mConflictText.setVisibility(View.GONE);
                 holder.mButtonBar.setVisibility(View.VISIBLE);
             } else {
-                displayMergeSelectionState(DisplayState.DESELECTED, holder.mHeadText, headText);
-                displayMergeSelectionState(DisplayState.SELECTED, holder.mTailText, tailText);
+                displayMergeSelectionState(DisplayState.DESELECTED, holder.mHeadText, formatDeselected(item, GET_HEAD));
+                displayMergeSelectionState(DisplayState.SELECTED, holder.mTailText, item.tailText);
                 holder.mConflictText.setVisibility(View.GONE);
                 holder.mButtonBar.setVisibility(View.VISIBLE);
             }
 
         } else {
-            displayMergeSelectionState(DisplayState.NORMAL, holder.mHeadText, headText);
-            displayMergeSelectionState(DisplayState.NORMAL, holder.mTailText, tailText);
+            displayMergeSelectionState(DisplayState.NORMAL, holder.mHeadText, item.headText);
+            displayMergeSelectionState(DisplayState.NORMAL, holder.mTailText, item.tailText);
             holder.mConflictText.setVisibility(View.VISIBLE);
             holder.mButtonBar.setVisibility(View.GONE);
         }
+    }
+
+    private CharSequence formatDeselected(ListItem item, boolean getHead) {
+        SpannableStringBuilder span = new SpannableStringBuilder(item.bodyTranslation);
+        span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_disabled_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return getMergeText(span, getHead);
     }
 
     /**
@@ -906,11 +929,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             case DESELECTED:
                 setLeftRightMargins( view, 2 * mMarginInitialLeft); // grow margins to de-emphasize
-                span = new SpannableStringBuilder(text);
                 // gray out text to de-emphasize
                 view.setTextSize(mInitialTextSize * 0.7f); // shrink text to de-emphasize
-                span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_disabled_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                view.setText(span);
+                view.setText(text);
                 break;
 
             case NORMAL:
@@ -2202,6 +2223,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         private boolean mHighlightSource = false;
         private boolean mHighlightTarget = false;
         private boolean isTranslationMergeConflicted = false;
+        private CharSequence headText;
+        private CharSequence tailText;
+
 
         public ListItem(String frameSlug, String chapterSlug) {
             this.frameSlug = frameSlug;

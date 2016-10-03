@@ -3,7 +3,7 @@ package com.door43.translationstudio.rendering;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
-import android.text.style.BackgroundColorSpan;
+import android.text.style.ForegroundColorSpan;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
@@ -84,7 +84,7 @@ public class MergeConflictHandler {
             }
 
             SpannableStringBuilder span = new SpannableStringBuilder(groupText);
-            span.setSpan(new BackgroundColorSpan(highlightColor), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            span.setSpan(new ForegroundColorSpan(highlightColor), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
             out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), span);
             lastIndex = endSection;
