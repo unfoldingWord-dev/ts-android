@@ -46,11 +46,13 @@ import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -420,14 +422,10 @@ public class App extends Application {
      */
     public static void deployDefaultLibrary() throws Exception {
         // copy index
-        URL indexURL = sInstance.getClassLoader().getResource("index.sqlite");
-        File indexFile = new File(indexURL.getPath());
-        Util.writeStream(new FileInputStream(indexFile), dbFile());
+        Util.writeStream(sInstance.getAssets().open("index.sqlite"), dbFile());
 
         // extract resource containers
-        URL containersURL = sInstance.getClassLoader().getResource("containers.zip");
-        File containersFile = new File(containersURL.getPath());
-        Zip.unzip(containersFile, containersDir());
+        Zip.unzipFromStream(sInstance.getAssets().open("containers.zip"), containersDir());
 
 //        File dbFile = new File(databaseDir(), "index.sqlite");
 //        Util.writeStream(sInstance.getAssets().open(DEFAULT_LIBRARY_ZIP), dbFile);
