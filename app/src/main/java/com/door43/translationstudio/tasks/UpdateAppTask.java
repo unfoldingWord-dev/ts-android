@@ -77,6 +77,9 @@ public class UpdateAppTask extends ManagedTask {
         }
         updateTargetTranslations();
         updateBuildNumbers();
+//        if(App.getLibrary().index().getTargetLanguages().size() < 6000) Logger.w("UpdateAppTask", "Unexpected number of target languages");
+//        if(App.getLibrary().index().getSourceLanguages().size() < 10) Logger.w("UpdateAppTask", "Unexpected number of source languages");
+//        if(App.getLibrary().index().getProjects("en", true).size() < 50) Logger.w("UpdateAppTask", "Unexpected number of projects");
     }
 
     /**

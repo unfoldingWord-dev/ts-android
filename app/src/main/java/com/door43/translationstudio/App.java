@@ -423,20 +423,8 @@ public class App extends Application {
     public static void deployDefaultLibrary() throws Exception {
         // copy index
         Util.writeStream(sInstance.getAssets().open("index.sqlite"), dbFile());
-
         // extract resource containers
         Zip.unzipFromStream(sInstance.getAssets().open("containers.zip"), containersDir());
-
-//        File dbFile = new File(databaseDir(), "index.sqlite");
-//        Util.writeStream(sInstance.getAssets().open(DEFAULT_LIBRARY_ZIP), dbFile);
-
-        // extract resource containers
-//        File containersZip = sInstance.getCacheDir().createTempFile("containers", ".zip");
-//        File containerDir = new File(publicDir(), "resource_containers");
-//        Zip.unzip(containersZip, containerDir);
-
-        // clean up
-//        FileUtilities.deleteQuietly(containersZip);
     }
 
     /**

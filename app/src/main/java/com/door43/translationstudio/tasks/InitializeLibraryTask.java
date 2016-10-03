@@ -9,6 +9,7 @@ import org.unfoldingword.tools.taskmanager.ManagedTask;
 /**
  * This tasks extracts the packaged library index into the assets directory
  */
+@Deprecated
 public class InitializeLibraryTask extends ManagedTask {
     public static final String TASK_ID = "deploy_library_task";
 

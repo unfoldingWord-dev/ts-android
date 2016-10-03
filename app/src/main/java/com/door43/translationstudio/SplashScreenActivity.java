@@ -8,8 +8,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.door43.translationstudio.newui.BaseActivity;
-import com.door43.translationstudio.tasks.InitializeLibraryTask;
-import com.door43.translationstudio.tasks.LoadTargetLanguagesTask;
 import com.door43.translationstudio.tasks.UpdateAppTask;
 
 import org.unfoldingword.tools.logger.Logger;
@@ -56,8 +54,8 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
 
             // connect to tasks
             boolean isWorking = false;
-            isWorking = connectToTask(LoadTargetLanguagesTask.TASK_ID) ? true : isWorking;
-            isWorking = connectToTask(InitializeLibraryTask.TASK_ID) ? true : isWorking;
+//            isWorking = connectToTask(LoadTargetLanguagesTask.TASK_ID) ? true : isWorking;
+//            isWorking = connectToTask(InitializeLibraryTask.TASK_ID) ? true : isWorking;
             isWorking = connectToTask(UpdateAppTask.TASK_ID) ? true : isWorking;
 
             // start new task
@@ -111,36 +109,36 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
         TaskManager.clearTask(task);
         disconnectTask(task);
 
-        Handler hand = new Handler(Looper.getMainLooper());
-        hand.post(new Runnable() {
-            @Override
-            public void run() {
-                mProgressBar.setIndeterminate(true);
-                mProgressBar.setProgress(task.maxProgress());
-            }
-        });
+//        Handler hand = new Handler(Looper.getMainLooper());
+//        hand.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                mProgressBar.setIndeterminate(true);
+//                mProgressBar.setProgress(task.maxProgress());
+//            }
+//        });
 
-        if(task instanceof UpdateAppTask) {
-            if(!App.isLibraryDeployed()) {
-                InitializeLibraryTask libraryTask = new InitializeLibraryTask();
-                libraryTask.addOnFinishedListener(this);
-                libraryTask.addOnStartListener(this);
-                TaskManager.addTask(libraryTask, InitializeLibraryTask.TASK_ID);
-            } else {
+//        if(task instanceof UpdateAppTask) {
+//            if(!App.isLibraryDeployed()) {
+//                InitializeLibraryTask libraryTask = new InitializeLibraryTask();
+//                libraryTask.addOnFinishedListener(this);
+//                libraryTask.addOnStartListener(this);
+//                TaskManager.addTask(libraryTask, InitializeLibraryTask.TASK_ID);
+//            } else {
                 // skip straight to loading languages if library is already initialized
-                LoadTargetLanguagesTask langTask = new LoadTargetLanguagesTask();
-                langTask.addOnFinishedListener(this);
-                langTask.addOnStartListener(this);
-                TaskManager.addTask(langTask, LoadTargetLanguagesTask.TASK_ID);
-            }
-        } else if(task instanceof InitializeLibraryTask) {
-            LoadTargetLanguagesTask langTask = new LoadTargetLanguagesTask();
-            langTask.addOnFinishedListener(this);
-            langTask.addOnStartListener(this);
-            TaskManager.addTask(langTask, LoadTargetLanguagesTask.TASK_ID);
-        } else if(task instanceof LoadTargetLanguagesTask) {
+//                LoadTargetLanguagesTask langTask = new LoadTargetLanguagesTask();
+//                langTask.addOnFinishedListener(this);
+//                langTask.addOnStartListener(this);
+//                TaskManager.addTask(langTask, LoadTargetLanguagesTask.TASK_ID);
+//            }
+//        } else if(task instanceof InitializeLibraryTask) {
+//            LoadTargetLanguagesTask langTask = new LoadTargetLanguagesTask();
+//            langTask.addOnFinishedListener(this);
+//            langTask.addOnStartListener(this);
+//            TaskManager.addTask(langTask, LoadTargetLanguagesTask.TASK_ID);
+//        } else if(task instanceof LoadTargetLanguagesTask) {
             openMainActivity();
-        }
+//        }
     }
 
     private void openMainActivity() {
@@ -157,11 +155,12 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
             public void run() {
                 if(task instanceof UpdateAppTask) {
                     mProgressTextView.setText(R.string.updating_app);
-                } else if(task instanceof InitializeLibraryTask) {
-                    mProgressTextView.setText(R.string.preparing_for_first_use);
-                } else if(task instanceof LoadTargetLanguagesTask) {
-                    mProgressTextView.setText(R.string.loading_languages);
                 }
+//                else if(task instanceof InitializeLibraryTask) {
+//                    mProgressTextView.setText(R.string.preparing_for_first_use);
+//                } else if(task instanceof LoadTargetLanguagesTask) {
+//                    mProgressTextView.setText(R.string.loading_languages);
+//                }
             }
         });
     }
@@ -175,8 +174,8 @@ public class SplashScreenActivity extends BaseActivity implements ManagedTask.On
 
     @Override
     public void onDestroy() {
-        disconnectTask(LoadTargetLanguagesTask.TASK_ID);
-        disconnectTask(InitializeLibraryTask.TASK_ID);
+//        disconnectTask(LoadTargetLanguagesTask.TASK_ID);
+//        disconnectTask(InitializeLibraryTask.TASK_ID);
         disconnectTask(UpdateAppTask.TASK_ID);
         super.onDestroy();
     }
