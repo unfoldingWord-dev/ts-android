@@ -452,6 +452,11 @@ public class App extends Application {
      * ... or just the source content
      */
     public static void deleteLibrary() {
+        try {
+            getLibrary().tearDown();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         FileUtilities.deleteQuietly(dbFile());
         FileUtilities.deleteQuietly(containersDir());
     }
