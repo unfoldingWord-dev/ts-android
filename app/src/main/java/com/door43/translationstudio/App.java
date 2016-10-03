@@ -770,12 +770,16 @@ public class App extends Application {
      * @param activity
      * @param view
      */
-    public static void showKeyboard(Activity activity, View view) {
+    public static void showKeyboard(Activity activity, View view, boolean forced) {
         if(activity != null) {
             if (activity.getCurrentFocus() != null) {
                 try {
                     InputMethodManager mgr = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                    mgr.showSoftInput(view, InputMethodManager.SHOW_FORCED);
+                    if(forced) {
+                        mgr.showSoftInput(view, InputMethodManager.SHOW_FORCED);
+                    } else {
+                        mgr.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
+                    }
                 } catch (Exception e) {
                 }
             } else {

@@ -490,13 +490,10 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                     };
 
                     edit.addTextChangedListener(mSearchTextWatcher);
-
-                    edit.setFocusableInTouchMode(true);
-                    if(edit.requestFocus()) {
-                        App.showKeyboard(TargetTranslationActivity.this, edit);
-                    }
+                    setFocusOnTextSearchEdit();
                 } else {
                     setSearchFilter(null); // clear search filter
+                    App.closeKeyboard(TargetTranslationActivity.this); // since we forced on the keyboard on search start, we need to remove it
                 }
 
                 if(mSearchString != null) { // restore after rotate
@@ -531,6 +528,32 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 type.setOnItemSelectedListener(this);
             }
         }
+    }
+
+    /**
+     * this seems crazy that we have to do a delay within a delay, but it is the only thing that works
+     *   to bring up keyboard.  Guessing that it is because there is so much redrawing that is
+     *   happening on bringing up the search bar.
+     */
+    private void setFocusOnTextSearchEdit() {
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                final EditText edit = (EditText) findViewById(R.id.search_text);
+                edit.setFocusableInTouchMode(true);
+                edit.requestFocus();
+
+                Handler hand = new Handler(Looper.getMainLooper());
+                hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        App.showKeyboard(TargetTranslationActivity.this, edit, true);
+                    }
+                });
+
+            }
+        });
     }
 
     /**
