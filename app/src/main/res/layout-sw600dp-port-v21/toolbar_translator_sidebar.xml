@@ -3,23 +3,23 @@
     android:id="@+id/leftToolbar"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:hint="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:layout_width="?attr/actionBarSize"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
     android:background="?attr/colorPrimary"
     android:fitsSystemWindows="true"
-    android:layout_height="match_parent">
+    android:layout_height="?attr/actionBarSize">
 
-     <!--top -->
+     <!--left -->
     <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center|top">
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_gravity="center_vertical|start">
 
         <ImageButton
             android:id="@+id/action_read"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
             android:padding="16dp"
             android:src="@drawable/icon_study_inactive"
             android:background="?attr/selectableItemBackground"
@@ -27,8 +27,8 @@
 
         <ImageButton
             android:id="@+id/action_chunk"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
             android:padding="16dp"
             android:src="@drawable/icon_frame_inactive"
             android:background="?attr/selectableItemBackground"
@@ -36,7 +36,7 @@
 
         <ImageButton
             android:id="@+id/action_review"
-            android:layout_width="fill_parent"
+            android:layout_width="wrap_content"
             android:layout_height="fill_parent"
             android:padding="16dp"
             android:src="@drawable/icon_check_inactive"
@@ -46,7 +46,7 @@
 
     <!-- middle -->
     <FrameLayout
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
@@ -56,44 +56,43 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <com.door43.translationstudio.newui.translate.VerticalSeekBarHint
+            <it.moondroid.seekbarhint.library.SeekBarHint
                 android:id="@+id/action_seek"
-                android:layout_height="match_parent"
-                android:layout_width="wrap_content"
-                android:layout_gravity="center"
-                android:padding="8dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="16dp"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:padding="10dp"
                 android:thumbTint="@color/white"
                 android:progressTint="@color/white"
-                hint:xOffset="10dp"
-                hint:yOffset="-120dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                hint:xOffset="0dp"
+                hint:yOffset="56dp"
                 hint:popupLayout="@layout/seekbar_hint_popup"
-                hint:popupStyle="follow"/>
+                hint:popupStyle="follow" />
 
             <LinearLayout
                 android:id="@+id/action_seek_graduations"
-                android:layout_alignLeft="@+id/action_seek"
                 android:layout_alignTop="@+id/action_seek"
                 android:layout_alignRight="@+id/action_seek"
                 android:layout_alignBottom="@+id/action_seek"
+                android:layout_alignLeft="@+id/action_seek"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical"
+                android:orientation="horizontal"
+                android:gravity="center"
                 android:alpha="0">
 
                 <RelativeLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.125"
-                    android:gravity="center_vertical">
+                    android:layout_weight="0.125">
                     <ImageView
                         style="@style/WidgetSeekBarGraduation"
-                        android:layout_alignLeft="@+id/graduation1"
+                        android:layout_alignLeft="@id/graduation1"
                         android:layout_alignRight="@+id/graduation1"
                         android:layout_alignBottom="@+id/graduation1"
                         android:layout_alignTop="@+id/graduation1"
-                        android:src="@android:drawable/toast_frame" />
+                        android:src="@android:drawable/toast_frame"/>
                     <TextView
                         android:id="@+id/graduation1"
                         style="@style/WidgetSeekBarGraduation" />
@@ -102,8 +101,7 @@
                 <RelativeLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.125"
-                    android:gravity="center_vertical">
+                    android:layout_weight="0.125">
                     <ImageView
                         style="@style/WidgetSeekBarGraduation"
                         android:layout_alignLeft="@+id/graduation2"
@@ -119,8 +117,7 @@
                 <RelativeLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.125"
-                    android:gravity="center_vertical">
+                    android:layout_weight="0.125">
                     <ImageView
                         style="@style/WidgetSeekBarGraduation"
                         android:layout_alignLeft="@+id/graduation3"
@@ -136,8 +133,7 @@
                 <RelativeLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.125"
-                    android:gravity="center_vertical">
+                    android:layout_weight="0.125">
                     <ImageView
                         style="@style/WidgetSeekBarGraduation"
                         android:layout_alignLeft="@+id/graduation4"
@@ -153,8 +149,7 @@
                 <RelativeLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.125"
-                    android:gravity="center_vertical">
+                    android:layout_weight="0.125">
                     <ImageView
                         style="@style/WidgetSeekBarGraduation"
                         android:layout_alignLeft="@+id/graduation5"
@@ -170,8 +165,7 @@
                 <RelativeLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.125"
-                    android:gravity="center_vertical">
+                    android:layout_weight="0.125">
                     <ImageView
                         style="@style/WidgetSeekBarGraduation"
                         android:layout_alignLeft="@+id/graduation6"
@@ -187,8 +181,7 @@
                 <RelativeLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.125"
-                    android:gravity="center_vertical">
+                    android:layout_weight="0.125">
                     <ImageView
                         style="@style/WidgetSeekBarGraduation"
                         android:layout_alignLeft="@+id/graduation7"
@@ -204,8 +197,7 @@
                 <RelativeLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.125"
-                    android:gravity="center_vertical">
+                    android:layout_weight="0.125">
                     <ImageView
                         style="@style/WidgetSeekBarGraduation"
                         android:layout_alignLeft="@+id/graduation8"
@@ -222,12 +214,12 @@
         </RelativeLayout>
     </FrameLayout>
 
-    <!-- bottom -->
+    <!-- right -->
     <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center|bottom">
+        android:layout_gravity="center_vertical|end">
         <ImageButton
             android:id="@+id/action_more"
             android:layout_width="wrap_content"
@@ -236,6 +228,5 @@
             android:src="@drawable/ic_more_vert_white_24dp"
             android:background="?attr/selectableItemBackground"/>
     </LinearLayout>
-
 
 </LinearLayout>

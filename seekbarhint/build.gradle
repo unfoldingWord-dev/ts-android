@@ -1,0 +1,27 @@
+apply plugin: 'com.android.library'
+//apply plugin: 'com.github.dcendents.android-maven'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
+
+    defaultConfig {
+        minSdkVersion 15
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0.1"
+    }
+
+    // Do not abort build if lint finds errors
+    lintOptions {
+        abortOnError false
+    }
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+}

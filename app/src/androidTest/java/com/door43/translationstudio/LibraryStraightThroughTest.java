@@ -52,7 +52,6 @@ import static org.junit.Assert.assertNotEquals;
  */
 public class LibraryStraightThroughTest {
     private Library mLibrary;
-    private String TAG = "LibraryStraightThroughTest";
     private Translator mTranslator;
 
     @Before
@@ -142,7 +141,7 @@ public class LibraryStraightThroughTest {
         Questionnaire [] questionnaires = mLibrary.getQuestionnaires();
         assertTrue(questionnaires.length > 0);
         for(Questionnaire q:questionnaires) {
-            Log.e(TAG, "questionaire: "+q.dbId);
+            Log.e("test", "questionaire: "+q.dbId);
         }
     }
 

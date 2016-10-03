@@ -67,7 +67,7 @@
                 android:thumbTint="@color/white"
                 android:progressTint="@color/white"
                 hint:xOffset="10dp"
-                hint:yOffset="-120dp"
+                hint:yOffset="-84dp"
                 hint:popupLayout="@layout/seekbar_hint_popup"
                 hint:popupStyle="follow"/>
 

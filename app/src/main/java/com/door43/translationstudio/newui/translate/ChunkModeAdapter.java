@@ -254,7 +254,25 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         return vh;
     }
 
-    @Override
+    /**
+     * get the chapter for the position, or null if not found
+     * @param position
+     * @return
+     */
+    public String getChapterForPosition(int position) {
+        if( (position < 0) || (position >= mFilteredItems.length)) {
+            return null;
+        }
+
+        ListItem item = mFilteredItems[position];
+        if(item != null) {
+            return item.chapterSlug;
+        }
+
+        return null;
+    }
+
+     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         int cardMargin = mContext.getResources().getDimensionPixelSize(R.dimen.card_margin);
         int stackedCardMargin = mContext.getResources().getDimensionPixelSize(R.dimen.stacked_card_margin);
@@ -1164,6 +1182,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
         // clear the cards displayed since we have new search string
         mFilteredItems = new ListItem[0];
+        resetSectionMarkers();
         notifyDataSetChanged();
 
         if( (searchString != null) && (searchString.length() > 0)) {
@@ -1209,6 +1228,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     private class SearchFilter extends TranslationSearchFilter {
 
         private boolean searchTarget = false;
+        CharSequence oldSearch = null;
 
         public SearchFilter setTargetSearch(boolean searchTarget) { // chainable
             this.searchTarget = searchTarget;
@@ -1227,6 +1247,9 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                 // no filter
                 results.values = Arrays.asList(mUnfilteredItems);
                 results.count = mUnfilteredItems.length;
+                for (ListItem unfilteredItem : mUnfilteredItems) {
+                    unfilteredItem.clearAllHighLighting();
+                }
             } else {
                 // perform filter
                 String matchString = charSequence.toString().toLowerCase();
@@ -1268,8 +1291,33 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
             List<ListItem> filteredLanguages = (List<ListItem>)filterResults.values;
             mFilteredItems = filteredLanguages.toArray(new ListItem[filteredLanguages.size()]);
+            updateChapterMarkers(oldSearch);
+            oldSearch = mSearchString;
             notifyDataSetChanged();
             getListener().onSetBusyIndicator(false);
+        }
+    }
+
+    /**
+     * check to see if search string has changed and therefor chapter markers will need updating.  Note null string and empty string are treated as the same
+     * @param oldSearch
+     */
+    private void updateChapterMarkers(CharSequence oldSearch) {
+        boolean searchChanged = false;
+        if (oldSearch == null) {
+            if( (mSearchString != null) && (mSearchString.length() > 0) ) {
+                searchChanged = true;
+            }
+        } else  if (mSearchString == null) {
+            if( (oldSearch != null)  && (oldSearch.length() > 0) ) {
+                searchChanged = true;
+            }
+        } else if(!mSearchString.equals(oldSearch)) {
+            searchChanged = true;
+        }
+
+        if(searchChanged) {
+            resetSectionMarkers();
         }
     }
 }

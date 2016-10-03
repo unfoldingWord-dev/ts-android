@@ -14,8 +14,8 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.Layout;
-import android.text.TextWatcher;
 import android.util.Log;
+import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -57,6 +57,8 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import it.moondroid.seekbarhint.library.SeekBarHint;
+
 public class TargetTranslationActivity extends BaseActivity implements ViewModeFragment.OnEventListener, FirstTabFragment.OnEventListener, Spinner.OnItemSelectedListener {
 
     private static final String TAG = TargetTranslationActivity.class.getSimpleName();
@@ -83,6 +85,10 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private Timer mSearchTimer;
     private String mSearchString;
     private ProgressBar mSearchingSpinner;
+
+    private boolean mEnableGrids = false;
+    private int mSeekbarMultiplier = 1; // allows for more granularity in setting position if cards are few
+    private int mOldItemCount = 1; // so we can update the seekbar maximum when item count has changed
 
 
     @Override
@@ -165,45 +171,10 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             }
         }
 
+
+        setUpSeekBar();
+
         // set up menu items
-        mGraduations = (ViewGroup) findViewById(R.id.action_seek_graduations);
-        mSeekBar = (SeekBar) findViewById(R.id.action_seek);
-        mSeekBar.setMax(100);
-        mSeekBar.setProgress(computePositionFromProgress(0));
-        mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                int position;
-                if (progress < 0) {
-                    position = computePositionFromProgress(0);
-                } else if (progress <= seekBar.getMax()) {
-                    position = computePositionFromProgress(progress);
-                } else {
-                    position = 0;
-                }
-
-                // If this change was initiated by a click on a UI element (rather than as a result
-                // of updates within the program), then update the view accordingly.
-                if (mFragment instanceof ViewModeFragment && fromUser) {
-                    ((ViewModeFragment) mFragment).onScrollProgressUpdate(position);
-                }
-
-                TargetTranslationActivity activity = (TargetTranslationActivity) seekBar.getContext();
-                if (activity != null) {
-                    activity.closeKeyboard();
-                }
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                mGraduations.animate().alpha(1.f);
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                mGraduations.animate().alpha(0.f);
-            }
-        });
         mMoreButton = (ImageButton) findViewById(R.id.action_more);
         buildMenu();
 
@@ -245,6 +216,105 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         setSearchBarVisibility(mSearchEnabled);
 
         restartAutoCommitTimer();
+    }
+
+    private void setUpSeekBar() {
+        if(mEnableGrids) {
+            mGraduations = (ViewGroup) findViewById(R.id.action_seek_graduations);
+        }
+        mSeekBar = (SeekBar) findViewById(R.id.action_seek);
+        mSeekBar.setMax(100);
+        mSeekBar.setProgress(computePositionFromProgress(0));
+        mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                progress = handleItemCountIfChanged(progress);
+                int correctedProgress = correctProgress(progress);
+                correctedProgress = limitRange(correctedProgress, 0, mSeekBar.getMax() - 1);
+                int position = correctedProgress / mSeekbarMultiplier;
+                int percentage = 0;
+
+                if(mSeekbarMultiplier > 1) { // if we need some granularity, calculate fractional amount
+                    int fractional = correctedProgress - position * mSeekbarMultiplier;
+                    if(fractional != 0) {
+                        percentage = 100 * fractional / mSeekbarMultiplier;
+                    }
+                }
+
+                // If this change was initiated by a click on a UI element (rather than as a result
+                // of updates within the program), then update the view accordingly.
+                if (mFragment instanceof ViewModeFragment && fromUser) {
+                    ((ViewModeFragment) mFragment).onScrollProgressUpdate(position, percentage);
+                }
+
+                TargetTranslationActivity activity = (TargetTranslationActivity) seekBar.getContext();
+                if (activity != null) {
+                    activity.closeKeyboard();
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                if(mGraduations != null) {
+                    mGraduations.animate().alpha(1.f);
+                }
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                if(mGraduations != null) {
+                    mGraduations.animate().alpha(0.f);
+                }
+            }
+        });
+
+        if(mSeekBar instanceof SeekBarHint) {
+            ((SeekBarHint) mSeekBar).setOnProgressChangeListener(new SeekBarHint.OnSeekBarHintProgressChangeListener() {
+                @Override
+                public String onHintTextChanged(SeekBarHint seekBarHint, int progress) {
+                    return getFormattedChapter(progress);
+                }
+            });
+        }
+
+        if(mSeekBar instanceof VerticalSeekBarHint) {
+            ((VerticalSeekBarHint) mSeekBar).setOnProgressChangeListener(new VerticalSeekBarHint.OnSeekBarHintProgressChangeListener() {
+                @Override
+                public String onHintTextChanged(VerticalSeekBarHint seekBarHint, int progress) {
+                    return getFormattedChapter(progress);
+                }
+            });
+        }
+    }
+
+    /**
+     * clips value to within range min to max
+     * @param value
+     * @param min
+     * @param max
+     * @return
+     */
+    private int limitRange(int value, int min, int max) {
+        int newValue = value;
+        if(newValue < min) {
+            newValue = min;
+        } else
+        if(newValue > max) {
+            newValue = max;
+        }
+        return newValue;
+    }
+
+    /**
+     * get chapter string to display
+     * @param progress
+     * @return
+     */
+    private String getFormattedChapter(int progress) {
+        int position = computePositionFromProgress(progress);
+        String chapter = getChapterID(position);
+        String displayedText = " " + chapter + " ";
+        return displayedText;
     }
 
     public void onSaveInstanceState(Bundle out) {
@@ -691,67 +761,156 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     @Override
     public void onScrollProgress(int position) {
+        position = handleItemCountIfChanged(position);
         mSeekBar.setProgress(computeProgressFromPosition(position));
         checkIfCursorStillOnScreen();
     }
 
     @Override
     public void onItemCountChanged(int itemCount, int progress) {
-        mSeekBar.setMax(itemCount);
-        mSeekBar.setProgress(itemCount - progress);
+        itemCount = setSeekbarMax(itemCount);
+        mSeekBar.setProgress((itemCount - progress) * mSeekbarMultiplier);
         closeKeyboard();
         setupGraduations();
     }
 
+    /**
+     * checks to see if item count has changed, if so it rescales the progress value to match the new count
+     * @param progress
+     * @return
+     */
+    private int handleItemCountIfChanged(int progress) {
+        int newItemCount = getItemCount();
+        if( newItemCount != mOldItemCount ) {
+            int oldItemCount = mOldItemCount;
+            if(oldItemCount < 1) {
+                oldItemCount = 1;
+            }
+            int fixedItemCount = setSeekbarMax(newItemCount);
+            int newProgress = (int) ((float) progress / oldItemCount * fixedItemCount);
+            return newProgress;
+        }
+        return progress;
+    }
+
+    /**
+     * get number of items in adapter
+     * @return
+     */
+    private int getItemCount() {
+        if((mFragment != null) && (mFragment instanceof ViewModeFragment)) {
+            return ((ViewModeFragment)mFragment).getItemCount();
+        }
+        return 0;
+    }
+
+    /**
+     * sets seekbar maximum based on item count, and add granularity if item count is small
+     * @param itemCount
+     * @return
+     */
+    private int setSeekbarMax(int itemCount) {
+        final int minimumSteps = 300;
+
+        if(itemCount < 1) { // sanity check
+            itemCount = 1;
+        }
+
+        if(itemCount < minimumSteps) {  // increase step size if number of cards is small, this gives more granularity in positioning
+            mSeekbarMultiplier = (int) (minimumSteps / itemCount) + 1;
+        } else {
+            mSeekbarMultiplier = 1;
+        }
+
+        mSeekBar.setMax(itemCount * mSeekbarMultiplier);
+        mOldItemCount = itemCount;
+
+        return itemCount;
+    }
+
+    /**
+     * initialize text on graduations if enabled
+     */
     private void setupGraduations() {
-        final int numChapters = mSeekBar.getMax();
-        TranslationViewMode viewMode = App.getLastViewMode(mTargetTranslation.getId());
+        if(mEnableGrids) {
+            final int numCards = mSeekBar.getMax() / mSeekbarMultiplier;
 
-        // Set up visibility of the graduation bar.
-        // Display graduations evenly spaced by number of chapters (but not more than the number
-        // of chapters that exist). As a special case, display nothing if there's only one chapter.
-        // Also, show nothing unless we're in read mode, since the other modes are indexed by
-        // frame, not by chapter, so displaying either frame numbers or chapter numbers would be
-        // nonsensical.
-        int numVisibleGraduations = Math.min(numChapters, mGraduations.getChildCount());
-        if (numChapters < 2) {
-            numVisibleGraduations = 0;
-        }
-        if (viewMode != TranslationViewMode.READ) {
-            numVisibleGraduations = 0;
-        }
+            String maxChapterStr = getChapterID(numCards - 1);
+            int maxChapter = Integer.valueOf(maxChapterStr);
 
-        // Set up the visible chapters.
-        for (int i = 0; i < numVisibleGraduations; ++i) {
-            ViewGroup container = (ViewGroup) mGraduations.getChildAt(i);
-            container.setVisibility(View.VISIBLE);
-            TextView text = (TextView) container.getChildAt(1);
+            // Set up visibility of the graduation bar.
+            // Display graduations evenly spaced by number of chapters (but not more than the number
+            // of chapters that exist). As a special case, display nothing if there's only one chapter.
+            // Also, show nothing unless we're in read mode, since the other modes are indexed by
+            // frame, not by chapter, so displaying either frame numbers or chapter numbers would be
+            // nonsensical.
+            int numVisibleGraduations = Math.min(numCards, mGraduations.getChildCount());
 
-            // This calculation, full of fudge factors, has the following properties:
-            //   - It starts at 1.
-            //   - It ends with the last chapter.
-            //   - It's evenly spaced in between.
-            int label = 1 + i * (numChapters - 1) / (numVisibleGraduations - 1);
+            if ((maxChapter > 0) && (maxChapter < numVisibleGraduations)) {
+                numVisibleGraduations = maxChapter;
+            }
 
-            text.setText(Integer.toString(label));
-        }
+            if (numVisibleGraduations < 2) {
+                numVisibleGraduations = 0;
+            }
 
-        // Undisplay the invisible chapters.
-        for (int i = numVisibleGraduations; i < mGraduations.getChildCount(); ++i) {
-            mGraduations.getChildAt(i).setVisibility(View.GONE);
+            // Set up the visible chapters.
+            for (int i = 0; i < numVisibleGraduations; ++i) {
+                ViewGroup container = (ViewGroup) mGraduations.getChildAt(i);
+                container.setVisibility(View.VISIBLE);
+                TextView text = (TextView) container.getChildAt(1);
+
+                int position = i * (numCards - 1) / (numVisibleGraduations - 1);
+                String chapter = getChapterID(position);
+                text.setText(chapter);
+            }
+
+            // Undisplay the invisible chapters.
+            for (int i = numVisibleGraduations; i < mGraduations.getChildCount(); ++i) {
+                mGraduations.getChildAt(i).setVisibility(View.GONE);
+            }
         }
     }
+
+    /**
+     * get the chapter ID for the position
+     * @param position
+     * @return
+     */
+    private String getChapterID(int position) {
+        if( (mFragment != null) && (mFragment instanceof ViewModeFragment)) {
+            return ((ViewModeFragment) mFragment).getChapterID(position);
+        }
+
+        String chapterID = Integer.toString(position + 1);
+        return chapterID;
+    }
+
 
     private boolean displaySeekBarAsInverted() {
         return mSeekBar instanceof VerticalSeekBar;
     }
 
     private int computeProgressFromPosition(int position) {
-        return displaySeekBarAsInverted() ? mSeekBar.getMax() - position : position;
+        int correctedProgress = correctProgress(position * mSeekbarMultiplier);
+        int progress = limitRange(correctedProgress, 0, mSeekBar.getMax());
+        return progress;
     }
 
     private int computePositionFromProgress(int progress) {
-        return displaySeekBarAsInverted() ? Math.abs(mSeekBar.getMax() - progress) : progress;
+        int correctedProgress = correctProgress(progress);
+        correctedProgress = limitRange(correctedProgress, 0, mSeekBar.getMax() - 1);
+        int position = correctedProgress / mSeekbarMultiplier;
+        return position;
+    }
+
+    /**
+     * if seekbar is inverted, this will correct the progress
+     * @param progress
+     * @return
+     */
+    private int correctProgress(int progress) {
+        return displaySeekBarAsInverted() ? mSeekBar.getMax() - progress : progress;
     }
 
     @Override
