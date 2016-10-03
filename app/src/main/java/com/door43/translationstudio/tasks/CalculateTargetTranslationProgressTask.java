@@ -28,12 +28,9 @@ public class CalculateTargetTranslationProgressTask extends ManagedTask {
     public void start() {
         String[] sourceTranslationIds = App.getSelectedSourceTranslations(targetTranslation.getId());
         if(sourceTranslationIds.length > 0) {
-            String languageSlug = SourceTranslation.getSourceLanguageIdFromId(sourceTranslationIds[0]);
-            String projectSlug = SourceTranslation.getProjectIdFromId(sourceTranslationIds[0]);
-            String resourceSlug = SourceTranslation.getResourceIdFromId(sourceTranslationIds[0]);
             ResourceContainer container;
             try {
-                container = library.open(languageSlug, projectSlug, resourceSlug);
+                container = library.open(sourceTranslationIds[0]);
             } catch (Exception e) {
                 Logger.e("CalculateTranslationProgressTask", "Failed to load container", e);
                 return;

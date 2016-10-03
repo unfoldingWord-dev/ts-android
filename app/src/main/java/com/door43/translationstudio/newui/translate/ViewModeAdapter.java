@@ -168,6 +168,7 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
      * if not yet cached, determine and cache the chapter boundaries
      */
     protected void makeSureSectionMarkersInitialized() {
+        // TODO: 10/3/16 this needs to be cleaned up
         if(null == mSectionMarkers) {
             List<String> chapterMarkers = new ArrayList<>();
             List<Integer> sectionForPosition = new ArrayList<>();

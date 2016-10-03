@@ -23,20 +23,12 @@ public class SourceTranslation {
      */
     public final String resourceContainerSlug;
 
-    @Deprecated
-    private final String mVersion;
-    @Deprecated
-    private final TranslationFormat format;
-
     public SourceTranslation(SourceLanguage language, Project project, Resource resource) {
         this.language = language;
         this.project = project;
         this.resource = resource;
 
         resourceContainerSlug = ContainerTools.makeSlug(language.slug, project.slug, resource.slug);
-
-        mVersion = null;
-        format = null;
     }
 
     /**
@@ -49,35 +41,15 @@ public class SourceTranslation {
         this.resource = container.resource;
 
         resourceContainerSlug = ContainerTools.makeSlug(language.slug, project.slug, resource.slug);
-
-
-        mVersion = null;
-        format = null;
     }
-
-
 
     /**
      * Returns the translation format of this source translation.
      * @return
      */
+    @Deprecated
     public TranslationFormat getFormat() {
-        return format;
-    }
-
-
-    /**
-     * Returns the project id
-     * @param sourceTranslationId
-     * @return
-     */
-    public static String getProjectIdFromId(String sourceTranslationId) {
-        String[] complexId = sourceTranslationId.split("-", 3);
-        if(complexId.length == 3) {
-            return complexId[0];
-        } else {
-            throw new StringIndexOutOfBoundsException("malformed source translation id" + sourceTranslationId);
-        }
+        return null;
     }
 
     /**
@@ -85,6 +57,7 @@ public class SourceTranslation {
      * @param sourceTranslationId
      * @return
      */
+    @Deprecated
     public static String getSourceLanguageIdFromId(String sourceTranslationId) {
         String[] complexId = sourceTranslationId.split("-");
         if(complexId.length >= 3) {
@@ -94,20 +67,6 @@ public class SourceTranslation {
                 sourceLanguageId += "-" + complexId[i];
             }
             return sourceLanguageId;
-        } else {
-            throw new StringIndexOutOfBoundsException("malformed source translation id" + sourceTranslationId);
-        }
-    }
-
-    /**
-     * Returns the resource id
-     * @param sourceTranslationId
-     * @return
-     */
-    public static String getResourceIdFromId(String sourceTranslationId) {
-        String[] complexId = sourceTranslationId.split("-");
-        if(complexId.length >= 3) {
-            return complexId[complexId.length - 1];
         } else {
             throw new StringIndexOutOfBoundsException("malformed source translation id" + sourceTranslationId);
         }

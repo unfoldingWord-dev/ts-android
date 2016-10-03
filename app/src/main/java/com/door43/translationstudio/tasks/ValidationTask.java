@@ -48,12 +48,9 @@ public class ValidationTask extends ManagedTask {
         TargetTranslation targetTranslation = translator.getTargetTranslation(mTargetTranslationId);
         TargetLanguage targetLanguage = library.index().getTargetLanguage(targetTranslation.getTargetLanguageId());
 
-        String languageSlug = SourceTranslation.getSourceLanguageIdFromId(mSourceTranslationId);
-        String projectSlug = SourceTranslation.getProjectIdFromId(mSourceTranslationId);
-        String resourceSlug = SourceTranslation.getResourceIdFromId(mSourceTranslationId);
         ResourceContainer container;
         try {
-            container = library.open(languageSlug, projectSlug, resourceSlug);
+            container = library.open(mSourceTranslationId);
         } catch (Exception e) {
             Logger.e("ValidationTask", "Failed to load resource container", e);
             return;
@@ -67,7 +64,7 @@ public class ValidationTask extends ManagedTask {
         }
         String projectTitle = "";
         projectTitle = container.readChunk("front", "title");
-        SourceLanguage sourceLanguage = library.index().getSourceLanguage(languageSlug);
+        SourceLanguage sourceLanguage = library.index().getSourceLanguage(container.language.slug);
         String[] chapters = container.chapters();
 
         // validate chapters

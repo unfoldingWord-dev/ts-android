@@ -32,6 +32,7 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
+import com.door43.translationstudio.newui.library.ServerLibraryLanguageAdapter;
 import com.door43.translationstudio.rendering.ClickableRenderingEngine;
 import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.DefaultRenderer;
@@ -54,11 +55,13 @@ import org.unfoldingword.resourcecontainer.ResourceContainer;
  */
 public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder> {
 
-    private final CharSequence[] mRenderedTargetBody;
+    private CharSequence[] mRenderedTargetBody;
+    private CharSequence[] mRenderedSourceBody;
+
+    private final String startingChapterSlug;
     private SourceLanguage mSourceLanguage;
     private final TargetLanguage mTargetLanguage;
     private boolean[] mTargetStateOpen;
-    private CharSequence[] mRenderedSourceBody;
     private final Activity mContext;
     private static final int BOTTOM_ELEVATION = 2;
     private static final int TOP_ELEVATION = 3;
@@ -70,58 +73,45 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     private int mLayoutBuildNumber = 0;
     private ContentValues[] mTabs;
 
-    public ReadModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId) {
+    public ReadModeAdapter(Activity context, String targetTranslationId, String sourceContainerSlug, String startingChapterSlug, String startingChunkSlug) {
+        this.startingChapterSlug = startingChapterSlug;
+
         mLibrary = App.getLibrary();
         mTranslator = App.getTranslator();
         mContext = context;
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
+        mTargetLanguage = App.languageFromTargetTranslation(mTargetTranslation);
 
+        setSourceTranslation(sourceContainerSlug);
+    }
+
+    /**
+     * Updates the source translation displayed
+     * @param sourceContainerSlug
+     */
+    public void setSourceTranslation(String sourceContainerSlug) {
         try {
-            mResourceContainer = mLibrary.open(SourceTranslation.getSourceLanguageIdFromId(sourceTranslationId),
-                    SourceTranslation.getProjectIdFromId(sourceTranslationId),
-                    SourceTranslation.getResourceIdFromId(sourceTranslationId));
+            mResourceContainer = mLibrary.open(sourceContainerSlug);
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         mSourceLanguage = mLibrary.index().getSourceLanguage(mResourceContainer.language.slug);
-        mTargetLanguage = App.languageFromTargetTranslation(mTargetTranslation);
 
         mChapters = mResourceContainer.chapters();
-        if(chapterId != null) {
-            // identify starting selection
-            for (int i = 0; i < mChapters.length; i ++) {
-                String cSlug = mChapters[i];
-                if (cSlug.equals(chapterId)) {
+        mTargetStateOpen = new boolean[mChapters.length];
+        mRenderedSourceBody = new CharSequence[mChapters.length];
+        mRenderedTargetBody = new CharSequence[mChapters.length];
+
+        // identify starting position
+        if(startingChapterSlug != null) {
+            for(int i = 0; i < mChapters.length; i ++) {
+                if(mChapters[i].equals(startingChapterSlug)) {
                     setListStartPosition(i);
                     break;
                 }
             }
         }
-        mTargetStateOpen = new boolean[mChapters.length];
-        mRenderedSourceBody = new CharSequence[mChapters.length];
-        mRenderedTargetBody = new CharSequence[mChapters.length];
-
-        loadTabInfo();
-    }
-
-    /**
-     * Updates the source translation displayed
-     * @param sourceTranslationId
-     */
-    public void setSourceTranslation(String sourceTranslationId) {
-        try {
-            mResourceContainer = mLibrary.open(SourceTranslation.getSourceLanguageIdFromId(sourceTranslationId),
-                    SourceTranslation.getProjectIdFromId(sourceTranslationId),
-                    SourceTranslation.getResourceIdFromId(sourceTranslationId));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        mSourceLanguage = mLibrary.index().getSourceLanguage(mResourceContainer.language.slug);
-
-        mChapters = mResourceContainer.chapters();
-        mTargetStateOpen = new boolean[mChapters.length];
-        mRenderedSourceBody = new CharSequence[mChapters.length];
 
         loadTabInfo();
 
