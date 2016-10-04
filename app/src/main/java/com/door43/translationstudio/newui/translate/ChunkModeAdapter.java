@@ -75,11 +75,8 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     private final Translator mTranslator;
     private ListItem[] mUnfilteredItems;
     private ListItem[] mFilteredItems;
-    @Deprecated
-//    private Map<String, Chapter> mChapters = new HashMap<>();
     private int mLayoutBuildNumber = 0;
     private ContentValues[] mTabs;
-    private TranslationFormat mTargetFormat;
     private SearchFilter mSearchFilter;
     private CharSequence mSearchString;
     private List<String> mUnFilteredChapters = new ArrayList();
@@ -402,50 +399,6 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     }
 
     /**
-     * Renders the project title card
-     * @param holder
-     * @param position
-     */
-    private void renderProjectTitle(final ViewHolder holder, final int position) {
-        holder.mSourceTitle.setText("");
-        boolean targetSearch = isTargetSearch();
-        CharSequence projectTitle = renderText(mSourceContainer.project.name, TranslationFormat.DEFAULT, !targetSearch);
-        CharSequence targetTitle = renderText(mTargetTranslation.getTargetLanguageName(), mTargetFormat, targetSearch);
-        holder.mSourceBody.setText(projectTitle);
-        holder.mTargetTitle.setText(targetTitle);
-        if(holder.mTextWatcher != null) {
-            holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
-        }
-        final ProjectTranslation projectTranslation = mTargetTranslation.getProjectTranslation();
-        holder.mTargetBody.setText(projectTranslation.getTitle());
-
-        indicateCardCompleted(projectTranslation.isTitleFinished(), holder);
-
-        // editing
-        holder.mTextWatcher = new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                try {
-                    mTargetTranslation.applyProjectTitleTranslation(s.toString());
-                } catch (IOException e) {
-                    Logger.e(ChunkModeFragment.class.getName(), "Failed to save the project title translation", e);
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        };
-        holder.mTargetBody.addTextChangedListener(holder.mTextWatcher);
-    }
-
-    /**
      * Renders the chapter title card
      * begin edit of target card
      * @param target
@@ -537,123 +490,6 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     }
 
     /**
-         * Renders the chapter title card
-         * @param holder
-         * @param position
-         */
-    private void renderChapterTitle(final ViewHolder holder, final int position) {
-        final ListItem item = mFilteredItems[position];
-        // source title
-        String sourceChapterTitle = mSourceContainer.project.name + " " + Integer.parseInt(item.chapterSlug);
-        holder.mSourceTitle.setText(sourceChapterTitle);
-
-        boolean targetSearch = isTargetSearch();
-        item.renderedSourceText = renderText(item.renderedSourceText.toString(), TranslationFormat.DEFAULT, !targetSearch);
-        holder.mSourceBody.setText(item.renderedSourceText);
-
-        // target chapter title
-        final ChapterTranslation chapterTranslation = mTargetTranslation.getChapterTranslation(item.chapterSlug);
-        if(item.renderedTargetText == null) {
-            item.renderedTargetText = chapterTranslation.title;
-        }
-        if(holder.mTextWatcher != null) {
-            holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
-        }
-        item.renderedTargetText = renderText(item.renderedTargetText.toString(), mTargetFormat, targetSearch);
-        holder.mTargetBody.setText(item.renderedTargetText);
-
-        // target title
-        holder.mTargetTitle.setText(sourceChapterTitle + " - " + mTargetLanguage.name);
-
-        // indicate completed frame translations
-        indicateCardCompleted(chapterTranslation.isTitleFinished(), holder);
-
-        // editing
-        holder.mTextWatcher = new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // save
-                //                TODO: do this so we don't have to wait for compiling
-                //                Translator.applyFrameTranslation(frameTranslation, (Editable)s);
-
-                String translation = Translator.compileTranslation((Editable)s);
-                mTargetTranslation.applyChapterTitleTranslation(chapterTranslation, translation);
-                item.renderedTargetText = translation;
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        };
-        holder.mTargetBody.addTextChangedListener(holder.mTextWatcher);
-    }
-
-    /**
-     * Renders the chapter reference card
-     * @param holder
-     * @param position
-     */
-    private void renderChapterReference(final ViewHolder holder, final int position) {
-        final ListItem item = mFilteredItems[position];
-
-        // source title
-        String sourceChapterTitle = mSourceContainer.project.name + " " + Integer.parseInt(item.chapterSlug);
-        holder.mSourceTitle.setText(sourceChapterTitle);
-
-        boolean targetSearch = isTargetSearch();
-        item.renderedSourceText = renderText(item.renderedSourceText.toString(), TranslationFormat.DEFAULT, !targetSearch);
-        holder.mSourceBody.setText(item.renderedSourceText);
-
-        // target chapter reference
-        final ChapterTranslation chapterTranslation = mTargetTranslation.getChapterTranslation(item.chapterSlug);
-        if(item.renderedTargetText == null) {
-            item.renderedTargetText = chapterTranslation.reference;
-        }
-        if(holder.mTextWatcher != null) {
-            holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
-        }
-        item.renderedTargetText = renderText(item.renderedTargetText.toString(), mTargetFormat, targetSearch);
-        holder.mTargetBody.setText(item.renderedTargetText);
-
-        // target title
-        holder.mTargetTitle.setText(sourceChapterTitle + " - " + mTargetLanguage.name);
-
-        // indicate completed frame translations
-        indicateCardCompleted(chapterTranslation.isReferenceFinished(), holder);
-
-        // editing
-        holder.mTextWatcher = new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // save
-//                TODO: do this so we don't have to wait for compiling
-//                Translator.applyFrameTranslation(frameTranslation, (Editable)s);
-
-                String translation = Translator.compileTranslation((Editable)s);
-                mTargetTranslation.applyChapterReferenceTranslation(chapterTranslation, translation);
-                item.renderedTargetText = translation;
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        };
-        holder.mTargetBody.addTextChangedListener(holder.mTextWatcher);
-    }
-
-    /**
      * Renders the frame cards
      * @param holder
      * @param position
@@ -724,7 +560,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                     mTargetTranslation.applyFrameTranslation(mTargetTranslation.getFrameTranslation(item.chapterSlug, item.chunkSlug, item.translationFormat), translation);
                 }
 
-                item.renderedTargetText = renderText(translation, mTargetFormat, isTargetSearch());
+                item.renderedTargetText = renderText(translation, item.translationFormat, isTargetSearch());
             }
 
             @Override
