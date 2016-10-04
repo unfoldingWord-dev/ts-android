@@ -33,7 +33,6 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.LinedEditText;
@@ -54,7 +53,6 @@ import com.door43.widget.ViewUtil;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -78,13 +76,14 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     private ListItem[] mUnfilteredItems;
     private ListItem[] mFilteredItems;
     @Deprecated
-    private Map<String, Chapter> mChapters = new HashMap<>();
+//    private Map<String, Chapter> mChapters = new HashMap<>();
     private int mLayoutBuildNumber = 0;
     private ContentValues[] mTabs;
     private TranslationFormat mTargetFormat;
     private SearchFilter mSearchFilter;
     private CharSequence mSearchString;
-    private List chapters = new ArrayList();
+    private List<String> mUnFilteredChapters = new ArrayList();
+    private List<String> mFilteredChapters = new ArrayList<>();
 
     public ChunkModeAdapter(Activity context, String targetTranslationId, String sourceContainerSlug, String startingChapterSlug, String startingChunkSlug, boolean openSelectedTarget) {
         this.startingChapterSlug = startingChapterSlug;
@@ -107,14 +106,14 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             e.printStackTrace();
         }
 
-        this.chapters = new ArrayList();
+        this.mUnFilteredChapters = new ArrayList();
         List<ListItem> listItems = new ArrayList<>();
 
         // TODO: there is also a map form of the toc.
         setListStartPosition(0);
         for(Map tocChapter:(List<Map>)mSourceContainer.toc) {
             String chapterSlug = (String)tocChapter.get("chapter");
-            this.chapters.add(chapterSlug);
+            this.mUnFilteredChapters.add(chapterSlug);
             List<String> tocChunks = (List)tocChapter.get("chunks");
             for(String chunkSlug:tocChunks) {
                 if(chapterSlug.equals(startingChapterSlug) && chunkSlug.equals(startingChunkSlug)) {
@@ -126,6 +125,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
         mUnfilteredItems = listItems.toArray(new ListItem[listItems.size()]);
         mFilteredItems = mUnfilteredItems;
+        mFilteredChapters = mUnFilteredChapters;
 
         loadTabInfo();
 
@@ -930,6 +930,23 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         return openTargetTranslationCard( holder, position, false);
     }
 
+    @Override
+    public Object[] getSections() {
+        return mFilteredChapters.toArray();
+    }
+
+    @Override
+    public int getPositionForSection(int sectionIndex) {
+        // not used
+        return sectionIndex;
+    }
+
+    @Override
+    public int getSectionForPosition(int position) {
+        ListItem item = mFilteredItems[position];
+        return mFilteredChapters.indexOf(item.chapterSlug);
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public int mLayoutBuildNumber = -1;
         public TextWatcher mTextWatcher;
@@ -1182,6 +1199,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
         private boolean searchTarget = false;
         CharSequence oldSearch = null;
+        List<String> filteredChapters = mUnFilteredChapters;
 
         public SearchFilter setTargetSearch(boolean searchTarget) { // chainable
             this.searchTarget = searchTarget;
@@ -1198,6 +1216,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             mSearchString = charSequence;
             if(charSequence == null || charSequence.length() == 0) {
                 // no filter
+                filteredChapters = mUnFilteredChapters;
                 results.values = Arrays.asList(mUnfilteredItems);
                 results.count = mUnfilteredItems.length;
                 for (ListItem unfilteredItem : mUnfilteredItems) {
@@ -1244,6 +1263,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
             List<ListItem> filteredLanguages = (List<ListItem>)filterResults.values;
             mFilteredItems = filteredLanguages.toArray(new ListItem[filteredLanguages.size()]);
+            mFilteredChapters = filteredChapters;
             updateChapterMarkers(oldSearch);
             oldSearch = mSearchString;
             notifyDataSetChanged();

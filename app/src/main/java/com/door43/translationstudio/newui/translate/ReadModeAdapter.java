@@ -576,6 +576,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
 
     @Override
     public int getPositionForSection(int sectionIndex) {
+        // not used
         return sectionIndex;
     }
 

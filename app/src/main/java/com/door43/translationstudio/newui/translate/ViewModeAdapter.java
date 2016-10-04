@@ -89,146 +89,20 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
      * get the chapter ID for the position
      * @param position
      */
+    @Deprecated
     public String getChapterID(int position) {
         int section = getSectionForPosition( position);
-
-        int markersLength = mSectionMarkers.length;
-        if( markersLength > 0 ) {
-            if (section >= 0) {
-                return mSectionMarkers[section];
-            }
-        }
-        return "";
-    }
-
-    @Override
-    public Object[] getSections() {
-//        return chapters
-        makeSureSectionMarkersInitialized();
-        return mSectionMarkers;
-    }
-
-    @Override
-    public int getPositionForSection(int sectionIndex) { // in our case we are finding where a chapter starts
-        makeSureSectionMarkersInitialized();
-
-        int length = mStartPositionForSection.length;
-        if( length <= 0 ) {
-            return 0;
-        }
-
-        if( sectionIndex < 0 ) { // limit input range
-            sectionIndex = 0;
-        } else {
-            if( sectionIndex >= length) {
-                sectionIndex = length - 1;
-            }
-        }
-
-        return mStartPositionForSection[sectionIndex];
-    }
-
-    @Override
-    public int getSectionForPosition(int position) {
-        makeSureSectionMarkersInitialized();
-
-        int posLength = mSectionForPosition.length;
-        int markersLength = mSectionMarkers.length;
-        if( (posLength <= 0) || (markersLength <= 0) ) {
-            return 0;
-        }
-
-        if( position < 0 ) { // limit input range
-            position = 0;
-        } else {
-            if( position >= posLength) {
-                position = posLength - 1;
-            }
-        }
-
-        int section = mSectionForPosition[position];
-
-        if( section < 0 ) { // sanity check - limit output range
-            section = 0;
-        } else {
-            if( section >= markersLength) {
-                section = markersLength - 1;
-            }
-        }
-        return section;
+        Object[] sections = getSections();
+        return (String)sections[section];
     }
 
     /**
      * clears the section markers so they will be regenerated
      */
+    @Deprecated
     protected void resetSectionMarkers() {
         mSectionMarkers = null;
     }
-
-    /**
-     * if not yet cached, determine and cache the chapter boundaries
-     */
-    @Deprecated
-    protected void makeSureSectionMarkersInitialized() {
-        // TODO: 10/3/16 this needs to be cleaned up
-        if(null == mSectionMarkers) {
-            List<String> chapterMarkers = new ArrayList<>();
-            List<Integer> sectionForPosition = new ArrayList<>();
-            List<Integer> startPositionForSection = new ArrayList<>();
-            int length = getItemCount();
-            String lastChapter = "";
-            int currentSection = -1;
-            for (int i = 0; i < length; i++) {
-                String chapter = getChapterForPosition(i);
-                if(chapter == null) {
-                    chapter = lastChapter;
-                    if(chapter.isEmpty()) { //if we haven't seen a chapter marker yet, we will associate it with chapter 1
-                        chapter = "01";
-                    }
-                }
-
-                if(!lastChapter.equals(chapter)) {
-                    if(lastChapter.isEmpty()) { //if we haven't seen a chapter marker yet, we will associate it with chapter 1
-                        lastChapter = "0";
-                    }
-                    if(Integer.valueOf(chapter) - Integer.valueOf(lastChapter) == 1) { // make sure we have sequential chapters
-                        chapterMarkers.add(chapter);
-                        startPositionForSection.add(i);
-
-                    } else { // we have skipped over chapters (could be due to string search)
-                        int markerLength = chapter.length();
-                        int startChapter = Integer.valueOf(lastChapter);
-                        int endChapter = Integer.valueOf(chapter);
-                        for(int ch = startChapter + 1; ch <= endChapter; ch++) {
-                            String chapterStr = ("000" + String.valueOf(ch));
-                            chapterStr = chapterStr.substring(chapterStr.length() - markerLength);
-                            chapterMarkers.add(chapterStr);
-                            startPositionForSection.add(i);
-                        }
-                    }
-                    lastChapter = chapter;
-                    currentSection = Integer.valueOf(chapter) - 1;
-                }
-                sectionForPosition.add(currentSection);
-            }
-
-            mSectionMarkers = chapterMarkers.toArray(new String[chapterMarkers.size()]);
-            mStartPositionForSection = startPositionForSection.toArray(new Integer[startPositionForSection.size()]);
-            mSectionForPosition = sectionForPosition.toArray(new Integer[sectionForPosition.size()]);
-            OnEventListener listener = getListener();
-            if(listener != null) {
-                listener.onItemCountChanged(getItemCount(), 0);
-            }
-        }
-    }
-
-    /**
-     * get the chapter for the position, or null if not found
-     * @param position
-     * @return
-     */
-    @Deprecated
-    abstract String getChapterForPosition(int position);
 
     /**
      * Requests the layout manager to coordinate all visible children in the list
