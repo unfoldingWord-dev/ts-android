@@ -170,16 +170,12 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     /**
-     * get the chapter ID for the position
+     * get the chapter slug for the position
      * @param position
      */
-    public String getChapterID(int position) {
-        if(mAdapter != null) {
-            return mAdapter.getChapterID(position);
-        }
-
-        String chapterID = Integer.toString(position + 1);
-        return chapterID;
+    public String getChapterSlug(int position) {
+        if(mAdapter != null) return mAdapter.getChapterSlug(position);
+        return Integer.toString(position + 1);
     }
 
     /**

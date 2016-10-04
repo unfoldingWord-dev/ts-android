@@ -312,14 +312,14 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      */
     private String getFormattedChapter(int progress) {
         int position = computePositionFromProgress(progress);
-        String chapter = getChapterID(position);
+        String chapter = getChapterSlug(position);
         String displayedText = " " + chapter + " ";
         return displayedText;
     }
 
     public void onSaveInstanceState(Bundle out) {
         out.putBoolean(STATE_SEARCH_ENABLED, mSearchEnabled);
-        String searchText = getSearchText();
+        String searchText = getFilterText();
         if( mSearchEnabled ) {
             out.putString(STATE_SEARCH_TEXT, searchText);
         }
@@ -424,8 +424,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      */
     private void removeSearchBar() {
         setSearchBarVisibility(false);
-        setSearchText(null);
-        setSearchFilter(null); // clear search filter
+        setFilterText(null);
+        filter(null); // clear search filter
     }
 
     /**
@@ -490,13 +490,13 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                     };
                     edit.addTextChangedListener(mSearchTextWatcher);
                 } else {
-                    setSearchFilter(null); // clear search filter
+                    filter(null); // clear search filter
                 }
 
                 if(mSearchString != null) { // restore after rotate
                     edit.setText(mSearchString);
                     if(show) {
-                        setSearchFilter(mSearchString);
+                        filter(mSearchString);
                     }
                     mSearchString = null;
                 }
@@ -547,7 +547,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     public void onItemSelected(AdapterView<?> parent, View view,
                                int pos, long id) {
 
-        setSearchFilter(getSearchText());  // do search with search string in edit control
+        filter(getFilterText());  // do search with search string in edit control
     }
 
     /**
@@ -559,7 +559,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     /**
-     * get the type of search (position)
+     * get the type of search
      */
     private TranslationFilter.FilterSubject getFilterSubject() {
         LinearLayout searchPane = (LinearLayout) findViewById(R.id.search_pane);
@@ -579,7 +579,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     /**
      * get search text in search bar
      */
-    private String getSearchText() {
+    private String getFilterText() {
         String text = null;
 
         LinearLayout searchPane = (LinearLayout) findViewById(R.id.search_pane);
@@ -596,7 +596,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     /**
      * set search text in search bar
      */
-    private void setSearchText(String text) {
+    private void setFilterText(String text) {
 
         if(text == null) {
             text = "";
@@ -614,17 +614,16 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
 
     /**
-     * do search with specific search string or clear search filter
-     * @param search - if null or "" then search is cleared
+     * Filters the list
+     * @param constraint
      */
-    public void setSearchFilter(final String search) {
-        final String searchString = search; // save in case search string changes before search runs
+    public void filter(final String constraint) {
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
             public void run() {
                 if((mFragment != null) && (mFragment instanceof ViewModeFragment)) {
-                    ((ViewModeFragment)mFragment).filter(searchString, getFilterSubject());
+                    ((ViewModeFragment)mFragment).filter(constraint, getFilterSubject());
                 }
              }
         });
@@ -819,7 +818,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         if(mEnableGrids) {
             final int numCards = mSeekBar.getMax() / mSeekbarMultiplier;
 
-            String maxChapterStr = getChapterID(numCards - 1);
+            String maxChapterStr = getChapterSlug(numCards - 1);
             int maxChapter = Integer.valueOf(maxChapterStr);
 
             // Set up visibility of the graduation bar.
@@ -845,7 +844,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 TextView text = (TextView) container.getChildAt(1);
 
                 int position = i * (numCards - 1) / (numVisibleGraduations - 1);
-                String chapter = getChapterID(position);
+                String chapter = getChapterSlug(position);
                 text.setText(chapter);
             }
 
@@ -857,17 +856,15 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     /**
-     * get the chapter ID for the position
+     * get the chapter slug for the position
      * @param position
      * @return
      */
-    private String getChapterID(int position) {
+    private String getChapterSlug(int position) {
         if( (mFragment != null) && (mFragment instanceof ViewModeFragment)) {
-            return ((ViewModeFragment) mFragment).getChapterID(position);
+            return ((ViewModeFragment) mFragment).getChapterSlug(position);
         }
-
-        String chapterID = Integer.toString(position + 1);
-        return chapterID;
+        return Integer.toString(position + 1);
     }
 
 
@@ -1119,7 +1116,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
         @Override
         public void run() {
-             activity.setSearchFilter(searchString.toString());
+             activity.filter(searchString.toString());
         }
     }
 }

@@ -83,14 +83,16 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
     abstract void onCoordinate(VH holder);
 
     /**
-     * get the chapter ID for the position
+     * get the chapter slug for the position
      * @param position
      */
-    @Deprecated
-    public String getChapterID(int position) {
+    public String getChapterSlug(int position) {
         int section = getSectionForPosition( position);
-        Object[] sections = getSections();
-        return (String)sections[section];
+        if(section >= 0) {
+            Object[] sections = getSections();
+            return (String) sections[section];
+        }
+        return "";
     }
 
     /**

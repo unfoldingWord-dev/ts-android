@@ -101,7 +101,7 @@ public abstract class ListItem {
     /**
      * Loads the translation text from the disk
      * @param sourceContainer
-     * @param targetTranslation
+     * @param targetTranslation TODO: this will become a resource container eventually
      */
     public void loadTranslations(ResourceContainer sourceContainer, TargetTranslation targetTranslation) {
         this.pt = targetTranslation.getProjectTranslation();

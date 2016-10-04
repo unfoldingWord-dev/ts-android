@@ -1755,8 +1755,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     @Override
     public int getSectionForPosition(int position) {
-        ListItem item = mFilteredItems.get(position);
-        return mFilteredChapters.indexOf(item.chapterSlug);
+        if(position >= 0 && position < mFilteredItems.size()) {
+            ListItem item = mFilteredItems.get(position);
+            return mFilteredChapters.indexOf(item.chapterSlug);
+        } else {
+            return -1;
+        }
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
