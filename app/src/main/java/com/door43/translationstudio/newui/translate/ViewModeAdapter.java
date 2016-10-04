@@ -102,7 +102,8 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
     }
 
     @Override
-    public Object[] getSections() { // in our case these are chapters
+    public Object[] getSections() {
+//        return chapters
         makeSureSectionMarkersInitialized();
         return mSectionMarkers;
     }
@@ -167,6 +168,7 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
     /**
      * if not yet cached, determine and cache the chapter boundaries
      */
+    @Deprecated
     protected void makeSureSectionMarkersInitialized() {
         // TODO: 10/3/16 this needs to be cleaned up
         if(null == mSectionMarkers) {
@@ -225,6 +227,7 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
      * @param position
      * @return
      */
+    @Deprecated
     abstract String getChapterForPosition(int position);
 
     /**
@@ -241,14 +244,14 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
      * @param position
      * @return
      */
-    public abstract String getFocusedFrameId(int position);
+    public abstract String getFocusedChunkSlug(int position);
 
     /**
      * returns the frame at the given position
      * @param position
      * @return
      */
-    public abstract String getFocusedChapterId(int position);
+    public abstract String getFocusedChapterSlug(int position);
 
     /**
      * Returns the position of an item in the adapter.

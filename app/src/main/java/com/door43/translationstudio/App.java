@@ -20,6 +20,7 @@ import android.view.inputmethod.InputMethodManager;
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.SourceLanguage;
 import org.unfoldingword.door43client.models.TargetLanguage;
+import org.unfoldingword.resourcecontainer.ContainerTools;
 import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.resourcecontainer.Resource;
 import org.unfoldingword.tools.logger.LogLevel;
@@ -358,6 +359,25 @@ public class App extends Application {
             }
         }
         return translations;
+    }
+
+    /**
+     * Returns the source translation that represents the resource container
+     * @param resourceContainerSlug
+     * @return
+     */
+    public static SourceTranslation getSourceTranslation(String resourceContainerSlug) {
+        try {
+            String[] slugs = ContainerTools.explodeSlug(resourceContainerSlug);
+            Door43Client library = getLibrary();
+            SourceLanguage l = library.index().getSourceLanguage(slugs[0]);
+            Project p = library.index().getProject(slugs[0], slugs[1]);
+            Resource r = library.index().getResource(slugs[0], slugs[1], slugs[2]);
+            return new SourceTranslation(l, p, r);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**

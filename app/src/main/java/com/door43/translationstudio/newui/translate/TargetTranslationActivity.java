@@ -175,7 +175,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             }
         }
 
-
         setUpSeekBar();
 
         // set up menu items

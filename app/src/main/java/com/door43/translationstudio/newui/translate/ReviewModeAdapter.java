@@ -228,7 +228,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     @Override
-    public String getFocusedFrameId(int position) {
+    public String getFocusedChunkSlug(int position) {
         if(position >= 0 && position < mFilteredItems.length) {
             return mFilteredItems[position].chunkSlug;
         }
@@ -236,7 +236,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     @Override
-    public String getFocusedChapterId(int position) {
+    public String getFocusedChapterSlug(int position) {
         if(position >= 0 && position < mFilteredItems.length) {
             return mFilteredItems[position].chapterSlug;
         }

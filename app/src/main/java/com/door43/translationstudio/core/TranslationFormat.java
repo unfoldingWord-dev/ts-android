@@ -46,7 +46,9 @@ public enum TranslationFormat {
     public static TranslationFormat parse(String mimeType) {
         switch(mimeType) {
             case "text/usfm":
-                return USFM;
+                // this is temporary.
+                return USX;
+//                return USFM;
             case "text/markdown":
                 return MARKDOWN;
             default:

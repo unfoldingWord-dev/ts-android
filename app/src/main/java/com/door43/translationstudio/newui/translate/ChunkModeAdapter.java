@@ -77,12 +77,14 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     private final Translator mTranslator;
     private ListItem[] mUnfilteredItems;
     private ListItem[] mFilteredItems;
+    @Deprecated
     private Map<String, Chapter> mChapters = new HashMap<>();
     private int mLayoutBuildNumber = 0;
     private ContentValues[] mTabs;
     private TranslationFormat mTargetFormat;
     private SearchFilter mSearchFilter;
     private CharSequence mSearchString;
+    private List chapters = new ArrayList();
 
     public ChunkModeAdapter(Activity context, String targetTranslationId, String sourceContainerSlug, String startingChapterSlug, String startingChunkSlug, boolean openSelectedTarget) {
         this.startingChapterSlug = startingChapterSlug;
@@ -105,12 +107,14 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             e.printStackTrace();
         }
 
+        this.chapters = new ArrayList();
         List<ListItem> listItems = new ArrayList<>();
 
         // TODO: there is also a map form of the toc.
         setListStartPosition(0);
         for(Map tocChapter:(List<Map>)mSourceContainer.toc) {
             String chapterSlug = (String)tocChapter.get("chapter");
+            this.chapters.add(chapterSlug);
             List<String> tocChunks = (List)tocChapter.get("chunks");
             for(String chunkSlug:tocChunks) {
                 if(chapterSlug.equals(startingChapterSlug) && chunkSlug.equals(startingChunkSlug)) {
@@ -164,7 +168,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     }
 
     @Override
-    public String getFocusedFrameId(int position) {
+    public String getFocusedChunkSlug(int position) {
         if(position >= 0 && position < mFilteredItems.length) {
             return mFilteredItems[position].chunkSlug;
         }
@@ -172,7 +176,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     }
 
     @Override
-    public String getFocusedChapterId(int position) {
+    public String getFocusedChapterSlug(int position) {
         if(position >= 0 && position < mFilteredItems.length) {
             return mFilteredItems[position].chapterSlug;
         }
@@ -183,7 +187,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     public int getItemPosition(String chapterSlug, String frameSlug) {
         for(int i = 0; i < mFilteredItems.length; i ++) {
             ListItem item = mFilteredItems[i];
-            if(item.isFrame() && item.chapterSlug.equals(chapterSlug) && item.chunkSlug.equals(frameSlug)) {
+            if(item.isChunk() && item.chapterSlug.equals(chapterSlug) && item.chunkSlug.equals(frameSlug)) {
                 return i;
             }
         }
@@ -369,6 +373,19 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             }
         });
 
+         item.loadTranslations(mSourceContainer, mTargetTranslation, this);
+
+        // render the content
+//        if(item.isChapterReference()) {
+//            renderChapterReference(holder, position);
+//        } else if(item.isChapterTitle()) {
+//            renderChapterTitle(holder, position);
+//        } else if(item.isProjectTitle()) {
+//            renderProjectTitle(holder, position);
+//        } else {
+            renderChunk(holder, position);
+//        }
+
         // set up fonts
         if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
             holder.mLayoutBuildNumber = mLayoutBuildNumber;
@@ -381,16 +398,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
         ViewUtil.makeLinksClickable(holder.mSourceBody);
 
-        // render the content
-        if(item.isChapterReference) {
-            renderChapterReference(holder, position, item.chapterSlug);
-        } else if(item.isChapterTitle) {
-            renderChapterTitle(holder, position, item.chapterSlug);
-        } else if(item.isProjectTitle) {
-            renderProjectTitle(holder, position);
-        } else {
-            renderFrame(holder, position);
-        }
+
     }
 
     /**
@@ -446,17 +454,17 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
         // flag that chunk is open for edit
 
-        if (item.isChapterReference) {
+        if (item.isChapterReference()) {
 //            Chapter chapter = mLibrary.getChapter(mSourceContainer, item.chapterSlug);
 //            if (null != chapter) {
                 mTargetTranslation.reopenChapterReference(item.chapterSlug);
 //            }
-        } else if (item.isChapterTitle) {
+        } else if (item.isChapterTitle()) {
 //            Chapter chapter = mLibrary.getChapter(mSourceContainer, item.chapterSlug);
 //            if (null != chapter) {
                 mTargetTranslation.reopenChapterTitle(item.chapterSlug);
 //            }
-        } else if(item.isProjectTitle) {
+        } else if(item.isProjectTitle()) {
             mTargetTranslation.openProjectTitle();
         } else {
 //            Frame frame = mLibrary.getFrame(mSourceContainer, item.chapterSlug, item.chunkSlug);
@@ -532,181 +540,94 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
          * Renders the chapter title card
          * @param holder
          * @param position
-         * @param chapterId
          */
-    private void renderChapterTitle(final ViewHolder holder, final int position, String chapterId) {
+    private void renderChapterTitle(final ViewHolder holder, final int position) {
         final ListItem item = mFilteredItems[position];
-        Chapter chapter = mChapters.get(chapterId);
-        if(chapter != null) {
-            // source title
-            String sourceChapterTitle = mSourceContainer.project.name + " " + Integer.parseInt(chapter.getId());
-            holder.mSourceTitle.setText(sourceChapterTitle);
+        // source title
+        String sourceChapterTitle = mSourceContainer.project.name + " " + Integer.parseInt(item.chapterSlug);
+        holder.mSourceTitle.setText(sourceChapterTitle);
 
-            // source chapter title
-            if(item.renderedSourceText == null) {
-                item.renderedSourceText = chapter.title;
-            }
+        boolean targetSearch = isTargetSearch();
+        item.renderedSourceText = renderText(item.renderedSourceText.toString(), TranslationFormat.DEFAULT, !targetSearch);
+        holder.mSourceBody.setText(item.renderedSourceText);
 
-            boolean targetSearch = isTargetSearch();
-            item.renderedSourceText = renderText(item.renderedSourceText.toString(), TranslationFormat.DEFAULT, !targetSearch);
-            holder.mSourceBody.setText(item.renderedSourceText);
-
-            // target chapter reference
-            final ChapterTranslation chapterTranslation = mTargetTranslation.getChapterTranslation(chapter);
-            if(item.renderedTargetText == null) {
-                item.renderedTargetText = chapterTranslation.title;
-            }
-            if(holder.mTextWatcher != null) {
-                holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
-            }
-            item.renderedTargetText = renderText(item.renderedTargetText.toString(), mTargetFormat, targetSearch);
-            holder.mTargetBody.setText(item.renderedTargetText);
-
-            // target title
-            holder.mTargetTitle.setText(sourceChapterTitle + " - " + mTargetLanguage.name);
-
-            // indicate completed frame translations
-            indicateCardCompleted(chapterTranslation.isTitleFinished(), holder);
-
-            // editing
-            holder.mTextWatcher = new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    // save
-                    //                TODO: do this so we don't have to wait for compiling
-                    //                Translator.applyFrameTranslation(frameTranslation, (Editable)s);
-
-                    String translation = Translator.compileTranslation((Editable)s);
-                    mTargetTranslation.applyChapterTitleTranslation(chapterTranslation, translation);
-                    item.renderedTargetText = translation;
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-
-                }
-            };
-            holder.mTargetBody.addTextChangedListener(holder.mTextWatcher);
+        // target chapter title
+        final ChapterTranslation chapterTranslation = mTargetTranslation.getChapterTranslation(item.chapterSlug);
+        if(item.renderedTargetText == null) {
+            item.renderedTargetText = chapterTranslation.title;
         }
+        if(holder.mTextWatcher != null) {
+            holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
+        }
+        item.renderedTargetText = renderText(item.renderedTargetText.toString(), mTargetFormat, targetSearch);
+        holder.mTargetBody.setText(item.renderedTargetText);
+
+        // target title
+        holder.mTargetTitle.setText(sourceChapterTitle + " - " + mTargetLanguage.name);
+
+        // indicate completed frame translations
+        indicateCardCompleted(chapterTranslation.isTitleFinished(), holder);
+
+        // editing
+        holder.mTextWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // save
+                //                TODO: do this so we don't have to wait for compiling
+                //                Translator.applyFrameTranslation(frameTranslation, (Editable)s);
+
+                String translation = Translator.compileTranslation((Editable)s);
+                mTargetTranslation.applyChapterTitleTranslation(chapterTranslation, translation);
+                item.renderedTargetText = translation;
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        };
+        holder.mTargetBody.addTextChangedListener(holder.mTextWatcher);
     }
 
     /**
      * Renders the chapter reference card
      * @param holder
      * @param position
-     * @param chapterId
      */
-    private void renderChapterReference(final ViewHolder holder, final int position, String chapterId) {
-        final ListItem item = mFilteredItems[position];
-        Chapter chapter = mChapters.get(chapterId);
-        if(chapter != null) {
-            // source title
-            String sourceChapterTitle = mSourceContainer.project.name + " " + Integer.parseInt(chapter.getId());
-            holder.mSourceTitle.setText(sourceChapterTitle);
-
-            // source chapter reference
-            if(item.renderedSourceText == null) {
-                item.renderedSourceText = chapter.reference;
-            }
-            boolean targetSearch = isTargetSearch();
-            item.renderedSourceText = renderText(item.renderedSourceText.toString(), TranslationFormat.DEFAULT, !targetSearch);
-            holder.mSourceBody.setText(item.renderedSourceText);
-
-            // target chapter reference
-            final ChapterTranslation chapterTranslation = mTargetTranslation.getChapterTranslation(chapter);
-            if(item.renderedTargetText == null) {
-                item.renderedTargetText = chapterTranslation.reference;
-            }
-            if(holder.mTextWatcher != null) {
-                holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
-            }
-            item.renderedTargetText = renderText(item.renderedTargetText.toString(), mTargetFormat, targetSearch);
-            holder.mTargetBody.setText(item.renderedTargetText);
-
-            // target title
-            holder.mTargetTitle.setText(sourceChapterTitle + " - " + mTargetLanguage.name);
-
-            // indicate completed frame translations
-            indicateCardCompleted(chapterTranslation.isReferenceFinished(), holder);
-
-            // editing
-            holder.mTextWatcher = new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    // save
-    //                TODO: do this so we don't have to wait for compiling
-    //                Translator.applyFrameTranslation(frameTranslation, (Editable)s);
-
-                    String translation = Translator.compileTranslation((Editable)s);
-                    mTargetTranslation.applyChapterReferenceTranslation(chapterTranslation, translation);
-                    item.renderedTargetText = translation;
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-
-                }
-            };
-            holder.mTargetBody.addTextChangedListener(holder.mTextWatcher);
-        }
-    }
-
-    /**
-     * Renders the frame cards
-     * @param holder
-     * @param position
-     */
-    private void renderFrame(final ViewHolder holder, final int position) {
+    private void renderChapterReference(final ViewHolder holder, final int position) {
         final ListItem item = mFilteredItems[position];
 
-        // render the source frame body
-        item.renderedSourceText = renderText(item.sourceText, item.translationFormat, !isTargetSearch());
-
-        holder.mSourceBody.setText(item.renderedSourceText);
-
-        // render source frame title
-
-//        Chapter chapter = mChapters.get(frame.getChapterId());
-        String sourceChapterTitle = mSourceContainer.readChunk(item.chapterSlug, "title");
-        if(sourceChapterTitle.isEmpty()) {
-            sourceChapterTitle = mSourceContainer.project.name + " " + Integer.parseInt(item.chapterSlug);
-        }
-        sourceChapterTitle += ":" + Frame.parseVerseTitle(item.sourceText, item.translationFormat);
+        // source title
+        String sourceChapterTitle = mSourceContainer.project.name + " " + Integer.parseInt(item.chapterSlug);
         holder.mSourceTitle.setText(sourceChapterTitle);
 
-        // render the target frame body
-        mTargetFormat =  mTargetTranslation.getFormat();
-        final FrameTranslation frameTranslation = mTargetTranslation.getFrameTranslation(item.chapterSlug, item.chunkSlug, item.translationFormat);
-        item.renderedTargetText = renderText(frameTranslation.body, mTargetFormat, isTargetSearch());
+        boolean targetSearch = isTargetSearch();
+        item.renderedSourceText = renderText(item.renderedSourceText.toString(), TranslationFormat.DEFAULT, !targetSearch);
+        holder.mSourceBody.setText(item.renderedSourceText);
 
+        // target chapter reference
+        final ChapterTranslation chapterTranslation = mTargetTranslation.getChapterTranslation(item.chapterSlug);
+        if(item.renderedTargetText == null) {
+            item.renderedTargetText = chapterTranslation.reference;
+        }
         if(holder.mTextWatcher != null) {
             holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
         }
-        holder.mTargetBody.setText(TextUtils.concat(item.renderedTargetText, "\n"));
+        item.renderedTargetText = renderText(item.renderedTargetText.toString(), mTargetFormat, targetSearch);
+        holder.mTargetBody.setText(item.renderedTargetText);
 
-        // render target frame title
-        ChapterTranslation chapterTranslation = mTargetTranslation.getChapterTranslation(item.chapterSlug);
-        String targetChapterTitle = chapterTranslation.title;
-        if(!targetChapterTitle.isEmpty()) {
-            targetChapterTitle += ":" + frameTranslation.getTitle();
-        } else {
-            targetChapterTitle = sourceChapterTitle;
-        }
-        holder.mTargetTitle.setText(targetChapterTitle + " - " + mTargetLanguage.name);
+        // target title
+        holder.mTargetTitle.setText(sourceChapterTitle + " - " + mTargetLanguage.name);
 
         // indicate completed frame translations
-        indicateCardCompleted(frameTranslation.isFinished(), holder);
+        indicateCardCompleted(chapterTranslation.isReferenceFinished(), holder);
 
+        // editing
         holder.mTextWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -720,7 +641,89 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 //                Translator.applyFrameTranslation(frameTranslation, (Editable)s);
 
                 String translation = Translator.compileTranslation((Editable)s);
-                mTargetTranslation.applyFrameTranslation(frameTranslation, translation);
+                mTargetTranslation.applyChapterReferenceTranslation(chapterTranslation, translation);
+                item.renderedTargetText = translation;
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        };
+        holder.mTargetBody.addTextChangedListener(holder.mTextWatcher);
+    }
+
+    /**
+     * Renders the frame cards
+     * @param holder
+     * @param position
+     */
+    private void renderChunk(final ViewHolder holder, final int position) {
+        final ListItem item = mFilteredItems[position];
+
+        // render source text
+        if(item.renderedSourceText == null) {
+            item.renderedSourceText = renderText(item.sourceText, item.translationFormat, !isTargetSearch());
+        }
+        holder.mSourceBody.setText(item.renderedSourceText);
+
+        // render target text
+        if(item.renderedTargetText == null) {
+            item.renderedTargetText = renderText(item.targetText, item.translationFormat, isTargetSearch());
+        }
+        if(holder.mTextWatcher != null) holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
+        holder.mTargetBody.setText(TextUtils.concat(item.renderedTargetText, "\n"));
+
+        // render source title
+        if(item.isProjectTitle()) {
+            holder.mSourceTitle.setText("");
+        } else if(item.isChapter()) {
+            holder.mSourceTitle.setText(mSourceContainer.project.name.trim());
+        } else {
+            // TODO: we should read the title from a cache instead of doing file io again
+            String title = mSourceContainer.readChunk(item.chapterSlug, "title").trim();
+            if(title.isEmpty()) {
+                title = mSourceContainer.project.name.trim() + " " + Integer.parseInt(item.chapterSlug);
+            }
+            String verseSpan = Frame.parseVerseTitle(item.sourceText, item.translationFormat);
+            if(verseSpan.isEmpty()) {
+                title += ":" + Integer.parseInt(item.chunkSlug);
+            } else {
+                title += ":" + verseSpan;
+            }
+            holder.mSourceTitle.setText(title);
+        }
+
+        // render target title
+        holder.mTargetTitle.setText(item.getTargetTitle());
+
+        // indicate complete
+        indicateCardCompleted(item.isComplete, holder);
+
+        holder.mTextWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // save
+                String translation = Translator.compileTranslation((Editable)s);
+                if(item.isProjectTitle()){
+                    try {
+                        mTargetTranslation.applyProjectTitleTranslation(translation);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else if(item.isChapterTitle()) {
+                    mTargetTranslation.applyChapterTitleTranslation(mTargetTranslation.getChapterTranslation(item.chapterSlug), translation);
+                } else if(item.isChapterReference()) {
+                    mTargetTranslation.applyChapterReferenceTranslation(mTargetTranslation.getChapterTranslation(item.chapterSlug), translation);
+                } else {
+                    mTargetTranslation.applyFrameTranslation(mTargetTranslation.getFrameTranslation(item.chapterSlug, item.chunkSlug, item.translationFormat), translation);
+                }
+
                 item.renderedTargetText = renderText(translation, mTargetFormat, isTargetSearch());
             }
 
@@ -962,10 +965,6 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         private final String chunkSlug;
         private final String chapterSlug;
 
-        private boolean isChapterReference = false;
-        private boolean isChapterTitle = false;
-        public boolean isProjectTitle = false;
-
         private boolean isTargetCardOpen = false;
 
         private String sourceText;
@@ -980,13 +979,49 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
         private boolean mHighlightSource = false;
         private boolean mHighlightTarget = false;
+        private TargetLanguage targetLanguage;
+        private ResourceContainer sourceContainer;
+        private boolean isComplete = false;
 
-        public ListItem(String chunkSlug, String chapterSlug) {
+        public ListItem(String chapterSlug, String chunkSlug) {
             this.chunkSlug = chunkSlug;
             this.chapterSlug = chapterSlug;
         }
 
-        public boolean isFrame() {
+        public String getTargetTitle() {
+            if(isProjectTitle()) {
+                return targetLanguage.name;
+            } else if(isChapter()) {
+                if(!pt.getTitle().trim().isEmpty()) {
+                    return pt.getTitle().trim() + " - " + targetLanguage.name;
+                } else {
+                    return sourceContainer.project.name.trim() + " - " + targetLanguage.name;
+                }
+            } else {
+                // use chapter title
+                String title = ct.title.trim();
+                if(title.isEmpty()) {
+                    title = sourceContainer.readChunk(chapterSlug, "title").trim();
+                }
+                // use project title
+                if(title.isEmpty()) {
+                    title = pt.getTitle().trim();
+                    if(title.isEmpty()) {
+                        title = sourceContainer.project.name.trim();
+                    }
+                    title += " " + Integer.parseInt(chapterSlug);
+                }
+                String verseSpan = Frame.parseVerseTitle(sourceText, translationFormat);
+                if(verseSpan.isEmpty()) {
+                    title += ":" + Integer.parseInt(chunkSlug);
+                } else {
+                    title += ":" + verseSpan;
+                }
+                return title + " - " + targetLanguage.name;
+            }
+        }
+
+        public boolean isChunk() {
             return !isChapter() && !isProjectTitle();
         }
 
@@ -1021,7 +1056,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
          */
         public void setHighLighting(boolean enable, boolean target) {
             if(target) {
-                if(!enable) { // disable highlighting
+                if(enable) { // disable highlighting
                     if(mHighlightTarget) {
                         renderedTargetText = null; // remove rendered text so will be re-rendered without highlighting
                     }
@@ -1045,36 +1080,45 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
          * Loads the translation text from the disk
          * @param sourceContainer
          * @param targetTranslation
-         * @param chapterSlug
-         * @param chunkSlug
          * @param adapter
          */
-        public void loadTranslations(ResourceContainer sourceContainer, TargetTranslation targetTranslation, String chapterSlug, String chunkSlug, ChunkModeAdapter adapter) {
-            this.sourceText = sourceContainer.readChunk(chapterSlug, chunkSlug);
+        public void loadTranslations(ResourceContainer sourceContainer, TargetTranslation targetTranslation, ChunkModeAdapter adapter) {
+            this.pt = targetTranslation.getProjectTranslation();
+            this.sourceContainer = sourceContainer;
+            this.targetLanguage = targetTranslation.getTargetLanguage();
+            if(this.sourceText == null) {
+                this.sourceText = sourceContainer.readChunk(chapterSlug, chunkSlug);
+            }
             this.translationFormat = TranslationFormat.parse(sourceContainer.contentMimeType);
             // TODO: 10/1/16 this will be simplified once we migrate target translations to resource containers
             if(chapterSlug.equals("front")) {
                 // project stuff
                 if (chunkSlug.equals("title")) {
-                    this.pt = targetTranslation.getProjectTranslation();
                     this.targetText = pt.getTitle();
+                    this.isComplete = pt.isTitleFinished();
                 }
             } else if(chapterSlug.equals("back")) {
                 // back matter
 
             } else {
                 // chapter stuff
+                this.ct = targetTranslation.getChapterTranslation(chapterSlug);
                 if(chunkSlug.equals("title")) {
-                    this.ct = targetTranslation.getChapterTranslation(chapterSlug);
                     this.targetText = ct.title;
+                    this.renderedTargetText = this.targetText;
+                    this.renderedSourceText = this.sourceText;
+                    this.isComplete = ct.isTitleFinished();
                 } else if(chunkSlug.equals("reference")) {
-                    this.ct = targetTranslation.getChapterTranslation(chapterSlug);
                     this.targetText = ct.reference;
+                    this.renderedTargetText = this.targetText;
+                    this.renderedSourceText = this.sourceText;
+                    this.isComplete = ct.isReferenceFinished();
                 } else {
                     this.ft = targetTranslation.getFrameTranslation(chapterSlug, chunkSlug, this.translationFormat);
                     this.targetText = ft.body;
-
+                    this.isComplete = ft.isFinished();
                     boolean targetSearch = adapter.isTargetSearch();
+                    // TODO: 10/3/16 this is bad programming
                     this.renderedSourceText = adapter.renderText(this.sourceText, this.translationFormat, !targetSearch);
                     this.renderedTargetText = adapter.renderText(this.targetText, this.translationFormat, targetSearch);
                 }
@@ -1168,14 +1212,14 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
                     if(!searchTarget) { // search the source
                         if (item.renderedSourceText == null) { // if source hasn't been rendered
-                            item.loadTranslations(mSourceContainer, mTargetTranslation, item.chapterSlug, item.chunkSlug, ChunkModeAdapter.this);
+                            item.loadTranslations(mSourceContainer, mTargetTranslation, ChunkModeAdapter.this);
                         }
                         if (item.renderedSourceText != null) {
                             match = item.renderedSourceText.toString().toLowerCase().contains(matchString);
                         }
                     } else { // search the target
                         if (item.renderedTargetText == null) { // if target hasn't been rendered
-                            item.loadTranslations(mSourceContainer, mTargetTranslation, item.chapterSlug, item.chunkSlug, ChunkModeAdapter.this);
+                            item.loadTranslations(mSourceContainer, mTargetTranslation, ChunkModeAdapter.this);
                         }
                         if (item.renderedTargetText != null) {
                             match = item.renderedTargetText.toString().toLowerCase().contains(matchString);

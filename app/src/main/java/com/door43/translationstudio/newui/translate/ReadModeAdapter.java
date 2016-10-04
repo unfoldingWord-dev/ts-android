@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.TabLayout;
+import android.support.v4.util.ArrayMap;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -32,7 +33,6 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
-import com.door43.translationstudio.newui.library.ServerLibraryLanguageAdapter;
 import com.door43.translationstudio.rendering.ClickableRenderingEngine;
 import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.DefaultRenderer;
@@ -42,7 +42,10 @@ import com.door43.translationstudio.spannables.Span;
 import com.door43.widget.ViewUtil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.LinkedTransferQueue;
 
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.SourceLanguage;
@@ -66,12 +69,13 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     private static final int BOTTOM_ELEVATION = 2;
     private static final int TOP_ELEVATION = 3;
     private final TargetTranslation mTargetTranslation;
-    private ResourceContainer mResourceContainer;
+    private ResourceContainer mSourceContainer;
     private final Door43Client mLibrary;
     private final Translator mTranslator;
-    private String[] mChapters;
+    private List<String> chapters;
     private int mLayoutBuildNumber = 0;
     private ContentValues[] mTabs;
+    private Map<String, List<String>> chunks = new HashMap<>();
 
     public ReadModeAdapter(Activity context, String targetTranslationId, String sourceContainerSlug, String startingChapterSlug, String startingChunkSlug) {
         this.startingChapterSlug = startingChapterSlug;
@@ -91,27 +95,31 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
      */
     public void setSourceTranslation(String sourceContainerSlug) {
         try {
-            mResourceContainer = mLibrary.open(sourceContainerSlug);
+            mSourceContainer = mLibrary.open(sourceContainerSlug);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        mSourceLanguage = mLibrary.index().getSourceLanguage(mResourceContainer.language.slug);
+        mSourceLanguage = mLibrary.index().getSourceLanguage(mSourceContainer.language.slug);
 
-        mChapters = mResourceContainer.chapters();
-        mTargetStateOpen = new boolean[mChapters.length];
-        mRenderedSourceBody = new CharSequence[mChapters.length];
-        mRenderedTargetBody = new CharSequence[mChapters.length];
+        this.chapters = new ArrayList<>();
+        this.chunks = new HashMap<>();
 
-        // identify starting position
-        if(startingChapterSlug != null) {
-            for(int i = 0; i < mChapters.length; i ++) {
-                if(mChapters[i].equals(startingChapterSlug)) {
-                    setListStartPosition(i);
-                    break;
-                }
+        setListStartPosition(0);
+        boolean foundStartingChapter = false;
+        for(Map tocChapter:(List<Map>)mSourceContainer.toc) {
+            String chapterSlug = (String)tocChapter.get("chapter");
+            this.chapters.add(chapterSlug);
+            if(!foundStartingChapter && chapterSlug.equals(startingChapterSlug) ) {
+                setListStartPosition(this.chapters.size());
+                foundStartingChapter = true;
             }
+            this.chunks.put(chapterSlug, (List)tocChapter.get("chunks"));
         }
+
+        mTargetStateOpen = new boolean[chapters.size()];
+        mRenderedSourceBody = new CharSequence[chapters.size()];
+        mRenderedTargetBody = new CharSequence[chapters.size()];
 
         loadTabInfo();
 
@@ -124,33 +132,27 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     }
 
     @Override
-    public String getFocusedFrameId(int position) {
+    public String getFocusedChunkSlug(int position) {
         return null;
     }
 
     @Override
-    public String getFocusedChapterId(int position) {
-        if(position >= 0 && position < mChapters.length) {
-            return mChapters[position];
+    public String getFocusedChapterSlug(int position) {
+        if(position >= 0 && position < chapters.size()) {
+            return chapters.get(position);
         } else {
             return null;
         }
     }
 
     @Override
-    public int getItemPosition(String chapterId, String frameId) {
-        for(int i = 0; i < mChapters.length; i ++) {
-            String slug = mChapters[i];
-            if(slug.equals(chapterId)) {
-                return i;
-            }
-        }
-        return -1;
+    public int getItemPosition(String chapterSlug, String chunkSlug) {
+        return chapters.indexOf(chapterSlug);
     }
 
     @Override
     public void reload() {
-        setSourceTranslation(mResourceContainer.slug);
+        setSourceTranslation(mSourceContainer.slug);
     }
 
 
@@ -166,24 +168,19 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
      */
     private void loadTabInfo() {
         List<ContentValues> tabContents = new ArrayList<>();
-        String[] sourceTranslationIds = App.getSelectedSourceTranslations(mTargetTranslation.getId());
-        for(String id:sourceTranslationIds) {
-            ResourceContainer resourceContainer = null;
-            try {
-                resourceContainer = mLibrary.open(id);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            if(resourceContainer != null) {
+        String[] sourceTranslationSlugs = App.getSelectedSourceTranslations(mTargetTranslation.getId());
+        for(String slug:sourceTranslationSlugs) {
+            SourceTranslation st = App.getSourceTranslation(slug);
+            if(st != null) {
                 ContentValues values = new ContentValues();
-                values.put("title", resourceContainer.language.name + " " + resourceContainer.resource.slug.toUpperCase());
+                values.put("title", st.language.name + " " + st.resource.slug.toUpperCase());
                 // include the resource id if there are more than one
-//                if(mLibrary.getResources(resourceContainer.projectSlug, resourceContainer.sourceLanguageSlug).length > 1) {
-//                    values.put("title", resourceContainer.getSourceLanguageTitle() + " " + resourceContainer.resourceSlug.toUpperCase());
-//                } else {
-//                    values.put("title", resourceContainer.getSourceLanguageTitle());
-//                }
-                values.put("tag", resourceContainer.slug);
+                if(mLibrary.index().getResources(st.language.slug, st.project.slug).size() > 1) {
+                    values.put("title", st.language.name + " " + st.resource.slug.toUpperCase());
+                } else {
+                    values.put("title", st.language.name);
+                }
+                values.put("tag", st.resourceContainerSlug);
                 tabContents.add(values);
             }
         }
@@ -198,10 +195,10 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     public String getChapterForPosition(int position) {
         if(position < 0) {
             position = 0;
-        } else if(position >= mChapters.length) {
-            position = mChapters.length - 1;
+        } else if(position >= chapters.size()) {
+            position = chapters.size() - 1;
         }
-        return mChapters[position];
+        return chapters.get(position);
     }
 
     @Override
@@ -270,12 +267,17 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
             }
         });
 
-        final String chapterSlug = mChapters[position];
+        final String chapterSlug = chapters.get(position);
 
         // render the source chapter body
         if(mRenderedSourceBody[position] == null) {
-            String chapterBody = mResourceContainer.readChunk(chapterSlug, ""); //mLibrary.getChapterBody(mResourceContainer, chapter.getId());
-            TranslationFormat bodyFormat = TranslationFormat.parse(mResourceContainer.contentMimeType);// mLibrary.getChapterBodyFormat(mResourceContainer, chapterSlug);
+            String chapterBody = "";
+            for(String chunk:chunks.get(chapterSlug)) {
+                if(!chunk.equals("title")) {
+                    chapterBody += mSourceContainer.readChunk(chapterSlug, chunk);
+                }
+            }
+            TranslationFormat bodyFormat = TranslationFormat.parse(mSourceContainer.contentMimeType);
             RenderingGroup sourceRendering = new RenderingGroup();
             if (Clickables.isClickableFormat(bodyFormat)) {
                 // TODO: add click listeners
@@ -314,9 +316,9 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
 
         holder.mSourceBody.setText(mRenderedSourceBody[position]);
         ViewUtil.makeLinksClickable(holder.mSourceBody);
-        String chapterTitle = mResourceContainer.readChunk(chapterSlug, "title");
+        String chapterTitle = mSourceContainer.readChunk(chapterSlug, "title").trim();
         if(chapterTitle.isEmpty()) {
-            chapterTitle = mResourceContainer.readChunk("front", "title") + " " + Integer.parseInt(chapterSlug);
+            chapterTitle = mSourceContainer.readChunk("front", "title").trim() + " " + Integer.parseInt(chapterSlug);
         }
         holder.mSourceTitle.setText(chapterTitle);
 
@@ -324,7 +326,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         if(mRenderedTargetBody[position] == null) {
             TranslationFormat bodyFormat = mTargetTranslation.getFormat();
             String chapterBody = "";
-            String[] frameSlugs = mResourceContainer.chunks(chapterSlug);
+            String[] frameSlugs = mSourceContainer.chunks(chapterSlug);
             for (String frameSlug : frameSlugs) {
                 Frame simpleFrame = new Frame(frameSlug, chapterSlug, null, bodyFormat, null);
                 FrameTranslation frameTranslation = mTargetTranslation.getFrameTranslation(simpleFrame);
@@ -381,24 +383,22 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         // look for translated chapter title first
         final ChapterTranslation chapterTranslation = mTargetTranslation.getChapterTranslation(chapterSlug);
         if(null != chapterTranslation) {
-            targetCardTitle = chapterTranslation.title;
+            targetCardTitle = chapterTranslation.title.trim();
         }
 
-        if (targetCardTitle.isEmpty() && !chapterTitle.isEmpty()) { // if no target chapter title translation, fall back to source chapter title
-            if(!chapterTitle.isEmpty()) {
-                targetCardTitle = chapterTitle;
-            }
+        if (targetCardTitle.isEmpty() && !chapterTitle.trim().isEmpty()) { // if no target chapter title translation, fall back to source chapter title
+            targetCardTitle = chapterTitle.trim();
         }
 
         if (targetCardTitle.isEmpty()) { // if no chapter titles, fall back to project title, try translated title first
             ProjectTranslation projTrans = mTargetTranslation.getProjectTranslation();
-            if(!projTrans.getTitle().isEmpty()) {
-                targetCardTitle = projTrans.getTitle() + " " + Integer.parseInt(chapterSlug);
+            if(!projTrans.getTitle().trim().isEmpty()) {
+                targetCardTitle = projTrans.getTitle().trim() + " " + Integer.parseInt(chapterSlug);
             }
         }
 
         if (targetCardTitle.isEmpty()) { // fall back to project source title
-            targetCardTitle = mResourceContainer.readChunk("front", "title") + " " + Integer.parseInt(chapterSlug);
+            targetCardTitle = mSourceContainer.readChunk("front", "title").trim() + " " + Integer.parseInt(chapterSlug);
         }
 
         holder.mTargetTitle.setText(targetCardTitle + " - " + mTargetLanguage.name);
@@ -416,7 +416,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         // select correct tab
         for(int i = 0; i < holder.mTabLayout.getTabCount(); i ++) {
             TabLayout.Tab tab = holder.mTabLayout.getTabAt(i);
-            if(tab.getTag().equals(mResourceContainer.slug)) {
+            if(tab.getTag().equals(mSourceContainer.slug)) {
                 tab.select();
                 break;
             }
@@ -463,7 +463,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
 
     @Override
     public int getItemCount() {
-        return mChapters.length;
+        return chapters.size();
     }
 
     public void rebuild() {
@@ -567,6 +567,21 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
      */
     public void openTargetTranslationCard(final ViewHolder holder, final int position) {
         openTargetTranslationCard( holder, position, false);
+    }
+
+    @Override
+    public Object[] getSections() {
+        return chapters.toArray();
+    }
+
+    @Override
+    public int getPositionForSection(int sectionIndex) {
+        return sectionIndex;
+    }
+
+    @Override
+    public int getSectionForPosition(int position) {
+        return position;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

@@ -19,7 +19,6 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
@@ -477,8 +476,8 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         // save position state
         if(mRememberLastPosition && (mLayoutManager != null)) {
             int lastItemPosition = mLayoutManager.findFirstVisibleItemPosition();
-            String chapterId = mAdapter.getFocusedChapterId(lastItemPosition);
-            String frameId = mAdapter.getFocusedFrameId(lastItemPosition);
+            String chapterId = mAdapter.getFocusedChapterSlug(lastItemPosition);
+            String frameId = mAdapter.getFocusedChunkSlug(lastItemPosition);
             App.setLastFocus(mTargetTranslation.getId(), chapterId, frameId);
         }
         super.onDestroy();
