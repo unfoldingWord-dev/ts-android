@@ -310,26 +310,6 @@ public class ReviewModeFragment extends ViewModeFragment {
     }
 
     /**
-     * do search with specific search string or clear search filter
-     * @param searchString - if null or "" then search is cleared
-     * @param searchTarget
-     */
-    public void setSearchFilter(String searchString, boolean searchTarget) {
-        Log.d(ReviewModeFragment.class.getSimpleName(),"setSearchFilter: " + (searchString != null ? searchString : "null"));
-        final ReviewModeAdapter adapter = (ReviewModeAdapter) getAdapter();
-        if(adapter != null) {
-            adapter.clearScreenAndStartNewSearch(searchString, searchTarget);
-        }
-    }
-
-    /**
-     * method to see if searching is supported
-     */
-    public boolean isSearchSupported() {
-        return true;
-    }
-
-    /**
      * Prepares the resources drawer with the translation word
      * @param translationWordId
      */

@@ -303,19 +303,22 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     /**
-     * do search with specific search string or clear search filter
-     * @param searchString - if null or "" then search is cleared
-     * @param searchTarget
+     * Filters the adapter by the constraint
+     * @param constraint the search will be cleared if null or an empty string
+     * @param subject the text to be searched
      */
-    public void setSearchFilter(String searchString, boolean searchTarget) {
-        // default is do nothing
+    public final void filter(CharSequence constraint, TranslationFilter.FilterSubject subject) {
+        if(getAdapter() != null) {
+            getAdapter().filter(constraint, subject);
+        }
     }
 
     /**
-     * method to see if searching is supported
+     * Checks if filtering is enabled.
      */
-    public boolean isSearchSupported() {
-        return false; // default is not supported
+    public final boolean hasFilter() {
+        if(getAdapter() != null) return getAdapter().hasFilter();
+        return false;
     }
 
     /**
@@ -516,10 +519,10 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
 
     /**
      * enable/disable the busy indiciator
-     * @param enable
+     * @param isSearching
      */
-    public void onSetBusyIndicator(boolean enable) {
-        mListener.onSetBusyIndicator(enable);
+    public void onSearching(boolean isSearching) {
+        mListener.onSearching(isSearching);
     }
 
     public interface OnEventListener {
@@ -557,6 +560,6 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
          * enable/disable busy spinner
          * @param enable
          */
-        void onSetBusyIndicator(boolean enable);
+        void onSearching(boolean enable);
     }
 }

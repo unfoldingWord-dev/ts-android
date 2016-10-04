@@ -14,7 +14,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.Layout;
-import android.util.Log;
 import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -40,7 +39,6 @@ import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
@@ -435,7 +433,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      */
     public boolean isSearchSupported() {
         if(mFragment != null) {
-            return ((ViewModeFragment) mFragment).isSearchSupported();
+            return ((ViewModeFragment) mFragment).hasFilter();
         }
         return false;
     }
@@ -563,7 +561,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     /**
      * get the type of search (position)
      */
-    private int getSearchTypeSelection() {
+    private TranslationFilter.FilterSubject getFilterSubject() {
         LinearLayout searchPane = (LinearLayout) findViewById(R.id.search_pane);
         if(searchPane != null) {
 
@@ -571,12 +569,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             if(type != null) {
                 int pos = type.getSelectedItemPosition();
                 if(pos >= 0) {
-                    return pos;
+                    return TranslationFilter.FilterSubject.TARGET;
                 }
             }
         }
-
-        return 0;
+        return TranslationFilter.FilterSubject.SOURCE;
     }
 
     /**
@@ -627,9 +624,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             @Override
             public void run() {
                 if((mFragment != null) && (mFragment instanceof ViewModeFragment)) {
-                    boolean searchTarget = getSearchTypeSelection() == TRANSLATION_SEARCH_TYPE;
-
-                    ((ViewModeFragment) mFragment).setSearchFilter(searchString, searchTarget);
+                    ((ViewModeFragment)mFragment).filter(searchString, getFilterSubject());
                 }
              }
         });
@@ -990,8 +985,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     @Override
-    public void onSetBusyIndicator(boolean enable) {
-        setSearchSpinner(enable);
+    public void onSearching(boolean isSearching) {
+        setSearchSpinner(isSearching);
     }
 
     @Override

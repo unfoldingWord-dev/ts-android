@@ -50,24 +50,4 @@ public class ChunkModeFragment extends ViewModeFragment {
     protected void onLeftSwipe(MotionEvent e1, MotionEvent e2) {
         doTranslationCardToggle(e1, e2, true);
     }
-
-    /**
-     * do search with specific search string or clear search filter
-     * @param searchString - if null or "" then search is cleared
-     * @param searchTarget
-     */
-    public void setSearchFilter(String searchString, boolean searchTarget) {
-        Log.d(ChunkModeFragment.class.getSimpleName(),"setSearchFilter: " + (searchString != null ? searchString : "null"));
-        ChunkModeAdapter adapter = (ChunkModeAdapter) getAdapter();
-        if(adapter != null) {
-            adapter.clearScreenAndStartNewSearch(searchString, searchTarget);
-        }
-    }
-
-    /**
-     * method to see if searching is supported
-     */
-    public boolean isSearchSupported() {
-        return true;
-    }
 }

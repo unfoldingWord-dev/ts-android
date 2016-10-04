@@ -113,6 +113,24 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
     }
 
     /**
+     * Filters the adapter by the constraint
+     * @param constraint the search query
+     * @param subject the text that will be searched
+     */
+    public void filter(CharSequence constraint, TranslationFilter.FilterSubject subject) {
+        // Override this in your adapter to enable searching
+    }
+
+    /**
+     * Checks if filtering is enabled for this adapter.
+     * Override this to customize filtering.
+     * @return
+     */
+    public boolean hasFilter() {
+        return false;
+    }
+
+    /**
      * returns the frame at the given position
      * @param position
      * @return
@@ -157,7 +175,7 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
         void onCheckingQuestionClick(String chapterId, String frameId, String checkingQuestionId, int width);
         void scrollToFrame(String chapterSlug, String frameSlug);
         void restartAutoCommitTimer();
-        void onSetBusyIndicator(boolean enable);
+        void onSearching(boolean enable);
         void onDataSetChanged(int count);
     }
 }
