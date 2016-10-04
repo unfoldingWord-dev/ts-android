@@ -87,6 +87,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         mTargetLanguage = App.languageFromTargetTranslation(mTargetTranslation);
 
         setSourceTranslation(sourceContainerSlug);
+        triggerNotifyDataSetChanged();
     }
 
     /**
@@ -149,12 +150,6 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     public int getItemPosition(String chapterSlug, String chunkSlug) {
         return chapters.indexOf(chapterSlug);
     }
-
-    @Override
-    public void reload() {
-        setSourceTranslation(mSourceContainer.slug);
-    }
-
 
     @Override
     public ViewHolder onCreateManagedViewHolder(ViewGroup parent, int viewType) {

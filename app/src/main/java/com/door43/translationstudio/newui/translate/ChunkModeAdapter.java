@@ -88,6 +88,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         mTargetLanguage = App.languageFromTargetTranslation(mTargetTranslation);
 
         setSourceTranslation(sourceContainerSlug);
+        triggerNotifyDataSetChanged();
     }
 
     @Override
@@ -181,11 +182,6 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             }
         }
         return -1;
-    }
-
-    @Override
-    public void reload() {
-        setSourceTranslation(mSourceContainer.slug);
     }
 
     @Override
@@ -801,13 +797,11 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         if(constraint == null || constraint.toString().trim().isEmpty()) {
             mFilteredItems = mItems;
             mFilteredChapters = mChapters;
-            triggerNotifyDataSetChanged();
             return;
         }
 
         // clear the cards displayed since we have new search string
         mFilteredItems = new ArrayList<>();
-        triggerNotifyDataSetChanged();
 
         getListener().onSearching(true);
         TranslationFilter filter = new TranslationFilter(mSourceContainer, mTargetTranslation, subject, mItems);

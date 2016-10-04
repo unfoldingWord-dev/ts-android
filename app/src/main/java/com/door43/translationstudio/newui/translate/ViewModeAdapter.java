@@ -71,7 +71,8 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
     abstract void rebuild();
 
     /**
-     * Updates the source translation to be displayed
+     * Updates the source translation to be displayed.
+     * Make sure to call triggerNotifyDatasetChanged() after this.
      * @param sourceTranslationId
      */
     abstract void setSourceTranslation(String sourceTranslationId);
@@ -160,11 +161,6 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
     public void restartAutoCommitTimer() {
         mListener.restartAutoCommitTimer();
     }
-
-    /**
-     * Notifies the adpater that it needs to reload all it's data.
-     */
-    public abstract void reload();
 
     public interface OnEventListener {
         void onSourceTranslationTabClick(String sourceTranslationId);

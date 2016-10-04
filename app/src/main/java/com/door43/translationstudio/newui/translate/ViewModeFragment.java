@@ -293,9 +293,9 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     @Override
     public void onResume() {
         super.onResume();
-        if(mAdapter != null) {
-            mAdapter.rebuild();
-        }
+//        if(mAdapter != null) {
+//            mAdapter.rebuild();
+//        }
     }
 
     /**
@@ -306,6 +306,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     public final void filter(CharSequence constraint, TranslationFilter.FilterSubject subject) {
         if(getAdapter() != null) {
             getAdapter().filter(constraint, subject);
+            getAdapter().triggerNotifyDataSetChanged();
         }
     }
 
@@ -408,6 +409,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         App.setSelectedSourceTranslation(mTargetTranslation.getId(), sourceTranslationId);
         mSourceTranslationId = sourceTranslationId;
         mAdapter.setSourceTranslation(sourceTranslationId);
+        mAdapter.triggerNotifyDataSetChanged();
     }
 
     @Override
@@ -460,6 +462,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
             }
             String selectedSourceTranslationId = App.getSelectedSourceTranslationId(targetTranslationId);
             mAdapter.setSourceTranslation(selectedSourceTranslationId);
+            mAdapter.triggerNotifyDataSetChanged();
         } else {
             mListener.onNoSourceTranslations(targetTranslationId);
         }

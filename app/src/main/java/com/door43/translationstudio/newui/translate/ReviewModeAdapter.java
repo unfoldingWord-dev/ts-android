@@ -124,6 +124,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         mResourcesOpened = openResources;
 
         setSourceTranslation(sourceContainerSlug);
+        triggerNotifyDataSetChanged();
     }
 
     @Override
@@ -242,11 +243,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         }
         return -1;
-    }
-
-    @Override
-    public void reload() {
-        setSourceTranslation(mSourceContainer.slug);
     }
 
     @Override
@@ -1868,13 +1864,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         if(constraint == null || constraint.toString().trim().isEmpty()) {
             mFilteredItems = mItems;
             mFilteredChapters = mChapters;
-            triggerNotifyDataSetChanged();
             return;
         }
 
         // clear the cards displayed since we have new search string
         mFilteredItems = new ArrayList<>();
-        triggerNotifyDataSetChanged();
 
         getListener().onSearching(true);
         TranslationFilter filter = new TranslationFilter(mSourceContainer, mTargetTranslation, subject, mItems);

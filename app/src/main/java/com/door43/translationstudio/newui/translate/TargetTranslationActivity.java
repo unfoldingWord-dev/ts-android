@@ -1031,7 +1031,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      */
     public void notifyDatasetChanged() {
         if (mFragment instanceof ViewModeFragment) {
-            ((ViewModeFragment) mFragment).getAdapter().reload();
+            ((ViewModeFragment) mFragment).getAdapter().notifyDataSetChanged();
         }
     }
 
