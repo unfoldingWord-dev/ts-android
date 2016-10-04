@@ -1,11 +1,9 @@
-package com.door43.translationstudio.newui.translate;
+package com.door43.widget;
 
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Rect;
-import android.os.Build;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,8 +11,6 @@ import android.view.ViewGroup;
 import android.widget.PopupWindow;
 import android.widget.SeekBar;
 import android.widget.TextView;
-
-import org.unfoldingword.tools.logger.Logger;
 
 /**
  * 7/1/2016
@@ -41,7 +37,7 @@ public class VerticalSeekBarHint extends com.door43.widget.VerticalSeekBar imple
     private OnSeekBarHintProgressChangeListener mProgressChangeListener;
 
     public interface OnSeekBarHintProgressChangeListener {
-        public String onHintTextChanged(VerticalSeekBarHint seekBarHint, int progress);
+        String onHintTextChanged(VerticalSeekBarHint seekBarHint, int progress);
     }
 
     public VerticalSeekBarHint(Context context) {

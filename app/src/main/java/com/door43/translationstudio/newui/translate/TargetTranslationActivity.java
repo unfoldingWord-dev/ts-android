@@ -49,6 +49,7 @@ import com.door43.translationstudio.newui.draft.DraftActivity;
 import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.util.SdUtils;
 import com.door43.widget.VerticalSeekBar;
+import com.door43.widget.VerticalSeekBarHint;
 import com.door43.widget.ViewUtil;
 import com.door43.translationstudio.newui.BaseActivity;
 
@@ -67,7 +68,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     public static final String STATE_SEARCH_ENABLED = "state_search_enabled";
     public static final int SEARCH_START_DELAY = 1000;
     public static final String STATE_SEARCH_TEXT = "state_search_text";
-    public static final int TRANSLATION_SEARCH_TYPE = 1;
     private Fragment mFragment;
     private SeekBar mSeekBar;
     private ViewGroup mGraduations;
@@ -228,7 +228,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                progress = handleItemCountIfChanged(progress);
+//                progress = handleItemCountIfChanged(progress);
                 int correctedProgress = correctProgress(progress);
                 correctedProgress = limitRange(correctedProgress, 0, mSeekBar.getMax() - 1);
                 int position = correctedProgress / mSeekbarMultiplier;
@@ -742,7 +742,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     @Override
     public void onScrollProgress(int position) {
-        position = handleItemCountIfChanged(position);
+//        position = handleItemCountIfChanged(position);
         mSeekBar.setProgress(computeProgressFromPosition(position));
         checkIfCursorStillOnScreen();
     }
