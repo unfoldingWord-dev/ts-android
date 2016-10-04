@@ -63,7 +63,7 @@ import it.moondroid.seekbarhint.library.SeekBarHint;
 
 public class TargetTranslationActivity extends BaseActivity implements ViewModeFragment.OnEventListener, FirstTabFragment.OnEventListener, Spinner.OnItemSelectedListener {
 
-    private static final String TAG = TargetTranslationActivity.class.getSimpleName();
+    private static final String TAG = "TranslationActivity";
 
     private static final long COMMIT_INTERVAL = 2 * 60 * 1000; // commit changes every 2 minutes
     public static final String STATE_SEARCH_ENABLED = "state_search_enabled";
@@ -79,7 +79,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private ImageButton mReadButton;
     private ImageButton mChunkButton;
     private ImageButton mReviewButton;
-    private List<SourceTranslation> draftTranslations;
     private ImageButton mMoreButton;
     private boolean mSearchEnabled = false;
     private TextWatcher mSearchTextWatcher;
@@ -622,7 +621,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      * @param search - if null or "" then search is cleared
      */
     public void setSearchFilter(final String search) {
-        Log.d(TAG,"setSearchFilter: " + search);
         final String searchString = search; // save in case search string changes before search runs
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
@@ -756,9 +754,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     @Override
-    public void onItemCountChanged(int itemCount, int progress) {
-        itemCount = setSeekbarMax(itemCount);
-        mSeekBar.setProgress((itemCount - progress) * mSeekbarMultiplier);
+    public void onDataSetChanged(int count) {
+        // TODO: 10/4/16 get progress
+        int progress = 0;
+        count = setSeekbarMax(count);
+        mSeekBar.setProgress((count - progress) * mSeekbarMultiplier);
         closeKeyboard();
         setupGraduations();
     }

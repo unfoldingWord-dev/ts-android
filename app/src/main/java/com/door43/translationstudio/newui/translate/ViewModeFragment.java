@@ -116,7 +116,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
                 }
             });
 
-            onItemCountChanged(mAdapter.getItemCount(), 0);
+            onDataSetChanged(mAdapter.getItemCount());
 
             mAdapter.setOnClickListener(this);
 
@@ -167,17 +167,6 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         onPrepareView(rootView);
 
         return rootView;
-    }
-
-    /**
-     * Called when the number of items in the fragment adapter changes
-     * @param itemCount
-     * @param progress
-     */
-    public void onItemCountChanged(int itemCount, int progress) {
-        if(mListener != null) {
-            mListener.onItemCountChanged(itemCount, progress);
-        }
     }
 
     /**
@@ -286,6 +275,12 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
 
     protected ViewModeAdapter getAdapter() {
         return mAdapter;
+    }
+
+    public void onDataSetChanged(int count) {
+        if(mListener != null) {
+            mListener.onDataSetChanged(count);
+        }
     }
 
     /**
@@ -536,11 +531,10 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         void onScrollProgress(int progress);
 
         /**
-         * Called when the number of items in the fragment adapter changes
-         * @param itemCount
-         * @param progress
+         * Called when the dataset in the adapter changed
+         * @param count the number of items in the adapter
          */
-        void onItemCountChanged(int itemCount, int progress);
+        void onDataSetChanged(int count);
 
         /**
          * No source translation has been chosen for this target translation

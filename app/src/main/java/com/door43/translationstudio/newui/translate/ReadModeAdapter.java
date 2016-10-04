@@ -123,7 +123,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
 
         loadTabInfo();
 
-        notifyDataSetChanged();
+        triggerNotifyDataSetChanged();
     }
 
     @Override
@@ -468,7 +468,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
 
     public void rebuild() {
         mLayoutBuildNumber ++;
-        notifyDataSetChanged();
+        triggerNotifyDataSetChanged();
     }
 
     /**

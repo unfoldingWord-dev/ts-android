@@ -126,7 +126,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
         loadTabInfo();
 
-        notifyDataSetChanged();
+        triggerNotifyDataSetChanged();
 
         clearScreenAndStartNewSearch(mSearchString, isTargetSearch());
     }
@@ -588,7 +588,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
      */
     public void rebuild() {
         mLayoutBuildNumber ++;
-        notifyDataSetChanged();
+        triggerNotifyDataSetChanged();
     }
 
     private CharSequence renderText(String text, TranslationFormat format, boolean enableSearch) {
@@ -988,8 +988,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
         // clear the cards displayed since we have new search string
         mFilteredItems = new ListItem[0];
-        resetSectionMarkers();
-        notifyDataSetChanged();
+        triggerNotifyDataSetChanged();
 
         if( (searchString != null) && (searchString.length() > 0)) {
             getListener().onSetBusyIndicator(true);
@@ -1100,33 +1099,9 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             List<ListItem> filteredLanguages = (List<ListItem>)filterResults.values;
             mFilteredItems = filteredLanguages.toArray(new ListItem[filteredLanguages.size()]);
             mFilteredChapters = filteredChapters;
-            updateChapterMarkers(oldSearch);
             oldSearch = mSearchString;
-            notifyDataSetChanged();
+            triggerNotifyDataSetChanged();
             getListener().onSetBusyIndicator(false);
-        }
-    }
-
-    /**
-     * check to see if search string has changed and therefor chapter markers will need updating.  Note null string and empty string are treated as the same
-     * @param oldSearch
-     */
-    private void updateChapterMarkers(CharSequence oldSearch) {
-        boolean searchChanged = false;
-        if (oldSearch == null) {
-            if( (mSearchString != null) && (mSearchString.length() > 0) ) {
-                searchChanged = true;
-            }
-        } else  if (mSearchString == null) {
-            if( (oldSearch != null)  && (oldSearch.length() > 0) ) {
-                searchChanged = true;
-            }
-        } else if(!mSearchString.equals(oldSearch)) {
-            searchChanged = true;
-        }
-
-        if(searchChanged) {
-            resetSectionMarkers();
         }
     }
 }

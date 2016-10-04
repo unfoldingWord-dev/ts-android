@@ -168,7 +168,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         loadTabInfo();
 
-        notifyDataSetChanged();
+        triggerNotifyDataSetChanged();
 
         clearScreenAndStartNewSearch(mSearchString, isTargetSearch());
     }
@@ -176,7 +176,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     @Override
     void rebuild() {
         mLayoutBuildNumber ++;
-        notifyDataSetChanged();
+        triggerNotifyDataSetChanged();
     }
 
     /**
@@ -615,7 +615,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     }
                     if (opened) {
                         item.renderedTargetText = null;
-                        notifyDataSetChanged();
+                        triggerNotifyDataSetChanged();
                     } else {
                         // TODO: 10/27/2015 notify user the frame could not be completed.
                     }
@@ -1098,7 +1098,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
             item.isEditing = false;
             item.renderedTargetText = null;
-            notifyDataSetChanged();
+            triggerNotifyDataSetChanged();
         }
 
         return success;
@@ -2032,8 +2032,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         // clear the cards displayed since we have new search string
         mFilteredItems = new ListItem[0];
-        resetSectionMarkers();
-        notifyDataSetChanged();
+        triggerNotifyDataSetChanged();
 
         if( (searchString != null) && (searchString.length() > 0)) {
             getListener().onSetBusyIndicator(true);
@@ -2155,33 +2154,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             List<ListItem> filteredLanguages = (List<ListItem>)filterResults.values;
             mFilteredItems = filteredLanguages.toArray(new ListItem[filteredLanguages.size()]);
             mFilteredChapters = filteredChapters;
-            updateChapterMarkers(oldSearch);
             oldSearch = mSearchString;
-            notifyDataSetChanged();
+            triggerNotifyDataSetChanged();
             getListener().onSetBusyIndicator(false);
-        }
-    }
-
-    /**
-     * check to see if search string has changed and therefor chapter markers will need updating.  Note null string and empty string are treated as the same
-     * @param oldSearch
-     */
-    private void updateChapterMarkers(CharSequence oldSearch) {
-        boolean searchChanged = false;
-        if (oldSearch == null) {
-            if( (mSearchString != null) && (mSearchString.length() > 0) ) {
-                searchChanged = true;
-            }
-        } else  if (mSearchString == null) {
-            if( (oldSearch != null)  && (oldSearch.length() > 0) ) {
-                searchChanged = true;
-            }
-        } else if(!mSearchString.equals(oldSearch)) {
-            searchChanged = true;
-        }
-
-        if(searchChanged) {
-            resetSectionMarkers();
         }
     }
 }
