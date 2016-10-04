@@ -569,11 +569,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             if(type != null) {
                 int pos = type.getSelectedItemPosition();
                 if(pos >= 0) {
-                    return TranslationFilter.FilterSubject.TARGET;
+                    return TranslationFilter.FilterSubject.SOURCE;
                 }
             }
         }
-        return TranslationFilter.FilterSubject.SOURCE;
+        return TranslationFilter.FilterSubject.TARGET;
     }
 
     /**

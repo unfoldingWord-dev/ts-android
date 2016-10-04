@@ -195,24 +195,6 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         return vh;
     }
 
-    /**
-     * get the chapter for the position, or null if not found
-     * @param position
-     * @return
-     */
-    public String getChapterForPosition(int position) {
-        if( (position < 0) || (position >= mFilteredItems.size())) {
-            return null;
-        }
-
-        ListItem item = mFilteredItems.get(position);
-        if(item != null) {
-            return item.chapterSlug;
-        }
-
-        return null;
-    }
-
      @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         int cardMargin = mContext.getResources().getDimensionPixelSize(R.dimen.card_margin);

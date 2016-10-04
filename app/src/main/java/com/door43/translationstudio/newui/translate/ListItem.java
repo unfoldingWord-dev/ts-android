@@ -19,9 +19,9 @@ public abstract class ListItem {
     public final String chunkSlug;
 
     public String sourceText;
-    public CharSequence renderedSourceText;
+    public CharSequence renderedSourceText = null;
     public String targetText;
-    public CharSequence renderedTargetText;
+    public CharSequence renderedTargetText = null;
     public TranslationFormat translationFormat;
     public boolean isComplete = false;
 
@@ -107,6 +107,8 @@ public abstract class ListItem {
         this.pt = targetTranslation.getProjectTranslation();
         this.sourceContainer = sourceContainer;
         this.targetLanguage = targetTranslation.getTargetLanguage();
+        this.renderedTargetText = null;
+        this.renderedSourceText = null;
         if(this.sourceText == null) {
             this.sourceText = sourceContainer.readChunk(chapterSlug, chunkSlug);
         }
@@ -126,21 +128,14 @@ public abstract class ListItem {
             this.ct = targetTranslation.getChapterTranslation(chapterSlug);
             if(chunkSlug.equals("title")) {
                 this.targetText = ct.title;
-                this.renderedTargetText = this.targetText;
-                this.renderedSourceText = this.sourceText;
                 this.isComplete = ct.isTitleFinished();
             } else if(chunkSlug.equals("reference")) {
                 this.targetText = ct.reference;
-                this.renderedTargetText = this.targetText;
-                this.renderedSourceText = this.sourceText;
                 this.isComplete = ct.isReferenceFinished();
             } else {
                 this.ft = targetTranslation.getFrameTranslation(chapterSlug, chunkSlug, this.translationFormat);
                 this.targetText = ft.body;
                 this.isComplete = ft.isFinished();
-
-                this.renderedTargetText = this.targetText;
-                this.renderedSourceText = this.sourceText;
             }
         }
     }

@@ -50,7 +50,7 @@ public class TranslationFilter extends Filter {
                 item.renderedTargetText = null;
             }
         } else {
-            String matcher = constraint.toString().toLowerCase();
+            String matcher = constraint.toString().toLowerCase().trim();
             for(ListItem item:items) {
                 item.renderedSourceText = null;
                 item.renderedTargetText = null;
@@ -65,7 +65,7 @@ public class TranslationFilter extends Filter {
                 if(subject == FilterSubject.TARGET || subject == FilterSubject.BOTH) {
                     match = item.targetText.toString().toLowerCase().contains(matcher) || match;
                 }
-                if(subject == FilterSubject.TARGET || subject == FilterSubject.BOTH) {
+                if(subject == FilterSubject.SOURCE || subject == FilterSubject.BOTH) {
                     match = item.sourceText.toString().toLowerCase().contains(matcher) || match;
                 }
 
