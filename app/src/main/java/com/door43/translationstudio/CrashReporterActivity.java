@@ -158,7 +158,7 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
             }
         });
 
-        if(task.getClass().getName().equals(CheckForLatestReleaseTask.class.getName())) {
+        if(task instanceof CheckForLatestReleaseTask) {
             CheckForLatestReleaseTask.Release release = ((CheckForLatestReleaseTask)task).getLatestRelease();
             if(release != null) {
                 // ask user if they would like to download updates
@@ -183,7 +183,7 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
                 newTask.addOnFinishedListener(CrashReporterActivity.this);
                 TaskManager.addTask(newTask, UploadCrashReportTask.TASK_ID);
             }
-        } else if(task.getClass().getName().equals(UploadCrashReportTask.class.getName())) {
+        } else if(task instanceof UploadCrashReportTask) {
             openSplash();
         }
     }

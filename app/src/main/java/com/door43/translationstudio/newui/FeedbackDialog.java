@@ -137,7 +137,7 @@ public class FeedbackDialog extends DialogFragment implements ManagedTask.OnFini
     public void onTaskFinished(ManagedTask task) {
         TaskManager.clearTask(task);
 
-        if(task.getClass().getName().equals(CheckForLatestReleaseTask.class.getName())) {
+        if(task instanceof CheckForLatestReleaseTask) {
             CheckForLatestReleaseTask.Release release = ((CheckForLatestReleaseTask)task).getLatestRelease();
             if(release != null) {
                 mLatestRelease = release;
@@ -158,8 +158,9 @@ public class FeedbackDialog extends DialogFragment implements ManagedTask.OnFini
                     FeedbackDialog.this.dismiss();
                 }
             }
-        } else if(task.getClass().getName().equals(UploadBugReportTask.class.getName())) {
-            Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.success, Snackbar.LENGTH_LONG);
+        } else if(task instanceof UploadBugReportTask) {
+            boolean success = ((UploadBugReportTask) task).isSuccess();
+            Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), success ? R.string.success : R.string.upload_failed_label, Snackbar.LENGTH_LONG);
             ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
             snack.show();
             FeedbackDialog.this.dismiss();
