@@ -108,17 +108,14 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             return;
         }
 
+        // reset cached values
+        ViewModeFragment.reset();
+
         // open used source translations by default
         if(App.getSelectedSourceTranslations(mTargetTranslation.getId()).length == 0) {
             String[] resourceContainerSlugs = mTargetTranslation.getSourceTranslations();
             for (String slug : resourceContainerSlugs) {
                 App.addOpenSourceTranslation(mTargetTranslation.getId(), slug);
-//                try {
-//                    ResourceContainer rc = App.getLibrary().open(slug);
-//                    App.addOpenSourceTranslation(mTargetTranslation.getId(), rc.slug);
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
             }
         }
 

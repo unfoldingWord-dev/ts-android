@@ -64,11 +64,17 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      */
     abstract ViewModeAdapter generateAdapter(Activity activity, String targetTranslationSlug, String startingChapterSlug, String startingChunkSlug, Bundle extras);
 
+    /**
+     * Resets the static variables
+     */
+    public static void reset() {
+        mSourceContainer = null;
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_stacked_card_list, container, false);
 
-        mSourceContainer = null;
         mLibrary = App.getLibrary();
         mTranslator = App.getTranslator();
 
@@ -296,22 +302,26 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     @Override
     public void onResume() {
         super.onResume();
-        // load the selected source translation if not already open
-        ManagedTask task = new ManagedTask() {
-            @Override
-            public void start() {
-                if(mSourceTranslation != null && mSourceContainer == null) {
-                    try {
-                        mSourceContainer = mLibrary.open(mSourceTranslation.resourceContainerSlug);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        mSourceContainer = null;
+        if(mSourceContainer == null) {
+            // load the container
+            if(mAdapter != null) mAdapter.setSourceContainer(null);
+            ManagedTask task = new ManagedTask() {
+                @Override
+                public void start() {
+                    if (mSourceTranslation != null) {
+                        try {
+                            mSourceContainer = mLibrary.open(mSourceTranslation.resourceContainerSlug);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
-            }
-        };
-        task.addOnFinishedListener(this);
-        TaskManager.addTask(task, TASK_ID_OPEN_SELECTED_SOURCE);
+            };
+            task.addOnFinishedListener(this);
+            TaskManager.addTask(task, TASK_ID_OPEN_SELECTED_SOURCE);
+        } else if(mAdapter != null) {
+            mAdapter.setSourceContainer(mSourceContainer);
+        }
     }
 
     /**
@@ -320,6 +330,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      * @param slug
      */
     private void openResourceContainer(final String slug) {
+        if(mAdapter != null) mAdapter.setSourceContainer(null);
         ManagedTask task = new ManagedTask() {
             @Override
             public void start() {

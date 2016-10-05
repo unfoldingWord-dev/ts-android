@@ -52,6 +52,7 @@ import com.door43.translationstudio.core.FileHistory;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.LinedEditText;
+import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TranslationNote;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
@@ -189,22 +190,17 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private void loadTabInfo() {
         List<ContentValues> tabContents = new ArrayList<>();
         String[] sourceTranslationIds = App.getSelectedSourceTranslations(mTargetTranslation.getId());
-        for(String id:sourceTranslationIds) {
-            ResourceContainer rc = null;
-            try {
-                rc = mLibrary.open(id);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            if(rc != null) {
+        for(String slug:sourceTranslationIds) {
+            SourceTranslation st = App.getSourceTranslation(slug);
+            if(st != null) {
                 ContentValues values = new ContentValues();
                 // include the resource id if there are more than one
-                if(mLibrary.index().getResources(rc.language.slug, rc.project.slug).size() > 1) {
-                    values.put("title", rc.language.name + " " + rc.resource.slug.toUpperCase());
+                if(mLibrary.index().getResources(st.language.slug, st.project.slug).size() > 1) {
+                    values.put("title", st.language.name + " " + st.resource.slug.toUpperCase());
                 } else {
-                    values.put("title", rc.language.name);
+                    values.put("title", st.language.name);
                 }
-                values.put("tag", rc.slug);
+                values.put("tag", st.resourceContainerSlug);
                 tabContents.add(values);
             }
         }
