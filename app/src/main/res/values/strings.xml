@@ -874,4 +874,8 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="export_failed">Export failed!</string>
     <string name="export_success">Export successful!\n\nExported file is at:\n<xliff:g example="/sd_card/downloads" id="file_path">%1$s</xliff:g></string>
     <string name="update_source_language">Do you want to update \'<xliff:g example="Pig Latin" id="language">%1$s</xliff:g>\' from Online (requires internet)?</string>
+    <string name="conflict_exists">CONFLICT EXISTS!</string>
+    <string name="conflict_resolve">Resolve Conflict - Click on the version to keep</string>
+    <string name="merge_conflict_title">Merge Conflict</string>
+    <string name="import_merge_conflict">Merge conflict on Import - Click OK to resolve</string>
 </resources>
