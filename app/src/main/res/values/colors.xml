@@ -59,4 +59,7 @@
     <color name="lighter_gray">#ffeaeaea</color>
     <color name="scrim">#32000000</color>
     <color name="footnote_yellow">#67fdff72</color>
+    <color name="light_yellow">#e5feffcc</color>
+    <color name="head_background">#bffff5</color>
+    <color name="tail_background">#baedff</color>
 </resources>

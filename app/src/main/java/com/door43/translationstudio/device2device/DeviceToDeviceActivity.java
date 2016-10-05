@@ -18,6 +18,7 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.network.Peer;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.service.BroadcastListenerService;
@@ -31,7 +32,6 @@ import com.door43.util.RSAEncryption;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 public class DeviceToDeviceActivity extends BaseActivity implements ServerService.OnServerEventListener, ClientService.OnClientEventListener, BroadcastListenerService.Callbacks {
@@ -552,7 +552,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ServerServic
     }
 
     @Override
-    public void onReceivedTargetTranslations(Peer server, String[] targetTranslations) {
+    public void onReceivedTargetTranslations(Peer server, Translator.ImportResults results) {
 
     }
 

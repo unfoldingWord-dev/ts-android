@@ -14,6 +14,7 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.publish.ValidationItem;
+import com.door43.translationstudio.rendering.MergeConflictHandler;
 
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
@@ -55,6 +56,11 @@ public class ValidationTask extends ManagedTask {
         if(projectTitle != null) {
             ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
             boolean isFinished = projectTranslation.isTitleFinished();
+            if(isFinished) {
+                if(MergeConflictHandler.isMergeConflicted(projectTranslation.getTitle())) {
+                    isFinished = false;
+                }
+            }
             if(!isFinished) {
                 mValidations.add(ValidationItem.generateInvalidGroup(projectTitle, sourceLanguage));
                 mValidations.add(ValidationItem.generateInvalidFrame(projectTitle, sourceLanguage, projectTranslation.getTitle(), targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, "0", "0"));
@@ -72,12 +78,24 @@ public class ValidationTask extends ManagedTask {
             List<ValidationItem> frameValidations = new ArrayList<>();
 
             ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(chapter.getId());
-            if((chapter.title != null) && (!chapter.title.isEmpty()) && !chapterTranslation.isTitleFinished()) {
+            boolean isUnfinishedChapterTitle = (chapter.title != null) && (!chapter.title.isEmpty()) && !chapterTranslation.isTitleFinished();
+            if(!isUnfinishedChapterTitle) {
+                if(MergeConflictHandler.isMergeConflicted(chapterTranslation.title)) {
+                    isUnfinishedChapterTitle = true;
+                }
+            }
+            if(isUnfinishedChapterTitle) {
                 chapterIsValid = false;
                 frameValidations.add(ValidationItem.generateInvalidFrame(chapter.title, sourceLanguage, chapterTranslation.title, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapter.getId(), "00"));
             }
 
-            if((chapter.reference != null) && (!chapter.reference.isEmpty()) && !chapterTranslation.isReferenceFinished()) {
+            boolean isUnfinishedRef = (chapter.reference != null) && (!chapter.reference.isEmpty()) && !chapterTranslation.isReferenceFinished();
+            if(!isUnfinishedRef) {
+                if(MergeConflictHandler.isMergeConflicted(chapterTranslation.reference)) {
+                    isUnfinishedRef = true;
+                }
+            }
+            if(isUnfinishedRef) {
                 chapterIsValid = false;
                 frameValidations.add(ValidationItem.generateInvalidFrame(chapter.reference, sourceLanguage, chapterTranslation.reference, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapter.getId(), "00"));
             }
@@ -86,14 +104,20 @@ public class ValidationTask extends ManagedTask {
                 Frame frame = frames[j];
                 FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(frame);
                 // TODO: also validate the checking questions
-                if(lastValidFrameIndex == -1 && (frameTranslation.isFinished() || frame.body.isEmpty())) {
+                boolean isFinishedFrame = frameTranslation.isFinished() || frame.body.isEmpty();
+                if(isFinishedFrame) {
+                    if(MergeConflictHandler.isMergeConflicted(frameTranslation.body)) {
+                        isFinishedFrame = false;
+                    }
+                }
+                if(lastValidFrameIndex == -1 && isFinishedFrame) {
                     // start new valid range
                     lastValidFrameIndex = j;
-                } else if(!(frameTranslation.isFinished() || frame.body.isEmpty()) || (frameTranslation.isFinished() || frame.body.isEmpty()) && j == frames.length - 1){
+                } else if(!isFinishedFrame || (isFinishedFrame && (j == frames.length - 1))){
                     // close valid range
                     if(lastValidFrameIndex > -1) {
                         int previousFrameIndex = j - 1;
-                        if(frameTranslation.isFinished() || frame.body.isEmpty()) {
+                        if(isFinishedFrame) {
                             previousFrameIndex = j;
                         }
                         if(lastValidFrameIndex < previousFrameIndex) {
@@ -116,7 +140,7 @@ public class ValidationTask extends ManagedTask {
                     }
 
                     // add invalid frame
-                    if(!(frameTranslation.isFinished() || frame.body.isEmpty())) {
+                    if(!isFinishedFrame) {
                         chapterIsValid = false;
                         String frameTitle = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
                         frameTitle += ":" + frame.getStartVerse();

@@ -32,6 +32,7 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.Door43LoginDialog;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
@@ -39,6 +40,7 @@ import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
 import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
+import com.door43.translationstudio.rendering.MergeConflictHandler;
 import com.door43.translationstudio.tasks.ExamineImportsForCollisionsTask;
 import com.door43.translationstudio.tasks.ImportProjectsTask;
 import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
@@ -56,6 +58,7 @@ import java.io.File;
 public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFinishedListener, WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
     private static final int NEW_TARGET_TRANSLATION_REQUEST = 1;
     public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
+    public static final String STATE_DIALOG_TRANSLATION_ID = "state_dialog_translationID";
     public static final String TAG = HomeActivity.class.getSimpleName();
     private Library mLibrary;
     private Translator mTranslator;
@@ -64,6 +67,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     private ExamineImportsForCollisionsTask mExamineTask;
     private eDialogShown mDialogShown = eDialogShown.NONE;
     private String mTargetTranslationWithUpdates;
+    private String mTargetTranslationID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -188,6 +192,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             }
         } else {
             mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
+            mTargetTranslationID = savedInstanceState.getString(STATE_DIALOG_TRANSLATION_ID, null);
         }
     }
 
@@ -251,6 +256,10 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 openLibrary();
                 break;
 
+            case MERGE_CONFLICT:
+                showMergeConflict(mTargetTranslationID);
+                break;
+
             case NONE:
                 break;
 
@@ -309,9 +318,13 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             hand.post(new Runnable() {
                 @Override
                 public void run() {
-                    String[] importedSlugs = importTask.getImportedSlugs();
-                    boolean success = (importedSlugs != null) && (importedSlugs.length > 0);
-                    showImportResults(mExamineTask.mContentUri.toString(), mExamineTask.mProjectsFound, success);
+                    Translator.ImportResults importResults = importTask.getImportResults();
+                    boolean success = importResults.isSuccess();
+                    if(success && importResults.mergeConflict) {
+                        showMergeConflict(importResults.importedSlug);
+                    } else {
+                        showImportResults(mExamineTask.mContentUri.toString(), mExamineTask.mProjectsFound, success);
+                    }
                 }
             });
             mExamineTask.cleanup();
@@ -360,6 +373,44 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 notifyTranslationUpdateFailed();
             }
         }
+    }
+
+    /**
+     * let user know there was a merge conflict
+     * @param targetTranslationID
+     */
+    public void showMergeConflict(String targetTranslationID) {
+        mDialogShown = eDialogShown.MERGE_CONFLICT;
+        mTargetTranslationID = targetTranslationID;
+        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                .setTitle(R.string.merge_conflict_title).setMessage(R.string.import_merge_conflict)
+                .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                        doManualMerge();
+                    }
+                }).show();
+    }
+
+    /**
+     * open review mode to let user resolve conflict
+     */
+    private void doManualMerge() {
+        // ask parent activity to navigate to a new activity
+        Intent intent = new Intent(this, TargetTranslationActivity.class);
+        Bundle args = new Bundle();
+        args.putString(App.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslationID);
+
+        MergeConflictHandler.CardLocation location = MergeConflictHandler.findFirstMergeConflict( mTargetTranslationID );
+        if(location != null) {
+            args.putString(App.EXTRA_CHAPTER_ID, location.chapterID);
+            args.putString(App.EXTRA_FRAME_ID, location.frameID);
+        }
+
+        args.putString(App.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
+        intent.putExtras(args);
+        startActivity(intent);
     }
 
     public void showAuthFailure() {
@@ -698,6 +749,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     @Override
     public void onSaveInstanceState(Bundle out) {
         out.putInt(STATE_DIALOG_SHOWN, mDialogShown.getValue());
+        out.putString(STATE_DIALOG_TRANSLATION_ID, mTargetTranslationID);
         super.onSaveInstanceState(out);
     }
 
@@ -708,7 +760,8 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         NONE(0),
         IMPORT_VERIFICATION(2),
         OPEN_LIBRARY(3),
-        IMPORT_RESULTS(4);
+        IMPORT_RESULTS(4),
+        MERGE_CONFLICT(5);
 
         private int _value;
 

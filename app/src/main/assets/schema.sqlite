@@ -191,7 +191,7 @@ CREATE TABLE `checking_question` (
 -- ---
 
 DROP TABLE IF EXISTS `chapter`;
-    
+
 CREATE TABLE `chapter` (
   `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   `slug` TEXT NOT NULL,
@@ -208,7 +208,7 @@ CREATE TABLE `chapter` (
 -- ---
 
 DROP TABLE IF EXISTS `frame`;
-    
+
 CREATE TABLE `frame` (
   `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   `slug` TEXT NOT NULL,

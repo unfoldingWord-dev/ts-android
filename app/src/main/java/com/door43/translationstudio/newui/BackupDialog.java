@@ -605,6 +605,10 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                 }).show();
     }
 
+    /**
+     * let user know there was a merge conflict
+     * @param targetTranslation
+     */
     private void showMergeConflict(final TargetTranslation targetTranslation) {
         mDialogShown = eDialogShown.MERGE_CONFLICT;
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
@@ -627,6 +631,9 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                 }).show();
     }
 
+    /**
+     * open review mode to let user resolve conflict
+     */
     private void doManualMerge() {
         if(getActivity() instanceof TargetTranslationActivity) {
             ((TargetTranslationActivity) getActivity()).notifyDatasetChanged();
