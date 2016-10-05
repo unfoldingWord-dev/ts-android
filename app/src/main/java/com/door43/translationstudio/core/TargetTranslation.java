@@ -426,7 +426,7 @@ public class TargetTranslation {
     /**
      * Adds a source translation to the list of used sources
      * This is used for tracking what source translations are used to create a target translation
-     *
+     * TODO: this should take a sourcetranslation instead so we don't have to load the resource container just for this method.
      * @param resourceContainer
      * @throws JSONException
      */

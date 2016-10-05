@@ -21,6 +21,7 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
@@ -47,9 +48,9 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     private TargetTranslation mTargetTranslation;
     private Translator mTranslator;
     private Door43Client mLibrary;
-    private String mSourceTranslationSlug;
     private GestureDetector mGesture;
     private boolean mRememberLastPosition = true;
+    private SourceTranslation mSourceTranslation = null;
 
     /**
      * Returns an instance of the adapter
@@ -80,24 +81,16 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         String chapterSlug = args.getString(App.EXTRA_CHAPTER_ID, App.getLastFocusChapterId(targetTranslationSlug));
         String chunkSlug = args.getString(App.EXTRA_FRAME_ID, App.getLastFocusFrameId(targetTranslationSlug));
 
-        // check if we have draft source
-        String draftTranslationId = args.getString(App.EXTRA_SOURCE_DRAFT_TRANSLATION_ID, null);
-        if(null != draftTranslationId) {
-            try {
-                ResourceContainer rc = mLibrary.open(draftTranslationId);
-                mSourceTranslationSlug = rc.slug;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-//
-//            SourceTranslation sourceTranslation = mLibrary.getDraftTranslation(draftTranslationId);
-//            mSourceTranslationId = sourceTranslation.getId();
-        } else {
-            // open selected tab
-            mSourceTranslationSlug = App.getSelectedSourceTranslationId(targetTranslationSlug);
+        try {
+            String sourceTranslationSlug = App.getSelectedSourceTranslationId(targetTranslationSlug);
+            mSourceTranslation = App.getSourceTranslation(sourceTranslationSlug);
+            if(mSourceTranslation == null) App.removeOpenSourceTranslation(targetTranslationSlug, sourceTranslationSlug);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        if(null == mSourceTranslationSlug) {
+        // open selected tab
+        if(null == mSourceTranslation) {
             mListener.onNoSourceTranslations(targetTranslationSlug);
         } else {
             mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view);
@@ -209,7 +202,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      */
     protected ResourceContainer getSelectedResourceContainer() {
         try {
-            return mLibrary.open(mSourceTranslationSlug);
+            return mLibrary.open(mSourceTranslation.resourceContainerSlug);
         } catch (Exception e) {
             // We perform checks when loading so this should never happen
             e.printStackTrace();
@@ -304,7 +297,9 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
             @Override
             public void start() {
                 if(mAdapter != null) {
-                    mAdapter.setSourceTranslation(mSourceTranslationSlug, false);
+                    if(mSourceTranslation != null) {
+                        mAdapter.setSourceTranslation(mSourceTranslation.resourceContainerSlug, false);
+                    }
                 }
             }
         };
@@ -421,7 +416,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     @Override
     public void onSourceTranslationTabClick(String sourceTranslationId) {
         App.setSelectedSourceTranslation(mTargetTranslation.getId(), sourceTranslationId);
-        mSourceTranslationSlug = sourceTranslationId;
+        App.getSourceTranslation(sourceTranslationId);
         mAdapter.setSourceTranslation(sourceTranslationId);
     }
 
