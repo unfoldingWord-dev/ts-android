@@ -99,19 +99,19 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private final String startingChunkSlug;
     private ResourceContainer mSourceContainer;
     private final TargetLanguage mTargetLanguage;
-    private List<ListItem> mItems;
-    private List<ListItem> mFilteredItems;
+    private List<ListItem> mItems = new ArrayList<>();
+    private List<ListItem> mFilteredItems = new ArrayList<>();
     private int mLayoutBuildNumber = 0;
     private boolean mResourcesOpened = false;
-    private ContentValues[] mTabs;
-    private int[] mOpenResourceTab;
+    private ContentValues[] mTabs = new ContentValues[0];
+    private int[] mOpenResourceTab = new int[0];
     private boolean mAllowFootnote = true;
-    private List<String> mChapters;
-    private List<String> mFilteredChapters;
+    private List<String> mChapters = new ArrayList<>();
+    private List<String> mFilteredChapters = new ArrayList<>();
     private CharSequence filterConstraint = null;
     private TranslationFilter.FilterSubject filterSubject = null;
 
-    public ReviewModeAdapter(Activity context, String targetTranslationSlug, String sourceContainerSlug, String startingChapterSlug, String startingChunkSlug, boolean openResources) {
+    public ReviewModeAdapter(Activity context, String targetTranslationSlug, String startingChapterSlug, String startingChunkSlug, boolean openResources) {
         this.startingChapterSlug = startingChapterSlug;
         this.startingChunkSlug = startingChunkSlug;
 
@@ -122,13 +122,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         mAllowFootnote = mTargetTranslation.getFormat() == TranslationFormat.USFM;
         mTargetLanguage = App.languageFromTargetTranslation(mTargetTranslation);
         mResourcesOpened = openResources;
-
-        setSourceTranslation(sourceContainerSlug);
-        triggerNotifyDataSetChanged();
     }
 
     @Override
-    void setSourceTranslation(String sourceContainerSlug) {
+    void setSourceTranslation(String sourceContainerSlug, boolean notifyDataSetChanged) {
         try {
             mSourceContainer = mLibrary.open(sourceContainerSlug);
         } catch (Exception e) {
@@ -159,12 +156,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         loadTabInfo();
 
         filter(filterConstraint, filterSubject);
-    }
 
-    @Override
-    void rebuild() {
-        mLayoutBuildNumber ++;
-        triggerNotifyDataSetChanged();
+        if(notifyDataSetChanged) triggerNotifyDataSetChanged();
     }
 
     /**

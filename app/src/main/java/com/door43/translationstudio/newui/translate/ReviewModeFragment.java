@@ -71,8 +71,8 @@ public class ReviewModeFragment extends ViewModeFragment {
     private LinearLayout mResourcesDrawerContent;
 
     @Override
-    ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId, Bundle extras) {
-        return new ReviewModeAdapter(activity, targetTranslationId, sourceTranslationId, chapterId, frameId, mResourcesOpen);
+    ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String chapterId, String frameId, Bundle extras) {
+        return new ReviewModeAdapter(activity, targetTranslationId, chapterId, frameId, mResourcesOpen);
     }
 
     @Override

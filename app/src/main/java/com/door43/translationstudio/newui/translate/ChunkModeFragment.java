@@ -14,12 +14,12 @@ public class ChunkModeFragment extends ViewModeFragment {
     public static final String EXTRA_TARGET_OPEN = "extra_target_start_open";
 
     @Override
-    ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId, Bundle extras) {
+    ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String chapterId, String frameId, Bundle extras) {
         boolean openTarget = false;
         if(extras != null && extras.containsKey(EXTRA_TARGET_OPEN)) {
             openTarget = extras.getBoolean(EXTRA_TARGET_OPEN, false);
         }
-        return new ChunkModeAdapter(activity, targetTranslationId, sourceTranslationId, chapterId, frameId, openTarget);
+        return new ChunkModeAdapter(activity, targetTranslationId, chapterId, frameId, openTarget);
     }
 
     /***

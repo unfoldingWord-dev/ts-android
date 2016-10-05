@@ -66,16 +66,21 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
     }
 
     /**
-     * Notifies the adapter that it should rebuild it's view holders
+     * Updates the source translation to be displayed.
+     * Make sure to call triggerNotifyDatasetChanged() after this.
+     * @param sourceTranslationSlug
+     * @param notifyDataSetChanged if true data set changed will be triggered automatically
      */
-    abstract void rebuild();
+    abstract void setSourceTranslation(String sourceTranslationSlug, boolean notifyDataSetChanged);
 
     /**
      * Updates the source translation to be displayed.
      * Make sure to call triggerNotifyDatasetChanged() after this.
-     * @param sourceTranslationId
+     * @param sourceTranslationSlug
      */
-    abstract void setSourceTranslation(String sourceTranslationId);
+    public final void setSourceTranslation(String sourceTranslationSlug) {
+        setSourceTranslation(sourceTranslationSlug, false);
+    }
 
     /**
      * Called when coordinating operations need to be applied to all the view holders

@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -25,15 +27,18 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.BaseFragment;
 
 import org.json.JSONException;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.util.List;
 
 /**
  * Created by joel on 9/18/2015.
  */
-public abstract class ViewModeFragment extends BaseFragment implements ViewModeAdapter.OnEventListener, ChooseSourceTranslationDialog.OnClickListener {
+public abstract class ViewModeFragment extends BaseFragment implements ViewModeAdapter.OnEventListener, ChooseSourceTranslationDialog.OnClickListener, ManagedTask.OnFinishedListener {
 
     public static final String TAG = ViewModeFragment.class.getSimpleName();
+    private static final String TASK_ID_SET_SOURCE = "set-source";
     private RecyclerView mRecyclerView;
     private LinearLayoutManager mLayoutManager;
     private ViewModeAdapter mAdapter;
@@ -42,18 +47,20 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     private TargetTranslation mTargetTranslation;
     private Translator mTranslator;
     private Door43Client mLibrary;
-    private String mSourceTranslationId;
+    private String mSourceTranslationSlug;
     private GestureDetector mGesture;
     private boolean mRememberLastPosition = true;
 
     /**
      * Returns an instance of the adapter
      * @param activity
-     * @param targetTranslationId
-     * @param sourceTranslationId
+     * @param targetTranslationSlug
+     * @param startingChapterSlug
+     * @param startingChunkSlug
+     * @param extras
      * @return
      */
-    abstract ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId, Bundle extras);
+    abstract ViewModeAdapter generateAdapter(Activity activity, String targetTranslationSlug, String startingChapterSlug, String startingChunkSlug, Bundle extras);
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -63,22 +70,22 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         mTranslator = App.getTranslator();
 
         Bundle args = getArguments();
-        String targetTranslationId = args.getString(App.EXTRA_TARGET_TRANSLATION_ID, null);
-        mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
+        String targetTranslationSlug = args.getString(App.EXTRA_TARGET_TRANSLATION_ID, null);
+        mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationSlug);
         if(mTargetTranslation == null) {
-            Logger.e(getClass().getName() ,"A valid target translation id is required. Received '" + targetTranslationId + "' but the translation could not be found");
+            Logger.e(getClass().getName() ,"A valid target translation id is required. Received '" + targetTranslationSlug + "' but the translation could not be found");
             getActivity().finish();
         }
 
-        String chapterId = args.getString(App.EXTRA_CHAPTER_ID, App.getLastFocusChapterId(targetTranslationId));
-        String frameId = args.getString(App.EXTRA_FRAME_ID, App.getLastFocusFrameId(targetTranslationId));
+        String chapterSlug = args.getString(App.EXTRA_CHAPTER_ID, App.getLastFocusChapterId(targetTranslationSlug));
+        String chunkSlug = args.getString(App.EXTRA_FRAME_ID, App.getLastFocusFrameId(targetTranslationSlug));
 
         // check if we have draft source
         String draftTranslationId = args.getString(App.EXTRA_SOURCE_DRAFT_TRANSLATION_ID, null);
         if(null != draftTranslationId) {
             try {
                 ResourceContainer rc = mLibrary.open(draftTranslationId);
-                mSourceTranslationId = rc.slug;
+                mSourceTranslationSlug = rc.slug;
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -87,17 +94,17 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
 //            mSourceTranslationId = sourceTranslation.getId();
         } else {
             // open selected tab
-            mSourceTranslationId = App.getSelectedSourceTranslationId(targetTranslationId);
+            mSourceTranslationSlug = App.getSelectedSourceTranslationId(targetTranslationSlug);
         }
 
-        if(null == mSourceTranslationId) {
-            mListener.onNoSourceTranslations(targetTranslationId);
+        if(null == mSourceTranslationSlug) {
+            mListener.onNoSourceTranslations(targetTranslationSlug);
         } else {
             mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view);
             mLayoutManager = new LinearLayoutManager(getActivity());
             mRecyclerView.setLayoutManager(mLayoutManager);
             mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-            mAdapter = generateAdapter(this.getActivity(), targetTranslationId, mSourceTranslationId, chapterId, frameId, args);
+            mAdapter = generateAdapter(this.getActivity(), targetTranslationSlug, chapterSlug, chunkSlug, args);
             mRecyclerView.setAdapter(mAdapter);
             mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override
@@ -202,7 +209,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      */
     protected ResourceContainer getSelectedResourceContainer() {
         try {
-            return mLibrary.open(mSourceTranslationId);
+            return mLibrary.open(mSourceTranslationSlug);
         } catch (Exception e) {
             // We perform checks when loading so this should never happen
             e.printStackTrace();
@@ -293,9 +300,16 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     @Override
     public void onResume() {
         super.onResume();
-//        if(mAdapter != null) {
-//            mAdapter.rebuild();
-//        }
+        ManagedTask loadingTask = new ManagedTask() {
+            @Override
+            public void start() {
+                if(mAdapter != null) {
+                    mAdapter.setSourceTranslation(mSourceTranslationSlug, false);
+                }
+            }
+        };
+        loadingTask.addOnFinishedListener(this);
+        TaskManager.addTask(loadingTask, TASK_ID_SET_SOURCE);
     }
 
     /**
@@ -407,9 +421,8 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     @Override
     public void onSourceTranslationTabClick(String sourceTranslationId) {
         App.setSelectedSourceTranslation(mTargetTranslation.getId(), sourceTranslationId);
-        mSourceTranslationId = sourceTranslationId;
+        mSourceTranslationSlug = sourceTranslationId;
         mAdapter.setSourceTranslation(sourceTranslationId);
-        mAdapter.triggerNotifyDataSetChanged();
     }
 
     @Override
@@ -462,7 +475,6 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
             }
             String selectedSourceTranslationId = App.getSelectedSourceTranslationId(targetTranslationId);
             mAdapter.setSourceTranslation(selectedSourceTranslationId);
-            mAdapter.triggerNotifyDataSetChanged();
         } else {
             mListener.onNoSourceTranslations(targetTranslationId);
         }
@@ -522,6 +534,22 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      */
     public void onSearching(boolean isSearching) {
         mListener.onSearching(isSearching);
+    }
+
+    @Override
+    public void onTaskFinished(ManagedTask task) {
+        TaskManager.clearTask(task);
+        if(task.getTaskId().equals(TASK_ID_SET_SOURCE)) {
+            Handler hand  = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    if(mAdapter != null) {
+                        mAdapter.triggerNotifyDataSetChanged();
+                    }
+                }
+            });
+        }
     }
 
     public interface OnEventListener {

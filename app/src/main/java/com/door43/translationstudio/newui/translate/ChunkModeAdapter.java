@@ -68,16 +68,16 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     private ResourceContainer mSourceContainer;
     private final Door43Client mLibrary;
     private final Translator mTranslator;
-    private List<ListItem> mItems;
-    private List<ListItem> mFilteredItems;
+    private List<ListItem> mItems = new ArrayList<>();
+    private List<ListItem> mFilteredItems = new ArrayList<>();
     private int mLayoutBuildNumber = 0;
-    private ContentValues[] mTabs;
+    private ContentValues[] mTabs = new ContentValues[0];
     private List<String> mChapters = new ArrayList();
     private List<String> mFilteredChapters = new ArrayList<>();
     private CharSequence filterConstraint = null;
     private TranslationFilter.FilterSubject filterSubject = null;
 
-    public ChunkModeAdapter(Activity context, String targetTranslationId, String sourceContainerSlug, String startingChapterSlug, String startingChunkSlug, boolean openSelectedTarget) {
+    public ChunkModeAdapter(Activity context, String targetTranslationId, String startingChapterSlug, String startingChunkSlug, boolean openSelectedTarget) {
         this.startingChapterSlug = startingChapterSlug;
         this.startingChunkSlug = startingChunkSlug;
 
@@ -86,13 +86,10 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         mContext = context;
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         mTargetLanguage = App.languageFromTargetTranslation(mTargetTranslation);
-
-        setSourceTranslation(sourceContainerSlug);
-        triggerNotifyDataSetChanged();
     }
 
     @Override
-    public void setSourceTranslation(String sourceContainerSlug) {
+    public void setSourceTranslation(String sourceContainerSlug, boolean notifyDataSetChanged) {
         try {
             mSourceContainer = mLibrary.open(sourceContainerSlug);
         } catch (Exception e) {
@@ -122,6 +119,8 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         loadTabInfo();
 
         filter(filterConstraint, filterSubject);
+
+        if(notifyDataSetChanged) triggerNotifyDataSetChanged();
     }
 
     /**
@@ -545,14 +544,6 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             holder.mTargetBody.setEnableLines(true);
             holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         }
-    }
-
-    /**
-     * Trigers some aspects of the children views to be rebuilt
-     */
-    public void rebuild() {
-        mLayoutBuildNumber ++;
-        triggerNotifyDataSetChanged();
     }
 
     private CharSequence renderText(String text, TranslationFormat format, boolean enableSearch) {

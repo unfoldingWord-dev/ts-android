@@ -58,13 +58,13 @@ import org.unfoldingword.resourcecontainer.ResourceContainer;
  */
 public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder> {
 
-    private CharSequence[] mRenderedTargetBody;
-    private CharSequence[] mRenderedSourceBody;
+    private CharSequence[] mRenderedTargetBody = new CharSequence[0];
+    private CharSequence[] mRenderedSourceBody = new CharSequence[0];
 
     private final String startingChapterSlug;
     private SourceLanguage mSourceLanguage;
     private final TargetLanguage mTargetLanguage;
-    private boolean[] mTargetStateOpen;
+    private boolean[] mTargetStateOpen = new boolean[0];
     private final Activity mContext;
     private static final int BOTTOM_ELEVATION = 2;
     private static final int TOP_ELEVATION = 3;
@@ -72,12 +72,12 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     private ResourceContainer mSourceContainer;
     private final Door43Client mLibrary;
     private final Translator mTranslator;
-    private List<String> chapters;
+    private List<String> chapters = new ArrayList<>();
     private int mLayoutBuildNumber = 0;
-    private ContentValues[] mTabs;
+    private ContentValues[] mTabs = new ContentValues[0];
     private Map<String, List<String>> chunks = new HashMap<>();
 
-    public ReadModeAdapter(Activity context, String targetTranslationId, String sourceContainerSlug, String startingChapterSlug, String startingChunkSlug) {
+    public ReadModeAdapter(Activity context, String targetTranslationId, String startingChapterSlug, String startingChunkSlug) {
         this.startingChapterSlug = startingChapterSlug;
 
         mLibrary = App.getLibrary();
@@ -85,16 +85,13 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         mContext = context;
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         mTargetLanguage = App.languageFromTargetTranslation(mTargetTranslation);
-
-        setSourceTranslation(sourceContainerSlug);
-        triggerNotifyDataSetChanged();
     }
 
     /**
      * Updates the source translation displayed
      * @param sourceContainerSlug
      */
-    public void setSourceTranslation(String sourceContainerSlug) {
+    public void setSourceTranslation(String sourceContainerSlug, boolean notifyDataSetChanged) {
         try {
             mSourceContainer = mLibrary.open(sourceContainerSlug);
         } catch (Exception e) {
@@ -124,7 +121,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
 
         loadTabInfo();
 
-        triggerNotifyDataSetChanged();
+        if(notifyDataSetChanged) triggerNotifyDataSetChanged();
     }
 
     @Override
@@ -459,11 +456,6 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     @Override
     public int getItemCount() {
         return chapters.size();
-    }
-
-    public void rebuild() {
-        mLayoutBuildNumber ++;
-        triggerNotifyDataSetChanged();
     }
 
     /**
