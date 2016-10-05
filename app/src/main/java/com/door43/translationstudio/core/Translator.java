@@ -152,6 +152,19 @@ public class Translator {
     }
 
     /**
+     * Renames a target translation on the device, used when the targe language has been changed
+     * @param targetTranslationId
+     * @param newTargetTranslationId
+     */
+    public void renameTargetTranslation(String targetTranslationId, String newTargetTranslationId) {
+        if(targetTranslationId != null) {
+            File targetTranslationDir = new File(mRootDir, targetTranslationId);
+            File targetTranslationNewDir = new File(mRootDir, newTargetTranslationId);
+            FileUtilities.moveOrCopyQuietly(targetTranslationDir, targetTranslationNewDir);
+        }
+    }
+
+    /**
      * Compiles all the editable text back into source that could be either USX or USFM.  It replaces
      *   the displayed text in spans with their mark-ups.
      * @param text
