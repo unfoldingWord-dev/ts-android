@@ -173,9 +173,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             String targetTranslationId = targetTranslation.getId();
 
             targetTranslation.changeTargetLanguage(mSelectedTargetLanguage);
-            String newTargetTranslationId = targetTranslation.getId();
-
-            translator.renameTargetTranslation(targetTranslationId, newTargetTranslationId);
+            translator.normalizePath(targetTranslation);
             finish();
         }
     }
