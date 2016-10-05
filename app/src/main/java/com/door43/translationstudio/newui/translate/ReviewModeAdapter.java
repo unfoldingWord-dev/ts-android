@@ -25,6 +25,7 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
+import android.util.Log;
 import android.view.DragEvent;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -128,7 +129,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private boolean mMergeTailSelected = false;
     private float mInitialTextSize = 0;
     private int mMarginInitialLeft = 0;
-//    private boolean onBind = false;
 
     enum DisplayState {
         NORMAL,
@@ -269,7 +269,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         ListItem item = getItem( position );
         if(item != null) {
             // fetch translation from disk
-            item.loadTranslations(mSourceContainer, mTargetTranslation);
+            item.load(mSourceContainer, mTargetTranslation);
             boolean conflicted = item.hasMergeConflicts;
             if(conflicted) {
                 return TYPE_MERGE_CONFLICT;
@@ -293,41 +293,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         return vh;
     }
 
-    /**
-     * Loads a frame from the index and caches it
-     * @param chapterSlug
-     * @param chunkSlug
-     * @return
-     */
-//    private String loadFrame(String chapterSlug, String chunkSlug) {
-//        String key = chapterSlug + "-" + chunkSlug;
-//        if(mChunks.containsKey(key)) {
-//            return mChunks.get(key);
-//        } else {
-//            String text = mSourceContainer.readChunk(chapterSlug, chunkSlug);
-//            mChunks.put(key, text);
-//            return text;
-//        }
-//    }
-
-    /**
-     * get the chapter for the position, or null if not found
-     * @param position
-     * @return
-     */
-//    public String getChapterForPosition(int position) {
-//        if( (position < 0) || (position >= mFilteredItems.length)) {
-//            return null;
-//        }
-//
-//        ListItem item = mFilteredItems[position];
-//        if(item != null) {
-//            return item.chapterSlug;
-//        }
-//
-//        return null;
-//    }
-
      @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         holder.currentPosition = position;
@@ -341,7 +306,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
 
         // fetch translation from disk
-        item.loadTranslations(mSourceContainer, mTargetTranslation);
+        item.load(mSourceContainer, mTargetTranslation);
 
         ViewUtil.makeLinksClickable(holder.mSourceBody);
 
@@ -364,7 +329,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 Typography.format(mContext, holder.mConflictText, mTargetLanguage.slug, mTargetLanguage.direction);
             }
         }
-//        this.onBind = false;
     }
 
     /**
@@ -419,26 +383,28 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     private void renderSourceCard(final int position, final ReviewListItem item, final ViewHolder holder) {
-        // render
         ManagedTask oldTask = TaskManager.getTask(holder.currentSourceTaskId);
         TaskManager.cancelTask(oldTask);
+        TaskManager.clearTask(oldTask);
         if(item.renderedSourceText == null) {
             holder.mSourceBody.setText("");
             ManagedTask task = new ManagedTask() {
                 @Override
                 public void start() {
                     if(interrupted()) return;
+                    Log.i("TEST", "Rendering for " + getTaskId() + " : " + item.sourceText);
                     CharSequence text = renderSourceText(item.sourceText, TranslationFormat.parse(mSourceContainer.contentMimeType), holder, item, false);
-                    if(interrupted()) return;
                     setResult(text);
                 }
             };
             task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
                 @Override
                 public void onTaskFinished(ManagedTask task) {
+                    TaskManager.clearTask(task);
+                    Log.i("TEST", "Finishing task " + task.getTaskId() + " at position " + holder.currentPosition);
                     CharSequence data = (CharSequence)task.getResult();
+                    item.renderedSourceText = data;
                     if(!task.isCanceled() && data != null && position == holder.currentPosition) {
-                        item.renderedSourceText = data;
                         Handler hand = new Handler(Looper.getMainLooper());
                         hand.post(new Runnable() {
                             @Override
@@ -446,12 +412,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                 holder.mSourceBody.setText(item.renderedSourceText);
                             }
                         });
-                    } else if (data != null && position == holder.currentPosition){
-                        item.renderedSourceText = data;
                     }
                 }
             });
             holder.currentSourceTaskId = TaskManager.addTask(task);
+            Log.i("TEST", "Starting task " + holder.currentSourceTaskId + " for position " + position);
         } else {
             holder.mSourceBody.setText(item.renderedSourceText);
         }
@@ -569,7 +534,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     mgr.showSoftInput(holder.mTargetEditableBody, InputMethodManager.SHOW_IMPLICIT);
 
                     // TRICKY: there may be changes to translation
-                     item.loadTranslations(mSourceContainer, mTargetTranslation);
+                     item.load(mSourceContainer, mTargetTranslation);
 
                     // re-render for editing mode
                     item.renderedTargetText = renderSourceText(item.targetText, item.translationFormat, holder, item, true);
@@ -583,7 +548,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     getListener().closeKeyboard();
 
                     // TRICKY: there may be changes to translation
-                    item.loadTranslations(mSourceContainer, mTargetTranslation);
+                    item.load(mSourceContainer, mTargetTranslation);
 
                     // re-render for verse mode
                     item.renderedTargetText = renderTargetText(item.targetText, item.translationFormat, item.ft, holder, item);
@@ -1769,7 +1734,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                 mTargetTranslation.applyFrameTranslation(frameTranslation, translation);
 
                                 // Reload, so that targetText and other data are kept in sync.
-                                item.loadTranslations(mSourceContainer, mTargetTranslation);
+                                item.load(mSourceContainer, mTargetTranslation);
                             } else if(event.getAction() == DragEvent.ACTION_DRAG_ENDED) {
                                 view.setOnDragListener(null);
                                 editText.setSelection(editText.getSelectionEnd());
@@ -1785,7 +1750,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                     mTargetTranslation.applyFrameTranslation(frameTranslation, translation);
 
                                     // Reload, so that targetText and other data are kept in sync.
-                                    item.loadTranslations(mSourceContainer, mTargetTranslation);
+                                    item.load(mSourceContainer, mTargetTranslation);
                                 }
                             } else if(event.getAction() == DragEvent.ACTION_DRAG_ENTERED) {
                                 hasEntered = true;

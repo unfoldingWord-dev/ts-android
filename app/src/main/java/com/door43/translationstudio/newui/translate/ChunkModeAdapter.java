@@ -24,7 +24,6 @@ import android.view.animation.Animation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Filter;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -46,7 +45,6 @@ import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.rendering.ClickableRenderingEngine;
 import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.DefaultRenderer;
-import com.door43.translationstudio.rendering.MergeConflictHandler;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.Span;
@@ -54,7 +52,6 @@ import com.door43.widget.ViewUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -340,7 +337,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             }
         });
 
-         item.loadTranslations(mSourceContainer, mTargetTranslation);
+         item.load(mSourceContainer, mTargetTranslation);
 
          renderChunk(holder, position);
 
@@ -356,10 +353,6 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
         //////
         // set up card UI for merge conflicts
-
-        if(item.renderedTargetText == null) {
-            item.loadTranslations(mSourceContainer, mTargetTranslation);
-        }
 
         Button conflictButton = (Button)holder.mTargetCard.findViewById(R.id.conflict_button);
         FrameLayout conflictButtonFrame = (FrameLayout)holder.mTargetCard.findViewById(R.id.conflict_frame);

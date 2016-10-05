@@ -127,45 +127,62 @@ public abstract class ListItem {
     }
 
     /**
-     * Loads the translation text from the disk
+     * Clears the loaded translation data
+     */
+    public void reset() {
+        this.sourceText = null;
+        this.targetText = null;
+        this.renderedSourceText = null;
+        this.renderedTargetText = null;
+        this.hasMergeConflicts = false;
+        sourceContainer = null;
+        targetLanguage = null;
+    }
+
+    /**
+     * Loads the translation text from the disk.
+     * This will not do anything if the sourceText is already loaded
+     *
      * @param sourceContainer
      * @param targetTranslation TODO: this will become a resource container eventually
      */
-    public void loadTranslations(ResourceContainer sourceContainer, TargetTranslation targetTranslation) {
-        this.pt = targetTranslation.getProjectTranslation();
-        this.sourceContainer = sourceContainer;
-        this.targetLanguage = targetTranslation.getTargetLanguage();
-        this.renderedTargetText = null;
-        this.renderedSourceText = null;
+    public void load(ResourceContainer sourceContainer, TargetTranslation targetTranslation) {
         if(this.sourceText == null) {
-            this.sourceText = sourceContainer.readChunk(chapterSlug, chunkSlug);
-        }
-        this.translationFormat = TranslationFormat.parse(sourceContainer.contentMimeType);
-        // TODO: 10/1/16 this will be simplified once we migrate target translations to resource containers
-        if(chapterSlug.equals("front")) {
-            // project stuff
-            if (chunkSlug.equals("title")) {
-                this.targetText = pt.getTitle();
-                this.isComplete = pt.isTitleFinished();
+            this.pt = targetTranslation.getProjectTranslation();
+            this.sourceContainer = sourceContainer;
+            this.targetLanguage = targetTranslation.getTargetLanguage();
+            this.renderedTargetText = null;
+            this.renderedSourceText = null;
+            if (this.sourceText == null) {
+                this.sourceText = sourceContainer.readChunk(chapterSlug, chunkSlug);
             }
-        } else if(chapterSlug.equals("back")) {
-            // back matter
+            this.translationFormat = TranslationFormat.parse(sourceContainer.contentMimeType);
+            // TODO: 10/1/16 this will be simplified once we migrate target translations to resource containers
+            if (chapterSlug.equals("front")) {
+                // project stuff
+                if (chunkSlug.equals("title")) {
+                    this.targetText = pt.getTitle();
+                    this.isComplete = pt.isTitleFinished();
+                }
+            } else if (chapterSlug.equals("back")) {
+                // back matter
 
-        } else {
-            // chapter stuff
-            this.ct = targetTranslation.getChapterTranslation(chapterSlug);
-            if(chunkSlug.equals("title")) {
-                this.targetText = ct.title;
-                this.isComplete = ct.isTitleFinished();
-            } else if(chunkSlug.equals("reference")) {
-                this.targetText = ct.reference;
-                this.isComplete = ct.isReferenceFinished();
             } else {
-                this.ft = targetTranslation.getFrameTranslation(chapterSlug, chunkSlug, this.translationFormat);
-                this.targetText = ft.body;
-                this.isComplete = ft.isFinished();
+                // chapter stuff
+                this.ct = targetTranslation.getChapterTranslation(chapterSlug);
+                if (chunkSlug.equals("title")) {
+                    this.targetText = ct.title;
+                    this.isComplete = ct.isTitleFinished();
+                } else if (chunkSlug.equals("reference")) {
+                    this.targetText = ct.reference;
+                    this.isComplete = ct.isReferenceFinished();
+                } else {
+                    this.ft = targetTranslation.getFrameTranslation(chapterSlug, chunkSlug, this.translationFormat);
+                    this.targetText = ft.body;
+                    this.isComplete = ft.isFinished();
+                }
             }
+            this.hasMergeConflicts = MergeConflictHandler.isMergeConflicted(this.targetText);
         }
-        this.hasMergeConflicts = MergeConflictHandler.isMergeConflicted(this.targetText);
     }
 }

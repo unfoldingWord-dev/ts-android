@@ -56,9 +56,7 @@ public class TranslationFilter extends Filter {
                 item.renderedTargetText = null;
 
                 // load text
-                if(item.sourceText == null || item.targetText == null) {
-                    item.loadTranslations(sourceContainer, targetTranslation);
-                }
+                item.load(sourceContainer, targetTranslation);
 
                 // match
                 boolean match = false;
