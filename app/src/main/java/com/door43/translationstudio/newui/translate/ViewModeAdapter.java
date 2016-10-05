@@ -7,6 +7,8 @@ import android.widget.SectionIndexer;
 
 import com.door43.translationstudio.core.TranslationViewMode;
 
+import org.unfoldingword.resourcecontainer.ResourceContainer;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,20 +69,10 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
 
     /**
      * Updates the source translation to be displayed.
-     * Make sure to call triggerNotifyDatasetChanged() after this.
-     * @param sourceTranslationSlug
-     * @param notifyDataSetChanged if true data set changed will be triggered automatically
+     * This should call notifyDataSetChanged()
+     * @param sourceContainer
      */
-    abstract void setSourceTranslation(String sourceTranslationSlug, boolean notifyDataSetChanged);
-
-    /**
-     * Updates the source translation to be displayed.
-     * Make sure to call triggerNotifyDatasetChanged() after this.
-     * @param sourceTranslationSlug
-     */
-    public final void setSourceTranslation(String sourceTranslationSlug) {
-        setSourceTranslation(sourceTranslationSlug, false);
-    }
+    abstract void setSourceContainer(ResourceContainer sourceContainer);
 
     /**
      * Called when coordinating operations need to be applied to all the view holders

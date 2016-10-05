@@ -39,7 +39,8 @@ import java.util.List;
 public abstract class ViewModeFragment extends BaseFragment implements ViewModeAdapter.OnEventListener, ChooseSourceTranslationDialog.OnClickListener, ManagedTask.OnFinishedListener {
 
     public static final String TAG = ViewModeFragment.class.getSimpleName();
-    private static final String TASK_ID_SET_SOURCE = "set-source";
+    private static final String TASK_ID_OPEN_SELECTED_SOURCE = "open-selected-source";
+    private static final String TASK_ID_OPEN_SOURCE = "open-source";
     private RecyclerView mRecyclerView;
     private LinearLayoutManager mLayoutManager;
     private ViewModeAdapter mAdapter;
@@ -49,8 +50,8 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     private Translator mTranslator;
     private Door43Client mLibrary;
     private GestureDetector mGesture;
-    private boolean mRememberLastPosition = true;
     private SourceTranslation mSourceTranslation = null;
+    private static ResourceContainer mSourceContainer = null;
 
     /**
      * Returns an instance of the adapter
@@ -67,6 +68,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_stacked_card_list, container, false);
 
+        mSourceContainer = null;
         mLibrary = App.getLibrary();
         mTranslator = App.getTranslator();
 
@@ -116,6 +118,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
                 }
             });
 
+            // notify activity contents changed
             onDataSetChanged(mAdapter.getItemCount());
 
             mAdapter.setOnClickListener(this);
@@ -293,18 +296,45 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     @Override
     public void onResume() {
         super.onResume();
-        ManagedTask loadingTask = new ManagedTask() {
+        // load the selected source translation if not already open
+        ManagedTask task = new ManagedTask() {
             @Override
             public void start() {
-                if(mAdapter != null) {
-                    if(mSourceTranslation != null) {
-                        mAdapter.setSourceTranslation(mSourceTranslation.resourceContainerSlug, false);
+                if(mSourceTranslation != null && mSourceContainer == null) {
+                    try {
+                        mSourceContainer = mLibrary.open(mSourceTranslation.resourceContainerSlug);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        mSourceContainer = null;
                     }
                 }
             }
         };
-        loadingTask.addOnFinishedListener(this);
-        TaskManager.addTask(loadingTask, TASK_ID_SET_SOURCE);
+        task.addOnFinishedListener(this);
+        TaskManager.addTask(task, TASK_ID_OPEN_SELECTED_SOURCE);
+    }
+
+    /**
+     * Initiates a task to open a resource container.
+     * This is used for switching the source translation.
+     * @param slug
+     */
+    private void openResourceContainer(final String slug) {
+        ManagedTask task = new ManagedTask() {
+            @Override
+            public void start() {
+                try {
+                    setResult(mLibrary.open(slug));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        Bundle args = new Bundle();
+        args.putString("slug", slug);
+        task.setArgs(args);
+        task.addOnFinishedListener(this);
+        TaskManager.addTask(task, TASK_ID_OPEN_SOURCE);
     }
 
     /**
@@ -417,7 +447,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     public void onSourceTranslationTabClick(String sourceTranslationId) {
         App.setSelectedSourceTranslation(mTargetTranslation.getId(), sourceTranslationId);
         App.getSourceTranslation(sourceTranslationId);
-        mAdapter.setSourceTranslation(sourceTranslationId);
+        openResourceContainer(sourceTranslationId);
     }
 
     @Override
@@ -469,7 +499,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
                 }
             }
             String selectedSourceTranslationId = App.getSelectedSourceTranslationId(targetTranslationId);
-            mAdapter.setSourceTranslation(selectedSourceTranslationId);
+            openResourceContainer(selectedSourceTranslationId);
         } else {
             mListener.onNoSourceTranslations(targetTranslationId);
         }
@@ -478,7 +508,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     @Override
     public void onDestroy() {
         // save position state
-        if(mRememberLastPosition && (mLayoutManager != null)) {
+        if(mLayoutManager != null) {
             int lastItemPosition = mLayoutManager.findFirstVisibleItemPosition();
             String chapterId = mAdapter.getFocusedChapterSlug(lastItemPosition);
             String frameId = mAdapter.getFocusedChunkSlug(lastItemPosition);
@@ -519,10 +549,6 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         mListener.restartAutoCommitTimer();
     }
 
-    public void setRememberLastPosition(boolean rememberLastPosition) {
-        this.mRememberLastPosition = rememberLastPosition;
-    }
-
     /**
      * enable/disable the busy indiciator
      * @param isSearching
@@ -532,15 +558,35 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     @Override
-    public void onTaskFinished(ManagedTask task) {
+    public void onTaskFinished(final ManagedTask task) {
         TaskManager.clearTask(task);
-        if(task.getTaskId().equals(TASK_ID_SET_SOURCE)) {
+        if(task.getTaskId().equals(TASK_ID_OPEN_SELECTED_SOURCE)) {
             Handler hand  = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {
                 @Override
                 public void run() {
-                    if(mAdapter != null) {
+                    if(mSourceContainer == null) {
+                        if(mListener != null) mListener.onNoSourceTranslations(mTargetTranslation.getId());
+                    } else if(mAdapter != null) {
+                        mAdapter.setSourceContainer(mSourceContainer);
+                    }
+                }
+            });
+        } else if(task.getTaskId().equals(TASK_ID_OPEN_SOURCE)) {
+            Handler hand  = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    if(task.getResult() == null) {
+                        // failed to load the container
+                        String slug = task.getArgs().getString("slug");
+                        App.removeOpenSourceTranslation(mTargetTranslation.getId(), slug);
                         mAdapter.triggerNotifyDataSetChanged();
+
+                        // TODO: 10/5/16 notify user we failed to select the source
+                    } else if(mAdapter != null) {
+                        mSourceContainer = (ResourceContainer) task.getResult();
+                        mAdapter.setSourceContainer(mSourceContainer);
                     }
                 }
             });

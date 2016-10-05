@@ -89,15 +89,10 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
 
     /**
      * Updates the source translation displayed
-     * @param sourceContainerSlug
+     * @param sourceContainer
      */
-    public void setSourceTranslation(String sourceContainerSlug, boolean notifyDataSetChanged) {
-        try {
-            mSourceContainer = mLibrary.open(sourceContainerSlug);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+    public void setSourceContainer(ResourceContainer sourceContainer) {
+        mSourceContainer = sourceContainer;
         this.chapters = new ArrayList<>();
         this.chunks = new HashMap<>();
 
@@ -123,7 +118,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
 
         loadTabInfo();
 
-        if(notifyDataSetChanged) triggerNotifyDataSetChanged();
+        triggerNotifyDataSetChanged();
     }
 
     @Override

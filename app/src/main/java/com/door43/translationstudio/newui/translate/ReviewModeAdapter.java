@@ -149,12 +149,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     @Override
-    void setSourceTranslation(String sourceContainerSlug, boolean notifyDataSetChanged) {
-        try {
-            mSourceContainer = mLibrary.open(sourceContainerSlug);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    void setSourceContainer(ResourceContainer sourceContainer) {
+        mSourceContainer = sourceContainer;
 
         this.mChapters = new ArrayList();
         mItems = new ArrayList<>();
@@ -184,7 +180,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         filter(filterConstraint, filterSubject);
 
-        if(notifyDataSetChanged) triggerNotifyDataSetChanged();
+        triggerNotifyDataSetChanged();
     }
 
     /**

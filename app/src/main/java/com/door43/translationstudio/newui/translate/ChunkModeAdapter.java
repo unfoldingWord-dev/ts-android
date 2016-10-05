@@ -36,6 +36,7 @@ import org.unfoldingword.resourcecontainer.ResourceContainer;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.LinedEditText;
+import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.TargetTranslation;
@@ -95,12 +96,8 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     }
 
     @Override
-    public void setSourceTranslation(String sourceContainerSlug, boolean notifyDataSetChanged) {
-        try {
-            mSourceContainer = mLibrary.open(sourceContainerSlug);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void setSourceContainer(ResourceContainer sourceContainer) {
+        mSourceContainer = sourceContainer;
 
         this.mChapters = new ArrayList();
         mItems = new ArrayList<>();
@@ -129,7 +126,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
         filter(filterConstraint, filterSubject);
 
-        if(notifyDataSetChanged) triggerNotifyDataSetChanged();
+        triggerNotifyDataSetChanged();
     }
 
     /**
@@ -138,22 +135,17 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     private void loadTabInfo() {
         List<ContentValues> tabContents = new ArrayList<>();
         String[] sourceTranslationIds = App.getSelectedSourceTranslations(mTargetTranslation.getId());
-        for(String id:sourceTranslationIds) {
-            ResourceContainer rc = null;
-            try {
-                rc = mLibrary.open(id);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            if(rc != null) {
+        for(String slug:sourceTranslationIds) {
+            SourceTranslation st = App.getSourceTranslation(slug);
+            if(st != null) {
                 ContentValues values = new ContentValues();
                 // include the resource id if there are more than one
-                if(mLibrary.index().getResources(rc.language.slug, rc.project.slug).size() > 1) {
-                    values.put("title", rc.language.name + " " + rc.resource.slug.toUpperCase());
+                if(mLibrary.index().getResources(st.language.slug, st.project.slug).size() > 1) {
+                    values.put("title", st.language.name + " " + st.resource.slug.toUpperCase());
                 } else {
-                    values.put("title", rc.language.name);
+                    values.put("title", st.language.name);
                 }
-                values.put("tag", rc.slug);
+                values.put("tag", st.resourceContainerSlug);
                 tabContents.add(values);
             }
         }
@@ -818,41 +810,5 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         public ChunkListItem(String chapterSlug, String chunkSlug) {
             super(chapterSlug, chunkSlug);
         }
-    }
-
-    @Override
-    public void filter(CharSequence constraint, TranslationFilter.FilterSubject subject) {
-        this.filterConstraint = constraint;
-        this.filterSubject = subject;
-        if(constraint == null || constraint.toString().trim().isEmpty()) {
-            mFilteredItems = mItems;
-            mFilteredChapters = mChapters;
-            return;
-        }
-
-        // clear the cards displayed since we have new search string
-        mFilteredItems = new ArrayList<>();
-
-        getListener().onSearching(true);
-        TranslationFilter filter = new TranslationFilter(mSourceContainer, mTargetTranslation, subject, mItems);
-        filter.setListener(new TranslationFilter.OnMatchListener() {
-            @Override
-            public void onMatch(ListItem item) {
-                if(!mFilteredChapters.contains(item.chapterSlug)) mFilteredChapters.add(item.chapterSlug);
-            }
-
-            @Override
-            public void onFinished(CharSequence constraint, List<ListItem> results) {
-                mFilteredItems = results;
-                triggerNotifyDataSetChanged();
-                getListener().onSearching(false);
-            }
-        });
-        filter.filter(constraint);
-    }
-
-    @Override
-    public boolean hasFilter() {
-        return true;
     }
 }
