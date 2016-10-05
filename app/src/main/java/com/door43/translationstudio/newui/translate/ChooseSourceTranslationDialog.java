@@ -105,7 +105,6 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if(mAdapter.isSelectableItem(position)) {
                     mAdapter.doClickOnItem(position);
-                    mAdapter.sort();
                 }
             }
         });
@@ -162,7 +161,8 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
         Resource resource = mLibrary.getResource( sourceTranslation);
         if(resource != null) {
             boolean downloaded = resource.isDownloaded();
-            mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation, selected, downloaded));
+            boolean hasUpdates = resource.hasUpdates();
+            mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation, selected, downloaded, hasUpdates));
         } else {
             Logger.e(TAG, "Failed to get resource for " + sourceTranslation.getId());
         }
