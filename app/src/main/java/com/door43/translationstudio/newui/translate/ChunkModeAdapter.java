@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.TabLayout;
@@ -21,7 +22,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Filter;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -32,14 +36,17 @@ import org.unfoldingword.resourcecontainer.ResourceContainer;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.LinedEditText;
+import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.rendering.ClickableRenderingEngine;
 import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.DefaultRenderer;
+import com.door43.translationstudio.rendering.MergeConflictHandler;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.Span;
@@ -89,27 +96,26 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     }
 
     @Override
-    public void setSourceTranslation(String sourceContainerSlug, boolean notifyDataSetChanged) {
-        try {
-            mSourceContainer = mLibrary.open(sourceContainerSlug);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void setSourceContainer(ResourceContainer sourceContainer) {
+        mSourceContainer = sourceContainer;
 
         this.mChapters = new ArrayList();
         mItems = new ArrayList<>();
 
         // TODO: there is also a map form of the toc.
         setListStartPosition(0);
-        for(Map tocChapter:(List<Map>)mSourceContainer.toc) {
-            String chapterSlug = (String)tocChapter.get("chapter");
-            this.mChapters.add(chapterSlug);
-            List<String> tocChunks = (List)tocChapter.get("chunks");
-            for(String chunkSlug:tocChunks) {
-                if(chapterSlug.equals(startingChapterSlug) && chunkSlug.equals(startingChunkSlug)) {
-                    setListStartPosition(mItems.size());
+
+        if(mSourceContainer != null) {
+            for (Map tocChapter : (List<Map>) mSourceContainer.toc) {
+                String chapterSlug = (String) tocChapter.get("chapter");
+                this.mChapters.add(chapterSlug);
+                List<String> tocChunks = (List) tocChapter.get("chunks");
+                for (String chunkSlug : tocChunks) {
+                    if (chapterSlug.equals(startingChapterSlug) && chunkSlug.equals(startingChunkSlug)) {
+                        setListStartPosition(mItems.size());
+                    }
+                    mItems.add(new ChunkListItem(chapterSlug, chunkSlug));
                 }
-                mItems.add(new ChunkListItem(chapterSlug, chunkSlug));
             }
         }
 
@@ -120,7 +126,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
         filter(filterConstraint, filterSubject);
 
-        if(notifyDataSetChanged) triggerNotifyDataSetChanged();
+        triggerNotifyDataSetChanged();
     }
 
     /**
@@ -129,22 +135,17 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     private void loadTabInfo() {
         List<ContentValues> tabContents = new ArrayList<>();
         String[] sourceTranslationIds = App.getSelectedSourceTranslations(mTargetTranslation.getId());
-        for(String id:sourceTranslationIds) {
-            ResourceContainer rc = null;
-            try {
-                rc = mLibrary.open(id);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            if(rc != null) {
+        for(String slug:sourceTranslationIds) {
+            SourceTranslation st = App.getSourceTranslation(slug);
+            if(st != null) {
                 ContentValues values = new ContentValues();
                 // include the resource id if there are more than one
-                if(mLibrary.index().getResources(rc.language.slug, rc.project.slug).size() > 1) {
-                    values.put("title", rc.language.name + " " + rc.resource.slug.toUpperCase());
+                if(mLibrary.index().getResources(st.language.slug, st.project.slug).size() > 1) {
+                    values.put("title", st.language.name + " " + st.resource.slug.toUpperCase());
                 } else {
-                    values.put("title", rc.language.name);
+                    values.put("title", st.language.name);
                 }
-                values.put("tag", rc.slug);
+                values.put("tag", st.resourceContainerSlug);
                 tabContents.add(values);
             }
         }
@@ -194,7 +195,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         int cardMargin = mContext.getResources().getDimensionPixelSize(R.dimen.card_margin);
         int stackedCardMargin = mContext.getResources().getDimensionPixelSize(R.dimen.stacked_card_margin);
-        ListItem item = mFilteredItems.get(position);
+        final ListItem item = mFilteredItems.get(position);
         if(((ChunkListItem)item).isTargetCardOpen) {
             // target on top
             // elevation takes precedence for API 21+
@@ -351,6 +352,37 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             Typography.format(mContext, holder.mSourceBody, mSourceContainer.language.slug, mSourceContainer.language.direction);
             Typography.formatSub(mContext, holder.mTargetTitle, mTargetLanguage.slug, mTargetLanguage.direction);
             Typography.format(mContext, holder.mTargetBody, mTargetLanguage.slug, mTargetLanguage.direction);
+        }
+
+        //////
+        // set up card UI for merge conflicts
+
+        if(item.renderedTargetText == null) {
+            item.loadTranslations(mSourceContainer, mTargetTranslation);
+        }
+
+        Button conflictButton = (Button)holder.mTargetCard.findViewById(R.id.conflict_button);
+        FrameLayout conflictButtonFrame = (FrameLayout)holder.mTargetCard.findViewById(R.id.conflict_frame);
+        if((conflictButton != null) &&(conflictButtonFrame != null)) {
+            if (item.hasMergeConflicts) {
+                conflictButton.setVisibility(View.VISIBLE);
+                conflictButtonFrame.setVisibility(View.VISIBLE);
+                holder.mTargetBody.setVisibility(View.GONE);
+                conflictButton.setOnClickListener(new View.OnClickListener() {
+                                                      @Override
+                                                      public void onClick(View v) {
+                                                          Bundle args = new Bundle();
+                                                          args.putBoolean(ChunkModeFragment.EXTRA_TARGET_OPEN, true);
+                                                          args.putString(App.EXTRA_CHAPTER_ID, item.chapterSlug);
+                                                          args.putString(App.EXTRA_FRAME_ID, item.chunkSlug);
+                                                          getListener().openTranslationMode(TranslationViewMode.REVIEW, args);
+                                                      }
+                                                  }
+                );
+            } else {
+                conflictButtonFrame.setVisibility(View.GONE);
+                holder.mTargetBody.setVisibility(View.VISIBLE);
+            }
         }
 
         ViewUtil.makeLinksClickable(holder.mSourceBody);
@@ -775,45 +807,8 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
      */
     private static class ChunkListItem extends ListItem {
         private boolean isTargetCardOpen = false;
-
         public ChunkListItem(String chapterSlug, String chunkSlug) {
             super(chapterSlug, chunkSlug);
         }
-    }
-
-    @Override
-    public void filter(CharSequence constraint, TranslationFilter.FilterSubject subject) {
-        this.filterConstraint = constraint;
-        this.filterSubject = subject;
-        if(constraint == null || constraint.toString().trim().isEmpty()) {
-            mFilteredItems = mItems;
-            mFilteredChapters = mChapters;
-            return;
-        }
-
-        // clear the cards displayed since we have new search string
-        mFilteredItems = new ArrayList<>();
-
-        getListener().onSearching(true);
-        TranslationFilter filter = new TranslationFilter(mSourceContainer, mTargetTranslation, subject, mItems);
-        filter.setListener(new TranslationFilter.OnMatchListener() {
-            @Override
-            public void onMatch(ListItem item) {
-                if(!mFilteredChapters.contains(item.chapterSlug)) mFilteredChapters.add(item.chapterSlug);
-            }
-
-            @Override
-            public void onFinished(CharSequence constraint, List<ListItem> results) {
-                mFilteredItems = results;
-                triggerNotifyDataSetChanged();
-                getListener().onSearching(false);
-            }
-        });
-        filter.filter(constraint);
-    }
-
-    @Override
-    public boolean hasFilter() {
-        return true;
     }
 }

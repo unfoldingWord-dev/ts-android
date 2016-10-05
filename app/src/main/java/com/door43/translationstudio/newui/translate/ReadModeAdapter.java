@@ -89,30 +89,27 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
 
     /**
      * Updates the source translation displayed
-     * @param sourceContainerSlug
+     * @param sourceContainer
      */
-    public void setSourceTranslation(String sourceContainerSlug, boolean notifyDataSetChanged) {
-        try {
-            mSourceContainer = mLibrary.open(sourceContainerSlug);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        mSourceLanguage = mLibrary.index().getSourceLanguage(mSourceContainer.language.slug);
-
+    public void setSourceContainer(ResourceContainer sourceContainer) {
+        mSourceContainer = sourceContainer;
         this.chapters = new ArrayList<>();
         this.chunks = new HashMap<>();
 
         setListStartPosition(0);
-        boolean foundStartingChapter = false;
-        for(Map tocChapter:(List<Map>)mSourceContainer.toc) {
-            String chapterSlug = (String)tocChapter.get("chapter");
-            this.chapters.add(chapterSlug);
-            if(!foundStartingChapter && chapterSlug.equals(startingChapterSlug) ) {
-                setListStartPosition(this.chapters.size());
-                foundStartingChapter = true;
+
+        if(mSourceContainer != null) {
+            mSourceLanguage = mLibrary.index().getSourceLanguage(mSourceContainer.language.slug);
+            boolean foundStartingChapter = false;
+            for (Map tocChapter : (List<Map>) mSourceContainer.toc) {
+                String chapterSlug = (String) tocChapter.get("chapter");
+                this.chapters.add(chapterSlug);
+                if (!foundStartingChapter && chapterSlug.equals(startingChapterSlug)) {
+                    setListStartPosition(this.chapters.size());
+                    foundStartingChapter = true;
+                }
+                this.chunks.put(chapterSlug, (List) tocChapter.get("chunks"));
             }
-            this.chunks.put(chapterSlug, (List)tocChapter.get("chunks"));
         }
 
         mTargetStateOpen = new boolean[chapters.size()];
@@ -121,7 +118,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
 
         loadTabInfo();
 
-        if(notifyDataSetChanged) triggerNotifyDataSetChanged();
+        triggerNotifyDataSetChanged();
     }
 
     @Override

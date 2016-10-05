@@ -357,9 +357,9 @@ public class ClientService extends NetworkService {
                                 Translator translator = App.getTranslator();
                                 // TODO: 11/23/2015 perform a diff first
                                 try {
-                                    String[] targetTranslationSlugs = translator.importArchive(file);
+                                    Translator.ImportResults results = translator.importArchive(file);
                                     if(listener != null) {
-                                        listener.onReceivedTargetTranslations(server, targetTranslationSlugs);
+                                        listener.onReceivedTargetTranslations(server, results);
                                     }
                                 } catch (Exception e) {
                                     e.printStackTrace();
@@ -409,7 +409,7 @@ public class ClientService extends NetworkService {
         void onClientServiceError(Throwable e);
 //        void onReceivedProjectList(Peer server, Model[] models);
 //        void onReceivedProject(Peer server, ProjectImport[] importStatuses);
-        void onReceivedTargetTranslations(Peer server, String[] targetTranslations);
+        void onReceivedTargetTranslations(Peer server, Translator.ImportResults results);
         void onReceivedRequest(Peer peer, Request request);
     }
 

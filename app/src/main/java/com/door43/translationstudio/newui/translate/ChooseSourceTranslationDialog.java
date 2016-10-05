@@ -102,7 +102,6 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if(mAdapter.isSelectableItem(position)) {
                     mAdapter.doClickOnItem(position);
-                    mAdapter.sort();
                 }
             }
         });
@@ -152,18 +151,21 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
 
         if(Integer.parseInt(sourceTranslation.resource.checkingLevel) < App.MIN_CHECKING_LEVEL) { // see if draft
             String format = getActivity().getResources().getString(R.string.draft_translation);
-            String newTitle = String.format(format, sourceTranslation.resource.checkingLevel, title);
+            String newTitle = String.format(format, Integer.parseInt(sourceTranslation.resource.checkingLevel), title);
             title = newTitle;
         }
 
         boolean isDownloaded = false;
+        boolean hasUpdates = false;
         try {
-            mLibrary.open(sourceTranslation.resourceContainerSlug);
+            ResourceContainer rc = mLibrary.open(sourceTranslation.resourceContainerSlug);
+            int latestModification = mLibrary.getResourceContainerLastModified(rc.language.slug, rc.project.slug, rc.resource.slug);
             isDownloaded = true;
+            hasUpdates = rc.modifiedAt < latestModification;
         } catch (Exception e) {
             e.printStackTrace();
         }
-        mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation, selected, isDownloaded));
+        mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation, selected, isDownloaded, hasUpdates));
     }
 
     /**

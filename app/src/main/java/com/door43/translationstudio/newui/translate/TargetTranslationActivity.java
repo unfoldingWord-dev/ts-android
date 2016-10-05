@@ -32,6 +32,7 @@ import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import org.unfoldingword.resourcecontainer.ContainerTools;
 import org.unfoldingword.resourcecontainer.Resource;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
@@ -107,16 +108,14 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             return;
         }
 
+        // reset cached values
+        ViewModeFragment.reset();
+
         // open used source translations by default
         if(App.getSelectedSourceTranslations(mTargetTranslation.getId()).length == 0) {
             String[] resourceContainerSlugs = mTargetTranslation.getSourceTranslations();
             for (String slug : resourceContainerSlugs) {
-                try {
-                    ResourceContainer rc = App.getLibrary().open(slug);
-                    App.addOpenSourceTranslation(mTargetTranslation.getId(), rc.slug);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                App.addOpenSourceTranslation(mTargetTranslation.getId(), slug);
             }
         }
 
@@ -328,95 +327,97 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     private void buildMenu() {
-        mMoreButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                PopupMenu moreMenu = new PopupMenu(TargetTranslationActivity.this, v);
-                ViewUtil.forcePopupMenuIcons(moreMenu);
-                moreMenu.getMenuInflater().inflate(R.menu.menu_target_translation_detail, moreMenu.getMenu());
+        if(mMoreButton != null) {
+            mMoreButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    PopupMenu moreMenu = new PopupMenu(TargetTranslationActivity.this, v);
+                    ViewUtil.forcePopupMenuIcons(moreMenu);
+                    moreMenu.getMenuInflater().inflate(R.menu.menu_target_translation_detail, moreMenu.getMenu());
 
-                // display menu item for draft translations
-                MenuItem draftsMenuItem = moreMenu.getMenu().findItem(R.id.action_drafts_available);
-                draftsMenuItem.setVisible(draftIsAvailable() && !targetTranslationHasDraft());
+                    // display menu item for draft translations
+                    MenuItem draftsMenuItem = moreMenu.getMenu().findItem(R.id.action_drafts_available);
+                    draftsMenuItem.setVisible(draftIsAvailable() && !targetTranslationHasDraft());
 
-                MenuItem searchMenuItem = moreMenu.getMenu().findItem(R.id.action_search);
-                boolean searchSupported = isSearchSupported();
-                searchMenuItem.setVisible(searchSupported);
+                    MenuItem searchMenuItem = moreMenu.getMenu().findItem(R.id.action_search);
+                    boolean searchSupported = isSearchSupported();
+                    searchMenuItem.setVisible(searchSupported);
 
-                moreMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
-                        switch (item.getItemId()) {
-                            case R.id.action_translations:
-                                finish();
-                                return true;
-                            case R.id.action_publish:
-                                Intent publishIntent = new Intent(TargetTranslationActivity.this, PublishActivity.class);
-                                publishIntent.putExtra(PublishActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
-                                publishIntent.putExtra(PublishActivity.EXTRA_CALLING_ACTIVITY, PublishActivity.ACTIVITY_TRANSLATION);
-                                startActivity(publishIntent);
-                                // TRICKY: we may move back and forth between the publisher and translation activites
-                                // so we finish to avoid filling the stack.
-                                finish();
-                                return true;
-                            case R.id.action_drafts_available:
-                                Intent intent = new Intent(TargetTranslationActivity.this, DraftActivity.class);
-                                intent.putExtra(DraftActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
-                                startActivity(intent);
-                                return true;
-                            case R.id.action_backup:
-                                FragmentTransaction backupFt = getFragmentManager().beginTransaction();
-                                Fragment backupPrev = getFragmentManager().findFragmentByTag(BackupDialog.TAG);
-                                if (backupPrev != null) {
-                                    backupFt.remove(backupPrev);
-                                }
-                                backupFt.addToBackStack(null);
+                    moreMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem item) {
+                            switch (item.getItemId()) {
+                                case R.id.action_translations:
+                                    finish();
+                                    return true;
+                                case R.id.action_publish:
+                                    Intent publishIntent = new Intent(TargetTranslationActivity.this, PublishActivity.class);
+                                    publishIntent.putExtra(PublishActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                                    publishIntent.putExtra(PublishActivity.EXTRA_CALLING_ACTIVITY, PublishActivity.ACTIVITY_TRANSLATION);
+                                    startActivity(publishIntent);
+                                    // TRICKY: we may move back and forth between the publisher and translation activites
+                                    // so we finish to avoid filling the stack.
+                                    finish();
+                                    return true;
+                                case R.id.action_drafts_available:
+                                    Intent intent = new Intent(TargetTranslationActivity.this, DraftActivity.class);
+                                    intent.putExtra(DraftActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                                    startActivity(intent);
+                                    return true;
+                                case R.id.action_backup:
+                                    FragmentTransaction backupFt = getFragmentManager().beginTransaction();
+                                    Fragment backupPrev = getFragmentManager().findFragmentByTag(BackupDialog.TAG);
+                                    if (backupPrev != null) {
+                                        backupFt.remove(backupPrev);
+                                    }
+                                    backupFt.addToBackStack(null);
 
-                                BackupDialog backupDialog = new BackupDialog();
-                                Bundle args = new Bundle();
-                                args.putString(BackupDialog.ARG_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
-                                backupDialog.setArguments(args);
-                                backupDialog.show(backupFt, BackupDialog.TAG);
-                                return true;
-                            case R.id.action_print:
-                                FragmentTransaction printFt = getFragmentManager().beginTransaction();
-                                Fragment printPrev = getFragmentManager().findFragmentByTag("printDialog");
-                                if (printPrev != null) {
-                                    printFt.remove(printPrev);
-                                }
-                                printFt.addToBackStack(null);
+                                    BackupDialog backupDialog = new BackupDialog();
+                                    Bundle args = new Bundle();
+                                    args.putString(BackupDialog.ARG_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                                    backupDialog.setArguments(args);
+                                    backupDialog.show(backupFt, BackupDialog.TAG);
+                                    return true;
+                                case R.id.action_print:
+                                    FragmentTransaction printFt = getFragmentManager().beginTransaction();
+                                    Fragment printPrev = getFragmentManager().findFragmentByTag("printDialog");
+                                    if (printPrev != null) {
+                                        printFt.remove(printPrev);
+                                    }
+                                    printFt.addToBackStack(null);
 
-                                PrintDialog printDialog = new PrintDialog();
-                                Bundle printArgs = new Bundle();
-                                printArgs.putString(PrintDialog.ARG_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
-                                printDialog.setArguments(printArgs);
-                                printDialog.show(printFt, "printDialog");
-                                return true;
-                            case R.id.action_feedback:
-                                FragmentTransaction ft = getFragmentManager().beginTransaction();
-                                Fragment prev = getFragmentManager().findFragmentByTag("bugDialog");
-                                if (prev != null) {
-                                    ft.remove(prev);
-                                }
-                                ft.addToBackStack(null);
+                                    PrintDialog printDialog = new PrintDialog();
+                                    Bundle printArgs = new Bundle();
+                                    printArgs.putString(PrintDialog.ARG_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                                    printDialog.setArguments(printArgs);
+                                    printDialog.show(printFt, "printDialog");
+                                    return true;
+                                case R.id.action_feedback:
+                                    FragmentTransaction ft = getFragmentManager().beginTransaction();
+                                    Fragment prev = getFragmentManager().findFragmentByTag("bugDialog");
+                                    if (prev != null) {
+                                        ft.remove(prev);
+                                    }
+                                    ft.addToBackStack(null);
 
-                                FeedbackDialog dialog = new FeedbackDialog();
-                                dialog.show(ft, "bugDialog");
-                                return true;
-                            case R.id.action_settings:
-                                Intent settingsIntent = new Intent(TargetTranslationActivity.this, SettingsActivity.class);
-                                startActivity(settingsIntent);
-                                return true;
-                            case R.id.action_search:
-                                setSearchBarVisibility(true);
-                                return true;
+                                    FeedbackDialog dialog = new FeedbackDialog();
+                                    dialog.show(ft, "bugDialog");
+                                    return true;
+                                case R.id.action_settings:
+                                    Intent settingsIntent = new Intent(TargetTranslationActivity.this, SettingsActivity.class);
+                                    startActivity(settingsIntent);
+                                    return true;
+                                case R.id.action_search:
+                                    setSearchBarVisibility(true);
+                                    return true;
+                            }
+                            return false;
                         }
-                        return false;
-                    }
-                });
-                moreMenu.show();
-            }
-        });
+                    });
+                    moreMenu.show();
+                }
+            });
+        }
     }
 
     /**
@@ -488,9 +489,12 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                             mSearchTimer.schedule(mSearchTimerTask, SEARCH_START_DELAY);
                         }
                     };
+
                     edit.addTextChangedListener(mSearchTextWatcher);
+                    setFocusOnTextSearchEdit();
                 } else {
                     filter(null); // clear search filter
+                    App.closeKeyboard(TargetTranslationActivity.this);
                 }
 
                 if(mSearchString != null) { // restore after rotate
@@ -525,6 +529,33 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 type.setOnItemSelectedListener(this);
             }
         }
+    }
+
+    /**
+     * this seems crazy that we have to do a delay within a delay, but it is the only thing that works
+     *   to bring up keyboard.  Guessing that it is because there is so much redrawing that is
+     *   happening on bringing up the search bar.
+     */
+    @Deprecated
+    private void setFocusOnTextSearchEdit() {
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                final EditText edit = (EditText) findViewById(R.id.search_text);
+                edit.setFocusableInTouchMode(true);
+                edit.requestFocus();
+
+                Handler hand = new Handler(Looper.getMainLooper());
+                hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        App.showKeyboard(TargetTranslationActivity.this, edit, true);
+                    }
+                });
+
+            }
+        });
     }
 
     /**
@@ -900,8 +931,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             mFragment = new FirstTabFragment();
             mFragment.setArguments(getIntent().getExtras());
             getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
-            // TODO: animate
-            // TODO: udpate menu
+            buildMenu();
         }
     }
 
