@@ -68,11 +68,21 @@
                         android:paddingRight="10dp"/>
                     <TextView
                         android:id="@+id/language_title"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="@color/dark_primary_text"
                         android:textSize="@dimen/body"
                         android:text="Afaraf (aa)"/>
+                    <TextView
+                        android:id="@+id/change_language"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/accent_dark"
+                        android:textSize="@dimen/body"
+                        android:text="@string/label_change"
+                        android:layout_marginLeft="@dimen/dialog_content_margin"
+                        android:clickable="true" />
+
                 </LinearLayout>
 
                 <LinearLayout

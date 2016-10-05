@@ -20,6 +20,7 @@ import com.door43.translationstudio.core.NativeSpeaker;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.PrintDialog;
+import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
 import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.newui.BackupDialog;
 
@@ -34,7 +35,7 @@ import org.unfoldingword.tools.taskmanager.ThreadableUI;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
+
 
 /**
  * Displays detailed information about a target translation
@@ -150,6 +151,18 @@ public class TargetTranslationInfoDialog extends DialogFragment {
                 break;
         }
         publishView.setText(statusID);
+
+        TextView changeButton = (TextView)v.findViewById(R.id.change_language);
+        changeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), NewTargetTranslationActivity.class);
+                intent.putExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                intent.putExtra(NewTargetTranslationActivity.EXTRA_CHANGE_TARGET_LANGUAGE_ONLY, true);
+                startActivity(intent);
+                dismiss();
+            }
+        });
 
         ImageButton deleteButton = (ImageButton)v.findViewById(R.id.delete_button);
         deleteButton.setOnClickListener(new View.OnClickListener() {
@@ -285,6 +298,4 @@ public class TargetTranslationInfoDialog extends DialogFragment {
         }
         return null;
     }
-
-
 }

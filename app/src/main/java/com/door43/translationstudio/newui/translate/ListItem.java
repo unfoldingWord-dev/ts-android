@@ -1,11 +1,13 @@
 package com.door43.translationstudio.newui.translate;
 
 import com.door43.translationstudio.core.ChapterTranslation;
+import com.door43.translationstudio.core.FileHistory;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.ProjectTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
+import com.door43.translationstudio.rendering.MergeConflictHandler;
 
 import org.unfoldingword.door43client.models.TargetLanguage;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
@@ -24,12 +26,14 @@ public abstract class ListItem {
     public CharSequence renderedTargetText = null;
     public TranslationFormat translationFormat;
     public boolean isComplete = false;
+    public boolean hasMergeConflicts = false;
 
     protected TargetLanguage targetLanguage;
     protected ResourceContainer sourceContainer;
     protected ProjectTranslation pt;
     protected ChapterTranslation ct;
     protected FrameTranslation ft;
+    protected FileHistory fileHistory = null;
 
     /**
      * Initializes a new list item
@@ -59,6 +63,30 @@ public abstract class ListItem {
 
     public boolean isChapterReference() {
         return !chapterSlug.equals("front") && !chapterSlug.equals("back") && chunkSlug.equals("reference");
+    }
+
+    /**
+     * Loads the file history or returns it from the cache
+     * @param targetTranslation
+     * @return
+     */
+    public FileHistory getFileHistory(TargetTranslation targetTranslation) {
+        if(this.fileHistory != null) {
+            return this.fileHistory;
+        }
+
+        FileHistory history = null;
+        if(this.isChapterReference()) {
+            history = targetTranslation.getChapterReferenceHistory(this.ct);
+        } else if(this.isChapterTitle()) {
+            history = targetTranslation.getChapterTitleHistory(this.ct);
+        } else if(this.isProjectTitle()) {
+            history = targetTranslation.getProjectTitleHistory();
+        } else if(this.isChunk()) {
+            history = targetTranslation.getFrameHistory(this.ft);
+        }
+        this.fileHistory = history;
+        return history;
     }
 
     /**
@@ -138,5 +166,6 @@ public abstract class ListItem {
                 this.isComplete = ft.isFinished();
             }
         }
+        this.hasMergeConflicts = MergeConflictHandler.isMergeConflicted(this.targetText);
     }
 }

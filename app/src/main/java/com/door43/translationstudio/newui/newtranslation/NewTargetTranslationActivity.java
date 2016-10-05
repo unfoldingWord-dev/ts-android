@@ -44,6 +44,7 @@ import java.util.List;
 public class NewTargetTranslationActivity extends BaseActivity implements TargetLanguageListFragment.OnItemClickListener, ProjectListFragment.OnItemClickListener {
 
     public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
+    public static final String EXTRA_CHANGE_TARGET_LANGUAGE_ONLY = "extra_change_target_language_only";
     public static final int RESULT_DUPLICATE = 2;
     private static final String STATE_TARGET_TRANSLATION_ID = "state_target_translation_id";
     private static final String STATE_TARGET_LANGUAGE = "state_target_language_id";
@@ -56,11 +57,19 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     private Searchable mFragment;
     private String mNewTargetTranslationId = null;
     private boolean createdNewLanguage = false;
+    private boolean mChangeTargetLanguageOnly = false;
+    private String mTargetTranslationId = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_target_translation);
+
+        Bundle extras = getIntent().getExtras();
+        if(extras != null) {
+            mTargetTranslationId = extras.getString(EXTRA_TARGET_TRANSLATION_ID, null);
+            mChangeTargetLanguageOnly = extras.getBoolean(EXTRA_CHANGE_TARGET_LANGUAGE_ONLY, false);
+        }
 
         if(savedInstanceState != null) {
             createdNewLanguage = savedInstanceState.getBoolean(STATE_NEW_LANGUAGE, false);
@@ -155,12 +164,22 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     public void onItemClick(TargetLanguage targetLanguage) {
         mSelectedTargetLanguage = targetLanguage;
 
-        // display project list
-        mFragment = new ProjectListFragment();
-        ((ProjectListFragment) mFragment).setArguments(getIntent().getExtras());
-        getFragmentManager().beginTransaction().replace(R.id.fragment_container, (ProjectListFragment) mFragment).commit();
-        // TODO: animate
-        invalidateOptionsMenu();
+        if(!mChangeTargetLanguageOnly) {
+            // display project list
+            mFragment = new ProjectListFragment();
+            ((ProjectListFragment) mFragment).setArguments(getIntent().getExtras());
+            getFragmentManager().beginTransaction().replace(R.id.fragment_container, (ProjectListFragment) mFragment).commit();
+            // TODO: animate
+            invalidateOptionsMenu();
+        } else { // just change the target language
+            Translator translator = App.getTranslator();
+            TargetTranslation targetTranslation = translator.getTargetTranslation(mTargetTranslationId);
+            String targetTranslationId = targetTranslation.getId();
+
+            targetTranslation.changeTargetLanguage(mSelectedTargetLanguage);
+            translator.normalizePath(targetTranslation);
+            finish();
+        }
     }
 
     @Override

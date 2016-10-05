@@ -1283,7 +1283,7 @@ public class TargetTranslation {
     }
 
     /**
-     * Changes the target langauge for this target translation
+     * Changes the target language for this target translation
      * This does not change the name of the directory where the target translation is stored.
      * @param targetLanguage
      */

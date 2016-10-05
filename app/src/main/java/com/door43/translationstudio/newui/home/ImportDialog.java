@@ -22,11 +22,14 @@ import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.ImportFileChooserActivity;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.DeviceNetworkAliasDialog;
 import com.door43.translationstudio.newui.ImportUsfmActivity;
 import com.door43.translationstudio.newui.Door43LoginDialog;
 import com.door43.translationstudio.newui.ShareWithPeerDialog;
+import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
+import com.door43.translationstudio.rendering.MergeConflictHandler;
 import com.door43.translationstudio.util.SdUtils;
 import com.door43.util.FileUtilities;
 import com.door43.widget.ViewUtil;
@@ -45,10 +48,12 @@ public class ImportDialog extends DialogFragment {
     private static final String STATE_SETTING_DEVICE_ALIAS = "state_setting_device_alias";
     public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
     public static final String STATE_DIALOG_MESSAGE = "state_dialog_message";
+    public static final String STATE_DIALOG_TRANSLATION_ID = "state_dialog_translationID";
     private boolean settingDeviceAlias = false;
     private boolean isDocumentFile = false;
     private eDialogShown mDialogShown = eDialogShown.NONE;
     private String mDialogMessage;
+    private String mTargetTranslationID;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -72,6 +77,7 @@ public class ImportDialog extends DialogFragment {
             settingDeviceAlias = savedInstanceState.getBoolean(STATE_SETTING_DEVICE_ALIAS, false);
             mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
             mDialogMessage = savedInstanceState.getString(STATE_DIALOG_MESSAGE, null);
+            mTargetTranslationID = savedInstanceState.getString(STATE_DIALOG_TRANSLATION_ID, null);
         }
 
         importDoor43Button.setOnClickListener(new View.OnClickListener() {
@@ -157,6 +163,10 @@ public class ImportDialog extends DialogFragment {
         switch(mDialogShown) {
             case SHOW_IMPORT_RESULTS:
                 showImportResults(mDialogMessage);
+                break;
+
+            case MERGE_CONFLICT:
+                showMergeConflict(mTargetTranslationID);
                 break;
 
             case NONE:
@@ -288,8 +298,13 @@ public class ImportDialog extends DialogFragment {
             try {
                 Logger.i(this.getClass().getName(), "Importing internal file: " + file.toString());
                 final Translator translator = App.getTranslator();
-                final String[] targetTranslationSlugs = translator.importArchive(file);
-                showImportResults(R.string.import_success, file.toString());
+                final Translator.ImportResults importResults = translator.importArchive(file);
+                if(importResults.isSuccess() && importResults.mergeConflict) {
+                    showMergeConflict(importResults.importedSlug);
+                }
+                else {
+                    showImportResults(R.string.import_success, file.toString());
+                }
             } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "Failed to import the archive", e);
                 showImportResults(R.string.import_failed, file.toString());
@@ -303,6 +318,45 @@ public class ImportDialog extends DialogFragment {
     }
 
     /**
+     * let user know there was a merge conflict
+     * @param targetTranslationID
+     */
+    public void showMergeConflict(String targetTranslationID) {
+        mDialogShown = eDialogShown.MERGE_CONFLICT;
+        mTargetTranslationID = targetTranslationID;
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                .setTitle(R.string.merge_conflict_title).setMessage(R.string.import_merge_conflict)
+                .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                        doManualMerge();
+                    }
+                }).show();
+    }
+
+    /**
+     * open review mode to let user resolve conflict
+     */
+    private void doManualMerge() {
+        // ask parent activity to navigate to a new activity
+        Intent intent = new Intent(getActivity(), TargetTranslationActivity.class);
+        Bundle args = new Bundle();
+        args.putString(App.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslationID);
+
+        MergeConflictHandler.CardLocation location = MergeConflictHandler.findFirstMergeConflict( mTargetTranslationID );
+        if(location != null) {
+            args.putString(App.EXTRA_CHAPTER_ID, location.chapterID);
+            args.putString(App.EXTRA_FRAME_ID, location.frameID);
+        }
+
+        args.putString(App.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.toString());
+        intent.putExtras(args);
+        startActivity(intent);
+        dismiss();
+    }
+
+    /**
      * import selected uri
      * @param uri
      */
@@ -312,8 +366,13 @@ public class ImportDialog extends DialogFragment {
                 Logger.i(this.getClass().getName(), "Importing SD card: " + uri);
                 final InputStream in = App.context().getContentResolver().openInputStream(uri);
                 final Translator translator = App.getTranslator();
-                final String[] targetTranslationSlugs = translator.importArchive(in);
-                showImportResults(R.string.import_success, SdUtils.getPathString(uri.toString()));
+                final Translator.ImportResults importResults = translator.importArchive(in);
+                if(importResults.isSuccess() && importResults.mergeConflict) {
+                    showMergeConflict(importResults.importedSlug); //
+                }
+                else {
+                    showImportResults(R.string.import_success, SdUtils.getPathString(uri.toString()));
+                }
             } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "Failed to import the archive", e);
                 showImportResults(R.string.import_failed, SdUtils.getPathString(uri.toString()));
@@ -358,9 +417,9 @@ public class ImportDialog extends DialogFragment {
     public void onSaveInstanceState(Bundle out) {
         out.putBoolean(STATE_SETTING_DEVICE_ALIAS, settingDeviceAlias);
         out.putInt(STATE_DIALOG_SHOWN, mDialogShown.getValue());
-        if(mDialogMessage != null) {
-            out.putString(STATE_DIALOG_MESSAGE, mDialogMessage);
-        }
+        out.putString(STATE_DIALOG_MESSAGE, mDialogMessage);
+        out.putString(STATE_DIALOG_TRANSLATION_ID, mTargetTranslationID);
+
         super.onSaveInstanceState(out);
     }
 
@@ -369,7 +428,8 @@ public class ImportDialog extends DialogFragment {
      */
     public enum eDialogShown {
         NONE(0),
-        SHOW_IMPORT_RESULTS(1);
+        SHOW_IMPORT_RESULTS(1),
+        MERGE_CONFLICT(2);
 
         private int value;
 

@@ -19,8 +19,12 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.Html;
 import android.text.Selection;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import android.view.DragEvent;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -28,6 +32,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -55,6 +60,7 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.DefaultRenderer;
+import com.door43.translationstudio.rendering.MergeConflictHandler;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.ClickableRenderingEngine;
 import com.door43.translationstudio.spannables.NoteSpan;
@@ -92,6 +98,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private static final int TAB_QUESTIONS = 2;
     public static final int HIGHLIGHT_COLOR = Color.YELLOW;
     private final Door43Client mLibrary;
+    private static final int TYPE_NO_MERGE_CONFLICT = 0;
+    private static final int TYPE_MERGE_CONFLICT = 1;
+    public static final int MERGE_CONFLICT_COLOR = R.color.warning;
+    private static final boolean GET_HEAD = true;
+    private static final boolean GET_TAIL = false;
     private final Translator mTranslator;
     private final Activity mContext;
     private final TargetTranslation mTargetTranslation;
@@ -106,10 +117,23 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private ContentValues[] mTabs = new ContentValues[0];
     private int[] mOpenResourceTab = new int[0];
     private boolean mAllowFootnote = true;
+
     private List<String> mChapters = new ArrayList<>();
     private List<String> mFilteredChapters = new ArrayList<>();
     private CharSequence filterConstraint = null;
     private TranslationFilter.FilterSubject filterSubject = null;
+
+    private boolean mMergeHeadSelected = false;
+    private boolean mMergeTailSelected = false;
+    private float mInitialTextSize = 0;
+    private int mMarginInitialLeft = 0;
+//    private boolean onBind = false;
+
+    enum DisplayState {
+        NORMAL,
+        SELECTED,
+        DESELECTED
+    }
 
     public ReviewModeAdapter(Activity context, String targetTranslationSlug, String startingChapterSlug, String startingChunkSlug, boolean openResources) {
         this.startingChapterSlug = startingChapterSlug;
@@ -137,15 +161,18 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         // TODO: there is also a map form of the toc.
         setListStartPosition(0);
-        for(Map tocChapter:(List<Map>)mSourceContainer.toc) {
-            String chapterSlug = (String)tocChapter.get("chapter");
-            this.mChapters.add(chapterSlug);
-            List<String> tocChunks = (List)tocChapter.get("chunks");
-            for(String chunkSlug:tocChunks) {
-                if(chapterSlug.equals(startingChapterSlug) && chunkSlug.equals(startingChunkSlug)) {
-                    setListStartPosition(mItems.size());
+
+        if(mSourceContainer != null) {
+            for (Map tocChapter : (List<Map>) mSourceContainer.toc) {
+                String chapterSlug = (String) tocChapter.get("chapter");
+                this.mChapters.add(chapterSlug);
+                List<String> tocChunks = (List) tocChapter.get("chunks");
+                for (String chunkSlug : tocChunks) {
+                    if (chapterSlug.equals(startingChapterSlug) && chunkSlug.equals(startingChunkSlug)) {
+                        setListStartPosition(mItems.size());
+                    }
+                    mItems.add(new ReviewListItem(chapterSlug, chunkSlug));
                 }
-                mItems.add(new ReviewListItem(chapterSlug, chunkSlug));
             }
         }
 
@@ -238,9 +265,38 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         return -1;
     }
 
+    public ListItem getItem(int position) {
+        if(position >= 0 && position < mFilteredItems.size()) {
+            return mFilteredItems.get(position);
+        }
+        return null;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        ListItem item = getItem( position );
+        if(item != null) {
+            // fetch translation from disk
+            item.loadTranslations(mSourceContainer, mTargetTranslation);
+            boolean conflicted = item.hasMergeConflicts;
+            if(conflicted) {
+                return TYPE_MERGE_CONFLICT;
+            }
+        }
+        return TYPE_NO_MERGE_CONFLICT;
+    }
+
     @Override
     public ViewHolder onCreateManagedViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_review_list_item, parent, false);
+        View v;
+        switch (viewType) {
+            case TYPE_MERGE_CONFLICT:
+                v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_review_list_item_merge_conflict, parent, false);
+                break;
+            default:
+                v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_review_list_item, parent, false);
+                break;
+        }
         ViewHolder vh = new ViewHolder(parent.getContext(), v);
         return vh;
     }
@@ -307,8 +363,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             holder.mLayoutBuildNumber = mLayoutBuildNumber;
             Typography.format(mContext, holder.mSourceBody, mSourceContainer.language.slug, mSourceContainer.language.direction);
             Typography.formatSub(mContext, holder.mTargetTitle, mTargetLanguage.slug, mTargetLanguage.direction);
-            Typography.format(mContext, holder.mTargetBody, mTargetLanguage.slug, mTargetLanguage.direction);
-            Typography.format(mContext, holder.mTargetEditableBody, mTargetLanguage.slug, mTargetLanguage.direction);
+            if(!item.hasMergeConflicts) {
+                Typography.format(mContext, holder.mTargetBody, mTargetLanguage.slug, mTargetLanguage.direction);
+                Typography.format(mContext, holder.mTargetEditableBody, mTargetLanguage.slug, mTargetLanguage.direction);
+            } else {
+                Typography.format(mContext, holder.mHeadText, mTargetLanguage.slug, mTargetLanguage.direction);
+                Typography.format(mContext, holder.mTailText, mTargetLanguage.slug, mTargetLanguage.direction);
+                Typography.format(mContext, holder.mConflictText, mTargetLanguage.slug, mTargetLanguage.direction);
+            }
         }
 //        this.onBind = false;
     }
@@ -433,6 +495,33 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         // render title
         holder.mTargetTitle.setText(item.getTargetTitle());
+
+        if(item.hasMergeConflicts) {
+            renderTargetMergeConflictCard(holder, item);
+            return;
+        }
+
+        if(item.renderedTargetText == null) {
+            renderTargetBody(item, holder);
+        }
+
+        // insert rendered text
+        if(item.isEditing) {
+            // editing mode
+            holder.mTargetEditableBody.setText(item.renderedTargetText);
+        } else {
+            // verse marker mode
+            holder.mTargetBody.setText(item.renderedTargetText);
+            holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    v.onTouchEvent(event);
+                    v.clearFocus();
+                    return true;
+                }
+            });
+            ViewUtil.makeLinksClickable(holder.mTargetBody);
+        }
 
         // set up text watcher
         holder.mEditableTextWatcher = new TextWatcher() {
@@ -578,63 +667,240 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             .show();
 
                 } else { // done button checked off
-
-                    boolean opened;
-                    if (item.isChapterReference()) {
-                        opened = mTargetTranslation.reopenChapterReference(item.chapterSlug);
-                    } else if (item.isChapterTitle()) {
-                        opened = mTargetTranslation.reopenChapterTitle(item.chapterSlug);
-                    } else if (item.isProjectTitle()) {
-                        opened = mTargetTranslation.openProjectTitle();
-                    } else {
-                        opened = mTargetTranslation.reopenFrame(item.chapterSlug, item.chunkSlug);
-                    }
-                    if (opened) {
-                        item.renderedTargetText = null;
-                        triggerNotifyDataSetChanged();
-                    } else {
-                        // TODO: 10/27/2015 notify user the frame could not be completed.
-                    }
+                    reOpenItem(item);
                 }
             }
         });
     }
 
-    private void prepareTranslationUI(final ViewHolder holder, ReviewListItem item) {
-        if(item.isEditing) {
-            final FileHistory history = item.getFileHistory(mTargetTranslation);
-            ThreadableUI thread = new ThreadableUI(mContext) {
-                @Override
-                public void onStop() {
+    /**
+     * mark item as not done
+     * @param item
+     */
+    private void reOpenItem(ListItem item) {
+        boolean opened;
+        if (item.isChapterReference()) {
+            opened = mTargetTranslation.reopenChapterReference(item.chapterSlug);
+        } else if (item.isChapterTitle()) {
+            opened = mTargetTranslation.reopenChapterTitle(item.chapterSlug);
+        } else if (item.isProjectTitle()) {
+            opened = mTargetTranslation.openProjectTitle();
+        } else {
+            opened = mTargetTranslation.reopenFrame(item.chapterSlug, item.chunkSlug);
+        }
+        if (opened) {
+            item.renderedTargetText = null;
+            notifyDataSetChanged();
+        } else {
+            // TODO: 10/27/2015 notify user the frame could not be completed.
+        }
+    }
 
-                }
+    /**
+     * initialize the target card for displaying and resolving merge conflicts
+     * @param item
+     * @param holder
+     */
+    private void renderTargetMergeConflictCard(final ViewHolder holder, final ReviewListItem item) {
 
-                @Override
-                public void run() {
-                    try {
-                        history.loadCommits();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (GitAPIException e) {
-                        e.printStackTrace();
-                    }
-                }
+        MergeConflictHandler renderer = new MergeConflictHandler();
+        int mergeConflictColor = mContext.getResources().getColor(MERGE_CONFLICT_COLOR);
+        renderer.renderMergeConflict(item.targetText, mergeConflictColor);
+        item.headText = renderer.getConflictPart(MergeConflictHandler.MERGE_HEAD_PART);
+        item.tailText = renderer.getConflictPart(MergeConflictHandler.MERGE_TAIL_PART);
+        item.isFullMergeConflict = renderer.isFullBlockMergeConflict();
+        if(item.isFullMergeConflict) { // if whole string is different, no need to highlight differing lines, so change to regular text color
+            SpannableStringBuilder span = new SpannableStringBuilder(item.headText);
+            span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_primary_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            item.headText = span;
 
-                @Override
-                public void onPostExecute() {
-                    if(history.hasNext()) {
-                        holder.mRedoButton.setVisibility(View.VISIBLE);
-                    } else {
-                        holder.mRedoButton.setVisibility(View.GONE);
-                    }
-                    if(history.hasPrevious()) {
-                        holder.mUndoButton.setVisibility(View.VISIBLE);
-                    } else {
-                        holder.mUndoButton.setVisibility(View.GONE);
-                    }
-                }
-            };
-            thread.start();
+            span = new SpannableStringBuilder(item.tailText);
+            span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_primary_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            item.tailText = span;
+        }
+
+        Typography.formatSub(mContext, holder.mHeadText, mSourceContainer.language.slug, mSourceContainer.language.direction);
+        Typography.formatSub(mContext, holder.mTailText, mSourceContainer.language.slug, mSourceContainer.language.direction);
+
+        if(mInitialTextSize == 0) { // see if we need to initialize values
+            mMarginInitialLeft = leftMargin(holder.mHeadText);
+            mInitialTextSize = holder.mHeadText.getTextSize();
+        }
+        displayMergeConflictSelectionState(false, false, holder, item);
+        holder.mConflictText.setVisibility(View.VISIBLE);
+        holder.mButtonBar.setVisibility(View.GONE);
+
+        holder.mHeadText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                displayMergeConflictSelectionState(true, false, holder, item);
+            }
+        });
+
+        holder.mTailText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                displayMergeConflictSelectionState(false, true, holder, item);
+            }
+        });
+
+        holder.mCancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                displayMergeConflictSelectionState(false, false, holder, item);
+            }
+        });
+
+        holder.mConfirmButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                CharSequence selectedText = mMergeHeadSelected ? item.headText : item.tailText;
+                applyNewCompiledText(selectedText.toString(), holder, item);
+                reOpenItem(item);
+                notifyDataSetChanged();
+            }
+        });
+
+        holder.mUndoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                undoTextInTarget(holder, (ReviewListItem) item);
+            }
+        });
+        holder.mRedoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                redoTextInTarget(holder, (ReviewListItem) item);
+            }
+        });
+
+        prepareUndoRedoUI(holder, item);
+        holder.mUndoButton.setVisibility(View.GONE);
+        holder.mRedoButton.setVisibility(View.GONE);
+    }
+
+    /**
+     * get either the head or tail merge text with highlighting
+     * @param text
+     * @param getHead
+     * @return
+     */
+    private CharSequence getMergeText(CharSequence text, boolean getHead) {
+        MergeConflictHandler renderer = new MergeConflictHandler();
+        int mergeConflictColor = mContext.getResources().getColor(MERGE_CONFLICT_COLOR);
+        renderer.renderMergeConflict(text, mergeConflictColor);
+        if(getHead) {
+            return renderer.getConflictPart(MergeConflictHandler.MERGE_HEAD_PART);
+        } else {
+            return renderer.getConflictPart(MergeConflictHandler.MERGE_TAIL_PART);
+        }
+    }
+
+    /**
+     * get the left margin for view
+     * @param v
+     * @return
+     */
+    private int leftMargin(View v) {
+        ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+        int lm = p.leftMargin;
+        return lm;
+    }
+
+    /**
+     * set merge conflict selection state
+     * @param selectHead
+     * @param selectTail
+     * @param holder
+     * @param item
+     */
+    private void displayMergeConflictSelectionState(boolean selectHead, boolean selectTail, ViewHolder holder, ReviewListItem item) {
+        mMergeHeadSelected = selectHead;
+        mMergeTailSelected = selectTail;
+
+        if(mMergeHeadSelected || mMergeTailSelected) {
+            if(mMergeHeadSelected) {
+                displayMergeSelectionState(DisplayState.SELECTED, holder.mHeadText, item.headText);
+                displayMergeSelectionState(DisplayState.DESELECTED, holder.mTailText, formatDeselected(item, GET_TAIL));
+                holder.mConflictText.setVisibility(View.GONE);
+                holder.mButtonBar.setVisibility(View.VISIBLE);
+            } else {
+                displayMergeSelectionState(DisplayState.DESELECTED, holder.mHeadText, formatDeselected(item, GET_HEAD));
+                displayMergeSelectionState(DisplayState.SELECTED, holder.mTailText, item.tailText);
+                holder.mConflictText.setVisibility(View.GONE);
+                holder.mButtonBar.setVisibility(View.VISIBLE);
+            }
+
+        } else {
+            displayMergeSelectionState(DisplayState.NORMAL, holder.mHeadText, item.headText);
+            displayMergeSelectionState(DisplayState.NORMAL, holder.mTailText, item.tailText);
+            holder.mConflictText.setVisibility(View.VISIBLE);
+            holder.mButtonBar.setVisibility(View.GONE);
+        }
+    }
+
+    private CharSequence formatDeselected(ReviewListItem item, boolean getHead) {
+        if(item.isFullMergeConflict) { // gray out everyithing
+            CharSequence text = getHead ? item.headText : item.tailText;
+            SpannableStringBuilder span = new SpannableStringBuilder(text);
+            span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_disabled_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            return span;
+        } else { // partial merge conflict, so set text gray and then highlight differing merge text
+            SpannableStringBuilder span = new SpannableStringBuilder(item.targetText);
+            span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_disabled_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            return getMergeText(span, getHead);
+        }
+    }
+
+    /**
+     * display the selection state for card
+     * @param state
+     */
+    private void displayMergeSelectionState(DisplayState state, TextView view, CharSequence text) {
+
+        SpannableStringBuilder span;
+
+        switch (state) {
+            case SELECTED:
+                setLeftRightMargins( view, 0); // shrink margins to emphasize
+                span = new SpannableStringBuilder(text);
+                // bold text to emphasize
+                view.setTextSize(mInitialTextSize * 0.9f); // grow text to emphasize
+                span.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                view.setText(span);
+                break;
+
+            case DESELECTED:
+                setLeftRightMargins( view, 2 * mMarginInitialLeft); // grow margins to de-emphasize
+                // gray out text to de-emphasize
+                view.setTextSize(mInitialTextSize * 0.7f); // shrink text to de-emphasize
+                view.setText(text);
+                break;
+
+            case NORMAL:
+            default:
+                setLeftRightMargins( view, mMarginInitialLeft); // restore original margins
+                view.setTextSize(mInitialTextSize * 0.8f); // restore initial test size
+                view.setText(text); // remove text emphasis
+                break;
+        }
+    }
+
+    /**
+     * change left and right margins to emphasize/de-emphasize
+     * @param view
+     * @param newValue
+     */
+    private void setLeftRightMargins(TextView view, int newValue) {
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+        params.leftMargin = newValue;
+        params.rightMargin = newValue;
+        view.requestLayout();
+    }
+
+    private void prepareTranslationUI(final ViewHolder holder, ListItem item) {
+        if(((ReviewListItem)item).isEditing) {
+            prepareUndoRedoUI(holder, item);
 
             boolean allowFootnote = mAllowFootnote && item.isChunk();
             holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
@@ -657,12 +923,54 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
     }
 
-    private void renderTargetBody(ReviewListItem item, ViewHolder holder) {
+    /**
+     * check history to see if we should show undo/redo buttons
+     * @param holder
+     * @param item
+     */
+    private void prepareUndoRedoUI(final ViewHolder holder, ListItem item) {
+        final FileHistory history = item.getFileHistory(mTargetTranslation);
+        ThreadableUI thread = new ThreadableUI(mContext) {
+            @Override
+            public void onStop() {
+
+            }
+
+            @Override
+            public void run() {
+                try {
+                    history.loadCommits();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (GitAPIException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onPostExecute() {
+                if(history.hasNext()) {
+                    holder.mRedoButton.setVisibility(View.VISIBLE);
+                } else {
+                    holder.mRedoButton.setVisibility(View.GONE);
+                }
+                if(history.hasPrevious()) {
+                    holder.mUndoButton.setVisibility(View.VISIBLE);
+                } else {
+                    holder.mUndoButton.setVisibility(View.GONE);
+                }
+            }
+        };
+        thread.start();
+    }
+
+    @Deprecated
+    private void renderTargetBody(ListItem item, ViewHolder holder) {
         // render body
-        if(item.isComplete || item.isEditing) {
-            item.renderedTargetText = renderSourceText(item.targetText, item.translationFormat, holder, item, true);
+        if(item.isComplete || ((ReviewListItem)item).isEditing) {
+            item.renderedTargetText = renderSourceText(item.targetText, item.translationFormat, holder, (ReviewListItem) item, true);
         } else {
-            item.renderedTargetText = renderTargetText(item.targetText, item.translationFormat, item.ft, holder, item);
+            item.renderedTargetText = renderTargetText(item.targetText, item.translationFormat, item.ft, holder, (ReviewListItem) item);
         }
     }
 
@@ -800,10 +1108,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     * save changed text
+     * save changed text to item,  first see if it needs to be compiled
      * @param s A string or editable
      * @param item
-     * @return
+     * @param holder
+     * @param item
+     * * @return
      */
     private String applyChangedText(CharSequence s, ViewHolder holder, ReviewListItem item) {
         String translation;
@@ -813,21 +1123,33 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             translation = s.toString();
         }
 
+        applyNewCompiledText(translation, holder, item);
+        return translation;
+    }
+
+    /**
+     *  save new text to item
+     * @param translation
+     * @param holder
+     * @param item
+     */
+    private void applyNewCompiledText(String translation, ViewHolder holder, ListItem item) {
+        item.targetText = translation;
         if (item.isChapterReference()) {
             mTargetTranslation.applyChapterReferenceTranslation(item.ct, translation);
         } else if (item.isChapterTitle()) {
             mTargetTranslation.applyChapterTitleTranslation(item.ct, translation);
         } else if (item.isProjectTitle()) {
             try {
-                mTargetTranslation.applyProjectTitleTranslation(s.toString());
+                mTargetTranslation.applyProjectTitleTranslation(translation);
             } catch (IOException e) {
                 Logger.e(ReviewModeAdapter.class.getName(), "Failed to save the project title translation", e);
             }
         } else if (item.isChunk()) {
             mTargetTranslation.applyFrameTranslation(item.ft, translation);
         }
-        item.renderedTargetText = renderSourceText(translation, item.translationFormat, holder, item, true);
-        return translation;
+
+        item.renderedTargetText = renderSourceText(translation, item.translationFormat, holder, (ReviewListItem) item, true);
     }
 
     /**
@@ -874,9 +1196,18 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             // TRICKY: prevent history from getting rolled back soon after the user views it
                             restartAutoCommitTimer();
                             applyChangedText(text, holder, item);
-                            holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
-                            holder.mTargetEditableBody.setText(item.renderedTargetText);
-                            holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
+
+                            if(holder.mTargetEditableBody != null) {
+                                holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
+                                holder.mTargetEditableBody.setText(item.renderedTargetText);
+                                holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
+
+                                if(item.hasMergeConflicts) {  // see if we pulled a merge conflict item
+                                    notifyDataSetChanged();
+                                }
+                            } else { // we were displaying merge conflict
+                                notifyDataSetChanged();
+                            }
                         }
                     }
                 } catch (IOException e) {
@@ -929,9 +1260,18 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             // TRICKY: prevent history from getting rolled back soon after the user views it
                             restartAutoCommitTimer();
                             applyChangedText(text, holder, item);
-                            holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
-                            holder.mTargetEditableBody.setText(item.renderedTargetText);
-                            holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
+
+                            if(holder.mTargetEditableBody != null) {
+                                holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
+                                holder.mTargetEditableBody.setText(item.renderedTargetText);
+                                holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
+
+                                if(item.hasMergeConflicts) {  // see if we pulled a merge conflict item
+                                    notifyDataSetChanged();
+                                }
+                            } else { // we were displaying merge conflict
+                                notifyDataSetChanged();
+                            }
                         }
                     }
                 } catch (IOException e) {
@@ -1777,6 +2117,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public TextView mSourceBody;
         public int currentResourceTaskId = -1;
         public int currentSourceTaskId = -1;
+        public final TextView mHeadText;
+        public final TextView mTailText;
+        public final TextView mConflictText;
+        public final LinearLayout mButtonBar;
+        public final Button mCancelButton;
+        public final Button mConfirmButton;
 
         public ViewHolder(Context context, View v) {
             super(v);
@@ -1801,6 +2147,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             mDoneSwitch = (Switch)v.findViewById(R.id.done_button);
             mTranslationTabs.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
             mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);
+            mHeadText = (TextView)v.findViewById(R.id.merge_head);
+            mTailText = (TextView)v.findViewById(R.id.merge_tail);
+            mConflictText = (TextView)v.findViewById(R.id.conflict_label);
+            mButtonBar = (LinearLayout)v.findViewById(R.id.button_bar);
+            mCancelButton = (Button) v.findViewById(R.id.cancel_button);
+            mConfirmButton = (Button)v.findViewById(R.id.confirm_button);
         }
 
         /**
@@ -1818,36 +2170,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     private static class ReviewListItem extends ListItem {
-        private boolean isEditing = false;
-        private FileHistory fileHistory = null;
+        public boolean isEditing = false;
+        public CharSequence headText = null;
+        public boolean isFullMergeConflict = false;
+        public CharSequence tailText = null;
 
         public ReviewListItem(String chapterSlug, String chunkSlug) {
             super(chapterSlug, chunkSlug);
         }
 
-        /**
-         * Loads the file history or returns it from the cache
-         * @param targetTranslation
-         * @return
-         */
-        public FileHistory getFileHistory(TargetTranslation targetTranslation) {
-            if(this.fileHistory != null) {
-                return this.fileHistory;
-            }
-
-            FileHistory history = null;
-            if(this.isChapterReference()) {
-                history = targetTranslation.getChapterReferenceHistory(this.ct);
-            } else if(this.isChapterTitle()) {
-                history = targetTranslation.getChapterTitleHistory(this.ct);
-            } else if(this.isProjectTitle()) {
-                history = targetTranslation.getProjectTitleHistory();
-            } else if(this.isChunk()) {
-                history = targetTranslation.getFrameHistory(this.ft);
-            }
-            this.fileHistory = history;
-            return history;
-        }
     }
 
     @Override

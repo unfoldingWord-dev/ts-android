@@ -1,6 +1,8 @@
 package com.door43.translationstudio.tasks;
 
 import com.door43.translationstudio.App;
+import com.door43.translationstudio.core.Translator;
+
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.io.File;
@@ -14,7 +16,7 @@ public class ImportProjectsTask extends ManagedTask {
 
     private File projectsFolder;
     private boolean overwrite;
-    private String[] importedSlugs;
+    private Translator.ImportResults importResults;
 
     public ImportProjectsTask(File projectsFolder, boolean overwrite) {
         this.projectsFolder = projectsFolder;
@@ -24,13 +26,13 @@ public class ImportProjectsTask extends ManagedTask {
     @Override
     public void start() {
         try {
-            importedSlugs = App.getTranslator().importArchive(projectsFolder, overwrite);
+            importResults = App.getTranslator().importArchive(projectsFolder, overwrite);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public String[] getImportedSlugs() {
-        return importedSlugs;
+    public Translator.ImportResults getImportResults() {
+        return importResults;
     }
 }

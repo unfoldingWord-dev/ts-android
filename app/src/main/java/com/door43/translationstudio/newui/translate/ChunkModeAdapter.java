@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.TabLayout;
@@ -21,7 +22,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Filter;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -35,11 +39,13 @@ import com.door43.translationstudio.core.LinedEditText;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.rendering.ClickableRenderingEngine;
 import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.DefaultRenderer;
+import com.door43.translationstudio.rendering.MergeConflictHandler;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.Span;
@@ -101,15 +107,18 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
         // TODO: there is also a map form of the toc.
         setListStartPosition(0);
-        for(Map tocChapter:(List<Map>)mSourceContainer.toc) {
-            String chapterSlug = (String)tocChapter.get("chapter");
-            this.mChapters.add(chapterSlug);
-            List<String> tocChunks = (List)tocChapter.get("chunks");
-            for(String chunkSlug:tocChunks) {
-                if(chapterSlug.equals(startingChapterSlug) && chunkSlug.equals(startingChunkSlug)) {
-                    setListStartPosition(mItems.size());
+
+        if(mSourceContainer != null) {
+            for (Map tocChapter : (List<Map>) mSourceContainer.toc) {
+                String chapterSlug = (String) tocChapter.get("chapter");
+                this.mChapters.add(chapterSlug);
+                List<String> tocChunks = (List) tocChapter.get("chunks");
+                for (String chunkSlug : tocChunks) {
+                    if (chapterSlug.equals(startingChapterSlug) && chunkSlug.equals(startingChunkSlug)) {
+                        setListStartPosition(mItems.size());
+                    }
+                    mItems.add(new ChunkListItem(chapterSlug, chunkSlug));
                 }
-                mItems.add(new ChunkListItem(chapterSlug, chunkSlug));
             }
         }
 
@@ -194,7 +203,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         int cardMargin = mContext.getResources().getDimensionPixelSize(R.dimen.card_margin);
         int stackedCardMargin = mContext.getResources().getDimensionPixelSize(R.dimen.stacked_card_margin);
-        ListItem item = mFilteredItems.get(position);
+        final ListItem item = mFilteredItems.get(position);
         if(((ChunkListItem)item).isTargetCardOpen) {
             // target on top
             // elevation takes precedence for API 21+
@@ -351,6 +360,37 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             Typography.format(mContext, holder.mSourceBody, mSourceContainer.language.slug, mSourceContainer.language.direction);
             Typography.formatSub(mContext, holder.mTargetTitle, mTargetLanguage.slug, mTargetLanguage.direction);
             Typography.format(mContext, holder.mTargetBody, mTargetLanguage.slug, mTargetLanguage.direction);
+        }
+
+        //////
+        // set up card UI for merge conflicts
+
+        if(item.renderedTargetText == null) {
+            item.loadTranslations(mSourceContainer, mTargetTranslation);
+        }
+
+        Button conflictButton = (Button)holder.mTargetCard.findViewById(R.id.conflict_button);
+        FrameLayout conflictButtonFrame = (FrameLayout)holder.mTargetCard.findViewById(R.id.conflict_frame);
+        if((conflictButton != null) &&(conflictButtonFrame != null)) {
+            if (item.hasMergeConflicts) {
+                conflictButton.setVisibility(View.VISIBLE);
+                conflictButtonFrame.setVisibility(View.VISIBLE);
+                holder.mTargetBody.setVisibility(View.GONE);
+                conflictButton.setOnClickListener(new View.OnClickListener() {
+                                                      @Override
+                                                      public void onClick(View v) {
+                                                          Bundle args = new Bundle();
+                                                          args.putBoolean(ChunkModeFragment.EXTRA_TARGET_OPEN, true);
+                                                          args.putString(App.EXTRA_CHAPTER_ID, item.chapterSlug);
+                                                          args.putString(App.EXTRA_FRAME_ID, item.chunkSlug);
+                                                          getListener().openTranslationMode(TranslationViewMode.REVIEW, args);
+                                                      }
+                                                  }
+                );
+            } else {
+                conflictButtonFrame.setVisibility(View.GONE);
+                holder.mTargetBody.setVisibility(View.VISIBLE);
+            }
         }
 
         ViewUtil.makeLinksClickable(holder.mSourceBody);
@@ -775,7 +815,6 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
      */
     private static class ChunkListItem extends ListItem {
         private boolean isTargetCardOpen = false;
-
         public ChunkListItem(String chapterSlug, String chunkSlug) {
             super(chapterSlug, chunkSlug);
         }

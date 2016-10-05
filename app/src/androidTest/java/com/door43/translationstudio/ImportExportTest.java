@@ -39,9 +39,9 @@ public class ImportExportTest extends InstrumentationTestCase {
         File file = new File(this.testsDir, "3.0.1_uw-obs-aa.tstudio");
         file.getParentFile().mkdirs();
         Util.copyStreamToCache(this.context, this.context.getAssets().open("exports/3.0.1_uw-obs-aa.tstudio"), file);
-        String[] importedIDs = this.translator.importArchive(file);
-        assertTrue(importedIDs.length == 1);
-        assertEquals(importedIDs[0], targetTranslationId);
+        Translator.ImportResults results = this.translator.importArchive(file);
+        assertNotNull(results.importedSlug);
+        assertEquals(results.importedSlug, targetTranslationId);
         TargetTranslation targetTranslation = this.translator.getTargetTranslation(targetTranslationId);
         assertNotNull(targetTranslation);
         assertTrue(targetTranslation.getChapterTranslations().length > 0);

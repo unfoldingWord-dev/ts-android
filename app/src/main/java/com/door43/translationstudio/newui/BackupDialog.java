@@ -606,11 +606,26 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                 }).show();
     }
 
+    /**
+     * let user know there was a merge conflict
+     * @param targetTranslation
+     */
     private void showMergeConflict(final TargetTranslation targetTranslation) {
         mDialogShown = eDialogShown.MERGE_CONFLICT;
+
+        String projectID = targetTranslation.getProjectId();
+        Project project = App.getLibrary().index().getProject(projectID, targetTranslation.getTargetLanguageName());
+        if(project == null) {
+            Logger.e(TAG, "invalid project id:" + projectID);
+            return;
+        }
+
+        String message = String.format(getResources().getString(R.string.merge_request),
+                project.name, targetTranslation.getTargetLanguageName());
+
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
-                .setTitle(R.string.backup_failed_title)
-                .setMessage(R.string.backup_rejected)
+                .setTitle(R.string.change_detected)
+                .setMessage(message)
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -628,6 +643,9 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                 }).show();
     }
 
+    /**
+     * open review mode to let user resolve conflict
+     */
     private void doManualMerge() {
         if(getActivity() instanceof TargetTranslationActivity) {
             ((TargetTranslationActivity) getActivity()).notifyDatasetChanged();
