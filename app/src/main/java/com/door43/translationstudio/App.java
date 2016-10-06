@@ -415,7 +415,7 @@ public class App extends Application {
      * @return
      */
     public static boolean isLibraryDeployed() {
-        return dbFile().exists() && dbFile().isFile() && containersDir().exists() && containersDir().isDirectory();
+        return dbFile().exists() && dbFile().isFile() && containersDir().exists() && containersDir().isDirectory() && containersDir().list().length > 0;
     }
 
     /**
