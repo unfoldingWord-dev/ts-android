@@ -187,6 +187,12 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             }
         });
 
+        if(targetTranslation.isObsProject()) {
+            LinearLayout exportToUsfmSeparator = (LinearLayout)v.findViewById(R.id.export_to_usfm_separator);
+            exportToUsfmSeparator.setVisibility(View.GONE);
+            exportToUsfmButton.setVisibility(View.GONE);
+        }
+
         backupToAppButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

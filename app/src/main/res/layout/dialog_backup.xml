@@ -115,6 +115,7 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/export_to_usfm_separator"
                 android:layout_width="match_parent"
                 android:layout_height="1px"
                 android:background="@color/list_separator" />
