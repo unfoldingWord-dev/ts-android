@@ -33,6 +33,14 @@ public class UploadBugReportTask extends ManagedTask {
         return (mResponseCode >= 200) && (mResponseCode <= 202);
     }
 
+    /**
+     * get response code from server
+     * @return
+     */
+    public int getResponseCode() {
+        return mResponseCode;
+    }
+
     @Override
     public void start() {
         mResponseCode = -1;
@@ -54,15 +62,14 @@ public class UploadBugReportTask extends ManagedTask {
             if(!isSuccess()) {
                 Logger.e(this.getClass().getName(), "Failed to upload bug report.  Code: " + mResponseCode);
             } else { // success
-                // empty the log
-                try {
-                    FileUtilities.writeStringToFile(logFile, "");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
                 Logger.i(this.getClass().getName(), "Submitted bug report");
             }
 
+            try {
+                FileUtilities.writeStringToFile(logFile, "");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         } else if(githubTokenIdentifier == 0) {
             Logger.w(this.getClass().getName(), "the github oauth2 token is missing");
         }

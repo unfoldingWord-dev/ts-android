@@ -33,6 +33,14 @@ public class UploadCrashReportTask extends ManagedTask {
         return (mResponseCode >= 200) && (mResponseCode <= 202);
     }
 
+    /**
+     * get response code from server
+     * @return
+     */
+    public int getResponseCode() {
+        return mResponseCode;
+    }
+
     @Override
     public void start() {
         mResponseCode = -1;
