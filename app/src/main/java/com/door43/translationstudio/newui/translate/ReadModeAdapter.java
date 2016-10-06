@@ -306,9 +306,11 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
 
         holder.mSourceBody.setText(mRenderedSourceBody[position]);
         ViewUtil.makeLinksClickable(holder.mSourceBody);
+
         String chapterTitle = mSourceContainer.readChunk(chapterSlug, "title").trim();
         if(chapterTitle.isEmpty()) {
-            chapterTitle = mSourceContainer.readChunk("front", "title").trim() + " " + Integer.parseInt(chapterSlug);
+            chapterTitle = mSourceContainer.readChunk("front", "title").trim();
+            if(!chapterSlug.equals("front")) chapterTitle += " " + Integer.parseInt(chapterSlug);
         }
         holder.mSourceTitle.setText(chapterTitle);
 
@@ -388,7 +390,8 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         }
 
         if (targetCardTitle.isEmpty()) { // fall back to project source title
-            targetCardTitle = mSourceContainer.readChunk("front", "title").trim() + " " + Integer.parseInt(chapterSlug);
+            targetCardTitle = mSourceContainer.readChunk("front", "title").trim();
+            if(!chapterSlug.equals("front")) targetCardTitle += " " + Integer.parseInt(chapterSlug);
         }
 
         holder.mTargetTitle.setText(targetCardTitle + " - " + mTargetLanguage.name);
