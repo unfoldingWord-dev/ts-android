@@ -1,10 +1,12 @@
 package com.door43.translationstudio.newui.translate;
 
 import android.app.DialogFragment;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,10 +23,13 @@ import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.tasks.DownloadResourceContainerTask;
+import com.door43.widget.ViewUtil;
 
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.Translation;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,15 +39,17 @@ import org.unfoldingword.tools.taskmanager.TaskManager;
 /**
  * Created by joel on 9/15/2015.
  */
-public class ChooseSourceTranslationDialog extends DialogFragment implements ManagedTask.OnFinishedListener {
+public class ChooseSourceTranslationDialog extends DialogFragment implements ManagedTask.OnFinishedListener, ManagedTask.OnProgressListener {
     public static final String ARG_TARGET_TRANSLATION_ID = "arg_target_translation_id";
     public static final String TAG = ChooseSourceTranslationDialog.class.getSimpleName();
+    private static final String TASK_DOWNLOAD_CONTAINER = "download-container";
     private Translator mTranslator;
     private TargetTranslation mTargetTranslation;
     private OnClickListener mListener;
     private ChooseSourceTranslationAdapter mAdapter;
     private Door43Client mLibrary;
     public static final boolean ENABLE_DRAFTS = false;
+    private ProgressDialog downloadDialog = null;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -77,9 +84,45 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
         listView.setAdapter(mAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
                 if(mAdapter.isSelectableItem(position)) {
-                    mAdapter.doClickOnItem(position);
+                    final ChooseSourceTranslationAdapter.ViewItem item = mAdapter.getItem(position);
+                    if(item.hasUpdates || !item.downloaded) {
+                        // download
+                        String format;
+                        if(item.hasUpdates) {
+                            format = getResources().getString(R.string.update_source_language);
+                        } else {
+                            format = getResources().getString(R.string.download_source_language);
+                        }
+                        String message = String.format(format, item.title);
+                        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                                .setTitle(R.string.title_download_source_language)
+                                .setMessage(message)
+                                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        DownloadResourceContainerTask task = new DownloadResourceContainerTask(item.sourceTranslation);
+                                        task.addOnFinishedListener(ChooseSourceTranslationDialog.this);
+                                        task.addOnProgressListener(ChooseSourceTranslationDialog.this);
+                                        task.TAG = position;
+                                        TaskManager.addTask(task, TASK_DOWNLOAD_CONTAINER);
+                                    }
+                                })
+                                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        if(item.downloaded) {
+                                            // allow selecting if downloaded already
+                                            mAdapter.toggleSelection(position);
+                                        }
+                                    }
+                                })
+                                .show();
+                    } else {
+                        // toggle
+                        mAdapter.toggleSelection(position);
+                    }
                 }
             }
         });
@@ -87,7 +130,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
                 final ChooseSourceTranslationAdapter.ViewItem item = mAdapter.getItem(position);
-                if(item.downloaded && mAdapter.getItemViewType(position) != ChooseSourceTranslationAdapter.TYPE_SEPARATOR) {
+                if(item.downloaded && mAdapter.isSelectableItem(position)) {
                     new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                             .setTitle(R.string.label_delete)
                             .setMessage(R.string.confirm_delete_project)
@@ -194,6 +237,75 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
     @Override
     public void onTaskFinished(ManagedTask task) {
         TaskManager.clearTask(task);
+        if(task instanceof DownloadResourceContainerTask) {
+            final DownloadResourceContainerTask t = (DownloadResourceContainerTask)task;
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    if(downloadDialog != null && downloadDialog.isShowing()) downloadDialog.dismiss();
+                    downloadDialog = null;
+                    if(t.success()) {
+                        mAdapter.markItemDownloaded(t.TAG);
+                    } else {
+                        Snackbar snack = Snackbar.make(ChooseSourceTranslationDialog.this.getView(), getResources().getString(R.string.download_failed), Snackbar.LENGTH_LONG);
+                        ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                        snack.show();
+                    }
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onTaskProgress(final ManagedTask task, final double progress, String message, boolean secondary) {
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                // init dialog
+                if(downloadDialog == null) {
+                    downloadDialog = new ProgressDialog(getActivity());
+                    downloadDialog.setCancelable(true);
+                    downloadDialog.setCanceledOnTouchOutside(false);
+                    downloadDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                    downloadDialog.setOnCancelListener(ChooseSourceTranslationDialog.this);
+                    downloadDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
+                    downloadDialog.setTitle(R.string.downloading);
+                }
+
+                // dismiss if finished
+                if(task.isFinished()) {
+                    downloadDialog.dismiss();
+                    return;
+                }
+
+                // progress
+                downloadDialog.setMax(task.maxProgress());
+                if(progress > 0) {
+                    downloadDialog.setIndeterminate(false);
+                    downloadDialog.setProgressStyle((int)progress);
+                    downloadDialog.setProgressNumberFormat("%1d/$2d");
+                    downloadDialog.setProgressPercentFormat(NumberFormat.getPercentInstance());
+                } else {
+                    downloadDialog.setIndeterminate(true);
+                    downloadDialog.setProgress(downloadDialog.getMax());
+                    downloadDialog.setProgressNumberFormat(null);
+                    downloadDialog.setProgressPercentFormat(null);
+                }
+
+                // show
+                if(!downloadDialog.isShowing()) downloadDialog.show();
+            }
+        });
+
+
+    }
+
+    @Override
+    public void onCancel(DialogInterface dialog) {
+        ManagedTask task = TaskManager.getTask(TASK_DOWNLOAD_CONTAINER);
+        if(task != null) TaskManager.cancelTask(task);
     }
 
     public interface OnClickListener {

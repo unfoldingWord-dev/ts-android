@@ -34,7 +34,7 @@ import java.util.TreeSet;
 /**
  * Created by joel on 9/15/2015.
  */
-public class ChooseSourceTranslationAdapter extends BaseAdapter  implements ManagedTask.OnFinishedListener,  ManagedTask.OnProgressListener {
+public class ChooseSourceTranslationAdapter extends BaseAdapter {
     public static final int TYPE_ITEM_SELECTABLE = 0;
     public static final int TYPE_SEPARATOR = 1;
     public static final int TYPE_ITEM_NEED_DOWNLOAD = 2;
@@ -46,7 +46,6 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
     private List<String> mAvailable = new ArrayList<>();
     private List<ViewItem> mSortedData = new ArrayList<>();
     private TreeSet<Integer> mSectionHeader = new TreeSet<>();
-    private ProgressDialog progressDialog;
 
     public ChooseSourceTranslationAdapter(Context context) {
         mContext = context;
@@ -78,149 +77,17 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
         return mSortedData.get(position);
     }
 
-    public void doClickOnItem(final int position) {
-        int type = getItemViewType( position);
-        final ViewItem item = getItem(position);
-        switch (type) {
-            case TYPE_ITEM_SELECTABLE:
-                toggleSelection(item, position);
-                break;
-
-            case TYPE_ITEM_NEED_DOWNLOAD:
-            case TYPE_ITEM_SELECTABLE_UPDATABLE:
-                promptToDownloadSourceLanguage(item, position);
-                break;
-        }
-    }
-
     /**
      * toggle selection state for item
-     * @param item
      * @param position
      */
-    private void toggleSelection(ViewItem item, int position) {
-        if(item.selected) {
+    public void toggleSelection(int position) {
+        if(getItem(position).selected) {
             deselect(position);
         } else {
             select(position);
         }
         sort();
-    }
-
-    /**
-     * make sure the user is aware that download will use the internet
-     * @param item
-     */
-    private void promptToDownloadSourceLanguage(final ViewItem item, final int position) {
-        final boolean hasUpdate = item.hasUpdates;
-        String format;
-        if(hasUpdate) {
-            format = mContext.getResources().getString(R.string.update_source_language);
-        } else {
-            format = mContext.getResources().getString(R.string.download_source_language);
-        }
-        String message = String.format(format, item.title);
-        new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
-                .setTitle(R.string.title_download_source_language)
-                .setMessage(message)
-                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        DownloadResourceContainerTask task = new DownloadResourceContainerTask(item.sourceTranslation);
-                        task.addOnFinishedListener(ChooseSourceTranslationAdapter.this);
-                        task.addOnProgressListener(ChooseSourceTranslationAdapter.this);
-                        task.TAG = position;
-                        TaskManager.addTask(task, item.sourceTranslation.resourceContainerSlug+ "-" + item.containerSlug);
-                        TaskManager.groupTask(task, ServerLibraryDetailFragment.DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP);
-                    }
-                })
-                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if(hasUpdate) {
-                            toggleSelection(item, position);
-                        }
-                    }
-                })
-                .show();
-    }
-
-    /**
-     * called when download is finished
-     * @param task
-     */
-    public void onTaskFinished(ManagedTask task) {
-        DownloadResourceContainerTask downloadTask = (DownloadResourceContainerTask) task;
-
-        if (progressDialog != null) {
-            progressDialog.dismiss();
-        }
-
-        if(downloadTask.isFinished() && downloadTask.success()) {
-
-            if(downloadTask.TAG >= 0 && downloadTask.TAG < getCount()) {
-                ViewItem item = getItem(downloadTask.TAG);
-                item.downloaded = true;
-            }
-
-            Handler hand = new Handler(Looper.getMainLooper());
-            hand.post(new Runnable() {
-                @Override
-                public void run() {
-                    notifyDataSetChanged();
-                }
-            });
-        }
-    }
-
-    @Override
-    public void onTaskProgress(final ManagedTask task, final double progress, final String message, final boolean secondary) {
-        Handler hand = new Handler(Looper.getMainLooper());
-        hand.post(new Runnable() {
-            @Override
-            public void run() {
-                if (task.isFinished()) {
-                    if (progressDialog != null) {
-                        progressDialog.dismiss();
-                    }
-                    return;
-                }
-
-                if (progressDialog == null) {
-                    progressDialog = new ProgressDialog(mContext);
-                    progressDialog.setCancelable(false);
-                    progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                    progressDialog.setCanceledOnTouchOutside(false);
-                    progressDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
-                    progressDialog.setTitle(mContext.getResources().getString(R.string.downloading_languages));
-                    progressDialog.setMessage("");
-                }
-                progressDialog.setMax(task.maxProgress());
-                if (!progressDialog.isShowing()) {
-                    progressDialog.show();
-                }
-                if (progress == -1) {
-                    progressDialog.setIndeterminate(true);
-                    progressDialog.setProgress(progressDialog.getMax());
-                    progressDialog.setProgressNumberFormat(null);
-                    progressDialog.setProgressPercentFormat(null);
-                } else {
-                    progressDialog.setIndeterminate(false);
-                    if(secondary) {
-                        progressDialog.setSecondaryProgress((int) progress);
-                    } else {
-                        progressDialog.setProgress((int) progress);
-                    }
-                    progressDialog.setProgressNumberFormat("%1d/%2d");
-                    progressDialog.setProgressPercentFormat(NumberFormat.getPercentInstance());
-                }
-                if (!message.isEmpty()) {
-                    progressDialog.setMessage(String.format(mContext.getResources().getString(R.string.downloading_source), message));
-                } else {
-                    progressDialog.setMessage(message);
-                }
-            }
-        });
     }
 
     @Override
@@ -395,7 +262,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
     }
 
     /**
-     * Removes an item from the list
+     * Marks an item as deleted
      * @param position
      */
     public void markItemDeleted(int position) {
@@ -403,10 +270,24 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
         if(item != null) {
             item.hasUpdates = false;
             item.downloaded = false;
+            item.selected = false;
             mSelected.remove(item.containerSlug);
             if(!mAvailable.contains(item.containerSlug)) mAvailable.add(item.containerSlug);
         }
-        notifyDataSetChanged();
+        sort();
+    }
+
+    /**
+     * marks an item as downloaded
+     * @param position
+     */
+    public void markItemDownloaded(int position) {
+        ViewItem item = getItem(position);
+        if(item != null) {
+            item.hasUpdates = false;
+            item.downloaded = true;
+        }
+        sort();
     }
 
     public static class ViewHolder {

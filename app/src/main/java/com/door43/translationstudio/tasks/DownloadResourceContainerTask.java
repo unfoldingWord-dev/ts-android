@@ -28,6 +28,7 @@ public class DownloadResourceContainerTask extends ManagedTask {
     public void start() {
         publishProgress(-1, "");
         try {
+            if(interrupted()) return;
             App.getLibrary().download(translation.language.slug, translation.project.slug, translation.resource.slug);
             success = true;
         } catch (Exception e) {
