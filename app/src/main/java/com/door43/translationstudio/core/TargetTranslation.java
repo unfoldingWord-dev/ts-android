@@ -346,7 +346,10 @@ public class TargetTranslation {
         generatorJson.put(FIELD_MANIFEST_BUILD, packageInfo.versionCode);
         manifest.put(FIELD_MANIFEST_GENERATOR, generatorJson);
         manifest.put(FIELD_MANIFEST_PACKAGE_VERSION, PACKAGE_VERSION);
-        manifest.put(FIELD_MANIFEST_TARGET_LANGUAGE, targetLanguage.toJSON());
+        JSONObject targetLanguageJson = targetLanguage.toJSON();
+        targetLanguageJson.put("id", targetLanguage.slug);
+        targetLanguageJson.remove("slug");
+        manifest.put(FIELD_MANIFEST_TARGET_LANGUAGE, targetLanguageJson);
         manifest.put(FIELD_MANIFEST_FORMAT, translationFormat);
         JSONObject resourceJson = new JSONObject();
         resourceJson.put(FIELD_MANIFEST_ID, resourceSlug);

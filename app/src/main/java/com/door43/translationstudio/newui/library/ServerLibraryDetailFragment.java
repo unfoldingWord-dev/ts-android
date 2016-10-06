@@ -278,7 +278,7 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
     private List<SourceLanguage> getSourceLanguages() {
         // TRICKY: we convert the source translations to source languages so we only get
         // languages that meet the minimum checking level
-        List<Translation> sourceTranslations = mServerLibrary.index().getTranslations(mProject.slug, App.MIN_CHECKING_LEVEL, "book");
+        List<Translation> sourceTranslations = mServerLibrary.index().getTranslations(mProject.slug, App.MIN_CHECKING_LEVEL, "book", "all");
         Map<String, SourceLanguage> sourceLanguages = new HashMap<>();
         for(Translation sourceTranslation:sourceTranslations) {
             SourceLanguage sourceLanguage = mServerLibrary.index().getSourceLanguage(sourceTranslation.language.slug);

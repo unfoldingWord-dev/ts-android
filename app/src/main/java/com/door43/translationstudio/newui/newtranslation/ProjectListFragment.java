@@ -19,6 +19,8 @@ import com.door43.translationstudio.App;
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.CategoryEntry;
 
+import java.util.List;
+
 
 /**
  * Created by joel on 9/4/2015.
@@ -44,7 +46,8 @@ public class ProjectListFragment extends BaseFragment implements Searchable {
         // TODO: set up update button
 
         ListView list = (ListView) rootView.findViewById(R.id.list);
-        mAdapter = new ProjectCategoryAdapter(mLibrary.index().getProjectCategories(0, App.getDeviceLanguageCode(), null));
+        List<CategoryEntry> entries = mLibrary.index().getProjectCategories(0, App.getDeviceLanguageCode(), "all");
+        mAdapter = new ProjectCategoryAdapter(entries);
         list.setAdapter(mAdapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -54,7 +57,7 @@ public class ProjectListFragment extends BaseFragment implements Searchable {
                     mListener.onItemClick(category.slug);
                 } else {
                     // TODO: we need to display another back arrow to back up a level in the categories
-                    mAdapter.changeData(mLibrary.index().getProjectCategories(category.id, App.getDeviceLanguageCode(), null));
+                    mAdapter.changeData(mLibrary.index().getProjectCategories(category.id, App.getDeviceLanguageCode(), "all"));
 
                     updateIcon.setVisibility(View.GONE);
                 }

@@ -202,7 +202,6 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                 e.printStackTrace();
             }
             TranslationFormat format = TranslationFormat.parse(resourceContainer.contentMimeType);
-//            SourceTranslation sourceTranslation = App.getLibrary().getDefaultSourceTranslation(projectId, sourceLanguage.getId());
             final TargetTranslation targetTranslation = App.getTranslator().createTargetTranslation(App.getProfile().getNativeSpeaker(), mSelectedTargetLanguage, projectId, TranslationType.TEXT, resourceSlug, format);
             if(targetTranslation != null) {
                 // deploy custom language code request to the translation
