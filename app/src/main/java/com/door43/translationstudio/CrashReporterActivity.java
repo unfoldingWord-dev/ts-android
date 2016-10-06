@@ -184,7 +184,21 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
                 TaskManager.addTask(newTask, UploadCrashReportTask.TASK_ID);
             }
         } else if(task instanceof UploadCrashReportTask) {
-            openSplash();
+            boolean success = ((UploadCrashReportTask) task).isSuccess();
+            if(success) {
+              openSplash();
+            } else { // upload failed
+                hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        new AlertDialog.Builder(CrashReporterActivity.this, R.style.AppTheme_Dialog)
+                                .setTitle(R.string.upload_failed)
+                                .setMessage(R.string.upload_crash_report_failed)
+                                .setPositiveButton(R.string.label_ok, null)
+                                .show();
+                    }
+                });
+            }
         }
     }
 

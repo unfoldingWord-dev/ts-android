@@ -880,4 +880,6 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="import_merge_conflict">Merge conflict on Import - Click OK to resolve</string>
     <string name="label_change">change</string>
     <string name="upload_failed_label">Upload Failed!</string>
+    <string name="upload_feedback_failed">Upload of feedback failed</string>
+    <string name="upload_crash_report_failed">Upload of crash report failed</string>
 </resources>

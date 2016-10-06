@@ -133,6 +133,12 @@ public class FeedbackDialog extends DialogFragment implements ManagedTask.OnFini
         mLoadingLayout.setVisibility(View.VISIBLE);
     }
 
+    private void hideLoadingUI() {
+        mFormLayout.setVisibility(View.VISIBLE);
+        mControlsLayout.setVisibility(View.VISIBLE);
+        mLoadingLayout.setVisibility(View.GONE);
+    }
+
     @Override
     public void onTaskFinished(ManagedTask task) {
         TaskManager.clearTask(task);
@@ -160,10 +166,25 @@ public class FeedbackDialog extends DialogFragment implements ManagedTask.OnFini
             }
         } else if(task instanceof UploadBugReportTask) {
             boolean success = ((UploadBugReportTask) task).isSuccess();
-            Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), success ? R.string.success : R.string.upload_failed_label, Snackbar.LENGTH_LONG);
-            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-            snack.show();
-            FeedbackDialog.this.dismiss();
+            if(success) {
+                Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), success ? R.string.success : R.string.upload_failed_label, Snackbar.LENGTH_LONG);
+                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                snack.show();
+                FeedbackDialog.this.dismiss();
+            } else { // upload failed
+                Handler hand = new Handler(Looper.getMainLooper());
+                hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        hideLoadingUI();
+                        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                                .setTitle(R.string.upload_failed)
+                                .setMessage(R.string.upload_feedback_failed)
+                                .setPositiveButton(R.string.label_ok, null)
+                                .show();
+                    }
+                });
+            }
         }
     }
 
