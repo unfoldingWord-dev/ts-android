@@ -21,6 +21,7 @@ import android.view.inputmethod.InputMethodManager;
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.SourceLanguage;
 import org.unfoldingword.door43client.models.TargetLanguage;
+import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.ContainerTools;
 import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.resourcecontainer.Resource;
@@ -342,50 +343,11 @@ public class App extends Application {
     }
 
     /**
-     * Returns a list of source translations for the project that have met the minimum checking level
-     * @param projectSlug
-     * @return
-     */
-    public static List<SourceTranslation> getSourceTranslations(String projectSlug) {
-        List<SourceTranslation> translations = new ArrayList<>();
-        Door43Client library = getLibrary();
-        List<SourceLanguage> languages = library.index().getSourceLanguages(projectSlug);
-        for(SourceLanguage l:languages) {
-            List<Resource> resources = library.index().getResources(l.slug, projectSlug);
-            Project p = library.index().getProject(l.slug, projectSlug);
-            for(Resource r:resources) {
-                if(Integer.parseInt(r.checkingLevel) >= MIN_CHECKING_LEVEL) {
-                    translations.add(new SourceTranslation(l, p, r));
-                }
-            }
-        }
-        return translations;
-    }
-
-    /**
-     * Returns the source translation that represents the resource container
-     * @param resourceContainerSlug
-     * @return
-     */
-    public static SourceTranslation getSourceTranslation(String resourceContainerSlug) {
-        try {
-            String[] slugs = ContainerTools.explodeSlug(resourceContainerSlug);
-            Door43Client library = getLibrary();
-            SourceLanguage l = library.index().getSourceLanguage(slugs[0]);
-            Project p = library.index().getProject(slugs[0], slugs[1]);
-            Resource r = library.index().getResource(slugs[0], slugs[1], slugs[2]);
-            return new SourceTranslation(l, p, r);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    /**
      * Returns a list of source translations for the project that have not yet reached the minimum checking level
      * @param projectSlug
      * @return
      */
+    @Deprecated
     public static List<SourceTranslation> getDraftTranslations(String projectSlug) {
         List<SourceTranslation> translations = new ArrayList<>();
         Door43Client library = getLibrary();

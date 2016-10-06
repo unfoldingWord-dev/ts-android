@@ -43,6 +43,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
@@ -191,7 +192,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         List<ContentValues> tabContents = new ArrayList<>();
         String[] sourceTranslationIds = App.getSelectedSourceTranslations(mTargetTranslation.getId());
         for(String slug:sourceTranslationIds) {
-            SourceTranslation st = App.getSourceTranslation(slug);
+            Translation st = mLibrary.index().getTranslation(slug);
             if(st != null) {
                 ContentValues values = new ContentValues();
                 // include the resource id if there are more than one
@@ -392,7 +393,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 @Override
                 public void start() {
                     if(interrupted()) return;
-                    Log.i("TEST", "Rendering for " + getTaskId() + " : " + item.sourceText);
                     CharSequence text = renderSourceText(item.sourceText, TranslationFormat.parse(mSourceContainer.contentMimeType), holder, item, false);
                     setResult(text);
                 }
@@ -401,7 +401,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 @Override
                 public void onTaskFinished(ManagedTask task) {
                     TaskManager.clearTask(task);
-                    Log.i("TEST", "Finishing task " + task.getTaskId() + " at position " + holder.currentPosition);
                     CharSequence data = (CharSequence)task.getResult();
                     item.renderedSourceText = data;
                     if(!task.isCanceled() && data != null && position == holder.currentPosition) {
@@ -416,7 +415,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
             });
             holder.currentSourceTaskId = TaskManager.addTask(task);
-            Log.i("TEST", "Starting task " + holder.currentSourceTaskId + " for position " + position);
         } else {
             holder.mSourceBody.setText(item.renderedSourceText);
         }

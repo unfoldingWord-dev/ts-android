@@ -3,6 +3,7 @@ package com.door43.translationstudio.tasks;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.core.SourceTranslation;
 
+import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 /**
@@ -10,7 +11,7 @@ import org.unfoldingword.tools.taskmanager.ManagedTask;
  */
 
 public class DownloadResourceContainerTask extends ManagedTask {
-    public final SourceTranslation translation;
+    public final Translation translation;
 
     /**
      * For keeping track of who this task is being performed for
@@ -19,7 +20,7 @@ public class DownloadResourceContainerTask extends ManagedTask {
 
     private boolean success = false;
 
-    public DownloadResourceContainerTask(SourceTranslation translation) {
+    public DownloadResourceContainerTask(Translation translation) {
         this.translation = translation;
     }
 

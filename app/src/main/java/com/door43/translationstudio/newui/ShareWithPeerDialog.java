@@ -21,6 +21,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
@@ -575,7 +576,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
         // build name list
         Translator translator = App.getTranslator();
         TargetTranslation targetTranslation = translator.getTargetTranslation(importResults.importedSlug);
-        SourceTranslation st = App.getSourceTranslation(targetTranslation.getId());
+        Translation st = App.getLibrary().index().getTranslation(targetTranslation.getId());
 
         String tempName;
         if(st != null) {

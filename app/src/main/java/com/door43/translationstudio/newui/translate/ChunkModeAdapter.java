@@ -30,6 +30,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 
 import com.door43.translationstudio.App;
@@ -133,7 +134,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         List<ContentValues> tabContents = new ArrayList<>();
         String[] sourceTranslationIds = App.getSelectedSourceTranslations(mTargetTranslation.getId());
         for(String slug:sourceTranslationIds) {
-            SourceTranslation st = App.getSourceTranslation(slug);
+            Translation st = mLibrary.index().getTranslation(slug);
             if(st != null) {
                 ContentValues values = new ContentValues();
                 // include the resource id if there are more than one

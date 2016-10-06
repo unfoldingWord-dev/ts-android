@@ -50,6 +50,7 @@ import java.util.concurrent.LinkedTransferQueue;
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.SourceLanguage;
 import org.unfoldingword.door43client.models.TargetLanguage;
+import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 
 
@@ -159,7 +160,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         List<ContentValues> tabContents = new ArrayList<>();
         String[] sourceTranslationSlugs = App.getSelectedSourceTranslations(mTargetTranslation.getId());
         for(String slug:sourceTranslationSlugs) {
-            SourceTranslation st = App.getSourceTranslation(slug);
+            Translation st = mLibrary.index().getTranslation(slug);
             if(st != null) {
                 ContentValues values = new ContentValues();
                 values.put("title", st.language.name + " " + st.resource.slug.toUpperCase());

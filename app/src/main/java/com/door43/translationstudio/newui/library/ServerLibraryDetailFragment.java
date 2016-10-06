@@ -26,6 +26,7 @@ import com.door43.translationstudio.tasks.DownloadSourceLanguageTask;
 import com.door43.translationstudio.App;
 
 import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
@@ -277,9 +278,9 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
     private List<SourceLanguage> getSourceLanguages() {
         // TRICKY: we convert the source translations to source languages so we only get
         // languages that meet the minimum checking level
-        List<SourceTranslation> sourceTranslations = App.getSourceTranslations(mProject.slug);
+        List<Translation> sourceTranslations = mServerLibrary.index().getTranslations(mProject.slug, App.MIN_CHECKING_LEVEL, "book");
         Map<String, SourceLanguage> sourceLanguages = new HashMap<>();
-        for(SourceTranslation sourceTranslation:sourceTranslations) {
+        for(Translation sourceTranslation:sourceTranslations) {
             SourceLanguage sourceLanguage = mServerLibrary.index().getSourceLanguage(sourceTranslation.language.slug);
             // TRICKY: a source language could be represented several times due to multiple resources
             if(!sourceLanguages.containsKey(sourceLanguage.slug)) {

@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
@@ -50,7 +51,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     private Translator mTranslator;
     private Door43Client mLibrary;
     private GestureDetector mGesture;
-    private SourceTranslation mSourceTranslation = null;
+    private Translation mSourceTranslation = null;
     private static ResourceContainer mSourceContainer = null;
 
     /**
@@ -91,7 +92,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
 
         try {
             String sourceTranslationSlug = App.getSelectedSourceTranslationId(targetTranslationSlug);
-            mSourceTranslation = App.getSourceTranslation(sourceTranslationSlug);
+            mSourceTranslation = mLibrary.index().getTranslation(sourceTranslationSlug);
             if(mSourceTranslation == null) App.removeOpenSourceTranslation(targetTranslationSlug, sourceTranslationSlug);
         } catch (Exception e) {
             e.printStackTrace();
@@ -457,7 +458,6 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     @Override
     public void onSourceTranslationTabClick(String sourceTranslationId) {
         App.setSelectedSourceTranslation(mTargetTranslation.getId(), sourceTranslationId);
-        App.getSourceTranslation(sourceTranslationId);
         openResourceContainer(sourceTranslationId);
     }
 
@@ -493,14 +493,14 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         if(sourceTranslationIds.size() > 0) {
             // save open source language tabs
             for(String slug:sourceTranslationIds) {
-                ResourceContainer rc = null;
+                Translation t = mLibrary.index().getTranslation(slug);
+                int modifiedAt = mLibrary.getResourceContainerLastModified(t.language.slug, t.project.slug, t.resource.slug);
                 try {
-                    rc = mLibrary.open(slug);
                     App.addOpenSourceTranslation(targetTranslationId, slug);
                     TargetTranslation targetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
                     if (targetTranslation != null) {
                         try {
-                            targetTranslation.addSourceTranslation(rc);
+                            targetTranslation.addSourceTranslation(t, modifiedAt);
                         } catch (JSONException e) {
                             Logger.e(this.getClass().getName(), "Failed to record source translation (" + slug + ") usage in the target translation " + targetTranslation.getId(), e);
                         }

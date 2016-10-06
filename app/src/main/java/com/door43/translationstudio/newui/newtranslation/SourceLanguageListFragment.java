@@ -16,6 +16,7 @@ import com.door43.translationstudio.newui.BaseFragment;
 
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.SourceLanguage;
+import org.unfoldingword.door43client.models.Translation;
 
 import java.util.HashMap;
 import java.util.List;
@@ -45,9 +46,9 @@ public class SourceLanguageListFragment extends BaseFragment implements Searchab
 
         // TRICKY: we convert the source translations to source languages so we only get
         // languages that meet the minimum checking level
-        List<SourceTranslation> sourceTranslations = App.getSourceTranslations(projectId);
+        List<Translation> sourceTranslations = mLibrary.index().getTranslations(projectId, App.MIN_CHECKING_LEVEL, "book");
         Map<String, SourceLanguage> sourceLanguages = new HashMap<>();
-        for(SourceTranslation sourceTranslation:sourceTranslations) {
+        for(Translation sourceTranslation:sourceTranslations) {
             SourceLanguage sourceLanguage = mLibrary.index().getSourceLanguage(sourceTranslation.language.slug);
             // TRICKY: a source language could be represented several times due to multiple resources
             if(!sourceLanguages.containsKey(sourceLanguage.slug)) {

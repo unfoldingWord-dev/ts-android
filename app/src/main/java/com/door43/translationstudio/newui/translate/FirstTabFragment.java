@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.resourcecontainer.Resource;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
@@ -123,14 +124,14 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
         if(sourceTranslationIds.size() > 0) {
             // save open source language tabs
             for(String slug:sourceTranslationIds) {
-                ResourceContainer rc = null;
+                Translation t = mLibrary.index().getTranslation(slug);
+                int modifiedAt = mLibrary.getResourceContainerLastModified(t.language.slug, t.project.slug, t.resource.slug);
                 try {
-                    rc = mLibrary.open(slug);
                     App.addOpenSourceTranslation(targetTranslationId, slug);
                     TargetTranslation targetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
                     if (targetTranslation != null) {
                         try {
-                            targetTranslation.addSourceTranslation(rc);
+                            targetTranslation.addSourceTranslation(t, modifiedAt);
                         } catch (JSONException e) {
                             Logger.e(this.getClass().getName(), "Failed to record source translation (" + slug + ") usage in the target translation " + targetTranslation.getId(), e);
                         }

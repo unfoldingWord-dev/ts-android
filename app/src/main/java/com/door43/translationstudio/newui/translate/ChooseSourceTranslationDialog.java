@@ -1,7 +1,11 @@
 package com.door43.translationstudio.newui.translate;
 
 import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,24 +19,22 @@ import android.widget.ListView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 
 import org.unfoldingword.door43client.Door43Client;
-import org.unfoldingword.door43client.models.SourceLanguage;
-import org.unfoldingword.resourcecontainer.ResourceContainer;
-import org.unfoldingword.tools.logger.Logger;
+import org.unfoldingword.door43client.models.Translation;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.unfoldingword.resourcecontainer.Resource;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 
 /**
  * Created by joel on 9/15/2015.
  */
-public class ChooseSourceTranslationDialog extends DialogFragment {
+public class ChooseSourceTranslationDialog extends DialogFragment implements ManagedTask.OnFinishedListener {
     public static final String ARG_TARGET_TRANSLATION_ID = "arg_target_translation_id";
     public static final String TAG = ChooseSourceTranslationDialog.class.getSimpleName();
     private Translator mTranslator;
@@ -71,30 +73,6 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
 
         mAdapter = new ChooseSourceTranslationAdapter(getActivity());
 
-        // add selected source translations
-        String[] resourceContainerSlugs = App.getSelectedSourceTranslations(mTargetTranslation.getId());
-        for(String slug:resourceContainerSlugs) {
-            try {
-                ResourceContainer rc = mLibrary.open(slug);
-                addSourceTranslation(new SourceTranslation(rc), true);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        List<SourceTranslation> availableSourceTranslations = App.getSourceTranslations(mTargetTranslation.getProjectId());
-        for(SourceTranslation sourceTranslation:availableSourceTranslations) {
-            addSourceTranslation(sourceTranslation, false);
-        }
-
-        if(ENABLE_DRAFTS) {
-            List<SourceTranslation> draftSourceTranslations = App.getDraftTranslations(mTargetTranslation.getProjectId());
-            for(SourceTranslation sourceTranslation:draftSourceTranslations) {
-                addSourceTranslation(sourceTranslation, false);
-            }
-        }
-        mAdapter.sort();
-
         ListView listView = (ListView) v.findViewById(R.id.list);
         listView.setAdapter(mAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -103,6 +81,28 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
                 if(mAdapter.isSelectableItem(position)) {
                     mAdapter.doClickOnItem(position);
                 }
+            }
+        });
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+                final ChooseSourceTranslationAdapter.ViewItem item = mAdapter.getItem(position);
+                if(item.downloaded && mAdapter.getItemViewType(position) != ChooseSourceTranslationAdapter.TYPE_SEPARATOR) {
+                    new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                            .setTitle(R.string.label_delete)
+                            .setMessage(R.string.confirm_delete_project)
+                            .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    mLibrary.delete(item.containerSlug);
+                                    mAdapter.markItemDeleted(position);
+                                }
+                            })
+                            .setNegativeButton(R.string.menu_cancel, null)
+                            .show();
+                    return true;
+                }
+                return false;
             }
         });
 
@@ -127,7 +127,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
                     if(mAdapter.isSelectableItem(i)) {
                         ChooseSourceTranslationAdapter.ViewItem item = mAdapter.getItem(i);
                         if(item.selected) {
-                            resourceContainerSlugs.add(item.id);
+                            resourceContainerSlugs.add(item.containerSlug);
                         }
                     }
                 }
@@ -138,7 +138,30 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
             }
         });
 
+        loadData();
+
         return v;
+    }
+
+    private void loadData() {
+        ManagedTask task = new ManagedTask() {
+            @Override
+            public void start() {
+                // add selected source translations
+                String[] sourceTranslationSlugs = App.getSelectedSourceTranslations(mTargetTranslation.getId());
+                for(String slug:sourceTranslationSlugs) {
+                    Translation st = mLibrary.index().getTranslation(slug);
+                    if(st != null) addSourceTranslation(st, true);
+                }
+
+                List<Translation> availableTranslations = mLibrary.index().getTranslations(mTargetTranslation.getProjectId(), App.MIN_CHECKING_LEVEL, "book");
+                for(Translation sourceTranslation:availableTranslations) {
+                    addSourceTranslation(sourceTranslation, false);
+                }
+            }
+        };
+        task.addOnFinishedListener(this);
+        TaskManager.addTask(task);
     }
 
     /**
@@ -146,26 +169,18 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
      * @param sourceTranslation
      * @param selected
      */
-    private void addSourceTranslation(SourceTranslation sourceTranslation, boolean selected) {
-        String title = sourceTranslation.language.name + " - " + sourceTranslation.resource.name;
+    private void addSourceTranslation(final Translation sourceTranslation, final boolean selected) {
+        final String title = sourceTranslation.language.name + " - " + sourceTranslation.resource.name;
 
-        if(Integer.parseInt(sourceTranslation.resource.checkingLevel) < App.MIN_CHECKING_LEVEL) { // see if draft
-            String format = getActivity().getResources().getString(R.string.draft_translation);
-            String newTitle = String.format(format, Integer.parseInt(sourceTranslation.resource.checkingLevel), title);
-            title = newTitle;
-        }
-
-        boolean isDownloaded = false;
-        boolean hasUpdates = false;
-        try {
-            ResourceContainer rc = mLibrary.open(sourceTranslation.resourceContainerSlug);
-            int latestModification = mLibrary.getResourceContainerLastModified(rc.language.slug, rc.project.slug, rc.resource.slug);
-            isDownloaded = true;
-            hasUpdates = rc.modifiedAt < latestModification;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation, selected, isDownloaded, hasUpdates));
+        final boolean isDownloaded = mLibrary.exists(sourceTranslation.resourceContainerSlug);
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation, selected, isDownloaded));
+                mAdapter.sort();
+            }
+        });
     }
 
     /**
@@ -174,6 +189,11 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
      */
     public void setOnClickListener(OnClickListener listener) {
         mListener = listener;
+    }
+
+    @Override
+    public void onTaskFinished(ManagedTask task) {
+        TaskManager.clearTask(task);
     }
 
     public interface OnClickListener {

@@ -15,12 +15,12 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.newui.library.ServerLibraryDetailFragment;
 import com.door43.translationstudio.tasks.DownloadResourceContainerTask;
 import com.door43.widget.ViewUtil;
 
-import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.Translation;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
@@ -63,12 +63,12 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
      * @param item
      */
     public void addItem(final ViewItem item) {
-        if(!mData.containsKey(item.id)) {
-            mData.put(item.id, item);
+        if(!mData.containsKey(item.containerSlug)) {
+            mData.put(item.containerSlug, item);
             if(item.selected  && item.downloaded) {
-                mSelected.add(item.id);
+                mSelected.add(item.containerSlug);
             } else {
-                mAvailable.add(item.id);
+                mAvailable.add(item.containerSlug);
             }
         }
     }
@@ -130,7 +130,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
                         task.addOnFinishedListener(ChooseSourceTranslationAdapter.this);
                         task.addOnProgressListener(ChooseSourceTranslationAdapter.this);
                         task.TAG = position;
-                        TaskManager.addTask(task, item.sourceTranslation.resourceContainerSlug+ "-" + item.id);
+                        TaskManager.addTask(task, item.sourceTranslation.resourceContainerSlug+ "-" + item.containerSlug);
                         TaskManager.groupTask(task, ServerLibraryDetailFragment.DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP);
                     }
                 })
@@ -260,13 +260,13 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
         mSectionHeader = new TreeSet<>();
 
         // build list
-        ViewItem selectedHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.selected), null, false, false, false);
+        ViewItem selectedHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.selected), null, false, false);
         mSortedData.add(selectedHeader);
         mSectionHeader.add(mSortedData.size() - 1);
         for(String id:mSelected) {
             mSortedData.add(mData.get(id));
         }
-        ViewItem availableHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.available), null, false, false, false);
+        ViewItem availableHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.available), null, false, false);
         mSortedData.add(availableHeader);
         mSectionHeader.add(mSortedData.size() - 1);
         for(String id:mAvailable) {
@@ -276,10 +276,11 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         View v = convertView;
         ViewHolder holder = null;
         int rowType = getItemViewType(position);
+        final ViewItem item = getItem(position);
 
         if(convertView == null) {
             switch (rowType) {
@@ -313,7 +314,46 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
             holder = (ViewHolder) convertView.getTag();
         }
 
-        holder.titleView.setText(getItem(position).title);
+        // load update status
+        final ViewHolder staticHolder = holder;
+        ManagedTask oldTask = TaskManager.getTask(holder.currentTaskId);
+        TaskManager.cancelTask(oldTask);
+        TaskManager.clearTask(oldTask);
+        if(!item.checkedUpdates && !item.downloaded) {
+            ManagedTask task = new ManagedTask() {
+                @Override
+                public void start() {
+                    try {
+                        if(interrupted()) return;
+                        ResourceContainer container = App.getLibrary().open(item.containerSlug);
+                        int lastModified = App.getLibrary().getResourceContainerLastModified(container.language.slug, container.project.slug, container.resource.slug);
+                        setResult(lastModified > container.modifiedAt);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
+            task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
+                @Override
+                public void onTaskFinished(ManagedTask task) {
+                    TaskManager.clearTask(task);
+                    boolean hasUpdates = false;
+                    if(task.getResult() != null) hasUpdates = (boolean)task.getResult();
+                    item.hasUpdates = hasUpdates;
+                    if(!task.isCanceled() && position == staticHolder.currentPosition) {
+                        Handler hand = new Handler(Looper.getMainLooper());
+                        hand.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                notifyDataSetChanged();
+                            }
+                        });
+                    }
+                }
+            });
+        }
+
+        holder.titleView.setText(item.title);
         if( (rowType == TYPE_ITEM_NEED_DOWNLOAD) || (rowType == TYPE_ITEM_SELECTABLE_UPDATABLE)) {
             if(rowType == TYPE_ITEM_NEED_DOWNLOAD) {
                 holder.downloadView.setBackgroundResource(R.drawable.ic_file_download_black_24dp);
@@ -324,7 +364,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
         }
 
         if((rowType == TYPE_ITEM_SELECTABLE) || (rowType == TYPE_ITEM_SELECTABLE_UPDATABLE)){
-            if (getItem(position).selected) {
+            if (item.selected) {
                 holder.checkboxView.setBackgroundResource(R.drawable.ic_check_box_black_24dp);
                 ViewUtil.tintViewDrawable(holder.checkboxView, parent.getContext().getResources().getColor(R.color.accent));
                 // display checked
@@ -341,44 +381,61 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
     public void select(int position) {
         ViewItem item = getItem(position);
         item.selected = true;
-        mSelected.remove(item.id);
-        mAvailable.remove(item.id);
-        mSelected.add(item.id);
+        mSelected.remove(item.containerSlug);
+        mAvailable.remove(item.containerSlug);
+        mSelected.add(item.containerSlug);
     }
 
     public void deselect(int position) {
         ViewItem item = getItem(position);
         item.selected = false;
-        mSelected.remove(item.id);
-        mAvailable.remove(item.id);
-        mAvailable.add(item.id);
+        mSelected.remove(item.containerSlug);
+        mAvailable.remove(item.containerSlug);
+        mAvailable.add(item.containerSlug);
+    }
+
+    /**
+     * Removes an item from the list
+     * @param position
+     */
+    public void markItemDeleted(int position) {
+        ViewItem item = getItem(position);
+        if(item != null) {
+            item.hasUpdates = false;
+            item.downloaded = false;
+            mSelected.remove(item.containerSlug);
+            if(!mAvailable.contains(item.containerSlug)) mAvailable.add(item.containerSlug);
+        }
+        notifyDataSetChanged();
     }
 
     public static class ViewHolder {
         public TextView titleView;
         public ImageView checkboxView;
         public ImageView downloadView;
+        public Object currentTaskId;
+        public int currentPosition;
     }
 
     public static class ViewItem {
         public final String title;
-        public final String id;
-        public final SourceTranslation sourceTranslation;
+        public final String containerSlug;
+        public final Translation sourceTranslation;
         public boolean selected;
         public boolean downloaded;
         public boolean hasUpdates;
+        public boolean checkedUpdates = false;
 
-        public ViewItem(String title, SourceTranslation sourceTranslation, boolean selected, boolean downloaded, boolean hasUpdates) {
+        public ViewItem(String title, Translation sourceTranslation, boolean selected, boolean downloaded) {
             this.title = title;
             this.selected = selected;
             this.sourceTranslation = sourceTranslation;
             if(sourceTranslation != null) {
-                this.id = sourceTranslation.resourceContainerSlug;
+                this.containerSlug = sourceTranslation.resourceContainerSlug;
             } else {
-                this.id = null;
+                this.containerSlug = null;
             }
             this.downloaded = downloaded;
-            this.hasUpdates = hasUpdates;
         }
     }
 }
