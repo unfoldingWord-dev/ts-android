@@ -43,6 +43,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
     public static final String ARG_TARGET_TRANSLATION_ID = "arg_target_translation_id";
     public static final String TAG = ChooseSourceTranslationDialog.class.getSimpleName();
     private static final String TASK_DOWNLOAD_CONTAINER = "download-container";
+    private static final String TASK_INIT = "init-data";
     private Translator mTranslator;
     private TargetTranslation mTargetTranslation;
     private OnClickListener mListener;
@@ -187,24 +188,39 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
     }
 
     private void loadData() {
-        ManagedTask task = new ManagedTask() {
-            @Override
-            public void start() {
-                // add selected source translations
-                String[] sourceTranslationSlugs = App.getSelectedSourceTranslations(mTargetTranslation.getId());
-                for(String slug:sourceTranslationSlugs) {
-                    Translation st = mLibrary.index().getTranslation(slug);
-                    if(st != null) addSourceTranslation(st, true);
-                }
+        ManagedTask initTask = TaskManager.getTask(TASK_INIT);
+        if(initTask == null) {
+            // begin init
+            initTask = new ManagedTask() {
+                @Override
+                public void start() {
+                    // add selected source translations
+                    String[] sourceTranslationSlugs = App.getSelectedSourceTranslations(mTargetTranslation.getId());
+                    for (String slug : sourceTranslationSlugs) {
+                        Translation st = mLibrary.index().getTranslation(slug);
+                        if (st != null) addSourceTranslation(st, true);
+                    }
 
-                List<Translation> availableTranslations = mLibrary.index().getTranslations(mTargetTranslation.getProjectId(), App.MIN_CHECKING_LEVEL, "book");
-                for(Translation sourceTranslation:availableTranslations) {
-                    addSourceTranslation(sourceTranslation, false);
+                    List<Translation> availableTranslations = mLibrary.index().getTranslations(mTargetTranslation.getProjectId(), App.MIN_CHECKING_LEVEL, "book");
+                    for (Translation sourceTranslation : availableTranslations) {
+                        addSourceTranslation(sourceTranslation, false);
+                    }
                 }
-            }
-        };
-        task.addOnFinishedListener(this);
-        TaskManager.addTask(task);
+            };
+
+            initTask.addOnFinishedListener(this);
+            TaskManager.addTask(initTask, TASK_INIT);
+        } else {
+            // connect to existing
+            initTask.addOnFinishedListener(this);
+        }
+
+        // connect to tasks
+        ManagedTask downloadTask = TaskManager.getTask(TASK_DOWNLOAD_CONTAINER);
+        if(downloadTask != null) {
+            downloadTask.addOnProgressListener(this);
+            downloadTask.addOnFinishedListener(this);
+        }
     }
 
     /**
@@ -311,5 +327,16 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
     public interface OnClickListener {
         void onCancelTabsDialog(String targetTranslationId);
         void onConfirmTabsDialog(String targetTranslationId, List<String> sourceTranslationIds);
+    }
+
+    @Override
+    public void onDestroy() {
+        ManagedTask task = TaskManager.getTask(TASK_DOWNLOAD_CONTAINER);
+        if(task != null) {
+            task.removeOnProgressListener(this);
+            task.removeOnFinishedListener(this);
+        }
+        if(downloadDialog != null) downloadDialog.dismiss();
+        super.onDestroy();
     }
 }
