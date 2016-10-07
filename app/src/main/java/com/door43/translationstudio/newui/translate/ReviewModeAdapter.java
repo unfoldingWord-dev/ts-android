@@ -420,6 +420,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         } else {
             holder.mSourceBody.setText(item.renderedSourceText);
         }
+
+        renderTabs(holder);
     }
 
     /**
@@ -485,6 +487,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             public void onClick(View v) {
                 CharSequence selectedText = mMergeHeadSelected ? item.headText : item.tailText;
                 applyNewCompiledText(selectedText.toString(), holder, item);
+                item.hasMergeConflicts = MergeConflictHandler.isMergeConflicted(selectedText.toString());
                 reOpenItem(item);
                 notifyDataSetChanged();
             }
@@ -579,7 +582,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 FileHistory history = item.getFileHistory(mTargetTranslation);
                 if(!history.isAtHead()) {
                     history.reset();
-                    prepareTranslationUI(holder, item);
+                    loadControls(holder, item);
                 }
             }
 
@@ -610,7 +613,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             @Override
             public boolean onSingleTapUp(MotionEvent e) {
                 item.isEditing = !item.isEditing;
-                prepareTranslationUI(holder, item);
+                loadControls(holder, item);
 
                 if(item.isEditing) {
                     holder.mTargetEditableBody.requestFocus();
@@ -656,7 +659,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         });
 
-        prepareTranslationUI(holder, item);
+        loadControls(holder, item);
 
         // disable listener
         holder.mDoneSwitch.setOnCheckedChangeListener(null);
@@ -673,9 +676,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             holder.mEditButton.setVisibility(View.VISIBLE);
             holder.mDoneSwitch.setChecked(false);
         }
-
-        // display source language tabs
-        renderTabs(holder);
 
         // done buttons
         holder.mDoneSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -856,8 +856,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         view.requestLayout();
     }
 
-    private void prepareTranslationUI(final ViewHolder holder, ListItem item) {
-        if(((ReviewListItem)item).isEditing) {
+    /**
+     * Sets the correct ui state for translation controls
+     * @param holder
+     * @param item
+     */
+    private void loadControls(final ViewHolder holder, ListItem item) {
+        if(item.isEditing) {
             prepareUndoRedoUI(holder, item);
 
             boolean allowFootnote = mAllowFootnote && item.isChunk();
@@ -925,7 +930,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     @Deprecated
     private void renderTargetBody(ListItem item, ViewHolder holder) {
         // render body
-        if(item.isComplete || ((ReviewListItem)item).isEditing) {
+        if(item.isComplete || item.isEditing) {
             item.renderedTargetText = renderSourceText(item.targetText, item.translationFormat, holder, (ReviewListItem) item, true);
         } else {
             item.renderedTargetText = renderTargetText(item.targetText, item.translationFormat, item.ft, holder, (ReviewListItem) item);
@@ -1155,16 +1160,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             restartAutoCommitTimer();
                             applyChangedText(text, holder, item);
 
+                            App.closeKeyboard(mContext);
+                            item.hasMergeConflicts = MergeConflictHandler.isMergeConflicted(text);
+                            notifyDataSetChanged();
+
                             if(holder.mTargetEditableBody != null) {
                                 holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
                                 holder.mTargetEditableBody.setText(item.renderedTargetText);
                                 holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
-
-                                if(item.hasMergeConflicts) {  // see if we pulled a merge conflict item
-                                    notifyDataSetChanged();
-                                }
-                            } else { // we were displaying merge conflict
-                                notifyDataSetChanged();
                             }
                         }
                     }
@@ -1219,16 +1222,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             restartAutoCommitTimer();
                             applyChangedText(text, holder, item);
 
+                            App.closeKeyboard(mContext);
+                            item.hasMergeConflicts = MergeConflictHandler.isMergeConflicted(text);
+                            notifyDataSetChanged();
+
                             if(holder.mTargetEditableBody != null) {
                                 holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
                                 holder.mTargetEditableBody.setText(item.renderedTargetText);
                                 holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
-
-                                if(item.hasMergeConflicts) {  // see if we pulled a merge conflict item
-                                    notifyDataSetChanged();
-                                }
-                            } else { // we were displaying merge conflict
-                                notifyDataSetChanged();
                             }
                         }
                     }
@@ -2128,7 +2129,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     private static class ReviewListItem extends ListItem {
-        public boolean isEditing = false;
         public CharSequence headText = null;
         public boolean isFullMergeConflict = false;
         public CharSequence tailText = null;

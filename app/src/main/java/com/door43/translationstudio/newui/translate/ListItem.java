@@ -27,6 +27,7 @@ public abstract class ListItem {
     public TranslationFormat translationFormat;
     public boolean isComplete = false;
     public boolean hasMergeConflicts = false;
+    public boolean isEditing = false;
 
     protected TargetLanguage targetLanguage;
     protected ResourceContainer sourceContainer;
