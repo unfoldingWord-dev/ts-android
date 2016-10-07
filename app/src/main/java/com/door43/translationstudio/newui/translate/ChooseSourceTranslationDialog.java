@@ -201,7 +201,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
                         if (st != null) addSourceTranslation(st, true);
                     }
 
-                    List<Translation> availableTranslations = mLibrary.index().findTranslations(null, mTargetTranslation.getProjectId(), App.MIN_CHECKING_LEVEL, 999999, "book", null);
+                    List<Translation> availableTranslations = mLibrary.index().findTranslations(null, mTargetTranslation.getProjectId(), null, "book", "all", App.MIN_CHECKING_LEVEL, -1);
                     for (Translation sourceTranslation : availableTranslations) {
                         addSourceTranslation(sourceTranslation, false);
                     }

@@ -668,15 +668,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      * @return
      */
     private boolean draftIsAvailable() {
-        String containerSlug = ContainerTools.makeSlug(mTargetTranslation.getTargetLanguageId(), mTargetTranslation.getProjectId(), mTargetTranslation.getResourceSlug());
-        if(!mTargetTranslation.getResourceSlug().equals(Resource.REGULAR_SLUG)) {
-            // non-regular translations must have an exact match
-            return App.getLibrary().index().getTranslation(containerSlug) != null;
-        } else {
-            // TRICKY: right we we only support book types with translate mode all
-            List<Translation> draftTranslations = App.getLibrary().index().findTranslations(mTargetTranslation.getTargetLanguage().slug, mTargetTranslation.getProjectId(), 0, 2, "book", "all");
-            return draftTranslations.size() > 0;
-        }
+        List<Translation> draftTranslations = App.getLibrary().index().findTranslations(mTargetTranslation.getTargetLanguage().slug, mTargetTranslation.getProjectId(), null, "book", "all", 0, -1);
+        return draftTranslations.size() > 0;
     }
 
     @Override

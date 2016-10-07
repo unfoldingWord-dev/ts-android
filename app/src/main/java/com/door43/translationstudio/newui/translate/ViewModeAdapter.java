@@ -86,8 +86,8 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
      */
     public String getChapterSlug(int position) {
         int section = getSectionForPosition( position);
-        if(section >= 0) {
-            Object[] sections = getSections();
+        Object[] sections = getSections();
+        if(section >= 0 && section < sections.length) {
             return (String) sections[section];
         }
         return "";

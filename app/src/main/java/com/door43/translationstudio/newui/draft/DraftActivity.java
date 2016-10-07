@@ -58,8 +58,7 @@ public class DraftActivity extends BaseActivity implements SimpleTaskWatcher.OnF
             String targetTranslationId = extras.getString(EXTRA_TARGET_TRANSLATION_ID, null);
             mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
             if(mTargetTranslation != null) {
-                // TRICKY: for now we only support books and translate mode of all
-                draftTranslations = mLibrary.index().findTranslations(mTargetTranslation.getTargetLanguage().slug, mTargetTranslation.getProjectId(), 0, App.MIN_CHECKING_LEVEL-2, "book", "all");
+                draftTranslations = mLibrary.index().findTranslations(mTargetTranslation.getTargetLanguage().slug, mTargetTranslation.getProjectId(), null, "book", "all", 0, -1);
             } else {
                 throw new InvalidParameterException("a valid target translation id is required");
             }
@@ -72,8 +71,7 @@ public class DraftActivity extends BaseActivity implements SimpleTaskWatcher.OnF
             return;
         }
 
-        // TODO: 1/20/2016 eventually users will be forced to define which resource they are translating into as well. When that happens we'll know which draft to choose
-        // Right now users will not be able to choose between several different resources if they exist.
+        // TODO: 10/7/16 display translations in tabs so they can choose which one to import
         mDraftTranslation = draftTranslations.get(0);
 
         mRecylerView = (RecyclerView)findViewById(R.id.recycler_view);
