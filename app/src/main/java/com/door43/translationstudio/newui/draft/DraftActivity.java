@@ -18,7 +18,7 @@ import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.tasks.ImportDraftTask;
 
 import org.unfoldingword.door43client.Door43Client;
-import org.unfoldingword.resourcecontainer.Resource;
+import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
@@ -39,7 +39,8 @@ public class DraftActivity extends BaseActivity implements SimpleTaskWatcher.OnF
     private LinearLayoutManager mLayoutManager;
     private DraftAdapter mAdapter;
     private SimpleTaskWatcher taskWatcher;
-    private ResourceContainer mDraftTranslation;
+    private Translation mDraftTranslation;
+    private ResourceContainer mSourceContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,22 +52,14 @@ public class DraftActivity extends BaseActivity implements SimpleTaskWatcher.OnF
         mLibrary = App.getLibrary();
 
         // validate parameters
-        List<ResourceContainer> draftTranslations = new ArrayList<>();
+        List<Translation> draftTranslations = new ArrayList<>();
         Bundle extras = getIntent().getExtras();
         if(extras != null) {
             String targetTranslationId = extras.getString(EXTRA_TARGET_TRANSLATION_ID, null);
             mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
             if(mTargetTranslation != null) {
-                List<Resource> resources = mLibrary.index().getResources(mTargetTranslation.getTargetLanguageId(), mTargetTranslation.getProjectId());
-                for(Resource r:resources) {
-                    if(Integer.parseInt(r.checkingLevel) < App.MIN_CHECKING_LEVEL) {
-                        try {
-                            draftTranslations.add(mLibrary.open(mTargetTranslation.getTargetLanguageId(), mTargetTranslation.getProjectId(), r.slug));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
+                // TRICKY: for now we only support books and translate mode of all
+                draftTranslations = mLibrary.index().findTranslations(mTargetTranslation.getTargetLanguage().slug, mTargetTranslation.getProjectId(), 0, App.MIN_CHECKING_LEVEL-2, "book", "all");
             } else {
                 throw new InvalidParameterException("a valid target translation id is required");
             }
@@ -87,7 +80,17 @@ public class DraftActivity extends BaseActivity implements SimpleTaskWatcher.OnF
         mLayoutManager = new LinearLayoutManager(this);
         mRecylerView.setLayoutManager(mLayoutManager);
         mRecylerView.setItemAnimator(new DefaultItemAnimator());
-        mAdapter = new DraftAdapter(this, mDraftTranslation);
+        // TODO: 10/6/16 we need to open the container in a task for better performance
+        ResourceContainer rc;
+        try {
+            rc = mLibrary.open(mDraftTranslation.resourceContainerSlug);
+        } catch (Exception e) {
+            e.printStackTrace();
+            finish();
+            return;
+        }
+        mSourceContainer = rc;
+        mAdapter = new DraftAdapter(this, mSourceContainer);
         mRecylerView.setAdapter(mAdapter);
 
         taskWatcher = new SimpleTaskWatcher(this, R.string.loading);
@@ -105,7 +108,7 @@ public class DraftActivity extends BaseActivity implements SimpleTaskWatcher.OnF
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 // // TODO: 1/20/2016 use the draft from the selected tab
-                                ImportDraftTask task = new ImportDraftTask(mDraftTranslation);
+                                ImportDraftTask task = new ImportDraftTask(mSourceContainer);
                                 taskWatcher.watch(task);
                                 TaskManager.addTask(task, ImportDraftTask.TASK_ID);
                             }
@@ -147,7 +150,7 @@ public class DraftActivity extends BaseActivity implements SimpleTaskWatcher.OnF
     }
     @Override
     public void onDestroy() {
-        taskWatcher.stop();
+        if(taskWatcher != null) taskWatcher.stop();
 
         super.onDestroy();
     }

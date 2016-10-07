@@ -32,6 +32,7 @@ import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.ContainerTools;
 import org.unfoldingword.resourcecontainer.Resource;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
@@ -120,7 +121,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         }
 
         // notify user that a draft translation exists the first time actvity starts
-        if(savedInstanceState == null && draftIsAvailable() && !targetTranslationHasDraft()) {
+        // TODO: 10/6/16 only notify the user if they have not already imported this draft translation
+        if(savedInstanceState == null && draftIsAvailable()) {
             Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.draft_translation_exists, Snackbar.LENGTH_LONG)
                     .setAction(R.string.preview, new View.OnClickListener() {
                         @Override
@@ -337,7 +339,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
                     // display menu item for draft translations
                     MenuItem draftsMenuItem = moreMenu.getMenu().findItem(R.id.action_drafts_available);
-                    draftsMenuItem.setVisible(draftIsAvailable() && !targetTranslationHasDraft());
+                    draftsMenuItem.setVisible(draftIsAvailable());
 
                     MenuItem searchMenuItem = moreMenu.getMenu().findItem(R.id.action_search);
                     boolean searchSupported = isSearchSupported();
@@ -661,39 +663,20 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     /**
-     * Checks if the target translation aleady has the best draft
-     * @return
-     */
-    private boolean targetTranslationHasDraft() {
-        // TODO: in order to property determine this we need to look in the resource container for the source translation info
-//        try {
-//            Resource resource = App.getLibrary().index().getResource(mTargetTranslation.getTargetLanguageId(), mTargetTranslation.getProjectId(), mTargetTranslation.getResourceSlug());
-//            return resource != null;
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-        return false;
-    }
-
-    /**
      * Checks if a draft is available
      *
      * @return
      */
     private boolean draftIsAvailable() {
-        try {
-            if(!mTargetTranslation.getResourceSlug().equals(Resource.REGULAR_SLUG)) {
-                // non-regular translations must have an exact match
-                Resource resource = App.getLibrary().index().getResource(mTargetTranslation.getTargetLanguageId(), mTargetTranslation.getProjectId(), mTargetTranslation.getResourceSlug());
-                return resource != null;
-            } else {
-                List<Resource> resources = App.getLibrary().index().getResources(mTargetTranslation.getTargetLanguageId(), mTargetTranslation.getProjectId());
-                return resources.size() > 0;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        String containerSlug = ContainerTools.makeSlug(mTargetTranslation.getTargetLanguageId(), mTargetTranslation.getProjectId(), mTargetTranslation.getResourceSlug());
+        if(!mTargetTranslation.getResourceSlug().equals(Resource.REGULAR_SLUG)) {
+            // non-regular translations must have an exact match
+            return App.getLibrary().index().getTranslation(containerSlug) != null;
+        } else {
+            // TRICKY: right we we only support book types with translate mode all
+            List<Translation> draftTranslations = App.getLibrary().index().findTranslations(mTargetTranslation.getTargetLanguage().slug, mTargetTranslation.getProjectId(), 0, 2, "book", "all");
+            return draftTranslations.size() > 0;
         }
-        return false;
     }
 
     @Override
