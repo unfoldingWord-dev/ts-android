@@ -27,12 +27,12 @@ public class CalculateTargetTranslationProgressTask extends ManagedTask {
     @Override
     public void start() {
         String[] sourceTranslationIds = App.getSelectedSourceTranslations(targetTranslation.getId());
-        if(sourceTranslationIds.length > 0) {
+        if(sourceTranslationIds.length > 0 && library.exists(sourceTranslationIds[0])) {
             ResourceContainer container;
             try {
                 container = library.open(sourceTranslationIds[0]);
             } catch (Exception e) {
-                Logger.e("CalculateTranslationProgressTask", "Failed to load container", e);
+                Logger.e("CalculateTranslationProgressTask", "Failed to load container " + sourceTranslationIds[0], e);
                 return;
             }
 

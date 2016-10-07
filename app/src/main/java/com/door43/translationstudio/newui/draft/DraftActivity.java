@@ -71,7 +71,7 @@ public class DraftActivity extends BaseActivity implements SimpleTaskWatcher.OnF
             return;
         }
 
-        // TODO: 10/7/16 display translations in tabs so they can choose which one to import
+        // TODO: 10/7/16 display translations in tabs like in the translate modes so they can choose which one to import
         mDraftTranslation = draftTranslations.get(0);
 
         mRecylerView = (RecyclerView)findViewById(R.id.recycler_view);
