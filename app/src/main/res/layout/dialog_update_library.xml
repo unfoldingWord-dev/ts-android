@@ -60,7 +60,7 @@
                 android:focusable="true"
                 android:background="?attr/selectableItemBackground"
                 android:contextClickable="true"
-                android:layout_marginBottom="@dimen/dialog_controls_margin">
+                android:paddingBottom="@dimen/dialog_controls_margin">
 
                 <TextView
                     android:layout_width="match_parent"
@@ -93,22 +93,28 @@
                 android:background="@color/list_separator"/>
 
             <LinearLayout
+                android:id="@+id/update_source"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:clickable="true"
                 android:focusable="true"
                 android:contextClickable="true"
-                android:layout_marginBottom="@dimen/dialog_controls_margin"
+                android:background="?attr/selectableItemBackground"
+                android:paddingBottom="@dimen/dialog_controls_margin"
                 android:visibility="visible">
 
-                <Button
-                    android:id="@+id/update_source"
-                    android:text="@string/update_source"
-                    android:textAllCaps="false"
+                <TextView
                     android:layout_width="match_parent"
-                    android:gravity="left"
+                    android:layout_height="wrap_content"
+                    android:text="@string/update_source"
                     android:textColor="@color/dark_primary_text"
+                    android:focusable="false"
+                    android:clickable="false"
+                    android:textAllCaps="false"
+                    android:gravity="left"
+                    android:background="@null"
+                    android:duplicateParentState="true"
                     style="@style/Widget.Alert.Button.Secondary"/>
 
                 <TextView
@@ -129,21 +135,27 @@
                 android:background="@color/list_separator"/>
 
             <LinearLayout
+                android:id="@+id/update_all"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:clickable="true"
                 android:focusable="true"
+                android:background="?attr/selectableItemBackground"
                 android:contextClickable="true"
-                android:layout_marginBottom="@dimen/dialog_controls_margin">
+                android:paddingBottom="@dimen/dialog_controls_margin">
 
-                <Button
-                    android:id="@+id/update_all"
-                    android:text="@string/update_all"
-                    android:textAllCaps="false"
+                <TextView
                     android:layout_width="match_parent"
-                    android:gravity="left"
+                    android:layout_height="wrap_content"
+                    android:text="@string/update_all"
                     android:textColor="@color/dark_primary_text"
+                    android:focusable="false"
+                    android:clickable="false"
+                    android:textAllCaps="false"
+                    android:gravity="left"
+                    android:background="@null"
+                    android:duplicateParentState="true"
                     style="@style/Widget.Alert.Button.Secondary"/>
 
                 <TextView
