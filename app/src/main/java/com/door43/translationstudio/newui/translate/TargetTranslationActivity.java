@@ -121,8 +121,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         }
 
         // notify user that a draft translation exists the first time actvity starts
-        // TODO: 10/6/16 only notify the user if they have not already imported this draft translation
-        if(savedInstanceState == null && draftIsAvailable()) {
+        if(savedInstanceState == null && draftIsAvailable() && mTargetTranslation.numTranslated() == 0) {
             Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.draft_translation_exists, Snackbar.LENGTH_LONG)
                     .setAction(R.string.preview, new View.OnClickListener() {
                         @Override

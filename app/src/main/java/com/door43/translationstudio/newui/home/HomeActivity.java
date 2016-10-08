@@ -1,5 +1,6 @@
 package com.door43.translationstudio.newui.home;
 
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.ContentResolver;
@@ -15,6 +16,7 @@ import android.support.design.widget.Snackbar;
 import android.os.Bundle;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
@@ -27,6 +29,7 @@ import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
+import com.door43.translationstudio.EventBuffer;
 import com.door43.translationstudio.ProfileActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
@@ -55,7 +58,7 @@ import com.door43.widget.ViewUtil;
 
 import java.io.File;
 
-public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFinishedListener, WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
+public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFinishedListener, WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener, EventBuffer.OnEventListener {
     private static final int NEW_TARGET_TRANSLATION_REQUEST = 1;
     public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
     public static final String STATE_DIALOG_TRANSLATION_ID = "state_dialog_translationID";
@@ -117,7 +120,8 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                     public boolean onMenuItemClick(MenuItem item) {
                         switch (item.getItemId()) {
                             case R.id.action_update:
-                                openLibrary();
+                                UpdateLibraryDialog updateDialog = new UpdateLibraryDialog();
+                                showDialogFragment(updateDialog, UpdateLibraryDialog.TAG);
                                 return true;
                             case R.id.action_import:
                                 ImportDialog importDialog = new ImportDialog();
@@ -252,10 +256,6 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 displayImportVerification();
                 break;
 
-            case OPEN_LIBRARY:
-                openLibrary();
-                break;
-
             case MERGE_CONFLICT:
                 showMergeConflict(mTargetTranslationID);
                 break;
@@ -270,25 +270,26 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     }
 
     /**
-     * this is to fix old method which when called in onResume() would create a
-     * second dialog overlaying the first.  The first was actually not removed.
-     * Doing a commit after the remove() and starting a second FragmentTransaction
-     * seems to fix the duplicate dialog bug.
+     * Displays a dialog while replacing any duplicate dialog
      *
      * @param dialog
      * @param tag
      */
-    private void showDialogFragment(android.app.DialogFragment dialog, String tag) {
-        FragmentTransaction backupFt = getFragmentManager().beginTransaction();
-        Fragment backupPrev = getFragmentManager().findFragmentByTag(tag);
-        if (backupPrev != null) {
-            backupFt.remove(backupPrev);
-            backupFt.commit(); // apply the remove
-            backupFt = getFragmentManager().beginTransaction(); // start a new transaction
+    private void showDialogFragment(DialogFragment dialog, String tag) {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag(tag);
+        if (prev != null) {
+            ft.remove(prev);
+            // TODO: 10/7/16 I don't think we need this
+            ft.commit();
+            ft = getFragmentManager().beginTransaction();
         }
-        backupFt.addToBackStack(null);
-
-        dialog.show(backupFt, tag);
+        ft.addToBackStack(null);
+        // attach to any available event buffers
+        if(dialog instanceof EventBuffer.OnEventTalker) {
+            ((EventBuffer.OnEventTalker)dialog).eventBuffer.addOnEventListener(this);
+        }
+        dialog.show(ft, tag);
     }
 
     @Override
@@ -531,32 +532,6 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     }
 
     /**
-     * Triggers the process of opening the server library
-     */
-    private void openLibrary() {
-        mDialogShown = eDialogShown.OPEN_LIBRARY;
-        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
-                .setTitle(R.string.update_library)
-                .setIcon(R.drawable.ic_local_library_black_24dp)
-                .setMessage(R.string.use_internet_confirmation)
-                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
-                        Intent intent = new Intent(HomeActivity.this, ServerLibraryActivity.class);
-                        startActivity(intent);
-                    }
-                })
-                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
-                    }
-                })
-                .show();
-    }
-
-    /**
      * get last project opened and make sure it is still present
      * @return
      */
@@ -711,25 +686,13 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
 
         Project project = App.getLibrary().index().getProject("en", targetTranslation.getProjectId(), true);
         TargetLanguage language = App.languageFromTargetTranslation(targetTranslation);
-        if(project == null) {
-            // validate project source exists
-            Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.missing_project, Snackbar.LENGTH_LONG);
-            snack.setAction(R.string.download, new View.OnClickListener() {
+        if(project == null || language == null) {
+            Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.missing_source, Snackbar.LENGTH_LONG);
+            snack.setAction(R.string.check_for_updates, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    openLibrary();
-                }
-            });
-            snack.setActionTextColor(getResources().getColor(R.color.light_primary_text));
-            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-            snack.show();
-        } else if(language == null) {
-            // validate target language exists
-            Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.missing_language, Snackbar.LENGTH_LONG);
-            snack.setAction(R.string.download, new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    openLibrary();
+                    UpdateLibraryDialog updateDialog = new UpdateLibraryDialog();
+                    showDialogFragment(updateDialog, updateDialog.TAG);
                 }
             });
             snack.setActionTextColor(getResources().getColor(R.color.light_primary_text));
@@ -751,6 +714,14 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         out.putInt(STATE_DIALOG_SHOWN, mDialogShown.getValue());
         out.putString(STATE_DIALOG_TRANSLATION_ID, mTargetTranslationID);
         super.onSaveInstanceState(out);
+    }
+
+    @Override
+    public void onEventBufferEvent(EventBuffer.OnEventTalker talker, int tag, Bundle args) {
+        if(talker instanceof UpdateLibraryDialog) {
+            // TODO: 10/7/16 handle events from the dialog
+            Log.d("test", tag + "");
+        }
     }
 
     /**

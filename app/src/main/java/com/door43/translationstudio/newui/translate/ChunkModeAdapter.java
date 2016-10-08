@@ -394,26 +394,17 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         // flag that chunk is open for edit
 
         if (item.isChapterReference()) {
-//            Chapter chapter = mLibrary.getChapter(mSourceContainer, item.chapterSlug);
-//            if (null != chapter) {
-                mTargetTranslation.reopenChapterReference(item.chapterSlug);
-//            }
+            mTargetTranslation.reopenChapterReference(item.chapterSlug);
         } else if (item.isChapterTitle()) {
-//            Chapter chapter = mLibrary.getChapter(mSourceContainer, item.chapterSlug);
-//            if (null != chapter) {
-                mTargetTranslation.reopenChapterTitle(item.chapterSlug);
-//            }
+            mTargetTranslation.reopenChapterTitle(item.chapterSlug);
         } else if(item.isProjectTitle()) {
             mTargetTranslation.openProjectTitle();
         } else {
-//            Frame frame = mLibrary.getFrame(mSourceContainer, item.chapterSlug, item.chunkSlug);
-//            if(null != frame) {
-                mTargetTranslation.reopenFrame(item.chapterSlug, item.chunkSlug);
-//            }
+            mTargetTranslation.reopenFrame(item.chapterSlug, item.chunkSlug);
         }
 
         // set focus on edit text
-        boolean gotFocus = target.requestFocus();
+        target.requestFocus();
         InputMethodManager mgr = (InputMethodManager)
                 mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
         mgr.showSoftInput(target, InputMethodManager.SHOW_IMPLICIT);

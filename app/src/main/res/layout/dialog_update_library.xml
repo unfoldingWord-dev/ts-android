@@ -16,11 +16,34 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/update_library"
+            android:text="@string/update_options"
             android:textColor="@color/dark_primary_text"
-            android:layout_marginBottom="@dimen/dialog_content_margin"
-            android:textSize="@dimen/headline"
-            android:id="@+id/textView13" />
+            android:layout_marginBottom="@dimen/dialog_controls_margin"
+            android:textAlignment="center"
+            android:textSize="@dimen/headline" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="16dp"
+            android:paddingEnd="16dp"
+            android:paddingRight="16dp"
+            android:gravity="center">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:layout_marginEnd="5dp"
+                android:background="@drawable/ic_wifi_black_18dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/caption"
+                android:layout_gravity="center"
+                android:textColor="@color/dark_secondary_text"
+                android:text="@string/requires_internet"/>
+        </LinearLayout>
 
         <LinearLayout
             android:orientation="vertical"
@@ -29,43 +52,39 @@
             android:layout_height="match_parent">
 
             <LinearLayout
-                android:id="@+id/backup_to_cloud"
+                android:id="@+id/update_languages"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:clickable="true"
                 android:focusable="true"
+                android:background="?attr/selectableItemBackground"
                 android:contextClickable="true"
                 android:layout_marginBottom="@dimen/dialog_controls_margin">
 
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/update_languages"
+                    android:textColor="@color/dark_primary_text"
+                    android:focusable="false"
+                    android:clickable="false"
+                    android:textAllCaps="false"
+                    android:gravity="left"
+                    android:background="@null"
+                    android:duplicateParentState="true"
+                    style="@style/Widget.Alert.Button.Secondary"/>
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/backup_to_door43"
-                    android:drawableLeft="@drawable/ic_backup_secondary_24dp"
-                    android:drawableStart="@drawable/ic_backup_secondary_24dp"
-                    android:drawablePadding="10dp"
-                    android:textColor="@color/dark_primary_text"
-                    android:textAllCaps="false"
-                    style="@style/Widget.Button.Secondary"
+                    android:text="@string/time_fast"
+                    android:textColor="@color/dark_secondary_text"
                     android:focusable="false"
                     android:clickable="false"
                     android:duplicateParentState="true"
-                    android:gravity="left|center_vertical" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/tip_backup_to_door43"
-                    android:textColor="@color/dark_primary_text"
-                    android:textAllCaps="false"
-                    android:focusable="false"
-                    android:clickable="false"
-                    android:duplicateParentState="true"
-                    android:gravity="start"
-                    android:textSize="@dimen/caption"
-                    android:layout_marginLeft="@dimen/dialog_content_margin" />
+                    android:layout_marginLeft="@dimen/dialog_content_margin"
+                    android:textSize="@dimen/caption"/>
             </LinearLayout>
 
             <LinearLayout
@@ -74,7 +93,6 @@
                 android:background="@color/list_separator"/>
 
             <LinearLayout
-                android:id="@+id/export_to_usfm"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -84,32 +102,23 @@
                 android:layout_marginBottom="@dimen/dialog_controls_margin"
                 android:visibility="visible">
 
+                <Button
+                    android:id="@+id/update_source"
+                    android:text="@string/update_source"
+                    android:textAllCaps="false"
+                    android:layout_width="match_parent"
+                    android:gravity="left"
+                    android:textColor="@color/dark_primary_text"
+                    style="@style/Widget.Alert.Button.Secondary"/>
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/export_to_usfm"
-                    android:drawableLeft="@drawable/icon_export_sd_dark"
-                    android:drawableStart="@drawable/icon_export_sd_dark"
-                    android:drawablePadding="10dp"
-                    android:textColor="@color/dark_primary_text"
-                    android:textAllCaps="false"
-                    style="@style/Widget.Button.Secondary"
+                    android:text="@string/time_slow"
+                    android:textColor="@color/dark_secondary_text"
                     android:focusable="false"
                     android:clickable="false"
                     android:duplicateParentState="true"
-                    android:gravity="left|center_vertical" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/tip_export_to_usfm"
-                    android:textColor="@color/dark_primary_text"
-                    android:textAllCaps="false"
-                    android:focusable="false"
-                    android:clickable="false"
-                    android:duplicateParentState="true"
-                    android:gravity="start"
                     android:textSize="@dimen/caption"
                     android:layout_marginLeft="@dimen/dialog_content_margin" />
             </LinearLayout>
@@ -117,10 +126,9 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="1px"
-                android:background="@color/list_separator" />
+                android:background="@color/list_separator"/>
 
             <LinearLayout
-                android:id="@+id/export_to_pdf"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -129,116 +137,26 @@
                 android:contextClickable="true"
                 android:layout_marginBottom="@dimen/dialog_controls_margin">
 
+                <Button
+                    android:id="@+id/update_all"
+                    android:text="@string/update_all"
+                    android:textAllCaps="false"
+                    android:layout_width="match_parent"
+                    android:gravity="left"
+                    android:textColor="@color/dark_primary_text"
+                    style="@style/Widget.Alert.Button.Secondary"/>
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/export_to_pdf"
-                    android:drawableLeft="@drawable/icon_export_sd_dark"
-                    android:drawableStart="@drawable/icon_export_sd_dark"
-                    android:drawablePadding="10dp"
-                    android:textColor="@color/dark_primary_text"
-                    android:textAllCaps="false"
-                    style="@style/Widget.Button.Secondary"
+                    android:text="@string/time_very_slow"
+                    android:textColor="@color/dark_secondary_text"
                     android:focusable="false"
                     android:clickable="false"
                     android:duplicateParentState="true"
-                    android:gravity="left|center_vertical" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/tip_export_to_pdf"
-                    android:textColor="@color/dark_primary_text"
-                    android:textAllCaps="false"
-                    android:focusable="false"
-                    android:clickable="false"
-                    android:duplicateParentState="true"
-                    android:gravity="start"
                     android:textSize="@dimen/caption"
                     android:layout_marginLeft="@dimen/dialog_content_margin" />
             </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="1px"
-                android:background="@color/list_separator"/>
-
-            <LinearLayout
-                android:id="@+id/backup_to_sd"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:clickable="true"
-                android:focusable="true"
-                android:contextClickable="true"
-                android:layout_marginBottom="@dimen/dialog_controls_margin">
-
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/backup_to_sd"
-                    android:drawableLeft="@drawable/icon_export_sd_dark"
-                    android:drawableStart="@drawable/icon_export_sd_dark"
-                    android:drawablePadding="10dp"
-                    android:textColor="@color/dark_primary_text"
-                    android:textAllCaps="false"
-                    style="@style/Widget.Button.Secondary"
-                    android:focusable="false"
-                    android:clickable="false"
-                    android:duplicateParentState="true"
-                    android:gravity="left|center_vertical" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/tip_backup_to_sd"
-                    android:textColor="@color/dark_primary_text"
-                    android:textAllCaps="false"
-                    android:focusable="false"
-                    android:clickable="false"
-                    android:duplicateParentState="true"
-                    android:gravity="start"
-                    android:textSize="@dimen/caption"
-                    android:layout_marginLeft="@dimen/dialog_content_margin" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="1px"
-                android:background="@color/list_separator"/>
-
-            <Button
-                android:id="@+id/backup_to_device"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/backup_to_friend"
-                android:drawableLeft="@drawable/ic_phone_android_secondary_24dp"
-                android:drawableStart="@drawable/ic_phone_android_secondary_24dp"
-                android:gravity="left|center_vertical"
-                android:drawablePadding="10dp"
-                android:textColor="@color/dark_primary_text"
-                android:textAllCaps="false"
-                style="@style/Widget.Button.Secondary" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="1px"
-                android:background="@color/list_separator"/>
-
-            <Button
-                android:id="@+id/backup_to_app"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/backup_to_app"
-                android:drawableLeft="@drawable/ic_share_secondary_24dp"
-                android:drawableStart="@drawable/ic_share_secondary_24dp"
-                android:gravity="left|center_vertical"
-                android:drawablePadding="10dp"
-                android:textColor="@color/dark_primary_text"
-                android:textAllCaps="false"
-                style="@style/Widget.Button.Secondary" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -260,7 +178,7 @@
         <Button
             android:id="@+id/dismiss_button"
             android:layout_marginLeft="@dimen/dialog_controls_margin"
-            android:text="@string/dismiss"
+            android:text="@string/menu_cancel"
             style="@style/Widget.Alert.Button"/>
     </LinearLayout>
 

@@ -879,4 +879,12 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="merge_conflict_title">Merge Conflict</string>
     <string name="import_merge_conflict">Merge conflict on Import - Click OK to resolve</string>
     <string name="label_change">change</string>
+    <string name="update_languages">Update Languages</string>
+    <string name="update_source">Update Source</string>
+    <string name="update_all">Update All</string>
+    <string name="time_very_slow">Takes awhile</string>
+    <string name="time_slow">Takes a few minutes</string>
+    <string name="time_fast">Takes a few seconds</string>
+    <string name="update_options">Update Options</string>
+    <string name="missing_source">Missing source translation</string>
 </resources>
