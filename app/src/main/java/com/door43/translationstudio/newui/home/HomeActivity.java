@@ -221,14 +221,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
 
             // load list after fragment created
-            Handler hand = new Handler(Looper.getMainLooper());
-            hand.post(new Runnable() {
-                @Override
-                public void run() {
-                    ((TargetTranslationListFragment) mFragment).reloadList();
-                }
-            });
-
+            ((TargetTranslationListFragment) mFragment).reloadList();
         } else if(numTranslations == 0 && mFragment instanceof TargetTranslationListFragment) {
             // display welcome screen
             mFragment = new WelcomeFragment();
@@ -756,6 +749,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         }
         // dismiss progress
         if(progressDialog != null) progressDialog.dismiss();
+        progressDialog = null;
 
         out.putInt(STATE_DIALOG_SHOWN, mAlertShown.getValue());
         out.putString(STATE_DIALOG_TRANSLATION_ID, mTargetTranslationID);
@@ -815,6 +809,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 // dismiss if finished
                 if(task.isFinished()) {
                     progressDialog.dismiss();
+                    progressDialog = null;
                     return;
                 }
 
@@ -843,13 +838,13 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     public void onTaskFinished(ManagedTask task) {
         TaskManager.clearTask(task);
 
+        if(progressDialog != null) progressDialog.dismiss();
+        progressDialog = null;
+
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
             public void run() {
-                if(progressDialog != null) progressDialog.dismiss();
-                progressDialog = null;
-
                 // notify update is done
                 // TODO: 10/10/16 check if task was success
                 // TODO: 10/10/16 check if the task was canceled
