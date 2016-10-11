@@ -747,9 +747,15 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             task.removeOnProgressListener(this);
             task.removeOnFinishedListener(this);
         }
+
         // dismiss progress
-        if(progressDialog != null) progressDialog.dismiss();
-        progressDialog = null;
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                if(progressDialog != null) progressDialog.dismiss();
+            }
+        });
 
         out.putInt(STATE_DIALOG_SHOWN, mAlertShown.getValue());
         out.putString(STATE_DIALOG_TRANSLATION_ID, mTargetTranslationID);
@@ -759,7 +765,6 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     @Override
     public void onDestroy() {
         if(progressDialog != null) progressDialog.dismiss();
-        progressDialog = null;
         super.onDestroy();
     }
 
@@ -809,7 +814,6 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 // dismiss if finished
                 if(task.isFinished()) {
                     progressDialog.dismiss();
-                    progressDialog = null;
                     return;
                 }
 
@@ -829,7 +833,11 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 }
 
                 // show
-                if(!progressDialog.isShowing()) progressDialog.show();
+                if(task.isFinished()) {
+                    progressDialog.dismiss();
+                } else if(!progressDialog.isShowing()) {
+                    progressDialog.show();
+                }
             }
         });
     }
@@ -838,13 +846,12 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     public void onTaskFinished(ManagedTask task) {
         TaskManager.clearTask(task);
 
-        if(progressDialog != null) progressDialog.dismiss();
-        progressDialog = null;
-
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
             public void run() {
+                if(progressDialog != null) progressDialog.dismiss();
+
                 // notify update is done
                 // TODO: 10/10/16 check if task was success
                 // TODO: 10/10/16 check if the task was canceled
