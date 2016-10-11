@@ -887,4 +887,6 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="time_fast">Takes a few seconds</string>
     <string name="update_options">Update Options</string>
     <string name="missing_source">Missing source translation</string>
+    <string name="update_success">The update finished successfully</string>
+    <string name="updating">Updating</string>
 </resources>

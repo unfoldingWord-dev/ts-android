@@ -17,6 +17,7 @@ import org.unfoldingword.tools.taskmanager.ManagedTask;
 /**
  * Gets a list of projects that are available for download from the server
  */
+@Deprecated
 public class CheckForLibraryUpdatesTask extends ManagedTask {
     public static final String TASK_ID  = "get_available_source_translations_task";
     private int mMaxProgress = 100;

@@ -330,10 +330,6 @@ public class App extends Application {
      */
     @Nullable
     public static Door43Client getLibrary() {
-        // TODO: 9/28/16 put this where we perform the update
-//        String server = getPref(SettingsActivity.KEY_PREF_MEDIA_SERVER, getRes(R.string.pref_default_media_server));
-//        String rootApiUrl = server + getRes(R.string.root_catalog_api);
-
         try {
             return new Door43Client(sInstance, dbFile(), containersDir());
         } catch (IOException e) {

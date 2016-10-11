@@ -72,10 +72,11 @@ public class EventBuffer {
      * The class doing the talking
      */
     public interface OnEventTalker {
+
         /**
-         * A buffer that can be written to.
-         * Anyone registered as a listener will receive events
+         * Returns the event buffer for the class
+         * @return
          */
-        EventBuffer eventBuffer = new EventBuffer();
+        EventBuffer getEventBuffer();
     }
 }

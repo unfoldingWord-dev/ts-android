@@ -10,6 +10,7 @@ import org.unfoldingword.tools.taskmanager.ManagedTask;
 /**
  * This task downloads a all of the projects
  */
+@Deprecated
 public class DownloadAllProjectsTask extends ManagedTask {
     public static final String TASK_ID = "download_all_projects task";
     private int mMaxProgress = 100;
