@@ -6,6 +6,8 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.MotionEvent;
 
+import org.unfoldingword.resourcecontainer.ResourceContainer;
+
 /**
  * Displays translations in chunks
  */
@@ -49,5 +51,10 @@ public class ChunkModeFragment extends ViewModeFragment {
     @Override
     protected void onLeftSwipe(MotionEvent e1, MotionEvent e2) {
         doTranslationCardToggle(e1, e2, true);
+    }
+
+    @Override
+    protected void onSourceContainerLoaded(ResourceContainer sourceContainer) {
+
     }
 }

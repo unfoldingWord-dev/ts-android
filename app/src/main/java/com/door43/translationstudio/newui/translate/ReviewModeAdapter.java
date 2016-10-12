@@ -43,6 +43,7 @@ import android.widget.TextView;
 
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.Translation;
+import org.unfoldingword.resourcecontainer.Link;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
@@ -129,6 +130,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private float mInitialTextSize = 0;
     private int mMarginInitialLeft = 0;
 
+    @Deprecated
     public void setHelpContainers(List<ResourceContainer> helpfulContainers) {
         // TODO: 10/11/16 load the containers into a map so we can retrieve them
         triggerNotifyDataSetChanged();
@@ -1445,6 +1447,25 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         });
     }
 
+    /**
+     * Returns the config options for a chunk
+     * @param chapterSlug
+     * @param chunkSlug
+     * @return
+     */
+    private Map<String, List<String>> getChunkConfig(String chapterSlug, String chunkSlug) {
+        if(mSourceContainer != null && mSourceContainer.config != null && mSourceContainer.config.containsKey("content")) {
+            Map contentConfig = (Map<String, Object>)mSourceContainer.config.get("content");
+            if(contentConfig.containsKey(chapterSlug)) {
+                Map chapterConfig = (Map<String, Object>) contentConfig.get(chapterSlug);
+                if (chapterConfig.containsKey(chunkSlug)) {
+                    return (Map<String, List<String>>) chapterConfig.get(chunkSlug);
+                }
+            }
+        }
+        return new HashMap();
+    }
+
     private void renderResourceCard(final int position, final ReviewListItem item, final ViewHolder holder) {
         // clean up view
         if(holder.mResourceList.getChildCount() > 0) {
@@ -1461,7 +1482,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 //        final String  frame = loadFrame(item.chapterSlug, item.chunkSlug);
 
         // clear resource card
-        renderResources(holder, position, new TranslationNote[0], new TranslationWord[0], new CheckingQuestion[0]);
+        renderResources(holder, position, new TranslationNote[0], new ArrayList<Link>(){}, new CheckingQuestion[0]);
 
         // prepare task to load resources
         ManagedTask oldTask = TaskManager.getTask(holder.currentResourceTaskId);
@@ -1469,17 +1490,44 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         ManagedTask task = new ManagedTask() {
             @Override
             public void start() {
+                Map<String, List<Link>> result = new HashMap<>();
+
+                // add some default values
+                result.put("words", new ArrayList<Link>());
+                result.put("questions", new ArrayList<Link>());
+                result.put("notes", new ArrayList<Link>());
+
+                if(getListener() == null) return;
+
                 if(interrupted()) return;
-                TranslationNote[] notes = getPreferredNotes(mSourceContainer, item.chunkSlug);
+                Map<String, List<String>> config = getChunkConfig(item.chapterSlug, item.chunkSlug);
+
+                if(config.containsKey("words")) {
+                    List<Link> links = getListener().preloadResourceLinks(config.get("words"));
+                    Pattern titlePattern = Pattern.compile("#(.*)");
+                    for(Link link:links) {
+                        ResourceContainer rc = getListener().cacheContainer(link.language, link.project, link.resource);
+                        // TODO: 10/12/16 the words need to have their title placed into a "title" file instead of being inline in the chunk
+                        String word = rc.readChunk(link.chapter, "01");
+                        Matcher match = titlePattern.matcher(word.trim());
+                        if(match.find()) {
+                            link.title = match.group(1);
+                        }
+                    }
+                    result.put("words", links);
+                }
+
                 if(interrupted()) return;
-                TranslationWord[] words = getPreferredWords(mSourceContainer, item.chunkSlug);
+                if(config.containsKey("questions")) {
+                    List<Link> links = getListener().preloadResourceLinks(config.get("questions"));
+                    result.put("questions", links);
+                }
+
                 if(interrupted()) return;
-                CheckingQuestion[] questions = getPreferredQuestions(mSourceContainer, item.chapterSlug, item.chunkSlug);
-                if(interrupted()) return;
-                Map<String, Object> result = new HashMap<>();
-                result.put("notes", notes);
-                result.put("words", words);
-                result.put("questions", questions);
+                if(config.containsKey("notes")) {
+                    List<Link> links = getListener().preloadResourceLinks(config.get("notes"));
+                    result.put("notes", links);
+                }
                 setResult(result);
             }
         };
@@ -1488,9 +1536,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             public void onTaskFinished(ManagedTask task) {
                 Map<String, Object> data = (Map<String, Object>)task.getResult();
                 if(!task.isCanceled() && data != null && position == holder.currentPosition) {
-                    final TranslationNote[] notes = (TranslationNote[]) data.get("notes");
-                    final TranslationWord[] words = (TranslationWord[]) data.get("words");
-                    final CheckingQuestion[] questions = (CheckingQuestion[]) data.get("questions");
+                    final TranslationNote[] notes = new TranslationNote[0];//data.get("notes");
+                    final List<Link> words = (List<Link>) data.get("words");
+                    final CheckingQuestion[] questions = new CheckingQuestion[0]; // data.get("questions");
 
                     Handler hand = new Handler(Looper.getMainLooper());
                     hand.post(new Runnable() {
@@ -1507,7 +1555,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                     tab.select();
                                 }
                             }
-                            if(words.length > 0) {
+                            if(words.size() > 0) {
                                 TabLayout.Tab tab = holder.mResourceTabs.newTab();
                                 tab.setText(R.string.translation_words);
                                 tab.setTag(TAB_WORDS);
@@ -1530,12 +1578,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             if(mOpenResourceTab[position] == TAB_NOTES && notes.length == 0) {
                                 mOpenResourceTab[position] = TAB_WORDS;
                             }
-                            if(mOpenResourceTab[position] == TAB_WORDS && words.length == 0) {
+                            if(mOpenResourceTab[position] == TAB_WORDS && words.size() == 0) {
                                 mOpenResourceTab[position] = TAB_QUESTIONS;
                             }
 
                             // resource list
-                            if(notes.length > 0 || words.length > 0 || questions.length > 0) {
+                            if(notes.length > 0 || words.size() > 0 || questions.length > 0) {
                                 renderResources(holder, position, notes, words, questions);
                             }
 
@@ -1606,7 +1654,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param words
      * @param questions
      */
-    private void renderResources(final ViewHolder holder, int position, TranslationNote[] notes, TranslationWord[] words, CheckingQuestion[] questions) {
+    private void renderResources(final ViewHolder holder, int position, TranslationNote[] notes, List<Link> words, CheckingQuestion[] questions) {
         if(holder.mResourceList.getChildCount() > 0) {
             holder.mResourceList.removeAllViews();
         }
@@ -1628,14 +1676,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         } else if(mOpenResourceTab[position] == TAB_WORDS) {
             // render words
-            for(final TranslationWord word:words) {
+            for(final Link word:words) {
                 TextView wordView = (TextView) mContext.getLayoutInflater().inflate(R.layout.fragment_resources_list_item, null);
-                wordView.setText(word.getTerm());
+                wordView.setText(word.title);
                 wordView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         if (getListener() != null) {
-                            getListener().onTranslationWordClick(word.getId(), holder.getResourceCardWidth());
+                            ResourceContainer rc = getListener().cacheContainer(word.language, word.project, word.resource);
+                            getListener().onTranslationWordClick(rc.slug, word.chapter, holder.getResourceCardWidth());
                         }
                     }
                 });

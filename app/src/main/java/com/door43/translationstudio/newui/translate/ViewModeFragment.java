@@ -18,12 +18,13 @@ import android.view.ViewGroup;
 
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.Translation;
+import org.unfoldingword.resourcecontainer.ContainerTools;
+import org.unfoldingword.resourcecontainer.Link;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
@@ -33,7 +34,11 @@ import org.json.JSONException;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * Created by joel on 9/18/2015.
@@ -53,7 +58,17 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     private Door43Client mLibrary;
     private GestureDetector mGesture;
     private Translation mSourceTranslation = null;
-    protected static ResourceContainer mSourceContainer = null;
+    private static ResourceContainer mSourceContainer = null;
+    private static List<String> inspectedTranslations = new ArrayList<>();
+    private static List<String> inspectedContainers = new ArrayList<>();
+    /**
+     * Maps containers by the translation slug of a link
+     */
+    private static Map<String, ResourceContainer> cachedContainers = new HashMap<>();
+    /**
+     * Maps a container slug to a translation slug of a link
+     */
+    private static Map<String, String> cachedContainerLookup = new HashMap<>();
 
     /**
      * Returns an instance of the adapter
@@ -71,6 +86,9 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      */
     public static void reset() {
         mSourceContainer = null;
+        inspectedContainers = new ArrayList<>();
+        inspectedTranslations = new ArrayList<>();
+        cachedContainers = new HashMap<>();
         ReviewModeFragment.reset();
     }
 
@@ -102,7 +120,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
 
         // open selected tab
         if(null == mSourceTranslation) {
-            mListener.onNoSourceTranslations(targetTranslationSlug);
+            if(mListener != null) mListener.onNoSourceTranslations(targetTranslationSlug);
         } else {
             mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view);
             mLayoutManager = new LinearLayoutManager(getActivity());
@@ -122,7 +140,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
                     super.onScrolled(recyclerView, dx, dy);
                     if (mFingerScroll) {
                         int position = mLayoutManager.findFirstVisibleItemPosition();
-                        mListener.onScrollProgress(position);
+                        if(mListener != null) mListener.onScrollProgress(position);
                     }
                 }
             });
@@ -134,7 +152,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
 
             if(savedInstanceState == null) {
                 mLayoutManager.scrollToPosition(mAdapter.getListStartPosition());
-                mListener.onScrollProgress(mAdapter.getListStartPosition());
+                if(mListener != null) mListener.onScrollProgress(mAdapter.getListStartPosition());
             }
         }
 
@@ -232,7 +250,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         int position = mAdapter.getItemPosition(chapterId, frameId);
         if(position != -1) {
             mLayoutManager.scrollToPosition(position);
-            mListener.onScrollProgress(position);
+            if(mListener != null) mListener.onScrollProgress(position);
         }
     }
 
@@ -286,9 +304,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     public void onDataSetChanged(int count) {
-        if(mListener != null) {
-            mListener.onDataSetChanged(count);
-        }
+        if(mListener != null) mListener.onDataSetChanged(count);
     }
 
     /**
@@ -303,11 +319,93 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     @Override
+    public ResourceContainer getCachedContainer(String resourceContainerSlug) {
+        if(cachedContainerLookup.containsKey(resourceContainerSlug)) {
+            String translationSlug = cachedContainerLookup.get(resourceContainerSlug);
+            if(cachedContainers.containsKey(translationSlug)) {
+                return cachedContainers.get(translationSlug);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Parses an array of links and preloads the nessesary resource containers.
+     * Only links that have a matching container are returned.
+     * This should only be used within a task
+     * @param linkData
+     * @return
+     */
+    @Override
+    public List<Link> preloadResourceLinks(List<String> linkData) {
+        List<Link> links = new ArrayList<>();
+        for(String rawLink:linkData) {
+            try {
+                Link link = Link.parseLink(rawLink);
+                ResourceContainer container = cacheContainer(link.language, link.project, link.resource);
+                if(container != null) {
+                    links.add(link);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return links;
+    }
+
+    /**
+     * Returns a resource container by looking up the matching or first available translation and
+     * caching the resource container. Hits on the cache will skip looking up translations and loading
+     * the container from the disk.
+     *
+     * @param languageSlug
+     * @param projectSlug
+     * @param resourceSlug
+     * @return
+     */
+    @Override
+    public synchronized ResourceContainer cacheContainer(String languageSlug, String projectSlug, String resourceSlug) {
+        if (languageSlug == null) languageSlug = Locale.getDefault().getLanguage();
+        String desiredTranslationSlug = ContainerTools.makeSlug(languageSlug, projectSlug, resourceSlug);
+        if(!inspectedTranslations.contains(desiredTranslationSlug)) {
+            // only inspect translations once
+            inspectedTranslations.add(desiredTranslationSlug);
+            List<Translation> translations = App.getLibrary().index().findTranslations(languageSlug, projectSlug, resourceSlug, null, null, 0, -1);
+            if (translations.size() == 0) {
+                // try to find any language
+                translations = App.getLibrary().index().findTranslations(null, projectSlug, resourceSlug, null, null, 0, -1);
+            }
+            // load the first available container
+            for (Translation translation : translations) {
+                if(!inspectedContainers.contains(translation.resourceContainerSlug)) {
+                    // only inspect container once
+                    inspectedContainers.add(translation.resourceContainerSlug);
+                    try {
+                        ResourceContainer rc = App.getLibrary().open(translation.resourceContainerSlug);
+                        cachedContainers.put(desiredTranslationSlug, rc);
+                        cachedContainerLookup.put(rc.slug, desiredTranslationSlug);
+                        // TRICKY: we only need the first match
+                        break;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        if(cachedContainers.containsKey(desiredTranslationSlug)) {
+            return cachedContainers.get(desiredTranslationSlug);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         if(mSourceContainer == null) {
             // load the container
             if(mAdapter != null) mAdapter.setSourceContainer(null);
+            onSourceContainerLoaded(null);
             ManagedTask task = new ManagedTask() {
                 @Override
                 public void start() {
@@ -324,6 +422,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
             TaskManager.addTask(task, TASK_ID_OPEN_SELECTED_SOURCE);
         } else if(mAdapter != null) {
             mAdapter.setSourceContainer(mSourceContainer);
+            onSourceContainerLoaded(mSourceContainer);
         }
     }
 
@@ -334,6 +433,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      */
     private void openResourceContainer(final String slug) {
         if(mAdapter != null) mAdapter.setSourceContainer(null);
+        onSourceContainerLoaded(null);
         ManagedTask task = new ManagedTask() {
             @Override
             public void start() {
@@ -379,7 +479,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     @Override
-    public void onTranslationWordClick(String translationWordId, int width) {
+    public void onTranslationWordClick(String resourceContainerSlug, String chapterSlug, int width) {
 
     }
 
@@ -514,7 +614,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
             String selectedSourceTranslationId = App.getSelectedSourceTranslationId(targetTranslationId);
             openResourceContainer(selectedSourceTranslationId);
         } else {
-            mListener.onNoSourceTranslations(targetTranslationId);
+            if(mListener != null) mListener.onNoSourceTranslations(targetTranslationId);
         }
     }
 
@@ -527,6 +627,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
             String frameId = mAdapter.getFocusedChunkSlug(lastItemPosition);
             App.setLastFocus(mTargetTranslation.getId(), chapterId, frameId);
         }
+        if(mAdapter != null) mAdapter.setOnClickListener(null);
         super.onDestroy();
     }
 
@@ -552,14 +653,14 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      * @param mode
      */
     public void openTranslationMode(TranslationViewMode mode, Bundle extras) {
-        mListener.openTranslationMode(mode, extras);
+        if(mListener != null) mListener.openTranslationMode(mode, extras);
     }
 
     /**
      * Restarts the auto commit timer
      */
     public void restartAutoCommitTimer() {
-        mListener.restartAutoCommitTimer();
+        if(mListener != null) mListener.restartAutoCommitTimer();
     }
 
     /**
@@ -567,7 +668,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      * @param isSearching
      */
     public void onSearching(boolean isSearching) {
-        mListener.onSearching(isSearching);
+        if(mListener != null) mListener.onSearching(isSearching);
     }
 
     @Override
@@ -582,6 +683,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
                         if(mListener != null) mListener.onNoSourceTranslations(mTargetTranslation.getId());
                     } else if(mAdapter != null) {
                         mAdapter.setSourceContainer(mSourceContainer);
+                        onSourceContainerLoaded(mSourceContainer);
                     }
                 }
             });
@@ -600,11 +702,18 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
                     } else if(mAdapter != null) {
                         mSourceContainer = (ResourceContainer) task.getResult();
                         mAdapter.setSourceContainer(mSourceContainer);
+                        onSourceContainerLoaded(mSourceContainer);
                     }
                 }
             });
         }
     }
+
+    /**
+     * Allows child classes to perform operations that dependon the source container
+     * @param sourceContainer
+     */
+    protected abstract void onSourceContainerLoaded(ResourceContainer sourceContainer);
 
     public interface OnEventListener {
 
