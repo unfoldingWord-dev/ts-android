@@ -129,6 +129,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private float mInitialTextSize = 0;
     private int mMarginInitialLeft = 0;
 
+    public void setHelpContainers(List<ResourceContainer> helpfulContainers) {
+        // TODO: 10/11/16 load the containers into a map so we can retrieve them
+        triggerNotifyDataSetChanged();
+    }
+
     enum DisplayState {
         NORMAL,
         SELECTED,

@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
@@ -44,7 +46,15 @@ import org.sufficientlysecure.htmltextview.LocalLinkMovementMethod;
 
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.SourceLanguage;
+import org.unfoldingword.resourcecontainer.ContainerTools;
+import org.unfoldingword.resourcecontainer.Link;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by joel on 9/8/2015.
@@ -58,6 +68,7 @@ public class ReviewModeFragment extends ViewModeFragment {
     private static final String STATE_CHAPTER_ID = "state_chapter_id";
     private static final String STATE_FRAME_ID = "state_frame_id";
     private static final String STATE_QUESTION_ID = "state_question_id";
+    private static final String TASK_ID_OPEN_HELP_SOURCE = "open-help-containers";
     private boolean mResourcesOpen = false;
     private boolean mResourcesDrawerOpen = false;
     private CardView mResourcesDrawer;
@@ -69,10 +80,77 @@ public class ReviewModeFragment extends ViewModeFragment {
     private String mChapterId;
     private String mCheckingQuestionId;
     private LinearLayout mResourcesDrawerContent;
+    private static List<ResourceContainer> helpfulContainers = null;
 
     @Override
     ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String chapterId, String frameId, Bundle extras) {
         return new ReviewModeAdapter(activity, targetTranslationId, chapterId, frameId, mResourcesOpen);
+    }
+
+    /**
+     * Resets the static variables
+     */
+    public static void reset() {
+        helpfulContainers = null;
+    }
+
+    @Override
+    public void onTaskFinished(final ManagedTask task) {
+        super.onTaskFinished(task);
+        if(task.getTaskId().equals(TASK_ID_OPEN_HELP_SOURCE)) {
+            Handler hand  = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    if(getAdapter() != null) {
+                        ((ReviewModeAdapter)getAdapter()).setHelpContainers(helpfulContainers);
+                    }
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(helpfulContainers == null && mSourceContainer != null) {
+            // load the helpful containers
+            if(getAdapter() != null) ((ReviewModeAdapter)getAdapter()).setHelpContainers(null);
+            ManagedTask task = new ManagedTask() {
+                @Override
+                public void start() {
+                    if(!mSourceContainer.config.containsKey("content")) {
+                        helpfulContainers = new ArrayList<>();
+                        return;
+                    }
+                    Map contentConfig = (Map<String, Object>)mSourceContainer.config.get("content");
+                    for(String chapterSlug:(List<String>)contentConfig.keySet()) {
+                        Map chapterConfig = (Map<String, Object>)contentConfig.get(chapterSlug);
+                        for(String chunkSlug:(List<String>)chapterConfig.keySet()) {
+                            Map chunkConfig = (Map<String, Object>)chapterConfig.get(chunkSlug);
+                            for(String helpSlug:(List<String>)chunkConfig.keySet()) {
+                                List<String> links = (List<String>)chunkConfig.get(helpSlug);
+                                for(String link:links) {
+                                    try {
+                                        Link l = ContainerTools.parseLink(link);
+                                        // TODO: 10/11/16 get link info and locate resource container for loading
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // TODO: 10/11/16 identify the needed containers
+                    // TODO: 10/11/16 attempt to open containers
+                    // TODO: 10/11/16 add containers to list
+                }
+            };
+            task.addOnFinishedListener(this);
+            TaskManager.addTask(task, TASK_ID_OPEN_HELP_SOURCE);
+        } else if(getAdapter() != null){
+            ((ReviewModeAdapter)getAdapter()).setHelpContainers(helpfulContainers);
+        }
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.door43.translationstudio.newui.translate;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -52,7 +53,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     private Door43Client mLibrary;
     private GestureDetector mGesture;
     private Translation mSourceTranslation = null;
-    private static ResourceContainer mSourceContainer = null;
+    protected static ResourceContainer mSourceContainer = null;
 
     /**
      * Returns an instance of the adapter
@@ -70,6 +71,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      */
     public static void reset() {
         mSourceContainer = null;
+        ReviewModeFragment.reset();
     }
 
     @Override
@@ -400,7 +402,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      * Require correct interface
      * @param activity
      */
-    public void onAttach(Activity activity) {
+    public void onAttach(Context activity) {
         super.onAttach(activity);
         try {
             this.mListener = (OnEventListener) activity;
