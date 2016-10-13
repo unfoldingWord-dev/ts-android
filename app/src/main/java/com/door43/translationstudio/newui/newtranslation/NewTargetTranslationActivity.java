@@ -18,6 +18,7 @@ import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.NewLanguageRequest;
+import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.Questionnaire;
 import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceLanguage;
@@ -30,18 +31,23 @@ import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.newlanguage.NewTempLanguageActivity;
+import com.door43.translationstudio.tasks.MergeTargetTranslationTask;
 import com.door43.util.StringUtilities;
 import com.door43.widget.ViewUtil;
 
 import org.json.JSONObject;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.io.IOException;
 
-public class NewTargetTranslationActivity extends BaseActivity implements TargetLanguageListFragment.OnItemClickListener, ProjectListFragment.OnItemClickListener {
+public class NewTargetTranslationActivity extends BaseActivity implements TargetLanguageListFragment.OnItemClickListener, ProjectListFragment.OnItemClickListener, SimpleTaskWatcher.OnFinishedListener {
 
     public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
     public static final String EXTRA_CHANGE_TARGET_LANGUAGE_ONLY = "extra_change_target_language_only";
     public static final int RESULT_DUPLICATE = 2;
+    public static final int RESULT_MERGE_CONFLICT = 3;
     private static final String STATE_TARGET_TRANSLATION_ID = "state_target_translation_id";
     private static final String STATE_TARGET_LANGUAGE = "state_target_language_id";
     public static final int RESULT_ERROR = 3;
@@ -55,6 +61,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     private boolean createdNewLanguage = false;
     private boolean mChangeTargetLanguageOnly = false;
     private String mTargetTranslationId = null;
+    private SimpleTaskWatcher taskWatcher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,8 +99,17 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             }
         }
 
+        taskWatcher = new SimpleTaskWatcher(this, R.string.merge);
+        taskWatcher.setOnFinishedListener(this);
+
         if(createdNewLanguage) {
             confirmTempLanguage(mSelectedTargetLanguage);
+        }
+
+        // connect to existing tasks
+        MergeTargetTranslationTask mergeTask = (MergeTargetTranslationTask) TaskManager.getTask(MergeTargetTranslationTask.TASK_ID);
+        if(mergeTask != null) {
+            taskWatcher.watch(mergeTask);
         }
     }
 
@@ -169,12 +185,53 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             invalidateOptionsMenu();
         } else { // just change the target language
             Translator translator = App.getTranslator();
-            TargetTranslation targetTranslation = translator.getTargetTranslation(mTargetTranslationId);
-            String targetTranslationId = targetTranslation.getId();
+            // TRICKY: android only supports translating regular text projects
+            final TargetTranslation targetTranslation = translator.getTargetTranslation(mTargetTranslationId);
 
-            targetTranslation.changeTargetLanguage(mSelectedTargetLanguage);
-            translator.normalizePath(targetTranslation);
-            finish();
+            if(targetLanguage.getId().equals(targetTranslation.getTargetLanguage().getId())) { // if nothing to do then skip
+                setResult(RESULT_OK);
+                finish();
+                return;
+            }
+
+            // check for project conflict
+            String projectId = targetTranslation.getProjectId();
+            String resourceSlug = projectId.equals("obs") ? "obs" : Resource.REGULAR_SLUG;
+            final TargetTranslation existingTranslation = translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId, TranslationType.TEXT, resourceSlug));
+
+            if(existingTranslation != null) {
+                Project project = App.getLibrary().getProject(existingTranslation.getProjectId(), App.getDeviceLanguageCode());
+                String message = String.format(getResources().getString(R.string.warn_existing_target_translation), project.name, existingTranslation.getTargetLanguageName());
+
+                new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                        .setTitle(R.string.warn_existing_target_translation_label)
+                        .setMessage(message)
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                MergeTargetTranslationTask mergeTask = new MergeTargetTranslationTask(existingTranslation, targetTranslation, true);
+                                taskWatcher.watch(mergeTask);
+                                TaskManager.addTask(mergeTask, MergeTargetTranslationTask.TASK_ID);
+                            }
+                        })
+                        .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.rename_canceled, Snackbar.LENGTH_LONG);
+                                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                                snack.show();
+                                setResult(RESULT_CANCELED);
+                                finish();
+                            }
+                        })
+                        .show();
+
+            } else { // no existing translation so change language and move
+                targetTranslation.changeTargetLanguage(mSelectedTargetLanguage);
+                translator.normalizePath(targetTranslation);
+                setResult(RESULT_OK);
+                finish();
+            }
         }
     }
 
@@ -343,6 +400,28 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                     snack.show();
                 }
             }
+        }
+    }
+
+    @Override
+    public void onFinished(ManagedTask task) {
+        taskWatcher.stop();
+        if(task instanceof MergeTargetTranslationTask) {
+            MergeTargetTranslationTask mergeTask = (MergeTargetTranslationTask) task;
+            MergeTargetTranslationTask.Status status = mergeTask.getStatus();
+
+            int results = RESULT_ERROR;
+
+            if(MergeTargetTranslationTask.Status.MERGE_CONFLICTS == status) {
+                results = RESULT_MERGE_CONFLICT;
+            } else if(MergeTargetTranslationTask.Status.SUCCESS == status) {
+                results = RESULT_OK;
+            }
+
+            Intent data = new Intent();
+            data.putExtra(EXTRA_TARGET_TRANSLATION_ID, mergeTask.getDestinationTranslation().getId());
+            setResult(results, data);
+            finish();
         }
     }
 }

@@ -879,4 +879,8 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="merge_conflict_title">Merge Conflict</string>
     <string name="import_merge_conflict">Merge conflict on Import - Click OK to resolve</string>
     <string name="label_change">change</string>
+    <string name="warn_existing_target_translation_label">Target Translation Already Present</string>
+    <string name="warn_existing_target_translation">You are already translating <xliff:g example="Genesis" id="project">%1$s</xliff:g> into <xliff:g example="English" id="target_language">%2$s</xliff:g>.  Do you want to merge projects?</string>
+    <string name="rename_canceled">Rename cancelled</string>
+    <string name="merge">Merge</string>
 </resources>

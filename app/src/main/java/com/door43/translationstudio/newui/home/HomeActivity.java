@@ -388,7 +388,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mDialogShown = eDialogShown.NONE;
-                        doManualMerge();
+                        doManualMerge(mTargetTranslationID);
                     }
                 }).show();
     }
@@ -396,7 +396,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     /**
      * open review mode to let user resolve conflict
      */
-    private void doManualMerge() {
+    public void doManualMerge(String mTargetTranslationID) {
         // ask parent activity to navigate to a new activity
         Intent intent = new Intent(this, TargetTranslationActivity.class);
         Bundle args = new Bundle();
