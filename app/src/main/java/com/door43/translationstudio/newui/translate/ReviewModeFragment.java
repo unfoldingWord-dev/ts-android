@@ -88,6 +88,7 @@ public class ReviewModeFragment extends ViewModeFragment {
     }
 
     private String mResourceContainerSlug;
+    private ResourceContainer mSourceContainer = null;
 
     @Override
     ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String chapterId, String frameId, Bundle extras) {
@@ -119,6 +120,7 @@ public class ReviewModeFragment extends ViewModeFragment {
 
     @Override
     protected void onSourceContainerLoaded(final ResourceContainer container) {
+        mSourceContainer = container;
         // TODO: 10/12/16 try to load the matching helps manually then run this task to pick up any missing ones
         // this will allow the helps to be loaded a LOT faster. Or we could just load them on the fly as the adapter needs them and cache them in the fragment.
         // the latter will probably be better.
@@ -491,12 +493,12 @@ public class ReviewModeFragment extends ViewModeFragment {
                             return false;
                         }
                     } else if(span instanceof PassageLinkSpan) {
-//                        PassageLinkSpan link = (PassageLinkSpan)span;
-//                        Frame frame = library.getFrame(rc, link.getChapterId(), link.getFrameId());
-//                        String title = rc.getProjectTitle() + " " + Integer.parseInt(link.getChapterId()) + ":" + frame.getTitle();
-//                        link.setTitle(title);
-//                        return library.getFrame(rc, link.getChapterId(), link.getFrameId()) != null;
-                        return false;
+                        PassageLinkSpan link = (PassageLinkSpan)span;
+                        String chunk = rc.readChunk(link.getChapterId(), link.getFrameId());
+                        String versetitle = Frame.parseVerseTitle(chunk, TranslationFormat.parse(rc.contentMimeType));
+                        String title = rc.readChunk("front", "title") + " " + Integer.parseInt(link.getChapterId()) + ":" + versetitle;
+                        link.setTitle(title);
+                        return !chunk.isEmpty();
                     }
                     return true;
                 }
@@ -553,39 +555,53 @@ public class ReviewModeFragment extends ViewModeFragment {
                     }
                     if(relatedSlugs.size() > 0) seeAlsoTitle.setVisibility(View.VISIBLE);
                 }
-                // TODO: 10/12/16 get examples
+                examplesTitle.setVisibility(View.GONE);
+                if(chapterConfig.containsKey("examples")) {
+                    List<String> exampleSlugs = (List<String>)chapterConfig.get("examples");
+                    for(String exampleSlug:exampleSlugs) {
+                        final String[] slugs = exampleSlug.split("-");
+                        if(slugs.length != 2) continue;
+                        if(mSourceContainer == null) continue;
+                        String projectTitle = mSourceContainer.readChunk("front", "title");
+                        String verseTitle = Frame.parseVerseTitle(mSourceContainer.readChunk(slugs[0], slugs[1]), TranslationFormat.parse(mSourceContainer.contentMimeType));
+
+                        LinearLayout exampleView = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_example_item, null);
+                        TextView referenceView = (TextView)exampleView.findViewById(R.id.reference);
+                        HtmlTextView passageView = (HtmlTextView)exampleView.findViewById(R.id.passage);
+                        referenceView.setText(projectTitle + " " + formatNumber(slugs[0]) + ":" + verseTitle);
+                        passageView.setHtmlFromString(mSourceContainer.readChunk(slugs[0], slugs[1]), true);
+                        exampleView.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                scrollToFrame(slugs[0], slugs[1]);
+                            }
+                        });
+                        Typography.formatSub(getActivity(), referenceView, rc.language.slug, rc.language.direction);
+                        Typography.formatSub(getActivity(), passageView, rc.language.slug, rc.language.direction);
+                        examplesView.addView(exampleView);
+                    }
+                    if(exampleSlugs.size() > 0) examplesTitle.setVisibility(View.VISIBLE);
+                }
             }
             Typography.formatTitle(getActivity(), seeAlsoTitle, rc.language.slug, rc.language.direction);
-
-
-//            examplesView.removeAllViews();
-//            for(final TranslationWord.Example example:word.getExamples()) {
-//                LinearLayout exampleView = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_example_item, null);
-//                TextView referenceView = (TextView)exampleView.findViewById(R.id.reference);
-//                HtmlTextView passageView = (HtmlTextView)exampleView.findViewById(R.id.passage);
-////                Frame frame = library.getFrame(rc, example.getChapterId(), example.getFrameId());
-////                referenceView.setText(rc.getProjectTitle() + " " + Integer.parseInt(example.getChapterId()) + ":" + frame.getTitle());
-//                passageView.setHtmlFromString(example.getPassage(), true);
-//                exampleView.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        scrollToFrame(example.getChapterId(), example.getFrameId());
-//                    }
-//                });
-//                Typography.formatSub(getActivity(), referenceView, rc.language.slug, rc.language.direction);
-//                Typography.formatSub(getActivity(), passageView, rc.language.slug, rc.language.direction);
-//                examplesView.addView(exampleView);
-//            }
-//            if(word.getExamples().length > 0) {
-//                examplesTitle.setVisibility(View.VISIBLE);
-//            } else {
-//                examplesTitle.setVisibility(View.GONE);
-//            }
             Typography.formatTitle(getActivity(), examplesTitle, rc.language.slug, rc.language.direction);
 
             mScrollingResourcesDrawerContent.removeAllViews();
             mScrollingResourcesDrawerContent.addView(view);
         }
+    }
+
+    /**
+     * Returns a string formatted as an integer (removes the leading 0's
+     * Otherwise it returns the original value
+     * @param value
+     * @return
+     */
+    private String formatNumber(String value) {
+        try {
+            return Integer.parseInt(value) + "";
+        } catch (Exception e) {}
+        return value;
     }
 
     /**
