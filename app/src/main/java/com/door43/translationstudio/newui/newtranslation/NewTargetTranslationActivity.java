@@ -50,6 +50,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     public static final int RESULT_MERGE_CONFLICT = 3;
     private static final String STATE_TARGET_TRANSLATION_ID = "state_target_translation_id";
     private static final String STATE_TARGET_LANGUAGE = "state_target_language_id";
+    public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
     public static final int RESULT_ERROR = 3;
     public static final String TAG = NewTargetTranslationActivity.class.getSimpleName();
     public static final int NEW_LANGUAGE_REQUEST = 1001;
@@ -62,6 +63,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     private boolean mChangeTargetLanguageOnly = false;
     private String mTargetTranslationId = null;
     private SimpleTaskWatcher taskWatcher;
+    private eDialogShown mDialogShown = eDialogShown.NONE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +78,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
 
         if(savedInstanceState != null) {
             createdNewLanguage = savedInstanceState.getBoolean(STATE_NEW_LANGUAGE, false);
+            mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
             if (savedInstanceState.containsKey(STATE_TARGET_TRANSLATION_ID)) {
                 mNewTargetTranslationId = (String) savedInstanceState.getSerializable(STATE_TARGET_TRANSLATION_ID);
             }
@@ -111,6 +114,68 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
         if(mergeTask != null) {
             taskWatcher.watch(mergeTask);
         }
+
+        restoreDialogs();
+    }
+
+    /**
+     * restore the dialogs that were displayed before rotation
+     */
+    private void restoreDialogs() {
+        switch(mDialogShown) {
+            case RENAME_CONFLICT:
+                {
+                    TargetTranslation sourceTargetTranslation = App.getTranslator().getTargetTranslation(mTargetTranslationId);
+                    TargetTranslation destTargetTranslation = App.getTranslator().getTargetTranslation(mNewTargetTranslationId);
+                    showTargetTranslationConflict(sourceTargetTranslation, destTargetTranslation);
+                }
+                break;
+
+            case NONE:
+                break;
+
+            default:
+                Logger.e(TAG,"Unsupported restore dialog: " + mDialogShown.toString());
+                break;
+        }
+    }
+
+
+    /**
+     * warn user that there is already an existing project with that language.  Give them the option of merging.
+     * @param sourceTargetTranslation
+     * @param existingTranslation
+     */
+    private void showTargetTranslationConflict(final TargetTranslation sourceTargetTranslation, final TargetTranslation existingTranslation) {
+        mDialogShown = eDialogShown.RENAME_CONFLICT;
+        mNewTargetTranslationId = existingTranslation.getId();
+        Project project = App.getLibrary().getProject(existingTranslation.getProjectId(), App.getDeviceLanguageCode());
+        String message = String.format(getResources().getString(R.string.warn_existing_target_translation), project.name, existingTranslation.getTargetLanguageName());
+
+        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+                .setTitle(R.string.warn_existing_target_translation_label)
+                .setMessage(message)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                        MergeTargetTranslationTask mergeTask = new MergeTargetTranslationTask(existingTranslation, sourceTargetTranslation, true);
+                        taskWatcher.watch(mergeTask);
+                        TaskManager.addTask(mergeTask, MergeTargetTranslationTask.TASK_ID);
+                    }
+                })
+                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                        Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.rename_canceled, Snackbar.LENGTH_LONG);
+                        ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                        snack.show();
+                        setResult(RESULT_CANCELED);
+                        finish();
+                    }
+                })
+                .show();
     }
 
     /**
@@ -186,49 +251,25 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
         } else { // just change the target language
             Translator translator = App.getTranslator();
             // TRICKY: android only supports translating regular text projects
-            final TargetTranslation targetTranslation = translator.getTargetTranslation(mTargetTranslationId);
+            TargetTranslation sourceTargetTranslation = translator.getTargetTranslation(mTargetTranslationId);
 
-            if(targetLanguage.getId().equals(targetTranslation.getTargetLanguage().getId())) { // if nothing to do then skip
+            if(targetLanguage.getId().equals(sourceTargetTranslation.getTargetLanguage().getId())) { // if nothing to do then skip
                 setResult(RESULT_OK);
                 finish();
                 return;
             }
 
             // check for project conflict
-            String projectId = targetTranslation.getProjectId();
+            String projectId = sourceTargetTranslation.getProjectId();
             String resourceSlug = projectId.equals("obs") ? "obs" : Resource.REGULAR_SLUG;
-            final TargetTranslation existingTranslation = translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId, TranslationType.TEXT, resourceSlug));
+            TargetTranslation existingTranslation = translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId, TranslationType.TEXT, resourceSlug));
 
             if(existingTranslation != null) {
-                Project project = App.getLibrary().getProject(existingTranslation.getProjectId(), App.getDeviceLanguageCode());
-                String message = String.format(getResources().getString(R.string.warn_existing_target_translation), project.name, existingTranslation.getTargetLanguageName());
-
-                new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
-                        .setTitle(R.string.warn_existing_target_translation_label)
-                        .setMessage(message)
-                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                MergeTargetTranslationTask mergeTask = new MergeTargetTranslationTask(existingTranslation, targetTranslation, true);
-                                taskWatcher.watch(mergeTask);
-                                TaskManager.addTask(mergeTask, MergeTargetTranslationTask.TASK_ID);
-                            }
-                        })
-                        .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.rename_canceled, Snackbar.LENGTH_LONG);
-                                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                                snack.show();
-                                setResult(RESULT_CANCELED);
-                                finish();
-                            }
-                        })
-                        .show();
+                showTargetTranslationConflict(sourceTargetTranslation, existingTranslation);
 
             } else { // no existing translation so change language and move
-                targetTranslation.changeTargetLanguage(mSelectedTargetLanguage);
-                translator.normalizePath(targetTranslation);
+                sourceTargetTranslation.changeTargetLanguage(mSelectedTargetLanguage);
+                translator.normalizePath(sourceTargetTranslation);
                 setResult(RESULT_OK);
                 finish();
             }
@@ -363,6 +404,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
 
     public void onSaveInstanceState(Bundle outState) {
         outState.putSerializable(STATE_TARGET_TRANSLATION_ID, mNewTargetTranslationId);
+        outState.putInt(STATE_DIALOG_SHOWN, mDialogShown.getValue());
         outState.putBoolean(STATE_NEW_LANGUAGE, createdNewLanguage);
         if(mSelectedTargetLanguage != null) {
             JSONObject targetLanguageJson = mSelectedTargetLanguage.toApiFormatJson();
@@ -422,6 +464,34 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             data.putExtra(EXTRA_TARGET_TRANSLATION_ID, mergeTask.getDestinationTranslation().getId());
             setResult(results, data);
             finish();
+        }
+    }
+
+
+    /**
+     * for keeping track if dialog is being shown for orientation changes
+     */
+    public enum eDialogShown {
+        NONE(0),
+        RENAME_CONFLICT(2);
+
+        private int _value;
+
+        eDialogShown(int Value) {
+            this._value = Value;
+        }
+
+        public int getValue() {
+            return _value;
+        }
+
+        public static eDialogShown fromInt(int i) {
+            for (eDialogShown b : eDialogShown.values()) {
+                if (b.getValue() == i) {
+                    return b;
+                }
+            }
+            return null;
         }
     }
 }

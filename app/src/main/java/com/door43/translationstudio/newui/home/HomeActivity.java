@@ -781,4 +781,5 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             }
             return null;
         }
-    }}
+    }
+}
