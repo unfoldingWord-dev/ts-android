@@ -40,7 +40,7 @@ public class PrintPDFTask extends ManagedTask {
             try {
                 SourceTranslation sourceTranslation = App.getLibrary().getDefaultSourceTranslation(mTargetTranslation.getProjectId(), "en");
                 File imagesDir = library.getImagesDir();
-                translator.exportPdf(library, mTargetTranslation, sourceTranslation.getFormat(), Typography.getAssetPath(App.context(), Typography.RENDER_TRANSLATION), imagesDir, includeImages, includeIncompleteFrames, mDestFile);
+                translator.exportPdf(library, mTargetTranslation, sourceTranslation.getFormat(), Typography.getAssetPath(App.context(), Typography.TranslationType.TRANSLATION), imagesDir, includeImages, includeIncompleteFrames, mDestFile);
                 if (mDestFile.exists()) {
                     success = true;
                 } else {

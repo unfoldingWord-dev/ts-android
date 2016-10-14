@@ -154,9 +154,9 @@ public class DraftAdapter extends RecyclerView.Adapter<DraftAdapter.ViewHolder> 
         // set up fonts
         if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
             holder.mLayoutBuildNumber = mLayoutBuildNumber;
-            Typography.formatTitle(mContext, Typography.RENDER_SOURCE, holder.mSourceHeading, mSourceLanguage.getId(), mSourceLanguage.getDirection());
-            Typography.formatTitle(mContext, Typography.RENDER_SOURCE, holder.mSourceTitle, mSourceLanguage.getId(), mSourceLanguage.getDirection());
-            Typography.format(mContext, Typography.RENDER_SOURCE, holder.mSourceBody, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+            Typography.formatTitle(mContext, Typography.TranslationType.SOURCE, holder.mSourceHeading, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+            Typography.formatTitle(mContext, Typography.TranslationType.SOURCE, holder.mSourceTitle, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+            Typography.format(mContext, Typography.TranslationType.SOURCE, holder.mSourceBody, mSourceLanguage.getId(), mSourceLanguage.getDirection());
         }
     }
 

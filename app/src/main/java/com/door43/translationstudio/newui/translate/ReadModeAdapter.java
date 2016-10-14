@@ -442,11 +442,11 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         // set up fonts
         if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
             holder.mLayoutBuildNumber = mLayoutBuildNumber;
-            Typography.formatTitle(mContext, Typography.RENDER_SOURCE, holder.mSourceHeading, mSourceLanguage.getId(), mSourceLanguage.getDirection());
-            Typography.formatTitle(mContext, Typography.RENDER_SOURCE, holder.mSourceTitle, mSourceLanguage.getId(), mSourceLanguage.getDirection());
-            Typography.format(mContext, Typography.RENDER_SOURCE, holder.mSourceBody, mSourceLanguage.getId(), mSourceLanguage.getDirection());
-            Typography.formatTitle(mContext, Typography.RENDER_TRANSLATION, holder.mTargetTitle, mTargetLanguage.getId(), mTargetLanguage.getDirection());
-            Typography.format(mContext, Typography.RENDER_TRANSLATION, holder.mTargetBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+            Typography.formatTitle(mContext, Typography.TranslationType.SOURCE, holder.mSourceHeading, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+            Typography.formatTitle(mContext, Typography.TranslationType.SOURCE, holder.mSourceTitle, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+            Typography.format(mContext, Typography.TranslationType.SOURCE, holder.mSourceBody, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+            Typography.formatTitle(mContext, Typography.TranslationType.TRANSLATION, holder.mTargetTitle, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+            Typography.format(mContext, Typography.TranslationType.TRANSLATION, holder.mTargetBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
         }
     }
 

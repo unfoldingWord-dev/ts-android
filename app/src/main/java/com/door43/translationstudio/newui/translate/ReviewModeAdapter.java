@@ -427,15 +427,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // set up fonts
         if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
             holder.mLayoutBuildNumber = mLayoutBuildNumber;
-            Typography.format(mContext, Typography.RENDER_SOURCE, holder.mSourceBody, mSourceLanguage.getId(), mSourceLanguage.getDirection());
-            Typography.formatSub(mContext, Typography.RENDER_TRANSLATION, holder.mTargetTitle, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+            Typography.format(mContext, Typography.TranslationType.SOURCE, holder.mSourceBody, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+            Typography.formatSub(mContext, Typography.TranslationType.TRANSLATION, holder.mTargetTitle, mTargetLanguage.getId(), mTargetLanguage.getDirection());
             if(!item.isTranslationMergeConflicted) {
-                Typography.format(mContext, Typography.RENDER_TRANSLATION, holder.mTargetBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
-                Typography.format(mContext, Typography.RENDER_TRANSLATION, holder.mTargetEditableBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+                Typography.format(mContext, Typography.TranslationType.TRANSLATION, holder.mTargetBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+                Typography.format(mContext, Typography.TranslationType.TRANSLATION, holder.mTargetEditableBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
             } else {
-                Typography.format(mContext, Typography.RENDER_TRANSLATION, holder.mHeadText, mTargetLanguage.getId(), mTargetLanguage.getDirection());
-                Typography.format(mContext, Typography.RENDER_TRANSLATION, holder.mTailText, mTargetLanguage.getId(), mTargetLanguage.getDirection());
-                Typography.format(mContext, Typography.RENDER_TRANSLATION, holder.mConflictText, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+                Typography.format(mContext, Typography.TranslationType.TRANSLATION, holder.mHeadText, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+                Typography.format(mContext, Typography.TranslationType.TRANSLATION, holder.mTailText, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+                Typography.format(mContext, Typography.TranslationType.TRANSLATION, holder.mConflictText, mTargetLanguage.getId(), mTargetLanguage.getDirection());
             }
         }
 //        this.onBind = false;
@@ -798,8 +798,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             item.tailText = span;
         }
 
-        Typography.formatSub(mContext, Typography.RENDER_TRANSLATION, holder.mHeadText, mSourceLanguage.getId(), mSourceLanguage.getDirection());
-        Typography.formatSub(mContext, Typography.RENDER_TRANSLATION, holder.mTailText, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+        Typography.formatSub(mContext, Typography.TranslationType.TRANSLATION, holder.mHeadText, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+        Typography.formatSub(mContext, Typography.TranslationType.TRANSLATION, holder.mTailText, mSourceLanguage.getId(), mSourceLanguage.getDirection());
 
         if(mInitialTextSize == 0) { // see if we need to initialize values
             mMarginInitialLeft = leftMargin(holder.mHeadText);
@@ -1736,7 +1736,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         }
                     }
                 });
-                Typography.formatSub(mContext, Typography.RENDER_SOURCE, noteView, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+                Typography.formatSub(mContext, Typography.TranslationType.SOURCE, noteView, mSourceLanguage.getId(), mSourceLanguage.getDirection());
                 holder.mResourceList.addView(noteView);
             }
         } else if(mOpenResourceTab[position] == TAB_WORDS) {
@@ -1752,7 +1752,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         }
                     }
                 });
-                Typography.formatSub(mContext, Typography.RENDER_SOURCE, wordView, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+                Typography.formatSub(mContext, Typography.TranslationType.SOURCE, wordView, mSourceLanguage.getId(), mSourceLanguage.getDirection());
                 holder.mResourceList.addView(wordView);
             }
         } else if(mOpenResourceTab[position] == TAB_QUESTIONS) {
@@ -1768,7 +1768,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         }
                     }
                 });
-                Typography.formatSub(mContext, Typography.RENDER_SOURCE, questionView, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+                Typography.formatSub(mContext, Typography.TranslationType.SOURCE, questionView, mSourceLanguage.getId(), mSourceLanguage.getDirection());
                 holder.mResourceList.addView(questionView);
             }
         }
