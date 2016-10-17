@@ -18,18 +18,21 @@
     <string name="pref_description_always_share">Allow nearby translators to import my translations while the app is open</string>
 
     <!-- Title for the typefaced used in the app -->
-    <string name="pref_title_translation_typeface">Font</string>
+    <string name="pref_title_translation_typeface">Translation Font</string>
     <string-array name="pref_translation_typeface_titles" translatable="false">
         <item>Gentium Plus</item>
     </string-array>
     <!-- The font size of the translation typeface -->
-    <string name="pref_title_typeface_size">Font Size</string>
+    <string name="pref_title_typeface_size">Translation Font Size</string>
     <string-array name="pref_typeface_size_titles">
         <item>small</item>
         <item>normal</item>
         <item>medium</item>
         <item>large</item>
     </string-array>
+
+    <string name="pref_title_source_typeface">Source Font</string>
+    <string name="pref_title_source_typeface_size">Source Font Size</string>
 
     <!-- Section heading for the Upload settings -->
     <string name="pref_header_synchronization">Server</string>

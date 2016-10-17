@@ -424,10 +424,10 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         // set up fonts
         if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
             holder.mLayoutBuildNumber = mLayoutBuildNumber;
-            Typography.formatSub(mContext, holder.mSourceTitle, mSourceLanguage.getId(), mSourceLanguage.getDirection());
-            Typography.format(mContext, holder.mSourceBody, mSourceLanguage.getId(), mSourceLanguage.getDirection());
-            Typography.formatSub(mContext, holder.mTargetTitle, mTargetLanguage.getId(), mTargetLanguage.getDirection());
-            Typography.format(mContext, holder.mTargetBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+            Typography.formatSub(mContext, Typography.TranslationType.SOURCE, holder.mSourceTitle, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+            Typography.format(mContext, Typography.TranslationType.SOURCE, holder.mSourceBody, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+            Typography.formatSub(mContext, Typography.TranslationType.TRANSLATION, holder.mTargetTitle, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+            Typography.format(mContext, Typography.TranslationType.TRANSLATION, holder.mTargetBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
         }
 
         ViewUtil.makeLinksClickable(holder.mSourceBody);
