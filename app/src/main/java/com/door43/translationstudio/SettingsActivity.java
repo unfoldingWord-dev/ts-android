@@ -69,7 +69,9 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
     public static final String KEY_PREF_MEDIA_SERVER = "media_server";
 //    public static final String KEY_PREF_EXPORT_FORMAT = "export_format";
     public static final String KEY_PREF_TRANSLATION_TYPEFACE = "translation_typeface";
-    public static final String KEY_PREF_TYPEFACE_SIZE = "typeface_size";
+    public static final String KEY_PREF_TRANSLATION_TYPEFACE_SIZE = "typeface_size";
+    public static final String KEY_PREF_SOURCE_TYPEFACE = "source_typeface";
+    public static final String KEY_PREF_SOURCE_TYPEFACE_SIZE = "source_typeface_size";
 //    public static final String KEY_PREF_HIGHLIGHT_KEY_TERMS = "highlight_key_terms";
 //    public static final String KEY_PREF_ADVANCED_SETTINGS = "advanced_settings";
     public static final String KEY_PREF_LOGGING_LEVEL = "logging_level";
@@ -185,6 +187,15 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
         pref.setEntryValues(entryValues.toArray(new CharSequence[entryValues.size()]));
         bindPreferenceSummaryToValue(pref);
 
+        bindPreferenceSummaryToValue(findPreference(KEY_PREF_TRANSLATION_TYPEFACE_SIZE));
+
+        ListPreference fontSourcePref = (ListPreference)findPreference(KEY_PREF_SOURCE_TYPEFACE);
+        fontSourcePref.setEntries(entries.toArray(new CharSequence[entries.size()]));
+        fontSourcePref.setEntryValues(entryValues.toArray(new CharSequence[entryValues.size()]));
+        bindPreferenceSummaryToValue(fontSourcePref);
+
+        bindPreferenceSummaryToValue(findPreference(KEY_PREF_SOURCE_TYPEFACE_SIZE));
+
         // Add 'sharing' preferences, and a corresponding header.
 //        PreferenceCategory preferenceHeader = new PreferenceCategory(this);
 //        preferenceHeader.setTitle(R.string.pref_header_sharing);
@@ -229,7 +240,6 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_MEDIA_SERVER));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_LOGGING_LEVEL));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_BACKUP_INTERVAL));
-        bindPreferenceSummaryToValue(findPreference(KEY_PREF_TYPEFACE_SIZE));
 
         final Preference appVersionPref = findPreference("app_version");
         try {
@@ -450,7 +460,14 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
             fontPref.setEntryValues(entryValues.toArray(new CharSequence[entryValues.size()]));
             bindPreferenceSummaryToValue(fontPref);
 
-            bindPreferenceSummaryToValue(findPreference(KEY_PREF_TYPEFACE_SIZE));
+            bindPreferenceSummaryToValue(findPreference(KEY_PREF_TRANSLATION_TYPEFACE_SIZE));
+
+            ListPreference fontSourcePref = (ListPreference)findPreference(KEY_PREF_SOURCE_TYPEFACE);
+            fontSourcePref.setEntries(entries.toArray(new CharSequence[entries.size()]));
+            fontSourcePref.setEntryValues(entryValues.toArray(new CharSequence[entryValues.size()]));
+            bindPreferenceSummaryToValue(fontSourcePref);
+
+            bindPreferenceSummaryToValue(findPreference(KEY_PREF_SOURCE_TYPEFACE_SIZE));
 
             final Preference appVersionPref = findPreference("app_version");
             try {

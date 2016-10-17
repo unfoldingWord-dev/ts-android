@@ -25,6 +25,8 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.DragEvent;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -328,15 +330,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // set up fonts
         if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
             holder.mLayoutBuildNumber = mLayoutBuildNumber;
-            Typography.format(mContext, holder.mSourceBody, mSourceContainer.language.slug, mSourceContainer.language.direction);
-            Typography.formatSub(mContext, holder.mTargetTitle, mTargetLanguage.slug, mTargetLanguage.direction);
+            Typography.format(mContext, Typography.TranslationType.SOURCE, holder.mSourceBody, mSourceContainer.language.slug, mSourceContainer.language.direction);
+            Typography.formatSub(mContext, Typography.TranslationType.TRANSLATION, holder.mTargetTitle, mTargetLanguage.slug, mTargetLanguage.direction);
             if(!item.hasMergeConflicts) {
-                Typography.format(mContext, holder.mTargetBody, mTargetLanguage.slug, mTargetLanguage.direction);
-                Typography.format(mContext, holder.mTargetEditableBody, mTargetLanguage.slug, mTargetLanguage.direction);
+                Typography.format(mContext, Typography.TranslationType.TRANSLATION, holder.mTargetBody, mTargetLanguage.slug, mTargetLanguage.direction);
+                Typography.format(mContext, Typography.TranslationType.TRANSLATION, holder.mTargetEditableBody, mTargetLanguage.slug, mTargetLanguage.direction);
             } else {
-                Typography.format(mContext, holder.mHeadText, mTargetLanguage.slug, mTargetLanguage.direction);
-                Typography.format(mContext, holder.mTailText, mTargetLanguage.slug, mTargetLanguage.direction);
-                Typography.formatSub(mContext, holder.mConflictText, mTargetLanguage.slug, mTargetLanguage.direction);
+                Typography.format(mContext, Typography.TranslationType.TRANSLATION, holder.mHeadText, mTargetLanguage.slug, mTargetLanguage.direction);
+                Typography.format(mContext, Typography.TranslationType.TRANSLATION, holder.mTailText, mTargetLanguage.slug, mTargetLanguage.direction);
+                Typography.formatSub(mContext, Typography.TranslationType.TRANSLATION, holder.mConflictText, mTargetLanguage.slug, mTargetLanguage.direction);
             }
         }
     }
@@ -457,8 +459,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             item.tailText = span;
         }
 
-        Typography.formatSub(mContext, holder.mHeadText, mSourceContainer.language.slug, mSourceContainer.language.direction);
-        Typography.formatSub(mContext, holder.mTailText, mSourceContainer.language.slug, mSourceContainer.language.direction);
+        Typography.formatSub(mContext, Typography.TranslationType.SOURCE, holder.mHeadText, mSourceContainer.language.slug, mSourceContainer.language.direction);
+        Typography.formatSub(mContext, Typography.TranslationType.SOURCE, holder.mTailText, mSourceContainer.language.slug, mSourceContainer.language.direction);
 
         if(mInitialTextSize == 0) { // see if we need to initialize values
             mMarginInitialLeft = leftMargin(holder.mHeadText);
@@ -827,25 +829,25 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         switch (state) {
             case SELECTED:
-                setLeftRightMargins( view, 0); // shrink margins to emphasize
+                setLeftRightMargins( view, mMarginInitialLeft); // shrink margins to emphasize
                 span = new SpannableStringBuilder(text);
                 // bold text to emphasize
-                view.setTextSize(mInitialTextSize * 0.9f); // grow text to emphasize
+                view.setTextSize(TypedValue.COMPLEX_UNIT_SP, mInitialTextSize * 1.0f); // grow text to emphasize
                 span.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 view.setText(span);
                 break;
 
             case DESELECTED:
                 setLeftRightMargins( view, 2 * mMarginInitialLeft); // grow margins to de-emphasize
-                // gray out text to de-emphasize
-                view.setTextSize(mInitialTextSize * 0.7f); // shrink text to de-emphasize
+                // contents of text has already been grayed out to de-emphasize
+                view.setTextSize(TypedValue.COMPLEX_UNIT_SP, mInitialTextSize * 0.8f); // shrink text to de-emphasize
                 view.setText(text);
                 break;
 
             case NORMAL:
             default:
                 setLeftRightMargins( view, mMarginInitialLeft); // restore original margins
-                view.setTextSize(mInitialTextSize * 0.8f); // restore initial test size
+                view.setTextSize(TypedValue.COMPLEX_UNIT_SP, mInitialTextSize * 1.0f); // restore initial test size
                 view.setText(text); // remove text emphasis
                 break;
         }
@@ -1671,7 +1673,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         }
                     }
                 });
-                Typography.formatSub(mContext, noteView, mSourceContainer.language.slug, mSourceContainer.language.direction);
+                Typography.formatSub(mContext, Typography.TranslationType.SOURCE, noteView, mSourceContainer.language.slug, mSourceContainer.language.direction);
                 holder.mResourceList.addView(noteView);
             }
         } else if(mOpenResourceTab[position] == TAB_WORDS) {
@@ -1688,7 +1690,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         }
                     }
                 });
-                Typography.formatSub(mContext, wordView, mSourceContainer.language.slug, mSourceContainer.language.direction);
+                Typography.formatSub(mContext, Typography.TranslationType.SOURCE, wordView, mSourceContainer.language.slug, mSourceContainer.language.direction);
                 holder.mResourceList.addView(wordView);
             }
         } else if(mOpenResourceTab[position] == TAB_QUESTIONS) {
@@ -1704,7 +1706,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         }
                     }
                 });
-                Typography.formatSub(mContext, questionView, mSourceContainer.language.slug, mSourceContainer.language.direction);
+                Typography.formatSub(mContext, Typography.TranslationType.SOURCE, questionView, mSourceContainer.language.slug, mSourceContainer.language.direction);
                 holder.mResourceList.addView(questionView);
             }
         }

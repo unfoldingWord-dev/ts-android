@@ -75,7 +75,7 @@ public class ValidationAdapter extends RecyclerView.Adapter<ValidationAdapter.Vi
 
             // title
             holder.mTitle.setText(item.getTitle());
-            Typography.format(mContext, holder.mTitle, item.getTitleLanguage().slug, item.getTitleLanguage().direction);
+            Typography.format(mContext, Typography.TranslationType.TRANSLATION, holder.mTitle, item.getTitleLanguage().slug, item.getTitleLanguage().direction);
 
             // icon
             if (item.isValid()) {
@@ -114,7 +114,7 @@ public class ValidationAdapter extends RecyclerView.Adapter<ValidationAdapter.Vi
                     renderedText[position] = renderingGroup.start();
                 }
                 holder.mBody.setText(renderedText[position]);
-                Typography.formatSub(mContext, holder.mBody, item.getBodyLanguage().slug, item.getBodyLanguage().direction);
+                Typography.formatSub(mContext, Typography.TranslationType.TRANSLATION, holder.mBody, item.getBodyLanguage().slug, item.getBodyLanguage().direction);
             } else {
                 holder.mBody.setVisibility(View.GONE);
                 holder.mReviewButton.setVisibility(View.GONE);

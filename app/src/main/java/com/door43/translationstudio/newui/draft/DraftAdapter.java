@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.LanguageDirection;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.rendering.ClickableRenderingEngine;
@@ -176,20 +177,15 @@ public class DraftAdapter extends RecyclerView.Adapter<DraftAdapter.ViewHolder> 
         // set up fonts
         if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
             holder.mLayoutBuildNumber = mLayoutBuildNumber;
-            Typography.formatTitle(mContext, holder.mSourceHeading, mSourceLanguage.slug, mSourceLanguage.direction);
-            Typography.formatTitle(mContext, holder.mSourceTitle, mSourceLanguage.slug, mSourceLanguage.direction);
-            Typography.format(mContext, holder.mSourceBody, mSourceLanguage.slug, mSourceLanguage.direction);
+            Typography.formatTitle(mContext, Typography.TranslationType.SOURCE, holder.mSourceHeading, mSourceLanguage.slug, mSourceLanguage.direction);
+            Typography.formatTitle(mContext, Typography.TranslationType.SOURCE, holder.mSourceTitle, mSourceLanguage.slug, mSourceLanguage.direction);
+            Typography.format(mContext, Typography.TranslationType.SOURCE, holder.mSourceBody, mSourceLanguage.slug, mSourceLanguage.direction);
         }
     }
 
     @Override
     public int getItemCount() {
         return mChapters.length;
-    }
-
-    public void rebuild() {
-        mLayoutBuildNumber ++;
-        notifyDataSetChanged();
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

@@ -100,12 +100,12 @@ public class App extends Application {
         super.onCreate();
         sInstance = this;
 
-        File dir = new File(App.publicDir(), "crashes");
-        Logger.registerGlobalExceptionHandler(dir);
-
         // configure logger
         int minLogLevel = Integer.parseInt(getUserPreferences().getString(SettingsActivity.KEY_PREF_LOGGING_LEVEL, getResources().getString(R.string.pref_default_logging_level)));
         configureLogger(minLogLevel);
+
+        File dir = new File(publicDir(), "crashes");
+        Logger.registerGlobalExceptionHandler(dir);
 
         // initialize default settings
         // NOTE: make sure to add any new preference files here in order to have their default values properly loaded.
