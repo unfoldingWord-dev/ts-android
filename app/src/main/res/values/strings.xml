@@ -842,7 +842,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="view_online">View Online</string>
     <string name="change_detected">Project Change Detected</string>
     <string name="upload_push_failure">There are changes to this translation on your Door43 account. You must import those changes before uploading.</string>
-    <string name="merge_request">There are changes to your translation of <xliff:g example="Hebrews" id="book">%1$s</xliff:g> in <xliff:g example="English" id="language">%2$s</xliff:g> on your Door43 account. Would you like to import those now?</string>
+    <string name="merge_request">There are changes to your translation of <xliff:g example="Hebrews" id="book">%1$s</xliff:g> in <xliff:g example="English" id="language">%2$s</xliff:g> on your Door43 account. Would you like to import those changes now?</string>
     <string name="import_failed_title">Import failed</string>
     <string name="push_rejected">Upload failed because of changes on Server. Do you want to review conflicts?</string>
     <string name="backup_rejected">Backup failed because of changes on Server. Do you want to review conflicts?</string>
@@ -879,6 +879,9 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="merge_conflict_title">Merge Conflict</string>
     <string name="import_merge_conflict">Merge conflict on Import - Click OK to resolve</string>
     <string name="label_change">change</string>
+    <string name="upload_failed_label">Upload Failed!</string>
+    <string name="upload_feedback_failed">Upload of feedback failed</string>
+    <string name="upload_crash_report_failed">Upload of crash report failed</string>
     <string name="warn_existing_target_translation_label">Target Translation Already Present</string>
     <string name="warn_existing_target_translation">You are already translating <xliff:g example="Genesis" id="project">%1$s</xliff:g> into <xliff:g example="English" id="target_language">%2$s</xliff:g>.  Do you want to merge projects?</string>
     <string name="rename_canceled">Rename cancelled</string>
