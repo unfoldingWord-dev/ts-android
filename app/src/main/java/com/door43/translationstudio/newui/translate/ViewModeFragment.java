@@ -1,9 +1,11 @@
 package com.door43.translationstudio.newui.translate;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -401,12 +403,36 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      * Require correct interface
      * @param activity
      */
+    @Override
+    @TargetApi(23)
     public void onAttach(Context activity) {
         super.onAttach(activity);
+        onAttachToContext(activity);
+    }
+
+    /**
+     * Deprecated on API 23
+     * Require correct interface
+     * @param activity
+     */
+    @Override
+    @SuppressWarnings("deprecation")
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        if(Build.VERSION.SDK_INT < 23) {
+            onAttachToContext(activity);
+        }
+    }
+
+    /**
+     * This method will be called when the fragment attaches to the context/activity
+     * @param context
+     */
+    protected void onAttachToContext(Context context) {
         try {
-            this.mListener = (OnEventListener) activity;
+            this.mListener = (OnEventListener) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString() + " must implement ViewModeFragment.OnEventListener");
+            throw new ClassCastException(context.toString() + " must implement ViewModeFragment.OnEventListener");
         }
     }
 

@@ -768,6 +768,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      * @param progress
      * @return
      */
+    @Deprecated
     private int handleItemCountIfChanged(int progress) {
         int newItemCount = getItemCount();
         if( newItemCount != mOldItemCount ) {
