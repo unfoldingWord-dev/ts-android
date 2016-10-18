@@ -97,7 +97,7 @@ public class ServerLibraryLanguageAdapter extends BaseAdapter {
         // name
         holder.mName.setText(getItem(position).sourceLanguage.name);
         holder.mCode.setText(getItem(position).sourceLanguage.slug);
-        Typography.format(mContext, holder.mName, getItem(position).sourceLanguage.slug, getItem(position).sourceLanguage.direction);
+        Typography.format(mContext, Typography.TranslationType.SOURCE, holder.mName, getItem(position).sourceLanguage.slug, getItem(position).sourceLanguage.direction);
 
         // progress
         holder.mProgressBar.setVisibility(View.GONE);

@@ -23,6 +23,24 @@
         android:negativeButtonText="@null"
         android:positiveButtonText="@null" />
 
+    <ListPreference
+        android:key="source_typeface"
+        android:title="@string/pref_title_source_typeface"
+        android:entries="@array/pref_translation_typeface_titles"
+        android:entryValues="@array/pref_translation_typeface_values"
+        android:defaultValue="@string/pref_default_translation_typeface"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null" />
+
+    <ListPreference
+        android:key="source_typeface_size"
+        android:title="@string/pref_title_source_typeface_size"
+        android:entries="@array/pref_typeface_size_titles"
+        android:entryValues="@array/pref_typeface_size_values"
+        android:defaultValue="@string/pref_default_typeface_size"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null" />
+
     <CheckBoxPreference
         android:key="always_share"
         android:title="@string/pref_title_always_share"

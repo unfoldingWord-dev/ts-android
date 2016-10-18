@@ -173,31 +173,5 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
         void restartAutoCommitTimer();
         void onSearching(boolean enable);
         void onDataSetChanged(int count);
-
-        /**
-         * Loads a container and caches it.
-         * This should first look up the best translation match.
-         * This should only be ran within a task
-         * @param languageSlug
-         * @param projectSlug
-         * @param resourceSlug
-         */
-        ResourceContainer cacheContainer(String languageSlug, String projectSlug, String resourceSlug);
-
-        /**
-         * Parses a list of link data and re-loads the needed resource containers
-         * @param linkData
-         * @return
-         */
-        List<Link> preloadResourceLinks(List<String> linkData);
-
-        /**
-         * Looks up a cached resource container by it's slug.
-         * This will not do any caching, but is read only.
-         *
-         * @param resourceContainerSlug
-         * @return
-         */
-        ResourceContainer getCachedContainer(String resourceContainerSlug) ;
     }
 }

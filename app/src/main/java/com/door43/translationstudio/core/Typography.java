@@ -10,8 +10,6 @@ import android.widget.TextView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 
-import java.io.File;
-
 /**
  * Created by joel on 9/11/2015.
  */
@@ -20,13 +18,14 @@ public class Typography {
     /**
      * Formats the text in the text view using the users preferences
      * @param context
+     * @param translationType
      * @param view
-     * @param langaugeCode the spoken language of the text
+     * @param languageCode the spoken language of the text
      * @param direction the reading direction of the text
      */
-    public static void format(Context context, TextView view, String langaugeCode, String direction) {
-        Typeface typeface = getTypeface(context, langaugeCode, direction);
-        float fontSize = getFontSize(context);
+    public static void format(Context context, TranslationType translationType, TextView view, String languageCode, String direction) {
+        Typeface typeface = getTypeface(context, translationType, languageCode, direction);
+        float fontSize = getFontSize(context, translationType);
 
         view.setTypeface(typeface, 0);
         view.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
@@ -37,13 +36,14 @@ public class Typography {
      * Titles are a little larger than normal text and bold
      *
      * @param context
+     * @param translationType
      * @param view
      * @param languageCode the spoken language of the text
      * @param direction the reading direction of the text
      */
-    public static void formatTitle(Context context, TextView view, String languageCode, String direction) {
-        Typeface typeface = getTypeface(context, languageCode, direction);
-        float fontSize = getFontSize(context) * 1.3f;
+    public static void formatTitle(Context context, TranslationType translationType, TextView view, String languageCode, String direction) {
+        Typeface typeface = getTypeface(context, translationType, languageCode, direction);
+        float fontSize = getFontSize(context, translationType) * 1.3f;
 
         view.setTypeface(typeface, Typeface.BOLD);
         view.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
@@ -54,13 +54,14 @@ public class Typography {
      * Sub text is a little smaller than normal text
      *
      * @param context
+     * @param translationType
      * @param view
-     * @param langaugeCode the spoken language of the text
+     * @param languageCode the spoken language of the text
      * @param direction the reading direction of the text
      */
-    public static void formatSub(Context context, TextView view, String langaugeCode, String direction) {
-        Typeface typeface = getTypeface(context, langaugeCode, direction);
-        float fontSize = getFontSize(context) * .7f;
+    public static void formatSub(Context context, TranslationType translationType, TextView view, String languageCode, String direction) {
+        Typeface typeface = getTypeface(context, translationType, languageCode, direction);
+        float fontSize = getFontSize(context, translationType) * .7f;
 
         view.setTypeface(typeface, 0);
         view.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
@@ -69,12 +70,13 @@ public class Typography {
     /**
      * Returns a subset of user preferences (currently, just the size) as a CSS style tag.
      * @param context
+     * @param translationType
      * @return Valid HTML, for prepending to unstyled HTML text
      */
-    public static CharSequence getStyle(Context context) {
+    public static CharSequence getStyle(Context context, TranslationType translationType) {
         return "<style type=\"text/css\">"
                 + "body {"
-                + "  font-size: " + getFontSize(context) + ";"
+                + "  font-size: " + getFontSize(context, translationType) + ";"
                 + "}"
                 + "</style>";
     }
@@ -82,36 +84,42 @@ public class Typography {
     /**
      * Returns the font size chosen by the user
      * @param context
+     * @param translationType
      * @return
      */
-    public static float getFontSize(Context context) {
+    public static float getFontSize(Context context, TranslationType translationType) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return Integer.parseInt(prefs.getString(SettingsActivity.KEY_PREF_TYPEFACE_SIZE, context.getResources().getString(R.string.pref_default_typeface_size)));
+        String typefaceSize = (translationType == TranslationType.SOURCE) ? SettingsActivity.KEY_PREF_SOURCE_TYPEFACE_SIZE :  SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE_SIZE;
+        return Integer.parseInt(prefs.getString(typefaceSize, context.getResources().getString(R.string.pref_default_typeface_size)));
     }
 
     /**
      * Returns the path to the font asset
      * @param context
+     * @param translationType
      * @return
      */
-    public static String getAssetPath(Context context) {
+    public static String getAssetPath(Context context, TranslationType translationType) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String fontName = prefs.getString(SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE, context.getResources().getString(R.string.pref_default_translation_typeface));
+        String selectedTypeface = (translationType == TranslationType.SOURCE) ? SettingsActivity.KEY_PREF_SOURCE_TYPEFACE : SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE;
+        String fontName = prefs.getString(selectedTypeface, context.getResources().getString(R.string.pref_default_translation_typeface));
         return "assets/fonts/" + fontName;
     }
 
     /**
      * Returns the typeface chosen by the user
      * @param context
+     * @param translationType
      * @param languageCode the spoken language
      * @param direction the reading direction
      * @return
      */
-    public static Typeface getTypeface(Context context, String languageCode, String direction) {
+    public static Typeface getTypeface(Context context, TranslationType translationType, String languageCode, String direction) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String fontName = prefs.getString(SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE, context.getResources().getString(R.string.pref_default_translation_typeface));
+        String selectedTypeface = (translationType == TranslationType.SOURCE) ? SettingsActivity.KEY_PREF_SOURCE_TYPEFACE : SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE;
+        String fontName = prefs.getString(selectedTypeface, context.getResources().getString(R.string.pref_default_translation_typeface));
 
-        // TODO: provide grahite support
+        // TODO: provide graphite support
 //        File fontFile = new File(context.getCacheDir(), "assets/fonts" + fontName);
 //        if(!fontFile.exists()) {
 //            fontFile.getParentFile().mkdirs();
@@ -146,5 +154,10 @@ public class Typography {
             e.printStackTrace();
         }
         return typeface;
+    }
+
+    public enum TranslationType {
+        SOURCE,
+        TRANSLATION
     }
 }

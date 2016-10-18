@@ -140,8 +140,8 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
 
             // fonts
             SourceLanguage fontSourceLanguage = mServerLibrary.index().getSourceLanguage(mProject.languageSlug);
-            Typography.formatSub(getActivity(), mHolder.mProjectDescription, fontSourceLanguage.slug, fontSourceLanguage.direction);
-            Typography.formatTitle(getActivity(), mHolder.mProjectTitle, fontSourceLanguage.slug, fontSourceLanguage.direction);
+            Typography.formatSub(getActivity(), Typography.TranslationType.SOURCE, mHolder.mProjectDescription, fontSourceLanguage.slug, fontSourceLanguage.direction);
+            Typography.formatTitle(getActivity(), Typography.TranslationType.SOURCE, mHolder.mProjectTitle, fontSourceLanguage.slug, fontSourceLanguage.direction);
 
             // custom project icon
             if (mImagePath == null) {

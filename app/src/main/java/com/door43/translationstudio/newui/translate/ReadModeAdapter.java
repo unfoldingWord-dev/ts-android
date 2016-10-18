@@ -445,12 +445,11 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         // set up fonts
         if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
             holder.mLayoutBuildNumber = mLayoutBuildNumber;
-
-            Typography.formatTitle(mContext, holder.mSourceHeading, mSourceLanguage.slug, mSourceLanguage.direction);
-            Typography.formatTitle(mContext, holder.mSourceTitle, mSourceLanguage.slug, mSourceLanguage.direction);
-            Typography.format(mContext, holder.mSourceBody, mSourceLanguage.slug, mSourceLanguage.direction);
-            Typography.formatTitle(mContext, holder.mTargetTitle, mTargetLanguage.slug, mTargetLanguage.direction);
-            Typography.format(mContext, holder.mTargetBody, mTargetLanguage.slug, mTargetLanguage.direction);
+            Typography.formatTitle(mContext, Typography.TranslationType.SOURCE, holder.mSourceHeading, mSourceLanguage.slug, mSourceLanguage.direction);
+            Typography.formatTitle(mContext, Typography.TranslationType.SOURCE, holder.mSourceTitle, mSourceLanguage.slug, mSourceLanguage.direction);
+            Typography.format(mContext, Typography.TranslationType.SOURCE, holder.mSourceBody, mSourceLanguage.slug, mSourceLanguage.direction);
+            Typography.formatTitle(mContext, Typography.TranslationType.TRANSLATION, holder.mTargetTitle, mTargetLanguage.slug, mTargetLanguage.direction);
+            Typography.format(mContext, Typography.TranslationType.TRANSLATION, holder.mTargetBody, mTargetLanguage.slug, mTargetLanguage.direction);
         }
     }
 

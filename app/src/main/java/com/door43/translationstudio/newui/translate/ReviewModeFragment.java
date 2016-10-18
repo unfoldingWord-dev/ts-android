@@ -25,6 +25,7 @@ import android.widget.TextView;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.CheckingQuestion;
+import com.door43.translationstudio.core.ContainerCache;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TranslationArticle;
@@ -68,7 +69,6 @@ public class ReviewModeFragment extends ViewModeFragment {
     private static final String STATE_FRAME_ID = "state_frame_id";
     private static final String STATE_QUESTION_ID = "state_question_id";
     private static final String STATE_RESOURCE_CONTAINER_SLUG = "container-slug";
-    private static final String TASK_ID_OPEN_HELP_SOURCE = "open-help-containers";
     private boolean mResourcesOpen = false;
     private boolean mResourcesDrawerOpen = false;
     private CardView mResourcesDrawer;
@@ -80,12 +80,6 @@ public class ReviewModeFragment extends ViewModeFragment {
     private String mChapterId;
     private String mCheckingQuestionId;
     private LinearLayout mResourcesDrawerContent;
-    @Deprecated
-    private static List<ResourceContainer> helpfulContainers = null;
-
-    static {
-        helpfulContainers = null;
-    }
 
     private String mResourceContainerSlug;
     private ResourceContainer mSourceContainer = null;
@@ -95,100 +89,14 @@ public class ReviewModeFragment extends ViewModeFragment {
         return new ReviewModeAdapter(activity, targetTranslationId, chapterId, frameId, mResourcesOpen);
     }
 
-    /**
-     * Resets the static variables
-     */
-    public static void reset() {
-        helpfulContainers = null;
-    }
-
     @Override
     public void onTaskFinished(final ManagedTask task) {
         super.onTaskFinished(task);
-        if(!task.isCanceled() && task.getTaskId().equals(TASK_ID_OPEN_HELP_SOURCE)) {
-            Handler hand  = new Handler(Looper.getMainLooper());
-            hand.post(new Runnable() {
-                @Override
-                public void run() {
-                    if(getAdapter() != null) {
-                        ((ReviewModeAdapter)getAdapter()).setHelpContainers(helpfulContainers);
-                    }
-                }
-            });
-        }
     }
 
     @Override
     protected void onSourceContainerLoaded(final ResourceContainer container) {
         mSourceContainer = container;
-        // TODO: 10/12/16 try to load the matching helps manually then run this task to pick up any missing ones
-        // this will allow the helps to be loaded a LOT faster. Or we could just load them on the fly as the adapter needs them and cache them in the fragment.
-        // the latter will probably be better.
-        // also we should provide a wrapper around the config object so we can easily get stuff out of it by giving it a chapter+chunk combo.
-//        if(false && helpfulContainers == null && container != null) {
-//            // load the helpful containers
-//            if(getAdapter() != null) ((ReviewModeAdapter)getAdapter()).setHelpContainers(null);
-//            ManagedTask task = new ManagedTask() {
-//                @Override
-//                public void start() {
-//                    if(!container.config.containsKey("content")) {
-//                        helpfulContainers = new ArrayList<>();
-//                        return;
-//                    }
-//                    List<String> inspectedContainers = new ArrayList<>();
-//                    Map contentConfig = (Map<String, Object>)container.config.get("content");
-//                    for(String chapterSlug:(String[])contentConfig.keySet().toArray(new String[contentConfig.size()])) {
-//                        if(isCanceled()) return;
-//                        Map chapterConfig = (Map<String, Object>)contentConfig.get(chapterSlug);
-//                        for(String chunkSlug:(String[])chapterConfig.keySet().toArray(new String[chapterConfig.size()])) {
-//                            if(isCanceled()) return;
-//                            Map chunkConfig = (Map<String, Object>)chapterConfig.get(chunkSlug);
-//                            for(String helpSlug:(String[])chunkConfig.keySet().toArray(new String[chunkConfig.size()])) {
-//                                if(isCanceled()) return;
-//                                List<String> links = (List<String>)chunkConfig.get(helpSlug);
-//                                for(String link:links) {
-//                                    if(interrupted()) return;
-//                                    try {
-//                                        Link l = Link.parseLink(link);
-//                                        if(l != null) {
-//                                            String languageSlug = l.language;
-//                                            if (languageSlug == null) languageSlug = Locale.getDefault().getLanguage();
-//                                            List<Translation> translations = App.getLibrary().index().findTranslations(languageSlug, l.project, l.resource, null, null, 0, -1);
-//                                            if (translations.size() == 0) {
-//                                                // try to find any language
-//                                                translations = App.getLibrary().index().findTranslations(null, l.project, l.resource, null, null, 0, -1);
-//                                            }
-//                                            // load the first available container
-//                                            for (Translation translation : translations) {
-//                                                if(isCanceled()) return;
-//                                                if(!inspectedContainers.contains(translation.resourceContainerSlug)) {
-//                                                    // only inspect a container once
-//                                                    inspectedContainers.add(translation.resourceContainerSlug);
-//                                                    try {
-//                                                        ResourceContainer rc = App.getLibrary().open(translation.resourceContainerSlug);
-//                                                        if(helpfulContainers == null) helpfulContainers = new ArrayList<>();
-//                                                        helpfulContainers.add(rc);
-//                                                        break;
-//                                                    } catch (Exception e) {
-//
-//                                                    }
-//                                                }
-//                                            }
-//                                        }
-//                                    } catch (Exception e) {
-//                                        e.printStackTrace();
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            };
-//            task.addOnFinishedListener(this);
-//            TaskManager.addTask(task, TASK_ID_OPEN_HELP_SOURCE);
-//        } else if(getAdapter() != null){
-//            ((ReviewModeAdapter)getAdapter()).setHelpContainers(helpfulContainers);
-//        }
     }
 
     @Override
@@ -310,7 +218,7 @@ public class ReviewModeFragment extends ViewModeFragment {
             mResourcesDrawerContent.removeAllViews();
             mResourcesDrawerContent.addView(list);
             ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), R.layout.list_clickable_text);
-            final ResourceContainer rc = getCachedContainer(mResourceContainerSlug);
+            final ResourceContainer rc = ContainerCache.get(mResourceContainerSlug);
             if(rc != null) {
                 final String[] chapters = rc.chapters();
                 Pattern titlePattern = Pattern.compile("#(.*)");
@@ -426,7 +334,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                     startActivity(intent);
                 }
             });
-            view.loadData(Typography.getStyle(getActivity())
+            view.loadData(Typography.getStyle(getActivity(), Typography.TranslationType.SOURCE )
                     + renderer.render(article.getBody()).toString(), "text/html", "utf-8");
 
             mScrollingResourcesDrawerContent.removeAllViews();
@@ -445,7 +353,7 @@ public class ReviewModeFragment extends ViewModeFragment {
         mResourceContainerSlug = resourceContainerSlug;
         mTranslationNoteId = null;
 
-        final ResourceContainer rc = getCachedContainer(resourceContainerSlug);
+        final ResourceContainer rc = ContainerCache.get(resourceContainerSlug);
         if(mResourcesDrawerContent != null) {
             mResourcesDrawerContent.setVisibility(View.GONE);
         }
@@ -480,7 +388,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                 // TODO: 10/12/16 load the description title. This should be read from the config maybe?
                 descriptionTitle.setText("Description");
             }
-            Typography.formatTitle(getActivity(), descriptionTitle, rc.language.slug, rc.language.direction);
+            Typography.formatTitle(getActivity(), Typography.TranslationType.SOURCE, descriptionTitle, rc.language.slug, rc.language.direction);
             HtmlRenderer renderer = new HtmlRenderer(new HtmlRenderer.OnPreprocessLink() {
                 @Override
                 public boolean onPreprocess(Span span) {
@@ -525,7 +433,7 @@ public class ReviewModeFragment extends ViewModeFragment {
             });
             descriptionView.setText(renderer.render(description));
             descriptionView.setMovementMethod(LocalLinkMovementMethod.getInstance());
-            Typography.formatSub(getActivity(), descriptionView, rc.language.slug, rc.language.direction);
+            Typography.formatSub(getActivity(), Typography.TranslationType.SOURCE, descriptionView, rc.language.slug, rc.language.direction);
 
             seeAlsoView.removeAllViews();
             seeAlsoTitle.setVisibility(View.GONE);
@@ -550,7 +458,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                                 onTranslationWordClick(rc.slug, relatedSlug, mResourcesDrawer.getLayoutParams().width);
                             }
                         });
-                        Typography.formatSub(getActivity(), button, rc.language.slug, rc.language.direction);
+                        Typography.formatSub(getActivity(), Typography.TranslationType.SOURCE, button, rc.language.slug, rc.language.direction);
                         seeAlsoView.addView(button);
                     }
                     if(relatedSlugs.size() > 0) seeAlsoTitle.setVisibility(View.VISIBLE);
@@ -576,15 +484,15 @@ public class ReviewModeFragment extends ViewModeFragment {
                                 scrollToFrame(slugs[0], slugs[1]);
                             }
                         });
-                        Typography.formatSub(getActivity(), referenceView, rc.language.slug, rc.language.direction);
-                        Typography.formatSub(getActivity(), passageView, rc.language.slug, rc.language.direction);
+                        Typography.formatSub(getActivity(), Typography.TranslationType.SOURCE, referenceView, rc.language.slug, rc.language.direction);
+                        Typography.formatSub(getActivity(), Typography.TranslationType.SOURCE, passageView, rc.language.slug, rc.language.direction);
                         examplesView.addView(exampleView);
                     }
                     if(exampleSlugs.size() > 0) examplesTitle.setVisibility(View.VISIBLE);
                 }
             }
-            Typography.formatTitle(getActivity(), seeAlsoTitle, rc.language.slug, rc.language.direction);
-            Typography.formatTitle(getActivity(), examplesTitle, rc.language.slug, rc.language.direction);
+            Typography.formatTitle(getActivity(), Typography.TranslationType.SOURCE, seeAlsoTitle, rc.language.slug, rc.language.direction);
+            Typography.formatTitle(getActivity(), Typography.TranslationType.SOURCE, examplesTitle, rc.language.slug, rc.language.direction);
 
             mScrollingResourcesDrawerContent.removeAllViews();
             mScrollingResourcesDrawerContent.addView(view);
@@ -682,10 +590,10 @@ public class ReviewModeFragment extends ViewModeFragment {
 
             title.setText(note.getTitle());
             SourceLanguage sourceLanguage = library.index().getSourceLanguage(sourceTranslation.language.slug);
-            Typography.format(getActivity(), title, sourceLanguage.slug, sourceLanguage.direction);
+            Typography.format(getActivity(), Typography.TranslationType.SOURCE, title, sourceLanguage.slug, sourceLanguage.direction);
 
             descriptionView.setText(renderer.render(note.getBody()));
-            Typography.formatSub(getActivity(), descriptionView, sourceLanguage.slug, sourceLanguage.direction);
+            Typography.formatSub(getActivity(), Typography.TranslationType.SOURCE, descriptionView, sourceLanguage.slug, sourceLanguage.direction);
             descriptionView.setMovementMethod(LocalLinkMovementMethod.getInstance());
 
             mScrollingResourcesDrawerContent.removeAllViews();
@@ -719,13 +627,13 @@ public class ReviewModeFragment extends ViewModeFragment {
 //            mCloseResourcesDrawerButton.setText(question.getQuestion());
 
             TextView questionTitle = (TextView)view.findViewById(R.id.question_title);
-            Typography.formatTitle(getActivity(), questionTitle, sourceLanguage.slug, sourceLanguage.direction);
+            Typography.formatTitle(getActivity(), Typography.TranslationType.SOURCE, questionTitle, sourceLanguage.slug, sourceLanguage.direction);
             TextView questionView = (TextView)view.findViewById(R.id.question);
             TextView answerTitle = (TextView)view.findViewById(R.id.answer_title);
-            Typography.formatTitle(getActivity(), answerTitle, sourceLanguage.slug, sourceLanguage.direction);
+            Typography.formatTitle(getActivity(), Typography.TranslationType.SOURCE, answerTitle, sourceLanguage.slug, sourceLanguage.direction);
             TextView answerView = (TextView)view.findViewById(R.id.answer);
             TextView referencesTitle = (TextView)view.findViewById(R.id.references_title);
-            Typography.formatTitle(getActivity(), referencesTitle, sourceLanguage.slug, sourceLanguage.direction);
+            Typography.formatTitle(getActivity(), Typography.TranslationType.SOURCE, referencesTitle, sourceLanguage.slug, sourceLanguage.direction);
             LinearLayout referencesLayout = (LinearLayout)view.findViewById(R.id.references);
 
             referencesLayout.removeAllViews();
@@ -733,7 +641,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                 TextView referenceView = (TextView) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_reference_item, null);
 //                Frame frame = library.getFrame(sourceTranslation, reference.getChapterId(), reference.getFrameId());
 //                referenceView.setText(sourceTranslation.getProjectTitle() + " " + Integer.parseInt(reference.getChapterId()) + ":" + frame.getTitle());
-                Typography.formatSub(getActivity(), referenceView, sourceLanguage.slug, sourceLanguage.direction);
+                Typography.formatSub(getActivity(), Typography.TranslationType.SOURCE, referenceView, sourceLanguage.slug, sourceLanguage.direction);
                 referenceView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -744,9 +652,9 @@ public class ReviewModeFragment extends ViewModeFragment {
             }
 
             questionView.setText(question.getQuestion());
-            Typography.formatSub(getActivity(), questionView, sourceLanguage.slug, sourceLanguage.direction);
+            Typography.formatSub(getActivity(), Typography.TranslationType.SOURCE, questionView, sourceLanguage.slug, sourceLanguage.direction);
             answerView.setText(question.getAnswer());
-            Typography.formatSub(getActivity(), answerView, sourceLanguage.slug, sourceLanguage.direction);
+            Typography.formatSub(getActivity(), Typography.TranslationType.SOURCE, answerView, sourceLanguage.slug, sourceLanguage.direction);
 
             mScrollingResourcesDrawerContent.removeAllViews();
             mScrollingResourcesDrawerContent.addView(view);
@@ -801,8 +709,6 @@ public class ReviewModeFragment extends ViewModeFragment {
             out.remove(STATE_QUESTION_ID);
         }
         out.putString(STATE_RESOURCE_CONTAINER_SLUG, mResourceContainerSlug);
-        ManagedTask task = TaskManager.getTask(TASK_ID_OPEN_HELP_SOURCE);
-        if(task != null) TaskManager.cancelTask(task);
         super.onSaveInstanceState(out);
     }
 

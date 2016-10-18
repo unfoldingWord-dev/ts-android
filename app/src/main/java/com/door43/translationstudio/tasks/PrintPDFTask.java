@@ -1,6 +1,7 @@
 package com.door43.translationstudio.tasks;
 
 import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.resourcecontainer.Resource;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
@@ -17,6 +18,7 @@ import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by joel on 1/21/2016.
@@ -47,7 +49,7 @@ public class PrintPDFTask extends ManagedTask {
                 List<Resource> resources = App.getLibrary().index().getResources(p.languageSlug, p.slug);
                 ResourceContainer resourceContainer = App.getLibrary().open(p.languageSlug, p.slug, resources.get(0).slug);
                 File imagesDir = App.getImagesDir();
-                translator.exportPdf(library, mTargetTranslation, TranslationFormat.parse(resourceContainer.contentMimeType), Typography.getAssetPath(App.context()), imagesDir, includeImages, includeIncompleteFrames, mDestFile);
+                translator.exportPdf(library, mTargetTranslation, TranslationFormat.parse(resourceContainer.contentMimeType), Typography.getAssetPath(App.context(), Typography.TranslationType.TRANSLATION), imagesDir, includeImages, includeIncompleteFrames, mDestFile);
                 if (mDestFile.exists()) {
                     success = true;
                 } else {
