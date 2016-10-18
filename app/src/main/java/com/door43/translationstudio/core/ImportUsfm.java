@@ -12,7 +12,7 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.spannables.USFMVerseSpan;
+import com.door43.translationstudio.ui.spannables.USFMVerseSpan;
 import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
@@ -81,7 +81,7 @@ public class ImportUsfm {
     private int mChaperCount;
     private List<MissingNameItem> mBooksMissingNames;
     private boolean mCancel = false;
-    private Chapter[] mChapters;
+    private String[] mChapters;
 
     /**
      * constructor
@@ -888,7 +888,7 @@ public class ImportUsfm {
             pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
             String projectId = mBookShortName;
             String resourceSlug = Resource.REGULAR_SLUG;
-            targetTranslation = TargetTranslation.create(context, App.getProfile().getNativeSpeaker(), TranslationFormat.USFM, mTargetLanguage, projectId, TranslationType.TEXT, resourceSlug, pInfo, mProjectFolder);
+            targetTranslation = TargetTranslation.create(context, App.getProfile().getNativeSpeaker(), TranslationFormat.USFM, mTargetLanguage, projectId, ResourceType.TEXT, resourceSlug, pInfo, mProjectFolder);
 
         } catch (Exception e) {
             addError(R.string.file_write_error);
@@ -1073,15 +1073,15 @@ public class ImportUsfm {
         try {
             int chapter = Integer.valueOf(findChapter);
             if (chapter > 0) { // first check in expected location
-                Chapter chapterN = mChapters[chapter - 1];
-                if (Integer.valueOf(chapterN.getId()) == chapter) {
-                    return chapterN.getId();
+                String chapterN = mChapters[chapter - 1];
+                if (Integer.valueOf(chapterN) == chapter) {
+                    return chapterN;
                 }
             }
 
-            for (Chapter chapterN : mChapters) { //search for chapter match
-                if (Integer.valueOf(chapterN.getId()) == chapter) {
-                    return chapterN.getId();
+            for (String chapterN : mChapters) { //search for chapter match
+                if (Integer.valueOf(chapterN) == chapter) {
+                    return chapterN;
                 }
             }
         } catch (Exception e) {

@@ -6,8 +6,8 @@ import android.graphics.BitmapFactory;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.spannables.Span;
-import com.door43.translationstudio.spannables.USFMVerseSpan;
+import com.door43.translationstudio.ui.spannables.Span;
+import com.door43.translationstudio.ui.spannables.USFMVerseSpan;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfContentByte;

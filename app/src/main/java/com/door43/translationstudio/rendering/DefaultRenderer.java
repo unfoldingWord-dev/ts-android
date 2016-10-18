@@ -1,6 +1,6 @@
 package com.door43.translationstudio.rendering;
 
-import com.door43.translationstudio.spannables.Span;
+import com.door43.translationstudio.ui.spannables.Span;
 
 /**
  * This is the default rendering engine.

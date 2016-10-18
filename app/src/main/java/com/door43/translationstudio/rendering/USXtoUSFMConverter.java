@@ -3,13 +3,13 @@ package com.door43.translationstudio.rendering;
 import android.os.Build;
 import android.text.TextUtils;
 
-import com.door43.translationstudio.spannables.USFMChar;
-import com.door43.translationstudio.spannables.USFMNoteSpan;
-import com.door43.translationstudio.spannables.USFMVerseSpan;
-import com.door43.translationstudio.spannables.USXChar;
-import com.door43.translationstudio.spannables.USXNoteSpan;
-import com.door43.translationstudio.spannables.Span;
-import com.door43.translationstudio.spannables.USXVerseSpan;
+import com.door43.translationstudio.ui.spannables.USFMChar;
+import com.door43.translationstudio.ui.spannables.USFMNoteSpan;
+import com.door43.translationstudio.ui.spannables.USFMVerseSpan;
+import com.door43.translationstudio.ui.spannables.USXChar;
+import com.door43.translationstudio.ui.spannables.USXNoteSpan;
+import com.door43.translationstudio.ui.spannables.Span;
+import com.door43.translationstudio.ui.spannables.USXVerseSpan;
 
 import java.util.ArrayList;
 import java.util.List;

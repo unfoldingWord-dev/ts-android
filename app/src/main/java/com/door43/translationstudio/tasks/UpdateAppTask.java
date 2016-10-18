@@ -11,7 +11,7 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.ui.SettingsActivity;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.util.FileUtilities;

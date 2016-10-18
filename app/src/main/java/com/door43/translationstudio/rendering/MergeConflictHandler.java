@@ -5,16 +5,6 @@ import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 
-import com.door43.translationstudio.App;
-import com.door43.translationstudio.core.Chapter;
-import com.door43.translationstudio.core.ChapterTranslation;
-import com.door43.translationstudio.core.Frame;
-import com.door43.translationstudio.core.FrameTranslation;
-import com.door43.translationstudio.core.ProjectTranslation;
-import com.door43.translationstudio.core.SourceTranslation;
-import com.door43.translationstudio.core.TargetTranslation;
-import com.door43.translationstudio.core.Translator;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

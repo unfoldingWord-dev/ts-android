@@ -10,10 +10,9 @@ import android.text.style.LeadingMarginSpan;
 import android.text.style.TypefaceSpan;
 import android.util.Log;
 
-import com.door43.translationstudio.spannables.LinkSpan;
-import com.door43.translationstudio.spannables.Span;
+import com.door43.translationstudio.ui.spannables.LinkSpan;
+import com.door43.translationstudio.ui.spannables.Span;
 
-import org.eclipse.jgit.diff.Edit;
 import org.xml.sax.XMLReader;
 
 import java.lang.reflect.Field;

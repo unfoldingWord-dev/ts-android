@@ -6,7 +6,7 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.ui.SettingsActivity;
 import com.door43.translationstudio.core.Profile;
 import com.door43.util.FileUtilities;
 import org.unfoldingword.tools.taskmanager.ManagedTask;

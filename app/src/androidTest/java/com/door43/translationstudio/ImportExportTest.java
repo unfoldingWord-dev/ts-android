@@ -5,7 +5,7 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import com.door43.translationstudio.core.TargetTranslation;
-import com.door43.translationstudio.core.TranslationType;
+import com.door43.translationstudio.core.ResourceType;
 import com.door43.translationstudio.core.Translator;
 
 import org.unfoldingword.door43client.Door43Client;
@@ -33,7 +33,7 @@ public class ImportExportTest extends InstrumentationTestCase {
     }
 
     public void test01ImportV2Archive() throws Exception {
-        String targetTranslationId = TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, "obs");
+        String targetTranslationId = TargetTranslation.generateTargetTranslationId("aa", "obs", ResourceType.TEXT, "obs");
         this.translator.deleteTargetTranslation(targetTranslationId);
         assertNull(this.translator.getTargetTranslation(targetTranslationId));
         File file = new File(this.testsDir, "3.0.1_uw-obs-aa.tstudio");
@@ -48,7 +48,7 @@ public class ImportExportTest extends InstrumentationTestCase {
     }
 
     public void test02ExportArchive() throws Exception {
-        String targetTranslationId = TargetTranslation.generateTargetTranslationId("aa", "obs", TranslationType.TEXT, "obs");
+        String targetTranslationId = TargetTranslation.generateTargetTranslationId("aa", "obs", ResourceType.TEXT, "obs");
         File outputPath = new File(testsDir, "exported_translation." + Translator.ARCHIVE_EXTENSION);
         if(outputPath.exists()) outputPath.delete();
         assertTrue(!outputPath.exists());

@@ -174,9 +174,9 @@ public class ArchiveDetails {
                     String commit = translationRecordJson.getString("commit_hash");
 
                     // translation type
-                    TranslationType translationType = TranslationType.get(manifest.getJSONObject("type").getString("id"));
-                    if (translationType == null) {
-                        translationType = TranslationType.TEXT;
+                    ResourceType resourceType = ResourceType.get(manifest.getJSONObject("type").getString("id"));
+                    if (resourceType == null) {
+                        resourceType = ResourceType.TEXT;
                     }
 
                     // resource
@@ -186,7 +186,7 @@ public class ArchiveDetails {
                     }
 
                     // build id
-                    String targetTranslationId = TargetTranslation.generateTargetTranslationId(targetLanguageSlug, projectSlug, translationType, resourceSlug);
+                    String targetTranslationId = TargetTranslation.generateTargetTranslationId(targetLanguageSlug, projectSlug, resourceType, resourceSlug);
 
                     targetDetails.add(new TargetTranslationDetails(targetTranslationId, targetLanguageSlug, targetLanguageName, projectSlug, projectName, targetLanguageDirection, commit));
                 }

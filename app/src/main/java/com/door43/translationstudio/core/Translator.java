@@ -91,12 +91,12 @@ public class Translator {
      * @param nativeSpeaker the human translator
      * @param targetLanguage the language that is being translated into
      * @param projectSlug the project that is being translated
-     * @param translationType the type of translation that is occurring
+     * @param resourceType the type of translation that is occurring
      * @param resourceSlug the resource that is being created
      * @param translationFormat the format of the translated text
      * @return A new or existing Target Translation
      */
-    public TargetTranslation createTargetTranslation(NativeSpeaker nativeSpeaker, TargetLanguage targetLanguage, String projectSlug, TranslationType translationType, String resourceSlug, TranslationFormat translationFormat) {
+    public TargetTranslation createTargetTranslation(NativeSpeaker nativeSpeaker, TargetLanguage targetLanguage, String projectSlug, ResourceType resourceType, String resourceSlug, TranslationFormat translationFormat) {
         // TRICKY: force deprecated formats to use new formats
         if(translationFormat == TranslationFormat.USX) {
             translationFormat = TranslationFormat.USFM;
@@ -104,13 +104,13 @@ public class Translator {
             translationFormat = TranslationFormat.MARKDOWN;
         }
 
-        String targetTranslationId = TargetTranslation.generateTargetTranslationId(targetLanguage.slug, projectSlug, translationType, resourceSlug);
+        String targetTranslationId = TargetTranslation.generateTargetTranslationId(targetLanguage.slug, projectSlug, resourceType, resourceSlug);
         TargetTranslation targetTranslation = getTargetTranslation(targetTranslationId);
         if(targetTranslation == null) {
             File targetTranslationDir = new File(this.mRootDir, targetTranslationId);
             try {
                 PackageInfo pInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
-                return TargetTranslation.create(this.mContext, nativeSpeaker, translationFormat, targetLanguage, projectSlug, translationType, resourceSlug, pInfo, targetTranslationDir);
+                return TargetTranslation.create(this.mContext, nativeSpeaker, translationFormat, targetLanguage, projectSlug, resourceType, resourceSlug, pInfo, targetTranslationDir);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -281,7 +281,7 @@ public class Translator {
         String resourceSlug = draftTranslation.project.slug.equals("obs") ? "obs" : Resource.REGULAR_SLUG;
 
         TranslationFormat format = TranslationFormat.parse(draftTranslation.contentMimeType);
-        TargetTranslation t = createTargetTranslation(nativeSpeaker, targetLanguage, draftTranslation.project.slug, TranslationType.TEXT, resourceSlug, format);
+        TargetTranslation t = createTargetTranslation(nativeSpeaker, targetLanguage, draftTranslation.project.slug, ResourceType.TEXT, resourceSlug, format);
 
         // convert legacy usx format to usfm
         boolean convertToUSFM = format == TranslationFormat.USX;

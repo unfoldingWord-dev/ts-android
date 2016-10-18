@@ -21,8 +21,6 @@ import android.view.inputmethod.InputMethodManager;
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.SourceLanguage;
 import org.unfoldingword.door43client.models.TargetLanguage;
-import org.unfoldingword.door43client.models.Translation;
-import org.unfoldingword.resourcecontainer.ContainerTools;
 import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.resourcecontainer.Resource;
 import org.unfoldingword.tools.logger.LogLevel;
@@ -35,8 +33,9 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Util;
-import com.door43.translationstudio.service.BackupService;
-import com.door43.translationstudio.util.SdUtils;
+import com.door43.translationstudio.services.BackupService;
+import com.door43.translationstudio.ui.SettingsActivity;
+import com.door43.util.SdUtils;
 import com.door43.util.FileUtilities;
 import com.door43.util.StorageUtils;
 import com.door43.util.StringUtilities;
@@ -49,14 +48,10 @@ import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -577,7 +572,7 @@ public class App extends Application {
     public static void setLastViewMode(String targetTranslationId, TranslationViewMode viewMode) {
         SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(LAST_VIEW_MODE + targetTranslationId, viewMode.toString());
+        editor.putInt(LAST_VIEW_MODE + targetTranslationId, viewMode.ordinal());
         editor.apply();
     }
 
@@ -590,11 +585,13 @@ public class App extends Application {
      */
     public static TranslationViewMode getLastViewMode(String targetTranslationId) {
         SharedPreferences prefs = sInstance.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
-        TranslationViewMode viewMode = TranslationViewMode.get(prefs.getString(LAST_VIEW_MODE + targetTranslationId, null));
-        if(viewMode == null) {
-            return TranslationViewMode.READ;
-        }
-        return viewMode;
+        try {
+            int modeIndex = prefs.getInt(LAST_VIEW_MODE + targetTranslationId, TranslationViewMode.READ.ordinal());
+            if (modeIndex > 0 && modeIndex < TranslationViewMode.values().length) {
+                return TranslationViewMode.values()[modeIndex];
+            }
+        } catch (Exception e) {}
+        return TranslationViewMode.READ;
     }
 
     /**

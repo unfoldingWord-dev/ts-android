@@ -10,7 +10,7 @@ import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.door43client.models.TargetLanguage;
 import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.git.Repo;
-import com.door43.translationstudio.util.NumericStringComparator;
+import com.door43.util.NumericStringComparator;
 import com.door43.util.FileUtilities;
 import com.door43.util.Manifest;
 
@@ -84,7 +84,7 @@ public class TargetTranslation {
     private String targetLanguageDirection;
     private final String projectId;
     private final String projectName;
-    private final TranslationType translationType;
+    private final ResourceType resourceType;
     private final String translationTypeName;
 
     private String resourceSlug = null;
@@ -118,10 +118,10 @@ public class TargetTranslation {
 
         // translation type
         JSONObject typeJson = this.manifest.getJSONObject(FIELD_MANIFEST_TRANSLATION_TYPE);
-        this.translationType = TranslationType.get(typeJson.getString(FIELD_MANIFEST_ID));
-        this.translationTypeName = Manifest.valueExists(typeJson, FIELD_MANIFEST_NAME) ? typeJson.getString(FIELD_MANIFEST_NAME) : this.translationType.toString().toUpperCase();
+        this.resourceType = ResourceType.get(typeJson.getString(FIELD_MANIFEST_ID));
+        this.translationTypeName = Manifest.valueExists(typeJson, FIELD_MANIFEST_NAME) ? typeJson.getString(FIELD_MANIFEST_NAME) : this.resourceType.toString().toUpperCase();
 
-        if(this.translationType == TranslationType.TEXT) {
+        if(this.resourceType == ResourceType.TEXT) {
             // resource
             JSONObject resourceJson = this.manifest.getJSONObject(FIELD_MANIFEST_RESOURCE);
             this.resourceSlug = resourceJson.getString(FIELD_MANIFEST_ID);
@@ -136,28 +136,28 @@ public class TargetTranslation {
      * @return
      */
     public String getId() {
-        return generateTargetTranslationId(this.targetLanguageId, this.projectId, this.translationType, this.resourceSlug);
+        return generateTargetTranslationId(this.targetLanguageId, this.projectId, this.resourceType, this.resourceSlug);
     }
 
     /**
      * Returns the translation type of the target translation
      * @return
      */
-    public TranslationType getTranslationType() {
-        return translationType;
+    public ResourceType getTranslationType() {
+        return resourceType;
     }
 
     /**
      * Returns a properly formatted target translation id
      * @param targetLanguageSlug
      * @param projectSlug
-     * @param translationType
+     * @param resourceType
      * @param resourceSlug
      * @return
      */
-    public static String generateTargetTranslationId(String targetLanguageSlug, String projectSlug, TranslationType translationType, String resourceSlug) {
-        String id = targetLanguageSlug + "_" + projectSlug + "_" + translationType;
-        if(translationType == TranslationType.TEXT && resourceSlug != null) {
+    public static String generateTargetTranslationId(String targetLanguageSlug, String projectSlug, ResourceType resourceType, String resourceSlug) {
+        String id = targetLanguageSlug + "_" + projectSlug + "_" + resourceType;
+        if(resourceType == ResourceType.TEXT && resourceSlug != null) {
             id += "_" + resourceSlug;
         }
         return id.toLowerCase();
@@ -238,8 +238,8 @@ public class TargetTranslation {
     private TranslationFormat readTranslationFormat() {
         TranslationFormat format = fetchTranslationFormat(manifest);
         if(null == format) {
-            TranslationType translationType = fetchTranslationType(manifest);
-            if(translationType != TranslationType.TEXT) {
+            ResourceType resourceType = fetchTranslationType(manifest);
+            if(resourceType != ResourceType.TEXT) {
                 return TranslationFormat.MARKDOWN;
             } else {
                 String projectIdStr = fetchProjectID(manifest);
@@ -274,7 +274,7 @@ public class TargetTranslation {
         return projectIdStr;
     }
 
-    public static TranslationType fetchTranslationType(Manifest manifest) {
+    public static ResourceType fetchTranslationType(Manifest manifest) {
         String translationTypeStr = "";
         JSONObject typeJson = manifest.getJSONObject(FIELD_MANIFEST_TRANSLATION_TYPE);
         if(typeJson != null) {
@@ -284,7 +284,7 @@ public class TargetTranslation {
                 translationTypeStr = "";
             }
         }
-        return TranslationType.get(translationTypeStr);
+        return ResourceType.get(translationTypeStr);
     }
 
     /**
@@ -321,14 +321,14 @@ public class TargetTranslation {
      * @param translationFormat
      * @param targetLanguage
      * @param projectId
-     * @param translationType
+     * @param resourceType
      * @param resourceSlug
      * @param packageInfo
      * @param targetTranslationDir
      * @return
      * @throws Exception
      */
-    public static TargetTranslation create(Context context, NativeSpeaker translator, TranslationFormat translationFormat, TargetLanguage targetLanguage, String projectId, TranslationType translationType, String resourceSlug, PackageInfo packageInfo, File targetTranslationDir) throws Exception {
+    public static TargetTranslation create(Context context, NativeSpeaker translator, TranslationFormat translationFormat, TargetLanguage targetLanguage, String projectId, ResourceType resourceType, String resourceSlug, PackageInfo packageInfo, File targetTranslationDir) throws Exception {
         targetTranslationDir.mkdirs();
         Manifest manifest = Manifest.generate(targetTranslationDir);
 
@@ -338,8 +338,8 @@ public class TargetTranslation {
         projectJson.put(FIELD_MANIFEST_NAME, "");
         manifest.put(FIELD_MANIFEST_PROJECT, projectJson);
         JSONObject typeJson = new JSONObject();
-        typeJson.put(FIELD_MANIFEST_ID, translationType);
-        typeJson.put(FIELD_MANIFEST_NAME, translationType.getName());
+        typeJson.put(FIELD_MANIFEST_ID, resourceType);
+        typeJson.put(FIELD_MANIFEST_NAME, resourceType.getName());
         manifest.put(FIELD_MANIFEST_TRANSLATION_TYPE, typeJson);
         JSONObject generatorJson = new JSONObject();
         generatorJson.put(FIELD_MANIFEST_NAME, APPLICATION_NAME);
@@ -562,19 +562,6 @@ public class TargetTranslation {
 
     /**
      * Returns the translation of a frame
-     *
-     * @param frame
-     * @return
-     */
-    public FrameTranslation getFrameTranslation(Frame frame) {
-        if(frame == null) {
-            return null;
-        }
-        return getFrameTranslation(frame.getChapterId(), frame.getId(), frame.getFormat());
-    }
-
-    /**
-     * Returns the translation of a frame
      * @param chapterId
      * @param frameId
      * @param format
@@ -592,20 +579,6 @@ public class TargetTranslation {
         }
         // give empty translation
         return new FrameTranslation(frameId, chapterId, "", format, false);
-    }
-
-    /**
-     * Returns the translation of a chapter
-     * This includes the chapter title and reference
-     *
-     * @param chapter
-     * @return
-     */
-    public ChapterTranslation getChapterTranslation(Chapter chapter) {
-        if(chapter == null) {
-            return null;
-        }
-        return getChapterTranslation(chapter.getId());
     }
 
     /**

@@ -4,7 +4,7 @@ import android.content.Context;
 import android.test.InstrumentationTestCase;
 
 import com.door43.translationstudio.App;
-import com.door43.translationstudio.spannables.USFMVerseSpan;
+import com.door43.translationstudio.ui.spannables.USFMVerseSpan;
 import com.door43.util.FileUtilities;
 
 import org.json.JSONArray;
@@ -473,10 +473,10 @@ public class ImportUsfmTest extends InstrumentationTestCase {
                 assertTrue("Import Projects count should be greater than zero, but is " + projects.length, projects.length > 0);
             }
             for (File project : projects) {
-                Chapter[] chapters = null;//mLibrary.getChapters(sourceTranslation);
-                for (Chapter chapter : chapters) {
+                String[] chapters = null;//mLibrary.getChapters(sourceTranslation);
+                for (String chapter : chapters) {
                     // verify chapter
-                    File chapterPath = new File(project, chapter.getId());
+                    File chapterPath = new File(project, chapter);
                     assertTrue("Chapter missing " + chapterPath.toString(), chapterPath.exists());
 
                     // verify chunks

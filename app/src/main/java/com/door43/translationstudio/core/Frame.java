@@ -1,14 +1,11 @@
 package com.door43.translationstudio.core;
 
 import com.door43.translationstudio.rendering.Clickables;
-import com.door43.translationstudio.spannables.USFMVerseSpan;
-import com.door43.translationstudio.spannables.USXVerseSpan;
+import com.door43.translationstudio.ui.spannables.USFMVerseSpan;
+import com.door43.translationstudio.ui.spannables.USXVerseSpan;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by joel on 8/26/2015.
@@ -195,7 +192,7 @@ public class Frame {
      */
     public int[] getVerseRange(CharSequence text) {
 
-        return Frame.getVerseRange(text, getFormat());
+        return getVerseRange(text, getFormat());
     }
 
 

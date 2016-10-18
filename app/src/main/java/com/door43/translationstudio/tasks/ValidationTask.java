@@ -1,16 +1,14 @@
 package com.door43.translationstudio.tasks;
 
 import com.door43.translationstudio.App;
-import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.ProjectTranslation;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.newui.publish.ValidationItem;
+import com.door43.translationstudio.ui.publish.ValidationItem;
 import com.door43.translationstudio.rendering.MergeConflictHandler;
 
 import org.json.JSONException;
@@ -21,7 +19,6 @@ import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

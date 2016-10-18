@@ -25,28 +25,28 @@
         </provider>
 
         <service
-            android:name=".service.BackupService"
+            android:name=".services.BackupService"
             android:label="Backup Manager" />
         <service
-            android:name=".service.BroadcastService"
+            android:name=".services.BroadcastService"
             android:label="Services Broadcaster" />
         <service
-            android:name=".service.BroadcastListenerService"
+            android:name=".services.BroadcastListenerService"
             android:label="Services Listener" />
         <service
-            android:name=".service.ServerService"
+            android:name=".services.ServerService"
             android:label="Server Service" />
         <service
-            android:name=".service.ClientService"
+            android:name=".services.ClientService"
             android:label="Client Service" />
 
         <activity
-            android:name=".TermsOfUseActivity"
+            android:name=".ui.TermsOfUseActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".SplashScreenActivity"
+            android:name=".ui.SplashScreenActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar">
@@ -57,23 +57,23 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".SettingsActivity"
+            android:name=".ui.SettingsActivity"
             android:launchMode="singleTop"
             android:label="@string/title_activity_settings"
-            android:parentActivityName=".newui.home.HomeActivity">
+            android:parentActivityName=".ui.home.HomeActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.door43.translationstudio.newui.home.HomeActivity" />
+                android:value="com.door43.translationstudio.ui.home.HomeActivity" />
         </activity>
         <activity
-            android:name=".CrashReporterActivity"
+            android:name=".ui.CrashReporterActivity"
             android:launchMode="singleTop"
             android:label="@string/title_activity_crash_reporter" />
         <activity
-            android:name=".ImportFileChooserActivity"
+            android:name=".ui.ImportFileChooserActivity"
             android:label="@string/title_file_browser" />
         <activity
-            android:name=".DeveloperToolsActivity"
+            android:name=".ui.devtools.DeveloperToolsActivity"
             android:label="@string/title_activity_developer">
             <intent-filter>
                 <action android:name="com.activity.DeveloperToolsActivity" />
@@ -83,37 +83,10 @@
 
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.door43.translationstudio.SettingsActivity" />
+                android:value="com.door43.translationstudio.ui.SettingsActivity" />
         </activity>
         <activity
-            android:name=".newui.library.ServerLibraryActivity"
-            android:label="@string/title_activity_project_library"
-            android:launchMode="singleTop"
-            android:parentActivityName=".newui.home.HomeActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".newui.home.HomeActivity" />
-            <meta-data
-                android:name="android.app.searchable"
-                android:resource="@xml/searchable" />
-
-            <intent-filter>
-                <action android:name="android.intent.action.SEARCH" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".newui.library.ProjectLibraryDetailActivity"
-            android:label="@string/title_project_detail"
-            android:parentActivityName=".newui.library.ServerLibraryActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".newui.library.ServerLibraryActivity" />
-        </activity>
-        <activity
-            android:name=".newui.home.HomeActivity"
+            android:name=".ui.home.HomeActivity"
             android:launchMode="singleTop"
             android:label="@string/title_activity_target_translations"
             android:theme="@style/AppTheme.NoActionBar">
@@ -136,32 +109,32 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".newui.newtranslation.NewTargetTranslationActivity"
+            android:name=".ui.newtranslation.NewTargetTranslationActivity"
             android:label="@string/title_activity_new_target_translation"
-            android:parentActivityName=".newui.home.HomeActivity">
+            android:parentActivityName=".ui.home.HomeActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".newui.home.HomeActivity" />
+                android:value=".ui.home.HomeActivity" />
         </activity>
         <activity
-            android:name=".newui.translate.TargetTranslationActivity"
+            android:name=".ui.translate.TargetTranslationActivity"
             android:label="@string/title_activity_target_translation_detail"
-            android:parentActivityName=".newui.home.HomeActivity"
+            android:parentActivityName=".ui.home.HomeActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".newui.home.HomeActivity" />
+                android:value=".ui.home.HomeActivity" />
         </activity>
         <activity
-            android:name=".newui.publish.PublishActivity"
+            android:name=".ui.publish.PublishActivity"
             android:label="@string/title_activity_publish"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".newui.newlanguage.NewTempLanguageActivity"
+            android:name=".ui.newlanguage.NewTempLanguageActivity"
             android:label="@string/title_activity_new_language"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".newui.legal.LegalDocumentActivity"
+            android:name=".ui.legal.LegalDocumentActivity"
             android:label=""
             android:theme="@style/AppTheme.Transparent">
             <intent-filter>
@@ -171,23 +144,23 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ProfileActivity"
+            android:name=".ui.ProfileActivity"
             android:label="@string/title_activity_profile"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".newui.draft.DraftActivity"
+            android:name=".ui.draft.DraftActivity"
             android:label="@string/preview">
 
             <!-- android:theme="@style/AppTheme.NoActionBar" -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".newui.translate.TargetTranslationActivity" />
+                android:value=".ui.translate.TargetTranslationActivity" />
         </activity>
-        <activity android:name=".RegisterDoor43Activity" />
-        <activity android:name=".LoginDoor43Activity" />
-        <activity android:name=".RegisterOfflineActivity"></activity>
+        <activity android:name=".ui.RegisterDoor43Activity" />
+        <activity android:name=".ui.LoginDoor43Activity" />
+        <activity android:name=".ui.RegisterOfflineActivity"></activity>
         <activity
-            android:name=".newui.ImportUsfmActivity"
+            android:name=".ui.ImportUsfmActivity"
             android:label="@string/title_activity_import_usfm_language">
         </activity>
     </application>

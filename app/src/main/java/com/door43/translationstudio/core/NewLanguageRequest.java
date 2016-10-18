@@ -5,9 +5,10 @@ import android.provider.Settings;
 import android.support.annotation.Nullable;
 
 import org.unfoldingword.tools.logger.Logger;
+
+import com.door43.questionnaire.QuestionnairePager;
 import com.door43.util.Security;
 
-import org.unfoldingword.door43client.models.Questionnaire;
 import org.unfoldingword.door43client.models.TargetLanguage;
 
 import org.json.JSONArray;

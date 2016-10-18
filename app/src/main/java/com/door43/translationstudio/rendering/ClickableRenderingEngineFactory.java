@@ -1,7 +1,7 @@
 package com.door43.translationstudio.rendering;
 
 import com.door43.translationstudio.core.TranslationFormat;
-import com.door43.translationstudio.spannables.Span;
+import com.door43.translationstudio.ui.spannables.Span;
 
 /**
  * ClickableRenderingEngineFactory for creating ClickableRenderingEngine based on format

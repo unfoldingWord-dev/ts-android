@@ -4,10 +4,9 @@ import android.content.Context;
 import android.test.InstrumentationTestCase;
 import android.util.Log;
 
-import com.door43.translationstudio.newui.translate.ReviewModeAdapter;
+import com.door43.translationstudio.ui.translate.ReviewModeAdapter;
 import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.RenderingGroup;
-import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.util.FileUtilities;
 
 import org.unfoldingword.tools.logger.Logger;
