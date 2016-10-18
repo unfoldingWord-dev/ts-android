@@ -17,9 +17,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.Project;
-import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Typography;
@@ -27,14 +24,19 @@ import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.tasks.DownloadProjectImageTask;
 import com.door43.translationstudio.tasks.DownloadSourceLanguageTask;
 import com.door43.translationstudio.App;
+
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.Translation;
+import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
+
+import org.unfoldingword.door43client.models.SourceLanguage;
 
 public class ServerLibraryDetailFragment extends BaseFragment implements ManagedTask.OnFinishedListener {
     public static final String ARG_PROJECT_ID = "item_id";
@@ -44,7 +46,7 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
     public static final String DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP = "download_source_language_task";
     private Project mProject;
     private String mImagePath;
-    private Library mServerLibrary;
+    private Door43Client mServerLibrary;
     private ViewHolder mHolder;
     private String mSelectedTab = TAB_SOURCE_LANGUAGES;
     private OnEventListener mListener;
@@ -57,7 +59,7 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
 
         if (getArguments().containsKey(ARG_PROJECT_ID)) {
             String projectId = getArguments().getString(ARG_PROJECT_ID);
-            mProject = mServerLibrary.getProject(projectId, App.getDeviceLanguageCode());
+            mProject = mServerLibrary.index().getProject(App.getDeviceLanguageCode(), projectId);
             // TODO: handle null project
 
         }
@@ -87,13 +89,13 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
 
         if(mHolder != null) {
             // project info
-            mHolder.mDateModified.setText("v. " + mProject.dateModified);
+//            mHolder.mDateModified.setText("v. " + mProject.dateModified);
             mHolder.mProjectTitle.setText(mProject.name);
             mHolder.mProjectDescription.setText(mProject.description);
             mHolder.mIcon.setBackgroundResource(R.drawable.ic_library_books_black_24dp);
 
             // delete project
-            if (App.getLibrary().projectHasSource(mProject.getId())) {
+            if (false) {///App.getLibrary().projectHasSource(mProject.slug)) {
                 mHolder.mDeleteButton.setVisibility(View.VISIBLE);
                 mHolder.mDeleteButton.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -102,7 +104,7 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
                         TargetTranslation[] targetTranslations = App.getTranslator().getTargetTranslations();
                         boolean projectHasTargetTranslations = false;
                         for(TargetTranslation targetTranslation:targetTranslations){
-                            if(targetTranslation.getProjectId().equals(mProject.getId())) {
+                            if(targetTranslation.getProjectId().equals(mProject.slug)) {
                                 projectHasTargetTranslations = true;
                                 break;
                             }
@@ -122,8 +124,8 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
                                     .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
-                                            App.getLibrary().deleteProject(mProject.getId());
-                                            mListener.onProjectDeleted(mProject.getId());
+//                                            App.getLibrary().deleteProject(mProject.slug);
+                                            mListener.onProjectDeleted(mProject.slug);
                                         }
                                     })
                                     .setNegativeButton(R.string.no, null)
@@ -137,9 +139,9 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
 
 
             // fonts
-            SourceLanguage fontSourceLanguage = mServerLibrary.getSourceLanguage(mProject.getId(), mProject.sourceLanguageId);
-            Typography.formatSub(getActivity(), Typography.TranslationType.SOURCE, mHolder.mProjectDescription, fontSourceLanguage.getId(), fontSourceLanguage.getDirection());
-            Typography.formatTitle(getActivity(), Typography.TranslationType.SOURCE, mHolder.mProjectTitle, fontSourceLanguage.getId(), fontSourceLanguage.getDirection());
+            SourceLanguage fontSourceLanguage = mServerLibrary.index().getSourceLanguage(mProject.languageSlug);
+            Typography.formatSub(getActivity(), Typography.TranslationType.SOURCE, mHolder.mProjectDescription, fontSourceLanguage.slug, fontSourceLanguage.direction);
+            Typography.formatTitle(getActivity(), Typography.TranslationType.SOURCE, mHolder.mProjectTitle, fontSourceLanguage.slug, fontSourceLanguage.direction);
 
             // custom project icon
             if (mImagePath == null) {
@@ -190,9 +192,9 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
                 public void onTabSelected(TabLayout.Tab tab) {
                     mSelectedTab = (String) tab.getTag();
                     if(mSelectedTab.equals(TAB_DRAFT_LANGUAGES)) {
-                        mHolder.mAdapter.changeDataSet(mProject.getId(), mServerLibrary.getAvailableUpdates(), draftLanguages);
+//                        mHolder.mAdapter.changeDataSet(mProject.slug, mServerLibrary.getAvailableUpdates(), draftLanguages);
                     } else {
-                        mHolder.mAdapter.changeDataSet(mProject.getId(), mServerLibrary.getAvailableUpdates(), sourceLanguages);
+//                        mHolder.mAdapter.changeDataSet(mProject.slug, mServerLibrary.getAvailableUpdates(), sourceLanguages);
                     }
                 }
 
@@ -209,9 +211,9 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
 
             // load languages
             if(mSelectedTab.equals(TAB_DRAFT_LANGUAGES)) {
-                mHolder.mAdapter.changeDataSet(mProject.getId(), mServerLibrary.getAvailableUpdates(), draftLanguages);
+//                mHolder.mAdapter.changeDataSet(mProject.slug, mServerLibrary.getAvailableUpdates(), draftLanguages);
             } else {
-                mHolder.mAdapter.changeDataSet(mProject.getId(), mServerLibrary.getAvailableUpdates(), sourceLanguages);
+//                mHolder.mAdapter.changeDataSet(mProject.slug, mServerLibrary.getAvailableUpdates(), sourceLanguages);
             }
 
             // list
@@ -221,14 +223,14 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
                     final ServerLibraryLanguageAdapter.ListItem item = mHolder.mAdapter.getItem(position);
 
                     // ignore clicks if a task is already running.
-                    DownloadSourceLanguageTask task = (DownloadSourceLanguageTask)TaskManager.getTask(mProject.getId() + "-" + item.sourceLanguage.getId());
+                    DownloadSourceLanguageTask task = (DownloadSourceLanguageTask)TaskManager.getTask(mProject.slug + "-" + item.sourceLanguage.slug);
                     if(task == null || task.isFinished()) {
-                        boolean isDownloaded = App.getLibrary().sourceLanguageHasSource(mProject.getId(), item.sourceLanguage.getId());
+                        boolean isDownloaded = false;//App.getLibrary().sourceLanguageHasSource(mProject.slug, item.sourceLanguage.slug);
                         if (!isDownloaded) {
                             // just download the update
-                            task = new DownloadSourceLanguageTask(mProject.getId(), item.sourceLanguage.getId());
+                            task = new DownloadSourceLanguageTask(mProject.slug, item.sourceLanguage.slug);
                             task.addOnFinishedListener(ServerLibraryDetailFragment.this);
-                            TaskManager.addTask(task, mProject.getId() + "-" + item.sourceLanguage.getId());
+                            TaskManager.addTask(task, mProject.slug + "-" + item.sourceLanguage.slug);
                             TaskManager.groupTask(task, DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP);
                             task.addOnFinishedListener(item.onFinishedListener);
                             task.addOnProgressListener(item.onProgressListener);
@@ -241,9 +243,9 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
                                     .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
-                                            DownloadSourceLanguageTask task = new DownloadSourceLanguageTask(mProject.getId(), item.sourceLanguage.getId());
+                                            DownloadSourceLanguageTask task = new DownloadSourceLanguageTask(mProject.slug, item.sourceLanguage.slug);
                                             task.addOnFinishedListener(ServerLibraryDetailFragment.this);
-                                            TaskManager.addTask(task, mProject.getId() + "-" + item.sourceLanguage.getId());
+                                            TaskManager.addTask(task, mProject.slug + "-" + item.sourceLanguage.slug);
                                             TaskManager.groupTask(task, DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP);
                                             task.addOnFinishedListener(item.onFinishedListener);
                                             task.addOnProgressListener(item.onProgressListener);
@@ -276,13 +278,13 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
     private List<SourceLanguage> getSourceLanguages() {
         // TRICKY: we convert the source translations to source languages so we only get
         // languages that meet the minimum checking level
-        SourceTranslation[] sourceTranslations = mServerLibrary.getSourceTranslations(mProject.getId());
+        List<Translation> sourceTranslations = null;//mServerLibrary.index().getTranslations(mProject.slug, App.MIN_CHECKING_LEVEL, "book", "all");
         Map<String, SourceLanguage> sourceLanguages = new HashMap<>();
-        for(SourceTranslation sourceTranslation:sourceTranslations) {
-            SourceLanguage sourceLanguage = mServerLibrary.getSourceLanguage(mProject.getId(), sourceTranslation.sourceLanguageSlug);
+        for(Translation sourceTranslation:sourceTranslations) {
+            SourceLanguage sourceLanguage = mServerLibrary.index().getSourceLanguage(sourceTranslation.language.slug);
             // TRICKY: a source language could be represented several times due to multiple resources
-            if(!sourceLanguages.containsKey(sourceLanguage.getId())) {
-                sourceLanguages.put(sourceLanguage.getId(), sourceLanguage);
+            if(!sourceLanguages.containsKey(sourceLanguage.slug)) {
+                sourceLanguages.put(sourceLanguage.slug, sourceLanguage);
             }
         }
         return new ArrayList(sourceLanguages.values());
@@ -295,13 +297,13 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
     private List<SourceLanguage> getDraftLanguages() {
         // TRICKY: we convert the source translations to source languages so we only get
         // languages that meet the minimum checking level
-        SourceTranslation[] draftTranslations = mServerLibrary.getDraftTranslations(mProject.getId());
+        List<SourceTranslation> draftTranslations = App.getDraftTranslations(mProject.slug);
         Map<String, SourceLanguage> draftLanguages = new HashMap<>();
         for(SourceTranslation draftTranslation:draftTranslations) {
-            SourceLanguage sourceLanguage = mServerLibrary.getSourceLanguage(mProject.getId(), draftTranslation.sourceLanguageSlug);
+            SourceLanguage sourceLanguage = mServerLibrary.index().getSourceLanguage(draftTranslation.language.slug);
             // TRICKY: a source language could be represented several times due to multiple resources
-            if(!draftLanguages.containsKey(sourceLanguage.getId())) {
-                draftLanguages.put(sourceLanguage.getId(), sourceLanguage);
+            if(!draftLanguages.containsKey(sourceLanguage.slug)) {
+                draftLanguages.put(sourceLanguage.slug, sourceLanguage);
             }
         }
         return new ArrayList<>(draftLanguages.values());
@@ -365,7 +367,7 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
      * @param projectId
      */
     public void setProjectId(String projectId) {
-        mProject = mServerLibrary.getProject(projectId, App.getDeviceLanguageCode());
+        mProject = mServerLibrary.index().getProject(App.getDeviceLanguageCode(), projectId, true);
         // TODO: handle null project
         rebuildLayout();
     }

@@ -14,7 +14,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.Layout;
-import android.util.Log;
 import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -33,12 +32,15 @@ import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import org.unfoldingword.door43client.models.Translation;
+import org.unfoldingword.resourcecontainer.ContainerTools;
+import org.unfoldingword.resourcecontainer.Resource;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
@@ -49,6 +51,7 @@ import com.door43.translationstudio.newui.draft.DraftActivity;
 import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.util.SdUtils;
 import com.door43.widget.VerticalSeekBar;
+import com.door43.widget.VerticalSeekBarHint;
 import com.door43.widget.ViewUtil;
 import com.door43.translationstudio.newui.BaseActivity;
 
@@ -61,13 +64,12 @@ import it.moondroid.seekbarhint.library.SeekBarHint;
 
 public class TargetTranslationActivity extends BaseActivity implements ViewModeFragment.OnEventListener, FirstTabFragment.OnEventListener, Spinner.OnItemSelectedListener {
 
-    private static final String TAG = TargetTranslationActivity.class.getSimpleName();
+    private static final String TAG = "TranslationActivity";
 
     private static final long COMMIT_INTERVAL = 2 * 60 * 1000; // commit changes every 2 minutes
     public static final String STATE_SEARCH_ENABLED = "state_search_enabled";
     public static final int SEARCH_START_DELAY = 1000;
     public static final String STATE_SEARCH_TEXT = "state_search_text";
-    public static final int TRANSLATION_SEARCH_TYPE = 1;
     private Fragment mFragment;
     private SeekBar mSeekBar;
     private ViewGroup mGraduations;
@@ -77,7 +79,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private ImageButton mReadButton;
     private ImageButton mChunkButton;
     private ImageButton mReviewButton;
-    private List<SourceTranslation> draftTranslations;
     private ImageButton mMoreButton;
     private boolean mSearchEnabled = false;
     private TextWatcher mSearchTextWatcher;
@@ -108,19 +109,19 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             return;
         }
 
+        // reset cached values
+        ViewModeFragment.reset();
+
         // open used source translations by default
-        if(App.getOpenSourceTranslationIds(mTargetTranslation.getId()).length == 0) {
-            String[] slugs = mTargetTranslation.getSourceTranslations();
-            for (String slug : slugs) {
-                SourceTranslation sourceTranslation = App.getLibrary().getSourceTranslation(slug);
-                if(sourceTranslation != null) {
-                    App.addOpenSourceTranslation(mTargetTranslation.getId(), sourceTranslation.getId());
-                }
+        if(App.getSelectedSourceTranslations(mTargetTranslation.getId()).length == 0) {
+            String[] resourceContainerSlugs = mTargetTranslation.getSourceTranslations();
+            for (String slug : resourceContainerSlugs) {
+                App.addOpenSourceTranslation(mTargetTranslation.getId(), slug);
             }
         }
 
         // notify user that a draft translation exists the first time actvity starts
-        if(savedInstanceState == null && draftIsAvailable() && !targetTranslationHasDraft()) {
+        if(savedInstanceState == null && draftIsAvailable() && mTargetTranslation.numTranslated() == 0) {
             Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.draft_translation_exists, Snackbar.LENGTH_LONG)
                     .setAction(R.string.preview, new View.OnClickListener() {
                         @Override
@@ -170,7 +171,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 // TODO: udpate menu
             }
         }
-
 
         setUpSeekBar();
 
@@ -228,7 +228,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                progress = handleItemCountIfChanged(progress);
+//                progress = handleItemCountIfChanged(progress);
                 int correctedProgress = correctProgress(progress);
                 correctedProgress = limitRange(correctedProgress, 0, mSeekBar.getMax() - 1);
                 int position = correctedProgress / mSeekbarMultiplier;
@@ -312,14 +312,14 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      */
     private String getFormattedChapter(int progress) {
         int position = computePositionFromProgress(progress);
-        String chapter = getChapterID(position);
+        String chapter = getChapterSlug(position);
         String displayedText = " " + chapter + " ";
         return displayedText;
     }
 
     public void onSaveInstanceState(Bundle out) {
         out.putBoolean(STATE_SEARCH_ENABLED, mSearchEnabled);
-        String searchText = getSearchText();
+        String searchText = getFilterText();
         if( mSearchEnabled ) {
             out.putString(STATE_SEARCH_TEXT, searchText);
         }
@@ -328,95 +328,97 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     private void buildMenu() {
-        mMoreButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                PopupMenu moreMenu = new PopupMenu(TargetTranslationActivity.this, v);
-                ViewUtil.forcePopupMenuIcons(moreMenu);
-                moreMenu.getMenuInflater().inflate(R.menu.menu_target_translation_detail, moreMenu.getMenu());
+        if(mMoreButton != null) {
+            mMoreButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    PopupMenu moreMenu = new PopupMenu(TargetTranslationActivity.this, v);
+                    ViewUtil.forcePopupMenuIcons(moreMenu);
+                    moreMenu.getMenuInflater().inflate(R.menu.menu_target_translation_detail, moreMenu.getMenu());
 
-                // display menu item for draft translations
-                MenuItem draftsMenuItem = moreMenu.getMenu().findItem(R.id.action_drafts_available);
-                draftsMenuItem.setVisible(draftIsAvailable() && !targetTranslationHasDraft());
+                    // display menu item for draft translations
+                    MenuItem draftsMenuItem = moreMenu.getMenu().findItem(R.id.action_drafts_available);
+                    draftsMenuItem.setVisible(draftIsAvailable());
 
-                MenuItem searchMenuItem = moreMenu.getMenu().findItem(R.id.action_search);
-                boolean searchSupported = isSearchSupported();
-                searchMenuItem.setVisible(searchSupported);
+                    MenuItem searchMenuItem = moreMenu.getMenu().findItem(R.id.action_search);
+                    boolean searchSupported = isSearchSupported();
+                    searchMenuItem.setVisible(searchSupported);
 
-                moreMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
-                        switch (item.getItemId()) {
-                            case R.id.action_translations:
-                                finish();
-                                return true;
-                            case R.id.action_publish:
-                                Intent publishIntent = new Intent(TargetTranslationActivity.this, PublishActivity.class);
-                                publishIntent.putExtra(PublishActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
-                                publishIntent.putExtra(PublishActivity.EXTRA_CALLING_ACTIVITY, PublishActivity.ACTIVITY_TRANSLATION);
-                                startActivity(publishIntent);
-                                // TRICKY: we may move back and forth between the publisher and translation activites
-                                // so we finish to avoid filling the stack.
-                                finish();
-                                return true;
-                            case R.id.action_drafts_available:
-                                Intent intent = new Intent(TargetTranslationActivity.this, DraftActivity.class);
-                                intent.putExtra(DraftActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
-                                startActivity(intent);
-                                return true;
-                            case R.id.action_backup:
-                                FragmentTransaction backupFt = getFragmentManager().beginTransaction();
-                                Fragment backupPrev = getFragmentManager().findFragmentByTag(BackupDialog.TAG);
-                                if (backupPrev != null) {
-                                    backupFt.remove(backupPrev);
-                                }
-                                backupFt.addToBackStack(null);
+                    moreMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem item) {
+                            switch (item.getItemId()) {
+                                case R.id.action_translations:
+                                    finish();
+                                    return true;
+                                case R.id.action_publish:
+                                    Intent publishIntent = new Intent(TargetTranslationActivity.this, PublishActivity.class);
+                                    publishIntent.putExtra(PublishActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                                    publishIntent.putExtra(PublishActivity.EXTRA_CALLING_ACTIVITY, PublishActivity.ACTIVITY_TRANSLATION);
+                                    startActivity(publishIntent);
+                                    // TRICKY: we may move back and forth between the publisher and translation activites
+                                    // so we finish to avoid filling the stack.
+                                    finish();
+                                    return true;
+                                case R.id.action_drafts_available:
+                                    Intent intent = new Intent(TargetTranslationActivity.this, DraftActivity.class);
+                                    intent.putExtra(DraftActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                                    startActivity(intent);
+                                    return true;
+                                case R.id.action_backup:
+                                    FragmentTransaction backupFt = getFragmentManager().beginTransaction();
+                                    Fragment backupPrev = getFragmentManager().findFragmentByTag(BackupDialog.TAG);
+                                    if (backupPrev != null) {
+                                        backupFt.remove(backupPrev);
+                                    }
+                                    backupFt.addToBackStack(null);
 
-                                BackupDialog backupDialog = new BackupDialog();
-                                Bundle args = new Bundle();
-                                args.putString(BackupDialog.ARG_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
-                                backupDialog.setArguments(args);
-                                backupDialog.show(backupFt, BackupDialog.TAG);
-                                return true;
-                            case R.id.action_print:
-                                FragmentTransaction printFt = getFragmentManager().beginTransaction();
-                                Fragment printPrev = getFragmentManager().findFragmentByTag("printDialog");
-                                if (printPrev != null) {
-                                    printFt.remove(printPrev);
-                                }
-                                printFt.addToBackStack(null);
+                                    BackupDialog backupDialog = new BackupDialog();
+                                    Bundle args = new Bundle();
+                                    args.putString(BackupDialog.ARG_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                                    backupDialog.setArguments(args);
+                                    backupDialog.show(backupFt, BackupDialog.TAG);
+                                    return true;
+                                case R.id.action_print:
+                                    FragmentTransaction printFt = getFragmentManager().beginTransaction();
+                                    Fragment printPrev = getFragmentManager().findFragmentByTag("printDialog");
+                                    if (printPrev != null) {
+                                        printFt.remove(printPrev);
+                                    }
+                                    printFt.addToBackStack(null);
 
-                                PrintDialog printDialog = new PrintDialog();
-                                Bundle printArgs = new Bundle();
-                                printArgs.putString(PrintDialog.ARG_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
-                                printDialog.setArguments(printArgs);
-                                printDialog.show(printFt, "printDialog");
-                                return true;
-                            case R.id.action_feedback:
-                                FragmentTransaction ft = getFragmentManager().beginTransaction();
-                                Fragment prev = getFragmentManager().findFragmentByTag("bugDialog");
-                                if (prev != null) {
-                                    ft.remove(prev);
-                                }
-                                ft.addToBackStack(null);
+                                    PrintDialog printDialog = new PrintDialog();
+                                    Bundle printArgs = new Bundle();
+                                    printArgs.putString(PrintDialog.ARG_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                                    printDialog.setArguments(printArgs);
+                                    printDialog.show(printFt, "printDialog");
+                                    return true;
+                                case R.id.action_feedback:
+                                    FragmentTransaction ft = getFragmentManager().beginTransaction();
+                                    Fragment prev = getFragmentManager().findFragmentByTag("bugDialog");
+                                    if (prev != null) {
+                                        ft.remove(prev);
+                                    }
+                                    ft.addToBackStack(null);
 
-                                FeedbackDialog dialog = new FeedbackDialog();
-                                dialog.show(ft, "bugDialog");
-                                return true;
-                            case R.id.action_settings:
-                                Intent settingsIntent = new Intent(TargetTranslationActivity.this, SettingsActivity.class);
-                                startActivity(settingsIntent);
-                                return true;
-                            case R.id.action_search:
-                                setSearchBarVisibility(true);
-                                return true;
+                                    FeedbackDialog dialog = new FeedbackDialog();
+                                    dialog.show(ft, "bugDialog");
+                                    return true;
+                                case R.id.action_settings:
+                                    Intent settingsIntent = new Intent(TargetTranslationActivity.this, SettingsActivity.class);
+                                    startActivity(settingsIntent);
+                                    return true;
+                                case R.id.action_search:
+                                    setSearchBarVisibility(true);
+                                    return true;
+                            }
+                            return false;
                         }
-                        return false;
-                    }
-                });
-                moreMenu.show();
-            }
-        });
+                    });
+                    moreMenu.show();
+                }
+            });
+        }
     }
 
     /**
@@ -424,16 +426,16 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      */
     private void removeSearchBar() {
         setSearchBarVisibility(false);
-        setSearchText(null);
-        setSearchFilter(null); // clear search filter
+        setFilterText(null);
+        filter(null); // clear search filter
     }
 
     /**
      * method to see if searching is supported
      */
     public boolean isSearchSupported() {
-        if(mFragment instanceof ViewModeFragment) {
-            return ((ViewModeFragment) mFragment).isSearchSupported();
+        if(mFragment != null) {
+            return ((ViewModeFragment) mFragment).hasFilter();
         }
         return false;
     }
@@ -492,14 +494,14 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                     edit.addTextChangedListener(mSearchTextWatcher);
                     setFocusOnTextSearchEdit();
                 } else {
-                    setSearchFilter(null); // clear search filter
-                    App.closeKeyboard(TargetTranslationActivity.this); // since we forced on the keyboard on search start, we need to remove it
+                    filter(null); // clear search filter
+                    App.closeKeyboard(TargetTranslationActivity.this);
                 }
 
                 if(mSearchString != null) { // restore after rotate
                     edit.setText(mSearchString);
                     if(show) {
-                        setSearchFilter(mSearchString);
+                        filter(mSearchString);
                     }
                     mSearchString = null;
                 }
@@ -535,6 +537,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      *   to bring up keyboard.  Guessing that it is because there is so much redrawing that is
      *   happening on bringing up the search bar.
      */
+    @Deprecated
     private void setFocusOnTextSearchEdit() {
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
@@ -576,7 +579,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     public void onItemSelected(AdapterView<?> parent, View view,
                                int pos, long id) {
 
-        setSearchFilter(getSearchText());  // do search with search string in edit control
+        filter(getFilterText());  // do search with search string in edit control
     }
 
     /**
@@ -588,9 +591,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     /**
-     * get the type of search (position)
+     * get the type of search
      */
-    private int getSearchTypeSelection() {
+    private TranslationFilter.FilterSubject getFilterSubject() {
         LinearLayout searchPane = (LinearLayout) findViewById(R.id.search_pane);
         if(searchPane != null) {
 
@@ -598,18 +601,17 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             if(type != null) {
                 int pos = type.getSelectedItemPosition();
                 if(pos >= 0) {
-                    return pos;
+                    return TranslationFilter.FilterSubject.SOURCE;
                 }
             }
         }
-
-        return 0;
+        return TranslationFilter.FilterSubject.TARGET;
     }
 
     /**
      * get search text in search bar
      */
-    private String getSearchText() {
+    private String getFilterText() {
         String text = null;
 
         LinearLayout searchPane = (LinearLayout) findViewById(R.id.search_pane);
@@ -626,7 +628,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     /**
      * set search text in search bar
      */
-    private void setSearchText(String text) {
+    private void setFilterText(String text) {
 
         if(text == null) {
             text = "";
@@ -644,49 +646,19 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
 
     /**
-     * do search with specific search string or clear search filter
-     * @param search - if null or "" then search is cleared
+     * Filters the list
+     * @param constraint
      */
-    public void setSearchFilter(final String search) {
-        Log.d(TAG,"setSearchFilter: " + search);
-        final String searchString = search; // save in case search string changes before search runs
+    public void filter(final String constraint) {
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
             public void run() {
                 if((mFragment != null) && (mFragment instanceof ViewModeFragment)) {
-                    boolean searchTarget = getSearchTypeSelection() == TRANSLATION_SEARCH_TYPE;
-
-                    ((ViewModeFragment) mFragment).setSearchFilter(searchString, searchTarget);
+                    ((ViewModeFragment)mFragment).filter(constraint, getFilterSubject());
                 }
              }
         });
-    }
-
-    /**
-     * Checks if the target translation aleady has the best draft
-     * @return
-     */
-    private boolean targetTranslationHasDraft() {
-        return mTargetTranslation.getParentDraft() != null;
-        // TODO: 1/20/2016 once users are forced to specify a resource they are translating into we'll use this to check
-//        if(mTargetTranslation.getParentDraft() != null) {
-//            // check for matching resource
-//            if(mTargetTranslation.resourceSlug.equals(mTargetTranslation.getParentDraft().resourceSlug)) {
-//                return true;
-//            } else {
-//                // check for second best
-//                if (draftTranslations == null) {
-//                    draftTranslations = App.getLibrary().getDraftTranslations(mTargetTranslation.getProjectId(), mTargetTranslation.getTargetLanguageId());
-//                }
-//                for (SourceTranslation st : draftTranslations) {
-//                    if (st.resourceSlug.equals(mTargetTranslation.getParentDraft().resourceSlug)) {
-//                        return true;
-//                    }
-//                }
-//            }
-//        }
-//        return false;
     }
 
     /**
@@ -695,22 +667,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      * @return
      */
     private boolean draftIsAvailable() {
-        if(draftTranslations == null) {
-            draftTranslations = App.getLibrary().getDraftTranslations(mTargetTranslation.getProjectId(), mTargetTranslation.getTargetLanguageId());
-        }
-        for(SourceTranslation st:draftTranslations) {
-            if(App.getLibrary().sourceTranslationHasSource(st)) {
-                return true;
-            }
-        }
-        return false;
-        // TODO: 1/20/2016 once users are forced to specify a resource they are translating into we'll use this to check
-//        for(SourceTranslation st:draftTranslations) {
-//            if(st.resourceSlug.equals(mTargetTranslation.resourceSlug) && App.getLibrary().sourceTranslationHasSource(st)) {
-//                return true;
-//            }
-//        }
-//        return false;
+        List<Translation> draftTranslations = App.getLibrary().index().findTranslations(mTargetTranslation.getTargetLanguage().slug, mTargetTranslation.getProjectId(), null, "book", "all", 0, -1);
+        return draftTranslations.size() > 0;
     }
 
     @Override
@@ -790,15 +748,17 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     @Override
     public void onScrollProgress(int position) {
-        position = handleItemCountIfChanged(position);
+//        position = handleItemCountIfChanged(position);
         mSeekBar.setProgress(computeProgressFromPosition(position));
         checkIfCursorStillOnScreen();
     }
 
     @Override
-    public void onItemCountChanged(int itemCount, int progress) {
-        itemCount = setSeekbarMax(itemCount);
-        mSeekBar.setProgress((itemCount - progress) * mSeekbarMultiplier);
+    public void onDataSetChanged(int count) {
+        // TODO: 10/4/16 get progress
+        int progress = 0;
+        count = setSeekbarMax(count);
+        mSeekBar.setProgress((count - progress) * mSeekbarMultiplier);
         closeKeyboard();
         setupGraduations();
     }
@@ -808,6 +768,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      * @param progress
      * @return
      */
+    @Deprecated
     private int handleItemCountIfChanged(int progress) {
         int newItemCount = getItemCount();
         if( newItemCount != mOldItemCount ) {
@@ -864,7 +825,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         if(mEnableGrids) {
             final int numCards = mSeekBar.getMax() / mSeekbarMultiplier;
 
-            String maxChapterStr = getChapterID(numCards - 1);
+            String maxChapterStr = getChapterSlug(numCards - 1);
             int maxChapter = Integer.valueOf(maxChapterStr);
 
             // Set up visibility of the graduation bar.
@@ -890,7 +851,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 TextView text = (TextView) container.getChildAt(1);
 
                 int position = i * (numCards - 1) / (numVisibleGraduations - 1);
-                String chapter = getChapterID(position);
+                String chapter = getChapterSlug(position);
                 text.setText(chapter);
             }
 
@@ -902,17 +863,15 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     /**
-     * get the chapter ID for the position
+     * get the chapter slug for the position
      * @param position
      * @return
      */
-    private String getChapterID(int position) {
+    private String getChapterSlug(int position) {
         if( (mFragment != null) && (mFragment instanceof ViewModeFragment)) {
-            return ((ViewModeFragment) mFragment).getChapterID(position);
+            return ((ViewModeFragment) mFragment).getChapterSlug(position);
         }
-
-        String chapterID = Integer.toString(position + 1);
-        return chapterID;
+        return Integer.toString(position + 1);
     }
 
 
@@ -948,8 +907,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             mFragment = new FirstTabFragment();
             mFragment.setArguments(getIntent().getExtras());
             getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
-            // TODO: animate
-            // TODO: udpate menu
+            buildMenu();
         }
     }
 
@@ -1030,8 +988,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     @Override
-    public void onSetBusyIndicator(boolean enable) {
-        setSearchSpinner(enable);
+    public void onSearching(boolean isSearching) {
+        setSearchSpinner(isSearching);
     }
 
     @Override
@@ -1078,8 +1036,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      * Causes the activity to tell the fragment it needs to reload
      */
     public void notifyDatasetChanged() {
-        if (mFragment instanceof ViewModeFragment) {
-            ((ViewModeFragment) mFragment).getAdapter().reload();
+        if (mFragment instanceof ViewModeFragment && ((ViewModeFragment) mFragment).getAdapter() != null) {
+            ((ViewModeFragment) mFragment).getAdapter().notifyDataSetChanged();
         }
     }
 
@@ -1164,7 +1122,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
         @Override
         public void run() {
-             activity.setSearchFilter(searchString.toString());
+             activity.filter(searchString.toString());
         }
     }
 }

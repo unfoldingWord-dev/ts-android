@@ -5,14 +5,16 @@ import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.view.MotionEvent;
 
+import org.unfoldingword.resourcecontainer.ResourceContainer;
+
 /**
  * Created by joel on 9/8/2015.
  */
 public class ReadModeFragment extends ViewModeFragment {
 
     @Override
-    ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId, Bundle extras) {
-        return new ReadModeAdapter(activity, targetTranslationId, sourceTranslationId, chapterId, frameId);
+    ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String chapterId, String frameId, Bundle extras) {
+        return new ReadModeAdapter(activity, targetTranslationId, chapterId, frameId);
     }
 
     /***
@@ -42,5 +44,10 @@ public class ReadModeFragment extends ViewModeFragment {
     @Override
     protected void onLeftSwipe(MotionEvent e1, MotionEvent e2) {
         doTranslationCardToggle(e1, e2, true);
+    }
+
+    @Override
+    protected void onSourceContainerLoaded(ResourceContainer sourceContainer) {
+
     }
 }

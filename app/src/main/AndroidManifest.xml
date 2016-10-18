@@ -73,14 +73,6 @@
             android:name=".ImportFileChooserActivity"
             android:label="@string/title_file_browser" />
         <activity
-            android:name=".device2device.DeviceToDeviceActivity"
-            android:label="@string/title_activity_sharing"
-            android:parentActivityName=".SharingActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.door43.translationstudio.SharingActivity" />
-        </activity>
-        <activity
             android:name=".DeveloperToolsActivity"
             android:label="@string/title_activity_developer">
             <intent-filter>

@@ -3,6 +3,7 @@ package com.door43.translationstudio.core;
 /**
  * A project category can represent a project or a category of projects.
  */
+@Deprecated
 public class ProjectCategory {
     public final String projectId;
     public final String categoryId;

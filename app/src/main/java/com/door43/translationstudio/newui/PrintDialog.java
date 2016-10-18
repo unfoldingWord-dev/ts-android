@@ -19,14 +19,16 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.tasks.DownloadImagesTask;
 import com.door43.translationstudio.tasks.PrintPDFTask;
 import com.door43.util.FileUtilities;
 
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.resourcecontainer.Project;
+import org.unfoldingword.resourcecontainer.Resource;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
@@ -35,7 +37,9 @@ import org.unfoldingword.tools.taskmanager.TaskManager;
 import java.io.File;
 import java.io.IOException;
 import java.security.InvalidParameterException;
-import java.util.Locale;
+import java.util.List;
+
+import org.unfoldingword.door43client.models.SourceLanguage;
 
 /**
  * Created by joel on 11/16/2015.
@@ -50,7 +54,7 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
     public static final String DOWNLOAD_IMAGES_TASK_GROUP = "download_images_task";
     private Translator translator;
     private TargetTranslation mTargetTranslation;
-    private Library library;
+    private Door43Client library;
     private boolean includeImages = false;
     private boolean includeIncompleteFrames = true;
     private Button printButton;
@@ -95,9 +99,17 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
         }
 
         TextView projectTitle = (TextView)v.findViewById(R.id.project_title);
-        SourceLanguage sourceLanguage = library.getPreferredSourceLanguage(mTargetTranslation.getProjectId(), App.getDeviceLanguageCode());
-        if(sourceLanguage != null) {
-            projectTitle.setText(sourceLanguage.projectTitle + " - " + mTargetTranslation.getTargetLanguageName());
+        Project p = library.index().getProject(App.getDeviceLanguageCode(), mTargetTranslation.getProjectId(), true);
+        List<Resource> resources = library.index().getResources(p.languageSlug, p.slug);
+        ResourceContainer resourceContainer = null;
+        try {
+            resourceContainer = library.open(p.languageSlug, p.slug, resources.get(0).slug);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+//        SourceLanguage sourceLanguage = library.getPreferredSourceLanguage(mTargetTranslation.getProjectId(), App.getDeviceLanguageCode());
+        if(resourceContainer != null) {
+            projectTitle.setText(resourceContainer.readChunk("front", "title") + " - " + mTargetTranslation.getTargetLanguageName());
         } else {
             projectTitle.setText(mTargetTranslation.getProjectId() + " - " + mTargetTranslation.getTargetLanguageName());
         }
@@ -133,7 +145,7 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
             public void onClick(View v) {
                 includeImages = includeImagesCheckBox.isChecked();
                 includeIncompleteFrames = includeIncompleteCheckBox.isChecked();
-                if(includeImages && !App.getLibrary().hasImages()) {
+                if(includeImages && !App.hasImages()) {
                     new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                             .setTitle(R.string.use_internet_confirmation)
                             .setMessage(R.string.image_large_download)

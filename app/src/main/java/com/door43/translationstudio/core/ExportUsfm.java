@@ -15,6 +15,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import org.unfoldingword.resourcecontainer.Project;
+
 // TODO: 9/6/16  separate UI components from this class and add listener
 
 /**
@@ -171,7 +173,7 @@ public class ExportUsfm {
                 String languageId = targetTranslation.getTargetLanguageId();
                 String languageName = targetTranslation.getTargetLanguageName();
                 ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
-                Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), languageId);
+                Project project = App.getLibrary().index().getProject(languageId, targetTranslation.getProjectId());
 
                 String bookName = bookCode; // default name
                 if( (project != null) && (project.name != null)) {

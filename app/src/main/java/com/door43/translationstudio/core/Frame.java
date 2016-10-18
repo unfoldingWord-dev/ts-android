@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 /**
  * Created by joel on 8/26/2015.
  */
+@Deprecated
 public class Frame {
 
     public final String body;
@@ -124,35 +125,55 @@ public class Frame {
     }
 
     /**
+     * Parses the text for the verse title
+     * e.g. 1-5
+     * @param text
+     * @param format
+     * @return
+     */
+    public static String parseVerseTitle(String text, TranslationFormat format) {
+        String title = "";
+        int[] verses = getVerseRange(text, format);
+        if(verses.length == 1) {
+            title = verses[0] + "";
+        } else if(verses.length == 2) {
+            title = verses[0] + "-" + verses[1];
+        }
+        return title;
+    }
+
+    /**
      * Returns the formatted beginning verse in this frame.
      * @return
      */
-    public String getStartVerse() {
-        if(Clickables.isClickableFormat(mFormat)) {
+    public static String getStartVerse(String text, TranslationFormat format) {
+//        if(Clickables.isClickableFormat(mFormat)) {
             // get verse range
-            int[] verses = getVerseRange();
-            if(verses.length > 0) {
-                return verses[0] + "";
-            }
+        int[] verses = getVerseRange(text, format);
+        if(verses.length > 0) {
+            return verses[0] + "";
         }
-        return Integer.parseInt(mId) + "";
+        return "";
+//        }
+//        return Integer.parseInt(mId) + "";
     }
 
     /**
      * Returns the formatted ending verse for this frame.
      * @return
      */
-    public String getEndVerse() {
-        if(Clickables.isClickableFormat(mFormat)) {
+    public static String getEndVerse(String text, TranslationFormat format) {
+//        if(Clickables.isClickableFormat(mFormat)) {
             // get verse range
-            int[] verses = getVerseRange();
-            if(verses.length == 1) {
-                return verses[0] + "";
-            } else if(verses.length == 2) {
-                return verses[1] + "";
-            }
+        int[] verses = getVerseRange(text, format);
+        if(verses.length == 1) {
+            return verses[0] + "";
+        } else if(verses.length == 2) {
+            return verses[1] + "";
         }
-        return Integer.parseInt(mId) + "";
+        return "";
+//        }
+//        return Integer.parseInt(mId) + "";
     }
 
     /**

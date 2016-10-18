@@ -12,10 +12,11 @@ import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.App;
+
+import org.unfoldingword.door43client.models.TargetLanguage;
 
 /**
  * Created by joel on 9/4/2015.
@@ -29,7 +30,7 @@ public class TargetLanguageListFragment extends BaseFragment implements Searchab
         View rootView = inflater.inflate(R.layout.fragment_language_list, container, false);
 
         ListView list = (ListView) rootView.findViewById(R.id.list);
-        mAdapter = new TargetLanguageAdapter(App.getLibrary().getTargetLanguages());
+        mAdapter = new TargetLanguageAdapter(App.getLibrary().index().getTargetLanguages());
         list.setAdapter(mAdapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

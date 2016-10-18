@@ -8,7 +8,6 @@ import android.support.annotation.Nullable;
 
 import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.device2device.SocketMessages;
 import com.door43.translationstudio.network.Connection;
 import com.door43.translationstudio.network.Peer;
 import com.door43.util.RSAEncryption;

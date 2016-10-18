@@ -20,16 +20,17 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.Translation;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.device2device.PeerAdapter;
 import com.door43.translationstudio.network.Peer;
 import com.door43.translationstudio.newui.home.HomeActivity;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
@@ -195,9 +196,19 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
 
         if(operationMode == MODE_SERVER) {
             title.setText(getResources().getString(R.string.backup_to_friend));
-            SourceTranslation sourceTranslation = App.getLibrary().getDefaultSourceTranslation(targetTranslation.getProjectId(), App.getDeviceLanguageCode());
-            if(sourceTranslation != null) {
-                subTitle.setText(sourceTranslation.getProjectTitle() + " - " + targetTranslation.getTargetLanguageName());
+            String[] sourceTranslationSlugs = App.getSelectedSourceTranslations(targetTranslationSlug);
+            String sourceLanguageSlug = "en";
+            if(sourceTranslationSlugs.length > 0) {
+                sourceLanguageSlug = SourceTranslation.getSourceLanguageIdFromId(sourceTranslationSlugs[0]);
+            }
+            ResourceContainer resourceContainer = null;//.getDefaultSourceTranslation(targetTranslation.getProjectId(), App.getDeviceLanguageCode());
+            try {
+                resourceContainer = App.getLibrary().open(sourceLanguageSlug, targetTranslation.getProjectId(), targetTranslation.getResourceSlug());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if(resourceContainer != null) {
+                subTitle.setText(resourceContainer.readChunk("front", "title") + " - " + targetTranslation.getTargetLanguageName());
             } else {
                 Logger.w(this.getClass().getName(), "Could not find a default source translation for " + targetTranslation.getProjectId());
                 subTitle.setText(targetTranslation.getProjectId() + " - " + targetTranslation.getTargetLanguageName());
@@ -216,7 +227,12 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
                 final Peer peer = adapter.getItem(position);
                 if(operationMode == MODE_SERVER) {
                     // offer target translation to the client
-                    serverService.offerTargetTranslation(peer, targetTranslationSlug);
+                    String[] sourceTranslationSlugs = App.getSelectedSourceTranslations(targetTranslationSlug);
+                    String sourceLanguageSlug = "en";
+                    if(sourceTranslationSlugs.length > 0) {
+                        sourceLanguageSlug = SourceTranslation.getSourceLanguageIdFromId(sourceTranslationSlugs[0]);
+                    }
+                    serverService.offerTargetTranslation(peer, sourceLanguageSlug, targetTranslationSlug);
                 } else if(operationMode == MODE_CLIENT) {
                     // TODO: 12/1/2015 eventually provide a ui for viewing multiple different requests from this peer
                     // display request user
@@ -559,15 +575,16 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
     public void onReceivedTargetTranslations(Peer server, final Translator.ImportResults importResults) {
         // build name list
         Translator translator = App.getTranslator();
-        Library library = App.getLibrary();
-        String targetTranslationName = "";
-        if(importResults.isSuccess()) {
-            String targetTranslationSlug = importResults.importedSlug;
-            TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationSlug);
-            SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(targetTranslation.getProjectId(), App.getDeviceLanguageCode());
-            targetTranslationName = sourceTranslation.getProjectTitle() + " - " + targetTranslation.getTargetLanguageName();
+        TargetTranslation targetTranslation = translator.getTargetTranslation(importResults.importedSlug);
+        Translation st = App.getLibrary().index().getTranslation(targetTranslation.getId());
+
+        String tempName;
+        if(st != null) {
+            tempName = st.project.name + " - " + targetTranslation.getTargetLanguage().name;
+        } else {
+            tempName = targetTranslation.getProjectId() + " - " + targetTranslation.getTargetLanguage().name;
         }
-        final String name = targetTranslationName;
+        final String name = tempName;
 
         // notify user
         Handler hand = new Handler(Looper.getMainLooper());

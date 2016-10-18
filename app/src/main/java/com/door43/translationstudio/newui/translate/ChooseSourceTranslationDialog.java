@@ -1,7 +1,13 @@
 package com.door43.translationstudio.newui.translate;
 
 import android.app.DialogFragment;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,30 +21,36 @@ import android.widget.ListView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.Resource;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.tasks.DownloadResourceContainerTask;
+import com.door43.widget.ViewUtil;
 
-import org.unfoldingword.tools.logger.Logger;
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.Translation;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 
 /**
  * Created by joel on 9/15/2015.
  */
-public class ChooseSourceTranslationDialog extends DialogFragment {
+public class ChooseSourceTranslationDialog extends DialogFragment implements ManagedTask.OnFinishedListener, ManagedTask.OnProgressListener {
     public static final String ARG_TARGET_TRANSLATION_ID = "arg_target_translation_id";
     public static final String TAG = ChooseSourceTranslationDialog.class.getSimpleName();
+    private static final String TASK_DOWNLOAD_CONTAINER = "download-container";
+    private static final String TASK_INIT = "init-data";
     private Translator mTranslator;
     private TargetTranslation mTargetTranslation;
     private OnClickListener mListener;
     private ChooseSourceTranslationAdapter mAdapter;
-    private Library mLibrary;
+    private Door43Client mLibrary;
     public static final boolean ENABLE_DRAFTS = false;
-    private static final int MIN_CHECKING_LEVEL = 1; // the minimum level to be considered a source translation
+    private ProgressDialog downloadDialog = null;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -68,44 +80,73 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
         // TODO: set up search
 
         mAdapter = new ChooseSourceTranslationAdapter(getActivity());
-        // add selected
-        String[] sourceTranslationIds = App.getOpenSourceTranslationIds(mTargetTranslation.getId());
-        for(String id:sourceTranslationIds) {
-            SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
-            if(sourceTranslation != null) {
-                addSourceTranslation(sourceTranslation, true);
-            }
-        }
-
-        int min_checking = Library.MIN_CHECKING_LEVEL;
-        if(ENABLE_DRAFTS) {
-            min_checking = this.MIN_CHECKING_LEVEL;
-        }
-
-        // add available (duplicates are filtered by the adapter)
-        SourceTranslation[] availableSourceTranslations = mLibrary.getSourceTranslations(mTargetTranslation.getProjectId(), min_checking);
-        for(SourceTranslation sourceTranslation:availableSourceTranslations) {
-            addSourceTranslation(sourceTranslation, false);
-        }
-
-        if(ENABLE_DRAFTS) {
-            SourceTranslation[] draftSourceTranslations = mLibrary.getDraftTranslations(mTargetTranslation.getProjectId());
-            for(SourceTranslation sourceTranslation:draftSourceTranslations) {
-                if(sourceTranslation != null && sourceTranslation.getCheckingLevel() >= min_checking) {
-                    addSourceTranslation(sourceTranslation, false);
-                }
-            }
-        }
-        mAdapter.sort();
 
         ListView listView = (ListView) v.findViewById(R.id.list);
         listView.setAdapter(mAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
                 if(mAdapter.isSelectableItem(position)) {
-                    mAdapter.doClickOnItem(position);
+                    final ChooseSourceTranslationAdapter.ViewItem item = mAdapter.getItem(position);
+                    if(item.hasUpdates || !item.downloaded) {
+                        // download
+                        String format;
+                        if(item.hasUpdates) {
+                            format = getResources().getString(R.string.update_source_language);
+                        } else {
+                            format = getResources().getString(R.string.download_source_language);
+                        }
+                        String message = String.format(format, item.title);
+                        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                                .setTitle(R.string.title_download_source_language)
+                                .setMessage(message)
+                                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        DownloadResourceContainerTask task = new DownloadResourceContainerTask(item.sourceTranslation);
+                                        task.addOnFinishedListener(ChooseSourceTranslationDialog.this);
+                                        task.addOnProgressListener(ChooseSourceTranslationDialog.this);
+                                        task.TAG = position;
+                                        TaskManager.addTask(task, TASK_DOWNLOAD_CONTAINER);
+                                    }
+                                })
+                                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        if(item.downloaded) {
+                                            // allow selecting if downloaded already
+                                            mAdapter.toggleSelection(position);
+                                        }
+                                    }
+                                })
+                                .show();
+                    } else {
+                        // toggle
+                        mAdapter.toggleSelection(position);
+                    }
                 }
+            }
+        });
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+                final ChooseSourceTranslationAdapter.ViewItem item = mAdapter.getItem(position);
+                if(item.downloaded && mAdapter.isSelectableItem(position)) {
+                    new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                            .setTitle(R.string.label_delete)
+                            .setMessage(R.string.confirm_delete_project)
+                            .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    mLibrary.delete(item.containerSlug);
+                                    mAdapter.markItemDeleted(position);
+                                }
+                            })
+                            .setNegativeButton(R.string.menu_cancel, null)
+                            .show();
+                    return true;
+                }
+                return false;
             }
         });
 
@@ -125,23 +166,61 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
             public void onClick(View v) {
                 // collect selected source translations
                 int count = mAdapter.getCount();
-                List<String> sourceTranslationIds = new ArrayList<>();
+                List<String> resourceContainerSlugs = new ArrayList<>();
                 for(int i = 0; i < count; i ++) {
                     if(mAdapter.isSelectableItem(i)) {
                         ChooseSourceTranslationAdapter.ViewItem item = mAdapter.getItem(i);
                         if(item.selected) {
-                            sourceTranslationIds.add(item.id);
+                            resourceContainerSlugs.add(item.containerSlug);
                         }
                     }
                 }
                 if(mListener != null) {
-                    mListener.onConfirmTabsDialog(mTargetTranslation.getId(), sourceTranslationIds.toArray(new String[sourceTranslationIds.size()]));
+                    mListener.onConfirmTabsDialog(mTargetTranslation.getId(), resourceContainerSlugs);
                 }
                 dismiss();
             }
         });
 
+        loadData();
+
         return v;
+    }
+
+    private void loadData() {
+        ManagedTask initTask = TaskManager.getTask(TASK_INIT);
+        if(initTask == null) {
+            // begin init
+            initTask = new ManagedTask() {
+                @Override
+                public void start() {
+                    // add selected source translations
+                    String[] sourceTranslationSlugs = App.getSelectedSourceTranslations(mTargetTranslation.getId());
+                    for (String slug : sourceTranslationSlugs) {
+                        Translation st = mLibrary.index().getTranslation(slug);
+                        if (st != null) addSourceTranslation(st, true);
+                    }
+
+                    List<Translation> availableTranslations = mLibrary.index().findTranslations(null, mTargetTranslation.getProjectId(), null, "book", "all", App.MIN_CHECKING_LEVEL, -1);
+                    for (Translation sourceTranslation : availableTranslations) {
+                        addSourceTranslation(sourceTranslation, false);
+                    }
+                }
+            };
+
+            initTask.addOnFinishedListener(this);
+            TaskManager.addTask(initTask, TASK_INIT);
+        } else {
+            // connect to existing
+            initTask.addOnFinishedListener(this);
+        }
+
+        // connect to tasks
+        ManagedTask downloadTask = TaskManager.getTask(TASK_DOWNLOAD_CONTAINER);
+        if(downloadTask != null) {
+            downloadTask.addOnProgressListener(this);
+            downloadTask.addOnFinishedListener(this);
+        }
     }
 
     /**
@@ -149,23 +228,18 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
      * @param sourceTranslation
      * @param selected
      */
-    private void addSourceTranslation(SourceTranslation sourceTranslation, boolean selected) {
-        String title = sourceTranslation.getSourceLanguageTitle() + " - " + sourceTranslation.getResourceTitle();
+    private void addSourceTranslation(final Translation sourceTranslation, final boolean selected) {
+        final String title = sourceTranslation.language.name + " - " + sourceTranslation.resource.name;
 
-        if(sourceTranslation.getCheckingLevel() < Library.MIN_CHECKING_LEVEL) { // see if draft
-            String format = getActivity().getResources().getString(R.string.draft_translation);
-            String newTitle = String.format(format, sourceTranslation.getCheckingLevel(), title);
-            title = newTitle;
-        }
-
-        Resource resource = mLibrary.getResource( sourceTranslation);
-        if(resource != null) {
-            boolean downloaded = resource.isDownloaded();
-            boolean hasUpdates = resource.hasUpdates();
-            mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation, selected, downloaded, hasUpdates));
-        } else {
-            Logger.e(TAG, "Failed to get resource for " + sourceTranslation.getId());
-        }
+        final boolean isDownloaded = mLibrary.exists(sourceTranslation.resourceContainerSlug);
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation, selected, isDownloaded));
+                mAdapter.sort();
+            }
+        });
     }
 
     /**
@@ -176,8 +250,93 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
         mListener = listener;
     }
 
+    @Override
+    public void onTaskFinished(ManagedTask task) {
+        TaskManager.clearTask(task);
+        if(task instanceof DownloadResourceContainerTask) {
+            final DownloadResourceContainerTask t = (DownloadResourceContainerTask)task;
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    if(downloadDialog != null && downloadDialog.isShowing()) downloadDialog.dismiss();
+                    downloadDialog = null;
+                    if(t.success()) {
+                        mAdapter.markItemDownloaded(t.TAG);
+                    } else {
+                        Snackbar snack = Snackbar.make(ChooseSourceTranslationDialog.this.getView(), getResources().getString(R.string.download_failed), Snackbar.LENGTH_LONG);
+                        ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                        snack.show();
+                    }
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onTaskProgress(final ManagedTask task, final double progress, String message, boolean secondary) {
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                // init dialog
+                if(downloadDialog == null) {
+                    downloadDialog = new ProgressDialog(getActivity());
+                    downloadDialog.setCancelable(true);
+                    downloadDialog.setCanceledOnTouchOutside(false);
+                    downloadDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                    downloadDialog.setOnCancelListener(ChooseSourceTranslationDialog.this);
+                    downloadDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
+                    downloadDialog.setTitle(R.string.downloading);
+                }
+
+                // dismiss if finished
+                if(task.isFinished()) {
+                    downloadDialog.dismiss();
+                    return;
+                }
+
+                // progress
+                downloadDialog.setMax(task.maxProgress());
+                if(progress > 0) {
+                    downloadDialog.setIndeterminate(false);
+                    downloadDialog.setProgressStyle((int)progress);
+                    downloadDialog.setProgressNumberFormat("%1d/$2d");
+                    downloadDialog.setProgressPercentFormat(NumberFormat.getPercentInstance());
+                } else {
+                    downloadDialog.setIndeterminate(true);
+                    downloadDialog.setProgress(downloadDialog.getMax());
+                    downloadDialog.setProgressNumberFormat(null);
+                    downloadDialog.setProgressPercentFormat(null);
+                }
+
+                // show
+                if(!downloadDialog.isShowing()) downloadDialog.show();
+            }
+        });
+
+
+    }
+
+    @Override
+    public void onCancel(DialogInterface dialog) {
+        ManagedTask task = TaskManager.getTask(TASK_DOWNLOAD_CONTAINER);
+        if(task != null) TaskManager.cancelTask(task);
+    }
+
     public interface OnClickListener {
         void onCancelTabsDialog(String targetTranslationId);
-        void onConfirmTabsDialog(String targetTranslationId, String[] sourceTranslationIds);
+        void onConfirmTabsDialog(String targetTranslationId, List<String> sourceTranslationIds);
+    }
+
+    @Override
+    public void onDestroy() {
+        ManagedTask task = TaskManager.getTask(TASK_DOWNLOAD_CONTAINER);
+        if(task != null) {
+            task.removeOnProgressListener(this);
+            task.removeOnFinishedListener(this);
+        }
+        if(downloadDialog != null) downloadDialog.dismiss();
+        super.onDestroy();
     }
 }

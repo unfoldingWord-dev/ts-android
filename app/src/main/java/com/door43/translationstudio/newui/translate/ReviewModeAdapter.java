@@ -25,7 +25,6 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.DragEvent;
 import android.view.GestureDetector;
@@ -37,30 +36,28 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.Filter;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.Translation;
+import org.unfoldingword.resourcecontainer.Link;
+import org.unfoldingword.resourcecontainer.Resource;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Chapter;
-import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.CheckingQuestion;
+import com.door43.translationstudio.core.ContainerCache;
 import com.door43.translationstudio.core.FileHistory;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
-import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.LinedEditText;
-import com.door43.translationstudio.core.ProjectTranslation;
 import com.door43.translationstudio.core.TranslationNote;
-import com.door43.translationstudio.core.SourceLanguage;
-import com.door43.translationstudio.core.SourceTranslation;
-import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.TranslationWord;
@@ -87,12 +84,14 @@ import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.RunnableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.unfoldingword.door43client.models.TargetLanguage;
 
 /**
  * Created by joel on 9/18/2015.
@@ -103,39 +102,43 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private static final int TAB_NOTES = 0;
     private static final int TAB_WORDS = 1;
     private static final int TAB_QUESTIONS = 2;
-    public static final String UNDO = "Undo";
-    public static final String REDO = "Redo";
-    public static final String OPTIONS = "Options";
-    public static final String ISO_DATE_FORMAT = "yyyy-MM-dd HH:mm";
     public static final int HIGHLIGHT_COLOR = Color.YELLOW;
-    private static final int TYPE_NO_MERGE_CONFLICT = 0;
-    private static final int TYPE_MERGE_CONFLICT = 1;
-    public static final int MERGE_CONFLICT_COLOR = R.color.warning;
+    private final Door43Client mLibrary;
+    private static final int VIEW_TYPE_NORMAL = 0;
+    private static final int VIEW_TYPE_CONFLICT = 1;
+    public static final int CONFLICT_COLOR = R.color.warning;
     private static final boolean GET_HEAD = true;
     private static final boolean GET_TAIL = false;
-    private final Library mLibrary;
     private final Translator mTranslator;
     private final Activity mContext;
     private final TargetTranslation mTargetTranslation;
-    private HashMap<String, Chapter> mChapters;
-    private HashMap<String, Frame> mFrames;
-    private SourceTranslation mSourceTranslation;
-    private SourceLanguage mSourceLanguage;
+    private final String startingChapterSlug;
+    private final String startingChunkSlug;
+    private ResourceContainer mSourceContainer;
     private final TargetLanguage mTargetLanguage;
-    private ListItem[] mUnfilteredItems;
-    private ListItem[] mFilteredItems;
+    private List<ListItem> mItems = new ArrayList<>();
+    private List<ListItem> mFilteredItems = new ArrayList<>();
     private int mLayoutBuildNumber = 0;
     private boolean mResourcesOpened = false;
-    private ContentValues[] mTabs;
-    private int[] mOpenResourceTab;
+    private ContentValues[] mTabs = new ContentValues[0];
+    private int[] mOpenResourceTab = new int[0];
     private boolean mAllowFootnote = true;
-    private SearchFilter mSearchFilter;
-    private CharSequence mSearchString;
+
+    private List<String> mChapters = new ArrayList<>();
+    private List<String> mFilteredChapters = new ArrayList<>();
+    private CharSequence filterConstraint = null;
+    private TranslationFilter.FilterSubject filterSubject = null;
+
     private boolean mMergeHeadSelected = false;
     private boolean mMergeTailSelected = false;
     private float mInitialTextSize = 0;
     private int mMarginInitialLeft = 0;
-//    private boolean onBind = false;
+
+    @Deprecated
+    public void setHelpContainers(List<ResourceContainer> helpfulContainers) {
+        // TODO: 10/11/16 load the containers into a map so we can retrieve them
+        triggerNotifyDataSetChanged();
+    }
 
     enum DisplayState {
         NORMAL,
@@ -143,73 +146,52 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         DESELECTED
     }
 
-
-    public ReviewModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String startingChapterSlug, String startingFrameSlug, boolean resourcesOpened) {
+    public ReviewModeAdapter(Activity context, String targetTranslationSlug, String startingChapterSlug, String startingChunkSlug, boolean openResources) {
+        this.startingChapterSlug = startingChapterSlug;
+        this.startingChunkSlug = startingChunkSlug;
 
         mLibrary = App.getLibrary();
         mTranslator = App.getTranslator();
         mContext = context;
-        mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
-        mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
-        boolean usfm = mTargetTranslation.getFormat() == TranslationFormat.USFM;
-        mAllowFootnote = usfm;
-        mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectSlug, mSourceTranslation.sourceLanguageSlug);
-        mTargetLanguage = mLibrary.getTargetLanguage(mTargetTranslation);
-        mResourcesOpened = resourcesOpened;
-
-        Chapter[] chapters = mLibrary.getChapters(mSourceTranslation);
-        mFrames = new HashMap<>();
-        mChapters = new HashMap<>();
-        List<ListItem> listItems = new ArrayList<>();
-
-        // add project title card
-        ListItem projectTitleItem = new ListItem(null, null);
-        projectTitleItem.isProjectTitle = true;
-        listItems.add(projectTitleItem);
-
-        for(Chapter c:chapters) {
-            // put in map for easier retrieval
-            mChapters.put(c.getId(), c);
-
-            String[] chapterFrameSlugs = mLibrary.getFrameSlugs(mSourceTranslation, c.getId());
-            boolean setStartPosition = startingChapterSlug != null && c.getId().equals(startingChapterSlug) && chapterFrameSlugs.length > 0;
-
-            // default starting selection is first item in chapter
-            if(setStartPosition) {
-                setListStartPosition(listItems.size());
-            }
-
-            // add title and reference cards for chapter
-            if(!c.title.isEmpty()) {
-                ListItem item = new ListItem(null, c.getId());
-                item.isChapterTitle = true;
-                listItems.add(item);
-            }
-            if(!c.reference.isEmpty()) {
-                ListItem item = new ListItem(null, c.getId());
-                item.isChapterReference = true;
-                listItems.add(item);
-            }
-
-            // identify starting frame selection
-            for(String frameSlug:chapterFrameSlugs) {
-                if(setStartPosition && startingFrameSlug != null && frameSlug.equals(startingFrameSlug)) {
-                    setListStartPosition(listItems.size());
-                }
-                listItems.add(new ListItem(frameSlug, c.getId()));
-            }
-        }
-        mUnfilteredItems = listItems.toArray(new ListItem[listItems.size()]);
-        mFilteredItems = mUnfilteredItems;
-        mOpenResourceTab = new int[listItems.size()];
-
-        loadTabInfo();
+        mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationSlug);
+        mAllowFootnote = mTargetTranslation.getFormat() == TranslationFormat.USFM;
+        mTargetLanguage = App.languageFromTargetTranslation(mTargetTranslation);
+        mResourcesOpened = openResources;
     }
 
     @Override
-    void rebuild() {
-        mLayoutBuildNumber ++;
-        notifyDataSetChanged();
+    void setSourceContainer(ResourceContainer sourceContainer) {
+        mSourceContainer = sourceContainer;
+
+        this.mChapters = new ArrayList();
+        mItems = new ArrayList<>();
+
+        // TODO: there is also a map form of the toc.
+        setListStartPosition(0);
+
+        if(mSourceContainer != null) {
+            for (Map tocChapter : (List<Map>) mSourceContainer.toc) {
+                String chapterSlug = (String) tocChapter.get("chapter");
+                this.mChapters.add(chapterSlug);
+                List<String> tocChunks = (List) tocChapter.get("chunks");
+                for (String chunkSlug : tocChunks) {
+                    if (chapterSlug.equals(startingChapterSlug) && chunkSlug.equals(startingChunkSlug)) {
+                        setListStartPosition(mItems.size());
+                    }
+                    mItems.add(new ReviewListItem(chapterSlug, chunkSlug));
+                }
+            }
+        }
+
+        mFilteredItems = mItems;
+        mFilteredChapters = mChapters;
+        mOpenResourceTab = new int[mItems.size()];
+
+        loadTabInfo();
+
+        filter(filterConstraint, filterSubject);
+
+        triggerNotifyDataSetChanged();
     }
 
     /**
@@ -217,68 +199,22 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      */
     private void loadTabInfo() {
         List<ContentValues> tabContents = new ArrayList<>();
-        String[] sourceTranslationIds = App.getOpenSourceTranslationIds(mTargetTranslation.getId());
-        for(String id:sourceTranslationIds) {
-            SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
-            if(sourceTranslation != null) {
+        String[] sourceTranslationIds = App.getSelectedSourceTranslations(mTargetTranslation.getId());
+        for(String slug:sourceTranslationIds) {
+            Translation st = mLibrary.index().getTranslation(slug);
+            if(st != null) {
                 ContentValues values = new ContentValues();
                 // include the resource id if there are more than one
-                if(mLibrary.getResources(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug).length > 1) {
-                    values.put("title", sourceTranslation.getSourceLanguageTitle() + " " + sourceTranslation.resourceSlug.toUpperCase());
+                if(mLibrary.index().getResources(st.language.slug, st.project.slug).size() > 1) {
+                    values.put("title", st.language.name + " " + st.resource.slug.toUpperCase());
                 } else {
-                    values.put("title", sourceTranslation.getSourceLanguageTitle());
+                    values.put("title", st.language.name);
                 }
-                values.put("tag", sourceTranslation.getId());
+                values.put("tag", st.resourceContainerSlug);
                 tabContents.add(values);
             }
         }
         mTabs = tabContents.toArray(new ContentValues[tabContents.size()]);
-    }
-
-    @Override
-    void setSourceTranslation(String sourceTranslationId) {
-        mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
-        mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectSlug, mSourceTranslation.sourceLanguageSlug);
-
-        Chapter[] chapters = mLibrary.getChapters(mSourceTranslation);
-        List<ListItem> listItems = new ArrayList<>();
-
-        // add project title card
-        ListItem projectTitleItem = new ListItem(null, null);
-        projectTitleItem.isProjectTitle = true;
-        listItems.add(projectTitleItem);
-
-        mFrames = new HashMap<>();
-        mChapters = new HashMap<>();
-        for(Chapter c:chapters) {
-            // add title and reference cards for chapter
-            if(!c.title.isEmpty()) {
-                ListItem item = new ListItem(null, c.getId());
-                item.isChapterTitle = true;
-                listItems.add(item);
-            }
-            if(!c.reference.isEmpty()) {
-                ListItem item = new ListItem(null, c.getId());
-                item.isChapterReference = true;
-                listItems.add(item);
-            }
-            // put in map for easier retrieval
-            mChapters.put(c.getId(), c);
-
-            String[] chapterFrameSlugs = mLibrary.getFrameSlugs(mSourceTranslation, c.getId());
-            for(String frameSlug:chapterFrameSlugs) {
-                listItems.add(new ListItem(frameSlug, c.getId()));
-            }
-        }
-        mUnfilteredItems = listItems.toArray(new ListItem[listItems.size()]);
-        mFilteredItems = mUnfilteredItems;
-        mOpenResourceTab = new int[listItems.size()];
-
-        loadTabInfo();
-
-        notifyDataSetChanged();
-
-        clearScreenAndStartNewSearch(mSearchString, isTargetSearch());
     }
 
     @Override
@@ -305,40 +241,35 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     @Override
-    public String getFocusedFrameId(int position) {
-        if(position >= 0 && position < mFilteredItems.length) {
-            return mFilteredItems[position].frameSlug;
+    public String getFocusedChunkSlug(int position) {
+        if(position >= 0 && position < mFilteredItems.size()) {
+            return mFilteredItems.get(position).chunkSlug;
         }
         return null;
     }
 
     @Override
-    public String getFocusedChapterId(int position) {
-        if(position >= 0 && position < mFilteredItems.length) {
-            return mFilteredItems[position].chapterSlug;
+    public String getFocusedChapterSlug(int position) {
+        if(position >= 0 && position < mFilteredItems.size()) {
+            return mFilteredItems.get(position).chapterSlug;
         }
         return null;
     }
 
     @Override
     public int getItemPosition(String chapterId, String frameId) {
-        for(int i = 0; i < mFilteredItems.length; i ++) {
-            ListItem item = mFilteredItems[i];
-            if(item.isFrame() && item.chapterSlug.equals(chapterId) && item.frameSlug.equals(frameId)) {
+        for(int i = 0; i < mFilteredItems.size(); i ++) {
+            ReviewListItem item = (ReviewListItem) mFilteredItems.get(i);
+            if(item.isChunk() && item.chapterSlug.equals(chapterId) && item.chunkSlug.equals(frameId)) {
                 return i;
             }
         }
         return -1;
     }
 
-    @Override
-    public void reload() {
-        setSourceTranslation(mSourceTranslation.getId());
-    }
-
     public ListItem getItem(int position) {
-        if(position >= 0 && position < mFilteredItems.length) {
-            return mFilteredItems[position];
+        if(position >= 0 && position < mFilteredItems.size()) {
+            return mFilteredItems.get(position);
         }
         return null;
     }
@@ -348,20 +279,20 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         ListItem item = getItem( position );
         if(item != null) {
             // fetch translation from disk
-            item.loadTranslations(mSourceTranslation, mTargetTranslation, mChapters.get(item.chapterSlug), loadFrame(item.chapterSlug, item.frameSlug));
-            boolean conflicted = item.isTranslationMergeConflicted;
+            item.load(mSourceContainer, mTargetTranslation);
+            boolean conflicted = item.hasMergeConflicts;
             if(conflicted) {
-                return TYPE_MERGE_CONFLICT;
+                return VIEW_TYPE_CONFLICT;
             }
         }
-        return TYPE_NO_MERGE_CONFLICT;
+        return VIEW_TYPE_NORMAL;
     }
 
     @Override
     public ViewHolder onCreateManagedViewHolder(ViewGroup parent, int viewType) {
         View v;
         switch (viewType) {
-            case TYPE_MERGE_CONFLICT:
+            case VIEW_TYPE_CONFLICT:
                 v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_review_list_item_merge_conflict, parent, false);
                 break;
             default:
@@ -372,45 +303,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         return vh;
     }
 
-    /**
-     * Loads a frame from the index and caches it
-     * @param chapterSlug
-     * @param frameSlug
-     * @return
-     */
-    private Frame loadFrame(String chapterSlug, String frameSlug) {
-        String complexSlug = chapterSlug + "-" + frameSlug;
-        if(mFrames.containsKey(complexSlug)) {
-            return mFrames.get(complexSlug);
-        } else {
-            Frame frame = mLibrary.getFrame(mSourceTranslation, chapterSlug, frameSlug);
-            mFrames.put(complexSlug, frame);
-            return frame;
-        }
-    }
-
-    /**
-     * get the chapter for the position, or null if not found
-     * @param position
-     * @return
-     */
-    public String getChapterForPosition(int position) {
-        if( (position < 0) || (position >= mFilteredItems.length)) {
-            return null;
-        }
-
-        ListItem item = mFilteredItems[position];
-        if(item != null) {
-            return item.chapterSlug;
-        }
-
-        return null;
-    }
-
      @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         holder.currentPosition = position;
-        final ListItem item = mFilteredItems[position];
+        final ReviewListItem item = (ReviewListItem) mFilteredItems.get(position);
 
         // open/close resources
         if(mResourcesOpened) {
@@ -419,28 +315,34 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             holder.mMainContent.setWeightSum(1f);
         }
 
+        // fetch translation from disk
+        item.load(mSourceContainer, mTargetTranslation);
+
         ViewUtil.makeLinksClickable(holder.mSourceBody);
 
         // render the cards
         renderSourceCard(position, item, holder);
-        renderTargetCard(position, item, holder);
+         if(getItemViewType(position) == VIEW_TYPE_CONFLICT) {
+             renderConflictingTargetCard(position, item, holder);
+         } else {
+             renderTargetCard(position, item, holder);
+         }
         renderResourceCard(position, item, holder);
 
         // set up fonts
         if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
             holder.mLayoutBuildNumber = mLayoutBuildNumber;
-            Typography.format(mContext, Typography.TranslationType.SOURCE, holder.mSourceBody, mSourceLanguage.getId(), mSourceLanguage.getDirection());
-            Typography.formatSub(mContext, Typography.TranslationType.TRANSLATION, holder.mTargetTitle, mTargetLanguage.getId(), mTargetLanguage.getDirection());
-            if(!item.isTranslationMergeConflicted) {
-                Typography.format(mContext, Typography.TranslationType.TRANSLATION, holder.mTargetBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
-                Typography.format(mContext, Typography.TranslationType.TRANSLATION, holder.mTargetEditableBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+            Typography.format(mContext, Typography.TranslationType.SOURCE, holder.mSourceBody, mSourceContainer.language.slug, mSourceContainer.language.direction);
+            Typography.formatSub(mContext, Typography.TranslationType.TRANSLATION, holder.mTargetTitle, mTargetLanguage.slug, mTargetLanguage.direction);
+            if(!item.hasMergeConflicts) {
+                Typography.format(mContext, Typography.TranslationType.TRANSLATION, holder.mTargetBody, mTargetLanguage.slug, mTargetLanguage.direction);
+                Typography.format(mContext, Typography.TranslationType.TRANSLATION, holder.mTargetEditableBody, mTargetLanguage.slug, mTargetLanguage.direction);
             } else {
-                Typography.format(mContext, Typography.TranslationType.TRANSLATION, holder.mHeadText, mTargetLanguage.getId(), mTargetLanguage.getDirection());
-                Typography.format(mContext, Typography.TranslationType.TRANSLATION, holder.mTailText, mTargetLanguage.getId(), mTargetLanguage.getDirection());
-                Typography.format(mContext, Typography.TranslationType.TRANSLATION, holder.mConflictText, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+                Typography.format(mContext, Typography.TranslationType.TRANSLATION, holder.mHeadText, mTargetLanguage.slug, mTargetLanguage.direction);
+                Typography.format(mContext, Typography.TranslationType.TRANSLATION, holder.mTailText, mTargetLanguage.slug, mTargetLanguage.direction);
+                Typography.formatSub(mContext, Typography.TranslationType.TRANSLATION, holder.mConflictText, mTargetLanguage.slug, mTargetLanguage.direction);
             }
         }
-//        this.onBind = false;
     }
 
     /**
@@ -449,14 +351,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param frame
      * @return
      */
-    private static TranslationNote[] getPreferredNotes(SourceTranslation sourceTranslation, Frame frame) {
-        Library library = App.getLibrary();
-        TranslationNote[] notes = library.getTranslationNotes(sourceTranslation, frame.getChapterId(), frame.getId());
-        if(notes.length == 0 && !sourceTranslation.sourceLanguageSlug.equals("en")) {
-            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
-            notes = library.getTranslationNotes(defaultSourceTranslation, frame.getChapterId(), frame.getId());
-        }
-        return notes;
+    private static TranslationNote[] getPreferredNotes(ResourceContainer sourceTranslation, String frame) {
+        Door43Client library = App.getLibrary();
+//        TranslationNote[] notes = library.getTranslationNotes(sourceTranslation, frame.getChapterId(), frame.getId());
+//        if(notes.length == 0 && !sourceTranslation.language.slug.equals("en")) {
+//            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.project.slug, "en");
+//            notes = library.getTranslationNotes(defaultSourceTranslation, frame.getChapterId(), frame.getId());
+//        }
+        return new TranslationNote[0];
     }
 
     /**
@@ -466,14 +368,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param frame
      * @return
      */
-    private static TranslationWord[] getPreferredWords(SourceTranslation sourceTranslation, Frame frame) {
-        Library library = App.getLibrary();
-        TranslationWord[] words = library.getTranslationWords(sourceTranslation, frame.getChapterId(), frame.getId());
-        if(words.length == 0 && !sourceTranslation.sourceLanguageSlug.equals("en")) {
-            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
-            words = library.getTranslationWords(defaultSourceTranslation, frame.getChapterId(), frame.getId());
-        }
-        return words;
+    private static TranslationWord[] getPreferredWords(ResourceContainer sourceTranslation, String frame) {
+        Door43Client library = App.getLibrary();
+//        TranslationWord[] words = library.getTranslationWords(sourceTranslation, frame.getChapterId(), frame.getId());
+//        if(words.length == 0 && !sourceTranslation.language.slug.equals("en")) {
+//            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.project.slug, "en");
+//            words = library.getTranslationWords(defaultSourceTranslation, frame.getChapterId(), frame.getId());
+//        }
+        return new TranslationWord[0];
     }
 
     /**
@@ -484,313 +386,72 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param frameId
      * @return
      */
-    private static CheckingQuestion[] getPreferredQuestions(SourceTranslation sourceTranslation, String chapterId, String frameId) {
-        Library library = App.getLibrary();
-        CheckingQuestion[] questions = library.getCheckingQuestions(sourceTranslation, chapterId, frameId);
-        if(questions.length == 0 && !sourceTranslation.sourceLanguageSlug.equals("en")) {
-            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
-            questions = library.getCheckingQuestions(defaultSourceTranslation, chapterId, frameId);
-        }
-        return questions;
+    private static CheckingQuestion[] getPreferredQuestions(ResourceContainer sourceTranslation, String chapterId, String frameId) {
+        Door43Client library = App.getLibrary();
+//        CheckingQuestion[] questions = library.getCheckingQuestions(sourceTranslation, chapterId, frameId);
+//        if(questions.length == 0 && !sourceTranslation.language.slug.equals("en")) {
+//            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.project.slug, "en");
+//            questions = library.getCheckingQuestions(defaultSourceTranslation, chapterId, frameId);
+//        }
+        return new CheckingQuestion[0];
     }
 
-    private void renderSourceCard(final int position, final ListItem item, final ViewHolder holder) {
-        // render
+    private void renderSourceCard(final int position, final ReviewListItem item, final ViewHolder holder) {
         ManagedTask oldTask = TaskManager.getTask(holder.currentSourceTaskId);
         TaskManager.cancelTask(oldTask);
-        if(item.renderedSourceBody == null) {
+        TaskManager.clearTask(oldTask);
+        if(item.renderedSourceText == null) {
             holder.mSourceBody.setText("");
             ManagedTask task = new ManagedTask() {
                 @Override
                 public void start() {
                     if(interrupted()) return;
-                    CharSequence text = renderSourceText(item.bodySource, mSourceTranslation.getFormat(), holder, item, false);
-                    if(interrupted()) return;
+                    CharSequence text = renderSourceText(item.sourceText, TranslationFormat.parse(mSourceContainer.contentMimeType), holder, item, false);
                     setResult(text);
                 }
             };
             task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
                 @Override
                 public void onTaskFinished(ManagedTask task) {
+                    TaskManager.clearTask(task);
                     CharSequence data = (CharSequence)task.getResult();
+                    item.renderedSourceText = data;
                     if(!task.isCanceled() && data != null && position == holder.currentPosition) {
-                        item.renderedSourceBody = data;
                         Handler hand = new Handler(Looper.getMainLooper());
                         hand.post(new Runnable() {
                             @Override
                             public void run() {
-                                holder.mSourceBody.setText(item.renderedSourceBody);
+                                holder.mSourceBody.setText(item.renderedSourceText);
                             }
                         });
-                    } else if (data != null && position == holder.currentPosition){
-                        item.renderedSourceBody = data;
                     }
                 }
             });
             holder.currentSourceTaskId = TaskManager.addTask(task);
         } else {
-            holder.mSourceBody.setText(item.renderedSourceBody);
-        }
-    }
-
-    private void renderTargetCard(int position, final ListItem item, final ViewHolder holder) {
-        final Frame frame;
-        if(item.isFrame()) {
-            frame  = loadFrame(item.chapterSlug, item.frameSlug);
-        } else {
-            frame = null;
-        }
-        final Chapter chapter;
-        if(item.isFrame() || item.isChapter()) {
-            chapter = mChapters.get(item.chapterSlug);
-        } else {
-            chapter = null;
+            holder.mSourceBody.setText(item.renderedSourceText);
         }
 
-        // remove old text watcher
-        if(holder.mEditableTextWatcher != null) {
-            holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
-        }
-
-        // render title
-        String targetTitle = "";
-        if(item.isChapter()) {
-            targetTitle = mSourceTranslation.getProjectTitle()
-                    + " " + Integer.parseInt(chapter.getId())
-                    + " - " + mTargetLanguage.name;
-        } else if(item.isFrame()) {
-            ChapterTranslation chapterTranslation = mTargetTranslation.getChapterTranslation(mChapters.get(item.chapterSlug));
-            targetTitle = chapterTranslation.title;
-            if(targetTitle.isEmpty()) {
-                targetTitle = chapter.title;
-                if (targetTitle.isEmpty()) {
-                    targetTitle = mSourceTranslation.getProjectTitle()
-                            + " " + Integer.parseInt(chapter.getId());
-                }
-
-            }
-            targetTitle += ":" + frame.getTitle() + " - " + mTargetLanguage.name;
-        } else if(item.isProjectTitle) {
-            targetTitle = mTargetTranslation.getTargetLanguageName();
-        }
-        holder.mTargetTitle.setText(targetTitle);
-
-        if(item.isTranslationMergeConflicted) {
-            renderTargetMergeConflictCard(holder, item, chapter, frame);
-            return;
-        }
-
-        if(item.renderedTargetBody == null) {
-            renderTargetBody(item, holder, frame);
-        }
-
-        // insert rendered text
-        if(item.isEditing) {
-            // editing mode
-            holder.mTargetEditableBody.setText(item.renderedTargetBody);
-        } else {
-            // verse marker mode
-            holder.mTargetBody.setText(item.renderedTargetBody);
-            holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    v.onTouchEvent(event);
-                    v.clearFocus();
-                    return true;
-                }
-            });
-            ViewUtil.makeLinksClickable(holder.mTargetBody);
-        }
-
-        // set up text watcher
-        holder.mEditableTextWatcher = new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                String translation = applyChangedText(s, holder, item);
-
-                // commit immediately if editing history
-                FileHistory history = item.getFileHistory(mTargetTranslation);
-                if(!history.isAtHead()) {
-                    history.reset();
-                    prepareTranslationUI(holder, item);
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        };
-        if(item.isEditing) {
-            holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
-        }
-
-        holder.mUndoButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                undoTextInTarget(holder, item);
-            }
-        });
-        holder.mRedoButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                redoTextInTarget(holder, item);
-            }
-        });
-
-        // editing button
-        final GestureDetector detector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
-            @Override
-            public boolean onSingleTapUp(MotionEvent e) {
-                item.isEditing = !item.isEditing;
-                prepareTranslationUI(holder, item);
-
-                if(item.isEditing) {
-                    holder.mTargetEditableBody.requestFocus();
-                    InputMethodManager mgr = (InputMethodManager)mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
-                    mgr.showSoftInput(holder.mTargetEditableBody, InputMethodManager.SHOW_IMPLICIT);
-
-                    // TRICKY: there may be changes to translation
-                     item.loadTranslations(mSourceTranslation, mTargetTranslation, chapter, frame);
-
-                    // re-render for editing mode
-                    item.renderedTargetBody = renderSourceText(item.bodyTranslation, item.translationFormat, holder, item, true);
-                    holder.mTargetEditableBody.setText(item.renderedTargetBody);
-                    holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
-                } else {
-                    if(holder.mEditableTextWatcher != null) {
-                        holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
-                    }
-                    holder.mTargetBody.requestFocus();
-                    getListener().closeKeyboard();
-
-                    // TRICKY: there may be changes to translation
-                    item.loadTranslations(mSourceTranslation, mTargetTranslation, chapter, frame);
-
-                    // re-render for verse mode
-                    item.renderedTargetBody = renderTargetText(item.bodyTranslation, item.translationFormat, frame, item.frameTranslation, holder, item);
-                    holder.mTargetBody.setText(item.renderedTargetBody);
-                }
-                return true;
-            }
-        });
-
-        holder.mEditButton.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return detector.onTouchEvent(event);
-            }
-        });
-
-        holder.mAddNoteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                createFootnoteAtSelection(holder, item);
-            }
-        });
-
-        prepareTranslationUI(holder, item);
-
-        // disable listener
-        holder.mDoneSwitch.setOnCheckedChangeListener(null);
-
-        // display as finished
-        if(item.isTranslationFinished) {
-            holder.mEditButton.setVisibility(View.GONE);
-            holder.mUndoButton.setVisibility(View.GONE);
-            holder.mRedoButton.setVisibility(View.GONE);
-            holder.mAddNoteButton.setVisibility(View.GONE);
-            holder.mDoneSwitch.setChecked(true);
-            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
-        } else {
-            holder.mEditButton.setVisibility(View.VISIBLE);
-            holder.mDoneSwitch.setChecked(false);
-        }
-
-        // display source language tabs
         renderTabs(holder);
-
-        // done buttons
-        holder.mDoneSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    // make sure to capture verse marker changes changes before dialog is displayed
-                    Editable changes = holder.mTargetEditableBody.getText();
-                    item.renderedTargetBody = changes;
-                    String newBody = Translator.compileTranslation(changes);
-                    item.bodyTranslation = newBody;
-
-                    new AlertDialog.Builder(mContext,R.style.AppTheme_Dialog)
-                            .setTitle(R.string.chunk_checklist_title)
-                            .setMessage(Html.fromHtml(mContext.getString(R.string.chunk_checklist_body)))
-                            .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                        boolean success = onConfirmChunk(item, chapter, frame, mTargetTranslation.getFormat());
-                                        holder.mDoneSwitch.setChecked(success);
-                                    }
-                                }
-                            )
-                            .setNegativeButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    holder.mDoneSwitch.setChecked(false); // force back off if not accepted
-                                }
-                            })
-                            .show();
-
-                } else { // done button checked off
-                    reOpenItem(item, chapter, frame);
-                }
-            }
-        });
     }
 
     /**
-     * mark item as not done
-     * @param item
-     * @param chapter
-     * @param frame
-     */
-    private void reOpenItem(ListItem item, Chapter chapter, Frame frame) {
-        boolean opened;
-        if (item.isChapterReference) {
-            opened = mTargetTranslation.reopenChapterReference(chapter);
-        } else if (item.isChapterTitle) {
-            opened = mTargetTranslation.reopenChapterTitle(chapter);
-        } else if (item.isProjectTitle) {
-            opened = mTargetTranslation.openProjectTitle();
-        } else {
-            opened = mTargetTranslation.reopenFrame(frame);
-        }
-        if (opened) {
-            item.renderedTargetBody = null;
-            notifyDataSetChanged();
-        } else {
-            // TODO: 10/27/2015 notify user the frame could not be completed.
-        }
-    }
-
-    /**
-     * initialize the target card for displaying and resolving merge conflicts
+     * Renders a target card that has merge conflicts
+     * @param position
      * @param item
      * @param holder
      */
-    private void renderTargetMergeConflictCard(final ViewHolder holder, final ListItem item, final Chapter chapter, final Frame frame) {
+    private void renderConflictingTargetCard(int position, final ReviewListItem item, final ViewHolder holder) {
+        // render title
+        holder.mTargetTitle.setText(item.getTargetTitle());
 
         MergeConflictHandler renderer = new MergeConflictHandler();
-        int mergeConflictColor = mContext.getResources().getColor(MERGE_CONFLICT_COLOR);
-        renderer.renderMergeConflict(item.bodyTranslation, mergeConflictColor);
+        int mergeConflictColor = mContext.getResources().getColor(CONFLICT_COLOR);
+        renderer.renderMergeConflict(item.targetText, mergeConflictColor);
         item.headText = renderer.getConflictPart(MergeConflictHandler.MERGE_HEAD_PART);
         item.tailText = renderer.getConflictPart(MergeConflictHandler.MERGE_TAIL_PART);
-        item.mFullMergeConflict = renderer.isFullBlockMergeConflict();
-        if(item.mFullMergeConflict) { // if whole string is different, no need to highlight differing lines, so change to regular text color
+        item.isFullMergeConflict = renderer.isFullBlockMergeConflict();
+        if(item.isFullMergeConflict) { // if whole string is different, no need to highlight differing lines, so change to regular text color
             SpannableStringBuilder span = new SpannableStringBuilder(item.headText);
             span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_primary_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             item.headText = span;
@@ -800,16 +461,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             item.tailText = span;
         }
 
-        Typography.format(mContext, Typography.TranslationType.TRANSLATION, holder.mHeadText, mSourceLanguage.getId(), mSourceLanguage.getDirection());
-        Typography.format(mContext, Typography.TranslationType.TRANSLATION, holder.mTailText, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+        Typography.formatSub(mContext, Typography.TranslationType.SOURCE, holder.mHeadText, mSourceContainer.language.slug, mSourceContainer.language.direction);
+        Typography.formatSub(mContext, Typography.TranslationType.SOURCE, holder.mTailText, mSourceContainer.language.slug, mSourceContainer.language.direction);
 
         if(mInitialTextSize == 0) { // see if we need to initialize values
-            mInitialTextSize = Typography.getFontSize(mContext, Typography.TranslationType.TRANSLATION);
-            Log.d(TAG,"Initial text size: " + mInitialTextSize);
             mMarginInitialLeft = leftMargin(holder.mHeadText);
-            Log.d(TAG,"Initial margin: " + mMarginInitialLeft);
+            mInitialTextSize = holder.mHeadText.getTextSize();
         }
-
         displayMergeConflictSelectionState(false, false, holder, item);
         holder.mConflictText.setVisibility(View.VISIBLE);
         holder.mButtonBar.setVisibility(View.GONE);
@@ -840,10 +498,156 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             public void onClick(View v) {
                 CharSequence selectedText = mMergeHeadSelected ? item.headText : item.tailText;
                 applyNewCompiledText(selectedText.toString(), holder, item);
-                reOpenItem( item, chapter, frame);
+                item.hasMergeConflicts = MergeConflictHandler.isMergeConflicted(selectedText.toString());
+                reOpenItem(item);
                 notifyDataSetChanged();
             }
         });
+
+        holder.mUndoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                undoTextInTarget(holder, (ReviewListItem) item);
+            }
+        });
+        holder.mRedoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                redoTextInTarget(holder, (ReviewListItem) item);
+            }
+        });
+
+        prepareUndoRedoUI(holder, item);
+        holder.mUndoButton.setVisibility(View.GONE);
+        holder.mRedoButton.setVisibility(View.GONE);
+    }
+
+    /**
+     * Renders a normal target card
+     * @param position
+     * @param item
+     * @param holder
+     */
+    private void renderTargetCard(final int position, final ReviewListItem item, final ViewHolder holder) {
+        // remove old text watcher
+        if(holder.mEditableTextWatcher != null) {
+            holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
+        }
+
+        // insert rendered text
+        if(item.isEditing) {
+            // editing mode
+            holder.mTargetEditableBody.setText(item.renderedTargetText);
+        } else {
+            // verse marker mode
+            holder.mTargetBody.setText(item.renderedTargetText);
+            holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    v.onTouchEvent(event);
+                    v.clearFocus();
+                    return true;
+                }
+            });
+            ViewUtil.makeLinksClickable(holder.mTargetBody);
+        }
+
+        // title
+        holder.mTargetTitle.setText(item.getTargetTitle());
+
+        // set up text watcher
+        holder.mEditableTextWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String translation = applyChangedText(s, holder, item);
+
+                // commit immediately if editing history
+                FileHistory history = item.getFileHistory(mTargetTranslation);
+                if(!history.isAtHead()) {
+                    history.reset();
+                    loadControls(holder, item);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        };
+
+        // render target body
+        if(item.renderedTargetText == null) {
+            holder.mTargetEditableBody.setText("");
+            holder.mTargetBody.setText("");
+            ManagedTask task = new ManagedTask() {
+                @Override
+                public void start() {
+                    if(interrupted()) return;
+                    CharSequence text;
+                    if(item.isComplete || item.isEditing) {
+                        text = renderSourceText(item.targetText, item.translationFormat, holder, item, true);
+                    } else {
+                        text = renderTargetText(item.targetText, item.translationFormat, item.ft, holder, item);
+                    }
+                    setResult(text);
+                }
+            };
+            task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
+                @Override
+                public void onTaskFinished(ManagedTask task) {
+                    TaskManager.clearTask(task);
+                    CharSequence data = (CharSequence)task.getResult();
+                    item.renderedTargetText = data;
+                    if(!task.isCanceled() && data != null && position == holder.currentPosition) {
+                        Handler hand = new Handler(Looper.getMainLooper());
+                        hand.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if(item.isEditing) {
+                                    // edit mode
+                                    holder.mTargetEditableBody.setText(item.renderedTargetText);
+                                    holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
+                                } else {
+                                    // verse marker mode
+                                    holder.mTargetBody.setText(item.renderedTargetText);
+                                    holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() {
+                                        @Override
+                                        public boolean onTouch(View v, MotionEvent event) {
+                                            v.onTouchEvent(event);
+                                            v.clearFocus();
+                                            return true;
+                                        }
+                                    });
+                                    ViewUtil.makeLinksClickable(holder.mTargetBody);
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+            holder.currentTargetTaskId = TaskManager.addTask(task);
+        } else if(item.isEditing) {
+            // editing mode
+            holder.mTargetEditableBody.setText(item.renderedTargetText);
+            holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
+        } else {
+            // verse marker mode
+            holder.mTargetBody.setText(item.renderedTargetText);
+            holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    v.onTouchEvent(event);
+                    v.clearFocus();
+                    return true;
+                }
+            });
+            ViewUtil.makeLinksClickable(holder.mTargetBody);
+        }
 
         holder.mUndoButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -858,9 +662,133 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         });
 
-        prepareUndoRedoUI(holder, item);
-        holder.mUndoButton.setVisibility(View.GONE);
-        holder.mRedoButton.setVisibility(View.GONE);
+        // editing button
+        final GestureDetector detector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onSingleTapUp(MotionEvent e) {
+                item.isEditing = !item.isEditing;
+                loadControls(holder, item);
+
+                if(item.isEditing) {
+                    holder.mTargetEditableBody.requestFocus();
+                    InputMethodManager mgr = (InputMethodManager)mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    mgr.showSoftInput(holder.mTargetEditableBody, InputMethodManager.SHOW_IMPLICIT);
+
+                    // TRICKY: there may be changes to translation
+                     item.load(mSourceContainer, mTargetTranslation);
+
+                    // re-render for editing mode
+                    item.renderedTargetText = renderSourceText(item.targetText, item.translationFormat, holder, item, true);
+                    holder.mTargetEditableBody.setText(item.renderedTargetText);
+                    holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
+                } else {
+                    if(holder.mEditableTextWatcher != null) {
+                        holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
+                    }
+                    holder.mTargetBody.requestFocus();
+                    getListener().closeKeyboard();
+
+                    // TRICKY: there may be changes to translation
+                    item.load(mSourceContainer, mTargetTranslation);
+
+                    // re-render for verse mode
+                    item.renderedTargetText = renderTargetText(item.targetText, item.translationFormat, item.ft, holder, item);
+                    holder.mTargetBody.setText(item.renderedTargetText);
+                }
+                return true;
+            }
+        });
+
+        holder.mEditButton.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return detector.onTouchEvent(event);
+            }
+        });
+
+        holder.mAddNoteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                createFootnoteAtSelection(holder, item);
+            }
+        });
+
+        loadControls(holder, item);
+
+        // disable listener
+        holder.mDoneSwitch.setOnCheckedChangeListener(null);
+
+        // display as finished
+        if(item.isComplete) {
+            holder.mEditButton.setVisibility(View.GONE);
+            holder.mUndoButton.setVisibility(View.GONE);
+            holder.mRedoButton.setVisibility(View.GONE);
+            holder.mAddNoteButton.setVisibility(View.GONE);
+            holder.mDoneSwitch.setChecked(true);
+            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
+        } else {
+            holder.mEditButton.setVisibility(View.VISIBLE);
+            holder.mDoneSwitch.setChecked(false);
+        }
+
+        // done buttons
+        holder.mDoneSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    // make sure to capture verse marker changes changes before dialog is displayed
+                    Editable changes = holder.mTargetEditableBody.getText();
+                    item.renderedTargetText = changes;
+                    String newBody = Translator.compileTranslation(changes);
+                    item.targetText = newBody;
+
+                    new AlertDialog.Builder(mContext,R.style.AppTheme_Dialog)
+                            .setTitle(R.string.chunk_checklist_title)
+                            .setMessage(Html.fromHtml(mContext.getString(R.string.chunk_checklist_body)))
+                            .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                        boolean success = onConfirmChunk(item, item.chapterSlug, item.chunkSlug, mTargetTranslation.getFormat());
+                                        holder.mDoneSwitch.setChecked(success);
+                                    }
+                                }
+                            )
+                            .setNegativeButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    holder.mDoneSwitch.setChecked(false); // force back off if not accepted
+                                }
+                            })
+                            .show();
+
+                } else { // done button checked off
+                    reOpenItem(item);
+                }
+            }
+        });
+    }
+
+    /**
+     * mark item as not done
+     * @param item
+     */
+    private void reOpenItem(ListItem item) {
+        boolean opened;
+        if (item.isChapterReference()) {
+            opened = mTargetTranslation.reopenChapterReference(item.chapterSlug);
+        } else if (item.isChapterTitle()) {
+            opened = mTargetTranslation.reopenChapterTitle(item.chapterSlug);
+        } else if (item.isProjectTitle()) {
+            opened = mTargetTranslation.openProjectTitle();
+        } else {
+            opened = mTargetTranslation.reopenFrame(item.chapterSlug, item.chunkSlug);
+        }
+        if (opened) {
+            item.renderedTargetText = null;
+            notifyDataSetChanged();
+        } else {
+            // TODO: 10/27/2015 notify user the frame could not be completed.
+        }
     }
 
     /**
@@ -871,7 +799,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      */
     private CharSequence getMergeText(CharSequence text, boolean getHead) {
         MergeConflictHandler renderer = new MergeConflictHandler();
-        int mergeConflictColor = mContext.getResources().getColor(MERGE_CONFLICT_COLOR);
+        int mergeConflictColor = mContext.getResources().getColor(CONFLICT_COLOR);
         renderer.renderMergeConflict(text, mergeConflictColor);
         if(getHead) {
             return renderer.getConflictPart(MergeConflictHandler.MERGE_HEAD_PART);
@@ -898,7 +826,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param holder
      * @param item
      */
-    private void displayMergeConflictSelectionState(boolean selectHead, boolean selectTail, ViewHolder holder, ListItem item) {
+    private void displayMergeConflictSelectionState(boolean selectHead, boolean selectTail, ViewHolder holder, ReviewListItem item) {
         mMergeHeadSelected = selectHead;
         mMergeTailSelected = selectTail;
 
@@ -923,14 +851,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
     }
 
-    private CharSequence formatDeselected(ListItem item, boolean getHead) {
-        if(item.mFullMergeConflict) { // gray out everything
+    private CharSequence formatDeselected(ReviewListItem item, boolean getHead) {
+        if(item.isFullMergeConflict) { // gray out everyithing
             CharSequence text = getHead ? item.headText : item.tailText;
             SpannableStringBuilder span = new SpannableStringBuilder(text);
             span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_disabled_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             return span;
         } else { // partial merge conflict, so set text gray and then highlight differing merge text
-            SpannableStringBuilder span = new SpannableStringBuilder(item.bodyTranslation);
+            SpannableStringBuilder span = new SpannableStringBuilder(item.targetText);
             span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_disabled_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             return getMergeText(span, getHead);
         }
@@ -982,11 +910,16 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         view.requestLayout();
     }
 
-    private void prepareTranslationUI(final ViewHolder holder, ListItem item) {
+    /**
+     * Sets the correct ui state for translation controls
+     * @param holder
+     * @param item
+     */
+    private void loadControls(final ViewHolder holder, ListItem item) {
         if(item.isEditing) {
             prepareUndoRedoUI(holder, item);
 
-            boolean allowFootnote = mAllowFootnote && item.isFrame();
+            boolean allowFootnote = mAllowFootnote && item.isChunk();
             holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
             holder.mAddNoteButton.setVisibility(allowFootnote ? View.VISIBLE : View.GONE);
             holder.mUndoButton.setVisibility(View.GONE);
@@ -1048,21 +981,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         thread.start();
     }
 
-    private void renderTargetBody(ListItem item, ViewHolder holder, Frame frame) {
-        // render body
-        if(item.isTranslationFinished || item.isEditing) {
-            item.renderedTargetBody = renderSourceText(item.bodyTranslation, item.translationFormat, holder, item, true);
-        } else {
-            item.renderedTargetBody = renderTargetText(item.bodyTranslation, item.translationFormat, frame, item.frameTranslation, holder, item);
-        }
-    }
-
     /**
      * create a new footnote at selected position in target text.  Displays an edit dialog to enter footnote data.
      * @param holder
      * @param item
      */
-    private void createFootnoteAtSelection(final ViewHolder holder, final ListItem item) {
+    private void createFootnoteAtSelection(final ViewHolder holder, final ReviewListItem item) {
         final EditText editText = getEditText(holder, item);
         int endPos = editText.getSelectionEnd();
         if (endPos < 0) {
@@ -1080,7 +1004,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param footnotePos
      * @param footnoteEndPos
      */
-    private void editFootnote(CharSequence initialNote, final ViewHolder holder, final ListItem item, final int footnotePos, final int footnoteEndPos ) {
+    private void editFootnote(CharSequence initialNote, final ViewHolder holder, final ReviewListItem item, final int footnotePos, final int footnoteEndPos ) {
         final EditText editText = getEditText(holder, item);
         final CharSequence original = editText.getText();
 
@@ -1127,7 +1051,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param item
      * @param editText
      */
-    private boolean verifyAndReplaceFootnote(CharSequence footnote, CharSequence original, int insertPos, final int insertEndPos, final ViewHolder holder, final ListItem item, EditText editText) {
+    private boolean verifyAndReplaceFootnote(CharSequence footnote, CharSequence original, int insertPos, final int insertEndPos, final ViewHolder holder, final ReviewListItem item, EditText editText) {
         // sanity checks
         if ((null == footnote) || (footnote.length() <= 0)) {
             warnDialog(R.string.title_footnote_invalid, R.string.footnote_message_empty);
@@ -1161,7 +1085,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param item
      * @param editText
      */
-    private void placeFootnote(CharSequence footnote, CharSequence original, int start, final int end, final ViewHolder holder, final ListItem item, EditText editText) {
+    private void placeFootnote(CharSequence footnote, CharSequence original, int start, final int end, final ViewHolder holder, final ReviewListItem item, EditText editText) {
         CharSequence footnotecode = "";
         if(footnote != null) {
             // sanity checks
@@ -1176,17 +1100,22 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         CharSequence newText = TextUtils.concat(original.subSequence(0, start), footnotecode, original.subSequence(end, original.length()));
         editText.setText(newText);
 
-        item.renderedTargetBody = newText;
-        item.bodyTranslation = Translator.compileTranslation(editText.getText()); // get XML for footnote
-        mTargetTranslation.applyFrameTranslation(item.frameTranslation, item.bodyTranslation); // save change
+        item.renderedTargetText = newText;
+        item.targetText = Translator.compileTranslation(editText.getText()); // get XML for footnote
+        mTargetTranslation.applyFrameTranslation(item.ft, item.targetText); // save change
 
-        Frame frame = null;
-        if(item.isFrame()) {
-            frame  = loadFrame(item.chapterSlug, item.frameSlug);
+//        String frame = null;
+//        if(item.isFrame()) {
+//            frame  = loadFrame(item.chapterSlug, item.chunkSlug);
+//        }
+
+        // generate spannable again adding
+        if(item.isComplete || item.isEditing) {
+            item.renderedTargetText = renderSourceText(item.targetText, item.translationFormat, holder, (ReviewListItem) item, true);
+        } else {
+            item.renderedTargetText = renderTargetText(item.targetText, item.translationFormat, item.ft, holder, (ReviewListItem) item);
         }
-
-        renderTargetBody(item, holder, frame); // generate spannable again adding
-        editText.setText(item.renderedTargetBody);
+        editText.setText(item.renderedTargetText);
         editText.setSelection(editText.length(), editText.length());
     }
 
@@ -1198,7 +1127,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param item
      * * @return
      */
-    private String applyChangedText(CharSequence s, ViewHolder holder, ListItem item) {
+    private String applyChangedText(CharSequence s, ViewHolder holder, ReviewListItem item) {
         String translation;
         if(s instanceof Editable) {
             translation = Translator.compileTranslation((Editable) s);
@@ -1217,21 +1146,22 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param item
      */
     private void applyNewCompiledText(String translation, ViewHolder holder, ListItem item) {
-        item.changeBodyTranslation(translation);
-        if (item.isChapterReference) {
-            mTargetTranslation.applyChapterReferenceTranslation(item.chapterTranslation, translation);
-        } else if (item.isChapterTitle) {
-            mTargetTranslation.applyChapterTitleTranslation(item.chapterTranslation, translation);
-        } else if (item.isProjectTitle) {
+        item.targetText = translation;
+        if (item.isChapterReference()) {
+            mTargetTranslation.applyChapterReferenceTranslation(item.ct, translation);
+        } else if (item.isChapterTitle()) {
+            mTargetTranslation.applyChapterTitleTranslation(item.ct, translation);
+        } else if (item.isProjectTitle()) {
             try {
                 mTargetTranslation.applyProjectTitleTranslation(translation);
             } catch (IOException e) {
                 Logger.e(ReviewModeAdapter.class.getName(), "Failed to save the project title translation", e);
             }
-        } else if (item.isFrame()) {
-            mTargetTranslation.applyFrameTranslation(item.frameTranslation, translation);
+        } else if (item.isChunk()) {
+            mTargetTranslation.applyFrameTranslation(item.ft, translation);
         }
-        item.renderedTargetBody = renderSourceText(translation, item.translationFormat, holder, item, true);
+
+        item.renderedTargetText = renderSourceText(translation, item.translationFormat, holder, (ReviewListItem) item, true);
     }
 
     /**
@@ -1239,7 +1169,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param holder
      * @param item
      */
-    private void undoTextInTarget(final ViewHolder holder, final ListItem item) {
+    private void undoTextInTarget(final ViewHolder holder, final ReviewListItem item) {
         holder.mUndoButton.setVisibility(View.INVISIBLE);
         holder.mRedoButton.setVisibility(View.INVISIBLE);
 
@@ -1278,16 +1208,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             // TRICKY: prevent history from getting rolled back soon after the user views it
                             restartAutoCommitTimer();
                             applyChangedText(text, holder, item);
+
+                            App.closeKeyboard(mContext);
+                            item.hasMergeConflicts = MergeConflictHandler.isMergeConflicted(text);
+                            notifyDataSetChanged();
+
                             if(holder.mTargetEditableBody != null) {
                                 holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
-                                holder.mTargetEditableBody.setText(item.renderedTargetBody);
+                                holder.mTargetEditableBody.setText(item.renderedTargetText);
                                 holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
-
-                                if(item.isTranslationMergeConflicted) {  // see if we pulled a merge conflict item
-                                    notifyDataSetChanged();
-                                }
-                            } else { // we were displaying merge conflict
-                                notifyDataSetChanged();
                             }
                         }
                     }
@@ -1314,7 +1243,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param holder
      * @param item
      */
-    private void redoTextInTarget(final ViewHolder holder, final ListItem item) {
+    private void redoTextInTarget(final ViewHolder holder, final ReviewListItem item) {
         holder.mUndoButton.setVisibility(View.INVISIBLE);
         holder.mRedoButton.setVisibility(View.INVISIBLE);
 
@@ -1341,16 +1270,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             // TRICKY: prevent history from getting rolled back soon after the user views it
                             restartAutoCommitTimer();
                             applyChangedText(text, holder, item);
+
+                            App.closeKeyboard(mContext);
+                            item.hasMergeConflicts = MergeConflictHandler.isMergeConflicted(text);
+                            notifyDataSetChanged();
+
                             if(holder.mTargetEditableBody != null) {
                                 holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
-                                holder.mTargetEditableBody.setText(item.renderedTargetBody);
+                                holder.mTargetEditableBody.setText(item.renderedTargetText);
                                 holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
-
-                                if(item.isTranslationMergeConflicted) {  // see if we pulled a merge conflict item
-                                    notifyDataSetChanged();
-                                }
-                            } else { // we were displaying merge conflict
-                                notifyDataSetChanged();
                             }
                         }
                     }
@@ -1388,22 +1316,22 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * Performs some validation, and commits changes if ready.
      * @return true if the section was successfully confirmed; otherwise false.
      */
-    private boolean onConfirmChunk(final ListItem item, final Chapter chapter, final Frame frame, TranslationFormat format) {
+    private boolean onConfirmChunk(final ReviewListItem item, final String chapter, final String frame, TranslationFormat format) {
         boolean success = true; // So far, so good.
 
         // Check for empty translation.
-        if (item.bodyTranslation.isEmpty()) {
+        if (item.targetText.isEmpty()) {
             Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.translate_first, Snackbar.LENGTH_LONG);
             ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
             snack.show();
             success = false;
         }
 
-        if(frame != null) {
+//        if(frame != null) {
             Matcher matcher;
             int lowVerse = -1;
             int highVerse = 999999999;
-            int[] range = frame.getVerseRange();
+            int[] range = Frame.getVerseRange(item.targetText, item.translationFormat);
             if ((range != null) && (range.length > 0)) {
                 lowVerse = range[0];
                 highVerse = lowVerse;
@@ -1415,9 +1343,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             // Check for contiguous verse numbers.
             if (success) {
                 if (format == TranslationFormat.USFM) {
-                    matcher = USFM_CONSECUTIVE_VERSE_MARKERS.matcher(item.bodyTranslation);
+                    matcher = USFM_CONSECUTIVE_VERSE_MARKERS.matcher(item.targetText);
                 } else {
-                    matcher = CONSECUTIVE_VERSE_MARKERS.matcher(item.bodyTranslation);
+                    matcher = CONSECUTIVE_VERSE_MARKERS.matcher(item.targetText);
                 }
                 if (matcher.find()) {
                     Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.consecutive_verse_markers, Snackbar.LENGTH_LONG);
@@ -1431,9 +1359,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             if (success) {
                 int error = 0;
                 if (format == TranslationFormat.USFM) {
-                    matcher = USFM_VERSE_MARKER.matcher(item.bodyTranslation);
+                    matcher = USFM_VERSE_MARKER.matcher(item.targetText);
                 } else {
-                    matcher = VERSE_MARKER.matcher(item.bodyTranslation);
+                    matcher = VERSE_MARKER.matcher(item.targetText);
                 }
                 int lastVerseSeen = 0;
                 while (matcher.find()) {
@@ -1462,20 +1390,18 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     snack.show();
                 }
             }
-        }
+//        }
 
         // Everything looks good so far. Try and commit.
         if (success) {
-            if (item.isChapterReference) {
-                success = mTargetTranslation.finishChapterReference(chapter);
-            } else if (item.isChapterTitle) {
-                success = mTargetTranslation.finishChapterTitle(chapter);
-            } else if (item.isProjectTitle) {
+            if (item.isChapterReference()) {
+                success = mTargetTranslation.finishChapterReference(item.chapterSlug);
+            } else if (item.isChapterTitle()) {
+                success = mTargetTranslation.finishChapterTitle(item.chapterSlug);
+            } else if (item.isProjectTitle()) {
                 success = mTargetTranslation.closeProjectTitle();
-            } else if(frame != null){
-                success = mTargetTranslation.finishFrame(frame);
             } else {
-                success = false;
+                success = mTargetTranslation.finishFrame(item.chapterSlug, item.chunkSlug);
             }
 
             if (!success) {
@@ -1491,12 +1417,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             try {
                 mTargetTranslation.commit();
             } catch (Exception e) {
-                String frameComplexId = frame == null ? "" : ":" + frame.getComplexId();
+                String frameComplexId =  ":" + item.chapterSlug + "-" + item.chunkSlug;
                 Logger.e(TAG, "Failed to commit translation of " + mTargetTranslation.getId() + frameComplexId, e);
             }
             item.isEditing = false;
-            item.renderedTargetBody = null;
-            notifyDataSetChanged();
+            item.renderedTargetText = null;
+            triggerNotifyDataSetChanged();
         }
 
         return success;
@@ -1520,7 +1446,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // open selected tab
         for(int i = 0; i < holder.mTranslationTabs.getTabCount(); i ++) {
             TabLayout.Tab tab = holder.mTranslationTabs.getTabAt(i);
-            if(tab.getTag().equals(mSourceTranslation.getId())) {
+            if(tab.getTag().equals(mSourceContainer.slug)) {
                 tab.select();
                 break;
             }
@@ -1563,7 +1489,38 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         });
     }
 
-    private void renderResourceCard(final int position, ListItem item, final ViewHolder holder) {
+    /**
+     * Returns the config options for a chunk
+     * @param chapterSlug
+     * @param chunkSlug
+     * @return
+     */
+    private Map<String, List<String>> getChunkConfig(String chapterSlug, String chunkSlug) {
+        if(mSourceContainer != null) {
+            Map config = null;
+            if(mSourceContainer.config == null || !mSourceContainer.config.containsKey("content") || !(mSourceContainer.config.get("content") instanceof Map)) {
+                // default to english if no config is found
+                ResourceContainer rc = ContainerCache.cacheClosest(mLibrary, "en", mSourceContainer.project.slug, mSourceContainer.resource.slug);
+                if(rc != null) config = rc.config;
+            } else {
+                config = mSourceContainer.config;
+            }
+
+            // look up config for chunk
+            if (config != null && config.containsKey("content") && config.get("content") instanceof Map) {
+                Map contentConfig = (Map<String, Object>) config.get("content");
+                if (contentConfig.containsKey(chapterSlug)) {
+                    Map chapterConfig = (Map<String, Object>) contentConfig.get(chapterSlug);
+                    if (chapterConfig.containsKey(chunkSlug)) {
+                        return (Map<String, List<String>>) chapterConfig.get(chunkSlug);
+                    }
+                }
+            }
+        }
+        return new HashMap();
+    }
+
+    private void renderResourceCard(final int position, final ReviewListItem item, final ViewHolder holder) {
         // clean up view
         if(holder.mResourceList.getChildCount() > 0) {
             holder.mResourceList.removeAllViews();
@@ -1572,14 +1529,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mResourceTabs.removeAllTabs();
 
         // skip if chapter title/reference
-        if(!item.isFrame()) {
+        if(!item.isChunk()) {
             return;
         }
 
-        final Frame  frame = loadFrame(item.chapterSlug, item.frameSlug);
+//        final String  frame = loadFrame(item.chapterSlug, item.chunkSlug);
 
         // clear resource card
-        renderResources(holder, position, new TranslationNote[0], new TranslationWord[0], new CheckingQuestion[0]);
+        renderResources(holder, position, new TranslationNote[0], new ArrayList<Link>(){}, new CheckingQuestion[0]);
 
         // prepare task to load resources
         ManagedTask oldTask = TaskManager.getTask(holder.currentResourceTaskId);
@@ -1587,17 +1544,45 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         ManagedTask task = new ManagedTask() {
             @Override
             public void start() {
+                Map<String, List<Link>> result = new HashMap<>();
+
+                // add some default values
+                result.put("words", new ArrayList<Link>());
+                result.put("questions", new ArrayList<Link>());
+                result.put("notes", new ArrayList<Link>());
+
+                if(getListener() == null) return;
+
                 if(interrupted()) return;
-                TranslationNote[] notes = getPreferredNotes(mSourceTranslation, frame);
+                Map<String, List<String>> config = getChunkConfig(item.chapterSlug, item.chunkSlug);
+
+                if(config.containsKey("words")) {
+                    List<Link> links = ContainerCache.cacheClosestFromLinks(mLibrary, config.get("words"));
+                    Pattern titlePattern = Pattern.compile("#(.*)");
+                    for(Link link:links) {
+                        ResourceContainer rc = ContainerCache.cacheClosest(App.getLibrary(), link.language, link.project, link.resource);
+                        // TODO: 10/12/16 the words need to have their title placed into a "title" file instead of being inline in the chunk
+                        String word = rc.readChunk(link.chapter, "01");
+                        Matcher match = titlePattern.matcher(word.trim());
+                        if(match.find()) {
+                            link.title = match.group(1);
+                        }
+                    }
+                    result.put("words", links);
+                }
+
                 if(interrupted()) return;
-                TranslationWord[] words = getPreferredWords(mSourceTranslation, frame);
+                if(config.containsKey("questions")) {
+                    List<Link> links = ContainerCache.cacheClosestFromLinks(mLibrary, config.get("questions"));
+                    result.put("questions", links);
+                }
+
                 if(interrupted()) return;
-                CheckingQuestion[] questions = getPreferredQuestions(mSourceTranslation, frame.getChapterId(), frame.getId());
-                if(interrupted()) return;
-                Map<String, Object> result = new HashMap<>();
-                result.put("notes", notes);
-                result.put("words", words);
-                result.put("questions", questions);
+                if(config.containsKey("notes")) {
+                    List<Link> links = ContainerCache.cacheClosestFromLinks(mLibrary, config.get("notes"));
+                    result.put("notes", links);
+                }
+                // TODO: 10/17/16 if there are no results then look in the english version of this container
                 setResult(result);
             }
         };
@@ -1606,9 +1591,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             public void onTaskFinished(ManagedTask task) {
                 Map<String, Object> data = (Map<String, Object>)task.getResult();
                 if(!task.isCanceled() && data != null && position == holder.currentPosition) {
-                    final TranslationNote[] notes = (TranslationNote[]) data.get("notes");
-                    final TranslationWord[] words = (TranslationWord[]) data.get("words");
-                    final CheckingQuestion[] questions = (CheckingQuestion[]) data.get("questions");
+                    final TranslationNote[] notes = new TranslationNote[0];//data.get("notes");
+                    final List<Link> words = (List<Link>) data.get("words");
+                    final CheckingQuestion[] questions = new CheckingQuestion[0]; // data.get("questions");
 
                     Handler hand = new Handler(Looper.getMainLooper());
                     hand.post(new Runnable() {
@@ -1625,7 +1610,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                     tab.select();
                                 }
                             }
-                            if(words.length > 0) {
+                            if(words.size() > 0) {
                                 TabLayout.Tab tab = holder.mResourceTabs.newTab();
                                 tab.setText(R.string.translation_words);
                                 tab.setTag(TAB_WORDS);
@@ -1648,12 +1633,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             if(mOpenResourceTab[position] == TAB_NOTES && notes.length == 0) {
                                 mOpenResourceTab[position] = TAB_WORDS;
                             }
-                            if(mOpenResourceTab[position] == TAB_WORDS && words.length == 0) {
+                            if(mOpenResourceTab[position] == TAB_WORDS && words.size() == 0) {
                                 mOpenResourceTab[position] = TAB_QUESTIONS;
                             }
 
                             // resource list
-                            if(notes.length > 0 || words.length > 0 || questions.length > 0) {
+                            if(notes.length > 0 || words.size() > 0 || questions.length > 0) {
                                 renderResources(holder, position, notes, words, questions);
                             }
 
@@ -1724,7 +1709,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param words
      * @param questions
      */
-    private void renderResources(final ViewHolder holder, int position, TranslationNote[] notes, TranslationWord[] words, CheckingQuestion[] questions) {
+    private void renderResources(final ViewHolder holder, int position, TranslationNote[] notes, List<Link> words, CheckingQuestion[] questions) {
         if(holder.mResourceList.getChildCount() > 0) {
             holder.mResourceList.removeAllViews();
         }
@@ -1741,23 +1726,24 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         }
                     }
                 });
-                Typography.formatSub(mContext, Typography.TranslationType.SOURCE, noteView, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+                Typography.formatSub(mContext, Typography.TranslationType.SOURCE, noteView, mSourceContainer.language.slug, mSourceContainer.language.direction);
                 holder.mResourceList.addView(noteView);
             }
         } else if(mOpenResourceTab[position] == TAB_WORDS) {
             // render words
-            for(final TranslationWord word:words) {
+            for(final Link word:words) {
                 TextView wordView = (TextView) mContext.getLayoutInflater().inflate(R.layout.fragment_resources_list_item, null);
-                wordView.setText(word.getTerm());
+                wordView.setText(word.title);
                 wordView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         if (getListener() != null) {
-                            getListener().onTranslationWordClick(word.getId(), holder.getResourceCardWidth());
+                            ResourceContainer rc = ContainerCache.cacheClosest(App.getLibrary(), word.language, word.project, word.resource);
+                            getListener().onTranslationWordClick(rc.slug, word.chapter, holder.getResourceCardWidth());
                         }
                     }
                 });
-                Typography.formatSub(mContext, Typography.TranslationType.SOURCE, wordView, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+                Typography.formatSub(mContext, Typography.TranslationType.SOURCE, wordView, mSourceContainer.language.slug, mSourceContainer.language.direction);
                 holder.mResourceList.addView(wordView);
             }
         } else if(mOpenResourceTab[position] == TAB_QUESTIONS) {
@@ -1773,7 +1759,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         }
                     }
                 });
-                Typography.formatSub(mContext, Typography.TranslationType.SOURCE, questionView, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+                Typography.formatSub(mContext, Typography.TranslationType.SOURCE, questionView, mSourceContainer.language.slug, mSourceContainer.language.direction);
                 holder.mResourceList.addView(questionView);
             }
         }
@@ -1783,15 +1769,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * generate spannable for target text.  Will add click listener for notes and verses if they are supported
      * @param text
      * @param format
-     * @param frame
      * @param frameTranslation
      * @param holder
      * @param item
      * @return
      */
-    private CharSequence renderTargetText(String text, TranslationFormat format, final Frame frame, final FrameTranslation frameTranslation, final ViewHolder holder, final ListItem item) {
+    private CharSequence renderTargetText(String text, TranslationFormat format, final FrameTranslation frameTranslation, final ViewHolder holder, final ReviewListItem item) {
         RenderingGroup renderingGroup = new RenderingGroup();
-        if(Clickables.isClickableFormat(format) && frame != null) {
+        boolean enableSearch = filterConstraint != null && filterSubject != null && filterSubject == TranslationFilter.FilterSubject.TARGET;
+        if(Clickables.isClickableFormat(format)) {
             Span.OnClickListener verseClickListener = new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
@@ -1803,7 +1789,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
                 @Override
                 public void onLongClick(final View view, Span span, int start, int end) {
-                    ClipData dragData = ClipData.newPlainText(frame.getComplexId(), span.getMachineReadable());
+                    ClipData dragData = ClipData.newPlainText(item.chapterSlug + "-" + item.chunkSlug, span.getMachineReadable());
                     final VerseSpan pin = ((VerseSpan) span);
 
                     // create drag shadow
@@ -1853,13 +1839,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                     // place the verse back at the beginning
                                     text = TextUtils.concat(pin.toCharSequence(), text);
                                 }
-                                item.renderedTargetBody = text;
+                                item.renderedTargetText = text;
                                 editText.setText(text);
                                 String translation = Translator.compileTranslation((Editable)editText.getText());
                                 mTargetTranslation.applyFrameTranslation(frameTranslation, translation);
 
-                                // Reload, so that bodyTranslation and other data are kept in sync.
-                                item.loadTranslations(mSourceTranslation, mTargetTranslation, null, frame);
+                                // Reload, so that targetText and other data are kept in sync.
+                                item.load(mSourceContainer, mTargetTranslation);
                             } else if(event.getAction() == DragEvent.ACTION_DRAG_ENDED) {
                                 view.setOnDragListener(null);
                                 editText.setSelection(editText.getSelectionEnd());
@@ -1869,13 +1855,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                     // place the verse back at the beginning
                                     CharSequence text = editText.getText();
                                     text = TextUtils.concat(pin.toCharSequence(), text);
-                                    item.renderedTargetBody = text;
+                                    item.renderedTargetText = text;
                                     editText.setText(text);
                                     String translation = Translator.compileTranslation((Editable)editText.getText());
                                     mTargetTranslation.applyFrameTranslation(frameTranslation, translation);
 
-                                    // Reload, so that bodyTranslation and other data are kept in sync.
-                                    item.loadTranslations(mSourceTranslation, mTargetTranslation, null, frame);
+                                    // Reload, so that targetText and other data are kept in sync.
+                                    item.load(mSourceContainer, mTargetTranslation);
                                 }
                             } else if(event.getAction() == DragEvent.ACTION_DRAG_ENTERED) {
                                 hasEntered = true;
@@ -1912,16 +1898,16 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             ClickableRenderingEngine renderer = Clickables.setupRenderingGroup(format, renderingGroup, verseClickListener, noteClickListener, true);
             renderer.setLinebreaksEnabled(true);
-            renderer.setPopulateVerseMarkers(frame.getVerseRange());
-            if( isTargetSearch() ) {
-                renderingGroup.setSearchString(mSearchString, HIGHLIGHT_COLOR);
+            renderer.setPopulateVerseMarkers(Frame.getVerseRange(item.sourceText, item.translationFormat));
+            if(enableSearch) {
+                renderingGroup.setSearchString(filterConstraint, HIGHLIGHT_COLOR);
             }
 
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
-            if( isTargetSearch() ) {
-                renderingGroup.setSearchString(mSearchString, HIGHLIGHT_COLOR);
+            if(enableSearch) {
+                renderingGroup.setSearchString(filterConstraint, HIGHLIGHT_COLOR);
             }
         }
         if(!text.trim().isEmpty()) {
@@ -1992,7 +1978,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param span
      * @param editable
      */
-    private void showFootnote(final ViewHolder holder, final ListItem item, final NoteSpan span, final int start, final int end, boolean editable) {
+    private void showFootnote(final ViewHolder holder, final ReviewListItem item, final NoteSpan span, final int start, final int end, boolean editable) {
         CharSequence marker = span.getPassage();
         CharSequence title = mContext.getResources().getText(R.string.title_note);
         if(!marker.toString().isEmpty()) {
@@ -2000,7 +1986,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
         CharSequence message = span.getNotes();
 
-        if(editable && !item.isTranslationFinished) {
+        if(editable && !item.isComplete) {
 
             new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
                     .setTitle(title)
@@ -2039,7 +2025,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param start
      * @param end
      */
-    private void deleteFootnote(CharSequence note, final ViewHolder holder, final ListItem item, final int start, final int end ) {
+    private void deleteFootnote(CharSequence note, final ViewHolder holder, final ReviewListItem item, final int start, final int end ) {
         final EditText editText = getEditText(holder, item);
         final CharSequence original = editText.getText();
 
@@ -2062,7 +2048,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param item
      * @return
      */
-    private EditText getEditText(final ViewHolder holder, final ListItem item) {
+    private EditText getEditText(final ViewHolder holder, final ReviewListItem item) {
         if (!item.isEditing) {
             return holder.mTargetBody;
         } else {
@@ -2079,9 +2065,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param editable
      * @return
      */
-    private CharSequence renderSourceText(String text, TranslationFormat format, final ViewHolder holder, final ListItem item, final boolean editable) {
+    private CharSequence renderSourceText(String text, TranslationFormat format, final ViewHolder holder, final ReviewListItem item, final boolean editable) {
         RenderingGroup renderingGroup = new RenderingGroup();
-        boolean enableSearch = (isTargetSearch() && editable)  || (!isTargetSearch() && !editable);
+        boolean enableSearch = filterConstraint != null && filterSubject != null && filterSubject == TranslationFilter.FilterSubject.SOURCE;
         if (Clickables.isClickableFormat(format)) {
             // TODO: add click listeners for verses
             Span.OnClickListener noteClickListener = new Span.OnClickListener() {
@@ -2100,20 +2086,20 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             Clickables.setupRenderingGroup(format, renderingGroup, null, noteClickListener, false);
             if(editable) {
-                if(!item.isTranslationFinished) {
+                if(!item.isComplete) {
                     renderingGroup.setVersesEnabled(false);
                 }
                 renderingGroup.setLinebreaksEnabled(true);
             }
 
             if( enableSearch ) {
-                renderingGroup.setSearchString(mSearchString, HIGHLIGHT_COLOR);
+                renderingGroup.setSearchString(filterConstraint, HIGHLIGHT_COLOR);
             }
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
             if( enableSearch ) {
-                renderingGroup.setSearchString(mSearchString, HIGHLIGHT_COLOR);
+                renderingGroup.setSearchString(filterConstraint, HIGHLIGHT_COLOR);
             }
         }
         renderingGroup.init(text);
@@ -2122,7 +2108,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     @Override
     public int getItemCount() {
-        return mFilteredItems.length;
+        return mFilteredItems.size();
     }
 
     /**
@@ -2151,6 +2137,27 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      */
     public boolean isResourcesOpen() {
         return mResourcesOpened;
+    }
+
+    @Override
+    public Object[] getSections() {
+        return mFilteredChapters.toArray();
+    }
+
+    @Override
+    public int getPositionForSection(int sectionIndex) {
+        // not used
+        return sectionIndex;
+    }
+
+    @Override
+    public int getSectionForPosition(int position) {
+        if(position >= 0 && position < mFilteredItems.size()) {
+            ListItem item = mFilteredItems.get(position);
+            return mFilteredChapters.indexOf(item.chapterSlug);
+        } else {
+            return -1;
+        }
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -2184,6 +2191,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public final LinearLayout mButtonBar;
         public final Button mCancelButton;
         public final Button mConfirmButton;
+        public int currentTargetTaskId = -1;
 
         public ViewHolder(Context context, View v) {
             super(v);
@@ -2230,311 +2238,50 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
     }
 
-    private static class ListItem {
-        private final String frameSlug;
-        private final String chapterSlug;
-        private boolean isChapterReference = false;
-        private boolean isChapterTitle = false;
-        private boolean isProjectTitle = false;
-        private boolean isEditing = false;
-        private CharSequence renderedSourceBody;
-        private CharSequence renderedTargetBody;
-        private TranslationFormat translationFormat;
-        private String bodyTranslation;
-        private boolean isTranslationFinished;
-        private String bodySource;
-        private FrameTranslation frameTranslation;
-        private ChapterTranslation chapterTranslation;
-        private ProjectTranslation projectTranslation;
-        private FileHistory fileHistory = null;
-        private boolean mHighlightSource = false;
-        private boolean mHighlightTarget = false;
-        private boolean isTranslationMergeConflicted = false;
-        private CharSequence headText;
-        private CharSequence tailText;
-        private boolean mFullMergeConflict = false;
+    private static class ReviewListItem extends ListItem {
+        public CharSequence headText = null;
+        public boolean isFullMergeConflict = false;
+        public CharSequence tailText = null;
 
-
-        public ListItem(String frameSlug, String chapterSlug) {
-            this.frameSlug = frameSlug;
-            this.chapterSlug = chapterSlug;
+        public ReviewListItem(String chapterSlug, String chunkSlug) {
+            super(chapterSlug, chunkSlug);
         }
 
-        public boolean isFrame() {
-            return this.frameSlug != null;
-        }
-
-        public boolean isChapter() {
-            return this.frameSlug == null && this.chapterSlug != null;
-        }
-
-        /**
-         * clear all the previous highlighting states for the item
-         */
-        public void clearAllHighLighting() {
-            setHighLighting(false, true);
-            setHighLighting(false, false);
-        }
-
-        /**
-         * set the highlighting state for the item and clearing any old highlighting
-         * @param enable
-         * @param target
-         */
-        public void setHighLighting(boolean enable, boolean target) {
-            if(target) {
-                if(!enable) { // disable highlighting
-                    if(mHighlightTarget) {
-                        renderedTargetBody = null; // remove rendered text so will be re-rendered without highlighting
-                    }
-                } else { // enable highlighting
-                    renderedTargetBody = null; // remove rendered text so will be re-rendered with new highlighting
-                }
-                mHighlightTarget = enable;
-            } else { // source
-                if(!enable) { // disable highlighting
-                    if(mHighlightSource) {
-                        renderedSourceBody = null; // remove rendered text so will be re-rendered without highlighting
-                    }
-                } else { // enable highlighting
-                    renderedSourceBody = null; // remove rendered text so will be re-rendered with new highlighting
-                }
-                mHighlightSource = enable;
-            }
-        }
-
-        /**
-         * Loads the file history or returns it from the cache
-         * @param targetTranslation
-         * @return
-         */
-        public FileHistory getFileHistory(TargetTranslation targetTranslation) {
-            if(this.fileHistory != null) {
-                return this.fileHistory;
-            }
-
-            FileHistory history = null;
-            if(this.isChapterReference) {
-                history = targetTranslation.getChapterReferenceHistory(this.chapterTranslation);
-            } else if(this.isChapterTitle) {
-                history = targetTranslation.getChapterTitleHistory(this.chapterTranslation);
-            } else if(this.isProjectTitle) {
-                history = targetTranslation.getProjectTitleHistory();
-            } else if(this.isFrame()) {
-                history = targetTranslation.getFrameHistory(this.frameTranslation);
-            }
-            this.fileHistory = history;
-            return history;
-        }
-
-        /**
-         * Loads the correct translation information into the item
-         * @param targetTranslation
-         * @param chapter
-         * @param frame
-         */
-        public void loadTranslations(SourceTranslation sourceTranslation, TargetTranslation targetTranslation, Chapter chapter, Frame frame) {
-            if(isChapterReference || isChapterTitle) {
-                frameTranslation = null;
-                chapterTranslation = targetTranslation.getChapterTranslation(chapter);
-                translationFormat = targetTranslation.getFormat();
-                if (isChapterTitle) {
-                    bodyTranslation = chapterTranslation.title;
-                    bodySource = chapter.title;
-                    isTranslationFinished = chapterTranslation.isTitleFinished();
-                } else {
-                    bodyTranslation = chapterTranslation.reference;
-                    bodySource = chapter.reference;
-                    isTranslationFinished = chapterTranslation.isReferenceFinished();
-                }
-            } else if(isProjectTitle) {
-                projectTranslation = targetTranslation.getProjectTranslation();
-                bodyTranslation = projectTranslation.getTitle();
-                bodySource = sourceTranslation.getProjectTitle();
-                isTranslationFinished = projectTranslation.isTitleFinished();
-            } else {
-                chapterTranslation = null;
-                frameTranslation = targetTranslation.getFrameTranslation(frame);
-                translationFormat = targetTranslation.getFormat();
-                bodyTranslation = frameTranslation.body;
-                bodySource = frame.body;
-                isTranslationFinished = frameTranslation.isFinished();
-            }
-
-            updateMergeConflict();
-        }
-
-        /**
-         * recheck if merge is conflict
-         */
-        private void updateMergeConflict() {
-            if (bodyTranslation != null) {
-                isTranslationMergeConflicted = MergeConflictHandler.isMergeConflicted(bodyTranslation);
-            } else {
-                isTranslationMergeConflicted = false;
-            }
-        }
-
-        public void changeBodyTranslation(String text) {
-            bodyTranslation = text;
-            updateMergeConflict();
-        }
     }
 
-    /**
-     * remove displayed cards
-     * @param searchString
-     * @param searchTarget
-     */
-    public void clearScreenAndStartNewSearch(final CharSequence searchString, final boolean searchTarget) {
+    @Override
+    public void filter(CharSequence constraint, TranslationFilter.FilterSubject subject) {
+        this.filterConstraint = constraint;
+        this.filterSubject = subject;
+        if(constraint == null || constraint.toString().trim().isEmpty()) {
+            mFilteredItems = mItems;
+            mFilteredChapters = mChapters;
+            return;
+        }
 
         // clear the cards displayed since we have new search string
-        mFilteredItems = new ListItem[0];
-        resetSectionMarkers();
-        notifyDataSetChanged();
+        mFilteredItems = new ArrayList<>();
 
-        if( (searchString != null) && (searchString.length() > 0)) {
-            getListener().onSetBusyIndicator(true);
-        }
-
-        //start search on delay so cards will clear first
-        Handler hand = new Handler(Looper.getMainLooper());
-        hand.post(new Runnable() {
+        getListener().onSearching(true);
+        TranslationFilter filter = new TranslationFilter(mSourceContainer, mTargetTranslation, subject, mItems);
+        filter.setListener(new TranslationFilter.OnMatchListener() {
             @Override
-            public void run() {
-                ((TranslationSearchFilter) getFilter()).setTargetSearch(searchTarget).filter(searchString);
+            public void onMatch(ListItem item) {
+                if(!mFilteredChapters.contains(item.chapterSlug)) mFilteredChapters.add(item.chapterSlug);
+            }
+
+            @Override
+            public void onFinished(CharSequence constraint, List<ListItem> results) {
+                mFilteredItems = results;
+                triggerNotifyDataSetChanged();
+                getListener().onSearching(false);
             }
         });
+        filter.filter(constraint);
     }
 
-    /**
-     * check the filter to see what the last search type was
-     * @return
-     */
-    private boolean isTargetSearch() {
-        if(mSearchFilter != null) {
-            return mSearchFilter.isTargetSearch();
-        }
-        return false;
-    }
-
-    /**
-     * Returns the target language filter
-     * @return
-     */
-    public Filter getFilter() {
-        if(mSearchFilter == null) {
-            mSearchFilter = new SearchFilter();
-        }
-        return mSearchFilter;
-    }
-
-    /**
-     * class for searching text
-     */
-    private class SearchFilter extends TranslationSearchFilter {
-
-        private boolean searchTarget = false;
-        CharSequence oldSearch = null;
-
-        public SearchFilter setTargetSearch(boolean searchTarget) { // chainable
-            this.searchTarget = searchTarget;
-            return this;
-        }
-
-        public boolean isTargetSearch() {
-            return searchTarget;
-        }
-
-        @Override
-        protected FilterResults performFiltering(CharSequence charSequence) {
-            FilterResults results = new FilterResults();
-            mSearchString = charSequence;
-            if(charSequence == null || charSequence.length() == 0) {
-                // no filter
-                results.values = Arrays.asList(mUnfilteredItems);
-                results.count = mUnfilteredItems.length;
-                for (ListItem unfilteredItem : mUnfilteredItems) {
-                    unfilteredItem.clearAllHighLighting();
-                }
-            } else {
-                // perform filter
-                String matchString = charSequence.toString().toLowerCase();
-                List<ListItem> filteredCategories = new ArrayList<>();
-                for(ListItem item: mUnfilteredItems) {
-                    boolean match = false;
-
-                    if(!searchTarget) { // search the source
-                        if (item.renderedSourceBody != null) { // if source has already been rendered, search that
-                            match = item.renderedSourceBody.toString().toLowerCase().contains(matchString);
-
-                        } else { // next best we search source
-                            if (item.bodySource == null) { // if source hasn't been loaded
-                                item.loadTranslations(mSourceTranslation, mTargetTranslation, mChapters.get(item.chapterSlug), loadFrame(item.chapterSlug, item.frameSlug));
-                            }
-                            if (item.bodySource != null) {
-                                match = item.bodySource.toLowerCase().contains(matchString);
-                            }
-                        }
-                    } else { // search the target
-                        if (item.renderedTargetBody != null) { // if target has already been rendered, search that
-                            match = item.renderedTargetBody.toString().toLowerCase().contains(matchString);
-
-                        } else { // next best we search source
-                            if (item.bodyTranslation == null) { // if source hasn't been loaded
-                                item.loadTranslations(mSourceTranslation, mTargetTranslation, mChapters.get(item.chapterSlug), loadFrame(item.chapterSlug, item.frameSlug));
-                            }
-                            if (item.bodyTranslation != null) {
-                                match = item.bodyTranslation.toLowerCase().contains(matchString);
-                            }
-                        }
-                    }
-
-                    if(match) {
-                        filteredCategories.add(item);
-                        item.setHighLighting(true, searchTarget);
-                        item.setHighLighting(false, !searchTarget); // remove searching from opposite pane
-                    } else {
-                        item.clearAllHighLighting(); // if not matched item, remove previous highlighting
-                    }
-                }
-                results.values = filteredCategories;
-                results.count = filteredCategories.size();
-            }
-            return results;
-        }
-
-        @Override
-        protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-            List<ListItem> filteredLanguages = (List<ListItem>)filterResults.values;
-            mFilteredItems = filteredLanguages.toArray(new ListItem[filteredLanguages.size()]);
-            updateChapterMarkers(oldSearch);
-            oldSearch = mSearchString;
-            notifyDataSetChanged();
-            getListener().onSetBusyIndicator(false);
-        }
-    }
-
-    /**
-     * check to see if search string has changed and therefor chapter markers will need updating.  Note null string and empty string are treated as the same
-     * @param oldSearch
-     */
-    private void updateChapterMarkers(CharSequence oldSearch) {
-        boolean searchChanged = false;
-        if (oldSearch == null) {
-            if( (mSearchString != null) && (mSearchString.length() > 0) ) {
-                searchChanged = true;
-            }
-        } else  if (mSearchString == null) {
-            if( (oldSearch != null)  && (oldSearch.length() > 0) ) {
-                searchChanged = true;
-            }
-        } else if(!mSearchString.equals(oldSearch)) {
-            searchChanged = true;
-        }
-
-        if(searchChanged) {
-            resetSectionMarkers();
-        }
+    @Override
+    public boolean hasFilter() {
+        return true;
     }
 }

@@ -6,9 +6,10 @@ import android.support.v4.provider.DocumentFile;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.ArchiveDetails;
-import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Translator;
 import com.door43.util.FileUtilities;
+
+import org.unfoldingword.door43client.Door43Client;
 
 
 /**
@@ -61,7 +62,7 @@ public class DocumentFileItem {
     /**
      * Checks if this file is a translationStudio archive
      */
-    public void inspect(String preferredLocale, Library library) {
+    public void inspect(String preferredLocale, Door43Client library) {
         if(file != null) {
             try {
                 this.archiveDetails = ArchiveDetails.newInstance(App.context(), file, preferredLocale, library);

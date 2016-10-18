@@ -12,20 +12,22 @@ import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.ProjectCategory;
 import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.App;
 
-import java.util.Locale;
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.CategoryEntry;
+
+import java.util.List;
+
 
 /**
  * Created by joel on 9/4/2015.
  */
 public class ProjectListFragment extends BaseFragment implements Searchable {
     private OnItemClickListener mListener;
-    private Library mLibrary;
+    private Door43Client mLibrary;
     private ProjectCategoryAdapter mAdapter;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -44,17 +46,18 @@ public class ProjectListFragment extends BaseFragment implements Searchable {
         // TODO: set up update button
 
         ListView list = (ListView) rootView.findViewById(R.id.list);
-        mAdapter = new ProjectCategoryAdapter(mLibrary.getProjectCategories(App.getDeviceLanguageCode()));
+        List<CategoryEntry> entries = mLibrary.index().getProjectCategories(0, App.getDeviceLanguageCode(), "all");
+        mAdapter = new ProjectCategoryAdapter(entries);
         list.setAdapter(mAdapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ProjectCategory category = mAdapter.getItem(position);
-                if (category.isProject()) {
-                    mListener.onItemClick(category.projectId);
+                CategoryEntry category = mAdapter.getItem(position);
+                if (category.entryType == CategoryEntry.Type.PROJECT) {
+                    mListener.onItemClick(category.slug);
                 } else {
                     // TODO: we need to display another back arrow to back up a level in the categories
-                    mAdapter.changeData(mLibrary.getProjectCategories(category));
+                    mAdapter.changeData(mLibrary.index().getProjectCategories(category.id, App.getDeviceLanguageCode(), "all"));
 
                     updateIcon.setVisibility(View.GONE);
                 }

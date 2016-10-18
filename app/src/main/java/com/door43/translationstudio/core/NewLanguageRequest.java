@@ -7,6 +7,9 @@ import android.support.annotation.Nullable;
 import org.unfoldingword.tools.logger.Logger;
 import com.door43.util.Security;
 
+import org.unfoldingword.door43client.models.Questionnaire;
+import org.unfoldingword.door43client.models.TargetLanguage;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -53,7 +56,7 @@ public class NewLanguageRequest {
      * Creates a new questionnaire response
      * @return
      */
-    public static NewLanguageRequest newInstance(Context context, Questionnaire questionnaire, String app, String requester) {
+    public static NewLanguageRequest newInstance(Context context, QuestionnairePager questionnaire, String app, String requester) {
         // generate language code
         String udid = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
         long time = System.currentTimeMillis();
@@ -61,7 +64,7 @@ public class NewLanguageRequest {
         String hash = Security.sha1(uniqueString);
         String languageCode  = LANGUAGE_PREFIX + hash.substring(0, 6);
 
-        return new NewLanguageRequest(UUID.randomUUID().toString(), languageCode, questionnaire.door43Id, app, requester, questionnaire.dataFields);
+        return new NewLanguageRequest(UUID.randomUUID().toString(), languageCode, questionnaire.questionnaire.tdId, app, requester, questionnaire.questionnaire.dataFields);
     }
 
     /**
@@ -197,7 +200,7 @@ public class NewLanguageRequest {
     public TargetLanguage getTempTargetLanguage() {
         String name = this.tempLanguageCode;
         String region = "unknown";
-        LanguageDirection direction = LanguageDirection.LeftToRight;
+        String direction = "ltr";
 
         if(this.dataFields.containsKey("ln")) {
             name = this.getAnswer(this.dataFields.get("ln"));
@@ -207,9 +210,9 @@ public class NewLanguageRequest {
         }
         if(this.dataFields.containsKey("ld")) {
             Boolean isLeftToRight = Boolean.parseBoolean(this.getAnswer(this.dataFields.get("ld")));
-            direction = isLeftToRight ? LanguageDirection.LeftToRight : LanguageDirection.RightToLeft;
+            direction = isLeftToRight ? "ltr" : "rtl";
         }
 
-        return new TargetLanguage(this.tempLanguageCode, name, region, direction);
+        return new TargetLanguage(this.tempLanguageCode, name, "", direction.toString(), region, false);
     }
 }

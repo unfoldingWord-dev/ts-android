@@ -6,6 +6,7 @@ import org.json.JSONObject;
 /**
  * Represents a translation note
  */
+@Deprecated
 public class TranslationNote {
     private final String mChapterId;
     private final String mFrameId;

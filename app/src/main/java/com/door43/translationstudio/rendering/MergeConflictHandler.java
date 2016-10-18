@@ -10,7 +10,6 @@ import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
-import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.ProjectTranslation;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
@@ -151,63 +150,66 @@ public class MergeConflictHandler {
 
     /**
      * search for first merge conflict
+     * TODO: instead of this we need to take users to a filtered mode that just displays the merge conflicts
      * @param targetTranslationId
      * @return
      */
+    @Deprecated
     static public CardLocation findFirstMergeConflict(String targetTranslationId) {
-        Library library = App.getLibrary();
-        Translator translator = App.getTranslator();
-
-        TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationId);
-        SourceTranslation[] sourceTranslations = library.getSourceTranslations(targetTranslation.getProjectId());
-        if(sourceTranslations.length <= 0) {
-            return null;
-        }
-        SourceTranslation sourceTranslation = sourceTranslations[0];
-        Chapter[] chapters = library.getChapters(sourceTranslation);
-
-        //check for project title
-        String projectTitle = sourceTranslation.getProjectTitle();
-        if(projectTitle != null) {
-            ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
-            if(isMergeConflicted(projectTranslation.getTitle())) {
-                return new CardLocation("00","00");
-            }
-        }
-
-        for(int i = 0; i < chapters.length; i ++) {
-            Chapter chapter = chapters[i];
-            String chapterStr = chapter.getId();
-
-            Frame[] frames = library.getFrames(sourceTranslation, chapter.getId());
-
-            ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(chapter.getId());
-            boolean isInvalidChapterTitle = (chapter.title != null) && (!chapter.title.isEmpty());
-            if(!isInvalidChapterTitle) {
-                if(MergeConflictHandler.isMergeConflicted(chapterTranslation.title)) {
-                    return new CardLocation(chapterStr, "00");
-                }
-            }
-
-            boolean isInvalidRef = (chapter.reference != null) && (!chapter.reference.isEmpty());
-            if(!isInvalidRef) {
-                if(MergeConflictHandler.isMergeConflicted(chapterTranslation.reference)) {
-                    return new CardLocation(chapterStr, "00");
-                }
-            }
-
-            for(int j = 0; j < frames.length; j ++) {
-                Frame frame = frames[j];
-                boolean isValidFrame = (frame.body != null) && !frame.body.isEmpty();
-                if(isValidFrame) {
-                    FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(frame);
-                    if(MergeConflictHandler.isMergeConflicted(frameTranslation.body)) {
-                        return new CardLocation(chapterStr, frame.getId());
-                    }
-                }
-            }
-        }
         return null;
+//        Translator translator = App.getTranslator();
+//
+//        TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationId);
+//
+//        SourceTranslation[] sourceTranslations = library.getSourceTranslations(targetTranslation.getProjectId());
+//        if(sourceTranslations.length <= 0) {
+//            return null;
+//        }
+//        SourceTranslation sourceTranslation = sourceTranslations[0];
+//        Chapter[] chapters = library.getChapters(sourceTranslation);
+//
+//        //check for project title
+//        String projectTitle = sourceTranslation.getProjectTitle();
+//        if(projectTitle != null) {
+//            ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
+//            if(isMergeConflicted(projectTranslation.getTitle())) {
+//                return new CardLocation("00","00");
+//            }
+//        }
+//
+//        for(int i = 0; i < chapters.length; i ++) {
+//            Chapter chapter = chapters[i];
+//            String chapterStr = chapter.getId();
+//
+//            Frame[] frames = library.getFrames(sourceTranslation, chapter.getId());
+//
+//            ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(chapter.getId());
+//            boolean isInvalidChapterTitle = (chapter.title != null) && (!chapter.title.isEmpty());
+//            if(!isInvalidChapterTitle) {
+//                if(MergeConflictHandler.isMergeConflicted(chapterTranslation.title)) {
+//                    return new CardLocation(chapterStr, "00");
+//                }
+//            }
+//
+//            boolean isInvalidRef = (chapter.reference != null) && (!chapter.reference.isEmpty());
+//            if(!isInvalidRef) {
+//                if(MergeConflictHandler.isMergeConflicted(chapterTranslation.reference)) {
+//                    return new CardLocation(chapterStr, "00");
+//                }
+//            }
+//
+//            for(int j = 0; j < frames.length; j ++) {
+//                Frame frame = frames[j];
+//                boolean isValidFrame = (frame.body != null) && !frame.body.isEmpty();
+//                if(isValidFrame) {
+//                    FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(frame);
+//                    if(MergeConflictHandler.isMergeConflicted(frameTranslation.body)) {
+//                        return new CardLocation(chapterStr, frame.getId());
+//                    }
+//                }
+//            }
+//        }
+//        return null;
     }
 
     /**

@@ -8,7 +8,8 @@ import android.widget.Filter;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.SourceLanguage;
+
+import org.unfoldingword.door43client.models.SourceLanguage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,7 +67,7 @@ public class SourceLanguageAdapter extends BaseAdapter {
 
         // render view
         holder.mLanguageView.setText(getItem(position).name);
-        holder.mCodeView.setText(getItem(position).code);
+        holder.mCodeView.setText(getItem(position).slug);
 
         return v;
     }
@@ -110,7 +111,7 @@ public class SourceLanguageAdapter extends BaseAdapter {
                 List<SourceLanguage> filteredCategories = new ArrayList<>();
                 for(SourceLanguage language:mLanguages) {
                     // match the source language id
-                    boolean match = language.getId().toLowerCase().startsWith(charSequence.toString().toLowerCase());
+                    boolean match = language.slug.toLowerCase().startsWith(charSequence.toString().toLowerCase());
                     if(!match) {
                         if (language.name.toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
                             // match the source language name
@@ -147,8 +148,8 @@ public class SourceLanguageAdapter extends BaseAdapter {
         Collections.sort(languages, new Comparator<SourceLanguage>() {
             @Override
             public int compare(SourceLanguage lhs, SourceLanguage rhs) {
-                String lhId = lhs.getId();
-                String rhId = rhs.getId();
+                String lhId = lhs.slug;
+                String rhId = rhs.slug;
                 // give priority to matches with the reference
                 if (lhId.startsWith(referenceId.toString().toLowerCase())) {
                     lhId = "!" + lhId;

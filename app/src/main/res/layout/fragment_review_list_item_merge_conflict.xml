@@ -135,6 +135,7 @@
                     android:layout_marginTop="@dimen/dialog_controls_margin" />
 
                 <LinearLayout
+                    android:visibility="gone"
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -167,19 +168,19 @@
                         android:textColor="@color/light_primary_text" />
                 </LinearLayout>
 
-            </LinearLayout>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/resolve_confict_instructions"
+                    android:drawableLeft="@drawable/ic_warning_black_24dp"
+                    android:drawablePadding="@dimen/dialog_controls_margin"
+                    android:textColor="@color/dark_secondary_text"
+                    android:id="@+id/conflict_label"
+                    android:layout_margin="@dimen/dialog_controls_margin"
+                    android:padding="@dimen/dialog_controls_margin"
+                    android:visibility="visible" />
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/conflict_resolve"
-                android:ems="10"
-                android:background="@color/warning"
-                android:textColor="@color/white"
-                android:id="@+id/conflict_label"
-                android:layout_margin="@dimen/dialog_controls_margin"
-                android:padding="@dimen/dialog_controls_margin"
-                android:visibility="gone" />
+            </LinearLayout>
 
         </LinearLayout>
 

@@ -5,14 +5,13 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
-import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.device2device.SocketMessages;
 import com.door43.translationstudio.network.Connection;
 import com.door43.translationstudio.network.Peer;
 import com.door43.util.RSAEncryption;
@@ -33,7 +32,6 @@ import java.security.MessageDigest;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -371,28 +369,24 @@ public class ServerService extends NetworkService {
      * @param client
      * @param targetTranslationSlug
      */
-    public void offerTargetTranslation(Peer client, String targetTranslationSlug) {
-        Library library = App.getLibrary();
+    public void offerTargetTranslation(Peer client, String sourceLanguageSlug, String targetTranslationSlug) {
+        Door43Client library = App.getLibrary();
         TargetTranslation targetTranslation = App.getTranslator().getTargetTranslation(targetTranslationSlug);
         if(targetTranslation != null) {
-            SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(targetTranslation.getProjectId(), App.getDeviceLanguageCode());
-            if(sourceTranslation != null) {
-                try {
-                    JSONObject json = new JSONObject();
-                    json.put("target_translation_id", targetTranslation.getId());
-                    json.put("package_version", TargetTranslation.PACKAGE_VERSION);
-                    json.put("project_name", sourceTranslation.getProjectTitle());
-                    json.put("target_language_name", targetTranslation.getTargetLanguageName());
-                    json.put("progress", library.getTranslationProgress(targetTranslation));
-                    Request request = new Request(Request.Type.AlertTargetTranslation, json);
-                    sendRequest(client, request);
-                } catch (JSONException e) {
-                    if (listener != null) {
-                        listener.onServerServiceError(e);
-                    }
+            try {
+                ResourceContainer container = library.open(sourceLanguageSlug, targetTranslation.getProjectId(), targetTranslation.getResourceSlug());
+                JSONObject json = new JSONObject();
+                json.put("target_translation_id", targetTranslation.getId());
+                json.put("package_version", TargetTranslation.PACKAGE_VERSION);
+                json.put("project_name", container.readChunk("front", "title"));
+                json.put("target_language_name", targetTranslation.getTargetLanguageName());
+                json.put("progress", 0); // we don't use this right now
+                Request request = new Request(Request.Type.AlertTargetTranslation, json);
+                sendRequest(client, request);
+            } catch (Exception e) {
+                if (listener != null) {
+                    listener.onServerServiceError(e);
                 }
-            } else {
-                // invalid project
             }
         } else {
             // invalid target translation

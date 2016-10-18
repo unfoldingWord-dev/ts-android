@@ -16,6 +16,7 @@ import javax.net.ssl.HttpsURLConnection;
 /**
  * Represents a network request
  */
+@Deprecated
 abstract class Request {
     private final URL url;
     private final String requestMethod;

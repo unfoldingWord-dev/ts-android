@@ -1,17 +1,24 @@
 package com.door43.translationstudio.tasks;
 
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.Translation;
+import org.unfoldingword.resourcecontainer.Project;
+import org.unfoldingword.resourcecontainer.Resource;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.io.File;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by joel on 1/21/2016.
@@ -35,12 +42,14 @@ public class PrintPDFTask extends ManagedTask {
     public void start() {
         publishProgress(-1, App.context().getString(R.string.printing));
         if(mTargetTranslation != null) {
-            Library library = App.getLibrary();
+            Door43Client library = App.getLibrary();
             Translator translator = App.getTranslator();
             try {
-                SourceTranslation sourceTranslation = App.getLibrary().getDefaultSourceTranslation(mTargetTranslation.getProjectId(), "en");
-                File imagesDir = library.getImagesDir();
-                translator.exportPdf(library, mTargetTranslation, sourceTranslation.getFormat(), Typography.getAssetPath(App.context(), Typography.TranslationType.TRANSLATION), imagesDir, includeImages, includeIncompleteFrames, mDestFile);
+                Project p = App.getLibrary().index().getProject("en", mTargetTranslation.getProjectId(), true);
+                List<Resource> resources = App.getLibrary().index().getResources(p.languageSlug, p.slug);
+                ResourceContainer resourceContainer = App.getLibrary().open(p.languageSlug, p.slug, resources.get(0).slug);
+                File imagesDir = App.getImagesDir();
+                translator.exportPdf(library, mTargetTranslation, TranslationFormat.parse(resourceContainer.contentMimeType), Typography.getAssetPath(App.context(), Typography.TranslationType.TRANSLATION), imagesDir, includeImages, includeIncompleteFrames, mDestFile);
                 if (mDestFile.exists()) {
                     success = true;
                 } else {

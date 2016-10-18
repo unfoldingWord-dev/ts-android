@@ -8,7 +8,8 @@ import android.widget.Filter;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.TargetLanguage;
+
+import org.unfoldingword.door43client.models.TargetLanguage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,11 +25,10 @@ public class TargetLanguageAdapter extends BaseAdapter {
     private TargetLanguage[] mFilteredTargetLanguages;
     private TargetLanguageFilter mTargetLanguageFilter;
 
-    public TargetLanguageAdapter(TargetLanguage[] targetLanguages) {
+    public TargetLanguageAdapter(List<TargetLanguage> targetLanguages) {
         if(targetLanguages != null) {
-            List<TargetLanguage> targetLanguagesList = Arrays.asList(targetLanguages);
-            Collections.sort(targetLanguagesList);
-            mTargetLanguages = targetLanguagesList.toArray(new TargetLanguage[targetLanguagesList.size()]);
+            Collections.sort(targetLanguages);
+            mTargetLanguages = targetLanguages.toArray(new TargetLanguage[targetLanguages.size()]);
             mFilteredTargetLanguages = mTargetLanguages;
         }
     }
@@ -38,15 +38,12 @@ public class TargetLanguageAdapter extends BaseAdapter {
      * @param targetLanguages
      * @param sorted
      */
-    public TargetLanguageAdapter(TargetLanguage[] targetLanguages, boolean sorted) {
+    public TargetLanguageAdapter(List<TargetLanguage> targetLanguages, boolean sorted) {
         if(targetLanguages != null) {
             if(sorted) {
-                List<TargetLanguage> targetLanguagesList = Arrays.asList(targetLanguages);
-                Collections.sort(targetLanguagesList);
-                mTargetLanguages = targetLanguagesList.toArray(new TargetLanguage[targetLanguagesList.size()]);
-            } else {
-                mTargetLanguages = targetLanguages;
+                Collections.sort(targetLanguages);
             }
+            targetLanguages.toArray(new TargetLanguage[targetLanguages.size()]);
             mFilteredTargetLanguages = mTargetLanguages;
         }
     }
@@ -84,7 +81,7 @@ public class TargetLanguageAdapter extends BaseAdapter {
 
         // render view
         holder.mLanguageView.setText(getItem(position).name);
-        holder.mCodeView.setText(getItem(position).code);
+        holder.mCodeView.setText(getItem(position).slug);
 
         return v;
     }
@@ -125,7 +122,7 @@ public class TargetLanguageAdapter extends BaseAdapter {
                 List<TargetLanguage> filteredCategories = new ArrayList<>();
                 for(TargetLanguage language:mTargetLanguages) {
                     // match the target language id
-                    boolean match = language.getId().toLowerCase().startsWith(charSequence.toString().toLowerCase());
+                    boolean match = language.slug.toLowerCase().startsWith(charSequence.toString().toLowerCase());
                     if(!match) {
                         if (language.name.toLowerCase().contains(charSequence.toString().toLowerCase())) {
                             // match the target language name
@@ -162,8 +159,8 @@ public class TargetLanguageAdapter extends BaseAdapter {
         Collections.sort(languages, new Comparator<TargetLanguage>() {
             @Override
             public int compare(TargetLanguage lhs, TargetLanguage rhs) {
-                String lhId = lhs.getId();
-                String rhId = rhs.getId();
+                String lhId = lhs.slug;
+                String rhId = rhs.slug;
                 // give priority to matches with the reference
                 if(lhId.toLowerCase().startsWith(referenceId.toString().toLowerCase())) {
                     lhId = "!!" + lhId;

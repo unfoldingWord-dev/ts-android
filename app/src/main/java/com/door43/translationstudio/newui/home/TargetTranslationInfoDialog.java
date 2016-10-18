@@ -16,18 +16,26 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.NativeSpeaker;
-import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.PrintDialog;
 import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
 import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.newui.BackupDialog;
+
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.SourceLanguage;
+import org.unfoldingword.resourcecontainer.Project;
+import org.unfoldingword.resourcecontainer.Resource;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
+import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ThreadableUI;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * Displays detailed information about a target translation
@@ -54,14 +62,26 @@ public class TargetTranslationInfoDialog extends DialogFragment {
             mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         }
 
-        final Library library = App.getLibrary();
+        final Door43Client library = App.getLibrary();
 
         TextView title = (TextView)v.findViewById(R.id.title);
         TextView projectTitle = (TextView)v.findViewById(R.id.project_title);
-        SourceLanguage sourceLanguage = library.getPreferredSourceLanguage(mTargetTranslation.getProjectId(), App.getDeviceLanguageCode());
-        if(sourceLanguage != null) {
-            title.setText(sourceLanguage.projectTitle + " - " + mTargetTranslation.getTargetLanguageName());
-            projectTitle.setText(sourceLanguage.projectTitle + " (" + mTargetTranslation.getProjectId() + ")");
+        Project p = library.index().getProject(App.getDeviceLanguageCode(), mTargetTranslation.getProjectId(), true);
+        SourceLanguage sourceLanguage = library.index().getSourceLanguage(p.languageSlug);
+        List<Resource> resources = library.index().getResources(sourceLanguage.slug, p.slug);
+        ResourceContainer resourceContainer;
+        try {
+            resourceContainer = library.open(sourceLanguage.slug, p.slug, resources.get(0).slug);
+        } catch (Exception e) {
+            Logger.e("TargetTranslationInfoDialog", "Failed to open the container", e);
+            dismiss();
+            return v;
+        }
+        String projectTitleString = null;
+        projectTitleString = resourceContainer.readChunk("front", "title");
+        if(projectTitleString != null) {
+            title.setText(projectTitleString + " - " + mTargetTranslation.getTargetLanguageName());
+            projectTitle.setText(projectTitleString + " (" + mTargetTranslation.getProjectId() + ")");
         } else {
             title.setText(mTargetTranslation.getProjectId() + " - " + mTargetTranslation.getTargetLanguageName());
             projectTitle.setText(mTargetTranslation.getProjectId());
@@ -81,7 +101,8 @@ public class TargetTranslationInfoDialog extends DialogFragment {
 
             @Override
             public void run() {
-                progress = Math.round(library.getTranslationProgress(mTargetTranslation) * 100);
+                // TODO: 9/28/16 this should use the task instead
+//                progress = Math.round(library.getTranslationProgress(mTargetTranslation) * 100);
             }
 
             @Override

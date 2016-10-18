@@ -10,6 +10,7 @@ import com.door43.util.FileUtilities;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.tools.logger.Logger;
 
 import java.io.File;
@@ -17,6 +18,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.unfoldingword.door43client.models.TargetLanguage;
 
 
 /**
@@ -29,7 +32,7 @@ public class ImportUsfmTest extends InstrumentationTestCase {
     private ImportUsfm mUsfm;
     private Context mTestContext;
     private Context mAppContext;
-    private Library mLibrary;
+    private Door43Client mLibrary;
 
     @Override
     public void setUp() throws Exception {
@@ -37,7 +40,7 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         mExpectedBooks = new JSONArray();
         mLibrary = App.getLibrary();
         Logger.flush();
-        mTargetLanguage = mLibrary.getTargetLanguage("es");
+        mTargetLanguage = mLibrary.index().getTargetLanguage("es");
         mTestContext = getInstrumentation().getContext();
         mAppContext = App.context();
         if(App.getProfile() == null) { // make sure this is initialized
@@ -464,20 +467,20 @@ public class ImportUsfmTest extends InstrumentationTestCase {
 
         // verify chapters and verses
         if(success  && !book.isEmpty()) {
-            SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(book.toLowerCase(), "en", "ulb");
+            SourceTranslation sourceTranslation = null;//mLibrary.getSourceTranslation(book.toLowerCase(), "en", "ulb");
             File[] projects = mUsfm.getImportProjects();
             if(success) {
                 assertTrue("Import Projects count should be greater than zero, but is " + projects.length, projects.length > 0);
             }
             for (File project : projects) {
-                Chapter[] chapters = mLibrary.getChapters(sourceTranslation);
+                Chapter[] chapters = null;//mLibrary.getChapters(sourceTranslation);
                 for (Chapter chapter : chapters) {
                     // verify chapter
                     File chapterPath = new File(project, chapter.getId());
                     assertTrue("Chapter missing " + chapterPath.toString(), chapterPath.exists());
 
                     // verify chunks
-                    String[] chapterFrameSlugs = mLibrary.getFrameSlugs(sourceTranslation, chapter.getId());
+                    String[] chapterFrameSlugs = null;//mLibrary.getFrameSlugs(sourceTranslation, chapter.getId());
                     for (int i = 0; i < chapterFrameSlugs.length; i++) {
                         String chapterFrameSlug = chapterFrameSlugs[i];
                         int expectCount = -1;

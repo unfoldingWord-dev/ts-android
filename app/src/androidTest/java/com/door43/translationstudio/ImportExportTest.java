@@ -4,10 +4,11 @@ import android.content.Context;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.MediumTest;
 
-import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.core.Translator;
+
+import org.unfoldingword.door43client.Door43Client;
 
 import java.io.File;
 
@@ -20,7 +21,7 @@ public class ImportExportTest extends InstrumentationTestCase {
     private Context context;
     private Translator translator;
     private File testsDir;
-    private Library library;
+    private Door43Client library;
 
     @Override
     protected void setUp() throws Exception {

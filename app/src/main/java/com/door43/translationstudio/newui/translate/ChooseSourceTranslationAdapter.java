@@ -15,14 +15,12 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.Resource;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.newui.library.ServerLibraryDetailFragment;
-import com.door43.translationstudio.tasks.DownloadSourceLanguageTask;
+import com.door43.translationstudio.tasks.DownloadResourceContainerTask;
 import com.door43.widget.ViewUtil;
 
-import org.unfoldingword.tools.logger.Logger;
+import org.unfoldingword.door43client.models.Translation;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
@@ -36,7 +34,7 @@ import java.util.TreeSet;
 /**
  * Created by joel on 9/15/2015.
  */
-public class ChooseSourceTranslationAdapter extends BaseAdapter  implements ManagedTask.OnFinishedListener,  ManagedTask.OnProgressListener {
+public class ChooseSourceTranslationAdapter extends BaseAdapter {
     public static final int TYPE_ITEM_SELECTABLE = 0;
     public static final int TYPE_SEPARATOR = 1;
     public static final int TYPE_ITEM_NEED_DOWNLOAD = 2;
@@ -48,7 +46,6 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
     private List<String> mAvailable = new ArrayList<>();
     private List<ViewItem> mSortedData = new ArrayList<>();
     private TreeSet<Integer> mSectionHeader = new TreeSet<>();
-    private ProgressDialog progressDialog;
 
     public ChooseSourceTranslationAdapter(Context context) {
         mContext = context;
@@ -65,12 +62,12 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
      * @param item
      */
     public void addItem(final ViewItem item) {
-        if(!mData.containsKey(item.id)) {
-            mData.put(item.id, item);
+        if(!mData.containsKey(item.containerSlug)) {
+            mData.put(item.containerSlug, item);
             if(item.selected  && item.downloaded) {
-                mSelected.add(item.id);
+                mSelected.add(item.containerSlug);
             } else {
-                mAvailable.add(item.id);
+                mAvailable.add(item.containerSlug);
             }
         }
     }
@@ -80,182 +77,17 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
         return mSortedData.get(position);
     }
 
-    public void doClickOnItem(int position) {
-        int type = getItemViewType( position);
-        ChooseSourceTranslationAdapter.ViewItem item = getItem(position);
-        switch (type) {
-            case TYPE_ITEM_SELECTABLE:
-                toggleSelection(item, position);
-                break;
-
-            case TYPE_ITEM_NEED_DOWNLOAD:
-            case TYPE_ITEM_SELECTABLE_UPDATABLE:
-                promptToDownloadSourceLanguage(item, position);
-                break;
-        }
-    }
-
     /**
      * toggle selection state for item
-     * @param item
      * @param position
      */
-    private void toggleSelection(ViewItem item, int position) {
-        if(item.selected) {
+    public void toggleSelection(int position) {
+        if(getItem(position).selected) {
             deselect(position);
         } else {
             select(position);
         }
         sort();
-    }
-
-    /**
-     * make sure the user is aware that download will use the internet
-     * @param item
-     */
-    private void promptToDownloadSourceLanguage(final ViewItem item, final int position) {
-        final boolean hasUpdate = item.hasUpdates;
-        String format;
-        if(hasUpdate) {
-            format = mContext.getResources().getString(R.string.update_source_language);
-        } else {
-            format = mContext.getResources().getString(R.string.download_source_language);
-        }
-        String message = String.format(format, item.title);
-        new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
-                .setTitle(R.string.title_download_source_language)
-                .setMessage(message)
-                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        downloadSourceLanguage(item);
-                    }
-                })
-                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if(hasUpdate) {
-                            toggleSelection(item, position);
-                        }
-                    }
-                })
-                .show();
-    }
-
-    /**
-     * initiate download
-     * @param item
-     */
-    private void downloadSourceLanguage(ViewItem item) {
-        DownloadSourceLanguageTask task = new DownloadSourceLanguageTask(item.sourceTranslation.projectSlug, item.sourceTranslation.sourceLanguageSlug);
-        task.addOnFinishedListener(this);
-        task.addOnProgressListener(this);
-        TaskManager.addTask(task, item.sourceTranslation.projectSlug + "-" + item.id);
-        TaskManager.groupTask(task, ServerLibraryDetailFragment.DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP);
-    }
-
-    /**
-     * called when download is finished
-     * @param task
-     */
-    public void onTaskFinished(ManagedTask task) {
-        DownloadSourceLanguageTask downloadTask = (DownloadSourceLanguageTask) task;
-        Library library = App.getLibrary();
-
-        if(downloadTask.isFinished() && downloadTask.getSuccess()) {
-            boolean databaseChanged = false;
-            String sourceLang = downloadTask.getSourceLanguageId();
-            String projectId = downloadTask.getProjectId();
-            if((sourceLang != null) && (projectId != null)) {
-                // find entry that was changed
-                for (int i = 0; i < getCount(); i++) {
-                    ChooseSourceTranslationAdapter.ViewItem item = getItem(i);
-                    if (item != null) {
-                        if( item.sourceTranslation != null ) {
-                            Resource resource = library.getResource(item.sourceTranslation);
-                            if (resource != null) {
-                                if(item.downloaded != resource.isDownloaded()) {
-                                    item.downloaded = resource.isDownloaded();
-                                    databaseChanged = true;
-                                }
-                                if(item.hasUpdates != resource.hasUpdates()) {
-                                    item.hasUpdates = resource.hasUpdates();
-                                    databaseChanged = true;
-                                }
-                            } else {
-                                Logger.e(TAG, "Failed to get resource for " + item.sourceTranslation.getId());
-                            }
-                        }
-                    } else {
-                        Logger.e(TAG, "Failed to get SourceTranslation for " + item.id);
-                    }
-                }
-            }
-
-            if (progressDialog != null) {
-                progressDialog.dismiss();
-            }
-
-            if(databaseChanged) { // refresh list in main loop
-                Handler hand = new Handler(Looper.getMainLooper());
-                hand.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        notifyDataSetChanged();
-                    }
-                });
-            }
-        }
-    }
-
-    @Override
-    public void onTaskProgress(final ManagedTask task, final double progress, final String message, final boolean secondary) {
-        Handler hand = new Handler(Looper.getMainLooper());
-        hand.post(new Runnable() {
-            @Override
-            public void run() {
-                if (task.isFinished()) {
-                    if (progressDialog != null) {
-                        progressDialog.dismiss();
-                    }
-                    return;
-                }
-
-                if (progressDialog == null) {
-                    progressDialog = new ProgressDialog(mContext);
-                    progressDialog.setCancelable(false);
-                    progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                    progressDialog.setCanceledOnTouchOutside(false);
-                    progressDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
-                    progressDialog.setTitle(mContext.getResources().getString(R.string.downloading_languages));
-                    progressDialog.setMessage("");
-                }
-                progressDialog.setMax(task.maxProgress());
-                if (!progressDialog.isShowing()) {
-                    progressDialog.show();
-                }
-                if (progress == -1) {
-                    progressDialog.setIndeterminate(true);
-                    progressDialog.setProgress(progressDialog.getMax());
-                    progressDialog.setProgressNumberFormat(null);
-                    progressDialog.setProgressPercentFormat(null);
-                } else {
-                    progressDialog.setIndeterminate(false);
-                    if(secondary) {
-                        progressDialog.setSecondaryProgress((int) progress);
-                    } else {
-                        progressDialog.setProgress((int) progress);
-                    }
-                    progressDialog.setProgressNumberFormat("%1d/%2d");
-                    progressDialog.setProgressPercentFormat(NumberFormat.getPercentInstance());
-                }
-                if (!message.isEmpty()) {
-                    progressDialog.setMessage(String.format(mContext.getResources().getString(R.string.downloading_source), message));
-                } else {
-                    progressDialog.setMessage(message);
-                }
-            }
-        });
     }
 
     @Override
@@ -295,13 +127,13 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
         mSectionHeader = new TreeSet<>();
 
         // build list
-        ViewItem selectedHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.selected), null, false, false, false);
+        ViewItem selectedHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.selected), null, false, false);
         mSortedData.add(selectedHeader);
         mSectionHeader.add(mSortedData.size() - 1);
         for(String id:mSelected) {
             mSortedData.add(mData.get(id));
         }
-        ViewItem availableHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.available), null, false, false, false);
+        ViewItem availableHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.available), null, false, false);
         mSortedData.add(availableHeader);
         mSectionHeader.add(mSortedData.size() - 1);
         for(String id:mAvailable) {
@@ -311,10 +143,11 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         View v = convertView;
         ViewHolder holder = null;
         int rowType = getItemViewType(position);
+        final ViewItem item = getItem(position);
 
         if(convertView == null) {
             switch (rowType) {
@@ -348,7 +181,46 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
             holder = (ViewHolder) convertView.getTag();
         }
 
-        holder.titleView.setText(getItem(position).title);
+        // load update status
+        final ViewHolder staticHolder = holder;
+        ManagedTask oldTask = TaskManager.getTask(holder.currentTaskId);
+        TaskManager.cancelTask(oldTask);
+        TaskManager.clearTask(oldTask);
+        if(!item.checkedUpdates && !item.downloaded) {
+            ManagedTask task = new ManagedTask() {
+                @Override
+                public void start() {
+                    try {
+                        if(interrupted()) return;
+                        ResourceContainer container = App.getLibrary().open(item.containerSlug);
+                        int lastModified = App.getLibrary().getResourceContainerLastModified(container.language.slug, container.project.slug, container.resource.slug);
+                        setResult(lastModified > container.modifiedAt);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
+            task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
+                @Override
+                public void onTaskFinished(ManagedTask task) {
+                    TaskManager.clearTask(task);
+                    boolean hasUpdates = false;
+                    if(task.getResult() != null) hasUpdates = (boolean)task.getResult();
+                    item.hasUpdates = hasUpdates;
+                    if(!task.isCanceled() && position == staticHolder.currentPosition) {
+                        Handler hand = new Handler(Looper.getMainLooper());
+                        hand.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                notifyDataSetChanged();
+                            }
+                        });
+                    }
+                }
+            });
+        }
+
+        holder.titleView.setText(item.title);
         if( (rowType == TYPE_ITEM_NEED_DOWNLOAD) || (rowType == TYPE_ITEM_SELECTABLE_UPDATABLE)) {
             if(rowType == TYPE_ITEM_NEED_DOWNLOAD) {
                 holder.downloadView.setBackgroundResource(R.drawable.ic_file_download_black_24dp);
@@ -359,7 +231,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
         }
 
         if((rowType == TYPE_ITEM_SELECTABLE) || (rowType == TYPE_ITEM_SELECTABLE_UPDATABLE)){
-            if (getItem(position).selected) {
+            if (item.selected) {
                 holder.checkboxView.setBackgroundResource(R.drawable.ic_check_box_black_24dp);
                 ViewUtil.tintViewDrawable(holder.checkboxView, parent.getContext().getResources().getColor(R.color.accent));
                 // display checked
@@ -376,44 +248,75 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter  implements Mana
     public void select(int position) {
         ViewItem item = getItem(position);
         item.selected = true;
-        mSelected.remove(item.id);
-        mAvailable.remove(item.id);
-        mSelected.add(item.id);
+        mSelected.remove(item.containerSlug);
+        mAvailable.remove(item.containerSlug);
+        mSelected.add(item.containerSlug);
     }
 
     public void deselect(int position) {
         ViewItem item = getItem(position);
         item.selected = false;
-        mSelected.remove(item.id);
-        mAvailable.remove(item.id);
-        mAvailable.add(item.id);
+        mSelected.remove(item.containerSlug);
+        mAvailable.remove(item.containerSlug);
+        mAvailable.add(item.containerSlug);
+    }
+
+    /**
+     * Marks an item as deleted
+     * @param position
+     */
+    public void markItemDeleted(int position) {
+        ViewItem item = getItem(position);
+        if(item != null) {
+            item.hasUpdates = false;
+            item.downloaded = false;
+            item.selected = false;
+            mSelected.remove(item.containerSlug);
+            if(!mAvailable.contains(item.containerSlug)) mAvailable.add(item.containerSlug);
+        }
+        sort();
+    }
+
+    /**
+     * marks an item as downloaded
+     * @param position
+     */
+    public void markItemDownloaded(int position) {
+        ViewItem item = getItem(position);
+        if(item != null) {
+            item.hasUpdates = false;
+            item.downloaded = true;
+        }
+        sort();
     }
 
     public static class ViewHolder {
         public TextView titleView;
         public ImageView checkboxView;
         public ImageView downloadView;
+        public Object currentTaskId;
+        public int currentPosition;
     }
 
     public static class ViewItem {
         public final String title;
-        public final String id;
-        public final SourceTranslation sourceTranslation;
+        public final String containerSlug;
+        public final Translation sourceTranslation;
         public boolean selected;
         public boolean downloaded;
         public boolean hasUpdates;
+        public boolean checkedUpdates = false;
 
-        public ViewItem(String title, SourceTranslation sourceTranslation, boolean selected, boolean downloaded, boolean hasUpdates) {
+        public ViewItem(String title, Translation sourceTranslation, boolean selected, boolean downloaded) {
             this.title = title;
             this.selected = selected;
             this.sourceTranslation = sourceTranslation;
             if(sourceTranslation != null) {
-                this.id = sourceTranslation.getId();
+                this.containerSlug = sourceTranslation.resourceContainerSlug;
             } else {
-                this.id = null;
+                this.containerSlug = null;
             }
             this.downloaded = downloaded;
-            this.hasUpdates = hasUpdates;
         }
     }
 }

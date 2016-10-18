@@ -1,7 +1,9 @@
 package com.door43.translationstudio.newui.home;
 
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -15,30 +17,33 @@ import android.support.design.widget.Snackbar;
 import android.os.Bundle;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 
 import org.eclipse.jgit.merge.MergeStrategy;
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.OnProgressListener;
+import org.unfoldingword.door43client.models.TargetLanguage;
+import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
+import com.door43.translationstudio.EventBuffer;
 import com.door43.translationstudio.ProfileActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 
-import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.Project;
-import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.Door43LoginDialog;
-import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
 import com.door43.translationstudio.newui.FeedbackDialog;
+import com.door43.translationstudio.newui.translate.ChooseSourceTranslationDialog;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.rendering.MergeConflictHandler;
 import com.door43.translationstudio.tasks.ExamineImportsForCollisionsTask;
@@ -49,25 +54,30 @@ import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import com.door43.translationstudio.tasks.PullTargetTranslationTask;
 import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
+import com.door43.translationstudio.tasks.UpdateAllTask;
+import com.door43.translationstudio.tasks.UpdateCatalogsTask;
+import com.door43.translationstudio.tasks.UpdateSourceTask;
 import com.door43.util.FileUtilities;
 import com.door43.widget.ViewUtil;
 
 
 import java.io.File;
+import java.text.NumberFormat;
 
-public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFinishedListener, WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
+public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFinishedListener, WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener, EventBuffer.OnEventListener, ManagedTask.OnProgressListener, ManagedTask.OnFinishedListener, DialogInterface.OnCancelListener {
     private static final int NEW_TARGET_TRANSLATION_REQUEST = 1;
     public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
     public static final String STATE_DIALOG_TRANSLATION_ID = "state_dialog_translationID";
     public static final String TAG = HomeActivity.class.getSimpleName();
-    private Library mLibrary;
+    private Door43Client mLibrary;
     private Translator mTranslator;
     private Fragment mFragment;
     private SimpleTaskWatcher taskWatcher;
     private ExamineImportsForCollisionsTask mExamineTask;
-    private eDialogShown mDialogShown = eDialogShown.NONE;
+    private eDialogShown mAlertShown = eDialogShown.NONE;
     private String mTargetTranslationWithUpdates;
     private String mTargetTranslationID;
+    private ProgressDialog progressDialog = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,7 +127,8 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                     public boolean onMenuItemClick(MenuItem item) {
                         switch (item.getItemId()) {
                             case R.id.action_update:
-                                openLibrary();
+                                UpdateLibraryDialog updateDialog = new UpdateLibraryDialog();
+                                showDialogFragment(updateDialog, UpdateLibraryDialog.TAG);
                                 return true;
                             case R.id.action_import:
                                 ImportDialog importDialog = new ImportDialog();
@@ -191,7 +202,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 return;
             }
         } else {
-            mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
+            mAlertShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
             mTargetTranslationID = savedInstanceState.getString(STATE_DIALOG_TRANSLATION_ID, null);
         }
     }
@@ -210,14 +221,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
 
             // load list after fragment created
-            Handler hand = new Handler(Looper.getMainLooper());
-            hand.post(new Runnable() {
-                @Override
-                public void run() {
-                    ((TargetTranslationListFragment) mFragment).reloadList();
-                }
-            });
-
+            ((TargetTranslationListFragment) mFragment).reloadList();
         } else if(numTranslations == 0 && mFragment instanceof TargetTranslationListFragment) {
             // display welcome screen
             mFragment = new WelcomeFragment();
@@ -229,31 +233,42 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         }
 
         // re-connect to tasks
-        PullTargetTranslationTask pullTask = (PullTargetTranslationTask) TaskManager.getTask(PullTargetTranslationTask.TASK_ID);
-        if(pullTask != null) {
-            taskWatcher.watch(pullTask);
-            TaskManager.addTask(pullTask, PullTargetTranslationTask.TASK_ID);
+        ManagedTask task = TaskManager.getTask(PullTargetTranslationTask.TASK_ID);
+        if(task != null) {
+            taskWatcher.watch(task);
+        }
+        task = TaskManager.getTask(UpdateAllTask.TASK_ID);
+        if(task != null) {
+            task.addOnProgressListener(this);
+            task.addOnFinishedListener(this);
+        }
+        task = TaskManager.getTask(UpdateSourceTask.TASK_ID);
+        if(task != null) {
+            task.addOnProgressListener(this);
+            task.addOnFinishedListener(this);
+        }
+        task = TaskManager.getTask(UpdateCatalogsTask.TASK_ID);
+        if(task != null) {
+            task.addOnProgressListener(this);
+            task.addOnFinishedListener(this);
         }
 
         mTargetTranslationWithUpdates = App.getNotifyTargetTranslationWithUpdates();
-        if(mTargetTranslationWithUpdates != null && pullTask == null) {
+        if(mTargetTranslationWithUpdates != null && task == null) {
             showTranslationUpdatePrompt(mTargetTranslationWithUpdates);
         }
 
         restoreDialogs();
     }
 
-   /**
-     * restore the dialogs that were displayed before rotation
+    /**
+     * Restores dialogs
      */
     private void restoreDialogs() {
-        switch(mDialogShown) {
+        // restore alert dialogs
+        switch(mAlertShown) {
             case IMPORT_VERIFICATION:
                 displayImportVerification();
-                break;
-
-            case OPEN_LIBRARY:
-                openLibrary();
                 break;
 
             case MERGE_CONFLICT:
@@ -264,31 +279,37 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 break;
 
             default:
-                Logger.e(TAG,"Unsupported restore dialog: " + mDialogShown.toString());
+                Logger.e(TAG,"Unsupported restore dialog: " + mAlertShown.toString());
                 break;
+        }
+        // re-connect to dialog fragments
+        Fragment dialog = getFragmentManager().findFragmentByTag(UpdateLibraryDialog.TAG);
+        if(dialog != null) {
+            ((UpdateLibraryDialog)dialog).getEventBuffer().addOnEventListener(this);
         }
     }
 
     /**
-     * this is to fix old method which when called in onResume() would create a
-     * second dialog overlaying the first.  The first was actually not removed.
-     * Doing a commit after the remove() and starting a second FragmentTransaction
-     * seems to fix the duplicate dialog bug.
+     * Displays a dialog while replacing any duplicate dialog
      *
      * @param dialog
      * @param tag
      */
-    private void showDialogFragment(android.app.DialogFragment dialog, String tag) {
-        FragmentTransaction backupFt = getFragmentManager().beginTransaction();
-        Fragment backupPrev = getFragmentManager().findFragmentByTag(tag);
-        if (backupPrev != null) {
-            backupFt.remove(backupPrev);
-            backupFt.commit(); // apply the remove
-            backupFt = getFragmentManager().beginTransaction(); // start a new transaction
+    private void showDialogFragment(DialogFragment dialog, String tag) {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag(tag);
+        if (prev != null) {
+            ft.remove(prev);
+            // TODO: 10/7/16 I don't think we need this
+            ft.commit();
+            ft = getFragmentManager().beginTransaction();
         }
-        backupFt.addToBackStack(null);
-
-        dialog.show(backupFt, tag);
+        ft.addToBackStack(null);
+        // attach to any available event buffers
+        if(dialog instanceof EventBuffer.OnEventTalker) {
+            ((EventBuffer.OnEventTalker)dialog).getEventBuffer().addOnEventListener(this);
+        }
+        dialog.show(ft, tag);
     }
 
     @Override
@@ -380,14 +401,14 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
      * @param targetTranslationID
      */
     public void showMergeConflict(String targetTranslationID) {
-        mDialogShown = eDialogShown.MERGE_CONFLICT;
+        mAlertShown = eDialogShown.MERGE_CONFLICT;
         mTargetTranslationID = targetTranslationID;
         new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                 .setTitle(R.string.merge_conflict_title).setMessage(R.string.import_merge_conflict)
                 .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
+                        mAlertShown = eDialogShown.NONE;
                         doManualMerge();
                     }
                 }).show();
@@ -419,7 +440,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
+                        mAlertShown = eDialogShown.NONE;
                         RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(true);
                         taskWatcher.watch(keyTask);
                         TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
@@ -428,7 +449,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
+                        mAlertShown = eDialogShown.NONE;
                         notifyTranslationUpdateFailed();
                     }
                 }).show();
@@ -446,7 +467,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
      * display the final import Results.
      */
     private void showImportResults(String projectPath, String projectNames, boolean success) {
-        mDialogShown = eDialogShown.IMPORT_RESULTS;
+        mAlertShown = eDialogShown.IMPORT_RESULTS;
         String message;
         if(success) {
             String format = App.context().getResources().getString(R.string.import_project_success);
@@ -462,7 +483,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
+                        mAlertShown = eDialogShown.NONE;
                         mExamineTask.cleanup();
                         HomeActivity.this.finish();
                     }
@@ -487,14 +508,14 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
      * show dialog to verify that we want to import, restore or cancel.
      */
     private void displayImportVerification() {
-        mDialogShown = eDialogShown.IMPORT_VERIFICATION;
+        mAlertShown = eDialogShown.IMPORT_VERIFICATION;
         AlertDialog.Builder dlg = new AlertDialog.Builder(this,R.style.AppTheme_Dialog);
             dlg.setTitle(R.string.label_import)
                 .setMessage(String.format(getResources().getString(R.string.confirm_import_target_translation), mExamineTask.mProjectsFound))
                 .setNegativeButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
+                        mAlertShown = eDialogShown.NONE;
                         mExamineTask.cleanup();
                         HomeActivity.this.finish();
                     }
@@ -502,7 +523,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 .setPositiveButton(R.string.label_restore, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
+                        mAlertShown = eDialogShown.NONE;
                         doArchiveImport(true);
                     }
                 });
@@ -511,7 +532,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             dlg.setNeutralButton(R.string.label_import, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    mDialogShown = eDialogShown.NONE;
+                    mAlertShown = eDialogShown.NONE;
                     doArchiveImport(false);
                     dialog.dismiss();
                 }
@@ -528,32 +549,6 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         ImportProjectsTask importTask = new ImportProjectsTask(mExamineTask.mProjectsFolder, overwrite);
         taskWatcher.watch(importTask);
         TaskManager.addTask(importTask, ImportProjectsTask.TASK_ID);
-    }
-
-    /**
-     * Triggers the process of opening the server library
-     */
-    private void openLibrary() {
-        mDialogShown = eDialogShown.OPEN_LIBRARY;
-        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
-                .setTitle(R.string.update_library)
-                .setIcon(R.drawable.ic_local_library_black_24dp)
-                .setMessage(R.string.use_internet_confirmation)
-                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
-                        Intent intent = new Intent(HomeActivity.this, ServerLibraryActivity.class);
-                        startActivity(intent);
-                    }
-                })
-                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
-                    }
-                })
-                .show();
     }
 
     /**
@@ -608,7 +603,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 String targetTranslationId = data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID);
                 TargetTranslation existingTranslation = mTranslator.getTargetTranslation(targetTranslationId);
                 if(existingTranslation != null) {
-                    Project project = mLibrary.getProject(existingTranslation.getProjectId(), App.getDeviceLanguageCode());
+                    Project project = mLibrary.index().getProject(App.getDeviceLanguageCode(), existingTranslation.getProjectId(), true);
                     Snackbar snack = Snackbar.make(findViewById(android.R.id.content), String.format(getResources().getString(R.string.duplicate_target_translation), project.name, existingTranslation.getTargetLanguageName()), Snackbar.LENGTH_LONG);
                     ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                     snack.show();
@@ -633,7 +628,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         }
 
         String projectID = targetTranslation.getProjectId();
-        Project project = App.getLibrary().getProject(projectID, targetTranslation.getTargetLanguageName());
+        Project project = App.getLibrary().index().getProject(targetTranslation.getTargetLanguageName(), projectID, true);
         if(project == null) {
             Logger.e(TAG, "invalid project id:" + projectID);
             return;
@@ -648,7 +643,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
+                        mAlertShown = eDialogShown.NONE;
                         downloadTargetTranslationUpdates(targetTranslationId);
                     }
                 })
@@ -656,7 +651,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         App.setNotifyTargetTranslationWithUpdates(null);
-                        mDialogShown = eDialogShown.NONE;
+                        mAlertShown = eDialogShown.NONE;
                     }
                 })
                 .show();
@@ -709,27 +704,15 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     public void onItemClick(TargetTranslation targetTranslation) {
         // validate project and target language
 
-        Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), "en");
-        TargetLanguage language = App.getLibrary().getTargetLanguage(targetTranslation);
-        if(project == null) {
-            // validate project source exists
-            Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.missing_project, Snackbar.LENGTH_LONG);
-            snack.setAction(R.string.download, new View.OnClickListener() {
+        Project project = App.getLibrary().index().getProject("en", targetTranslation.getProjectId(), true);
+        TargetLanguage language = App.languageFromTargetTranslation(targetTranslation);
+        if(project == null || language == null) {
+            Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.missing_source, Snackbar.LENGTH_LONG);
+            snack.setAction(R.string.check_for_updates, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    openLibrary();
-                }
-            });
-            snack.setActionTextColor(getResources().getColor(R.color.light_primary_text));
-            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-            snack.show();
-        } else if(language == null) {
-            // validate target language exists
-            Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.missing_language, Snackbar.LENGTH_LONG);
-            snack.setAction(R.string.download, new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    openLibrary();
+                    UpdateLibraryDialog updateDialog = new UpdateLibraryDialog();
+                    showDialogFragment(updateDialog, updateDialog.TAG);
                 }
             });
             snack.setActionTextColor(getResources().getColor(R.color.light_primary_text));
@@ -748,9 +731,148 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
 
     @Override
     public void onSaveInstanceState(Bundle out) {
-        out.putInt(STATE_DIALOG_SHOWN, mDialogShown.getValue());
+        // disconnect from tasks
+        ManagedTask task = TaskManager.getTask(UpdateAllTask.TASK_ID);
+        if(task != null) {
+            task.removeOnProgressListener(this);
+            task.removeOnFinishedListener(this);
+        }
+        task = TaskManager.getTask(UpdateSourceTask.TASK_ID);
+        if(task != null) {
+            task.removeOnProgressListener(this);
+            task.removeOnFinishedListener(this);
+        }
+        task = TaskManager.getTask(UpdateCatalogsTask.TASK_ID);
+        if(task != null) {
+            task.removeOnProgressListener(this);
+            task.removeOnFinishedListener(this);
+        }
+
+        // dismiss progress
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                if(progressDialog != null) progressDialog.dismiss();
+            }
+        });
+
+        out.putInt(STATE_DIALOG_SHOWN, mAlertShown.getValue());
         out.putString(STATE_DIALOG_TRANSLATION_ID, mTargetTranslationID);
         super.onSaveInstanceState(out);
+    }
+
+    @Override
+    public void onDestroy() {
+        if(progressDialog != null) progressDialog.dismiss();
+        super.onDestroy();
+    }
+
+    @Override
+    public void onEventBufferEvent(EventBuffer.OnEventTalker talker, int tag, Bundle args) {
+        if(talker instanceof UpdateLibraryDialog) {
+            ManagedTask task;
+            String taskId;
+            switch (tag) {
+                case UpdateLibraryDialog.EVENT_UPDATE_LANGUAGES:
+                    task = new UpdateCatalogsTask();
+                    taskId = UpdateCatalogsTask.TASK_ID;
+                    break;
+                case UpdateLibraryDialog.EVENT_UPDATE_SOURCE:
+                    task = new UpdateSourceTask();
+                    taskId = UpdateSourceTask.TASK_ID;
+                    break;
+                case UpdateLibraryDialog.EVENT_UPDATE_ALL:
+                default:
+                    task = new UpdateAllTask();
+                    taskId = UpdateAllTask.TASK_ID;
+            }
+            task.addOnProgressListener(this);
+            task.addOnFinishedListener(this);
+            TaskManager.addTask(task, taskId);
+        }
+    }
+
+    @Override
+    public void onTaskProgress(final ManagedTask task, final double progress, final String message, boolean secondary) {
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                // init dialog
+                if(progressDialog == null) {
+                    progressDialog = new ProgressDialog(HomeActivity.this);
+                    progressDialog.setCancelable(true);
+                    progressDialog.setCanceledOnTouchOutside(false);
+                    progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                    progressDialog.setOnCancelListener(HomeActivity.this);
+                    progressDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
+                    progressDialog.setTitle(R.string.updating);
+                    progressDialog.setMessage("");
+                }
+
+                // dismiss if finished
+                if(task.isFinished()) {
+                    progressDialog.dismiss();
+                    return;
+                }
+
+                // progress
+                progressDialog.setMax(task.maxProgress());
+                progressDialog.setMessage(message);
+                if(progress > 0) {
+                    progressDialog.setIndeterminate(false);
+                    progressDialog.setProgress((int)(progress * progressDialog.getMax()));
+                    progressDialog.setProgressNumberFormat("%1d/%2d");
+                    progressDialog.setProgressPercentFormat(NumberFormat.getPercentInstance());
+                } else {
+                    progressDialog.setIndeterminate(true);
+                    progressDialog.setProgress(progressDialog.getMax());
+                    progressDialog.setProgressNumberFormat(null);
+                    progressDialog.setProgressPercentFormat(null);
+                }
+
+                // show
+                if(task.isFinished()) {
+                    progressDialog.dismiss();
+                } else if(!progressDialog.isShowing()) {
+                    progressDialog.show();
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onTaskFinished(ManagedTask task) {
+        TaskManager.clearTask(task);
+
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                if(progressDialog != null) progressDialog.dismiss();
+
+                // notify update is done
+                // TODO: 10/10/16 check if task was success
+                // TODO: 10/10/16 check if the task was canceled
+                new AlertDialog.Builder(HomeActivity.this, R.style.AppTheme_Dialog)
+                        .setTitle(R.string.success)
+                        .setMessage(R.string.update_success)
+                        .setPositiveButton(R.string.dismiss, null)
+                        .show();
+            }
+        });
+    }
+
+    @Override
+    public void onCancel(DialogInterface dialog) {
+        // cancel the running update tasks
+        ManagedTask task = TaskManager.getTask(UpdateAllTask.TASK_ID);
+        if(task != null) TaskManager.cancelTask(task);
+        task = TaskManager.getTask(UpdateSourceTask.TASK_ID);
+        if(task != null) TaskManager.cancelTask(task);
+        task = TaskManager.getTask(UpdateCatalogsTask.TASK_ID);
+        if(task != null) TaskManager.cancelTask(task);
     }
 
     /**

@@ -248,7 +248,7 @@
     <string name="title_activity_developer">Developer Tools</string>
     <string name="action_settings">Settings</string>
     <!-- displays the application build or version code -->
-    <string name="app_version_code" translatable="false">BUILD <xliff:g example="61" id="verion_code">%1$s</xliff:g></string>
+    <string name="app_version_code" translatable="false">BUILD <xliff:g example="61" id="verion_code">%1$d</xliff:g></string>
     <!-- displays the application version name -->
     <string name="app_version_name" translatable="false">VERSION <xliff:g example="2.1.2" id="verion_name">%1$s</xliff:g></string>
     <!-- displays the unique device id -->
@@ -875,10 +875,20 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="export_success">Export successful!\n\nExported file is at:\n<xliff:g example="/sd_card/downloads" id="file_path">%1$s</xliff:g></string>
     <string name="update_source_language">Do you want to update \'<xliff:g example="Pig Latin" id="language">%1$s</xliff:g>\' from Online (requires internet)?</string>
     <string name="conflict_exists">CONFLICT EXISTS!</string>
-    <string name="conflict_resolve">Resolve Conflict - Click on the version to keep</string>
+    <string name="resolve_confict_instructions">Conflict: Click on the version to keep</string>
     <string name="merge_conflict_title">Merge Conflict</string>
     <string name="import_merge_conflict">Merge conflict on Import - Click OK to resolve</string>
     <string name="label_change">change</string>
+    <string name="update_languages">Update Languages</string>
+    <string name="update_source">Update Source</string>
+    <string name="update_all">Update All</string>
+    <string name="time_very_slow">Takes awhile</string>
+    <string name="time_slow">Takes a few minutes</string>
+    <string name="time_fast">Takes a few seconds</string>
+    <string name="update_options">Update Options</string>
+    <string name="missing_source">Missing source translation</string>
+    <string name="update_success">The update finished successfully</string>
+    <string name="updating">Updating</string>
     <string name="upload_failed_label">Upload Failed!</string>
     <string name="upload_feedback_failed">Upload of feedback failed</string>
     <string name="upload_crash_report_failed">Upload of crash report failed</string>

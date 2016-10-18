@@ -2,23 +2,25 @@ package com.door43.translationstudio.core;
 
 import android.support.annotation.Nullable;
 
+import org.unfoldingword.door43client.models.Question;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Represents a page of questions in a questionnaire
+ * Represents a page of questions in questionnaire pager
  */
 public class QuestionnairePage {
-    private Map<Long, QuestionnaireQuestion> questions = new LinkedHashMap<>();
+    private Map<Long, Question> questions = new LinkedHashMap<>();
 
     /**
      * Adds a question to this page
      * @param question
      */
-    public void addQuestion(QuestionnaireQuestion question) {
-        this.questions.put(question.id, question);
+    public void addQuestion(Question question) {
+        this.questions.put(question.tdId, question);
     }
 
     /**
@@ -34,7 +36,7 @@ public class QuestionnairePage {
      * Returns the questions on this page
      * @return
      */
-    public List<QuestionnaireQuestion> getQuestions() {
+    public List<Question> getQuestions() {
         return new ArrayList<>(this.questions.values());
     }
 
@@ -52,7 +54,7 @@ public class QuestionnairePage {
      * @return
      */
     @Nullable
-    public QuestionnaireQuestion getQuestion(int position) {
+    public Question getQuestion(int position) {
         if(position >= 0 && position < getNumQuestions()) {
             return getQuestions().get(position);
         }
@@ -65,7 +67,7 @@ public class QuestionnairePage {
      * @return
      */
     @Nullable
-    public QuestionnaireQuestion getQuestionById(long id) {
+    public Question getQuestionById(long id) {
         return this.questions.get(id);
     }
 

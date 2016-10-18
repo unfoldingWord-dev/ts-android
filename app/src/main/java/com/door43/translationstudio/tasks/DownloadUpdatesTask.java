@@ -1,13 +1,13 @@
 package com.door43.translationstudio.tasks;
 
-import com.door43.translationstudio.App;
-import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.LibraryUpdates;
+
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 /**
  * Created by joel on 10/28/2015.
  */
+@Deprecated
 public class DownloadUpdatesTask extends ManagedTask {
     public static String TASK_ID = "download_all_updates";
     private final LibraryUpdates availableUpdates;
@@ -23,20 +23,20 @@ public class DownloadUpdatesTask extends ManagedTask {
         publishProgress(-1, "");
 
         if(availableUpdates != null) {
-            Library library = App.getLibrary();
-            library.downloadUpdates(availableUpdates, new Library.OnProgressListener() {
-                @Override
-                public boolean onProgress(int progress, int max) {
-                    mMaxProgress = max;
-                    publishProgress(progress, "");
-                    return !isCanceled();
-                }
 
-                @Override
-                public boolean onIndeterminate() {
-                    return !isCanceled();
-                }
-            });
+//            library.downloadUpdates(availableUpdates, new Library.OnProgressListener() {
+//                @Override
+//                public boolean onProgress(int progress, int max) {
+//                    mMaxProgress = max;
+//                    publishProgress(progress, "");
+//                    return !isCanceled();
+//                }
+//
+//                @Override
+//                public boolean onIndeterminate() {
+//                    return !isCanceled();
+//                }
+//            });
         }
     }
 

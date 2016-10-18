@@ -12,21 +12,23 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.LibraryUpdates;
-import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.App;
+
+import org.unfoldingword.door43client.Door43Client;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.unfoldingword.resourcecontainer.Project;
+
 /**
- * This adpater handles all of the projects in the server library browser
+ * This adapter handles all of the projects in the server library browser
  */
 public class ServerLibraryAdapter extends BaseAdapter {
     private final Activity mContext;
-    private final Library mLibrary;
+    private final Door43Client mLibrary;
     private int mSelectedIndex = -1;
     private boolean mSearching = false;
     private boolean[] mHasSource;
@@ -86,7 +88,7 @@ public class ServerLibraryAdapter extends BaseAdapter {
         // indicate downloaded
         if(!mIsProcessed[position]) {
             mIsProcessed[position] = true;
-            mHasSource[position] = mLibrary.projectHasSource(getItem(position).getId());
+//            mHasSource[position] = mLibrary.projectHasSource(getItem(position).slug);
         }
         if(mHasSource[position]) {
             if(mSelectedIndex == position) {
@@ -99,7 +101,7 @@ public class ServerLibraryAdapter extends BaseAdapter {
         }
 
         // indicate updates
-        if(mHasSource[position] && mUpdates.hasProjectUpdate(getItem(position).getId())) {
+        if(mHasSource[position] && mUpdates.hasProjectUpdate(getItem(position).slug)) {
             if(mSelectedIndex == position) {
                 holder.mStatus.setBackgroundResource(R.drawable.ic_refresh_white_24dp);
             } else {
@@ -177,17 +179,17 @@ public class ServerLibraryAdapter extends BaseAdapter {
                 List<Project> filteredProjects = new ArrayList<>();
                 for(Project project: mProjects) {
                     // match the project id
-                    boolean match = project.getId().toLowerCase().startsWith(charSequence.toString().toLowerCase());
+                    boolean match = project.slug.toLowerCase().startsWith(charSequence.toString().toLowerCase());
                     if(!match) {
                         if (project.name.toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
                             // match the project title in any language
                             match = true;
                         }
 //                        TODO: search the source language title as well. This requires an update to the project category.
-                        else if (project.sourceLanguageId.toLowerCase().startsWith(charSequence.toString().toLowerCase())) {// || l.getName().toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
+                        else if (project.name.toLowerCase().startsWith(charSequence.toString().toLowerCase())) {// || l.getName().toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
                             // match the language id or name
                             match = true;
-                        } else if (project.getId().toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
+                        } else if (project.slug.toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
                             // match category id
                             match = true;
                         }

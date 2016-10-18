@@ -14,7 +14,6 @@ import android.widget.TextView;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.LibraryUpdates;
-import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.tasks.DownloadSourceLanguageTask;
 
@@ -24,6 +23,9 @@ import org.unfoldingword.tools.taskmanager.TaskManager;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+
+import org.unfoldingword.door43client.models.SourceLanguage;
 
 /**
  * This adpater handles the display of source languages in the server library
@@ -73,14 +75,14 @@ public class ServerLibraryLanguageAdapter extends BaseAdapter {
         ListItem item = getItem(position);
 
         // disconnect from task
-        DownloadSourceLanguageTask task = (DownloadSourceLanguageTask)TaskManager.getTask(mProjectId + "-" + item.sourceLanguage.getId());
+        DownloadSourceLanguageTask task = (DownloadSourceLanguageTask)TaskManager.getTask(mProjectId + "-" + item.sourceLanguage.slug);
         if(task != null) {
             task.removeOnFinishedListener(item.onFinishedListener);
             task.removeOnProgressListener(item.onProgressListener);
         }
 
         // icon
-        boolean isDownloaded = App.getLibrary().sourceLanguageHasSource(mProjectId, item.sourceLanguage.getId());
+        boolean isDownloaded = false;//App.getLibrary().sourceLanguageHasSource(mProjectId, item.sourceLanguage.slug);
         if(isDownloaded) {
             holder.mStatus.setBackgroundResource(R.drawable.ic_bookmark_black_24dp);
         } else {
@@ -88,14 +90,14 @@ public class ServerLibraryLanguageAdapter extends BaseAdapter {
         }
 
         // identify updates
-        if(isDownloaded && mUpdates.hasSourceLanguageUpdate(mProjectId, item.sourceLanguage.getId())) {
+        if(isDownloaded && mUpdates.hasSourceLanguageUpdate(mProjectId, item.sourceLanguage.slug)) {
             holder.mStatus.setBackgroundResource(R.drawable.ic_refresh_black_24dp);
         }
 
         // name
         holder.mName.setText(getItem(position).sourceLanguage.name);
-        holder.mCode.setText(getItem(position).sourceLanguage.code);
-        Typography.format(mContext, Typography.TranslationType.SOURCE, holder.mName, getItem(position).sourceLanguage.getId(), getItem(position).sourceLanguage.direction);
+        holder.mCode.setText(getItem(position).sourceLanguage.slug);
+        Typography.format(mContext, Typography.TranslationType.SOURCE, holder.mName, getItem(position).sourceLanguage.slug, getItem(position).sourceLanguage.direction);
 
         // progress
         holder.mProgressBar.setVisibility(View.GONE);
@@ -178,8 +180,8 @@ public class ServerLibraryLanguageAdapter extends BaseAdapter {
         Collections.sort(languages, new Comparator<SourceLanguage>() {
             @Override
             public int compare(SourceLanguage lhs, SourceLanguage rhs) {
-                String lhId = lhs.getId();
-                String rhId = rhs.getId();
+                String lhId = lhs.slug;
+                String rhId = rhs.slug;
                 // give priority to matches with the reference
                 if (lhId.startsWith(referenceId.toString().toLowerCase())) {
                     lhId = "!" + lhId;

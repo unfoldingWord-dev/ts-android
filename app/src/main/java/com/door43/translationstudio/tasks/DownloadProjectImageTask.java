@@ -1,11 +1,13 @@
 package com.door43.translationstudio.tasks;
 
-import com.door43.translationstudio.core.Project;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
+
+import org.unfoldingword.resourcecontainer.Project;
 
 /**
  * Downloads a project icon from the server or loads it from the cache
  */
+@Deprecated
 public class DownloadProjectImageTask extends ManagedTask {
     private final Project mProject;
     private String mImagPath;

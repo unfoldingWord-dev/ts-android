@@ -7,10 +7,13 @@ import android.test.suitebuilder.annotation.LargeTest;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Questionnaire;
+import com.door43.translationstudio.core.QuestionnairePager;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.unfoldingword.door43client.models.Questionnaire;
+
+import java.util.List;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
@@ -29,8 +32,8 @@ import static org.junit.Assert.assertTrue;
 public class QuestionnaireActivityUiTest extends NewLanguageActivityUiUtils {
 
     private int pageCount() {
-        Questionnaire[] questionnaires = App.getLibrary().getQuestionnaires();
-        return questionnaires[0].getNumPages();
+        List<Questionnaire> questionnaires = App.getLibrary().index().getQuestionnaires();
+        return new QuestionnairePager(questionnaires.get(0)).size();
     }
     @Test
     public void fillPageBoolean() throws Exception {

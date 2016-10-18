@@ -16,23 +16,24 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ListView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.tasks.CheckForLibraryUpdatesTask;
 import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
 import com.door43.translationstudio.tasks.DownloadUpdatesTask;
 import com.door43.translationstudio.App;
+
+import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 import com.door43.widget.ViewUtil;
 
 import java.text.NumberFormat;
-import java.util.Locale;
+import java.util.List;
+
+import org.unfoldingword.resourcecontainer.Project;
 
 public class ServerLibraryActivity extends BaseActivity implements ServerLibraryDetailFragment.OnEventListener, ServerLibraryFragment.OnClickListener, ManagedTask.OnFinishedListener, ManagedTask.OnProgressListener, DialogInterface.OnCancelListener {
 
@@ -79,9 +80,9 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
             TaskManager.addTask(getUpdatesTask, CheckForLibraryUpdatesTask.TASK_ID);
         } else {
             // populated cached data
-            Library serverLibrary = App.getLibrary();
-            Project[] projects = serverLibrary.getProjects(App.getDeviceLanguageCode());
-            mListFragment.setData(serverLibrary.getAvailableUpdates(), projects);
+            Door43Client serverLibrary = App.getLibrary();
+            List<Project> projects = serverLibrary.index().getProjects(App.getDeviceLanguageCode());
+//            mListFragment.setData(serverLibrary.getAvailableUpdates(), projects);
 
             // connect to tasks
             DownloadAllProjectsTask downloadAllTask = (DownloadAllProjectsTask)TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
@@ -190,11 +191,11 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
         });
         searchViewAction.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         // display download updates
-        if(App.getLibrary().getAvailableUpdates().numSourceTranslationUpdates() > 0) {
-            menu.findItem(R.id.action_download_updates).setVisible(true);
-        } else {
-            menu.findItem(R.id.action_download_updates).setVisible(false);
-        }
+//        if(App.getLibrary().getAvailableUpdates().numSourceTranslationUpdates() > 0) {
+//            menu.findItem(R.id.action_download_updates).setVisible(true);
+//        } else {
+//            menu.findItem(R.id.action_download_updates).setVisible(false);
+//        }
         return true;
     }
 
@@ -235,10 +236,10 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                                 DownloadUpdatesTask task = (DownloadUpdatesTask)TaskManager.getTask(DownloadUpdatesTask.TASK_ID);
                                 if(task == null) {
                                     // start new task
-                                    task = new DownloadUpdatesTask(App.getLibrary().getAvailableUpdates());
-                                    task.addOnProgressListener(ServerLibraryActivity.this);
-                                    task.addOnFinishedListener(ServerLibraryActivity.this);
-                                    TaskManager.addTask(task, DownloadUpdatesTask.TASK_ID);
+//                                    task = new DownloadUpdatesTask(App.getLibrary().getAvailableUpdates());
+//                                    task.addOnProgressListener(ServerLibraryActivity.this);
+//                                    task.addOnFinishedListener(ServerLibraryActivity.this);
+//                                    TaskManager.addTask(task, DownloadUpdatesTask.TASK_ID);
                                 } else {
                                     connectDownloadTasks();
                                 }
@@ -325,9 +326,9 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
             @Override
             public void run() {
                 invalidateOptionsMenu();
-                Library serverLibrary = App.getLibrary();
-                Project[] projects = serverLibrary.getProjects(App.getDeviceLanguageCode());
-                mListFragment.setData(serverLibrary.getAvailableUpdates(), projects);
+                Door43Client serverLibrary = App.getLibrary();
+                List<Project> projects = serverLibrary.index().getProjects(App.getDeviceLanguageCode(), true);
+//                mListFragment.setData(serverLibrary.getAvailableUpdates(), projects);
 
                 if(mProgressDialog != null && mProgressDialog.isShowing()) {
                     mProgressDialog.dismiss();

@@ -6,6 +6,7 @@ import org.json.JSONObject;
 /**
  * Created by joel on 9/5/2015.
  */
+@Deprecated
 public class Chapter {
     private final String mId;
     public final String reference;

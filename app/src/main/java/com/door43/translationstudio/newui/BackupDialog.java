@@ -28,7 +28,6 @@ import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.ExportUsfm;
-import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
@@ -53,6 +52,8 @@ import java.io.File;
 import java.io.OutputStream;
 import java.net.URL;
 import java.security.InvalidParameterException;
+
+import org.unfoldingword.resourcecontainer.Project;
 
 /**
  * Created by joel on 10/5/2015.
@@ -619,7 +620,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         mDialogShown = eDialogShown.MERGE_CONFLICT;
 
         String projectID = targetTranslation.getProjectId();
-        Project project = App.getLibrary().getProject(projectID, targetTranslation.getTargetLanguageName());
+        Project project = App.getLibrary().index().getProject(projectID, targetTranslation.getTargetLanguageName());
         if(project == null) {
             Logger.e(TAG, "invalid project id:" + projectID);
             return;
@@ -703,7 +704,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     }
 
     private void showFeedbackDialog(TargetTranslation targetTranslation) {
-        Project project = App.getLibrary().getProject(targetTranslation.getProjectId(), "en");
+        Project project = App.getLibrary().index().getProject("en", targetTranslation.getProjectId(), true);
 
         // open bug report dialog
         FeedbackDialog feedbackDialog = new FeedbackDialog();
