@@ -25,7 +25,6 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.DragEvent;
 import android.view.GestureDetector;
@@ -46,12 +45,14 @@ import android.widget.TextView;
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.Link;
+import org.unfoldingword.resourcecontainer.Resource;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.CheckingQuestion;
+import com.door43.translationstudio.core.ContainerCache;
 import com.door43.translationstudio.core.FileHistory;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
@@ -1456,12 +1457,24 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @return
      */
     private Map<String, List<String>> getChunkConfig(String chapterSlug, String chunkSlug) {
-        if(mSourceContainer != null && mSourceContainer.config != null && mSourceContainer.config.containsKey("content")) {
-            Map contentConfig = (Map<String, Object>)mSourceContainer.config.get("content");
-            if(contentConfig.containsKey(chapterSlug)) {
-                Map chapterConfig = (Map<String, Object>) contentConfig.get(chapterSlug);
-                if (chapterConfig.containsKey(chunkSlug)) {
-                    return (Map<String, List<String>>) chapterConfig.get(chunkSlug);
+        if(mSourceContainer != null) {
+            Map config = null;
+            if(mSourceContainer.config == null || !mSourceContainer.config.containsKey("content") || !(mSourceContainer.config.get("content") instanceof Map)) {
+                // default to english if no config is found
+                ResourceContainer rc = ContainerCache.cacheClosest(mLibrary, "en", mSourceContainer.project.slug, mSourceContainer.resource.slug);
+                if(rc != null) config = rc.config;
+            } else {
+                config = mSourceContainer.config;
+            }
+
+            // look up config for chunk
+            if (config != null && config.containsKey("content") && config.get("content") instanceof Map) {
+                Map contentConfig = (Map<String, Object>) config.get("content");
+                if (contentConfig.containsKey(chapterSlug)) {
+                    Map chapterConfig = (Map<String, Object>) contentConfig.get(chapterSlug);
+                    if (chapterConfig.containsKey(chunkSlug)) {
+                        return (Map<String, List<String>>) chapterConfig.get(chunkSlug);
+                    }
                 }
             }
         }
@@ -1505,10 +1518,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 Map<String, List<String>> config = getChunkConfig(item.chapterSlug, item.chunkSlug);
 
                 if(config.containsKey("words")) {
-                    List<Link> links = getListener().preloadResourceLinks(config.get("words"));
+                    List<Link> links = ContainerCache.cacheClosestFromLinks(mLibrary, config.get("words"));
                     Pattern titlePattern = Pattern.compile("#(.*)");
                     for(Link link:links) {
-                        ResourceContainer rc = getListener().cacheContainer(link.language, link.project, link.resource);
+                        ResourceContainer rc = ContainerCache.cacheClosest(App.getLibrary(), link.language, link.project, link.resource);
                         // TODO: 10/12/16 the words need to have their title placed into a "title" file instead of being inline in the chunk
                         String word = rc.readChunk(link.chapter, "01");
                         Matcher match = titlePattern.matcher(word.trim());
@@ -1521,15 +1534,16 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
                 if(interrupted()) return;
                 if(config.containsKey("questions")) {
-                    List<Link> links = getListener().preloadResourceLinks(config.get("questions"));
+                    List<Link> links = ContainerCache.cacheClosestFromLinks(mLibrary, config.get("questions"));
                     result.put("questions", links);
                 }
 
                 if(interrupted()) return;
                 if(config.containsKey("notes")) {
-                    List<Link> links = getListener().preloadResourceLinks(config.get("notes"));
+                    List<Link> links = ContainerCache.cacheClosestFromLinks(mLibrary, config.get("notes"));
                     result.put("notes", links);
                 }
+                // TODO: 10/17/16 if there are no results then look in the english version of this container
                 setResult(result);
             }
         };
@@ -1685,7 +1699,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     @Override
                     public void onClick(View v) {
                         if (getListener() != null) {
-                            ResourceContainer rc = getListener().cacheContainer(word.language, word.project, word.resource);
+                            ResourceContainer rc = ContainerCache.cacheClosest(App.getLibrary(), word.language, word.project, word.resource);
                             getListener().onTranslationWordClick(rc.slug, word.chapter, holder.getResourceCardWidth());
                         }
                     }

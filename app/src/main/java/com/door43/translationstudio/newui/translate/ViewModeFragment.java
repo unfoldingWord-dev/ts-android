@@ -25,6 +25,7 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.ContainerCache;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
@@ -59,16 +60,6 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     private GestureDetector mGesture;
     private Translation mSourceTranslation = null;
     private static ResourceContainer mSourceContainer = null;
-    private static List<String> inspectedTranslations = new ArrayList<>();
-    private static List<String> inspectedContainers = new ArrayList<>();
-    /**
-     * Maps containers by the translation slug of a link
-     */
-    private static Map<String, ResourceContainer> cachedContainers = new HashMap<>();
-    /**
-     * Maps a container slug to a translation slug of a link
-     */
-    private static Map<String, String> cachedContainerLookup = new HashMap<>();
 
     /**
      * Returns an instance of the adapter
@@ -85,11 +76,8 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      * Resets the static variables
      */
     public static void reset() {
+        ContainerCache.empty();
         mSourceContainer = null;
-        inspectedContainers = new ArrayList<>();
-        inspectedTranslations = new ArrayList<>();
-        cachedContainers = new HashMap<>();
-        ReviewModeFragment.reset();
     }
 
     @Override
@@ -319,87 +307,6 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     @Override
-    public ResourceContainer getCachedContainer(String resourceContainerSlug) {
-        if(cachedContainerLookup.containsKey(resourceContainerSlug)) {
-            String translationSlug = cachedContainerLookup.get(resourceContainerSlug);
-            if(cachedContainers.containsKey(translationSlug)) {
-                return cachedContainers.get(translationSlug);
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Parses an array of links and preloads the nessesary resource containers.
-     * Only links that have a matching container are returned.
-     * This should only be used within a task
-     * @param linkData
-     * @return
-     */
-    @Override
-    public List<Link> preloadResourceLinks(List<String> linkData) {
-        List<Link> links = new ArrayList<>();
-        for(String rawLink:linkData) {
-            try {
-                Link link = Link.parseLink(rawLink);
-                ResourceContainer container = cacheContainer(link.language, link.project, link.resource);
-                if(container != null) {
-                    links.add(link);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return links;
-    }
-
-    /**
-     * Returns a resource container by looking up the matching or first available translation and
-     * caching the resource container. Hits on the cache will skip looking up translations and loading
-     * the container from the disk.
-     *
-     * @param languageSlug
-     * @param projectSlug
-     * @param resourceSlug
-     * @return
-     */
-    @Override
-    public synchronized ResourceContainer cacheContainer(String languageSlug, String projectSlug, String resourceSlug) {
-        if (languageSlug == null) languageSlug = Locale.getDefault().getLanguage();
-        String desiredTranslationSlug = ContainerTools.makeSlug(languageSlug, projectSlug, resourceSlug);
-        if(!inspectedTranslations.contains(desiredTranslationSlug)) {
-            // only inspect translations once
-            inspectedTranslations.add(desiredTranslationSlug);
-            List<Translation> translations = App.getLibrary().index().findTranslations(languageSlug, projectSlug, resourceSlug, null, null, 0, -1);
-            if (translations.size() == 0) {
-                // try to find any language
-                translations = App.getLibrary().index().findTranslations(null, projectSlug, resourceSlug, null, null, 0, -1);
-            }
-            // load the first available container
-            for (Translation translation : translations) {
-                if(!inspectedContainers.contains(translation.resourceContainerSlug)) {
-                    // only inspect container once
-                    inspectedContainers.add(translation.resourceContainerSlug);
-                    try {
-                        ResourceContainer rc = App.getLibrary().open(translation.resourceContainerSlug);
-                        cachedContainers.put(desiredTranslationSlug, rc);
-                        cachedContainerLookup.put(rc.slug, desiredTranslationSlug);
-                        // TRICKY: we only need the first match
-                        break;
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-        if(cachedContainers.containsKey(desiredTranslationSlug)) {
-            return cachedContainers.get(desiredTranslationSlug);
-        } else {
-            return null;
-        }
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
         if(mSourceContainer == null) {
@@ -410,11 +317,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
                 @Override
                 public void start() {
                     if (mSourceTranslation != null) {
-                        try {
-                            mSourceContainer = mLibrary.open(mSourceTranslation.resourceContainerSlug);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        mSourceContainer = ContainerCache.cache(mLibrary, mSourceTranslation.resourceContainerSlug);
                     }
                 }
             };
@@ -437,11 +340,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         ManagedTask task = new ManagedTask() {
             @Override
             public void start() {
-                try {
-                    setResult(mLibrary.open(slug));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                setResult(ContainerCache.cache(mLibrary, slug));
             }
         };
         Bundle args = new Bundle();
