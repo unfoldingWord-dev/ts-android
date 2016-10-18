@@ -63,7 +63,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     private boolean mChangeTargetLanguageOnly = false;
     private String mTargetTranslationId = null;
     private SimpleTaskWatcher taskWatcher;
-    private eDialogShown mDialogShown = eDialogShown.NONE;
+    private DialogShown mDialogShown = DialogShown.NONE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +78,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
 
         if(savedInstanceState != null) {
             createdNewLanguage = savedInstanceState.getBoolean(STATE_NEW_LANGUAGE, false);
-            mDialogShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
+            mDialogShown = DialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, DialogShown.NONE.getValue()));
             if (savedInstanceState.containsKey(STATE_TARGET_TRANSLATION_ID)) {
                 mNewTargetTranslationId = (String) savedInstanceState.getSerializable(STATE_TARGET_TRANSLATION_ID);
             }
@@ -147,7 +147,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
      * @param existingTranslation
      */
     private void showTargetTranslationConflict(final TargetTranslation sourceTargetTranslation, final TargetTranslation existingTranslation) {
-        mDialogShown = eDialogShown.RENAME_CONFLICT;
+        mDialogShown = DialogShown.RENAME_CONFLICT;
         mNewTargetTranslationId = existingTranslation.getId();
         Project project = App.getLibrary().getProject(existingTranslation.getProjectId(), App.getDeviceLanguageCode());
         String message = String.format(getResources().getString(R.string.warn_existing_target_translation), project.name, existingTranslation.getTargetLanguageName());
@@ -158,7 +158,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
+                        mDialogShown = DialogShown.NONE;
                         MergeTargetTranslationTask mergeTask = new MergeTargetTranslationTask(existingTranslation, sourceTargetTranslation, true);
                         taskWatcher.watch(mergeTask);
                         TaskManager.addTask(mergeTask, MergeTargetTranslationTask.TASK_ID);
@@ -167,7 +167,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                 .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mDialogShown = eDialogShown.NONE;
+                        mDialogShown = DialogShown.NONE;
                         Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.rename_canceled, Snackbar.LENGTH_LONG);
                         ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                         snack.show();
@@ -471,13 +471,13 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     /**
      * for keeping track if dialog is being shown for orientation changes
      */
-    public enum eDialogShown {
+    public enum DialogShown {
         NONE(0),
         RENAME_CONFLICT(2);
 
         private int _value;
 
-        eDialogShown(int Value) {
+        DialogShown(int Value) {
             this._value = Value;
         }
 
@@ -485,8 +485,8 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             return _value;
         }
 
-        public static eDialogShown fromInt(int i) {
-            for (eDialogShown b : eDialogShown.values()) {
+        public static DialogShown fromInt(int i) {
+            for (DialogShown b : DialogShown.values()) {
                 if (b.getValue() == i) {
                     return b;
                 }

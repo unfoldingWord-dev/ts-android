@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Pulls down changes from a remote target translation repository
+ * Do GIT Merge of target translation projects
  */
 public class MergeTargetTranslationTask extends ManagedTask {
 
