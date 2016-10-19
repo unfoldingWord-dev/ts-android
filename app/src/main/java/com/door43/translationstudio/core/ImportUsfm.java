@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import org.unfoldingword.door43client.models.TargetLanguage;
-import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
@@ -24,6 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -655,13 +655,14 @@ public class ImportUsfm {
     }
 
     /**
-     * add chunk markers (contains verses and chapters) to map by chapter
+     * parse chunk markers (contains verses and chapters) into map of verses indexed by chapter
      *
      * @param book
      * @param chunks
      * @return
      */
-    public boolean addChunks(String book, ChunkMarker[] chunks, SourceTranslation sourceTranslation) {
+    public boolean parseChunks(String book, List<ChunkMarker> chunks) {
+        mChunks = new HashMap<>(); // clear old map
         try {
             for (ChunkMarker chunkMarker : chunks) {
 
@@ -678,19 +679,18 @@ public class ImportUsfm {
 
                 JSONObject chunk = new JSONObject();
                 chunk.put(FIRST_VERSE, firstVerse);
-//                chunk.put(FILE_NAME, firstverse); // default to the same, later cleanup
+                // TODO: 10/19/16 will first verse always match file name?  or do we still have chunk 0 issues?
+                chunk.put(FILE_NAME, firstVerse);
                 verses.put(chunk);
             }
 
-            for (int i = 1; i <= mChapters.length; i++) { // get file names for chunks
-                String chapterId = getChapterFolderName(i + "");
-                String[] chapterFrameSlugs = new String[0]; //App.getLibrary().getFrameSlugs(sourceTranslation, chapterId);
-                JSONArray verseBreaks = getVerseBreaksObj(i + "");
-                for (int j = 0; j < verseBreaks.length(); j++) {
-                    JSONObject chunk = verseBreaks.getJSONObject(j);
-                    chunk.put(FILE_NAME, chapterFrameSlugs[j]);
-                }
+            //extract chapters
+            List<String> foundChapters = new ArrayList<>();
+            for (String chapter : mChunks.keySet()) {
+                foundChapters.add(chapter);
             }
+            Collections.sort(foundChapters);
+            mChapters = foundChapters.toArray(new String[foundChapters.size()]);;
 
         } catch (Exception e) {
             Logger.e(TAG, "error parsing chunks " + book, e);
@@ -812,11 +812,7 @@ public class ImportUsfm {
                 addBookMissingName(mBookName, mBookShortName, book);
                 return promptForName;
             } else { // has chunks
-                ResourceContainer resourceContainer = App.getLibrary().open("en", mBookShortName, "ulb");
-                mChapters = null;//resourceContainer.chapters();
-
-                mChunks = new HashMap<>(); // clear old map
-                //addChunks(mBookShortName, markers, resourceContainer);
+                parseChunks(mBookShortName, markers);
                 mChaperCount = mChunks.size();
 
                 success = extractChaptersFromBook(book);
@@ -1103,8 +1099,9 @@ public class ImportUsfm {
             JSONArray chunks = getVerseBreaksObj(findChapter);
             for (int i = 0; i < chunks.length(); i++) {
                 JSONObject chunk = chunks.getJSONObject(i);
-                if (firstVerse.equals(chunk.getString(FIRST_VERSE))) {
-                    return chunk.getString(FILE_NAME);
+                String firstVerseFile = chunk.getString(FIRST_VERSE);
+                if (firstVerse.equals(firstVerseFile)) {
+                    return firstVerseFile;
                 }
             }
         } catch (JSONException e) {
