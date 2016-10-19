@@ -173,7 +173,7 @@ public class ExportUsfm {
                 String languageId = targetTranslation.getTargetLanguageId();
                 String languageName = targetTranslation.getTargetLanguageName();
                 ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
-                Project project = App.getLibrary().index().getProject(languageId, targetTranslation.getProjectId());
+                Project project = App.getLibrary().index().getProject(languageId, targetTranslation.getProjectId(), true);
 
                 String bookName = bookCode; // default name
                 if( (project != null) && (project.name != null)) {

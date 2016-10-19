@@ -1050,8 +1050,7 @@ public class ImportUsfm {
                 return false;
             }
         } else { // save stuff before first chapter
-            String chapter1 = getChapterFolderName("1"); // to get width of chapters
-            String chapter0 = "0000".substring(0, chapter1.length()); // match length of chapter 1
+            String chapter0 = "00"; // chapter "00" folder contains title
             success = saveSection(".", "before", text);
             successOverall = successOverall && success;
             success = saveSection(chapter0, "title", mBookName);
