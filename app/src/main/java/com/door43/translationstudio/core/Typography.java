@@ -8,7 +8,7 @@ import android.util.TypedValue;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.ui.SettingsActivity;
 
 /**
  * Created by joel on 9/11/2015.
@@ -23,7 +23,7 @@ public class Typography {
      * @param languageCode the spoken language of the text
      * @param direction the reading direction of the text
      */
-    public static void format(Context context, TranslationType translationType, TextView view, String languageCode, LanguageDirection direction) {
+    public static void format(Context context, TranslationType translationType, TextView view, String languageCode, String direction) {
         Typeface typeface = getTypeface(context, translationType, languageCode, direction);
         float fontSize = getFontSize(context, translationType);
 
@@ -41,7 +41,7 @@ public class Typography {
      * @param languageCode the spoken language of the text
      * @param direction the reading direction of the text
      */
-    public static void formatTitle(Context context, TranslationType translationType, TextView view, String languageCode, LanguageDirection direction) {
+    public static void formatTitle(Context context, TranslationType translationType, TextView view, String languageCode, String direction) {
         Typeface typeface = getTypeface(context, translationType, languageCode, direction);
         float fontSize = getFontSize(context, translationType) * 1.3f;
 
@@ -59,7 +59,7 @@ public class Typography {
      * @param languageCode the spoken language of the text
      * @param direction the reading direction of the text
      */
-    public static void formatSub(Context context, TranslationType translationType, TextView view, String languageCode, LanguageDirection direction) {
+    public static void formatSub(Context context, TranslationType translationType, TextView view, String languageCode, String direction) {
         Typeface typeface = getTypeface(context, translationType, languageCode, direction);
         float fontSize = getFontSize(context, translationType) * .7f;
 
@@ -89,7 +89,7 @@ public class Typography {
      */
     public static float getFontSize(Context context, TranslationType translationType) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String typefaceSize = (translationType == TranslationType.SOURCE) ? SettingsActivity.KEY_PREF_SOURCE_TYPEFACE_SIZE :  SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE_SIZE;
+        String typefaceSize = (translationType == com.door43.translationstudio.core.TranslationType.SOURCE) ? SettingsActivity.KEY_PREF_SOURCE_TYPEFACE_SIZE :  SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE_SIZE;
         return Integer.parseInt(prefs.getString(typefaceSize, context.getResources().getString(R.string.pref_default_typeface_size)));
     }
 
@@ -101,7 +101,7 @@ public class Typography {
      */
     public static String getAssetPath(Context context, TranslationType translationType) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String selectedTypeface = (translationType == TranslationType.SOURCE) ? SettingsActivity.KEY_PREF_SOURCE_TYPEFACE : SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE;
+        String selectedTypeface = (translationType == com.door43.translationstudio.core.TranslationType.SOURCE) ? SettingsActivity.KEY_PREF_SOURCE_TYPEFACE : SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE;
         String fontName = prefs.getString(selectedTypeface, context.getResources().getString(R.string.pref_default_translation_typeface));
         return "assets/fonts/" + fontName;
     }
@@ -114,9 +114,9 @@ public class Typography {
      * @param direction the reading direction
      * @return
      */
-    public static Typeface getTypeface(Context context, TranslationType translationType, String languageCode, LanguageDirection direction) {
+    public static Typeface getTypeface(Context context, TranslationType translationType, String languageCode, String direction) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String selectedTypeface = (translationType == TranslationType.SOURCE) ? SettingsActivity.KEY_PREF_SOURCE_TYPEFACE : SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE;
+        String selectedTypeface = (translationType == com.door43.translationstudio.core.TranslationType.SOURCE) ? SettingsActivity.KEY_PREF_SOURCE_TYPEFACE : SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE;
         String fontName = prefs.getString(selectedTypeface, context.getResources().getString(R.string.pref_default_translation_typeface));
 
         // TODO: provide graphite support
@@ -156,8 +156,4 @@ public class Typography {
         return typeface;
     }
 
-    public enum TranslationType {
-        SOURCE,
-        TRANSLATION
-    }
 }

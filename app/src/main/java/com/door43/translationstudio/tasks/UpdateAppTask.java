@@ -11,8 +11,7 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.SettingsActivity;
-import com.door43.translationstudio.core.LibraryData;
+import com.door43.translationstudio.ui.SettingsActivity;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.util.FileUtilities;
@@ -69,7 +68,7 @@ public class UpdateAppTask extends ManagedTask {
             }
         }
 
-        if(!App.getLibrary().exists()) {
+        if(!App.isLibraryDeployed()) {
             try {
                 App.deployDefaultLibrary();
             } catch (Exception e) {
@@ -104,10 +103,14 @@ public class UpdateAppTask extends ManagedTask {
             // TRICKY: this was the old name of the database
             App.context().deleteDatabase("app");
         }
+        if(lastVersion < 142) {
+            // TRICKY: this was another old name of the database
+            App.context().deleteDatabase("library");
+        }
 
         // this should always be the latest version in which the library was updated
-        if(lastVersion < 141) {
-            App.context().deleteDatabase(LibraryData.DATABASE_NAME);
+        if(lastVersion < 142) {
+            App.deleteLibrary();
         }
     }
 

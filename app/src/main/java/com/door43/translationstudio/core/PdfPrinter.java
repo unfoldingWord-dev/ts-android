@@ -6,8 +6,8 @@ import android.graphics.BitmapFactory;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.spannables.Span;
-import com.door43.translationstudio.spannables.USFMVerseSpan;
+import com.door43.translationstudio.ui.spannables.Span;
+import com.door43.translationstudio.ui.spannables.USFMVerseSpan;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfContentByte;
@@ -18,13 +18,17 @@ import com.itextpdf.text.pdf.PdfTemplate;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.text.pdf.draw.VerticalPositionMark;
 
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.resourcecontainer.Project;
+import org.unfoldingword.resourcecontainer.Resource;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,8 +48,8 @@ public class PdfPrinter extends PdfPageEventHelper {
     private final Font subFont;
     private final Font headingFont;
     private final TranslationFormat format;
-    private final Library library;
-    private final SourceTranslation sourceTranslation;
+    private final Door43Client library;
+    private final ResourceContainer sourceContainer;
     private final Font superScriptFont;
     private final BaseFont baseFont;
     private final File imagesDir;
@@ -58,13 +62,21 @@ public class PdfPrinter extends PdfPageEventHelper {
     private Paragraph mCurrentParagraph;
 
 
-    public PdfPrinter(Context context, Library library, TargetTranslation targetTranslation, TranslationFormat format, String fontPath, File imagesDir) throws IOException, DocumentException {
+    public PdfPrinter(Context context, Door43Client library, TargetTranslation targetTranslation, TranslationFormat format, String fontPath, File imagesDir) throws IOException, DocumentException {
         this.targetTranslation = targetTranslation;
         this.context = context;
         this.format = format;
         this.library = library;
         this.imagesDir = imagesDir;
-        this.sourceTranslation = library.getDefaultSourceTranslation(targetTranslation.getProjectId(), "en");
+        Project p = library.index().getProject("en", targetTranslation.getProjectId(), true);
+        java.util.List<Resource> resources = library.index().getResources(p.languageSlug, p.slug);
+        ResourceContainer rc = null;
+        try {
+            rc = library.open("en", targetTranslation.getProjectId(), resources.get(0).slug);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        this.sourceContainer = rc;
 
         baseFont = BaseFont.createFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
         titleFont = new Font(baseFont, 25, Font.BOLD);
@@ -118,7 +130,7 @@ public class PdfPrinter extends PdfPageEventHelper {
         document.add(intro);
 
         for(ChapterTranslation c:targetTranslation.getChapterTranslations()) {
-            if(!includeIncomplete && !c.isTitleFinished() && !library.getChapter(sourceTranslation, c.getId()).title.isEmpty()) {
+            if(!includeIncomplete && !c.isTitleFinished() && !sourceContainer.readChunk(c.getId(), "title").isEmpty()) {
                 continue;
             }
             // write chapter title
@@ -243,7 +255,7 @@ public class PdfPrinter extends PdfPageEventHelper {
      */
     private void addContent(Document document) throws DocumentException, IOException {
         for(ChapterTranslation c:targetTranslation.getChapterTranslations()) {
-            if(includeIncomplete || c.isTitleFinished() || library.getChapter(sourceTranslation, c.getId()).title.isEmpty()) {
+            if(includeIncomplete || c.isTitleFinished() || sourceContainer.readChunk(c.getId(), "title").isEmpty()) {
                 addChapterPage(document, c);
             }
 

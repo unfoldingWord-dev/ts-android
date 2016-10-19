@@ -105,7 +105,7 @@ public class Manifest {
         try {
             return mManifest.getJSONArray(key);
         } catch (JSONException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             return new JSONArray();
         }
     }

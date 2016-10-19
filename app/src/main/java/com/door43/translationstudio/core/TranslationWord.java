@@ -13,6 +13,7 @@ import java.util.List;
 /**
  * Created by joel on 9/19/2015.
  */
+@Deprecated
 public class TranslationWord {
 
     private final String mId;

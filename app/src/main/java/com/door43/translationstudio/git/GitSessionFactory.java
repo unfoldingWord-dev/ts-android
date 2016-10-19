@@ -2,7 +2,7 @@ package com.door43.translationstudio.git;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.ui.SettingsActivity;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;

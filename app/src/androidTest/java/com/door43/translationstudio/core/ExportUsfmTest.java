@@ -7,6 +7,7 @@ import com.door43.translationstudio.App;
 import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
+import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.tools.logger.Logger;
 
 import java.io.File;
@@ -15,6 +16,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.unfoldingword.door43client.models.TargetLanguage;
 
 /**
  * Created by blm on 7/25/16.
@@ -25,7 +28,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
     private Context mTestContext;
     private Context mAppContext;
     private TargetLanguage mTargetLanguage;
-    private Library mLibrary;
+    private Door43Client mLibrary;
     private ImportUsfm mUsfm;
     private File mOutputFolder;
     private TargetTranslation mTargetTranslation;
@@ -38,7 +41,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         Logger.flush();
         mTestContext = getInstrumentation().getContext();
         mAppContext = App.context();
-        mTargetLanguage = mLibrary.getTargetLanguage("aae");
+        mTargetLanguage = mLibrary.index().getTargetLanguage("aae");
     }
 
     @Override

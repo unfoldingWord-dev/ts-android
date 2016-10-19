@@ -8,6 +8,7 @@ import java.net.URL;
 /**
  * Created by joel on 6/18/16.
  */
+@Deprecated
 public class DeleteRequest extends Request {
 
     /**

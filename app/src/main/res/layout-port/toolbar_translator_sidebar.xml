@@ -57,7 +57,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <it.moondroid.seekbarhint.library.SeekBarHint
+            <com.door43.widget.SeekbarHintReversed
                 android:id="@+id/action_seek"
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"

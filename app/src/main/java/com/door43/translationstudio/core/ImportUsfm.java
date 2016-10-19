@@ -6,11 +6,13 @@ import android.content.pm.PackageInfo;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import org.unfoldingword.door43client.models.TargetLanguage;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.spannables.USFMVerseSpan;
+import com.door43.translationstudio.ui.spannables.USFMVerseSpan;
 import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
@@ -26,6 +28,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.unfoldingword.resourcecontainer.Resource;
+
+import org.unfoldingword.door43client.models.ChunkMarker;
 
 /**
  * For processing USFM input file or zip files into importable package.
@@ -75,7 +81,7 @@ public class ImportUsfm {
     private int mChaperCount;
     private List<MissingNameItem> mBooksMissingNames;
     private boolean mCancel = false;
-    private Chapter[] mChapters;
+    private String[] mChapters;
 
     /**
      * constructor
@@ -179,7 +185,7 @@ public class ImportUsfm {
             json.putOpt("ImportProjects", toJsonFileArray(mImportProjects));
             json.putOpt("Errors", toJsonStringArray(mErrors));
             json.putOpt("FoundBooks", toJsonStringArray(mFoundBooks));
-            json.putOpt("TargetLanguage", mTargetLanguage.toApiFormatJson());
+            json.putOpt("TargetLanguage", mTargetLanguage.toJSON());
             json.putOpt("CurrentBook", mCurrentBook);
             json.putOpt("Success", mProcessSuccess);
             json.putOpt("MissingNames", MissingNameItem.toJsonArray(mBooksMissingNames));
@@ -250,7 +256,7 @@ public class ImportUsfm {
                     getOptInteger(json,"CurrentBook"),
                     getOptString(json,"BookName"),
                     getOptString(json,"BookShortName"),
-                    TargetLanguage.generate(getOptJsonObject(json,"TargetLanguage")),
+                    TargetLanguage.fromJSON(getOptJsonObject(json,"TargetLanguage")),
                     getOptBoolean(json,"Success"),
                     getOptInteger(json,"CurrentChapter"),
                     getOptInteger(json,"ChaperCount"),
@@ -378,7 +384,7 @@ public class ImportUsfm {
     public String getLanguageTitle() {
         String format;
         format = mContext.getResources().getString(R.string.selected_language);
-        String language = String.format(format, mTargetLanguage.getId() + " - " + mTargetLanguage.name);
+        String language = String.format(format, mTargetLanguage.slug + " - " + mTargetLanguage.name);
         return language;
     }
 
@@ -659,8 +665,8 @@ public class ImportUsfm {
         try {
             for (ChunkMarker chunkMarker : chunks) {
 
-                String chapter = chunkMarker.chapterSlug;
-                String firstverse = chunkMarker.firstVerseSlug;
+                String chapter = chunkMarker.chapter;
+                String firstVerse = chunkMarker.verse;
 
                 JSONArray verses = null;
                 if (mChunks.containsKey(chapter)) {
@@ -671,14 +677,14 @@ public class ImportUsfm {
                 }
 
                 JSONObject chunk = new JSONObject();
-                chunk.put(FIRST_VERSE, firstverse);
+                chunk.put(FIRST_VERSE, firstVerse);
 //                chunk.put(FILE_NAME, firstverse); // default to the same, later cleanup
                 verses.put(chunk);
             }
 
             for (int i = 1; i <= mChapters.length; i++) { // get file names for chunks
                 String chapterId = getChapterFolderName(i + "");
-                String[] chapterFrameSlugs = App.getLibrary().getFrameSlugs(sourceTranslation, chapterId);
+                String[] chapterFrameSlugs = new String[0]; //App.getLibrary().getFrameSlugs(sourceTranslation, chapterId);
                 JSONArray verseBreaks = getVerseBreaksObj(i + "");
                 for (int j = 0; j < verseBreaks.length(); j++) {
                     JSONObject chunk = verseBreaks.getJSONObject(j);
@@ -789,15 +795,15 @@ public class ImportUsfm {
             }
 
             mTempDest = new File(mTempOutput, mBookShortName);
-            mProjectFolder = new File(mTempDest, mBookShortName + "-" + mTargetLanguage.getId());
+            mProjectFolder = new File(mTempDest, mBookShortName + "-" + mTargetLanguage.slug);
 
             if (isMissing(mBookName)) {
                 addError(R.string.missing_book_name);
                 mBookName = mBookShortName;
             }
 
-            ChunkMarker[] markers = App.getLibrary().getChunkMarkers(mBookShortName);
-            boolean haveChunksList = markers.length > 0;
+            List<ChunkMarker> markers = App.getLibrary().index().getChunkMarkers(mBookShortName, "en-US");
+            boolean haveChunksList = markers.size() > 0;
 
             if (!haveChunksList) { // no chunk list
                 // TODO: 4/13/16 add support for processing by sections
@@ -806,11 +812,11 @@ public class ImportUsfm {
                 addBookMissingName(mBookName, mBookShortName, book);
                 return promptForName;
             } else { // has chunks
-                SourceTranslation sourceTranslation = App.getLibrary().getSourceTranslation(mBookShortName, "en", "ulb");
-                mChapters = App.getLibrary().getChapters(sourceTranslation);
+                ResourceContainer resourceContainer = App.getLibrary().open("en", mBookShortName, "ulb");
+                mChapters = null;//resourceContainer.chapters();
 
                 mChunks = new HashMap<>(); // clear old map
-                addChunks(mBookShortName, markers, sourceTranslation);
+                //addChunks(mBookShortName, markers, resourceContainer);
                 mChaperCount = mChunks.size();
 
                 success = extractChaptersFromBook(book);
@@ -882,14 +888,13 @@ public class ImportUsfm {
             pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
             String projectId = mBookShortName;
             String resourceSlug = Resource.REGULAR_SLUG;
-            targetTranslation = TargetTranslation.create(context, App.getProfile().getNativeSpeaker(), TranslationFormat.USFM, mTargetLanguage, projectId, TranslationType.TEXT, resourceSlug, pInfo, mProjectFolder);
+            targetTranslation = TargetTranslation.create(context, App.getProfile().getNativeSpeaker(), TranslationFormat.USFM, mTargetLanguage, projectId, ResourceType.TEXT, resourceSlug, pInfo, mProjectFolder);
 
         } catch (Exception e) {
             addError(R.string.file_write_error);
             Logger.e(TAG, "failed to build manifest", e);
             return false;
         }
-
         return true;
     }
 
@@ -1068,15 +1073,15 @@ public class ImportUsfm {
         try {
             int chapter = Integer.valueOf(findChapter);
             if (chapter > 0) { // first check in expected location
-                Chapter chapterN = mChapters[chapter - 1];
-                if (Integer.valueOf(chapterN.getId()) == chapter) {
-                    return chapterN.getId();
+                String chapterN = mChapters[chapter - 1];
+                if (Integer.valueOf(chapterN) == chapter) {
+                    return chapterN;
                 }
             }
 
-            for (Chapter chapterN : mChapters) { //search for chapter match
-                if (Integer.valueOf(chapterN.getId()) == chapter) {
-                    return chapterN.getId();
+            for (String chapterN : mChapters) { //search for chapter match
+                if (Integer.valueOf(chapterN) == chapter) {
+                    return chapterN;
                 }
             }
         } catch (Exception e) {

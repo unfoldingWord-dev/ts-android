@@ -6,7 +6,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:2.2.1'
-        classpath 'com.getkeepsafe.dexcount:dexcount-gradle-plugin:0.5.4'
+        classpath 'com.getkeepsafe.dexcount:dexcount-gradle-plugin:0.6.1'
     }
 }
 
@@ -87,6 +87,8 @@ dependencies {
 
     compile 'org.unfoldingword.tools:gogs-client:1.6.0'
     compile 'org.unfoldingword.tools:task-manager:1.5.0'
+    compile 'org.unfoldingword.tools:door43-client:0.7.9'
+    compile 'org.unfoldingword.tools:http:2.3.0'
     compile 'org.unfoldingword.tools:logger:2.0.0'
 
     compile project(':html-textview')

@@ -11,11 +11,11 @@ import android.text.style.AlignmentSpan;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.StyleSpan;
 
-import com.door43.translationstudio.spannables.USXChar;
-import com.door43.translationstudio.spannables.USXNoteSpan;
-import com.door43.translationstudio.spannables.Span;
-import com.door43.translationstudio.spannables.USXVersePinSpan;
-import com.door43.translationstudio.spannables.USXVerseSpan;
+import com.door43.translationstudio.ui.spannables.USXChar;
+import com.door43.translationstudio.ui.spannables.USXNoteSpan;
+import com.door43.translationstudio.ui.spannables.Span;
+import com.door43.translationstudio.ui.spannables.USXVersePinSpan;
+import com.door43.translationstudio.ui.spannables.USXVerseSpan;
 
 import java.util.ArrayList;
 import java.util.List;

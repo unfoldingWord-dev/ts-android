@@ -114,7 +114,7 @@ public class SubmitNewLanguageRequestsTask extends ManagedTask {
     private void sealRequest(NewLanguageRequest request) throws IOException {
         Logger.i(this.getClass().getName(), "Sealing new language request '" + request.tempLanguageCode + "'");
         request.setSubmittedAt(System.currentTimeMillis());
-        File requestFile = new File(App.getPublicDirectory(), "new_languages/" + request.tempLanguageCode + ".json");
+        File requestFile = new File(App.publicDir(), "new_languages/" + request.tempLanguageCode + ".json");
         FileUtilities.writeStringToFile(requestFile, request.toJson());
 
         // updated affected target translations
