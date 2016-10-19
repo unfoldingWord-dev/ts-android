@@ -200,7 +200,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 return;
             }
         } else {
-            mAlertShown = intToDialogShown(savedInstanceState.getInt(STATE_DIALOG_SHOWN, INVALID), DialogShown.NONE);
+            mAlertShown = DialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, INVALID), DialogShown.NONE);
             mTargetTranslationID = savedInstanceState.getString(STATE_DIALOG_TRANSLATION_ID, null);
         }
     }
@@ -755,7 +755,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             }
         });
 
-        out.putInt(STATE_DIALOG_SHOWN, mAlertShown.ordinal());
+        out.putInt(STATE_DIALOG_SHOWN, mAlertShown.getValue());
         out.putString(STATE_DIALOG_TRANSLATION_ID, mTargetTranslationID);
         super.onSaveInstanceState(out);
     }
@@ -881,13 +881,17 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         IMPORT_VERIFICATION,
         OPEN_LIBRARY,
         IMPORT_RESULTS,
-        MERGE_CONFLICT
-    }
+        MERGE_CONFLICT;
 
-    public DialogShown intToDialogShown(int ordinal, DialogShown defaultValue) {
-        if (ordinal > 0 && ordinal < DialogShown.values().length) {
-            return DialogShown.values()[ordinal];
+        public int getValue() {
+            return this.ordinal();
         }
-        return defaultValue;
+
+        public static DialogShown fromInt(int ordinal, DialogShown defaultValue) {
+            if (ordinal > 0 && ordinal < DialogShown.values().length) {
+                return DialogShown.values()[ordinal];
+            }
+            return defaultValue;
+        }
     }
 }

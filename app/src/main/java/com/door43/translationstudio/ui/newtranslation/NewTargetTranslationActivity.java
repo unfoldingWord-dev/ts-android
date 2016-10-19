@@ -80,7 +80,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
 
         if(savedInstanceState != null) {
             createdNewLanguage = savedInstanceState.getBoolean(STATE_NEW_LANGUAGE, false);
-            mDialogShown = intToDialogShown(savedInstanceState.getInt(STATE_DIALOG_SHOWN, INVALID), DialogShown.NONE);
+            mDialogShown = DialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, INVALID), DialogShown.NONE);
             if (savedInstanceState.containsKey(STATE_TARGET_TRANSLATION_ID)) {
                 mNewTargetTranslationId = (String) savedInstanceState.getSerializable(STATE_TARGET_TRANSLATION_ID);
             }
@@ -401,7 +401,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
 
     public void onSaveInstanceState(Bundle outState) {
         outState.putSerializable(STATE_TARGET_TRANSLATION_ID, mNewTargetTranslationId);
-        outState.putInt(STATE_DIALOG_SHOWN, mDialogShown.ordinal());
+        outState.putInt(STATE_DIALOG_SHOWN, mDialogShown.getValue());
         outState.putBoolean(STATE_NEW_LANGUAGE, createdNewLanguage);
         if(mSelectedTargetLanguage != null) {
             JSONObject targetLanguageJson = null;
@@ -475,13 +475,17 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
      */
     public enum DialogShown {
         NONE,
-        RENAME_CONFLICT
-    }
+        RENAME_CONFLICT;
 
-    public DialogShown intToDialogShown(int ordinal, DialogShown defaultValue) {
-        if (ordinal > 0 && ordinal < DialogShown.values().length) {
-           return DialogShown.values()[ordinal];
+        public int getValue() {
+            return this.ordinal();
         }
-        return defaultValue;
+
+        public static DialogShown fromInt(int ordinal, DialogShown defaultValue) {
+            if (ordinal > 0 && ordinal < DialogShown.values().length) {
+                return DialogShown.values()[ordinal];
+            }
+            return defaultValue;
+        }
     }
 }
