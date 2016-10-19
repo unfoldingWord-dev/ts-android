@@ -22,6 +22,7 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.tasks.MergeTargetTranslationTask;
 import com.door43.translationstudio.ui.SettingsActivity;
 import com.door43.translationstudio.core.NewLanguageRequest;
 import com.door43.translationstudio.core.TargetTranslation;
@@ -56,6 +57,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     public static final int NEW_LANGUAGE_REQUEST = 1001;
     public static final String NEW_LANGUAGE_CONFIRMATION = "new-language-confirmation";
     private static final String STATE_NEW_LANGUAGE = "new_language";
+    public static final int INVALID = -1;
     private TargetLanguage mSelectedTargetLanguage = null;
     private Searchable mFragment;
     private String mNewTargetTranslationId = null;
@@ -78,7 +80,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
 
         if(savedInstanceState != null) {
             createdNewLanguage = savedInstanceState.getBoolean(STATE_NEW_LANGUAGE, false);
-            mDialogShown = DialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, DialogShown.NONE.getValue()));
+            mDialogShown = intToDialogShown(savedInstanceState.getInt(STATE_DIALOG_SHOWN, INVALID), DialogShown.NONE);
             if (savedInstanceState.containsKey(STATE_TARGET_TRANSLATION_ID)) {
                 mNewTargetTranslationId = (String) savedInstanceState.getSerializable(STATE_TARGET_TRANSLATION_ID);
             }
@@ -149,7 +151,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     private void showTargetTranslationConflict(final TargetTranslation sourceTargetTranslation, final TargetTranslation existingTranslation) {
         mDialogShown = DialogShown.RENAME_CONFLICT;
         mNewTargetTranslationId = existingTranslation.getId();
-        Project project = App.getLibrary().getProject(existingTranslation.getProjectId(), App.getDeviceLanguageCode());
+        Project project = App.getLibrary().index().getProject(existingTranslation.getProjectId(), App.getDeviceLanguageCode());
         String message = String.format(getResources().getString(R.string.warn_existing_target_translation), project.name, existingTranslation.getTargetLanguageName());
 
         new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
@@ -252,7 +254,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             Translator translator = App.getTranslator();
             TargetTranslation sourceTargetTranslation = translator.getTargetTranslation(mTargetTranslationId);
 
-            if(targetLanguage.getId().equals(sourceTargetTranslation.getTargetLanguage().getId())) { // if nothing to do then skip
+            if(targetLanguage.slug.equals(sourceTargetTranslation.getTargetLanguage().slug)) { // if nothing to do then skip
                 setResult(RESULT_OK);
                 finish();
                 return;
@@ -261,7 +263,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             // check for project conflict
             String projectId = sourceTargetTranslation.getProjectId();
             String resourceSlug = projectId.equals("obs") ? "obs" : Resource.REGULAR_SLUG;
-            TargetTranslation existingTranslation = translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId, TranslationType.TEXT, resourceSlug));
+            TargetTranslation existingTranslation = translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.slug, projectId, ResourceType.TEXT, resourceSlug));
 
             if(existingTranslation != null) {
                 showTargetTranslationConflict(sourceTargetTranslation, existingTranslation);
@@ -399,7 +401,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
 
     public void onSaveInstanceState(Bundle outState) {
         outState.putSerializable(STATE_TARGET_TRANSLATION_ID, mNewTargetTranslationId);
-        outState.putInt(STATE_DIALOG_SHOWN, mDialogShown.getValue());
+        outState.putInt(STATE_DIALOG_SHOWN, mDialogShown.ordinal());
         outState.putBoolean(STATE_NEW_LANGUAGE, createdNewLanguage);
         if(mSelectedTargetLanguage != null) {
             JSONObject targetLanguageJson = null;
@@ -472,26 +474,14 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
      * for keeping track if dialog is being shown for orientation changes
      */
     public enum DialogShown {
-        NONE(0),
-        RENAME_CONFLICT(2);
+        NONE,
+        RENAME_CONFLICT
+    }
 
-        private int _value;
-
-        DialogShown(int Value) {
-            this._value = Value;
+    public DialogShown intToDialogShown(int ordinal, DialogShown defaultValue) {
+        if (ordinal > 0 && ordinal < DialogShown.values().length) {
+           return DialogShown.values()[ordinal];
         }
-
-        public int getValue() {
-            return _value;
-        }
-
-        public static DialogShown fromInt(int i) {
-            for (DialogShown b : DialogShown.values()) {
-                if (b.getValue() == i) {
-                    return b;
-                }
-            }
-            return null;
-        }
+        return defaultValue;
     }
 }

@@ -66,12 +66,13 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
     public static final String STATE_DIALOG_TRANSLATION_ID = "state_dialog_translationID";
     public static final String TAG = HomeActivity.class.getSimpleName();
+    public static final int INVALID = -1;
     private Door43Client mLibrary;
     private Translator mTranslator;
     private Fragment mFragment;
     private SimpleTaskWatcher taskWatcher;
     private ExamineImportsForCollisionsTask mExamineTask;
-    private eDialogShown mAlertShown = eDialogShown.NONE;
+    private DialogShown mAlertShown = DialogShown.NONE;
     private String mTargetTranslationWithUpdates;
     private String mTargetTranslationID;
     private ProgressDialog progressDialog = null;
@@ -199,7 +200,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 return;
             }
         } else {
-            mAlertShown = eDialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, eDialogShown.NONE.getValue()));
+            mAlertShown = intToDialogShown(savedInstanceState.getInt(STATE_DIALOG_SHOWN, INVALID), DialogShown.NONE);
             mTargetTranslationID = savedInstanceState.getString(STATE_DIALOG_TRANSLATION_ID, null);
         }
     }
@@ -398,14 +399,14 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
      * @param targetTranslationID
      */
     public void showMergeConflict(String targetTranslationID) {
-        mAlertShown = eDialogShown.MERGE_CONFLICT;
+        mAlertShown = DialogShown.MERGE_CONFLICT;
         mTargetTranslationID = targetTranslationID;
         new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                 .setTitle(R.string.merge_conflict_title).setMessage(R.string.import_merge_conflict)
                 .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mAlertShown = eDialogShown.NONE;
+                        mAlertShown = DialogShown.NONE;
                         doManualMerge(mTargetTranslationID);
                     }
                 }).show();
@@ -437,7 +438,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mAlertShown = eDialogShown.NONE;
+                        mAlertShown = DialogShown.NONE;
                         RegisterSSHKeysTask keyTask = new RegisterSSHKeysTask(true);
                         taskWatcher.watch(keyTask);
                         TaskManager.addTask(keyTask, RegisterSSHKeysTask.TASK_ID);
@@ -446,7 +447,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mAlertShown = eDialogShown.NONE;
+                        mAlertShown = DialogShown.NONE;
                         notifyTranslationUpdateFailed();
                     }
                 }).show();
@@ -464,7 +465,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
      * display the final import Results.
      */
     private void showImportResults(String projectPath, String projectNames, boolean success) {
-        mAlertShown = eDialogShown.IMPORT_RESULTS;
+        mAlertShown = DialogShown.IMPORT_RESULTS;
         String message;
         if(success) {
             String format = App.context().getResources().getString(R.string.import_project_success);
@@ -480,7 +481,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mAlertShown = eDialogShown.NONE;
+                        mAlertShown = DialogShown.NONE;
                         mExamineTask.cleanup();
                         HomeActivity.this.finish();
                     }
@@ -505,14 +506,14 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
      * show dialog to verify that we want to import, restore or cancel.
      */
     private void displayImportVerification() {
-        mAlertShown = eDialogShown.IMPORT_VERIFICATION;
+        mAlertShown = DialogShown.IMPORT_VERIFICATION;
         AlertDialog.Builder dlg = new AlertDialog.Builder(this,R.style.AppTheme_Dialog);
             dlg.setTitle(R.string.label_import)
                 .setMessage(String.format(getResources().getString(R.string.confirm_import_target_translation), mExamineTask.mProjectsFound))
                 .setNegativeButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mAlertShown = eDialogShown.NONE;
+                        mAlertShown = DialogShown.NONE;
                         mExamineTask.cleanup();
                         HomeActivity.this.finish();
                     }
@@ -520,7 +521,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 .setPositiveButton(R.string.label_restore, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mAlertShown = eDialogShown.NONE;
+                        mAlertShown = DialogShown.NONE;
                         doArchiveImport(true);
                     }
                 });
@@ -529,7 +530,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             dlg.setNeutralButton(R.string.label_import, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    mAlertShown = eDialogShown.NONE;
+                    mAlertShown = DialogShown.NONE;
                     doArchiveImport(false);
                     dialog.dismiss();
                 }
@@ -640,7 +641,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mAlertShown = eDialogShown.NONE;
+                        mAlertShown = DialogShown.NONE;
                         downloadTargetTranslationUpdates(targetTranslationId);
                     }
                 })
@@ -648,7 +649,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         App.setNotifyTargetTranslationWithUpdates(null);
-                        mAlertShown = eDialogShown.NONE;
+                        mAlertShown = DialogShown.NONE;
                     }
                 })
                 .show();
@@ -754,7 +755,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             }
         });
 
-        out.putInt(STATE_DIALOG_SHOWN, mAlertShown.getValue());
+        out.putInt(STATE_DIALOG_SHOWN, mAlertShown.ordinal());
         out.putString(STATE_DIALOG_TRANSLATION_ID, mTargetTranslationID);
         super.onSaveInstanceState(out);
     }
@@ -875,30 +876,18 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     /**
      * for keeping track if dialog is being shown for orientation changes
      */
-    public enum eDialogShown {
-        NONE(0),
-        IMPORT_VERIFICATION(2),
-        OPEN_LIBRARY(3),
-        IMPORT_RESULTS(4),
-        MERGE_CONFLICT(5);
+    public enum DialogShown {
+        NONE,
+        IMPORT_VERIFICATION,
+        OPEN_LIBRARY,
+        IMPORT_RESULTS,
+        MERGE_CONFLICT
+    }
 
-        private int _value;
-
-        eDialogShown(int Value) {
-            this._value = Value;
+    public DialogShown intToDialogShown(int ordinal, DialogShown defaultValue) {
+        if (ordinal > 0 && ordinal < DialogShown.values().length) {
+            return DialogShown.values()[ordinal];
         }
-
-        public int getValue() {
-            return _value;
-        }
-
-        public static eDialogShown fromInt(int i) {
-            for (eDialogShown b : eDialogShown.values()) {
-                if (b.getValue() == i) {
-                    return b;
-                }
-            }
-            return null;
-        }
+        return defaultValue;
     }
 }
