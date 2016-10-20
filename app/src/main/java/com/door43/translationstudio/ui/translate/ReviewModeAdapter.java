@@ -133,12 +133,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private float mInitialTextSize = 0;
     private int mMarginInitialLeft = 0;
 
-    @Deprecated
-    public void setHelpContainers(List<ResourceContainer> helpfulContainers) {
-        // TODO: 10/11/16 load the containers into a map so we can retrieve them
-        triggerNotifyDataSetChanged();
-    }
-
     enum DisplayState {
         NORMAL,
         SELECTED,
@@ -580,6 +574,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         };
 
         // render target body
+        ManagedTask oldtask = TaskManager.getTask(holder.currentTargetTaskId);
+        TaskManager.cancelTask(oldtask);
+        TaskManager.clearTask(oldtask);
         if(item.renderedTargetText == null) {
             holder.mTargetEditableBody.setText("");
             holder.mTargetBody.setText("");
@@ -1540,6 +1537,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // prepare task to load resources
         ManagedTask oldTask = TaskManager.getTask(holder.currentResourceTaskId);
         TaskManager.cancelTask(oldTask);
+        TaskManager.clearTask(oldTask);
+        // TODO: 10/19/16 check for cached links
         ManagedTask task = new ManagedTask() {
             @Override
             public void start() {
@@ -1593,6 +1592,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     final TranslationNote[] notes = new TranslationNote[0];//data.get("notes");
                     final List<Link> words = (List<Link>) data.get("words");
                     final CheckingQuestion[] questions = new CheckingQuestion[0]; // data.get("questions");
+
+                    // TODO: cache the links
 
                     Handler hand = new Handler(Looper.getMainLooper());
                     hand.post(new Runnable() {
@@ -2241,6 +2242,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public CharSequence headText = null;
         public boolean isFullMergeConflict = false;
         public CharSequence tailText = null;
+        public List<Link> wordLinks = new ArrayList<>();
+        public List<Link> questionLinks = new ArrayList<>();
+        public List<Link> noteLinks = new ArrayList<>();
 
         public ReviewListItem(String chapterSlug, String chunkSlug) {
             super(chapterSlug, chunkSlug);
