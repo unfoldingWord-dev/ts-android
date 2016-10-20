@@ -291,9 +291,9 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         if(mListener != null) mListener.onDataSetChanged(count);
     }
 
-    public void onEnableMergeConflict(boolean showConflicted) {
+    public void onEnableMergeConflict(boolean showConflicted, boolean active) {
         if(mListener != null) {
-            mListener.onEnableMergeConflict(showConflicted);
+            mListener.onEnableMergeConflict(showConflicted, active);
         }
     }
 
@@ -355,9 +355,9 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     /**
      * Filters the adapter by merge conflicts
      */
-    public final void mergeConflictFilter() {
+    public final void toggleMergeConflictFilter() {
         if(getAdapter() != null) {
-            getAdapter().mergeConflictFilter();
+            getAdapter().toggleMergeConflictFilter();
             getAdapter().triggerNotifyDataSetChanged();
         }
     }
@@ -691,6 +691,6 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
          * enable/disable merge conflict indicator
          * @param showConflicted
          */
-        void onEnableMergeConflict(boolean showConflicted);
+        void onEnableMergeConflict(boolean showConflicted, boolean active);
     }
 }

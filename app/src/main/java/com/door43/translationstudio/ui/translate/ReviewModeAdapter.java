@@ -133,7 +133,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private float mInitialTextSize = 0;
     private int mMarginInitialLeft = 0;
     private boolean mHaveMergeConflict = false;
-    private boolean mMergeConflictFilterMode = false;
+    private boolean mMergeConflictFilterEnabled = false;
 
     @Deprecated
     public void setHelpContainers(List<ResourceContainer> helpfulContainers) {
@@ -184,7 +184,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     // fetch translation from disk
                     item.load(mSourceContainer, mTargetTranslation);
                     if(item.hasMergeConflicts) {
-                        setMergeConflict(true);
+                        showMergeConflictIcon(true, mMergeConflictFilterEnabled);
                     }
 
                     mItems.add(item);
@@ -289,7 +289,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         if (item != null) {
             boolean conflicted = item.hasMergeConflicts;
             if (conflicted) {
-                setMergeConflict(true);
+                showMergeConflictIcon(true, mMergeConflictFilterEnabled);
                 return VIEW_TYPE_CONFLICT;
             }
         }
@@ -454,6 +454,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // render title
         holder.mTargetTitle.setText(item.getTargetTitle());
 
+        showMergeConflictIcon(true, mMergeConflictFilterEnabled);
+
         MergeConflictHandler renderer = new MergeConflictHandler();
         int mergeConflictColor = mContext.getResources().getColor(CONFLICT_COLOR);
         renderer.renderMergeConflict(item.targetText, mergeConflictColor);
@@ -509,7 +511,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 applyNewCompiledText(selectedText.toString(), holder, item);
                 item.hasMergeConflicts = MergeConflictHandler.isMergeConflicted(selectedText.toString());
                 reOpenItem(item);
-                updateMergeConflict();
+                updateMergeConflict(mMergeConflictFilterEnabled);
                 notifyDataSetChanged();
             }
         });
@@ -2156,31 +2158,41 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     /**
      * show or hide the merge conflict icon
      * @param showMergeConflict
+     * @param mergeConflictFilterMode
      */
-    private void setMergeConflict(boolean showMergeConflict) {
-        if(showMergeConflict != mHaveMergeConflict) {
+    private void showMergeConflictIcon(final boolean showMergeConflict, final boolean mergeConflictFilterMode) {
+        if( (showMergeConflict != mHaveMergeConflict) || (mergeConflictFilterMode != mMergeConflictFilterEnabled) ) {
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {
                 @Override
                 public void run() {
-                    getListener().onEnableMergeConflict(mHaveMergeConflict);
+                    getListener().onEnableMergeConflict(showMergeConflict, mergeConflictFilterMode);
                 }
             });
         }
         mHaveMergeConflict = showMergeConflict;
+        mMergeConflictFilterEnabled = mHaveMergeConflict ? mergeConflictFilterMode : false;
     }
 
     /**
      * check all cards for merge conflicts to see if we should show warning
+     * @param mergeConflictFilterMode
      */
-    private void updateMergeConflict() {
+    private void updateMergeConflict(boolean mergeConflictFilterMode) {
         boolean mergeConflictFound = false;
         for (ListItem item : mItems) {
             if(item.hasMergeConflicts) {
                 mergeConflictFound = true;
             }
         }
-        setMergeConflict(mergeConflictFound);
+
+        boolean needToClearFilter = (mHaveMergeConflict && !mergeConflictFound);
+        showMergeConflictIcon(mergeConflictFound, mergeConflictFilterMode);
+        if(needToClearFilter) {
+            mHaveMergeConflict = false;
+            toggleMergeConflictFilter();
+            mMergeConflictFilterEnabled = false;
+        }
     }
 
     /**
@@ -2357,14 +2369,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     @Override
-    public void mergeConflictFilter() {
-        this.filterConstraint = mHaveMergeConflict ? "true" : null;
+    public void toggleMergeConflictFilter() {
+        this.filterConstraint = mHaveMergeConflict ? "true" : null; // will filter if string is not null
 
-        mMergeConflictFilterMode = !mMergeConflictFilterMode; // toggle filter mode
+        final boolean mergeConflictFilterEnabled = !mMergeConflictFilterEnabled; // toggle filter mode
 
-        if(!mHaveMergeConflict || !mMergeConflictFilterMode) {
+        if(!mHaveMergeConflict || !mergeConflictFilterEnabled) { // if no merge conflict or filter off, then remove filter
             mFilteredItems = mItems;
             mFilteredChapters = mChapters;
+            updateMergeConflict(mergeConflictFilterEnabled);
             return;
         }
 
@@ -2382,6 +2395,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             @Override
             public void onFinished(CharSequence constraint, List<ListItem> results) {
                 mFilteredItems = results;
+                updateMergeConflict(mergeConflictFilterEnabled);
                 triggerNotifyDataSetChanged();
                 getListener().onSearching(false);
             }

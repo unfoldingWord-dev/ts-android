@@ -181,7 +181,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             @Override
             public void onClick(View v) {
                 if(mFragment instanceof ViewModeFragment) {
-                    ((ViewModeFragment) mFragment).mergeConflictFilter();
+                    ((ViewModeFragment) mFragment).toggleMergeConflictFilter();
                 }
             }
         });
@@ -226,9 +226,15 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         restartAutoCommitTimer();
     }
 
-    public void onEnableMergeConflict(boolean showConflicted) {
+    @Override
+    public void onEnableMergeConflict(boolean showConflicted, boolean active) {
         if(mMergeConflict != null) {
             mMergeConflict.setVisibility(showConflicted ? View.VISIBLE : View.GONE);
+            if(active) {
+                mMergeConflict.setImageResource(R.drawable.ic_assignment_late_white_24dp);
+            } else {
+                mMergeConflict.setImageResource(R.drawable.ic_assignment_late_white_inactive_24dp);
+            }
         }
     }
 
