@@ -353,6 +353,16 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     /**
+     * Filters the adapter by merge conflicts
+     */
+    public final void mergeConflictFilter() {
+        if(getAdapter() != null) {
+            getAdapter().mergeConflictFilter();
+            getAdapter().triggerNotifyDataSetChanged();
+        }
+    }
+
+    /**
      * Filters the adapter by the constraint
      * @param constraint the search will be cleared if null or an empty string
      * @param subject the text to be searched

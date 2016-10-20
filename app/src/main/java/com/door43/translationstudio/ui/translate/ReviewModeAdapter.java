@@ -132,7 +132,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private boolean mMergeTailSelected = false;
     private float mInitialTextSize = 0;
     private int mMarginInitialLeft = 0;
-    private boolean mMergeConflictMode = false;
+    private boolean mHaveMergeConflict = false;
+    private boolean mMergeConflictFilterMode = false;
 
     @Deprecated
     public void setHelpContainers(List<ResourceContainer> helpfulContainers) {
@@ -178,7 +179,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     if (chapterSlug.equals(startingChapterSlug) && chunkSlug.equals(startingChunkSlug)) {
                         setListStartPosition(mItems.size());
                     }
-                    mItems.add(new ReviewListItem(chapterSlug, chunkSlug));
+                    ReviewListItem item = new ReviewListItem(chapterSlug, chunkSlug);
+
+                    // fetch translation from disk
+                    item.load(mSourceContainer, mTargetTranslation);
+                    if(item.hasMergeConflicts) {
+                        setMergeConflict(true);
+                    }
+
+                    mItems.add(item);
                 }
             }
         }
@@ -278,8 +287,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     public int getItemViewType(int position) {
         ListItem item = getItem(position);
         if (item != null) {
-            // fetch translation from disk
-            item.load(mSourceContainer, mTargetTranslation);
             boolean conflicted = item.hasMergeConflicts;
             if (conflicted) {
                 setMergeConflict(true);
@@ -315,9 +322,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         } else {
             holder.mMainContent.setWeightSum(1f);
         }
-
-        // fetch translation from disk
-        item.load(mSourceContainer, mTargetTranslation);
 
         ViewUtil.makeLinksClickable(holder.mSourceBody);
 
@@ -2154,16 +2158,16 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param showMergeConflict
      */
     private void setMergeConflict(boolean showMergeConflict) {
-        if(showMergeConflict != mMergeConflictMode) {
+        if(showMergeConflict != mHaveMergeConflict) {
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {
                 @Override
                 public void run() {
-                    getListener().onEnableMergeConflict(mMergeConflictMode);
+                    getListener().onEnableMergeConflict(mHaveMergeConflict);
                 }
             });
         }
-        mMergeConflictMode = showMergeConflict;
+        mHaveMergeConflict = showMergeConflict;
     }
 
     /**
@@ -2350,5 +2354,38 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     @Override
     public boolean hasFilter() {
         return true;
+    }
+
+    @Override
+    public void mergeConflictFilter() {
+        this.filterConstraint = mHaveMergeConflict ? "true" : null;
+
+        mMergeConflictFilterMode = !mMergeConflictFilterMode; // toggle filter mode
+
+        if(!mHaveMergeConflict || !mMergeConflictFilterMode) {
+            mFilteredItems = mItems;
+            mFilteredChapters = mChapters;
+            return;
+        }
+
+        // clear the cards displayed since we have new search string
+        mFilteredItems = new ArrayList<>();
+
+        getListener().onSearching(true);
+        MergeConflictFilter filter = new MergeConflictFilter(mSourceContainer, mTargetTranslation, mItems);
+        filter.setListener(new MergeConflictFilter.OnMatchListener() {
+            @Override
+            public void onMatch(ListItem item) {
+                if(!mFilteredChapters.contains(item.chapterSlug)) mFilteredChapters.add(item.chapterSlug);
+            }
+
+            @Override
+            public void onFinished(CharSequence constraint, List<ListItem> results) {
+                mFilteredItems = results;
+                triggerNotifyDataSetChanged();
+                getListener().onSearching(false);
+            }
+        });
+        filter.filter(this.filterConstraint);
     }
 }

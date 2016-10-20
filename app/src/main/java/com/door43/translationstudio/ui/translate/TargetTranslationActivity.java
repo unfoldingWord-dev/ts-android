@@ -87,6 +87,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private boolean mEnableGrids = false;
     private int mSeekbarMultiplier = 1; // allows for more granularity in setting position if cards are few
     private int mOldItemCount = 1; // so we can update the seekbar maximum when item count has changed
+    private ImageButton mMergeConflict;
 
 
     @Override
@@ -142,6 +143,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mReadButton = (ImageButton) findViewById(R.id.action_read);
         mChunkButton = (ImageButton) findViewById(R.id.action_chunk);
         mReviewButton = (ImageButton) findViewById(R.id.action_review);
+        mMergeConflict = (ImageButton) findViewById(R.id.warn_merge_conflict);
 
         setupSidebarModeIcons();
 
@@ -174,6 +176,15 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         // set up menu items
         mMoreButton = (ImageButton) findViewById(R.id.action_more);
         buildMenu();
+
+        mMergeConflict.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mFragment instanceof ViewModeFragment) {
+                    ((ViewModeFragment) mFragment).mergeConflictFilter();
+                }
+            }
+        });
 
         mReadButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -216,9 +227,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     public void onEnableMergeConflict(boolean showConflicted) {
-        ImageButton icon = (ImageButton) findViewById(R.id.warn_merge_conflict);
-        if(icon != null) {
-            icon.setVisibility(showConflicted ? View.VISIBLE : View.GONE);
+        if(mMergeConflict != null) {
+            mMergeConflict.setVisibility(showConflicted ? View.VISIBLE : View.GONE);
         }
     }
 

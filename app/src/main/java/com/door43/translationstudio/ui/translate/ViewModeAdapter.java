@@ -122,6 +122,13 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
     }
 
     /**
+     * Filters the adapter by merge conflicts
+     */
+    public void mergeConflictFilter() {
+        // Override this in your adapter to enable merge conflict filtering
+    }
+
+    /**
      * Checks if filtering is enabled for this adapter.
      * Override this to customize filtering.
      * @return
