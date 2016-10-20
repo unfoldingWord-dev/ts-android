@@ -172,5 +172,6 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
         void restartAutoCommitTimer();
         void onSearching(boolean enable);
         void onDataSetChanged(int count);
+        void onEnableMergeConflict(boolean showConflicted);
     }
 }

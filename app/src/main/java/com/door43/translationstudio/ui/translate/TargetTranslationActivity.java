@@ -215,6 +215,13 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         restartAutoCommitTimer();
     }
 
+    public void onEnableMergeConflict(boolean showConflicted) {
+        ImageButton icon = (ImageButton) findViewById(R.id.warn_merge_conflict);
+        if(icon != null) {
+            icon.setVisibility(showConflicted ? View.VISIBLE : View.GONE);
+        }
+    }
+
     private void setUpSeekBar() {
         if(mEnableGrids) {
             mGraduations = (ViewGroup) findViewById(R.id.action_seek_graduations);

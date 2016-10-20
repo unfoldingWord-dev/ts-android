@@ -132,6 +132,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private boolean mMergeTailSelected = false;
     private float mInitialTextSize = 0;
     private int mMarginInitialLeft = 0;
+    private boolean mMergeConflictMode = false;
 
     @Deprecated
     public void setHelpContainers(List<ResourceContainer> helpfulContainers) {
@@ -168,7 +169,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // TODO: there is also a map form of the toc.
         setListStartPosition(0);
 
-        if(mSourceContainer != null) {
+        if (mSourceContainer != null) {
             for (Map tocChapter : (List<Map>) mSourceContainer.toc) {
                 String chapterSlug = (String) tocChapter.get("chapter");
                 this.mChapters.add(chapterSlug);
@@ -199,12 +200,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private void loadTabInfo() {
         List<ContentValues> tabContents = new ArrayList<>();
         String[] sourceTranslationIds = App.getSelectedSourceTranslations(mTargetTranslation.getId());
-        for(String slug:sourceTranslationIds) {
+        for (String slug : sourceTranslationIds) {
             Translation st = mLibrary.index().getTranslation(slug);
-            if(st != null) {
+            if (st != null) {
                 ContentValues values = new ContentValues();
                 // include the resource id if there are more than one
-                if(mLibrary.index().getResources(st.language.slug, st.project.slug).size() > 1) {
+                if (mLibrary.index().getResources(st.language.slug, st.project.slug).size() > 1) {
                     values.put("title", st.language.name + " " + st.resource.slug.toUpperCase());
                 } else {
                     values.put("title", st.language.name);
@@ -222,7 +223,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         float openWeight = 1f;
         float closedWeight = 0.765f;
         ObjectAnimator anim;
-        if(mResourcesOpened) {
+        if (mResourcesOpened) {
             holder.mResourceLayout.setVisibility(View.VISIBLE);
             anim = ObjectAnimator.ofFloat(holder.mMainContent, "weightSum", openWeight, closedWeight);
         } else {
@@ -241,7 +242,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     @Override
     public String getFocusedChunkSlug(int position) {
-        if(position >= 0 && position < mFilteredItems.size()) {
+        if (position >= 0 && position < mFilteredItems.size()) {
             return mFilteredItems.get(position).chunkSlug;
         }
         return null;
@@ -249,7 +250,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     @Override
     public String getFocusedChapterSlug(int position) {
-        if(position >= 0 && position < mFilteredItems.size()) {
+        if (position >= 0 && position < mFilteredItems.size()) {
             return mFilteredItems.get(position).chapterSlug;
         }
         return null;
@@ -257,9 +258,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     @Override
     public int getItemPosition(String chapterId, String frameId) {
-        for(int i = 0; i < mFilteredItems.size(); i ++) {
+        for (int i = 0; i < mFilteredItems.size(); i++) {
             ReviewListItem item = (ReviewListItem) mFilteredItems.get(i);
-            if(item.isChunk() && item.chapterSlug.equals(chapterId) && item.chunkSlug.equals(frameId)) {
+            if (item.isChunk() && item.chapterSlug.equals(chapterId) && item.chunkSlug.equals(frameId)) {
                 return i;
             }
         }
@@ -267,7 +268,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     public ListItem getItem(int position) {
-        if(position >= 0 && position < mFilteredItems.size()) {
+        if (position >= 0 && position < mFilteredItems.size()) {
             return mFilteredItems.get(position);
         }
         return null;
@@ -275,12 +276,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     @Override
     public int getItemViewType(int position) {
-        ListItem item = getItem( position );
-        if(item != null) {
+        ListItem item = getItem(position);
+        if (item != null) {
             // fetch translation from disk
             item.load(mSourceContainer, mTargetTranslation);
             boolean conflicted = item.hasMergeConflicts;
-            if(conflicted) {
+            if (conflicted) {
+                setMergeConflict(true);
                 return VIEW_TYPE_CONFLICT;
             }
         }
@@ -302,13 +304,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         return vh;
     }
 
-     @Override
+    @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         holder.currentPosition = position;
         final ReviewListItem item = (ReviewListItem) mFilteredItems.get(position);
 
         // open/close resources
-        if(mResourcesOpened) {
+        if (mResourcesOpened) {
             holder.mMainContent.setWeightSum(.765f);
         } else {
             holder.mMainContent.setWeightSum(1f);
@@ -321,19 +323,19 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         // render the cards
         renderSourceCard(position, item, holder);
-         if(getItemViewType(position) == VIEW_TYPE_CONFLICT) {
-             renderConflictingTargetCard(position, item, holder);
-         } else {
-             renderTargetCard(position, item, holder);
-         }
+        if (getItemViewType(position) == VIEW_TYPE_CONFLICT) {
+            renderConflictingTargetCard(position, item, holder);
+        } else {
+            renderTargetCard(position, item, holder);
+        }
         renderResourceCard(position, item, holder);
 
         // set up fonts
-        if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
+        if (holder.mLayoutBuildNumber != mLayoutBuildNumber) {
             holder.mLayoutBuildNumber = mLayoutBuildNumber;
             Typography.format(mContext, TranslationType.SOURCE, holder.mSourceBody, mSourceContainer.language.slug, mSourceContainer.language.direction);
             Typography.formatSub(mContext, TranslationType.TARGET, holder.mTargetTitle, mTargetLanguage.slug, mTargetLanguage.direction);
-            if(!item.hasMergeConflicts) {
+            if (!item.hasMergeConflicts) {
                 Typography.format(mContext, TranslationType.TARGET, holder.mTargetBody, mTargetLanguage.slug, mTargetLanguage.direction);
                 Typography.format(mContext, TranslationType.TARGET, holder.mTargetEditableBody, mTargetLanguage.slug, mTargetLanguage.direction);
             } else {
@@ -347,6 +349,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     /**
      * Returns the preferred translation notes.
      * if none exist in the source language it will return the english version
+     *
      * @param frame
      * @return
      */
@@ -363,6 +366,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     /**
      * Returns the preferred translation words.
      * if none exist in the source language it will return the english version
+     *
      * @param sourceTranslation
      * @param frame
      * @return
@@ -380,6 +384,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     /**
      * Returns the preferred checking questions.
      * if none exist in the source language it will return the english version
+     *
      * @param sourceTranslation
      * @param chapterId
      * @param frameId
@@ -399,12 +404,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         ManagedTask oldTask = TaskManager.getTask(holder.currentSourceTaskId);
         TaskManager.cancelTask(oldTask);
         TaskManager.clearTask(oldTask);
-        if(item.renderedSourceText == null) {
+        if (item.renderedSourceText == null) {
             holder.mSourceBody.setText("");
             ManagedTask task = new ManagedTask() {
                 @Override
                 public void start() {
-                    if(interrupted()) return;
+                    if (interrupted()) return;
                     CharSequence text = renderSourceText(item.sourceText, TranslationFormat.parse(mSourceContainer.contentMimeType), holder, item, false);
                     setResult(text);
                 }
@@ -413,9 +418,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 @Override
                 public void onTaskFinished(ManagedTask task) {
                     TaskManager.clearTask(task);
-                    CharSequence data = (CharSequence)task.getResult();
+                    CharSequence data = (CharSequence) task.getResult();
                     item.renderedSourceText = data;
-                    if(!task.isCanceled() && data != null && position == holder.currentPosition) {
+                    if (!task.isCanceled() && data != null && position == holder.currentPosition) {
                         Handler hand = new Handler(Looper.getMainLooper());
                         hand.post(new Runnable() {
                             @Override
@@ -436,6 +441,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * Renders a target card that has merge conflicts
+     *
      * @param position
      * @param item
      * @param holder
@@ -450,7 +456,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         item.headText = renderer.getConflictPart(MergeConflictHandler.MERGE_HEAD_PART);
         item.tailText = renderer.getConflictPart(MergeConflictHandler.MERGE_TAIL_PART);
         item.isFullMergeConflict = renderer.isFullBlockMergeConflict();
-        if(item.isFullMergeConflict) { // if whole string is different, no need to highlight differing lines, so change to regular text color
+        if (item.isFullMergeConflict) { // if whole string is different, no need to highlight differing lines, so change to regular text color
             SpannableStringBuilder span = new SpannableStringBuilder(item.headText);
             span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_primary_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             item.headText = span;
@@ -463,7 +469,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         Typography.formatSub(mContext, TranslationType.SOURCE, holder.mHeadText, mSourceContainer.language.slug, mSourceContainer.language.direction);
         Typography.formatSub(mContext, TranslationType.SOURCE, holder.mTailText, mSourceContainer.language.slug, mSourceContainer.language.direction);
 
-        if(mInitialTextSize == 0) { // see if we need to initialize values
+        if (mInitialTextSize == 0) { // see if we need to initialize values
             mMarginInitialLeft = leftMargin(holder.mHeadText);
             mInitialTextSize = holder.mHeadText.getTextSize();
         }
@@ -499,6 +505,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 applyNewCompiledText(selectedText.toString(), holder, item);
                 item.hasMergeConflicts = MergeConflictHandler.isMergeConflicted(selectedText.toString());
                 reOpenItem(item);
+                updateMergeConflict();
                 notifyDataSetChanged();
             }
         });
@@ -523,18 +530,19 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * Renders a normal target card
+     *
      * @param position
      * @param item
      * @param holder
      */
     private void renderTargetCard(final int position, final ReviewListItem item, final ViewHolder holder) {
         // remove old text watcher
-        if(holder.mEditableTextWatcher != null) {
+        if (holder.mEditableTextWatcher != null) {
             holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
         }
 
         // insert rendered text
-        if(item.isEditing) {
+        if (item.isEditing) {
             // editing mode
             holder.mTargetEditableBody.setText(item.renderedTargetText);
         } else {
@@ -567,7 +575,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
                 // commit immediately if editing history
                 FileHistory history = item.getFileHistory(mTargetTranslation);
-                if(!history.isAtHead()) {
+                if (!history.isAtHead()) {
                     history.reset();
                     loadControls(holder, item);
                 }
@@ -580,15 +588,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         };
 
         // render target body
-        if(item.renderedTargetText == null) {
+        if (item.renderedTargetText == null) {
             holder.mTargetEditableBody.setText("");
             holder.mTargetBody.setText("");
             ManagedTask task = new ManagedTask() {
                 @Override
                 public void start() {
-                    if(interrupted()) return;
+                    if (interrupted()) return;
                     CharSequence text;
-                    if(item.isComplete || item.isEditing) {
+                    if (item.isComplete || item.isEditing) {
                         text = renderSourceText(item.targetText, item.translationFormat, holder, item, true);
                     } else {
                         text = renderTargetText(item.targetText, item.translationFormat, item.ft, holder, item);
@@ -600,14 +608,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 @Override
                 public void onTaskFinished(ManagedTask task) {
                     TaskManager.clearTask(task);
-                    CharSequence data = (CharSequence)task.getResult();
+                    CharSequence data = (CharSequence) task.getResult();
                     item.renderedTargetText = data;
-                    if(!task.isCanceled() && data != null && position == holder.currentPosition) {
+                    if (!task.isCanceled() && data != null && position == holder.currentPosition) {
                         Handler hand = new Handler(Looper.getMainLooper());
                         hand.post(new Runnable() {
                             @Override
                             public void run() {
-                                if(item.isEditing) {
+                                if (item.isEditing) {
                                     // edit mode
                                     holder.mTargetEditableBody.setText(item.renderedTargetText);
                                     holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
@@ -630,7 +638,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
             });
             holder.currentTargetTaskId = TaskManager.addTask(task);
-        } else if(item.isEditing) {
+        } else if (item.isEditing) {
             // editing mode
             holder.mTargetEditableBody.setText(item.renderedTargetText);
             holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
@@ -668,20 +676,20 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 item.isEditing = !item.isEditing;
                 loadControls(holder, item);
 
-                if(item.isEditing) {
+                if (item.isEditing) {
                     holder.mTargetEditableBody.requestFocus();
-                    InputMethodManager mgr = (InputMethodManager)mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    InputMethodManager mgr = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
                     mgr.showSoftInput(holder.mTargetEditableBody, InputMethodManager.SHOW_IMPLICIT);
 
                     // TRICKY: there may be changes to translation
-                     item.load(mSourceContainer, mTargetTranslation);
+                    item.load(mSourceContainer, mTargetTranslation);
 
                     // re-render for editing mode
                     item.renderedTargetText = renderSourceText(item.targetText, item.translationFormat, holder, item, true);
                     holder.mTargetEditableBody.setText(item.renderedTargetText);
                     holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
                 } else {
-                    if(holder.mEditableTextWatcher != null) {
+                    if (holder.mEditableTextWatcher != null) {
                         holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
                     }
                     holder.mTargetBody.requestFocus();
@@ -718,7 +726,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mDoneSwitch.setOnCheckedChangeListener(null);
 
         // display as finished
-        if(item.isComplete) {
+        if (item.isComplete) {
             holder.mEditButton.setVisibility(View.GONE);
             holder.mUndoButton.setVisibility(View.GONE);
             holder.mRedoButton.setVisibility(View.GONE);
@@ -741,16 +749,16 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     String newBody = Translator.compileTranslation(changes);
                     item.targetText = newBody;
 
-                    new AlertDialog.Builder(mContext,R.style.AppTheme_Dialog)
+                    new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
                             .setTitle(R.string.chunk_checklist_title)
                             .setMessage(Html.fromHtml(mContext.getString(R.string.chunk_checklist_body)))
                             .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                        boolean success = onConfirmChunk(item, item.chapterSlug, item.chunkSlug, mTargetTranslation.getFormat());
-                                        holder.mDoneSwitch.setChecked(success);
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            boolean success = onConfirmChunk(item, item.chapterSlug, item.chunkSlug, mTargetTranslation.getFormat());
+                                            holder.mDoneSwitch.setChecked(success);
+                                        }
                                     }
-                                }
                             )
                             .setNegativeButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
                                 @Override
@@ -769,6 +777,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * mark item as not done
+     *
      * @param item
      */
     private void reOpenItem(ListItem item) {
@@ -792,6 +801,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * get either the head or tail merge text with highlighting
+     *
      * @param text
      * @param getHead
      * @return
@@ -800,7 +810,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         MergeConflictHandler renderer = new MergeConflictHandler();
         int mergeConflictColor = mContext.getResources().getColor(CONFLICT_COLOR);
         renderer.renderMergeConflict(text, mergeConflictColor);
-        if(getHead) {
+        if (getHead) {
             return renderer.getConflictPart(MergeConflictHandler.MERGE_HEAD_PART);
         } else {
             return renderer.getConflictPart(MergeConflictHandler.MERGE_TAIL_PART);
@@ -809,6 +819,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * get the left margin for view
+     *
      * @param v
      * @return
      */
@@ -820,6 +831,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * set merge conflict selection state
+     *
      * @param selectHead
      * @param selectTail
      * @param holder
@@ -829,8 +841,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         mMergeHeadSelected = selectHead;
         mMergeTailSelected = selectTail;
 
-        if(mMergeHeadSelected || mMergeTailSelected) {
-            if(mMergeHeadSelected) {
+        if (mMergeHeadSelected || mMergeTailSelected) {
+            if (mMergeHeadSelected) {
                 displayMergeSelectionState(DisplayState.SELECTED, holder.mHeadText, item.headText);
                 displayMergeSelectionState(DisplayState.DESELECTED, holder.mTailText, formatDeselected(item, GET_TAIL));
                 holder.mConflictText.setVisibility(View.GONE);
@@ -851,7 +863,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     private CharSequence formatDeselected(ReviewListItem item, boolean getHead) {
-        if(item.isFullMergeConflict) { // gray out everyithing
+        if (item.isFullMergeConflict) { // gray out everyithing
             CharSequence text = getHead ? item.headText : item.tailText;
             SpannableStringBuilder span = new SpannableStringBuilder(text);
             span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_disabled_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -865,6 +877,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * display the selection state for card
+     *
      * @param state
      */
     private void displayMergeSelectionState(DisplayState state, TextView view, CharSequence text) {
@@ -873,7 +886,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         switch (state) {
             case SELECTED:
-                setLeftRightMargins( view, mMarginInitialLeft); // shrink margins to emphasize
+                setLeftRightMargins(view, mMarginInitialLeft); // shrink margins to emphasize
                 span = new SpannableStringBuilder(text);
                 // bold text to emphasize
                 view.setTextSize(TypedValue.COMPLEX_UNIT_SP, mInitialTextSize * 1.0f); // grow text to emphasize
@@ -882,7 +895,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 break;
 
             case DESELECTED:
-                setLeftRightMargins( view, 2 * mMarginInitialLeft); // grow margins to de-emphasize
+                setLeftRightMargins(view, 2 * mMarginInitialLeft); // grow margins to de-emphasize
                 // contents of text has already been grayed out to de-emphasize
                 view.setTextSize(TypedValue.COMPLEX_UNIT_SP, mInitialTextSize * 0.8f); // shrink text to de-emphasize
                 view.setText(text);
@@ -890,7 +903,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             case NORMAL:
             default:
-                setLeftRightMargins( view, mMarginInitialLeft); // restore original margins
+                setLeftRightMargins(view, mMarginInitialLeft); // restore original margins
                 view.setTextSize(TypedValue.COMPLEX_UNIT_SP, mInitialTextSize * 1.0f); // restore initial test size
                 view.setText(text); // remove text emphasis
                 break;
@@ -899,6 +912,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * change left and right margins to emphasize/de-emphasize
+     *
      * @param view
      * @param newValue
      */
@@ -911,11 +925,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * Sets the correct ui state for translation controls
+     *
      * @param holder
      * @param item
      */
     private void loadControls(final ViewHolder holder, ListItem item) {
-        if(item.isEditing) {
+        if (item.isEditing) {
             prepareUndoRedoUI(holder, item);
 
             boolean allowFootnote = mAllowFootnote && item.isChunk();
@@ -941,6 +956,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * check history to see if we should show undo/redo buttons
+     *
      * @param holder
      * @param item
      */
@@ -965,12 +981,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             @Override
             public void onPostExecute() {
-                if(history.hasNext()) {
+                if (history.hasNext()) {
                     holder.mRedoButton.setVisibility(View.VISIBLE);
                 } else {
                     holder.mRedoButton.setVisibility(View.GONE);
                 }
-                if(history.hasPrevious()) {
+                if (history.hasPrevious()) {
                     holder.mUndoButton.setVisibility(View.VISIBLE);
                 } else {
                     holder.mUndoButton.setVisibility(View.GONE);
@@ -982,6 +998,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * create a new footnote at selected position in target text.  Displays an edit dialog to enter footnote data.
+     *
      * @param holder
      * @param item
      */
@@ -997,19 +1014,20 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * edit contents of footnote at specified position
+     *
      * @param initialNote
      * @param holder
      * @param item
      * @param footnotePos
      * @param footnoteEndPos
      */
-    private void editFootnote(CharSequence initialNote, final ViewHolder holder, final ReviewListItem item, final int footnotePos, final int footnoteEndPos ) {
+    private void editFootnote(CharSequence initialNote, final ViewHolder holder, final ReviewListItem item, final int footnotePos, final int footnoteEndPos) {
         final EditText editText = getEditText(holder, item);
         final CharSequence original = editText.getText();
 
         LayoutInflater inflater = LayoutInflater.from(mContext);
         final View footnoteFragment = inflater.inflate(R.layout.fragment_footnote_prompt, null);
-        if(footnoteFragment != null) {
+        if (footnoteFragment != null) {
             final EditText footnoteText = (EditText) footnoteFragment.findViewById(R.id.footnote_text);
             if ((footnoteText != null)) {
                 footnoteText.setText(initialNote);
@@ -1022,7 +1040,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             public void onClick(DialogInterface dialog, int which) {
                                 CharSequence footnote = footnoteText.getText();
                                 boolean validated = verifyAndReplaceFootnote(footnote, original, footnotePos, footnoteEndPos, holder, item, editText);
-                                if(validated) {
+                                if (validated) {
                                     dialog.dismiss();
                                 }
                             }
@@ -1030,7 +1048,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         .setNegativeButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                               dialog.dismiss();
+                                dialog.dismiss();
                             }
                         })
                         .setView(footnoteFragment)
@@ -1042,7 +1060,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * insert footnote into EditText or remove footnote from EditText if both footnote and
-     *      footnoteTitleText are null
+     * footnoteTitleText are null
+     *
      * @param footnote
      * @param original
      * @param insertPos
@@ -1063,20 +1082,22 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * display warning dialog
+     *
      * @param titleID
      * @param messageID
      */
     private void warnDialog(int titleID, int messageID) {
         new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
-            .setTitle(titleID)
-            .setMessage(messageID)
-            .setPositiveButton(R.string.dismiss, null)
-            .show();
+                .setTitle(titleID)
+                .setMessage(messageID)
+                .setPositiveButton(R.string.dismiss, null)
+                .show();
     }
 
     /**
      * insert footnote into EditText or remove footnote from EditText if both footnote and
-     *      footnoteTitleText are null
+     * footnoteTitleText are null
+     *
      * @param footnote
      * @param original
      * @param start
@@ -1086,7 +1107,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      */
     private void placeFootnote(CharSequence footnote, CharSequence original, int start, final int end, final ViewHolder holder, final ReviewListItem item, EditText editText) {
         CharSequence footnotecode = "";
-        if(footnote != null) {
+        if (footnote != null) {
             // sanity checks
             if ((null == footnote) || (footnote.length() <= 0)) {
                 footnote = mContext.getResources().getString(R.string.footnote_label);
@@ -1109,7 +1130,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 //        }
 
         // generate spannable again adding
-        if(item.isComplete || item.isEditing) {
+        if (item.isComplete || item.isEditing) {
             item.renderedTargetText = renderSourceText(item.targetText, item.translationFormat, holder, (ReviewListItem) item, true);
         } else {
             item.renderedTargetText = renderTargetText(item.targetText, item.translationFormat, item.ft, holder, (ReviewListItem) item);
@@ -1120,15 +1141,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * save changed text to item,  first see if it needs to be compiled
-     * @param s A string or editable
+     *
+     * @param s      A string or editable
      * @param item
      * @param holder
-     * @param item
-     * * @return
+     * @param item   * @return
      */
     private String applyChangedText(CharSequence s, ViewHolder holder, ReviewListItem item) {
         String translation;
-        if(s instanceof Editable) {
+        if (s instanceof Editable) {
             translation = Translator.compileTranslation((Editable) s);
         } else {
             translation = s.toString();
@@ -1139,7 +1160,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     *  save new text to item
+     * save new text to item
+     *
      * @param translation
      * @param holder
      * @param item
@@ -1165,6 +1187,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * restore the text from previous commit for fragment
+     *
      * @param holder
      * @param item
      */
@@ -1175,6 +1198,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         final FileHistory history = item.getFileHistory(mTargetTranslation);
         ThreadableUI thread = new ThreadableUI(mContext) {
             RevCommit commit = null;
+
             @Override
             public void onStop() {
 
@@ -1183,8 +1207,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             @Override
             public void run() {
                 // commit changes before viewing history
-                if(history.isAtHead()) {
-                    if(!mTargetTranslation.isClean()) {
+                if (history.isAtHead()) {
+                    if (!mTargetTranslation.isClean()) {
                         try {
                             mTargetTranslation.commitSync();
                             history.loadCommits();
@@ -1200,7 +1224,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             @Override
             public void onPostExecute() {
                 try {
-                    if(commit != null) {
+                    if (commit != null) {
                         String text = history.read(commit);
                         // save and update ui
                         if (text != null) {
@@ -1212,7 +1236,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             item.hasMergeConflicts = MergeConflictHandler.isMergeConflicted(text);
                             notifyDataSetChanged();
 
-                            if(holder.mTargetEditableBody != null) {
+                            if (holder.mTargetEditableBody != null) {
                                 holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
                                 holder.mTargetEditableBody.setText(item.renderedTargetText);
                                 holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
@@ -1222,12 +1246,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                if(history.hasNext()) {
+                if (history.hasNext()) {
                     holder.mRedoButton.setVisibility(View.VISIBLE);
                 } else {
                     holder.mRedoButton.setVisibility(View.GONE);
                 }
-                if(history.hasPrevious()) {
+                if (history.hasPrevious()) {
                     holder.mUndoButton.setVisibility(View.VISIBLE);
                 } else {
                     holder.mUndoButton.setVisibility(View.GONE);
@@ -1239,6 +1263,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * restore the text from later commit for fragment
+     *
      * @param holder
      * @param item
      */
@@ -1249,6 +1274,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         final FileHistory history = item.getFileHistory(mTargetTranslation);
         ThreadableUI thread = new ThreadableUI(mContext) {
             RevCommit commit = null;
+
             @Override
             public void onStop() {
 
@@ -1262,7 +1288,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             @Override
             public void onPostExecute() {
                 try {
-                    if(commit != null) {
+                    if (commit != null) {
                         String text = history.read(commit);
                         // save and update ui
                         if (text != null) {
@@ -1274,7 +1300,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             item.hasMergeConflicts = MergeConflictHandler.isMergeConflicted(text);
                             notifyDataSetChanged();
 
-                            if(holder.mTargetEditableBody != null) {
+                            if (holder.mTargetEditableBody != null) {
                                 holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
                                 holder.mTargetEditableBody.setText(item.renderedTargetText);
                                 holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
@@ -1284,12 +1310,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                if(history.hasNext()) {
+                if (history.hasNext()) {
                     holder.mRedoButton.setVisibility(View.VISIBLE);
                 } else {
                     holder.mRedoButton.setVisibility(View.GONE);
                 }
-                if(history.hasPrevious()) {
+                if (history.hasPrevious()) {
                     holder.mUndoButton.setVisibility(View.VISIBLE);
                 } else {
                     holder.mUndoButton.setVisibility(View.GONE);
@@ -1313,6 +1339,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * Performs some validation, and commits changes if ready.
+     *
      * @return true if the section was successfully confirmed; otherwise false.
      */
     private boolean onConfirmChunk(final ReviewListItem item, final String chapter, final String frame, TranslationFormat format) {
@@ -1327,68 +1354,68 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
 
 //        if(frame != null) {
-            Matcher matcher;
-            int lowVerse = -1;
-            int highVerse = 999999999;
-            int[] range = Frame.getVerseRange(item.targetText, item.translationFormat);
-            if ((range != null) && (range.length > 0)) {
-                lowVerse = range[0];
-                highVerse = lowVerse;
-                if (range.length > 1) {
-                    highVerse = range[1];
-                }
+        Matcher matcher;
+        int lowVerse = -1;
+        int highVerse = 999999999;
+        int[] range = Frame.getVerseRange(item.targetText, item.translationFormat);
+        if ((range != null) && (range.length > 0)) {
+            lowVerse = range[0];
+            highVerse = lowVerse;
+            if (range.length > 1) {
+                highVerse = range[1];
             }
+        }
 
-            // Check for contiguous verse numbers.
-            if (success) {
-                if (format == TranslationFormat.USFM) {
-                    matcher = USFM_CONSECUTIVE_VERSE_MARKERS.matcher(item.targetText);
-                } else {
-                    matcher = CONSECUTIVE_VERSE_MARKERS.matcher(item.targetText);
-                }
-                if (matcher.find()) {
-                    Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.consecutive_verse_markers, Snackbar.LENGTH_LONG);
-                    ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
-                    snack.show();
-                    success = false;
-                }
+        // Check for contiguous verse numbers.
+        if (success) {
+            if (format == TranslationFormat.USFM) {
+                matcher = USFM_CONSECUTIVE_VERSE_MARKERS.matcher(item.targetText);
+            } else {
+                matcher = CONSECUTIVE_VERSE_MARKERS.matcher(item.targetText);
             }
+            if (matcher.find()) {
+                Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.consecutive_verse_markers, Snackbar.LENGTH_LONG);
+                ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
+                snack.show();
+                success = false;
+            }
+        }
 
-            // Check for out-of-order verse markers.
-            if (success) {
-                int error = 0;
-                if (format == TranslationFormat.USFM) {
-                    matcher = USFM_VERSE_MARKER.matcher(item.targetText);
-                } else {
-                    matcher = VERSE_MARKER.matcher(item.targetText);
-                }
-                int lastVerseSeen = 0;
-                while (matcher.find()) {
-                    int currentVerse = Integer.valueOf(matcher.group(1));
-                    if (currentVerse <= lastVerseSeen) {
-                        if (currentVerse == lastVerseSeen) {
-                            error = R.string.duplicate_verse_marker;
-                            success = false;
-                            break;
-                        } else {
-                            error = R.string.outoforder_verse_markers;
-                            success = false;
-                            break;
-                        }
-                    } else if ((currentVerse < lowVerse) || (currentVerse > highVerse)) {
-                        error = R.string.outofrange_verse_marker;
+        // Check for out-of-order verse markers.
+        if (success) {
+            int error = 0;
+            if (format == TranslationFormat.USFM) {
+                matcher = USFM_VERSE_MARKER.matcher(item.targetText);
+            } else {
+                matcher = VERSE_MARKER.matcher(item.targetText);
+            }
+            int lastVerseSeen = 0;
+            while (matcher.find()) {
+                int currentVerse = Integer.valueOf(matcher.group(1));
+                if (currentVerse <= lastVerseSeen) {
+                    if (currentVerse == lastVerseSeen) {
+                        error = R.string.duplicate_verse_marker;
                         success = false;
                         break;
                     } else {
-                        lastVerseSeen = currentVerse;
+                        error = R.string.outoforder_verse_markers;
+                        success = false;
+                        break;
                     }
-                }
-                if (!success) {
-                    Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), error, Snackbar.LENGTH_LONG);
-                    ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
-                    snack.show();
+                } else if ((currentVerse < lowVerse) || (currentVerse > highVerse)) {
+                    error = R.string.outofrange_verse_marker;
+                    success = false;
+                    break;
+                } else {
+                    lastVerseSeen = currentVerse;
                 }
             }
+            if (!success) {
+                Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), error, Snackbar.LENGTH_LONG);
+                ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
+                snack.show();
+            }
+        }
 //        }
 
         // Everything looks good so far. Try and commit.
@@ -1416,7 +1443,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             try {
                 mTargetTranslation.commit();
             } catch (Exception e) {
-                String frameComplexId =  ":" + item.chapterSlug + "-" + item.chunkSlug;
+                String frameComplexId = ":" + item.chapterSlug + "-" + item.chunkSlug;
                 Logger.e(TAG, "Failed to commit translation of " + mTargetTranslation.getId() + frameComplexId, e);
             }
             item.isEditing = false;
@@ -1430,12 +1457,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * Renders the source language tabs on the target card
+     *
      * @param holder
      */
     private void renderTabs(ViewHolder holder) {
         holder.mTranslationTabs.setOnTabSelectedListener(null);
         holder.mTranslationTabs.removeAllTabs();
-        for(ContentValues values:mTabs) {
+        for (ContentValues values : mTabs) {
             TabLayout.Tab tab = holder.mTranslationTabs.newTab();
             tab.setText(values.getAsString("title"));
             tab.setTag(values.getAsString("tag"));
@@ -1443,9 +1471,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
 
         // open selected tab
-        for(int i = 0; i < holder.mTranslationTabs.getTabCount(); i ++) {
+        for (int i = 0; i < holder.mTranslationTabs.getTabCount(); i++) {
             TabLayout.Tab tab = holder.mTranslationTabs.getTabAt(i);
-            if(tab.getTag().equals(mSourceContainer.slug)) {
+            if (tab.getTag().equals(mSourceContainer.slug)) {
                 tab.select();
                 break;
             }
@@ -1490,17 +1518,18 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * Returns the config options for a chunk
+     *
      * @param chapterSlug
      * @param chunkSlug
      * @return
      */
     private Map<String, List<String>> getChunkConfig(String chapterSlug, String chunkSlug) {
-        if(mSourceContainer != null) {
+        if (mSourceContainer != null) {
             Map config = null;
-            if(mSourceContainer.config == null || !mSourceContainer.config.containsKey("content") || !(mSourceContainer.config.get("content") instanceof Map)) {
+            if (mSourceContainer.config == null || !mSourceContainer.config.containsKey("content") || !(mSourceContainer.config.get("content") instanceof Map)) {
                 // default to english if no config is found
                 ResourceContainer rc = ContainerCache.cacheClosest(mLibrary, "en", mSourceContainer.project.slug, mSourceContainer.resource.slug);
-                if(rc != null) config = rc.config;
+                if (rc != null) config = rc.config;
             } else {
                 config = mSourceContainer.config;
             }
@@ -1521,21 +1550,22 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     private void renderResourceCard(final int position, final ReviewListItem item, final ViewHolder holder) {
         // clean up view
-        if(holder.mResourceList.getChildCount() > 0) {
+        if (holder.mResourceList.getChildCount() > 0) {
             holder.mResourceList.removeAllViews();
         }
         holder.mResourceTabs.setOnTabSelectedListener(null);
         holder.mResourceTabs.removeAllTabs();
 
         // skip if chapter title/reference
-        if(!item.isChunk()) {
+        if (!item.isChunk()) {
             return;
         }
 
 //        final String  frame = loadFrame(item.chapterSlug, item.chunkSlug);
 
         // clear resource card
-        renderResources(holder, position, new TranslationNote[0], new ArrayList<Link>(){}, new CheckingQuestion[0]);
+        renderResources(holder, position, new TranslationNote[0], new ArrayList<Link>() {
+        }, new CheckingQuestion[0]);
 
         // prepare task to load resources
         ManagedTask oldTask = TaskManager.getTask(holder.currentResourceTaskId);
@@ -1550,34 +1580,34 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 result.put("questions", new ArrayList<Link>());
                 result.put("notes", new ArrayList<Link>());
 
-                if(getListener() == null) return;
+                if (getListener() == null) return;
 
-                if(interrupted()) return;
+                if (interrupted()) return;
                 Map<String, List<String>> config = getChunkConfig(item.chapterSlug, item.chunkSlug);
 
-                if(config.containsKey("words")) {
+                if (config.containsKey("words")) {
                     List<Link> links = ContainerCache.cacheClosestFromLinks(mLibrary, config.get("words"));
                     Pattern titlePattern = Pattern.compile("#(.*)");
-                    for(Link link:links) {
+                    for (Link link : links) {
                         ResourceContainer rc = ContainerCache.cacheClosest(App.getLibrary(), link.language, link.project, link.resource);
                         // TODO: 10/12/16 the words need to have their title placed into a "title" file instead of being inline in the chunk
                         String word = rc.readChunk(link.chapter, "01");
                         Matcher match = titlePattern.matcher(word.trim());
-                        if(match.find()) {
+                        if (match.find()) {
                             link.title = match.group(1);
                         }
                     }
                     result.put("words", links);
                 }
 
-                if(interrupted()) return;
-                if(config.containsKey("questions")) {
+                if (interrupted()) return;
+                if (config.containsKey("questions")) {
                     List<Link> links = ContainerCache.cacheClosestFromLinks(mLibrary, config.get("questions"));
                     result.put("questions", links);
                 }
 
-                if(interrupted()) return;
-                if(config.containsKey("notes")) {
+                if (interrupted()) return;
+                if (config.containsKey("notes")) {
                     List<Link> links = ContainerCache.cacheClosestFromLinks(mLibrary, config.get("notes"));
                     result.put("notes", links);
                 }
@@ -1588,8 +1618,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
             @Override
             public void onTaskFinished(ManagedTask task) {
-                Map<String, Object> data = (Map<String, Object>)task.getResult();
-                if(!task.isCanceled() && data != null && position == holder.currentPosition) {
+                Map<String, Object> data = (Map<String, Object>) task.getResult();
+                if (!task.isCanceled() && data != null && position == holder.currentPosition) {
                     final TranslationNote[] notes = new TranslationNote[0];//data.get("notes");
                     final List<Link> words = (List<Link>) data.get("words");
                     final CheckingQuestion[] questions = new CheckingQuestion[0]; // data.get("questions");
@@ -1600,44 +1630,44 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         public void run() {
                             holder.mResourceTabs.setOnTabSelectedListener(null);
                             holder.mResourceTabs.removeAllTabs();
-                            if(notes.length > 0) {
+                            if (notes.length > 0) {
                                 TabLayout.Tab tab = holder.mResourceTabs.newTab();
                                 tab.setText(R.string.label_translation_notes);
                                 tab.setTag(TAB_NOTES);
                                 holder.mResourceTabs.addTab(tab);
-                                if(mOpenResourceTab[position] == TAB_NOTES) {
+                                if (mOpenResourceTab[position] == TAB_NOTES) {
                                     tab.select();
                                 }
                             }
-                            if(words.size() > 0) {
+                            if (words.size() > 0) {
                                 TabLayout.Tab tab = holder.mResourceTabs.newTab();
                                 tab.setText(R.string.translation_words);
                                 tab.setTag(TAB_WORDS);
                                 holder.mResourceTabs.addTab(tab);
-                                if(mOpenResourceTab[position] == TAB_WORDS) {
+                                if (mOpenResourceTab[position] == TAB_WORDS) {
                                     tab.select();
                                 }
                             }
-                            if(questions.length > 0) {
+                            if (questions.length > 0) {
                                 TabLayout.Tab tab = holder.mResourceTabs.newTab();
                                 tab.setText(R.string.questions);
                                 tab.setTag(TAB_QUESTIONS);
                                 holder.mResourceTabs.addTab(tab);
-                                if(mOpenResourceTab[position] == TAB_QUESTIONS) {
+                                if (mOpenResourceTab[position] == TAB_QUESTIONS) {
                                     tab.select();
                                 }
                             }
 
                             // select default tab. first notes, then words, then questions
-                            if(mOpenResourceTab[position] == TAB_NOTES && notes.length == 0) {
+                            if (mOpenResourceTab[position] == TAB_NOTES && notes.length == 0) {
                                 mOpenResourceTab[position] = TAB_WORDS;
                             }
-                            if(mOpenResourceTab[position] == TAB_WORDS && words.size() == 0) {
+                            if (mOpenResourceTab[position] == TAB_WORDS && words.size() == 0) {
                                 mOpenResourceTab[position] = TAB_QUESTIONS;
                             }
 
                             // resource list
-                            if(notes.length > 0 || words.size() > 0 || questions.length > 0) {
+                            if (notes.length > 0 || words.size() > 0 || questions.length > 0) {
                                 renderResources(holder, position, notes, words, questions);
                             }
 
@@ -1677,7 +1707,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.currentResourceTaskId = TaskManager.addTask(task);
 
         // tap to open resources
-        if(!mResourcesOpened) {
+        if (!mResourcesOpened) {
             holder.mResourceLayout.setVisibility(View.INVISIBLE);
             // TRICKY: we have to detect a single tap so that swipes do not trigger this
             final GestureDetector resourceCardDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
@@ -1702,6 +1732,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * Renders the resources card
+     *
      * @param holder
      * @param position
      * @param notes
@@ -1709,12 +1740,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param questions
      */
     private void renderResources(final ViewHolder holder, int position, TranslationNote[] notes, List<Link> words, CheckingQuestion[] questions) {
-        if(holder.mResourceList.getChildCount() > 0) {
+        if (holder.mResourceList.getChildCount() > 0) {
             holder.mResourceList.removeAllViews();
         }
-        if(mOpenResourceTab[position] == TAB_NOTES) {
+        if (mOpenResourceTab[position] == TAB_NOTES) {
             // render notes
-            for(final TranslationNote note:notes) {
+            for (final TranslationNote note : notes) {
                 TextView noteView = (TextView) mContext.getLayoutInflater().inflate(R.layout.fragment_resources_list_item, null);
                 noteView.setText(note.getTitle());
                 noteView.setOnClickListener(new View.OnClickListener() {
@@ -1728,9 +1759,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 Typography.formatSub(mContext, TranslationType.SOURCE, noteView, mSourceContainer.language.slug, mSourceContainer.language.direction);
                 holder.mResourceList.addView(noteView);
             }
-        } else if(mOpenResourceTab[position] == TAB_WORDS) {
+        } else if (mOpenResourceTab[position] == TAB_WORDS) {
             // render words
-            for(final Link word:words) {
+            for (final Link word : words) {
                 TextView wordView = (TextView) mContext.getLayoutInflater().inflate(R.layout.fragment_resources_list_item, null);
                 wordView.setText(word.title);
                 wordView.setOnClickListener(new View.OnClickListener() {
@@ -1745,9 +1776,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 Typography.formatSub(mContext, TranslationType.SOURCE, wordView, mSourceContainer.language.slug, mSourceContainer.language.direction);
                 holder.mResourceList.addView(wordView);
             }
-        } else if(mOpenResourceTab[position] == TAB_QUESTIONS) {
+        } else if (mOpenResourceTab[position] == TAB_QUESTIONS) {
             // render questions
-            for(final CheckingQuestion question:questions) {
+            for (final CheckingQuestion question : questions) {
                 TextView questionView = (TextView) mContext.getLayoutInflater().inflate(R.layout.fragment_resources_list_item, null);
                 questionView.setText(question.getQuestion());
                 questionView.setOnClickListener(new View.OnClickListener() {
@@ -1766,6 +1797,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * generate spannable for target text.  Will add click listener for notes and verses if they are supported
+     *
      * @param text
      * @param format
      * @param frameTranslation
@@ -1776,7 +1808,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private CharSequence renderTargetText(String text, TranslationFormat format, final FrameTranslation frameTranslation, final ViewHolder holder, final ReviewListItem item) {
         RenderingGroup renderingGroup = new RenderingGroup();
         boolean enableSearch = filterConstraint != null && filterSubject != null && filterSubject == TranslationFilter.FilterSubject.TARGET;
-        if(Clickables.isClickableFormat(format)) {
+        if (Clickables.isClickableFormat(format)) {
             Span.OnClickListener verseClickListener = new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
@@ -1793,9 +1825,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
                     // create drag shadow
                     LayoutInflater inflater = (LayoutInflater) App.context().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                    FrameLayout verseLayout = (FrameLayout)inflater.inflate(R.layout.fragment_verse_marker, null);
-                    TextView verseTitle = (TextView)verseLayout.findViewById(R.id.verse);
-                    if(pin.getEndVerseNumber() > 0) {
+                    FrameLayout verseLayout = (FrameLayout) inflater.inflate(R.layout.fragment_verse_marker, null);
+                    TextView verseTitle = (TextView) verseLayout.findViewById(R.id.verse);
+                    if (pin.getEndVerseNumber() > 0) {
                         verseTitle.setText(pin.getStartVerseNumber() + "-" + pin.getEndVerseNumber());
                     } else {
                         verseTitle.setText(pin.getStartVerseNumber() + "");
@@ -1811,27 +1843,28 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     );
                     view.setOnDragListener(new View.OnDragListener() {
                         private boolean hasEntered = false;
+
                         @Override
                         public boolean onDrag(View v, DragEvent event) {
                             EditText editText = ((EditText) view);
                             // TODO: highlight the drop site.
                             if (event.getAction() == DragEvent.ACTION_DRAG_STARTED) {
                                 // delete old span
-                                int[] spanRange = (int[])event.getLocalState();
-                                if((spanRange != null) && (spanRange.length >= 2) ) {
+                                int[] spanRange = (int[]) event.getLocalState();
+                                if ((spanRange != null) && (spanRange.length >= 2)) {
                                     CharSequence in = editText.getText();
-                                    if( (spanRange[0] < in.length()) && spanRange[1] < in.length()) {
+                                    if ((spanRange[0] < in.length()) && spanRange[1] < in.length()) {
                                         CharSequence out = TextUtils.concat(in.subSequence(0, spanRange[0]), in.subSequence(spanRange[1], in.length()));
                                         editText.setText(out);
                                     }
                                 }
-                            } else if(event.getAction() == DragEvent.ACTION_DROP) {
+                            } else if (event.getAction() == DragEvent.ACTION_DROP) {
                                 int offset = editText.getOffsetForPosition(event.getX(), event.getY());
                                 CharSequence text = editText.getText();
 
                                 offset = closestSpotForVerseMarker(offset, text);
 
-                                if(offset >= 0) {
+                                if (offset >= 0) {
                                     // insert the verse at the offset
                                     text = TextUtils.concat(text.subSequence(0, offset), pin.toCharSequence(), text.subSequence(offset, text.length()));
                                 } else {
@@ -1840,36 +1873,36 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                 }
                                 item.renderedTargetText = text;
                                 editText.setText(text);
-                                String translation = Translator.compileTranslation((Editable)editText.getText());
+                                String translation = Translator.compileTranslation((Editable) editText.getText());
                                 mTargetTranslation.applyFrameTranslation(frameTranslation, translation);
 
                                 // Reload, so that targetText and other data are kept in sync.
                                 item.load(mSourceContainer, mTargetTranslation);
-                            } else if(event.getAction() == DragEvent.ACTION_DRAG_ENDED) {
+                            } else if (event.getAction() == DragEvent.ACTION_DRAG_ENDED) {
                                 view.setOnDragListener(null);
                                 editText.setSelection(editText.getSelectionEnd());
                                 // reset verse if dragged off the view
                                 // TODO: 10/5/2015 perhaps we should confirm with the user?
-                                if(!hasEntered) {
+                                if (!hasEntered) {
                                     // place the verse back at the beginning
                                     CharSequence text = editText.getText();
                                     text = TextUtils.concat(pin.toCharSequence(), text);
                                     item.renderedTargetText = text;
                                     editText.setText(text);
-                                    String translation = Translator.compileTranslation((Editable)editText.getText());
+                                    String translation = Translator.compileTranslation((Editable) editText.getText());
                                     mTargetTranslation.applyFrameTranslation(frameTranslation, translation);
 
                                     // Reload, so that targetText and other data are kept in sync.
                                     item.load(mSourceContainer, mTargetTranslation);
                                 }
-                            } else if(event.getAction() == DragEvent.ACTION_DRAG_ENTERED) {
+                            } else if (event.getAction() == DragEvent.ACTION_DRAG_ENTERED) {
                                 hasEntered = true;
-                            } else if(event.getAction() == DragEvent.ACTION_DRAG_EXITED) {
+                            } else if (event.getAction() == DragEvent.ACTION_DRAG_EXITED) {
                                 hasEntered = false;
                                 editText.setSelection(editText.getSelectionEnd());
-                            } else if(event.getAction() == DragEvent.ACTION_DRAG_LOCATION) {
+                            } else if (event.getAction() == DragEvent.ACTION_DRAG_LOCATION) {
                                 int offset = editText.getOffsetForPosition(event.getX(), event.getY());
-                                if(offset >= 0) {
+                                if (offset >= 0) {
                                     Selection.setSelection(editText.getText(), offset);
                                 } else {
                                     editText.setSelection(editText.getSelectionEnd());
@@ -1898,18 +1931,18 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             ClickableRenderingEngine renderer = Clickables.setupRenderingGroup(format, renderingGroup, verseClickListener, noteClickListener, true);
             renderer.setLinebreaksEnabled(true);
             renderer.setPopulateVerseMarkers(Frame.getVerseRange(item.sourceText, item.translationFormat));
-            if(enableSearch) {
+            if (enableSearch) {
                 renderingGroup.setSearchString(filterConstraint, HIGHLIGHT_COLOR);
             }
 
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
-            if(enableSearch) {
+            if (enableSearch) {
                 renderingGroup.setSearchString(filterConstraint, HIGHLIGHT_COLOR);
             }
         }
-        if(!text.trim().isEmpty()) {
+        if (!text.trim().isEmpty()) {
             renderingGroup.init(text);
             return renderingGroup.start();
         } else {
@@ -1919,8 +1952,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * find closest place to drop verse marker.  Weighted toward beginning of word.
+     *
      * @param offset - initial drop position
-     * @param text - edit text
+     * @param text   - edit text
      * @return
      */
     private int closestSpotForVerseMarker(int offset, CharSequence text) {
@@ -1928,10 +1962,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         for (int j = offset; j >= 0; j--) {
             char c = text.charAt(j);
             boolean whitespace = isWhitespace(c);
-            if(whitespace) {
+            if (whitespace) {
 
-                if((j == offset) ||  // if this is already a good spot, then done
-                    (j == offset - 1)) {
+                if ((j == offset) ||  // if this is already a good spot, then done
+                        (j == offset - 1)) {
                     return offset;
                 }
 
@@ -1941,20 +1975,20 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
 
         int limit = offset - charsToWhiteSpace - 1;
-        if(limit > text.length()) {
+        if (limit > text.length()) {
             limit = text.length();
         }
 
         for (int j = offset + 1; j < limit; j++) {
             char c = text.charAt(j);
             boolean whitespace = isWhitespace(c);
-            if(whitespace) {
+            if (whitespace) {
                 charsToWhiteSpace = j - offset;
                 break;
             }
         }
 
-        if(charsToWhiteSpace != 0) {
+        if (charsToWhiteSpace != 0) {
             offset += charsToWhiteSpace;
         }
         return offset;
@@ -1962,16 +1996,18 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * test if character is whitespace
+     *
      * @param c
      * @return
      */
     private boolean isWhitespace(char c) {
-        return (c ==' ') || (c == '\t') || (c == '\n') || (c == '\r');
+        return (c == ' ') || (c == '\t') || (c == '\n') || (c == '\r');
     }
 
     /**
      * display selected footnote in dialog.  If editable, then it adds options to delete and edit
-     *      the footnote
+     * the footnote
+     *
      * @param holder
      * @param item
      * @param span
@@ -1980,12 +2016,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private void showFootnote(final ViewHolder holder, final ReviewListItem item, final NoteSpan span, final int start, final int end, boolean editable) {
         CharSequence marker = span.getPassage();
         CharSequence title = mContext.getResources().getText(R.string.title_note);
-        if(!marker.toString().isEmpty()) {
+        if (!marker.toString().isEmpty()) {
             title = title + ": " + marker;
         }
         CharSequence message = span.getNotes();
 
-        if(editable && !item.isComplete) {
+        if (editable && !item.isComplete) {
 
             new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
                     .setTitle(title)
@@ -2018,13 +2054,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * prompt to confirm removal of specific footnote at position
+     *
      * @param note
      * @param holder
      * @param item
      * @param start
      * @param end
      */
-    private void deleteFootnote(CharSequence note, final ViewHolder holder, final ReviewListItem item, final int start, final int end ) {
+    private void deleteFootnote(CharSequence note, final ViewHolder holder, final ReviewListItem item, final int start, final int end) {
         final EditText editText = getEditText(holder, item);
         final CharSequence original = editText.getText();
 
@@ -2043,6 +2080,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * get appropriate edit text - it is different when editing versus viewing
+     *
      * @param holder
      * @param item
      * @return
@@ -2057,6 +2095,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * generate spannable for source text.  Will add click listener for notes if supported
+     *
      * @param text
      * @param format
      * @param holder
@@ -2072,7 +2111,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             Span.OnClickListener noteClickListener = new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
-                    if(span instanceof NoteSpan) {
+                    if (span instanceof NoteSpan) {
                         showFootnote(holder, item, (NoteSpan) span, start, end, editable);
                     }
                 }
@@ -2084,20 +2123,20 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             };
 
             Clickables.setupRenderingGroup(format, renderingGroup, null, noteClickListener, false);
-            if(editable) {
-                if(!item.isComplete) {
+            if (editable) {
+                if (!item.isComplete) {
                     renderingGroup.setVersesEnabled(false);
                 }
                 renderingGroup.setLinebreaksEnabled(true);
             }
 
-            if( enableSearch ) {
+            if (enableSearch) {
                 renderingGroup.setSearchString(filterConstraint, HIGHLIGHT_COLOR);
             }
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
-            if( enableSearch ) {
+            if (enableSearch) {
                 renderingGroup.setSearchString(filterConstraint, HIGHLIGHT_COLOR);
             }
         }
@@ -2108,6 +2147,36 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     @Override
     public int getItemCount() {
         return mFilteredItems.size();
+    }
+
+    /**
+     * show or hide the merge conflict icon
+     * @param showMergeConflict
+     */
+    private void setMergeConflict(boolean showMergeConflict) {
+        if(showMergeConflict != mMergeConflictMode) {
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    getListener().onEnableMergeConflict(mMergeConflictMode);
+                }
+            });
+        }
+        mMergeConflictMode = showMergeConflict;
+    }
+
+    /**
+     * check all cards for merge conflicts to see if we should show warning
+     */
+    private void updateMergeConflict() {
+        boolean mergeConflictFound = false;
+        for (ListItem item : mItems) {
+            if(item.hasMergeConflicts) {
+                mergeConflictFound = true;
+            }
+        }
+        setMergeConflict(mergeConflictFound);
     }
 
     /**
@@ -2245,7 +2314,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public ReviewListItem(String chapterSlug, String chunkSlug) {
             super(chapterSlug, chunkSlug);
         }
-
     }
 
     @Override
