@@ -1050,8 +1050,8 @@ public class ImportUsfm {
                 return false;
             }
         } else { // save stuff before first chapter
-            String chapter0 = "00"; // chapter "00" folder contains title
-            success = saveSection(".", "before", text);
+            String chapter0 = "00"; // chapter "00" folder contains stuff that applies to the whole book, like title
+            success = saveSection("front", "intro", text);
             successOverall = successOverall && success;
             success = saveSection(chapter0, "title", mBookName);
             successOverall = successOverall && success;
