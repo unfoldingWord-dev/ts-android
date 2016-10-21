@@ -56,6 +56,7 @@ import com.door43.translationstudio.core.FileHistory;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.TranslationType;
+import com.door43.translationstudio.tasks.CheckForMergeConflictsTask;
 import com.door43.widget.LinedEditText;
 import com.door43.translationstudio.core.TranslationNote;
 import com.door43.translationstudio.core.TargetTranslation;
@@ -75,6 +76,7 @@ import com.door43.translationstudio.ui.spannables.USFMVerseSpan;
 import com.door43.translationstudio.ui.spannables.VerseSpan;
 
 import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 import org.unfoldingword.tools.taskmanager.ThreadableUI;
 import com.door43.widget.ViewUtil;
@@ -95,7 +97,7 @@ import org.unfoldingword.door43client.models.TargetLanguage;
 /**
  * Created by joel on 9/18/2015.
  */
-public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHolder> {
+public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHolder> implements SimpleTaskWatcher.OnFinishedListener {
     private static final String TAG = ReviewModeAdapter.class.getSimpleName();
 
     private static final int TAB_NOTES = 0;
@@ -134,6 +136,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private int mMarginInitialLeft = 0;
     private boolean mHaveMergeConflict = false;
     private boolean mMergeConflictFilterEnabled = false;
+    private SimpleTaskWatcher taskWatcher;
 
     @Deprecated
     public void setHelpContainers(List<ResourceContainer> helpfulContainers) {
@@ -158,6 +161,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         mAllowFootnote = mTargetTranslation.getFormat() == TranslationFormat.USFM;
         mTargetLanguage = App.languageFromTargetTranslation(mTargetTranslation);
         mResourcesOpened = openResources;
+
+        this.taskWatcher = new SimpleTaskWatcher(mContext, R.string.loading);
+        this.taskWatcher.setOnFinishedListener(this);
     }
 
     @Override
@@ -179,15 +185,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     if (chapterSlug.equals(startingChapterSlug) && chunkSlug.equals(startingChunkSlug)) {
                         setListStartPosition(mItems.size());
                     }
-                    ReviewListItem item = new ReviewListItem(chapterSlug, chunkSlug);
-
-                    // fetch translation from disk
-                    item.load(mSourceContainer, mTargetTranslation);
-                    if(item.hasMergeConflicts) {
-                        showMergeConflictIcon(true, mMergeConflictFilterEnabled);
-                    }
-
-                    mItems.add(item);
+                    mItems.add(new ReviewListItem(chapterSlug, chunkSlug));
                 }
             }
         }
@@ -201,6 +199,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         filter(filterConstraint, filterSubject);
 
         triggerNotifyDataSetChanged();
+        updateMergeConflict();
     }
 
     /**
@@ -287,6 +286,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     public int getItemViewType(int position) {
         ListItem item = getItem( position );
         if(item != null) {
+            // fetch translation from disk
+            item.load(mSourceContainer, mTargetTranslation);
             boolean conflicted = item.hasMergeConflicts;
             if(conflicted) {
                 showMergeConflictIcon(true, mMergeConflictFilterEnabled);
@@ -322,6 +323,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         } else {
             holder.mMainContent.setWeightSum(1f);
         }
+
+        // fetch translation from disk
+        item.load(mSourceContainer, mTargetTranslation);
 
         ViewUtil.makeLinksClickable(holder.mSourceBody);
 
@@ -507,7 +511,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 applyNewCompiledText(selectedText.toString(), holder, item);
                 item.hasMergeConflicts = MergeConflictHandler.isMergeConflicted(selectedText.toString());
                 reOpenItem(item);
-                updateMergeConflict(mMergeConflictFilterEnabled);
+                updateMergeConflict();
                 notifyDataSetChanged();
             }
         });
@@ -1220,6 +1224,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             App.closeKeyboard(mContext);
                             item.hasMergeConflicts = MergeConflictHandler.isMergeConflicted(text);
                             notifyDataSetChanged();
+                            updateMergeConflict();
 
                             if(holder.mTargetEditableBody != null) {
                                 holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
@@ -1282,6 +1287,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             App.closeKeyboard(mContext);
                             item.hasMergeConflicts = MergeConflictHandler.isMergeConflicted(text);
                             notifyDataSetChanged();
+                            updateMergeConflict();
 
                             if(holder.mTargetEditableBody != null) {
                                 holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
@@ -2139,27 +2145,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     * check all cards for merge conflicts to see if we should show warning
-     * @param mergeConflictFilterMode
-     */
-    private void updateMergeConflict(boolean mergeConflictFilterMode) {
-        boolean mergeConflictFound = false;
-        for (ListItem item : mItems) {
-            if(item.hasMergeConflicts) {
-                mergeConflictFound = true;
-            }
-        }
-
-        boolean needToClearFilter = (mHaveMergeConflict && !mergeConflictFound);
-        showMergeConflictIcon(mergeConflictFound, mergeConflictFilterMode);
-        if(needToClearFilter) {
-            mHaveMergeConflict = false;
-            toggleMergeConflictFilter();
-            mMergeConflictFilterEnabled = false;
-        }
-    }
-
-    /**
      * opens the resources view
      */
     public void openResources() {
@@ -2342,9 +2327,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         if(!mHaveMergeConflict || !mergeConflictFilterEnabled) { // if no merge conflict or filter off, then remove filter
             mFilteredItems = mItems;
             mFilteredChapters = mChapters;
-            updateMergeConflict(mergeConflictFilterEnabled);
+            showMergeConflictIcon(mHaveMergeConflict, false);
+            updateMergeConflict();
+            triggerNotifyDataSetChanged();
             return;
         }
+
+        showMergeConflictIcon(mHaveMergeConflict, true);
 
         // clear the cards displayed since we have new search string
         mFilteredItems = new ArrayList<>();
@@ -2360,11 +2349,40 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             @Override
             public void onFinished(CharSequence constraint, List<ListItem> results) {
                 mFilteredItems = results;
-                updateMergeConflict(mergeConflictFilterEnabled);
+                updateMergeConflict();
                 triggerNotifyDataSetChanged();
                 getListener().onSearching(false);
             }
         });
         filter.filter(this.filterConstraint);
+    }
+
+    /**
+     * check all cards for merge conflicts to see if we should show warning.  Runs as background task.
+     */
+    private void updateMergeConflict() {
+        if((mItems != null) && (mItems.size() > 0) ) {  // make sure initialized
+            CheckForMergeConflictsTask task = new CheckForMergeConflictsTask(mItems, mSourceContainer, mTargetTranslation);
+            taskWatcher.watch(task);
+            TaskManager.addTask(task, CheckForMergeConflictsTask.TASK_ID);
+        }
+    }
+
+    @Override
+    public void onFinished(ManagedTask task) {
+        taskWatcher.stop();
+        TaskManager.clearTask(task);
+
+        if (task instanceof CheckForMergeConflictsTask) {
+            CheckForMergeConflictsTask mergeConflictsTask = (CheckForMergeConflictsTask) task;
+
+            boolean mergeConflictFound = mergeConflictsTask.hasMergeConflict();
+            boolean needToClearFilter = (mHaveMergeConflict && !mergeConflictFound);
+            showMergeConflictIcon(mergeConflictFound, mMergeConflictFilterEnabled);
+            if (needToClearFilter) {
+                toggleMergeConflictFilter();
+                mMergeConflictFilterEnabled = false;
+            }
+        }
     }
 }
