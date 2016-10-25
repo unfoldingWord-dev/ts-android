@@ -45,23 +45,10 @@ public class MergeConflictFilter extends Filter {
             if(bEmpty){
                 results.values = items;
                 results.count = items.size();
-                // reset the rendered text to clear filter highlights
-                for(ListItem item:items) {
-                    item.renderedSourceText = null;
-                    item.renderedTargetText = null;
-                }
             } else {
                 for(ListItem item:items) {
-                    item.renderedSourceText = null;
-                    item.renderedTargetText = null;
-
-                    // load text
-                    item.load(sourceContainer, targetTranslation);
-
-                    // match
+                   // match
                     boolean match = item.hasMergeConflicts;
-
-                    // record matches
                     if(match) {
                         filteredItems.add(item);
                         if(listener != null) listener.onMatch(item);

@@ -222,7 +222,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             mSearchString = savedInstanceState.getString(STATE_SEARCH_TEXT, null);
             mHaveMergeConflict = savedInstanceState.getBoolean(STATE_HAVE_MERGE_CONFLICT, false);
             mMergeConflictFilterEnabled = savedInstanceState.getBoolean(STATE_MERGE_CONFLICT_FILTER_ENABLED, false);
-            setMergeConflictFilter(mMergeConflictFilterEnabled); //restore merge filter
         }
 
         setSearchBarVisibility(mSearchEnabled);
@@ -723,6 +722,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         super.onResume();
         notifyDatasetChanged();
         buildMenu();
+        setMergeConflictFilter(mMergeConflictFilterEnabled); // restore last state
     }
 
     public void closeKeyboard() {

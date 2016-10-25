@@ -56,6 +56,7 @@ import com.door43.translationstudio.core.FileHistory;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.TranslationType;
+import com.door43.translationstudio.tasks.CalculateTargetTranslationProgressTask;
 import com.door43.translationstudio.tasks.CheckForMergeConflictsTask;
 import com.door43.widget.LinedEditText;
 import com.door43.translationstudio.core.TranslationNote;
@@ -76,7 +77,6 @@ import com.door43.translationstudio.ui.spannables.USFMVerseSpan;
 import com.door43.translationstudio.ui.spannables.VerseSpan;
 
 import org.unfoldingword.tools.taskmanager.ManagedTask;
-import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 import org.unfoldingword.tools.taskmanager.ThreadableUI;
 import com.door43.widget.ViewUtil;
@@ -97,7 +97,7 @@ import org.unfoldingword.door43client.models.TargetLanguage;
 /**
  * Created by joel on 9/18/2015.
  */
-public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHolder> implements SimpleTaskWatcher.OnFinishedListener {
+public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHolder> implements ManagedTask.OnFinishedListener {
     private static final String TAG = ReviewModeAdapter.class.getSimpleName();
 
     private static final int TAB_NOTES = 0;
@@ -134,7 +134,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private boolean mMergeTailSelected = false;
     private float mInitialTextSize = 0;
     private int mMarginInitialLeft = 0;
-    private SimpleTaskWatcher taskWatcher;
     private boolean mHaveMergeConflict = false;
     private boolean mMergeConflictFilterEnabled = false;
     private boolean mMergeConflictFilterOn = false;
@@ -162,9 +161,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         mAllowFootnote = mTargetTranslation.getFormat() == TranslationFormat.USFM;
         mTargetLanguage = App.languageFromTargetTranslation(mTargetTranslation);
         mResourcesOpened = openResources;
-
-        this.taskWatcher = new SimpleTaskWatcher(mContext, R.string.loading);
-        this.taskWatcher.setOnFinishedListener(this);
     }
 
     @Override
@@ -2337,13 +2333,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         mMergeConflictFilterOn = true;
 
-        this.filterConstraint = enableFilter ? "true" : null; // will filter if string is not null
+        CharSequence filterConstraint = enableFilter ? "true" : null; // will filter if string is not null
         showMergeConflictIcon(mHaveMergeConflict, true);
 
         // clear the cards displayed since we have new search string
         mFilteredItems = new ArrayList<>();
 
-        getListener().onSearching(true);
         MergeConflictFilter filter = new MergeConflictFilter(mSourceContainer, mTargetTranslation, mItems);
         filter.setListener(new MergeConflictFilter.OnMatchListener() {
             @Override
@@ -2358,7 +2353,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 triggerNotifyDataSetChanged();
             }
         });
-        filter.filter(this.filterConstraint);
+        filter.filter(filterConstraint);
     }
 
     /**
@@ -2367,14 +2362,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private void updateMergeConflict() {
         if((mItems != null) && (mItems.size() > 0) ) {  // make sure initialized
             CheckForMergeConflictsTask task = new CheckForMergeConflictsTask(mItems, mSourceContainer, mTargetTranslation);
-            taskWatcher.watch(task);
+            task.addOnFinishedListener(this);
             TaskManager.addTask(task, CheckForMergeConflictsTask.TASK_ID);
         }
     }
 
     @Override
-    public void onFinished(ManagedTask task) {
-        taskWatcher.stop();
+    public void onTaskFinished(ManagedTask task) {
         TaskManager.clearTask(task);
 
         if (task instanceof CheckForMergeConflictsTask) {
@@ -2382,13 +2376,16 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             final boolean mergeConflictFound = mergeConflictsTask.hasMergeConflict();
             boolean doMergeFiltering = mergeConflictFound && mMergeConflictFilterEnabled;
-            final boolean needToUpdateFilter = doMergeFiltering != mMergeConflictFilterOn;
+            boolean conflictCountChanged = mergeConflictsTask.getConflictCount() != mFilteredItems.size();
+            boolean needToUpdateFilter = (doMergeFiltering != mMergeConflictFilterOn) || conflictCountChanged;
+
             Handler hand = new Handler(Looper.getMainLooper());
+            final boolean finalNeedToUpdateFilter = needToUpdateFilter;
             hand.post(new Runnable() {
                 @Override
                 public void run() {
                     showMergeConflictIcon(mergeConflictFound, mMergeConflictFilterEnabled);
-                    if (needToUpdateFilter) {
+                    if (finalNeedToUpdateFilter) {
                         setMergeConflictFilter(mMergeConflictFilterEnabled);
                     }
                 }
