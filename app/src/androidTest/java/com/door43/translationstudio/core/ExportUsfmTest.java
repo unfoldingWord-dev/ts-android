@@ -41,7 +41,13 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         Logger.flush();
         mTestContext = getInstrumentation().getContext();
         mAppContext = App.context();
+        if(!App.isLibraryDeployed()) {
+            App.deployDefaultLibrary();
+        }
         mTargetLanguage = mLibrary.index().getTargetLanguage("aae");
+        if(App.getProfile() == null) { // make sure this is initialized
+            App.setProfile(new Profile("testing"));
+        }
     }
 
     @Override
@@ -238,7 +244,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
            if (chapterInInt > 1) {
                 // verify verses in last chapter
                 String inputChapter = usfmInputText.substring(lastInputChapterStart, inputMatcher.start());
-                String outputChapter = FileUtilities.readFileToString(usfmFiles[chapterInInt-2]);
+                String outputChapter = FileUtilities.readFileToString(usfmFiles[chapterInInt-1]);
                 verifyBookID(usfmInputText, outputChapter);
                 compareVersesInChapter(chapterInInt-1, inputChapter, outputChapter);
             }
@@ -246,11 +252,11 @@ public class ExportUsfmTest extends InstrumentationTestCase {
             lastInputChapterStart = inputMatcher.end();
         }
 
-        assertTrue("chapter count should equal last chapter", usfmFiles.length == chapterInInt);
+        assertTrue("chapter count should equal last chapter + 1", usfmFiles.length == chapterInInt + 1);
 
         // verify verses in last chapter
         String inputChapter = usfmInputText.substring(lastInputChapterStart);
-        String outputChapter = FileUtilities.readFileToString(usfmFiles[chapterInInt-1]);
+        String outputChapter = FileUtilities.readFileToString(usfmFiles[chapterInInt]);
         verifyBookID(usfmInputText, outputChapter);
         compareVersesInChapter(chapterInInt, inputChapter, outputChapter);
     }
@@ -326,7 +332,9 @@ public class ExportUsfmTest extends InstrumentationTestCase {
             verseIn = inputVerseMatcher.group(1); // verse number in input
             if (outputVerseMatcher.find()) {
                 String verseOut = outputVerseMatcher.group(1); // verse number in output
-                assertEquals("in chapter '" + chapter + "' verse input should match verse output", verseIn, verseOut);
+                if(!verseIn.equals(verseOut)) {
+                    assertEquals("in chapter '" + chapter + "' verse input should match verse output", verseIn, verseOut);
+                }
             } else {
                 fail("verse '" + verseIn + "' missing in output");
             }
@@ -376,7 +384,9 @@ public class ExportUsfmTest extends InstrumentationTestCase {
             return;
         }
 
-        assertEquals("In chapter '" + chapterNum + "' verse '" + verseIn + "' verse content should match", input, output);
+        if(!input.equals(output)) {
+            assertEquals("In chapter '" + chapterNum + "' verse '" + verseIn + "' verse content should match", input, output);
+        }
     }
 
     public static final String CHAPTER_LABEL_MARKER = "\\\\cl\\s([^\\n]*)";
@@ -426,6 +436,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
     private void importTestTranslation(String source) throws IOException {
         //import USFM file to be used for testing
         mUsfm = new ImportUsfm(mAppContext, mTargetLanguage);
+        assertNotNull("mTargetLanguage", mTargetLanguage);
         boolean success = mUsfm.readResourceFile(mTestContext, "usfm/" + source);
         assertTrue("import usfm test file should succeed", success);
         File[] imports = mUsfm.getImportProjects();
