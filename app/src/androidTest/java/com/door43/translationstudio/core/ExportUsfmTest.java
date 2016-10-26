@@ -288,8 +288,10 @@ public class ExportUsfmTest extends InstrumentationTestCase {
 
             if (outputMatcher.find()) {
                 String chapterOut = outputMatcher.group(1); // chapter number in output
-                int chapterOutInt = Integer.valueOf(chapterOut);
-                assertEquals("chapter input should match chapter output", chapterInInt, chapterOutInt);
+                int chapterOutInt = Integer.parseInt(chapterOut);
+                if(chapterInInt != chapterOutInt) {
+                    assertEquals("chapter input should match chapter output", chapterInInt, chapterOutInt);
+                }
             } else {
                 fail("chapter '" + chapterIn + "' missing in output");
             }

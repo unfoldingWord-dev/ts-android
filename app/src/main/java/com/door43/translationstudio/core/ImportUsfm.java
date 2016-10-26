@@ -925,6 +925,10 @@ public class ImportUsfm {
                 break;
             }
 
+            if(mCurrentChapter <= 0) { // skip till we get to chapter 1
+                continue;
+            }
+
             int expectedChapter = mLastChapter + 1;
             if(mCurrentChapter != expectedChapter) { // if out of order
                 if (mCurrentChapter > expectedChapter) { // if gap

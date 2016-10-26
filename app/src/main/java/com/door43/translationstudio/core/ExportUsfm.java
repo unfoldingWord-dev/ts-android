@@ -3,6 +3,7 @@ package com.door43.translationstudio.core;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
@@ -14,6 +15,10 @@ import org.unfoldingword.tools.logger.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 
 import org.unfoldingword.resourcecontainer.Project;
 
@@ -215,22 +220,52 @@ public class ExportUsfm {
                 ps.println(shortBookID);
             }
 
+            // frames
+            ArrayList<FrameTranslation> frameList = new ArrayList<FrameTranslation>(Arrays.asList(frames));
+            Collections.sort(frameList, new Comparator<FrameTranslation>() {
+                @Override
+                public int compare(FrameTranslation lhs, FrameTranslation rhs) {
+                    String lhId = lhs.getId();
+                    String rhId = rhs.getId();
+                    return lhId.compareToIgnoreCase(rhId);
+                }
+            });
+
+            boolean haveFrame0 = false;
+            int startChunk = 0;
+            if(frameList.size() > 0) {
+                FrameTranslation frame = frameList.get(0);
+                int verseID = strToInt(frame.getId(),0);
+                haveFrame0 = (verseID == 0);
+                if(haveFrame0) {
+                    String text = frame.body;
+
+                    // text
+                    ps.println("\\s5"); // section marker
+                    ps.print(text);
+
+                    startChunk++;
+                }
+           }
+
+            int chapterInt = strToInt(chapter.getId(),0);
+            if(!haveFrame0 && (chapterInt != 0)) {
+                String chapterNumber = "\\c " + chapter.getId();
+                ps.println(chapterNumber);
+            }
+
             if((chapter.title != null) && (!chapter.title.isEmpty())) {
                 String chapterTitle = "\\cl " + chapter.title;
                 ps.println(chapterTitle);
             }
 
-            String chapterNumber = "\\c " + chapter.getId();
-            ps.println(chapterNumber);
-
-            if( (chapter.reference != null) && (!chapter.title.isEmpty())) {
+            if( (chapter.reference != null) && (!chapter.reference.isEmpty())) {
                 String chapterRef = "\\cd " + chapter.reference;
                 ps.println(chapterRef);
             }
 
-            // frames
-            for(FrameTranslation frame:frames) {
-
+            for (int i = startChunk; i < frameList.size(); i++) {
+                FrameTranslation frame = frameList.get(i);
                 String text = frame.body;
 
                 // text
@@ -263,6 +298,22 @@ public class ExportUsfm {
         }
         FileUtilities.deleteQuietly(tempDir);
         return destFile;
+    }
+
+    /**
+     * do string to integer with default value on conversion error
+     * @param value
+     * @param defaultValue
+     * @return
+     */
+    public static int strToInt(String value, int defaultValue) {
+        try {
+            int retValue = Integer.parseInt(value);
+            return retValue;
+        } catch (Exception e) {
+            Log.d(TAG, "Cannot convert to int: " + value);
+        }
+        return defaultValue;
     }
 
     public interface OnResultsListener {
