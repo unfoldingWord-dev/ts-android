@@ -151,7 +151,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     private void showTargetTranslationConflict(final TargetTranslation sourceTargetTranslation, final TargetTranslation existingTranslation) {
         mDialogShown = DialogShown.RENAME_CONFLICT;
         mNewTargetTranslationId = existingTranslation.getId();
-        Project project = App.getLibrary().index().getProject(existingTranslation.getProjectId(), App.getDeviceLanguageCode());
+        Project project = App.getLibrary().index().getProject(App.getDeviceLanguageCode(), existingTranslation.getProjectId());
         String message = String.format(getResources().getString(R.string.warn_existing_target_translation), project.name, existingTranslation.getTargetLanguageName());
 
         new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
