@@ -157,7 +157,7 @@ public abstract class ListItem {
             if (this.sourceText == null) {
                 this.sourceText = sourceContainer.readChunk(chapterSlug, chunkSlug);
             }
-            this.translationFormat = TranslationFormat.parse(sourceContainer.contentMimeType);
+            this.translationFormat = targetTranslation.getFormat();
             // TODO: 10/1/16 this will be simplified once we migrate target translations to resource containers
             if (chapterSlug.equals("front")) {
                 // project stuff

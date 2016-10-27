@@ -222,12 +222,14 @@ public class ExportUsfm {
 
             // frames
             ArrayList<FrameTranslation> frameList = new ArrayList<FrameTranslation>(Arrays.asList(frames));
-            Collections.sort(frameList, new Comparator<FrameTranslation>() {
+            Collections.sort(frameList, new Comparator<FrameTranslation>() { // do numeric sort
                 @Override
                 public int compare(FrameTranslation lhs, FrameTranslation rhs) {
                     String lhId = lhs.getId();
                     String rhId = rhs.getId();
-                    return lhId.compareToIgnoreCase(rhId);
+                    Integer lhInt = strToInt(lhId,-1);
+                    Integer rhInt = strToInt(rhId,-1);
+                    return lhInt.compareTo(rhInt);
                 }
             });
 
@@ -239,11 +241,7 @@ public class ExportUsfm {
                 haveFrame0 = (verseID == 0);
                 if(haveFrame0) {
                     String text = frame.body;
-
-                    // text
-                    ps.println("\\s5"); // section marker
                     ps.print(text);
-
                     startChunk++;
                 }
            }
