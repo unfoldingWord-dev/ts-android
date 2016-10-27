@@ -1,5 +1,6 @@
 package com.door43.translationstudio.ui.home;
 
+import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -42,6 +43,7 @@ import java.util.List;
 public class TargetTranslationInfoDialog extends DialogFragment {
 
     public static final String ARG_TARGET_TRANSLATION_ID = "arg_target_translation_id";
+    public static final int CHANGE_TARGET_TRANSLATION_LANGUAGE = 2;
     private TargetTranslation mTargetTranslation;
     private Translator mTranslator;
     private OnDeleteListener mListener;
@@ -158,8 +160,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
                 Intent intent = new Intent(getActivity(), NewTargetTranslationActivity.class);
                 intent.putExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
                 intent.putExtra(NewTargetTranslationActivity.EXTRA_CHANGE_TARGET_LANGUAGE_ONLY, true);
-                startActivity(intent);
-                dismiss();
+                startActivityForResult(intent, CHANGE_TARGET_TRANSLATION_LANGUAGE);
             }
         });
 
@@ -296,5 +297,23 @@ public class TargetTranslationInfoDialog extends DialogFragment {
             return listString;
         }
         return null;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (CHANGE_TARGET_TRANSLATION_LANGUAGE == requestCode) {
+            if(NewTargetTranslationActivity.RESULT_MERGE_CONFLICT == resultCode ) {
+                String targetTranslationID = data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID);
+                if(targetTranslationID != null) {
+                    Activity activity = getActivity();
+                    if(activity instanceof HomeActivity) {
+                        ((HomeActivity) activity).doManualMerge(targetTranslationID);
+                    }
+                }
+            }
+
+            dismiss();
+        }
     }
 }

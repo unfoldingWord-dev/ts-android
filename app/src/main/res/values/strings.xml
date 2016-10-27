@@ -892,4 +892,8 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="upload_failed_label">Upload Failed!</string>
     <string name="upload_feedback_failed">Upload of feedback failed</string>
     <string name="upload_crash_report_failed">Upload of crash report failed</string>
+    <string name="warn_existing_target_translation_label">Target Translation Already Present</string>
+    <string name="warn_existing_target_translation">You are already translating <xliff:g example="Genesis" id="project">%1$s</xliff:g> into <xliff:g example="English" id="target_language">%2$s</xliff:g>.  Do you want to merge projects?</string>
+    <string name="rename_canceled">Rename cancelled</string>
+    <string name="merge">Merge</string>
 </resources>

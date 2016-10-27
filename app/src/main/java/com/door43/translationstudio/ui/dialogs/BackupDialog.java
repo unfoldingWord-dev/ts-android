@@ -618,7 +618,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         mDialogShown = eDialogShown.MERGE_CONFLICT;
 
         String projectID = targetTranslation.getProjectId();
-        Project project = App.getLibrary().index().getProject(projectID, targetTranslation.getTargetLanguageName());
+        Project project = App.getLibrary().index().getProject(targetTranslation.getTargetLanguage().slug, projectID);
         if(project == null) {
             Logger.e(TAG, "invalid project id:" + projectID);
             return;
