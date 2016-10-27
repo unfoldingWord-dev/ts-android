@@ -405,7 +405,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 @Override
                 public void start() {
                     if(interrupted()) return;
-                    CharSequence text = renderSourceText(item.sourceText, TranslationFormat.parse(mSourceContainer.contentMimeType), holder, item, false);
+                    CharSequence text = renderSourceText(item.sourceText, item.sourceTranslationFormat, holder, item, false);
                     setResult(text);
                 }
             };
@@ -589,9 +589,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     if(interrupted()) return;
                     CharSequence text;
                     if(item.isComplete || item.isEditing) {
-                        text = renderSourceText(item.targetText, item.translationFormat, holder, item, true);
+                        text = renderSourceText(item.targetText, item.targetTranslationFormat, holder, item, true);
                     } else {
-                        text = renderTargetText(item.targetText, item.translationFormat, item.ft, holder, item);
+                        text = renderTargetText(item.targetText, item.targetTranslationFormat, item.ft, holder, item);
                     }
                     setResult(text);
                 }
@@ -677,7 +677,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                      item.load(mSourceContainer, mTargetTranslation);
 
                     // re-render for editing mode
-                    item.renderedTargetText = renderSourceText(item.targetText, item.translationFormat, holder, item, true);
+                    item.renderedTargetText = renderSourceText(item.targetText, item.targetTranslationFormat, holder, item, true);
                     holder.mTargetEditableBody.setText(item.renderedTargetText);
                     holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
                 } else {
@@ -691,7 +691,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     item.load(mSourceContainer, mTargetTranslation);
 
                     // re-render for verse mode
-                    item.renderedTargetText = renderTargetText(item.targetText, item.translationFormat, item.ft, holder, item);
+                    item.renderedTargetText = renderTargetText(item.targetText, item.targetTranslationFormat, item.ft, holder, item);
                     holder.mTargetBody.setText(item.renderedTargetText);
                 }
                 return true;
@@ -1110,9 +1110,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         // generate spannable again adding
         if(item.isComplete || item.isEditing) {
-            item.renderedTargetText = renderSourceText(item.targetText, item.translationFormat, holder, (ReviewListItem) item, true);
+            item.renderedTargetText = renderSourceText(item.targetText, item.targetTranslationFormat, holder, (ReviewListItem) item, true);
         } else {
-            item.renderedTargetText = renderTargetText(item.targetText, item.translationFormat, item.ft, holder, (ReviewListItem) item);
+            item.renderedTargetText = renderTargetText(item.targetText, item.targetTranslationFormat, item.ft, holder, (ReviewListItem) item);
         }
         editText.setText(item.renderedTargetText);
         editText.setSelection(editText.length(), editText.length());
@@ -1160,7 +1160,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             mTargetTranslation.applyFrameTranslation(item.ft, translation);
         }
 
-        item.renderedTargetText = renderSourceText(translation, item.translationFormat, holder, (ReviewListItem) item, true);
+        item.renderedTargetText = renderSourceText(translation, item.targetTranslationFormat, holder, (ReviewListItem) item, true);
     }
 
     /**
@@ -1330,7 +1330,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             Matcher matcher;
             int lowVerse = -1;
             int highVerse = 999999999;
-            int[] range = Frame.getVerseRange(item.targetText, item.translationFormat);
+            int[] range = Frame.getVerseRange(item.targetText, item.targetTranslationFormat);
             if ((range != null) && (range.length > 0)) {
                 lowVerse = range[0];
                 highVerse = lowVerse;
@@ -1897,7 +1897,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             ClickableRenderingEngine renderer = Clickables.setupRenderingGroup(format, renderingGroup, verseClickListener, noteClickListener, true);
             renderer.setLinebreaksEnabled(true);
-            renderer.setPopulateVerseMarkers(Frame.getVerseRange(item.sourceText, item.translationFormat));
+            renderer.setPopulateVerseMarkers(Frame.getVerseRange(item.sourceText, item.targetTranslationFormat));
             if(enableSearch) {
                 renderingGroup.setSearchString(filterConstraint, HIGHLIGHT_COLOR);
             }
