@@ -225,10 +225,8 @@ public class ExportUsfm {
             Collections.sort(frameList, new Comparator<FrameTranslation>() { // do numeric sort
                 @Override
                 public int compare(FrameTranslation lhs, FrameTranslation rhs) {
-                    String lhId = lhs.getId();
-                    String rhId = rhs.getId();
-                    Integer lhInt = strToInt(lhId,-1);
-                    Integer rhInt = strToInt(rhId,-1);
+                    Integer lhInt = getChunkOrder(lhs.getId());
+                    Integer rhInt = getChunkOrder(rhs.getId());
                     return lhInt.compareTo(rhInt);
                 }
             });
@@ -296,6 +294,18 @@ public class ExportUsfm {
         }
         FileUtilities.deleteQuietly(tempDir);
         return destFile;
+    }
+
+    /**
+     *
+     * @param chunkID
+     * @return
+     */
+    private static Integer getChunkOrder(String chunkID) {
+        if("00".equals(chunkID)) { // special treatment for chunk 00 to move to end of list
+            return 9999999;
+        }
+        return strToInt(chunkID, -1);
     }
 
     /**
