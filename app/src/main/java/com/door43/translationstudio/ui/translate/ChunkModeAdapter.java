@@ -477,14 +477,14 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         // render source text
         if(item.renderedSourceText == null) {
             boolean enableSearch = filterConstraint != null && filterSubject != null && filterSubject == TranslationFilter.FilterSubject.SOURCE;
-            item.renderedSourceText = renderText(item.sourceText, item.translationFormat, enableSearch);
+            item.renderedSourceText = renderText(item.sourceText, item.sourceTranslationFormat, enableSearch);
         }
         holder.mSourceBody.setText(item.renderedSourceText);
 
         // render target text
         if(item.renderedTargetText == null) {
             boolean enableSearch = filterConstraint != null && filterSubject != null && filterSubject == TranslationFilter.FilterSubject.TARGET;
-            item.renderedTargetText = renderText(item.targetText, item.translationFormat, enableSearch);
+            item.renderedTargetText = renderText(item.targetText, item.targetTranslationFormat, enableSearch);
         }
         if(holder.mTextWatcher != null) holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
         holder.mTargetBody.setText(TextUtils.concat(item.renderedTargetText, "\n"));
@@ -500,7 +500,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             if(title.isEmpty()) {
                 title = mSourceContainer.project.name.trim() + " " + Integer.parseInt(item.chapterSlug);
             }
-            String verseSpan = Frame.parseVerseTitle(item.sourceText, item.translationFormat);
+            String verseSpan = Frame.parseVerseTitle(item.sourceText, item.sourceTranslationFormat);
             if(verseSpan.isEmpty()) {
                 title += ":" + Integer.parseInt(item.chunkSlug);
             } else {
@@ -536,11 +536,11 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                 } else if(item.isChapterReference()) {
                     mTargetTranslation.applyChapterReferenceTranslation(mTargetTranslation.getChapterTranslation(item.chapterSlug), translation);
                 } else {
-                    mTargetTranslation.applyFrameTranslation(mTargetTranslation.getFrameTranslation(item.chapterSlug, item.chunkSlug, item.translationFormat), translation);
+                    mTargetTranslation.applyFrameTranslation(mTargetTranslation.getFrameTranslation(item.chapterSlug, item.chunkSlug, item.targetTranslationFormat), translation);
                 }
 
                 boolean enableSearch = filterConstraint != null && filterSubject != null && filterSubject == TranslationFilter.FilterSubject.TARGET;
-                item.renderedTargetText = renderText(translation, item.translationFormat, enableSearch);
+                item.renderedTargetText = renderText(translation, item.targetTranslationFormat, enableSearch);
             }
 
             @Override

@@ -218,8 +218,15 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             mFragment.setArguments(getIntent().getExtras());
             getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
 
-            // load list after fragment created
-            ((TargetTranslationListFragment) mFragment).reloadList();
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    // delay to load list after fragment initializes
+                    ((TargetTranslationListFragment) mFragment).reloadList();
+                }
+            });
+
         } else if(numTranslations == 0 && mFragment instanceof TargetTranslationListFragment) {
             // display welcome screen
             mFragment = new WelcomeFragment();

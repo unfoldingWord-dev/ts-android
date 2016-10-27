@@ -11,11 +11,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.ChunkMarker;
 import org.unfoldingword.tools.logger.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,6 +38,8 @@ public class ImportUsfmTest extends InstrumentationTestCase {
     private Context mTestContext;
     private Context mAppContext;
     private Door43Client mLibrary;
+    private HashMap<String, List<String>> mChunks;
+    private String[] mChapters;
 
     @Override
     public void setUp() throws Exception {
@@ -428,6 +435,45 @@ public class ImportUsfmTest extends InstrumentationTestCase {
         assertTrue(filename + " should be missing name ", found);
     }
 
+    /**
+     * parse chunk markers (contains verses and chapters) into map of verses indexed by chapter
+     *
+     * @param chunks
+     * @return
+     */
+    public boolean parseChunks(List<ChunkMarker> chunks) {
+        mChunks = new HashMap<>(); // clear old map
+        try {
+            for (ChunkMarker chunkMarker : chunks) {
+
+                String chapter = chunkMarker.chapter;
+                String firstVerse = chunkMarker.verse;
+
+                List<String> verses = null;
+                if (mChunks.containsKey(chapter)) {
+                    verses = mChunks.get(chapter);
+                } else {
+                    verses = new ArrayList<>();
+                    mChunks.put(chapter, verses);
+                }
+
+                verses.add(firstVerse);
+            }
+
+            //extract chapters
+            List<String> foundChapters = new ArrayList<>();
+            for (String chapter : mChunks.keySet()) {
+                foundChapters.add(chapter);
+            }
+            Collections.sort(foundChapters);
+            mChapters = foundChapters.toArray(new String[foundChapters.size()]);;
+
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
+
     public void verifyBookResults(String[] results, String filename, String book, boolean noErrorsExpected, boolean noEmptyChunks, boolean success, boolean exactVerseCount) {
         String bookLine = filename;
         if(!book.isEmpty()) {
@@ -467,25 +513,28 @@ public class ImportUsfmTest extends InstrumentationTestCase {
 
         // verify chapters and verses
         if(success  && !book.isEmpty()) {
-            SourceTranslation sourceTranslation = null;//mLibrary.getSourceTranslation(book.toLowerCase(), "en", "ulb");
             File[] projects = mUsfm.getImportProjects();
             if(success) {
                 assertTrue("Import Projects count should be greater than zero, but is " + projects.length, projects.length > 0);
             }
-            for (File project : projects) {
-                String[] chapters = null;//mLibrary.getChapters(sourceTranslation);
-                for (String chapter : chapters) {
+
+             for (File project : projects) {
+
+                List<ChunkMarker> chunks = App.getLibrary().index().getChunkMarkers(book, "en-US");
+                parseChunks(chunks);
+
+                for (String chapter : mChapters) {
                     // verify chapter
                     File chapterPath = new File(project, chapter);
                     assertTrue("Chapter missing " + chapterPath.toString(), chapterPath.exists());
 
                     // verify chunks
-                    String[] chapterFrameSlugs = null;//mLibrary.getFrameSlugs(sourceTranslation, chapter.getId());
-                    for (int i = 0; i < chapterFrameSlugs.length; i++) {
-                        String chapterFrameSlug = chapterFrameSlugs[i];
+                    List<String> chapterFrameSlugs = mChunks.get(chapter);
+                    for (int i = 0; i < chapterFrameSlugs.size(); i++) {
+                        String chapterFrameSlug = chapterFrameSlugs.get(i);
                         int expectCount = -1;
-                        if(i + 1 < chapterFrameSlugs.length) {
-                            String nextSlug = chapterFrameSlugs[i+1];
+                        if(i + 1 < chapterFrameSlugs.size()) {
+                            String nextSlug = chapterFrameSlugs.get(i+1);
                             int nextStart = Integer.valueOf(nextSlug);
                             if(nextStart > 0) {
                                 expectCount = nextStart - Integer.valueOf(chapterFrameSlug);

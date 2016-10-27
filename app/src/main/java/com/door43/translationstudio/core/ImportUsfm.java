@@ -5,9 +5,9 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
 import android.text.TextUtils;
+import android.util.Log;
 
 import org.unfoldingword.door43client.models.TargetLanguage;
-import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
@@ -24,6 +24,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -64,7 +66,7 @@ public class ImportUsfm {
     private String mChapter;
     private int mLastChapter;
     private List<File> mSourceFiles; // raw list of files found in expanded package
-    private HashMap<String, JSONArray> mChunks;
+    private HashMap<String, List<String>> mChunks;
 
     private List<File> mImportProjects; // files that seem to be actual books.
     private List<String> mErrors;
@@ -81,7 +83,7 @@ public class ImportUsfm {
     private int mChaperCount;
     private List<MissingNameItem> mBooksMissingNames;
     private boolean mCancel = false;
-    private String[] mChapters;
+    private List<String> mChapters;
 
     /**
      * constructor
@@ -655,48 +657,67 @@ public class ImportUsfm {
     }
 
     /**
-     * add chunk markers (contains verses and chapters) to map by chapter
+     * parse chunk markers (contains verses and chapters) into map of verses indexed by chapter
      *
      * @param book
      * @param chunks
      * @return
      */
-    public boolean addChunks(String book, ChunkMarker[] chunks, SourceTranslation sourceTranslation) {
-        try {
+    public boolean parseChunks(String book, List<ChunkMarker> chunks) {
+        mChunks = new HashMap<>(); // clear old map
+        mChapters = new ArrayList<>();
+        if(chunks != null) {
             for (ChunkMarker chunkMarker : chunks) {
-
                 String chapter = chunkMarker.chapter;
                 String firstVerse = chunkMarker.verse;
 
-                JSONArray verses = null;
+                List<String> verses = null;
                 if (mChunks.containsKey(chapter)) {
                     verses = mChunks.get(chapter);
                 } else {
-                    verses = new JSONArray();
+                    verses = new ArrayList<>();
                     mChunks.put(chapter, verses);
                 }
 
-                JSONObject chunk = new JSONObject();
-                chunk.put(FIRST_VERSE, firstVerse);
-//                chunk.put(FILE_NAME, firstverse); // default to the same, later cleanup
-                verses.put(chunk);
+                verses.add(firstVerse);
             }
 
-            for (int i = 1; i <= mChapters.length; i++) { // get file names for chunks
-                String chapterId = getChapterFolderName(i + "");
-                String[] chapterFrameSlugs = new String[0]; //App.getLibrary().getFrameSlugs(sourceTranslation, chapterId);
-                JSONArray verseBreaks = getVerseBreaksObj(i + "");
-                for (int j = 0; j < verseBreaks.length(); j++) {
-                    JSONObject chunk = verseBreaks.getJSONObject(j);
-                    chunk.put(FILE_NAME, chapterFrameSlugs[j]);
+            //extract chapters
+            List<String> foundChapters = new ArrayList<>();
+            for (String chapter : mChunks.keySet()) {
+                if(strToInt(chapter, 0) > 0) {
+                    foundChapters.add(chapter);
                 }
             }
-
-        } catch (Exception e) {
-            Logger.e(TAG, "error parsing chunks " + book, e);
-            return false;
+            Collections.sort(foundChapters, new Comparator<String>() { // do numeric sort
+                @Override
+                public int compare(String lhs, String rhs) {
+                    Integer lhInt = strToInt(lhs, -1);
+                    Integer rhInt = strToInt(rhs, -1);
+                    return lhInt.compareTo(rhInt);
+                }
+            });
+            mChapters = foundChapters;
+            return (mChapters.size() > 0) || (mChunks.size() > 0);
         }
-        return true;
+
+        return false;
+    }
+
+    /**
+     * do string to integer with default value on conversion error
+     * @param value
+     * @param defaultValue
+     * @return
+     */
+    public static int strToInt(String value, int defaultValue) {
+        try {
+            int retValue = Integer.parseInt(value);
+            return retValue;
+        } catch (Exception e) {
+            Log.d(TAG, "Cannot convert to int: " + value);
+        }
+        return defaultValue;
     }
 
     /**
@@ -812,12 +833,8 @@ public class ImportUsfm {
                 addBookMissingName(mBookName, mBookShortName, book);
                 return promptForName;
             } else { // has chunks
-                ResourceContainer resourceContainer = App.getLibrary().open("en", mBookShortName, "ulb");
-                mChapters = null;//resourceContainer.chapters();
-
-                mChunks = new HashMap<>(); // clear old map
-                //addChunks(mBookShortName, markers, resourceContainer);
-                mChaperCount = mChunks.size();
+                parseChunks(mBookShortName, markers);
+                mChaperCount = mChapters.size();
 
                 success = extractChaptersFromBook(book);
                 successOverall = successOverall && success;
@@ -925,8 +942,12 @@ public class ImportUsfm {
 
             String chapter = matcher.group(1); // chapter number for next section
             mCurrentChapter = Integer.valueOf(chapter);
-            if(mCurrentChapter > mChunks.size()) { //make sure in range
+            if(mCurrentChapter > mChapters.size()) { //make sure in range
                 break;
+            }
+
+            if(mCurrentChapter <= 0) { // skip till we get to chapter 1
+                continue;
             }
 
             int expectedChapter = mLastChapter + 1;
@@ -974,14 +995,14 @@ public class ImportUsfm {
 
         if (successOverall) {
             mCurrentChapter = Integer.valueOf(mChapter);
-            if ((mChapter == null) || (mCurrentChapter != mChunks.size())) {
+            if ((mChapter == null) || (mCurrentChapter != mChapters.size())) {
 
-                if(mCurrentChapter < mChunks.size()) {
-                    success = processChapterGap("", mCurrentChapter, mChunks.size() + 1);
+                if(mCurrentChapter < mChapters.size()) {
+                    success = processChapterGap("", mCurrentChapter, mChapters.size() + 1);
                     successOverall = successOverall && success;
                 } else  {
                     String lastChapter = (mChapter != null) ? mChapter : "(null)";
-                    addWarning(R.string.chapter_count_invalid, mChunks.size() + "", lastChapter);
+                    addWarning(R.string.chapter_count_invalid, mChapters.size() + "", lastChapter);
                     return false;
                 }
             }
@@ -1031,14 +1052,14 @@ public class ImportUsfm {
                     return false;
                 }
 
-                JSONArray versebreaks = getVerseBreaksObj(chapter);
+                List<String> versebreaks = getVerseBreaksObj(chapter);
 
                 int currentChapter = Integer.valueOf(chapter);
                 updateStatus(R.string.processing_chapter, new Integer(mChaperCount - currentChapter + 1).toString());
 
                 String lastFirst = null;
-                for (int i = 0; (i < versebreaks.length()) && success; i++) {
-                    String first = versebreaks.getJSONObject(i).getString(FIRST_VERSE);
+                for (int i = 0; (i < versebreaks.size()) && success; i++) {
+                    String first = versebreaks.get(i);
                     success = extractVerses(chapter, text, lastFirst, first);
                     successOverall = successOverall && success;
                     lastFirst = first;
@@ -1054,9 +1075,8 @@ public class ImportUsfm {
                 return false;
             }
         } else { // save stuff before first chapter
-            String chapter1 = getChapterFolderName("1"); // to get width of chapters
-            String chapter0 = "0000".substring(0, chapter1.length()); // match length of chapter 1
-            success = saveSection(".", "before", text);
+            String chapter0 = "00"; // chapter "00" folder contains stuff that applies to the whole book, like title
+            success = saveSection("front", "intro", text);
             successOverall = successOverall && success;
             success = saveSection(chapter0, "title", mBookName);
             successOverall = successOverall && success;
@@ -1071,17 +1091,17 @@ public class ImportUsfm {
      */
     private String getChapterFolderName(String findChapter) {
         try {
-            int chapter = Integer.valueOf(findChapter);
+            int chapter = strToInt(findChapter,-1);
             if (chapter > 0) { // first check in expected location
-                String chapterN = mChapters[chapter - 1];
-                if (Integer.valueOf(chapterN) == chapter) {
-                    return chapterN;
+                String chapterN = mChapters.get(chapter - 1);
+                if (strToInt(chapterN,-1) == chapter) {
+                    return getRightChapterLength(chapterN);
                 }
             }
 
             for (String chapterN : mChapters) { //search for chapter match
-                if (Integer.valueOf(chapterN) == chapter) {
-                    return chapterN;
+                if (strToInt(chapterN,-1) == chapter) {
+                    return getRightChapterLength(chapterN);
                 }
             }
         } catch (Exception e) {
@@ -1093,22 +1113,31 @@ public class ImportUsfm {
     }
 
     /**
+     * right size the chapter.  App expects chapter numbers under 100 to be only two digits.
+     * @param chapterN
+     * @return
+     */
+    private String getRightChapterLength(String chapterN) {
+        Integer chapterNInt = strToInt(chapterN, -1);
+        if((chapterNInt >= 0) && (chapterNInt < 100)) {
+            chapterN = chapterN.substring(chapterN.length()-2);
+        }
+        return chapterN;
+    }
+
+    /**
      * get the file name to use for verse chunk
      * @param findChapter
      * @param firstVerse
      * @return
      */
     private String getChunkFileName(String findChapter, String firstVerse)  {
-        try {
-            JSONArray chunks = getVerseBreaksObj(findChapter);
-            for (int i = 0; i < chunks.length(); i++) {
-                JSONObject chunk = chunks.getJSONObject(i);
-                if (firstVerse.equals(chunk.getString(FIRST_VERSE))) {
-                    return chunk.getString(FILE_NAME);
-                }
+        List<String> chunks = getVerseBreaksObj(findChapter);
+        for (int i = 0; i < chunks.size(); i++) {
+            String firstVerseFile = chunks.get(i);
+            if (strToInt(firstVerse,0) ==  strToInt(firstVerseFile,0)) {
+                return firstVerseFile;
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
 
         return firstVerse; // if not found, use same as chapter id
@@ -1119,7 +1148,7 @@ public class ImportUsfm {
      * @param findChapter
      * @return
      */
-    private JSONArray getVerseBreaksObj(String findChapter) {
+    private List<String> getVerseBreaksObj(String findChapter) {
         String chapter = findChapter;
         if (mChunks.containsKey(chapter)) {
             return mChunks.get(chapter);
@@ -1210,6 +1239,7 @@ public class ImportUsfm {
                         break;
                     }
 
+                    int chunkEnd = matcher.start();
                     while(true) { // find the end of the section
 
                         if(endVerseRange > 0) {
@@ -1226,17 +1256,21 @@ public class ImportUsfm {
                         currentVerse = verseRange[0];
                         endVerseRange = verseRange[1];
 
+                        chunkEnd = matcher.start(); // update end of chunk
+
                         if (currentVerse >= end) {
                              break;
                         }
 
                         boolean found = matcher.find();
-                        if(!found) {
+                        if(!found) { // we have reached the end, use this verse
+                            chunkEnd = text.length();
+                            foundVerseCount++;
                             break;
                         }
                     }
 
-                    section = section + text.subSequence(lastIndex, matcher.start()); // get section before this chunk marker
+                    section = section + text.subSequence(lastIndex, chunkEnd); // get section before this chunk marker
                     done = true;
                     break;
                 }
