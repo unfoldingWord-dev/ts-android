@@ -569,7 +569,7 @@ public class ImportUsfmTest extends InstrumentationTestCase {
     }
 
     /**
-     * right size the chapter.  App expects chapter numbers under 100 to be only two digits.
+     * right size the chapter string.  App expects chapter numbers under 100 to be only two digits.
      * @param chapterN
      * @return
      */

@@ -1113,7 +1113,7 @@ public class ImportUsfm {
     }
 
     /**
-     * right size the chapter.  App expects chapter numbers under 100 to be only two digits.
+     * right size the chapter string length.  App expects chapter numbers under 100 to be only two digits.
      * @param chapterN
      * @return
      */
