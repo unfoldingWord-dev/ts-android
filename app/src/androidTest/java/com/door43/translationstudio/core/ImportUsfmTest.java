@@ -2,6 +2,7 @@ package com.door43.translationstudio.core;
 
 import android.content.Context;
 import android.test.InstrumentationTestCase;
+import android.util.Log;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.ui.spannables.USFMVerseSpan;
@@ -525,8 +526,11 @@ public class ImportUsfmTest extends InstrumentationTestCase {
 
                 for (String chapter : mChapters) {
                     // verify chapter
-                    File chapterPath = new File(project, chapter);
-                    assertTrue("Chapter missing " + chapterPath.toString(), chapterPath.exists());
+                    File chapterPath = new File(project, getRightChapterLength(chapter));
+                    boolean exists = chapterPath.exists();
+                    if(!exists) {
+                        assertTrue("Chapter missing " + chapterPath.toString(), exists);
+                    }
 
                     // verify chunks
                     List<String> chapterFrameSlugs = mChunks.get(chapter);
@@ -562,6 +566,35 @@ public class ImportUsfmTest extends InstrumentationTestCase {
                 }
             }
         }
+    }
+
+    /**
+     * right size the chapter.  App expects chapter numbers under 100 to be only two digits.
+     * @param chapterN
+     * @return
+     */
+    private String getRightChapterLength(String chapterN) {
+        Integer chapterNInt = strToInt(chapterN, -1);
+        if((chapterNInt >= 0) && (chapterNInt < 100)) {
+            chapterN = chapterN.substring(chapterN.length()-2);
+        }
+        return chapterN;
+    }
+
+    /**
+     * do string to integer with default value on conversion error
+     * @param value
+     * @param defaultValue
+     * @return
+     */
+    public static int strToInt(String value, int defaultValue) {
+        try {
+            int retValue = Integer.parseInt(value);
+            return retValue;
+        } catch (Exception e) {
+            Log.d(ImportUsfmTest.class.getSimpleName(), "Cannot convert to int: " + value);
+        }
+        return defaultValue;
     }
 
     private static final Pattern PATTERN_USFM_VERSE_SPAN = Pattern.compile(USFMVerseSpan.PATTERN);
