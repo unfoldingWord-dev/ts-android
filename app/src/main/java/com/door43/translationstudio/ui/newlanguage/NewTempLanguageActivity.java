@@ -77,7 +77,11 @@ public class NewTempLanguageActivity extends QuestionnaireActivity implements La
         // TRICKY: for now we only have one questionnaire
         List<Questionnaire> questionnaires = App.getLibrary().index().getQuestionnaires();
         if(questionnaires.size() > 0) {
-            return new QuestionnairePager(questionnaires.get(0));
+            Questionnaire q = questionnaires.get(0);
+            List<Question> questions = App.getLibrary().index.getQuestions(q.tdId);
+            QuestionnairePager pager = new QuestionnairePager(q);
+            pager.loadQuestions(questions);
+            return pager;
         }
         return null;
     }
