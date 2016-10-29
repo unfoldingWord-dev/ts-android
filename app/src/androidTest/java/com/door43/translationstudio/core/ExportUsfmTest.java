@@ -142,6 +142,35 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         verifyExportedUsfmFile(zipFileName, separateChapters, source, usfmOutput);
     }
 
+    public void test07ValidExportJobSingle() throws Exception {
+        //given
+        String zipFileName = null;
+        boolean separateChapters = false;
+        String source = "18-JOB.usfm";
+        importTestTranslation(source);
+
+        //when
+        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, zipFileName, separateChapters);
+
+        //then
+        verifyExportedUsfmFile(zipFileName, separateChapters, source, usfmOutput);
+    }
+
+    public void test08ValidExportIsaiahSingle() throws Exception {
+        //given
+        String zipFileName = null;
+        boolean separateChapters = false;
+        String source = "23-ISA.usfm";
+        importTestTranslation(source);
+
+        //when
+        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, zipFileName, separateChapters);
+
+        //then
+        verifyExportedUsfmFile(zipFileName, separateChapters, source, usfmOutput);
+    }
+
+
     /**
      * match all the book identifiers
      * @param input
@@ -338,7 +367,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
                     assertEquals("in chapter '" + chapter + "' verse input should match verse output", verseIn, verseOut);
                 }
             } else {
-                fail("verse '" + verseIn + "' missing in output");
+                fail("in chapter '" + chapter + "', verse '" + verseIn + "' missing in output");
             }
 
             if (lastInputVerseStart > 0) {
@@ -407,7 +436,9 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         }
 
         text = text.replace("\\s5\n", "\n"); // remove section markers
+        text = text.replace("\\s5 \n", "\n"); // remove section markers
         text = replaceAll(text,"\n\n", "\n"); // remove double new-lines
+        text = replaceAll(text,"\n \n", "\n"); // remove double new-lines
         return text;
     }
 
