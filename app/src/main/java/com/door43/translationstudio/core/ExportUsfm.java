@@ -173,6 +173,28 @@ public class ExportUsfm {
         Door43Client library = App.getLibrary();
         try {
             String sourceTranslationSlug = App.getSelectedSourceTranslationId(targetTranslation.getId());
+            if(sourceTranslationSlug == null) { // if none selected, try list of selected translations
+                String[] sourceTranslationSlugs = App.getSelectedSourceTranslations(targetTranslation.getId());
+                if((sourceTranslationSlugs != null) && (sourceTranslationSlugs.length > 0)) {
+                    sourceTranslationSlug = sourceTranslationSlugs[0];
+                }
+            }
+
+            // last try look for any available that are loaded into memory
+            if(sourceTranslationSlug == null) { // if none selected, try list of selected translations
+                List<Translation> availableTranslations = library.index().findTranslations(null, targetTranslation.getProjectId(), null, "book", "all", App.MIN_CHECKING_LEVEL, -1);
+                if((availableTranslations != null) && (availableTranslations.size() > 0)) {
+                    for (Translation availableTranslation : availableTranslations) {
+                        final boolean isDownloaded = library.exists(availableTranslation.resourceContainerSlug);
+                        if(isDownloaded) {
+//                            App.setSelectedSourceTranslation(targetTranslation.getId(), availableTranslation.resourceContainerSlug) ;
+                            sourceTranslationSlug = availableTranslation.resourceContainerSlug;
+                            break;
+                        }
+                    }
+                }
+            }
+
             sourceTranslation = library.index().getTranslation(sourceTranslationSlug);
             mSourceContainer = ContainerCache.cache(library, sourceTranslation.resourceContainerSlug);
             sourceToc = (List<Map>) mSourceContainer.toc;
