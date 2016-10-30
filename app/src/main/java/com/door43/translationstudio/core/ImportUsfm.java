@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import org.unfoldingword.door43client.models.TargetLanguage;
+import org.unfoldingword.door43client.models.Versification;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
@@ -823,7 +824,8 @@ public class ImportUsfm {
                 mBookName = mBookShortName;
             }
 
-            List<ChunkMarker> markers = App.getLibrary().index().getChunkMarkers(mBookShortName, "en-US");
+            List<Versification> versifications = App.getLibrary().index().getVersifications("en");
+            List<ChunkMarker> markers = App.getLibrary().index().getChunkMarkers(mBookShortName, versifications.get(0).slug);
             boolean haveChunksList = markers.size() > 0;
 
             if (!haveChunksList) { // no chunk list
@@ -1095,13 +1097,13 @@ public class ImportUsfm {
             if (chapter > 0) { // first check in expected location
                 String chapterN = mChapters.get(chapter - 1);
                 if (strToInt(chapterN,-1) == chapter) {
-                    return getRightChapterLength(chapterN);
+                    return getRightFileNameLength(chapterN);
                 }
             }
 
             for (String chapterN : mChapters) { //search for chapter match
                 if (strToInt(chapterN,-1) == chapter) {
-                    return getRightChapterLength(chapterN);
+                    return getRightFileNameLength(chapterN);
                 }
             }
         } catch (Exception e) {
@@ -1113,16 +1115,16 @@ public class ImportUsfm {
     }
 
     /**
-     * right size the chapter string length.  App expects chapter numbers under 100 to be only two digits.
-     * @param chapterN
+     * right size the file name length.  App expects file names under 100 to be only two digits.
+     * @param fileName
      * @return
      */
-    private String getRightChapterLength(String chapterN) {
-        Integer chapterNInt = strToInt(chapterN, -1);
-        if((chapterNInt >= 0) && (chapterNInt < 100)) {
-            chapterN = chapterN.substring(chapterN.length()-2);
+    private String getRightFileNameLength(String fileName) {
+        Integer numericalValue = strToInt(fileName, -1);
+        if((numericalValue >= 0) && (numericalValue < 100)) {
+            fileName = fileName.substring(fileName.length()-2);
         }
-        return chapterN;
+        return fileName;
     }
 
     /**
@@ -1136,7 +1138,7 @@ public class ImportUsfm {
         for (int i = 0; i < chunks.size(); i++) {
             String firstVerseFile = chunks.get(i);
             if (strToInt(firstVerse,0) ==  strToInt(firstVerseFile,0)) {
-                return firstVerseFile;
+                return getRightFileNameLength(firstVerseFile);
             }
         }
 

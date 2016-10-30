@@ -2,6 +2,7 @@ package com.door43.translationstudio.core;
 
 import android.content.Context;
 import android.test.InstrumentationTestCase;
+import android.util.Log;
 
 import com.door43.translationstudio.App;
 import com.door43.util.FileUtilities;
@@ -24,6 +25,7 @@ import org.unfoldingword.door43client.models.TargetLanguage;
  */
 public class ExportUsfmTest extends InstrumentationTestCase {
 
+    public static final String TAG = ExportUsfmTest.class.getSimpleName();
     File mTempFolder;
     private Context mTestContext;
     private Context mAppContext;
@@ -32,11 +34,13 @@ public class ExportUsfmTest extends InstrumentationTestCase {
     private ImportUsfm mUsfm;
     private File mOutputFolder;
     private TargetTranslation mTargetTranslation;
+    private String mErrorLog;
 
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
+        mErrorLog = null;
         mLibrary = App.getLibrary();
         Logger.flush();
         mTestContext = getInstrumentation().getContext();
@@ -226,6 +230,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
      */
     private void verifyExportedUsfmFile(String zipFileName, boolean separateChapters, String source, File usfmOutput) throws IOException {
         assertNotNull("exported file", usfmOutput);
+        mErrorLog = "";
         if (zipFileName == null) {
             if (!separateChapters) {
                 verifySingleUsfmFile(source, usfmOutput);
@@ -238,6 +243,11 @@ public class ExportUsfmTest extends InstrumentationTestCase {
             } else {
                 fail("single book with zip is not supported");
             }
+        }
+
+        if(!mErrorLog.isEmpty()) {
+            Log.d(TAG, "Errors found:\n" + mErrorLog);
+            fail("Errors found:\n" + mErrorLog);
         }
     }
 
@@ -268,7 +278,10 @@ public class ExportUsfmTest extends InstrumentationTestCase {
             chapterIn = inputMatcher.group(1); // chapter number in input
             chapterInInt = Integer.valueOf(chapterIn);
 
-            assertTrue("chapter count should be greater than or equal to chapter", usfmFiles.length >= chapterInInt);
+            if(usfmFiles.length < chapterInInt) {
+                addErrorMsg("chapter count " + usfmFiles.length + "' should be greater than or equal to chapter number '" + chapterInInt + "'\n");
+//            assertTrue("chapter count should be greater than or equal to chapter", usfmFiles.length >= chapterInInt);
+            }
 
            if (chapterInInt > 1) {
                 // verify verses in last chapter
@@ -281,13 +294,24 @@ public class ExportUsfmTest extends InstrumentationTestCase {
             lastInputChapterStart = inputMatcher.end();
         }
 
-        assertTrue("chapter count should equal last chapter + 1", usfmFiles.length == chapterInInt + 1);
+        if(usfmFiles.length != chapterInInt + 1) {
+            addErrorMsg("chapter count " + usfmFiles.length + "' should be  '" + (chapterInInt + 1) + "'\n");
+//            assertTrue("chapter count should equal last chapter + 1", usfmFiles.length == chapterInInt + 1);
+        }
 
         // verify verses in last chapter
         String inputChapter = usfmInputText.substring(lastInputChapterStart);
         String outputChapter = FileUtilities.readFileToString(usfmFiles[chapterInInt]);
         verifyBookID(usfmInputText, outputChapter);
         compareVersesInChapter(chapterInInt, inputChapter, outputChapter);
+    }
+
+    /**
+     * queue up error messages
+     * @param error
+     */
+    private void addErrorMsg(String error) {
+        mErrorLog = error + mErrorLog;
     }
 
     /**
@@ -319,10 +343,12 @@ public class ExportUsfmTest extends InstrumentationTestCase {
                 String chapterOut = outputMatcher.group(1); // chapter number in output
                 int chapterOutInt = Integer.parseInt(chapterOut);
                 if(chapterInInt != chapterOutInt) {
-                    assertEquals("chapter input should match chapter output", chapterInInt, chapterOutInt);
+                    addErrorMsg("chapter input: " + chapterInInt + "\n does not match chapter output:" + chapterOutInt + "\n");
+//                    assertEquals("chapter input should match chapter output", chapterInInt, chapterOutInt);
                 }
             } else {
-                fail("chapter '" + chapterIn + "' missing in output");
+                addErrorMsg("chapter '" + chapterIn + "' missing in output\n");
+//                fail("chapter '" + chapterIn + "' missing in output");
             }
 
             if (chapterInInt > 1) {
@@ -337,7 +363,8 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         }
 
         if (outputMatcher.find()) {
-            fail("extra chapter in output: " + outputMatcher.group(1));
+            addErrorMsg("extra chapter in output: " + outputMatcher.group(1) + "\n");
+//            fail("extra chapter in output: " + outputMatcher.group(1));
         }
 
         // verify verses in last chapter
@@ -364,10 +391,14 @@ public class ExportUsfmTest extends InstrumentationTestCase {
             if (outputVerseMatcher.find()) {
                 String verseOut = outputVerseMatcher.group(1); // verse number in output
                 if(!verseIn.equals(verseOut)) {
-                    assertEquals("in chapter '" + chapter + "' verse input should match verse output", verseIn, verseOut);
+                    addErrorMsg("in chapter '" + chapter + "' verse input '" + verseIn + "'\n does not match verse output '" + verseOut + "'\n");
+                    return;
+//                    assertEquals("in chapter '" + chapter + "' verse input should match verse output", verseIn, verseOut);
                 }
             } else {
-                fail("in chapter '" + chapter + "', verse '" + verseIn + "' missing in output");
+                addErrorMsg("in chapter '" + chapter + "', verse '" + verseIn + "' missing in output\n");
+                return;
+//                fail("in chapter '" + chapter + "', verse '" + verseIn + "' missing in output");
             }
 
             if (lastInputVerseStart > 0) {
@@ -381,7 +412,8 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         }
 
         if (outputVerseMatcher.find()) {
-            fail("In chapter '" + chapter + "' extra verse in output: " + outputVerseMatcher.group(1));
+            addErrorMsg("In chapter '" + chapter + "' extra verse in output: '" + outputVerseMatcher.group(1) + "\n");
+//            fail("In chapter '" + chapter + "' extra verse in output: " + outputVerseMatcher.group(1));
         }
 
         String inputVerse = inputChapter.substring(lastInputVerseStart);
@@ -416,7 +448,8 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         }
 
         if(!input.equals(output)) {
-            assertEquals("In chapter '" + chapterNum + "' verse '" + verseIn + "' verse content should match", input, output);
+            addErrorMsg("In chapter '" + chapterNum + "' verse '" + verseIn + "' verse input " + input + "\n does not match output: " + output + "\n");
+//            assertEquals("In chapter '" + chapterNum + "' verse '" + verseIn + "' verse content should match", input, output);
         }
     }
 
@@ -437,6 +470,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
 
         text = text.replace("\\s5\n", "\n"); // remove section markers
         text = text.replace("\\s5 \n", "\n"); // remove section markers
+        text = replaceAll(text,"\n\n", "\n"); // remove double new-lines
         text = replaceAll(text,"\n\n", "\n"); // remove double new-lines
         text = replaceAll(text,"\n \n", "\n"); // remove double new-lines
         return text;
