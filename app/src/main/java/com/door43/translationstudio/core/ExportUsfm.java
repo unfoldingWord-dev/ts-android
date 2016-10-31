@@ -8,8 +8,10 @@ import android.util.Log;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.util.FileUtilities;
+import com.door43.util.StringUtilities;
 import com.door43.util.Zip;
 
+import org.eclipse.jgit.util.StringUtils;
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
@@ -172,32 +174,7 @@ public class ExportUsfm {
 
         Door43Client library = App.getLibrary();
         try {
-            String sourceTranslationSlug = App.getSelectedSourceTranslationId(targetTranslation.getId());
-            if(sourceTranslationSlug == null) { // if none selected, try list of selected translations
-                String[] sourceTranslationSlugs = App.getSelectedSourceTranslations(targetTranslation.getId());
-                if((sourceTranslationSlugs != null) && (sourceTranslationSlugs.length > 0)) {
-                    sourceTranslationSlug = sourceTranslationSlugs[0];
-                }
-            }
-
-            // last try look for any available that are loaded into memory
-            if(sourceTranslationSlug == null) { // if none selected, try list of selected translations
-                List<Translation> availableTranslations = library.index().findTranslations(null, targetTranslation.getProjectId(), null, "book", "all", App.MIN_CHECKING_LEVEL, -1);
-                if((availableTranslations != null) && (availableTranslations.size() > 0)) {
-                    for (Translation availableTranslation : availableTranslations) {
-                        final boolean isDownloaded = library.exists(availableTranslation.resourceContainerSlug);
-                        if(isDownloaded) {
-//                            App.setSelectedSourceTranslation(targetTranslation.getId(), availableTranslation.resourceContainerSlug) ;
-                            sourceTranslationSlug = availableTranslation.resourceContainerSlug;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            sourceTranslation = library.index().getTranslation(sourceTranslationSlug);
-            mSourceContainer = ContainerCache.cache(library, sourceTranslation.resourceContainerSlug);
-            sourceToc = (List<Map>) mSourceContainer.toc;
+            sourceToc = getResourceTOC(targetTranslation, library);
         } catch (Exception e) {
             Logger.e(TAG,"Could not get source resources for " + targetTranslation.getId(), e);
             return null;
@@ -279,7 +256,7 @@ public class ExportUsfm {
 
             int chapterInt = strToInt(chapterSlug,0);
             if(tocChapter.equals(lastChapter)){
-                Logger.i(TAG, "Last chapter " + chapterInt);
+                Logger.i(TAG, "Last chapter " + chapterInt + " chunks: " + StringUtils.join(tocChunks,", "));
             }
             if(!haveFrontMatter && (chapterInt != 0)) {
                 String chapterNumber = "\\c " + chapterSlug;
@@ -300,6 +277,12 @@ public class ExportUsfm {
             for (int i = startChunk; i < tocChunks.size(); i++) {
                 FrameTranslation frame =  targetTranslation.getFrameTranslation(chapterSlug, tocChunks.get(i), targetTranslation.getFormat());
                 String text = frame.body;
+
+                //check for file name length error
+                if(text.isEmpty() && (i == (tocChunks.size()-1))) {
+                    frame =  targetTranslation.getFrameTranslation(chapterSlug, getRightFileNameLength(tocChunks.get(i)), targetTranslation.getFormat());
+                    text = frame.body;
+                }
 
                 //check for chunk zero exception
                 if(text.isEmpty() && (i == (tocChunks.size()-1)) && (tocChapter.equals(lastChapter))) {
@@ -337,6 +320,58 @@ public class ExportUsfm {
         }
         FileUtilities.deleteQuietly(tempDir);
         return destFile;
+    }
+
+    /**
+     * gets the resource TOCs even if user has not selected one yet
+     * @param targetTranslation
+     * @param library
+     * @return
+     */
+    public static List<Map> getResourceTOC(TargetTranslation targetTranslation, Door43Client library) {
+        Translation sourceTranslation;
+        ResourceContainer mSourceContainer;
+        List<Map> sourceToc;
+        String sourceTranslationSlug = App.getSelectedSourceTranslationId(targetTranslation.getId());
+        if(sourceTranslationSlug == null) { // if none selected, try list of selected translations
+            String[] sourceTranslationSlugs = App.getSelectedSourceTranslations(targetTranslation.getId());
+            if((sourceTranslationSlugs != null) && (sourceTranslationSlugs.length > 0)) {
+                sourceTranslationSlug = sourceTranslationSlugs[0];
+            }
+        }
+
+        // last try look for any available that are loaded into memory
+        if(sourceTranslationSlug == null) { // if none selected, try list of selected translations
+            List<Translation> availableTranslations = library.index().findTranslations(null, targetTranslation.getProjectId(), null, "book", "all", App.MIN_CHECKING_LEVEL, -1);
+            if((availableTranslations != null) && (availableTranslations.size() > 0)) {
+                for (Translation availableTranslation : availableTranslations) {
+                    final boolean isDownloaded = library.exists(availableTranslation.resourceContainerSlug);
+                    if(isDownloaded) {
+                        sourceTranslationSlug = availableTranslation.resourceContainerSlug;
+                        break;
+                    }
+                }
+            }
+        }
+
+        sourceTranslation = library.index().getTranslation(sourceTranslationSlug);
+        mSourceContainer = ContainerCache.cache(library, sourceTranslation.resourceContainerSlug);
+        sourceToc = (List<Map>) mSourceContainer.toc;
+        return sourceToc;
+    }
+
+    /**
+     * right size the file name length.  App expects file names under 100 to be only two digits.
+     * @param fileName
+     * @return
+     */
+    public static String getRightFileNameLength(String fileName) {
+        Integer numericalValue = strToInt(fileName, -1);
+        if((numericalValue >= 0) && (numericalValue < 100) && (fileName.length() != 2)) {
+            fileName = "00" + fileName; // make sure has leading zeroes
+            fileName = fileName.substring(fileName.length()-2); // trim down extra leading zeros
+        }
+        return fileName;
     }
 
     /**

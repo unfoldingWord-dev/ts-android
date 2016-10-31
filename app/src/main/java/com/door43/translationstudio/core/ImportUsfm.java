@@ -657,16 +657,29 @@ public class ImportUsfm {
         return success;
     }
 
+    public static class ParsedChunks {
+        final public HashMap<String, List<String>> chunks; // clear old map
+        final public List<String> chapters;
+        final public boolean success;
+
+        public ParsedChunks(HashMap<String, List<String>> chunks, List<String> chapters, boolean success) {
+            this.chunks = chunks;
+            this.chapters = chapters;
+            this.success = success;
+        }
+    }
+
+
     /**
      * parse chunk markers (contains verses and chapters) into map of verses indexed by chapter
      *
-     * @param book
      * @param chunks
      * @return
      */
-    public boolean parseChunks(String book, List<ChunkMarker> chunks) {
-        mChunks = new HashMap<>(); // clear old map
-        mChapters = new ArrayList<>();
+    public static ParsedChunks parseChunks(List<ChunkMarker> chunks) {
+        HashMap<String, List<String>> mChunks = new HashMap<>();
+        List<String> mChapters = new ArrayList<>();
+        boolean success = false;
         if(chunks != null) {
             for (ChunkMarker chunkMarker : chunks) {
                 String chapter = chunkMarker.chapter;
@@ -699,10 +712,10 @@ public class ImportUsfm {
                 }
             });
             mChapters = foundChapters;
-            return (mChapters.size() > 0) || (mChunks.size() > 0);
+            success = (mChapters.size() > 0) || (mChunks.size() > 0);
         }
 
-        return false;
+        return new ParsedChunks(mChunks, mChapters, success);
     }
 
     /**
@@ -835,7 +848,9 @@ public class ImportUsfm {
                 addBookMissingName(mBookName, mBookShortName, book);
                 return promptForName;
             } else { // has chunks
-                parseChunks(mBookShortName, markers);
+                ParsedChunks parsedChunks = parseChunks(markers);
+                mChapters = parsedChunks.chapters;
+                mChunks = parsedChunks.chunks;
                 mChaperCount = mChapters.size();
 
                 success = extractChaptersFromBook(book);
@@ -1119,10 +1134,11 @@ public class ImportUsfm {
      * @param fileName
      * @return
      */
-    private String getRightFileNameLength(String fileName) {
+    public static String getRightFileNameLength(String fileName) {
         Integer numericalValue = strToInt(fileName, -1);
-        if((numericalValue >= 0) && (numericalValue < 100)) {
-            fileName = fileName.substring(fileName.length()-2);
+        if((numericalValue >= 0) && (numericalValue < 100) && (fileName.length() != 2)) {
+            fileName = "00" + fileName; // make sure has leading zeroes
+            fileName = fileName.substring(fileName.length()-2); // trim down extra leading zeros
         }
         return fileName;
     }
