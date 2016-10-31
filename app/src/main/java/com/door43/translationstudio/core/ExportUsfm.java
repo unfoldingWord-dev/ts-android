@@ -227,17 +227,7 @@ public class ExportUsfm {
                 ps.println(shortBookID);
             }
 
-            // sort frames
-            ArrayList<FrameTranslation> frameList = new ArrayList<FrameTranslation>(Arrays.asList(frames));
-            Collections.sort(frameList, new Comparator<FrameTranslation>() { // do numeric sort
-                @Override
-                public int compare(FrameTranslation lhs, FrameTranslation rhs) {
-                    Integer lhInt = getChunkOrder(lhs.getId());
-                    Integer rhInt = getChunkOrder(rhs.getId());
-                    return lhInt.compareTo(rhInt);
-                }
-            });
-
+            ArrayList<FrameTranslation> frameList = sortFrameTranslations(frames);
             boolean haveFrame0 = false;
             int startChunk = 0;
             if(frameList.size() > 0) {
@@ -304,11 +294,30 @@ public class ExportUsfm {
     }
 
     /**
+     * sort the frames
+     * @param frames
+     * @return
+     */
+    public static ArrayList<FrameTranslation> sortFrameTranslations(FrameTranslation[] frames) {
+        // sort frames
+        ArrayList<FrameTranslation> frameList = new ArrayList<FrameTranslation>(Arrays.asList(frames));
+        Collections.sort(frameList, new Comparator<FrameTranslation>() { // do numeric sort
+            @Override
+            public int compare(FrameTranslation lhs, FrameTranslation rhs) {
+                Integer lhInt = getChunkOrder(lhs.getId());
+                Integer rhInt = getChunkOrder(rhs.getId());
+                return lhInt.compareTo(rhInt);
+            }
+        });
+        return frameList;
+    }
+
+    /**
      *
      * @param chunkID
      * @return
      */
-    private static Integer getChunkOrder(String chunkID) {
+    public static Integer getChunkOrder(String chunkID) {
         if("00".equals(chunkID)) { // special treatment for chunk 00 to move to end of list
             return 9999999;
         }
