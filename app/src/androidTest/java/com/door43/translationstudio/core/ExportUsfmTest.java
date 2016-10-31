@@ -11,8 +11,9 @@ import com.door43.util.Zip;
 import org.eclipse.jgit.util.StringUtils;
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.ChunkMarker;
+import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.door43client.models.Versification;
-import org.unfoldingword.resourcecontainer.Project;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import java.io.File;
@@ -583,7 +584,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
 
         int versificationIndex = 0;
 
-        List<Map> sourceToc = ExportUsfm.getResourceTOC(mTargetTranslation, mLibrary);
+        List<Map> sourceToc = getResourceTOC(mTargetTranslation, mLibrary);
         for (int i = 0; i < sourceToc.size(); i++) {
             Map tocChapter = sourceToc.get(i);
             String chapterSlug = (String) tocChapter.get("chapter");
@@ -636,6 +637,58 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         if(!mErrorLog.isEmpty()) {
             addErrorMsg("\n\n==============\nChunking Errors found:\n");
         }
+    }
+
+    /**
+     * gets the resource TOCs even if user has not selected one yet
+     * @param targetTranslation
+     * @param library
+     * @return
+     */
+    public static List<Map> getResourceTOC(TargetTranslation targetTranslation, Door43Client library) {
+        Translation sourceTranslation;
+        ResourceContainer mSourceContainer;
+        List<Map> sourceToc;
+        String sourceTranslationSlug = App.getSelectedSourceTranslationId(targetTranslation.getId());
+        if(sourceTranslationSlug == null) { // if none selected, try list of selected translations
+            String[] sourceTranslationSlugs = App.getSelectedSourceTranslations(targetTranslation.getId());
+            if((sourceTranslationSlugs != null) && (sourceTranslationSlugs.length > 0)) {
+                sourceTranslationSlug = sourceTranslationSlugs[0];
+            }
+        }
+
+        // last try look for any available that are loaded into memory
+        if(sourceTranslationSlug == null) { // if none selected, try list of selected translations
+            List<Translation> availableTranslations = library.index().findTranslations(null, targetTranslation.getProjectId(), null, "book", "all", App.MIN_CHECKING_LEVEL, -1);
+            if((availableTranslations != null) && (availableTranslations.size() > 0)) {
+                for (Translation availableTranslation : availableTranslations) {
+                    final boolean isDownloaded = library.exists(availableTranslation.resourceContainerSlug);
+                    if(isDownloaded) {
+                        sourceTranslationSlug = availableTranslation.resourceContainerSlug;
+                        break;
+                    }
+                }
+            }
+        }
+
+        sourceTranslation = library.index().getTranslation(sourceTranslationSlug);
+        mSourceContainer = ContainerCache.cache(library, sourceTranslation.resourceContainerSlug);
+        sourceToc = (List<Map>) mSourceContainer.toc;
+        return sourceToc;
+    }
+
+    /**
+     * right size the file name length.  App expects file names under 100 to be only two digits.
+     * @param fileName
+     * @return
+     */
+    public static String getRightFileNameLength(String fileName) {
+        Integer numericalValue = strToInt(fileName, -1);
+        if((numericalValue >= 0) && (numericalValue < 100) && (fileName.length() != 2)) {
+            fileName = "00" + fileName; // make sure has leading zeroes
+            fileName = fileName.substring(fileName.length()-2); // trim down extra leading zeros
+        }
+        return fileName;
     }
 
     /**

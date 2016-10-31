@@ -20,6 +20,10 @@ import org.unfoldingword.tools.logger.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -165,31 +169,14 @@ public class ExportUsfm {
     static private File exportAsUSFM(TargetTranslation targetTranslation, File outputFolder, String zipFileName, boolean separateChapters) throws IOException {
         File tempDir = new File(App.context().getCacheDir(), System.currentTimeMillis() + "");
         tempDir.mkdirs();
+        ChapterTranslation[] chapters = targetTranslation.getChapterTranslations();
         PrintStream ps = null;
         String outputFileName = null;
         File chapterFile = null;
-        Translation sourceTranslation = null;
-        List<Map> sourceToc = null;
-        ResourceContainer mSourceContainer = null;
-
-        Door43Client library = App.getLibrary();
-        try {
-            sourceToc = getResourceTOC(targetTranslation, library);
-        } catch (Exception e) {
-            Logger.e(TAG,"Could not get source resources for " + targetTranslation.getId(), e);
-            return null;
-        }
-
-        Map lastChapter = sourceToc.get(sourceToc.size()-1);
-
-        for(Map tocChapter:sourceToc) {
-            String chapterSlug = (String) tocChapter.get("chapter");
-            List<String> tocChunks = (List) tocChapter.get("chunks");
-
+        for(ChapterTranslation chapter:chapters) {
             // TRICKY: the translation format doesn't matter for exporting
-//            FrameTranslation[] frames = targetTranslation.getFrameTranslations(chapter.getId(), TranslationFormat.DEFAULT);
-
-            if(tocChunks.size() == 0) continue;
+            FrameTranslation[] frames = targetTranslation.getFrameTranslations(chapter.getId(), TranslationFormat.DEFAULT);
+            if(frames.length == 0) continue;
 
             boolean needNewFile = (ps == null) || (separateChapters);
             if(needNewFile) {
@@ -198,7 +185,7 @@ public class ExportUsfm {
                 String languageId = targetTranslation.getTargetLanguageId();
                 String languageName = targetTranslation.getTargetLanguageName();
                 ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
-                Project project = library.index().getProject(languageId, targetTranslation.getProjectId(), true);
+                Project project = App.getLibrary().index().getProject(languageId, targetTranslation.getProjectId(), true);
 
                 String bookName = bookCode; // default name
                 if( (project != null) && (project.name != null)) {
@@ -218,7 +205,7 @@ public class ExportUsfm {
 
                 // generate file name
                 if(separateChapters) {
-                    outputFileName = "chapter_" + chapterSlug + ".usfm";
+                    outputFileName = "chapter_" + chapter.getId() + ".usfm";
                 } else {
                     outputFileName = System.currentTimeMillis() + "_" + languageId + "_" + bookCode + "_" + bookName + ".usfm";
                 }
@@ -240,55 +227,49 @@ public class ExportUsfm {
                 ps.println(shortBookID);
             }
 
-            boolean haveFrontMatter = false;
-            int startChunk = 0;
-            if(tocChunks.size() > 0) {
-                FrameTranslation frame =  targetTranslation.getFrameTranslation(chapterSlug, tocChunks.get(0), targetTranslation.getFormat());
+            // sort frames
+            ArrayList<FrameTranslation> frameList = new ArrayList<FrameTranslation>(Arrays.asList(frames));
+            Collections.sort(frameList, new Comparator<FrameTranslation>() { // do numeric sort
+                @Override
+                public int compare(FrameTranslation lhs, FrameTranslation rhs) {
+                    Integer lhInt = getChunkOrder(lhs.getId());
+                    Integer rhInt = getChunkOrder(rhs.getId());
+                    return lhInt.compareTo(rhInt);
+                }
+            });
 
+            boolean haveFrame0 = false;
+            int startChunk = 0;
+            if(frameList.size() > 0) {
+                FrameTranslation frame = frameList.get(0);
                 int verseID = strToInt(frame.getId(),0);
-                haveFrontMatter = (verseID == 0);
-                if(haveFrontMatter) {
+                haveFrame0 = (verseID == 0);
+                if(haveFrame0) {
                     String text = frame.body;
                     ps.print(text);
                     startChunk++;
                 }
            }
 
-            int chapterInt = strToInt(chapterSlug,0);
-            if(tocChapter.equals(lastChapter)){
-                Logger.i(TAG, "Last chapter " + chapterInt + " chunks: " + StringUtils.join(tocChunks,", "));
-            }
-            if(!haveFrontMatter && (chapterInt != 0)) {
-                String chapterNumber = "\\c " + chapterSlug;
+            int chapterInt = strToInt(chapter.getId(),0);
+            if(!haveFrame0 && (chapterInt != 0)) {
+                String chapterNumber = "\\c " + chapter.getId();
                 ps.println(chapterNumber);
             }
 
-            ChapterTranslation ct = targetTranslation.getChapterTranslation(chapterSlug);
-            if((ct.title != null) && (!ct.title.isEmpty())) {
-                String chapterTitle = "\\cl " + ct.title;
+            if((chapter.title != null) && (!chapter.title.isEmpty())) {
+                String chapterTitle = "\\cl " + chapter.title;
                 ps.println(chapterTitle);
             }
 
-            if( (ct.reference != null) && (!ct.reference.isEmpty())) {
-                String chapterRef = "\\cd " + ct.reference;
+            if( (chapter.reference != null) && (!chapter.reference.isEmpty())) {
+                String chapterRef = "\\cd " + chapter.reference;
                 ps.println(chapterRef);
             }
 
-            for (int i = startChunk; i < tocChunks.size(); i++) {
-                FrameTranslation frame =  targetTranslation.getFrameTranslation(chapterSlug, tocChunks.get(i), targetTranslation.getFormat());
+            for (int i = startChunk; i < frameList.size(); i++) {
+                FrameTranslation frame = frameList.get(i);
                 String text = frame.body;
-
-                //check for file name length error
-                if(text.isEmpty() && (i == (tocChunks.size()-1))) {
-                    frame =  targetTranslation.getFrameTranslation(chapterSlug, getRightFileNameLength(tocChunks.get(i)), targetTranslation.getFormat());
-                    text = frame.body;
-                }
-
-                //check for chunk zero exception
-                if(text.isEmpty() && (i == (tocChunks.size()-1)) && (tocChapter.equals(lastChapter))) {
-                    frame =  targetTranslation.getFrameTranslation(chapterSlug, "00", targetTranslation.getFormat());
-                    text = frame.body;
-                }
 
                 // text
                 ps.println("\\s5"); // section marker
@@ -320,58 +301,6 @@ public class ExportUsfm {
         }
         FileUtilities.deleteQuietly(tempDir);
         return destFile;
-    }
-
-    /**
-     * gets the resource TOCs even if user has not selected one yet
-     * @param targetTranslation
-     * @param library
-     * @return
-     */
-    public static List<Map> getResourceTOC(TargetTranslation targetTranslation, Door43Client library) {
-        Translation sourceTranslation;
-        ResourceContainer mSourceContainer;
-        List<Map> sourceToc;
-        String sourceTranslationSlug = App.getSelectedSourceTranslationId(targetTranslation.getId());
-        if(sourceTranslationSlug == null) { // if none selected, try list of selected translations
-            String[] sourceTranslationSlugs = App.getSelectedSourceTranslations(targetTranslation.getId());
-            if((sourceTranslationSlugs != null) && (sourceTranslationSlugs.length > 0)) {
-                sourceTranslationSlug = sourceTranslationSlugs[0];
-            }
-        }
-
-        // last try look for any available that are loaded into memory
-        if(sourceTranslationSlug == null) { // if none selected, try list of selected translations
-            List<Translation> availableTranslations = library.index().findTranslations(null, targetTranslation.getProjectId(), null, "book", "all", App.MIN_CHECKING_LEVEL, -1);
-            if((availableTranslations != null) && (availableTranslations.size() > 0)) {
-                for (Translation availableTranslation : availableTranslations) {
-                    final boolean isDownloaded = library.exists(availableTranslation.resourceContainerSlug);
-                    if(isDownloaded) {
-                        sourceTranslationSlug = availableTranslation.resourceContainerSlug;
-                        break;
-                    }
-                }
-            }
-        }
-
-        sourceTranslation = library.index().getTranslation(sourceTranslationSlug);
-        mSourceContainer = ContainerCache.cache(library, sourceTranslation.resourceContainerSlug);
-        sourceToc = (List<Map>) mSourceContainer.toc;
-        return sourceToc;
-    }
-
-    /**
-     * right size the file name length.  App expects file names under 100 to be only two digits.
-     * @param fileName
-     * @return
-     */
-    public static String getRightFileNameLength(String fileName) {
-        Integer numericalValue = strToInt(fileName, -1);
-        if((numericalValue >= 0) && (numericalValue < 100) && (fileName.length() != 2)) {
-            fileName = "00" + fileName; // make sure has leading zeroes
-            fileName = fileName.substring(fileName.length()-2); // trim down extra leading zeros
-        }
-        return fileName;
     }
 
     /**
