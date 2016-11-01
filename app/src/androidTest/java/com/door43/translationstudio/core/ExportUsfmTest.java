@@ -654,14 +654,19 @@ public class ExportUsfmTest extends InstrumentationTestCase {
 
             boolean chunkErrors = false;
 
-            if(tocChunks.size() != versificationChunks.size()) {
-                addErrorMsg("For chapter '" + chapterSlug + "' toc chunk count is '" + tocChunks.size() + "' but versification chunk count is '" + versificationChunks.size() + "'\n");
+            int offset = 0;
+            while(strToInt(tocChunks.get(offset), -1) < 0) {
+                offset++;
+            }
+
+            if((tocChunks.size()-offset) != versificationChunks.size()) {
+                addErrorMsg("For chapter '" + chapterSlug + "' toc chunk count is '" + (tocChunks.size()-offset) + "' but versification chunk count is '" + versificationChunks.size() + "'\n");
                 chunkErrors = true;
             }
 
-            int limit = tocChunks.size() < versificationChunks.size() ? tocChunks.size() : versificationChunks.size();
+            int limit = (tocChunks.size()-offset) < versificationChunks.size() ? tocChunks.size()-offset : versificationChunks.size();
             for(int j = 0; j < limit; j++) {
-                String tocVerse = tocChunks.get(j);
+                String tocVerse = tocChunks.get(j+offset);
                 String versificationVerse = versificationChunks.get(j);
                 if(strToInt(tocVerse,-1) != strToInt(versificationVerse,-1)) {
                     addErrorMsg("For chapter '" + chapterSlug + "' toc chunk " + i + " is '" + tocVerse + "' but versification chunk is '" + versificationVerse + "'\n");
