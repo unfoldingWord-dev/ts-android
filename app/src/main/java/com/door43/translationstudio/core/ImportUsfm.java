@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import org.unfoldingword.door43client.models.TargetLanguage;
+import org.unfoldingword.door43client.models.Versification;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
@@ -40,6 +41,10 @@ import org.unfoldingword.door43client.models.ChunkMarker;
  */
 public class ImportUsfm {
     public static final String TAG = ImportUsfm.class.getSimpleName();
+    public static final String CHAPTER_TITLE_MARKER = "\\\\cl\\s([^\\n]*)";
+    public static final Pattern PATTERN_CHAPTER_TITLE_MARKER = Pattern.compile(CHAPTER_TITLE_MARKER);
+    public static final String CHAPTER_SUB_TITLE_MARKER = "\\\\cl\\s([^\\n]*)";
+    public static final Pattern PATTERN_CHAPTER_SUB_TITLE_MARKER = Pattern.compile(CHAPTER_SUB_TITLE_MARKER);
     public static final String BOOK_TITLE_MARKER = "\\\\toc1\\s([^\\n]*)";
     public static final Pattern PATTERN_BOOK_TITLE_MARKER = Pattern.compile(BOOK_TITLE_MARKER);
     public static final String ID_TAG = "\\\\id\\s([^\\n]*)";
@@ -656,16 +661,29 @@ public class ImportUsfm {
         return success;
     }
 
+    public static class ParsedChunks {
+        final public HashMap<String, List<String>> chunks; // clear old map
+        final public List<String> chapters;
+        final public boolean success;
+
+        public ParsedChunks(HashMap<String, List<String>> chunks, List<String> chapters, boolean success) {
+            this.chunks = chunks;
+            this.chapters = chapters;
+            this.success = success;
+        }
+    }
+
+
     /**
      * parse chunk markers (contains verses and chapters) into map of verses indexed by chapter
      *
-     * @param book
      * @param chunks
      * @return
      */
-    public boolean parseChunks(String book, List<ChunkMarker> chunks) {
-        mChunks = new HashMap<>(); // clear old map
-        mChapters = new ArrayList<>();
+    public static ParsedChunks parseChunks(List<ChunkMarker> chunks) {
+        HashMap<String, List<String>> mChunks = new HashMap<>();
+        List<String> mChapters = new ArrayList<>();
+        boolean success = false;
         if(chunks != null) {
             for (ChunkMarker chunkMarker : chunks) {
                 String chapter = chunkMarker.chapter;
@@ -698,10 +716,10 @@ public class ImportUsfm {
                 }
             });
             mChapters = foundChapters;
-            return (mChapters.size() > 0) || (mChunks.size() > 0);
+            success = (mChapters.size() > 0) || (mChunks.size() > 0);
         }
 
-        return false;
+        return new ParsedChunks(mChunks, mChapters, success);
     }
 
     /**
@@ -715,7 +733,7 @@ public class ImportUsfm {
             int retValue = Integer.parseInt(value);
             return retValue;
         } catch (Exception e) {
-            Log.d(TAG, "Cannot convert to int: " + value);
+//            Log.d(TAG, "Cannot convert to int: " + value);
         }
         return defaultValue;
     }
@@ -823,7 +841,8 @@ public class ImportUsfm {
                 mBookName = mBookShortName;
             }
 
-            List<ChunkMarker> markers = App.getLibrary().index().getChunkMarkers(mBookShortName, "en-US");
+            List<Versification> versifications = App.getLibrary().index().getVersifications("en");
+            List<ChunkMarker> markers = App.getLibrary().index().getChunkMarkers(mBookShortName, versifications.get(0).slug);
             boolean haveChunksList = markers.size() > 0;
 
             if (!haveChunksList) { // no chunk list
@@ -833,7 +852,9 @@ public class ImportUsfm {
                 addBookMissingName(mBookName, mBookShortName, book);
                 return promptForName;
             } else { // has chunks
-                parseChunks(mBookShortName, markers);
+                ParsedChunks parsedChunks = parseChunks(markers);
+                mChapters = parsedChunks.chapters;
+                mChunks = parsedChunks.chunks;
                 mChaperCount = mChapters.size();
 
                 success = extractChaptersFromBook(book);
@@ -1052,7 +1073,12 @@ public class ImportUsfm {
                     return false;
                 }
 
-                List<String> versebreaks = getVerseBreaksObj(chapter);
+                // TODO: 11/1/16 search for title and sub-title
+//                PATTERN_CHAPTER_TITLE_MARKER = Pattern.compile(CHAPTER_TITLE_MARKER);
+//                PATTERN_CHAPTER_SUB_TITLE_MARKER = Pattern.compile(CHAPTER_SUB_TITLE_MARKER);
+
+
+                List<String> versebreaks = getVerseBreaks(chapter);
 
                 int currentChapter = Integer.valueOf(chapter);
                 updateStatus(R.string.processing_chapter, new Integer(mChaperCount - currentChapter + 1).toString());
@@ -1095,13 +1121,13 @@ public class ImportUsfm {
             if (chapter > 0) { // first check in expected location
                 String chapterN = mChapters.get(chapter - 1);
                 if (strToInt(chapterN,-1) == chapter) {
-                    return getRightChapterLength(chapterN);
+                    return getRightFileNameLength(chapterN);
                 }
             }
 
             for (String chapterN : mChapters) { //search for chapter match
                 if (strToInt(chapterN,-1) == chapter) {
-                    return getRightChapterLength(chapterN);
+                    return getRightFileNameLength(chapterN);
                 }
             }
         } catch (Exception e) {
@@ -1113,16 +1139,17 @@ public class ImportUsfm {
     }
 
     /**
-     * right size the chapter.  App expects chapter numbers under 100 to be only two digits.
-     * @param chapterN
+     * right size the file name length.  App expects file names under 100 to be only two digits.
+     * @param fileName
      * @return
      */
-    private String getRightChapterLength(String chapterN) {
-        Integer chapterNInt = strToInt(chapterN, -1);
-        if((chapterNInt >= 0) && (chapterNInt < 100)) {
-            chapterN = chapterN.substring(chapterN.length()-2);
+    public static String getRightFileNameLength(String fileName) {
+        Integer numericalValue = strToInt(fileName, -1);
+        if((numericalValue >= 0) && (numericalValue < 100) && (fileName.length() != 2)) {
+            fileName = "00" + fileName; // make sure has leading zeroes
+            fileName = fileName.substring(fileName.length()-2); // trim down extra leading zeros
         }
-        return chapterN;
+        return fileName;
     }
 
     /**
@@ -1132,11 +1159,11 @@ public class ImportUsfm {
      * @return
      */
     private String getChunkFileName(String findChapter, String firstVerse)  {
-        List<String> chunks = getVerseBreaksObj(findChapter);
+        List<String> chunks = getVerseBreaks(findChapter);
         for (int i = 0; i < chunks.size(); i++) {
             String firstVerseFile = chunks.get(i);
             if (strToInt(firstVerse,0) ==  strToInt(firstVerseFile,0)) {
-                return firstVerseFile;
+                return getRightFileNameLength(firstVerseFile);
             }
         }
 
@@ -1148,7 +1175,7 @@ public class ImportUsfm {
      * @param findChapter
      * @return
      */
-    private List<String> getVerseBreaksObj(String findChapter) {
+    private List<String> getVerseBreaks(String findChapter) {
         String chapter = findChapter;
         if (mChunks.containsKey(chapter)) {
             return mChunks.get(chapter);
@@ -1189,6 +1216,20 @@ public class ImportUsfm {
     private boolean extractVerses(String chapter, CharSequence text, String start, String end) {
         boolean success = true;
         if (null == start) { // skip over stuff before verse 1 for now
+
+            // TODO: 11/1/16 save stuff before verse one
+            if (!isMissing(chapter)) {
+                Pattern pattern = PATTERN_USFM_VERSE_SPAN;
+                Matcher matcher = pattern.matcher(text);
+                if (matcher.find()) {
+                    int verseStart = matcher.start();
+                    if(verseStart > 0) {
+                        CharSequence intro = text.subSequence(0, verseStart);
+                        saveSection(getChapterFolderName(chapter), "intro", intro);
+                    }
+                }
+            }
+
             return true;
         }
 

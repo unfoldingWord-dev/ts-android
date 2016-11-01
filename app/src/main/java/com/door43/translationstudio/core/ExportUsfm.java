@@ -8,8 +8,13 @@ import android.util.Log;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.util.FileUtilities;
+import com.door43.util.StringUtilities;
 import com.door43.util.Zip;
 
+import org.eclipse.jgit.util.StringUtils;
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.Translation;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import java.io.File;
@@ -19,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 
 import org.unfoldingword.resourcecontainer.Project;
 
@@ -220,24 +227,12 @@ public class ExportUsfm {
                 ps.println(shortBookID);
             }
 
-            // frames
-            ArrayList<FrameTranslation> frameList = new ArrayList<FrameTranslation>(Arrays.asList(frames));
-            Collections.sort(frameList, new Comparator<FrameTranslation>() { // do numeric sort
-                @Override
-                public int compare(FrameTranslation lhs, FrameTranslation rhs) {
-                    Integer lhInt = getChunkOrder(lhs.getId());
-                    Integer rhInt = getChunkOrder(rhs.getId());
-                    return lhInt.compareTo(rhInt);
-                }
-            });
-
-            boolean haveFrame0 = false;
+            ArrayList<FrameTranslation> frameList = sortFrameTranslations(frames);
             int startChunk = 0;
             if(frameList.size() > 0) {
                 FrameTranslation frame = frameList.get(0);
                 int verseID = strToInt(frame.getId(),0);
-                haveFrame0 = (verseID == 0);
-                if(haveFrame0) {
+                if((verseID == 0)) {
                     String text = frame.body;
                     ps.print(text);
                     startChunk++;
@@ -245,7 +240,7 @@ public class ExportUsfm {
            }
 
             int chapterInt = strToInt(chapter.getId(),0);
-            if(!haveFrame0 && (chapterInt != 0)) {
+            if(chapterInt != 0) {
                 String chapterNumber = "\\c " + chapter.getId();
                 ps.println(chapterNumber);
             }
@@ -297,15 +292,37 @@ public class ExportUsfm {
     }
 
     /**
+     * sort the frames
+     * @param frames
+     * @return
+     */
+    public static ArrayList<FrameTranslation> sortFrameTranslations(FrameTranslation[] frames) {
+        // sort frames
+        ArrayList<FrameTranslation> frameList = new ArrayList<FrameTranslation>(Arrays.asList(frames));
+        Collections.sort(frameList, new Comparator<FrameTranslation>() { // do numeric sort
+            @Override
+            public int compare(FrameTranslation lhs, FrameTranslation rhs) {
+                Integer lhInt = getChunkOrder(lhs.getId());
+                Integer rhInt = getChunkOrder(rhs.getId());
+                return lhInt.compareTo(rhInt);
+            }
+        });
+        return frameList;
+    }
+
+    /**
      *
      * @param chunkID
      * @return
      */
-    private static Integer getChunkOrder(String chunkID) {
+    public static Integer getChunkOrder(String chunkID) {
         if("00".equals(chunkID)) { // special treatment for chunk 00 to move to end of list
-            return 9999999;
+            return 99999;
         }
-        return strToInt(chunkID, -1);
+        if("back".equalsIgnoreCase(chunkID)){
+            return 9999999; // back is moved to very end
+        }
+        return strToInt(chunkID, -1); // if not numeric, then will move to top of list and leave order unchanged
     }
 
     /**
@@ -319,7 +336,7 @@ public class ExportUsfm {
             int retValue = Integer.parseInt(value);
             return retValue;
         } catch (Exception e) {
-            Log.d(TAG, "Cannot convert to int: " + value);
+//            Log.d(TAG, "Cannot convert to int: " + value);
         }
         return defaultValue;
     }
