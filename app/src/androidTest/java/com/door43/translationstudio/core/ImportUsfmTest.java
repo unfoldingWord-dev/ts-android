@@ -545,7 +545,7 @@ public class ImportUsfmTest extends InstrumentationTestCase {
                             }
                         }
 
-                        File chunkPath = new File(chapterPath, chapterFrameSlug + ".txt");
+                        File chunkPath = new File(chapterPath, ExportUsfmTest.getRightFileNameLength(chapterFrameSlug) + ".txt");
                         assertTrue("Chunk missing " + chunkPath.toString(), chunkPath.exists());
                         try {
                             chunk = FileUtilities.readFileToString(chunkPath);

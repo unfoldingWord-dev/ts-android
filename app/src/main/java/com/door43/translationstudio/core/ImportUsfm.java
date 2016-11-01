@@ -41,6 +41,10 @@ import org.unfoldingword.door43client.models.ChunkMarker;
  */
 public class ImportUsfm {
     public static final String TAG = ImportUsfm.class.getSimpleName();
+    public static final String CHAPTER_TITLE_MARKER = "\\\\cl\\s([^\\n]*)";
+    public static final Pattern PATTERN_CHAPTER_TITLE_MARKER = Pattern.compile(CHAPTER_TITLE_MARKER);
+    public static final String CHAPTER_SUB_TITLE_MARKER = "\\\\cl\\s([^\\n]*)";
+    public static final Pattern PATTERN_CHAPTER_SUB_TITLE_MARKER = Pattern.compile(CHAPTER_SUB_TITLE_MARKER);
     public static final String BOOK_TITLE_MARKER = "\\\\toc1\\s([^\\n]*)";
     public static final Pattern PATTERN_BOOK_TITLE_MARKER = Pattern.compile(BOOK_TITLE_MARKER);
     public static final String ID_TAG = "\\\\id\\s([^\\n]*)";
@@ -729,7 +733,7 @@ public class ImportUsfm {
             int retValue = Integer.parseInt(value);
             return retValue;
         } catch (Exception e) {
-            Log.d(TAG, "Cannot convert to int: " + value);
+//            Log.d(TAG, "Cannot convert to int: " + value);
         }
         return defaultValue;
     }
@@ -1069,7 +1073,12 @@ public class ImportUsfm {
                     return false;
                 }
 
-                List<String> versebreaks = getVerseBreaksObj(chapter);
+                // TODO: 11/1/16 search for title and sub-title
+//                PATTERN_CHAPTER_TITLE_MARKER = Pattern.compile(CHAPTER_TITLE_MARKER);
+//                PATTERN_CHAPTER_SUB_TITLE_MARKER = Pattern.compile(CHAPTER_SUB_TITLE_MARKER);
+
+
+                List<String> versebreaks = getVerseBreaks(chapter);
 
                 int currentChapter = Integer.valueOf(chapter);
                 updateStatus(R.string.processing_chapter, new Integer(mChaperCount - currentChapter + 1).toString());
@@ -1150,7 +1159,7 @@ public class ImportUsfm {
      * @return
      */
     private String getChunkFileName(String findChapter, String firstVerse)  {
-        List<String> chunks = getVerseBreaksObj(findChapter);
+        List<String> chunks = getVerseBreaks(findChapter);
         for (int i = 0; i < chunks.size(); i++) {
             String firstVerseFile = chunks.get(i);
             if (strToInt(firstVerse,0) ==  strToInt(firstVerseFile,0)) {
@@ -1166,7 +1175,7 @@ public class ImportUsfm {
      * @param findChapter
      * @return
      */
-    private List<String> getVerseBreaksObj(String findChapter) {
+    private List<String> getVerseBreaks(String findChapter) {
         String chapter = findChapter;
         if (mChunks.containsKey(chapter)) {
             return mChunks.get(chapter);
@@ -1207,6 +1216,20 @@ public class ImportUsfm {
     private boolean extractVerses(String chapter, CharSequence text, String start, String end) {
         boolean success = true;
         if (null == start) { // skip over stuff before verse 1 for now
+
+            // TODO: 11/1/16 save stuff before verse one
+            if (!isMissing(chapter)) {
+                Pattern pattern = PATTERN_USFM_VERSE_SPAN;
+                Matcher matcher = pattern.matcher(text);
+                if (matcher.find()) {
+                    int verseStart = matcher.start();
+                    if(verseStart > 0) {
+                        CharSequence intro = text.subSequence(0, verseStart);
+                        saveSection(getChapterFolderName(chapter), "intro", intro);
+                    }
+                }
+            }
+
             return true;
         }
 

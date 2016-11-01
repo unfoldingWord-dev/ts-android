@@ -447,6 +447,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
                 }
             } else {
                 addErrorMsg("chapter '" + chapterIn + "' missing in output\n");
+                break;
             }
 
             if (chapterInInt > 1) {
@@ -765,7 +766,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
             int retValue = Integer.parseInt(value);
             return retValue;
         } catch (Exception e) {
-            Log.d(TAG, "Cannot convert to int: " + value);
+//            Log.d(TAG, "Cannot convert to int: " + value);
         }
         return defaultValue;
     }

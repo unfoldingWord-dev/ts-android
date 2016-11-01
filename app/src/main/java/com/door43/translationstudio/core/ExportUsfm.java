@@ -228,13 +228,11 @@ public class ExportUsfm {
             }
 
             ArrayList<FrameTranslation> frameList = sortFrameTranslations(frames);
-            boolean haveFrame0 = false;
             int startChunk = 0;
             if(frameList.size() > 0) {
                 FrameTranslation frame = frameList.get(0);
                 int verseID = strToInt(frame.getId(),0);
-                haveFrame0 = (verseID == 0);
-                if(haveFrame0) {
+                if((verseID == 0)) {
                     String text = frame.body;
                     ps.print(text);
                     startChunk++;
@@ -242,7 +240,7 @@ public class ExportUsfm {
            }
 
             int chapterInt = strToInt(chapter.getId(),0);
-            if(!haveFrame0 && (chapterInt != 0)) {
+            if(chapterInt != 0) {
                 String chapterNumber = "\\c " + chapter.getId();
                 ps.println(chapterNumber);
             }
@@ -319,9 +317,12 @@ public class ExportUsfm {
      */
     public static Integer getChunkOrder(String chunkID) {
         if("00".equals(chunkID)) { // special treatment for chunk 00 to move to end of list
-            return 9999999;
+            return 99999;
         }
-        return strToInt(chunkID, -1);
+        if("back".equalsIgnoreCase(chunkID)){
+            return 9999999; // back is moved to very end
+        }
+        return strToInt(chunkID, -1); // if not numeric, then will move to top of list and leave order unchanged
     }
 
     /**
@@ -335,7 +336,7 @@ public class ExportUsfm {
             int retValue = Integer.parseInt(value);
             return retValue;
         } catch (Exception e) {
-            Log.d(TAG, "Cannot convert to int: " + value);
+//            Log.d(TAG, "Cannot convert to int: " + value);
         }
         return defaultValue;
     }

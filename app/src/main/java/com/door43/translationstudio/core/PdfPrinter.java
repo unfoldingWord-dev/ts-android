@@ -258,7 +258,7 @@ public class PdfPrinter extends PdfPageEventHelper {
             if(includeIncomplete || c.isTitleFinished() || sourceContainer.readChunk(c.getId(), "title").isEmpty()) {
                 addChapterPage(document, c);
             }
-            
+
             // chapter body
             FrameTranslation[] frames = targetTranslation.getFrameTranslations(c.getId(), this.format);
             ArrayList<FrameTranslation> frameList = ExportUsfm.sortFrameTranslations(frames);
