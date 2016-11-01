@@ -458,16 +458,16 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         // look for nested changes
         // TODO: this block should probably be placed in a task
-        boolean changeFound = true;
-        while(changeFound) {
-            changeFound = false;
+//        boolean changeFound = true;
+//        while(changeFound) {
+//            changeFound = false;
 
             for(int i = 0; i < item.mergeItems.size(); i++) {
                 MergeConflictCard mergeConflictCard = item.mergeItems.get(i);
                 CharSequence mergeText = mergeConflictCard.text;
                 boolean mergeConflicted = MergeConflictHandler.isMergeConflicted(mergeText);
                 if(mergeConflicted) {
-                    changeFound = true;
+//                    changeFound = true;
                     renderer = new MergeConflictHandler();
                     renderer.renderMergeConflict(mergeText, mergeConflictColor);
                     fullMergeConflict = renderer.isFullBlockMergeConflict();
@@ -479,7 +479,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     i++;
                 }
             }
-        }
+//        }
 
         holder.mConflictText.setVisibility(View.VISIBLE);
         holder.mButtonBar.setVisibility(View.GONE);

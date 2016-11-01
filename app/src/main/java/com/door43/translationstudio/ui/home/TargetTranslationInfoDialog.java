@@ -61,6 +61,11 @@ public class TargetTranslationInfoDialog extends DialogFragment {
         } else {
             String targetTranslationId = args.getString(ARG_TARGET_TRANSLATION_ID, null);
             mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
+            if(mTargetTranslation == null) {
+                Logger.w("TargetTranslationInfoDialog", "Unknown target translation " + targetTranslationId);
+                dismiss();
+                return null;
+            }
         }
 
         final Door43Client library = App.getLibrary();
