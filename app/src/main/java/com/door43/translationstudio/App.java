@@ -156,13 +156,13 @@ public class App extends Application {
     @Deprecated
     public static TargetLanguage languageFromTargetTranslation(TargetTranslation t) {
         Door43Client library = getLibrary();
-        TargetLanguage l = library.index().getTargetLanguage(t.getTargetLanguageId());
+        TargetLanguage l = library.index.getTargetLanguage(t.getTargetLanguageId());
         if(l == null && t.getTargetLanguageId().isEmpty()) {
             String name = t.getTargetLanguageName().isEmpty() ? t.getTargetLanguageId() : t.getTargetLanguageName();
             String direction = t.getTargetLanguageDirection() == null ? "ltr" : t.getTargetLanguageDirection();
             l = new TargetLanguage(t.getTargetLanguageId(), name, "", direction, "unknown", false);
             try {
-                library.index().addTempTargetLanguage(l);
+                library.index.addTempTargetLanguage(l);
             } catch (Exception e) {
                 l = null;
                 e.printStackTrace();
@@ -342,10 +342,10 @@ public class App extends Application {
     public static List<SourceTranslation> getDraftTranslations(String projectSlug) {
         List<SourceTranslation> translations = new ArrayList<>();
         Door43Client library = getLibrary();
-        List<SourceLanguage> languages = library.index().getSourceLanguages(projectSlug);
+        List<SourceLanguage> languages = library.index.getSourceLanguages(projectSlug);
         for(SourceLanguage l:languages) {
-            List<Resource> resources = library.index().getResources(l.slug, projectSlug);
-            Project p = library.index().getProject(l.slug, projectSlug);
+            List<Resource> resources = library.index.getResources(l.slug, projectSlug);
+            Project p = library.index.getProject(l.slug, projectSlug);
             for(Resource r:resources) {
                 if(Integer.parseInt(r.checkingLevel) < MIN_CHECKING_LEVEL) {
                     translations.add(new SourceTranslation(l, p, r));
@@ -407,7 +407,7 @@ public class App extends Application {
      */
     public static boolean isLibraryDeployed() {
         boolean hasContainers = containersDir().exists() && containersDir().isDirectory() && containersDir().list().length > 0;
-        return getLibrary().index().getSourceLanguages().size() > 0 && hasContainers;
+        return getLibrary().index.getSourceLanguages().size() > 0 && hasContainers;
 //        return dbFile().exists() && dbFile().isFile() && ;
     }
 
@@ -1004,7 +1004,7 @@ public class App extends Application {
             requestFile.getParentFile().mkdirs();
             try {
                 FileUtilities.writeStringToFile(requestFile, request.toJson());
-                return getLibrary().index().addTempTargetLanguage(request.getTempTargetLanguage());
+                return getLibrary().index.addTempTargetLanguage(request.getTempTargetLanguage());
             } catch (Exception e) {
                 Logger.e(App.class.getName(), "Failed to save the new langauge request", e);
             }

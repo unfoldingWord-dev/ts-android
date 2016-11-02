@@ -34,6 +34,28 @@ public class DownloadResourceContainerTask extends ManagedTask {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        if(success) {
+            // also download helps
+            if(!translation.resource.slug.equals("tw") || !translation.resource.slug.equals("tn") || !translation.resource.slug.equals("tq")) {
+                // TODO: 11/2/16 only download these if there is an update
+                try {
+                    App.getLibrary().download(translation.language.slug, translation.project.slug, "tw");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                try {
+                    App.getLibrary().download(translation.language.slug, translation.project.slug, "tn");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                try {
+                    App.getLibrary().download(translation.language.slug, translation.project.slug, "tq");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     /**

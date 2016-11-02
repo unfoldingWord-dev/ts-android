@@ -87,10 +87,10 @@ public class ContainerCache {
         // attempt to cache the container
         if(!sInstance.inspectedTranslations.contains(translationSlug)) {
             sInstance.inspectedTranslations.add(translationSlug);
-            List<Translation> translations = client.index().findTranslations(languageSlug, projectSlug, resourceSlug, null, null, 0, -1);
+            List<Translation> translations = client.index.findTranslations(languageSlug, projectSlug, resourceSlug, null, null, 0, -1);
             if (translations.size() == 0) {
                 // try to find any language
-                translations = client.index().findTranslations(null, projectSlug, resourceSlug, null, null, 0, -1);
+                translations = client.index.findTranslations(null, projectSlug, resourceSlug, null, null, 0, -1);
             }
             // load the first available container
             for (Translation translation : translations) {

@@ -664,7 +664,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      * @return
      */
     private boolean draftIsAvailable() {
-        List<Translation> draftTranslations = App.getLibrary().index().findTranslations(mTargetTranslation.getTargetLanguage().slug, mTargetTranslation.getProjectId(), null, "book", "all", 0, -1);
+        List<Translation> draftTranslations = App.getLibrary().index().findTranslations(mTargetTranslation.getTargetLanguage().slug, mTargetTranslation.getProjectId(), null, "book", null, 0, -1);
         return draftTranslations.size() > 0;
     }
 
