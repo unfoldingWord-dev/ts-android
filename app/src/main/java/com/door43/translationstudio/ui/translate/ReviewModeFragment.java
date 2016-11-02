@@ -80,6 +80,7 @@ public class ReviewModeFragment extends ViewModeFragment {
 
     private String mResourceContainerSlug;
     private ResourceContainer mSourceContainer = null;
+    private TranslationHelp mTranslationHelp = null;
 
     @Override
     ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String chapterId, String frameId, Bundle extras) {
@@ -129,11 +130,13 @@ public class ReviewModeFragment extends ViewModeFragment {
                         ReviewModeAdapter.ViewHolder sample = (ReviewModeAdapter.ViewHolder) getViewHolderSample();
                         if (sample != null) {
                             if (mTranslationNoteId != null) {
-                                onTranslationNoteClick(mChapterId, mFrameId, mTranslationNoteId, sample.getResourceCardWidth());
+                                // TODO: 11/2/16 we need a way to restore the note
+//                                onTranslationNoteClick(mChapterId, mFrameId, mTranslationNoteId, sample.getResourceCardWidth());
                             } else if (mTranslationWordId != null) {
                                 onTranslationWordClick(mResourceContainerSlug, mTranslationWordId, sample.getResourceCardWidth());
                             } else if (mCheckingQuestionId != null) {
-                                onCheckingQuestionClick(mChapterId, mFrameId, mCheckingQuestionId, sample.getResourceCardWidth());
+                                // TODO: we need a way to restore the question
+                                //onCheckingQuestionClick(mChapterId, mFrameId, mCheckingQuestionId, sample.getResourceCardWidth());
                             }
                         }
                     }
@@ -190,14 +193,14 @@ public class ReviewModeFragment extends ViewModeFragment {
     }
 
     @Override
-    public void onTranslationNoteClick(String chapterId, String frameId, String translatioNoteId, int width) {
-        renderTranslationNote(chapterId, frameId, translatioNoteId);
+    public void onTranslationNoteClick(TranslationHelp note, int width) {
+        renderTranslationNote(note);
         openResourcesDrawer(width);
     }
 
     @Override
-    public void onCheckingQuestionClick(String chapterId, String frameId, String checkingQuestionId, int width) {
-        renderCheckingQuestion(chapterId, frameId, checkingQuestionId);
+    public void onCheckingQuestionClick(TranslationHelp question, int width) {
+        renderCheckingQuestion(question);
         openResourcesDrawer(width);
     }
 
@@ -511,17 +514,17 @@ public class ReviewModeFragment extends ViewModeFragment {
 
     /**
      * Prepares the resources drawer with the translation note
-     * @param noteId
+     * @param note
      */
-    private void renderTranslationNote(String chapterId, String frameId, String noteId) {
+    private void renderTranslationNote(TranslationHelp note) {
         mTranslationWordId = null;
-        mTranslationNoteId = noteId;
-        mFrameId = frameId;
-        mChapterId = chapterId;
+        mTranslationNoteId = null;
+        mFrameId = null;
+        mChapterId = null;
 
         final Door43Client library = App.getLibrary();
         final ResourceContainer sourceTranslation = getSelectedResourceContainer();
-        TranslationNote note = null;//getPreferredNote(sourceTranslation, chapterId, frameId, noteId);
+//        TranslationNote note = null;//getPreferredNote(sourceTranslation, chapterId, frameId, noteId);
         if(mResourcesDrawerContent != null) {
             mResourcesDrawerContent.setVisibility(View.GONE);
         }
@@ -585,11 +588,11 @@ public class ReviewModeFragment extends ViewModeFragment {
                 }
             });
 
-            title.setText(note.getTitle());
+            title.setText(note.title);
             SourceLanguage sourceLanguage = library.index().getSourceLanguage(sourceTranslation.language.slug);
             Typography.format(getActivity(), TranslationType.SOURCE, title, sourceLanguage.slug, sourceLanguage.direction);
 
-            descriptionView.setText(renderer.render(note.getBody()));
+            descriptionView.setText(renderer.render(note.body));
             Typography.formatSub(getActivity(), TranslationType.SOURCE, descriptionView, sourceLanguage.slug, sourceLanguage.direction);
             descriptionView.setMovementMethod(LocalLinkMovementMethod.getInstance());
 
@@ -600,19 +603,22 @@ public class ReviewModeFragment extends ViewModeFragment {
 
     /**
      * Prepares the resources drawer with the checking question
-     * @param questionId
+     * @param question
      */
-    private void renderCheckingQuestion(String chapterId, String frameId, String questionId) {
+    private void renderCheckingQuestion(TranslationHelp question) {
         mTranslationWordId = null;
         mTranslationNoteId = null;
-        mCheckingQuestionId = questionId;
-        mFrameId = frameId;
-        mChapterId = chapterId;
+        mTranslationHelp = question;
+
+        // these are deprecated
+        mCheckingQuestionId = null;
+        mFrameId = null;
+        mChapterId = null;
 
         final Door43Client library = App.getLibrary();
         ResourceContainer sourceTranslation = getSelectedResourceContainer();
-        CheckingQuestion question = null;//getPreferredQuestion(sourceTranslation, chapterId, frameId, questionId);
-        SourceLanguage sourceLanguage = library.index().getSourceLanguage(sourceTranslation.language.slug);
+//        CheckingQuestion question = null;//getPreferredQuestion(sourceTranslation, chapterId, frameId, questionId);
+        SourceLanguage sourceLanguage = library.index.getSourceLanguage(sourceTranslation.language.slug);
         if(mResourcesDrawerContent != null && question != null) {
             mResourcesDrawerContent.setVisibility(View.GONE);
         }
@@ -629,28 +635,10 @@ public class ReviewModeFragment extends ViewModeFragment {
             TextView answerTitle = (TextView)view.findViewById(R.id.answer_title);
             Typography.formatTitle(getActivity(), TranslationType.SOURCE, answerTitle, sourceLanguage.slug, sourceLanguage.direction);
             TextView answerView = (TextView)view.findViewById(R.id.answer);
-            TextView referencesTitle = (TextView)view.findViewById(R.id.references_title);
-            Typography.formatTitle(getActivity(), TranslationType.SOURCE, referencesTitle, sourceLanguage.slug, sourceLanguage.direction);
-            LinearLayout referencesLayout = (LinearLayout)view.findViewById(R.id.references);
 
-            referencesLayout.removeAllViews();
-            for(final CheckingQuestion.Reference reference:question.getReferences()) {
-                TextView referenceView = (TextView) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_reference_item, null);
-//                Frame frame = library.getFrame(sourceTranslation, reference.getChapterId(), reference.getFrameId());
-//                referenceView.setText(sourceTranslation.getProjectTitle() + " " + Integer.parseInt(reference.getChapterId()) + ":" + frame.getTitle());
-                Typography.formatSub(getActivity(), TranslationType.SOURCE, referenceView, sourceLanguage.slug, sourceLanguage.direction);
-                referenceView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        scrollToFrame(reference.getChapterId(), reference.getFrameId());
-                    }
-                });
-                referencesLayout.addView(referenceView);
-            }
-
-            questionView.setText(question.getQuestion());
+            questionView.setText(question.title);
             Typography.formatSub(getActivity(), TranslationType.SOURCE, questionView, sourceLanguage.slug, sourceLanguage.direction);
-            answerView.setText(question.getAnswer());
+            answerView.setText(question.body);
             Typography.formatSub(getActivity(), TranslationType.SOURCE, answerView, sourceLanguage.slug, sourceLanguage.direction);
 
             mScrollingResourcesDrawerContent.removeAllViews();

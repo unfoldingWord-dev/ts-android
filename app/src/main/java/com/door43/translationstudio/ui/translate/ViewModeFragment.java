@@ -215,13 +215,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      * @return
      */
     protected ResourceContainer getSelectedResourceContainer() {
-        try {
-            return mLibrary.open(mSourceTranslation.resourceContainerSlug);
-        } catch (Exception e) {
-            // We perform checks when loading so this should never happen
-            e.printStackTrace();
-            return null;
-        }
+        return ContainerCache.cache(mLibrary, mSourceTranslation.resourceContainerSlug);
     }
 
     /**
@@ -384,12 +378,12 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     @Override
-    public void onTranslationNoteClick(String chapterId, String frameId, String translationNoteId, int width) {
+    public void onTranslationNoteClick(TranslationHelp note, int width) {
 
     }
 
     @Override
-    public void onCheckingQuestionClick(String chapterId, String frameId, String checkingQuestionId, int width) {
+    public void onCheckingQuestionClick(TranslationHelp question, int width) {
 
     }
 

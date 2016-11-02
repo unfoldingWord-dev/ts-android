@@ -50,6 +50,7 @@ public class ContainerCache {
 
     /**
      * Caches an exact match to a resource container if one exists.
+     * If the container has already been cached it will not touch the disk.
      * @param client
      * @param resourceContainerSlug
      * @return

@@ -84,6 +84,8 @@ import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -132,6 +134,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private boolean mMergeTailSelected = false;
     private float mInitialTextSize = 0;
     private int mMarginInitialLeft = 0;
+    private Map<String, String[]> mSortedChunks = new HashMap<>();
 
     enum DisplayState {
         NORMAL,
@@ -1516,6 +1519,91 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         return new HashMap();
     }
 
+    /**
+     * Converts a verse id to a chunk id.
+     * If an error occurs the verse will be returned
+     * @param verse
+     * @param chapter
+     * @return
+     */
+    private String verseToChunk(String verse, String chapter) {
+        if(!mSortedChunks.containsKey(chapter)) {
+            try {
+                String[] chunks = mSourceContainer.chunks(chapter);
+                Arrays.sort(chunks, new Comparator<String>() {
+                    @Override
+                    public int compare(String o1, String o2) {
+                        Integer i1;
+                        Integer i2;
+                        // TRICKY: push strings to top
+                        try {
+                            i1 = Integer.valueOf(o1);
+                        } catch (NumberFormatException e) {
+                            return 1;
+                        }
+                        try {
+                            i2 = Integer.valueOf(o2);
+                        } catch (NumberFormatException e) {
+                            return 1;
+                        }
+                        return i1.compareTo(i2);
+                    }
+                });
+                mSortedChunks.put(chapter, chunks);
+            } catch (Exception e) {
+                return verse;
+            }
+        }
+
+        String match = verse;
+        for(String chunk:mSortedChunks.get(chapter)) {
+            try { // Note: in javascript parseInt will return NaN rather than throw an exception.
+                if(Integer.parseInt(chunk) > Integer.parseInt(verse)) {
+                    break;
+                }
+                match = chunk;
+            } catch (Exception e) {
+                // TRICKY: some chunks are not numbers
+                if(chunk.equals(verse)) {
+                    match = chunk;
+                    break;
+                }
+            }
+        }
+        return match;
+    }
+
+    /**
+     * Splits some raw help text into translation helps
+     * @param rawText the help text
+     * @return
+     */
+    private List<TranslationHelp> parseHelps(String rawText) {
+        List<TranslationHelp> helps = new ArrayList<>();
+
+        // split up multiple helps
+        String[] helpTextArray = rawText.split("#");
+        for(String helpText:helpTextArray) {
+            if(helpText.trim().isEmpty()) continue;
+
+            // split help title and body
+            String[] parts = helpText.trim().split("\n", 2);
+            String title = parts[0].trim();
+            String body = parts.length > 1 ? parts[1].trim() : null;
+
+            // prepare snippets (has no title)
+            int maxSnippetLength = 50;
+            if(body == null) {
+                body = title;
+                if (title.length() > maxSnippetLength) {
+                    title = title.substring(0, maxSnippetLength) + "...";
+                }
+            }
+            helps.add(new TranslationHelp(title, body));
+        }
+        return helps;
+    }
+
     private void renderResourceCard(final int position, final ReviewListItem item, final ViewHolder holder) {
         // clean up view
         if(holder.mResourceList.getChildCount() > 0) {
@@ -1532,7 +1620,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 //        final String  frame = loadFrame(item.chapterSlug, item.chunkSlug);
 
         // clear resource card
-        renderResources(holder, position, new TranslationNote[0], new ArrayList<Link>(){}, new CheckingQuestion[0]);
+        renderResources(holder, position, new ArrayList<TranslationHelp>(), new ArrayList<Link>(){}, new ArrayList<TranslationHelp>());
 
         // prepare task to load resources
         ManagedTask oldTask = TaskManager.getTask(holder.currentResourceTaskId);
@@ -1542,12 +1630,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         ManagedTask task = new ManagedTask() {
             @Override
             public void start() {
-                Map<String, List<Link>> result = new HashMap<>();
+                Map<String, Object> result = new HashMap<>();
 
                 // add some default values
-                result.put("words", new ArrayList<Link>());
-                result.put("questions", new ArrayList<Link>());
-                result.put("notes", new ArrayList<Link>());
+                result.put("words", new ArrayList<>());
+                result.put("questions", new ArrayList<>());
+                result.put("notes", new ArrayList<>());
 
                 if(getListener() == null) return;
 
@@ -1570,16 +1658,46 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
 
                 if(interrupted()) return;
-                if(config.containsKey("questions")) {
-                    List<Link> links = ContainerCache.cacheClosestFromLinks(mLibrary, config.get("questions"));
-                    result.put("questions", links);
+                List<TranslationHelp> translationQuestions = new ArrayList<>();
+                List<Translation> questionTranslations = mLibrary.index.findTranslations(mSourceContainer.language.slug, mSourceContainer.project.slug, "tq", "help", null, 0, -1);
+                if(questionTranslations.size() > 0) {
+                    try {
+                        ResourceContainer rc = ContainerCache.cache(mLibrary, questionTranslations.get(0).resourceContainerSlug);
+                        // TRICKY: questions are id'd by verse not chunk
+                        String[] verses = rc.chunks(item.chapterSlug);
+                        for(String verse:verses) {
+                            String chunk = verseToChunk(verse, item.chapterSlug);
+                            if(chunk.equals(item.chunkSlug)) {
+                                String rawQuestions = rc.readChunk(item.chapterSlug, verse);
+                                List<TranslationHelp> helps = parseHelps(rawQuestions);
+                                translationQuestions.addAll(helps);
+                                break;
+                            }
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    result.put("questions", translationQuestions);
                 }
 
                 if(interrupted()) return;
-                if(config.containsKey("notes")) {
-                    List<Link> links = ContainerCache.cacheClosestFromLinks(mLibrary, config.get("notes"));
-                    result.put("notes", links);
+                List<TranslationHelp> translationNotes = new ArrayList<>();
+                List<Translation> noteTranslations = mLibrary.index.findTranslations(mSourceContainer.language.slug, mSourceContainer.project.slug, "tn", "help", null, 0, -1);
+                if(noteTranslations.size() > 0) {
+                    try {
+                        ResourceContainer rc = ContainerCache.cache(mLibrary, noteTranslations.get(0).resourceContainerSlug);
+                        String rawNotes = rc.readChunk(item.chapterSlug, item.chunkSlug);
+                        if(!rawNotes.isEmpty()) {
+                            List<TranslationHelp> helps = parseHelps(rawNotes);
+                            translationNotes.addAll(helps);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    result.put("notes", translationNotes);
                 }
+
                 // TODO: 10/17/16 if there are no results then look in the english version of this container
                 setResult(result);
             }
@@ -1589,9 +1707,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             public void onTaskFinished(ManagedTask task) {
                 Map<String, Object> data = (Map<String, Object>)task.getResult();
                 if(!task.isCanceled() && data != null && position == holder.currentPosition) {
-                    final TranslationNote[] notes = new TranslationNote[0];//data.get("notes");
+                    final List<TranslationHelp> notes = (List<TranslationHelp>)data.get("notes");
                     final List<Link> words = (List<Link>) data.get("words");
-                    final CheckingQuestion[] questions = new CheckingQuestion[0]; // data.get("questions");
+                    final List<TranslationHelp> questions = (List<TranslationHelp>)data.get("questions");
 
                     // TODO: cache the links
 
@@ -1601,7 +1719,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         public void run() {
                             holder.mResourceTabs.setOnTabSelectedListener(null);
                             holder.mResourceTabs.removeAllTabs();
-                            if(notes.length > 0) {
+                            if(notes.size() > 0) {
                                 TabLayout.Tab tab = holder.mResourceTabs.newTab();
                                 tab.setText(R.string.label_translation_notes);
                                 tab.setTag(TAB_NOTES);
@@ -1619,7 +1737,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                     tab.select();
                                 }
                             }
-                            if(questions.length > 0) {
+                            if(questions.size()> 0) {
                                 TabLayout.Tab tab = holder.mResourceTabs.newTab();
                                 tab.setText(R.string.questions);
                                 tab.setTag(TAB_QUESTIONS);
@@ -1630,7 +1748,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             }
 
                             // select default tab. first notes, then words, then questions
-                            if(mOpenResourceTab[position] == TAB_NOTES && notes.length == 0) {
+                            if(mOpenResourceTab[position] == TAB_NOTES && notes.size() == 0) {
                                 mOpenResourceTab[position] = TAB_WORDS;
                             }
                             if(mOpenResourceTab[position] == TAB_WORDS && words.size() == 0) {
@@ -1638,7 +1756,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             }
 
                             // resource list
-                            if(notes.length > 0 || words.size() > 0 || questions.length > 0) {
+                            if(notes.size() > 0 || words.size() > 0 || questions.size() > 0) {
                                 renderResources(holder, position, notes, words, questions);
                             }
 
@@ -1709,20 +1827,20 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param words
      * @param questions
      */
-    private void renderResources(final ViewHolder holder, int position, TranslationNote[] notes, List<Link> words, CheckingQuestion[] questions) {
+    private void renderResources(final ViewHolder holder, int position, List<TranslationHelp> notes, List<Link> words, List<TranslationHelp> questions) {
         if(holder.mResourceList.getChildCount() > 0) {
             holder.mResourceList.removeAllViews();
         }
         if(mOpenResourceTab[position] == TAB_NOTES) {
             // render notes
-            for(final TranslationNote note:notes) {
+            for(final TranslationHelp note:notes) {
                 TextView noteView = (TextView) mContext.getLayoutInflater().inflate(R.layout.fragment_resources_list_item, null);
-                noteView.setText(note.getTitle());
+                noteView.setText(note.title);
                 noteView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         if (getListener() != null) {
-                            getListener().onTranslationNoteClick(note.getChapterId(), note.getFrameId(), note.getId(), holder.getResourceCardWidth());
+                            getListener().onTranslationNoteClick(note, holder.getResourceCardWidth());
                         }
                     }
                 });
@@ -1748,14 +1866,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         } else if(mOpenResourceTab[position] == TAB_QUESTIONS) {
             // render questions
-            for(final CheckingQuestion question:questions) {
+            for(final TranslationHelp question:questions) {
                 TextView questionView = (TextView) mContext.getLayoutInflater().inflate(R.layout.fragment_resources_list_item, null);
-                questionView.setText(question.getQuestion());
+                questionView.setText(question.title);
                 questionView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         if (getListener() != null) {
-                            getListener().onCheckingQuestionClick(question.getChapterId(), question.getFrameId(), question.getId(), holder.getResourceCardWidth());
+                            getListener().onCheckingQuestionClick(question, holder.getResourceCardWidth());
                         }
                     }
                 });
