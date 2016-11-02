@@ -401,6 +401,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             ManagedTask task = new ManagedTask() {
                 @Override
                 public void start() {
+                    setThreadPriority(Thread.MIN_PRIORITY);
                     if(interrupted()) return;
                     CharSequence text = renderSourceText(item.sourceText, item.sourceTranslationFormat, holder, item, false);
                     setResult(text);
@@ -586,6 +587,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             ManagedTask task = new ManagedTask() {
                 @Override
                 public void start() {
+                    setThreadPriority(Thread.MIN_PRIORITY);
                     if(interrupted()) return;
                     CharSequence text;
                     if(item.isComplete || item.isEditing) {
@@ -1630,6 +1632,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         ManagedTask task = new ManagedTask() {
             @Override
             public void start() {
+                setThreadPriority(Thread.MIN_PRIORITY);
                 Map<String, Object> result = new HashMap<>();
 
                 // add some default values

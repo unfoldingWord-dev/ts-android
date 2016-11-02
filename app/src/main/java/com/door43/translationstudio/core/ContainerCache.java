@@ -57,7 +57,7 @@ public class ContainerCache {
      */
     public static ResourceContainer cache(Door43Client client, String resourceContainerSlug) {
         // check the cache first
-        if(sInstance.resourceContainers.containsKey(resourceContainerSlug)) {
+        if (sInstance.resourceContainers.containsKey(resourceContainerSlug)) {
             return sInstance.resourceContainers.get(resourceContainerSlug);
         }
         // cache it
@@ -86,7 +86,7 @@ public class ContainerCache {
         if(languageSlug == null || languageSlug.isEmpty()) languageSlug = Locale.getDefault().getLanguage();
         String translationSlug = ContainerTools.makeSlug(languageSlug, projectSlug, resourceSlug);
         // attempt to cache the container
-        if(!sInstance.inspectedTranslations.contains(translationSlug)) {
+        if (!sInstance.inspectedTranslations.contains(translationSlug)) {
             sInstance.inspectedTranslations.add(translationSlug);
             List<Translation> translations = client.index.findTranslations(languageSlug, projectSlug, resourceSlug, null, null, 0, -1);
             if (translations.size() == 0) {
@@ -95,7 +95,7 @@ public class ContainerCache {
             }
             // load the first available container
             for (Translation translation : translations) {
-                if(!sInstance.inspectedContainers.contains(translation.resourceContainerSlug)) {
+                if (!sInstance.inspectedContainers.contains(translation.resourceContainerSlug)) {
                     // only inspect container once
                     sInstance.inspectedContainers.add(translation.resourceContainerSlug);
                     try {
@@ -110,7 +110,7 @@ public class ContainerCache {
                 }
             }
         }
-        if(sInstance.translationToContainerSlugs.containsKey(translationSlug)) {
+        if (sInstance.translationToContainerSlugs.containsKey(translationSlug)) {
             String containerSlug = sInstance.translationToContainerSlugs.get(translationSlug);
             return sInstance.resourceContainers.get(containerSlug);
         }
