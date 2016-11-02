@@ -444,42 +444,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             return;
         }
 
-        MergeConflictHandler renderer = new MergeConflictHandler();
-        int mergeConflictColor = mContext.getResources().getColor(CONFLICT_COLOR);
-        renderer.renderMergeConflict(item.targetText, mergeConflictColor);
-        holder.mMergeText = new ArrayList<>();
-        item.mergeItems = new ArrayList<>();
         item.mergeItemSelected = -1;
-        boolean fullMergeConflict = renderer.isFullBlockMergeConflict();
-        CharSequence headText = renderer.getConflictPart(MergeConflictHandler.MERGE_HEAD_PART);
-        item.mergeItems.add(new MergeConflictCard(headText, fullMergeConflict));
-        CharSequence tailText = renderer.getConflictPart(MergeConflictHandler.MERGE_TAIL_PART);
-        item.mergeItems.add(new MergeConflictCard(tailText, fullMergeConflict));
-
-        // look for nested changes
-        // TODO: this block should probably be placed in a task
-//        boolean changeFound = true;
-//        while(changeFound) {
-//            changeFound = false;
-
-            for(int i = 0; i < item.mergeItems.size(); i++) {
-                MergeConflictCard mergeConflictCard = item.mergeItems.get(i);
-                CharSequence mergeText = mergeConflictCard.text;
-                boolean mergeConflicted = MergeConflictHandler.isMergeConflicted(mergeText);
-                if(mergeConflicted) {
-//                    changeFound = true;
-                    renderer = new MergeConflictHandler();
-                    renderer.renderMergeConflict(mergeText, mergeConflictColor);
-                    fullMergeConflict = renderer.isFullBlockMergeConflict();
-                    headText = renderer.getConflictPart(MergeConflictHandler.MERGE_HEAD_PART);
-                    tailText = renderer.getConflictPart(MergeConflictHandler.MERGE_TAIL_PART);
-                    mergeConflictCard.text = headText;
-                    mergeConflictCard.mFullMergeConflict = fullMergeConflict;
-                    item.mergeItems.add(i + 1, new MergeConflictCard(tailText, fullMergeConflict));
-                    i++;
-                }
-            }
-//        }
+        holder.mMergeText = new ArrayList<>();
+        int mergeConflictColor = mContext.getResources().getColor(CONFLICT_COLOR);
+        item.mergeItems = getAllMergeConflicts(mergeConflictColor, item.targetText);
 
         holder.mConflictText.setVisibility(View.VISIBLE);
         holder.mButtonBar.setVisibility(View.GONE);
@@ -561,6 +529,49 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         prepareUndoRedoUI(holder, item);
         holder.mUndoButton.setVisibility(View.GONE);
         holder.mRedoButton.setVisibility(View.GONE);
+    }
+
+    /**
+     * get all merge conflicts including nested
+     * @param mergeConflictColor
+     * @param searchText
+     * @return
+     */
+    static public List<MergeConflictCard> getAllMergeConflicts(int mergeConflictColor, String searchText) {
+        MergeConflictHandler renderer = new MergeConflictHandler();
+        renderer.renderMergeConflict(searchText, mergeConflictColor);
+        List<MergeConflictCard> mergeItems = new ArrayList<>();
+        boolean fullMergeConflict = renderer.isFullBlockMergeConflict();
+        CharSequence headText = renderer.getConflictPart(MergeConflictHandler.MERGE_HEAD_PART);
+        mergeItems.add(new MergeConflictCard(headText, fullMergeConflict));
+        CharSequence tailText = renderer.getConflictPart(MergeConflictHandler.MERGE_TAIL_PART);
+        mergeItems.add(new MergeConflictCard(tailText, fullMergeConflict));
+
+        // look for nested changes
+        // TODO: this block should probably be placed in a task
+        boolean changeFound = true;
+        while(changeFound) {
+            changeFound = false;
+
+            for(int i = 0; i < mergeItems.size(); i++) {
+                MergeConflictCard mergeConflictCard = mergeItems.get(i);
+                CharSequence mergeText = mergeConflictCard.text;
+                boolean mergeConflicted = MergeConflictHandler.isMergeConflicted(mergeText);
+                if(mergeConflicted) {
+                    changeFound = true;
+                    renderer = new MergeConflictHandler();
+                    renderer.renderMergeConflict(mergeText, mergeConflictColor);
+                    fullMergeConflict = renderer.isFullBlockMergeConflict();
+                    headText = renderer.getConflictPart(MergeConflictHandler.MERGE_HEAD_PART);
+                    tailText = renderer.getConflictPart(MergeConflictHandler.MERGE_TAIL_PART);
+                    mergeConflictCard.text = headText;
+                    mergeConflictCard.mFullMergeConflict = fullMergeConflict;
+                    mergeItems.add(i + 1, new MergeConflictCard(tailText, fullMergeConflict));
+                    i++;
+                }
+            }
+        }
+        return mergeItems;
     }
 
     /**
@@ -2282,9 +2293,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
     }
 
-    private static class MergeConflictCard {
-        private CharSequence text;
-        private boolean mFullMergeConflict = false;
+    public static class MergeConflictCard {
+        public CharSequence text;
+        public boolean mFullMergeConflict = false;
 
         public MergeConflictCard(CharSequence text, boolean mFullMergeConflict) {
             this.text = text;

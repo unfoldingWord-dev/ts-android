@@ -5,6 +5,8 @@ import android.test.InstrumentationTestCase;
 import android.util.Log;
 
 import com.door43.translationstudio.rendering.MergeConflictHandler;
+import com.door43.translationstudio.tasks.ParseMergeConflictsTask;
+import com.door43.translationstudio.ui.translate.ReviewModeAdapter;
 import com.door43.util.FileUtilities;
 
 import org.unfoldingword.tools.logger.Logger;
@@ -12,6 +14,9 @@ import org.unfoldingword.tools.logger.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by blm on 7/25/16.
@@ -23,18 +28,17 @@ public class MergeConflictHandlerTest extends InstrumentationTestCase {
     private Context mTestContext;
     private String mTestText;
     private String mExpectedText;
+    private List<String> mExpectedTexts = new ArrayList<>();
     private String mExpectedHeadText;
     private String mExpectedTailText;
-    private String mHeadText;
-    private String mTailText;
+    private List<String>  mParsedText = new ArrayList<>();
     private boolean mExpectFullBlockMergeConflict;
-    private boolean mExpectHeadNested;
-    private boolean mExpectTailNested;
+    private boolean mExpectNested;
     private boolean mFoundFullBlockMergeConflict;
-    private boolean mFoundHeadNested;
-    private boolean mFoundTailNested;
     private boolean mFoundNested;
-
+    private int mExpectedConflictCount;
+    private int mFoundConflictCount;
+    private List<ReviewModeAdapter.MergeConflictCard> mLastMergeConflictCards;
 
     @Override
     public void setUp() throws Exception {
@@ -50,9 +54,9 @@ public class MergeConflictHandlerTest extends InstrumentationTestCase {
     public void test01ProcessFullConflict() throws Exception {
         //given
         String testId = "merge/full_conflict";
-        mExpectFullBlockMergeConflict = true;
-        mExpectHeadNested = false;
-        mExpectTailNested = false;
+        mExpectFullBlockMergeConflict = false;
+        mExpectNested = false;
+        mExpectedConflictCount = 2;
 
         //when
         doRenderMergeConflicts(testId);
@@ -65,8 +69,8 @@ public class MergeConflictHandlerTest extends InstrumentationTestCase {
         //given
         String testId = "merge/two_conflict";
         mExpectFullBlockMergeConflict = false;
-        mExpectHeadNested = false;
-        mExpectTailNested = false;
+        mExpectNested = false;
+        mExpectedConflictCount = 2;
 
         //when
         doRenderMergeConflicts(testId);
@@ -79,8 +83,8 @@ public class MergeConflictHandlerTest extends InstrumentationTestCase {
         //given
         String testId = "merge/partial_conflict";
         mExpectFullBlockMergeConflict = false;
-        mExpectHeadNested = false;
-        mExpectTailNested = false;
+        mExpectNested = false;
+        mExpectedConflictCount = 2;
 
         //when
         doRenderMergeConflicts(testId);
@@ -92,9 +96,9 @@ public class MergeConflictHandlerTest extends InstrumentationTestCase {
     public void test04ProcessNestedHeadConflict() throws Exception {
         //given
         String testId = "merge/head_nested_conflict";
-        mExpectFullBlockMergeConflict = true;
-        mExpectHeadNested = true;
-        mExpectTailNested = false;
+        mExpectFullBlockMergeConflict = false;
+        mExpectNested = true;
+        mExpectedConflictCount = 3;
 
         //when
         doRenderMergeConflicts(testId);
@@ -106,9 +110,9 @@ public class MergeConflictHandlerTest extends InstrumentationTestCase {
     public void test05ProcessNestedTailConflict() throws Exception {
         //given
         String testId = "merge/tail_nested_conflict";
-        mExpectFullBlockMergeConflict = true;
-        mExpectHeadNested = false;
-        mExpectTailNested = true;
+        mExpectFullBlockMergeConflict = false;
+        mExpectNested = true;
+        mExpectedConflictCount = 3;
 
         //when
         doRenderMergeConflicts(testId);
@@ -121,8 +125,8 @@ public class MergeConflictHandlerTest extends InstrumentationTestCase {
         //given
         String testId = "merge/not_full_double_nested_conflict";
         mExpectFullBlockMergeConflict = false;
-        mExpectHeadNested = true;
-        mExpectTailNested = true;
+        mExpectNested = true;
+        mExpectedConflictCount = 4;
 
         //when
         doRenderMergeConflicts(testId);
@@ -135,8 +139,8 @@ public class MergeConflictHandlerTest extends InstrumentationTestCase {
         //given
         String testId = "merge/not_full_double_nested_conflict_end";
         mExpectFullBlockMergeConflict = false;
-        mExpectHeadNested = true;
-        mExpectTailNested = true;
+        mExpectNested = true;
+        mExpectedConflictCount = 4;
 
         //when
         doRenderMergeConflicts(testId);
@@ -150,8 +154,8 @@ public class MergeConflictHandlerTest extends InstrumentationTestCase {
         String testTextFile = "merge/partial_conflict_part1.data";
         String expectTextFile = "merge/partial_conflict_part1.data";
         mExpectFullBlockMergeConflict = false;
-        mExpectHeadNested = false;
-        mExpectTailNested = false;
+        mExpectNested = false;
+        mExpectedConflictCount = 1;
 
         //when
         doRenderMergeConflicts(testTextFile, expectTextFile);
@@ -208,39 +212,65 @@ public class MergeConflictHandlerTest extends InstrumentationTestCase {
         assertEquals(expectedConflict, conflicted);
     }
 
+    public void test13ProcessFullTripleNestedConflict() throws Exception {
+        //given
+        String testId = "merge/full_triple_nested";
+        mExpectFullBlockMergeConflict = false;
+        mExpectNested = false;
+        mExpectedConflictCount = 5;
+
+        //when
+        doRenderMergeConflicts(testId);
+
+        //then
+        verifyRenderText("test02ProcessTwoConflict");
+    }
+
+
+
     private void verifyRenderText(String id) {
-        verifyProcessedText(id + ": Head", mExpectedHeadText, mHeadText);
-        verifyProcessedText(id + ": Tail", mExpectedTailText, mTailText);
+
+        assertEquals("merge counts should be the same", mExpectedTexts.size(), mParsedText.size());
+
+        //sort to make sure in same order
+        Collections.sort(mParsedText);
+        Collections.sort(mExpectedTexts);
+
+        for (int i = 0; i < mParsedText.size(); i++) {
+            String got = mParsedText.get(i);
+            String expected = mExpectedTexts.get(i);
+            verifyProcessedText(id + ": Conflict text " + i, expected, got);
+        }
 
         assertEquals(id + ": FullBlockMergeConflict", mExpectFullBlockMergeConflict, mFoundFullBlockMergeConflict);
-        assertEquals(id + ": HeadNested", mExpectHeadNested, mFoundHeadNested);
-        assertEquals(id + ": TailNested", mExpectTailNested, mFoundTailNested);
     }
 
     private void doRenderMergeConflicts( String testId) throws IOException {
-        mHeadText = doRenderMergeConflict(testId, MergeConflictHandler.MERGE_HEAD_PART);
-        mExpectedHeadText = mExpectedText; // save expected text for this section
-        boolean foundFullBlockMergeConflict = mFoundFullBlockMergeConflict;
-        mFoundHeadNested = mFoundNested;
+        for(int i = 0; i < mExpectedConflictCount; i++) {
+            String text = doRenderMergeConflict(testId, i + 1);
+            mParsedText.add(text);
+            mExpectedTexts.add(mExpectedText);
+        }
 
-        mTailText = doRenderMergeConflict(testId, MergeConflictHandler.MERGE_TAIL_PART);
-        mExpectedTailText = mExpectedText; // save expected text for this section
-        mFoundTailNested = mFoundNested;
-
-        assertEquals(testId + ": mFoundFullBlockMergeConflict should get same results from both passes", foundFullBlockMergeConflict, mFoundFullBlockMergeConflict);
+        if(mExpectedConflictCount != mFoundConflictCount) {
+            for (int i = 0; i < mLastMergeConflictCards.size(); i++) {
+                ReviewModeAdapter.MergeConflictCard conflict = mLastMergeConflictCards.get(i);
+                Log.d(TAG, "conflict card " + i + ":\n" + conflict.text );
+            }
+            assertEquals("conflict count", mExpectedConflictCount, mFoundConflictCount);
+        }
     }
 
     private void doRenderMergeConflicts(String testTextFile, String expectTextFile ) throws IOException {
-        mHeadText = doRenderMergeConflict(MergeConflictHandler.MERGE_HEAD_PART, testTextFile, expectTextFile );
-        mExpectedHeadText = mExpectedText; // save expected text for this section
-        boolean foundFullBlockMergeConflict = mFoundFullBlockMergeConflict;
-        mFoundHeadNested = mFoundNested;
+        String text = doRenderMergeConflict(MergeConflictHandler.MERGE_HEAD_PART, testTextFile, expectTextFile );
+        mParsedText.add(text);
+        mExpectedTexts.add(mExpectedText);
 
-        mTailText = doRenderMergeConflict(MergeConflictHandler.MERGE_TAIL_PART, testTextFile, expectTextFile );
-        mExpectedTailText = mExpectedText; // save expected text for this section
-        mFoundTailNested = mFoundNested;
-
-        assertEquals(testTextFile + ": mFoundFullBlockMergeConflict should get same results from both passes", foundFullBlockMergeConflict,mFoundFullBlockMergeConflict);
+        if(mLastMergeConflictCards.size() > 1) {
+            text = doRenderMergeConflict(MergeConflictHandler.MERGE_TAIL_PART, testTextFile, expectTextFile);
+            mParsedText.add(text);
+            mExpectedTexts.add(mExpectedText);
+        }
     }
 
     private boolean doDetectMergeConflict(String testFile) throws IOException {
@@ -269,14 +299,25 @@ public class MergeConflictHandlerTest extends InstrumentationTestCase {
         assertNotNull(mExpectedText);
         assertFalse(mExpectedText.isEmpty());
 
-        MergeConflictHandler renderer = new MergeConflictHandler();
-        renderer.renderMergeConflict(mTestText, sourceGroup);
-        String out = renderer.getConflictPart(sourceGroup).toString();
+        ParseMergeConflictsTask parseTask = new ParseMergeConflictsTask(1, mTestText);
+        parseTask.start();
+        mLastMergeConflictCards = parseTask.getMergeConflictItems();
+        mFoundNested = false;
+        mFoundFullBlockMergeConflict = parseTask.isFullMergeConflict();
+        mFoundConflictCount = mLastMergeConflictCards.size();
+        if(mFoundConflictCount >= sourceGroup) {
+            return mLastMergeConflictCards.get(sourceGroup - 1).text.toString();
+        }
+        return null;
 
-        mFoundFullBlockMergeConflict = renderer.isFullBlockMergeConflict();
-        mFoundNested = renderer.isNested(sourceGroup);
+//        MergeConflictHandler renderer = new MergeConflictHandler();
+//        renderer.renderMergeConflict(mTestText, sourceGroup);
+//        String out = renderer.getConflictPart(sourceGroup).toString();
 
-        return out;
+//        mFoundFullBlockMergeConflict = renderer.isFullBlockMergeConflict();
+//        mFoundNested = renderer.isNested(sourceGroup);
+
+//        return out;
     }
 
     private void verifyProcessedText(String id, String expectedText, String out) {
@@ -306,15 +347,19 @@ public class MergeConflictHandlerTest extends InstrumentationTestCase {
                 char cExpect = expectedText.charAt(ptr);
                 if(cOut != cExpect) {
                     Log.e(TAG, "expected different at position " + ptr );
-                    Log.e(TAG, "expected: '" + expectedText.substring(ptr) + "'");
-                    Log.e(TAG, "but got: '" + out.substring(ptr) + "'");
+                    Log.e(TAG, "expected sub match: '" + expectedText.substring(ptr) + "'");
+                    Log.e(TAG, "but got sub match: '" + out.substring(ptr) + "'");
                     Log.e(TAG, "expected character: '" + expectedText.charAt(ptr) + "', " + Character.codePointAt(expectedText, ptr) );
                     Log.e(TAG, "but got character: '" + out.charAt(ptr) + "', " + Character.codePointAt(out, ptr));
+                    Log.e(TAG, "expected: '" + expectedText + "'");
+                    Log.e(TAG, "but got: '" + out + "'");
                     break;
                 }
             }
             Log.e(TAG, "error in: " + id);
         }
-        assertEquals(id, out, expectedText);
+        if(!out.equals(expectedText)) {
+            assertEquals(id, out, expectedText);
+        }
     }
 }
