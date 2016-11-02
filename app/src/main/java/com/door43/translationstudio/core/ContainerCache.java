@@ -21,18 +21,11 @@ public class ContainerCache {
      * A map of cached containers
      */
     private Map<String, ResourceContainer> resourceContainers = new HashMap<>();
-    /**
-     * A map of translation slugs and their container (or closest match)
-     */
-    private Map<String, String> translationToContainerSlugs = new HashMap<>();
+
     /**
      * A list of container slugs that have already been searched for
      */
     private List<String> inspectedContainers = new ArrayList<>();
-    /**
-     * A list of translations hat have already been searched for
-     */
-    private List<String> inspectedTranslations = new ArrayList<>();
 
     private static ContainerCache sInstance = null;
 
@@ -86,33 +79,29 @@ public class ContainerCache {
         if(languageSlug == null || languageSlug.isEmpty()) languageSlug = Locale.getDefault().getLanguage();
         String translationSlug = ContainerTools.makeSlug(languageSlug, projectSlug, resourceSlug);
         // attempt to cache the container
-        if (!sInstance.inspectedTranslations.contains(translationSlug)) {
-            sInstance.inspectedTranslations.add(translationSlug);
-            List<Translation> translations = client.index.findTranslations(languageSlug, projectSlug, resourceSlug, null, null, 0, -1);
-            if (translations.size() == 0) {
-                // try to find any language
-                translations = client.index.findTranslations(null, projectSlug, resourceSlug, null, null, 0, -1);
+        List<Translation> translations = client.index.findTranslations(languageSlug, projectSlug, resourceSlug, null, null, 0, -1);
+        if (translations.size() == 0) {
+            // try to find any language
+            translations = client.index.findTranslations(null, projectSlug, resourceSlug, null, null, 0, -1);
+        }
+        // load the first available container
+        for (Translation translation : translations) {
+            // check cache
+            if(sInstance.resourceContainers.containsKey(translation.resourceContainerSlug)) {
+                return sInstance.resourceContainers.get(translation.resourceContainerSlug);
             }
-            // load the first available container
-            for (Translation translation : translations) {
-                if (!sInstance.inspectedContainers.contains(translation.resourceContainerSlug)) {
-                    // only inspect container once
-                    sInstance.inspectedContainers.add(translation.resourceContainerSlug);
-                    try {
-                        ResourceContainer rc = client.open(translation.resourceContainerSlug);
-                        sInstance.resourceContainers.put(rc.slug, rc);
-                        sInstance.translationToContainerSlugs.put(translationSlug, rc.slug);
-                        // TRICKY: we only need the first match
-                        break;
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+
+            // load from disk (only attempts to load once)
+            if (!sInstance.inspectedContainers.contains(translation.resourceContainerSlug)) {
+                sInstance.inspectedContainers.add(translation.resourceContainerSlug);
+                try {
+                    ResourceContainer rc = client.open(translation.resourceContainerSlug);
+                    sInstance.resourceContainers.put(rc.slug, rc);
+                    return rc;
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
-        }
-        if (sInstance.translationToContainerSlugs.containsKey(translationSlug)) {
-            String containerSlug = sInstance.translationToContainerSlugs.get(translationSlug);
-            return sInstance.resourceContainers.get(containerSlug);
         }
         return null;
     }
