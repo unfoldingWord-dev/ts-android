@@ -64,8 +64,10 @@ public class ReviewModeFragment extends ViewModeFragment {
     private static final String STATE_NOTE_ID = "state_note_id";
     private static final String STATE_CHAPTER_ID = "state_chapter_id";
     private static final String STATE_FRAME_ID = "state_frame_id";
-    private static final String STATE_QUESTION_ID = "state_question_id";
     private static final String STATE_RESOURCE_CONTAINER_SLUG = "container-slug";
+    private static final String STATE_HELP_TITLE = "state_help_title";
+    private static final String STATE_HELP_BODY = "state_help_body";
+    private static final String STATE_HELP_TYPE = "state_help_type";
     private boolean mResourcesOpen = false;
     private boolean mResourcesDrawerOpen = false;
     private CardView mResourcesDrawer;
@@ -80,7 +82,8 @@ public class ReviewModeFragment extends ViewModeFragment {
 
     private String mResourceContainerSlug;
     private ResourceContainer mSourceContainer = null;
-    private TranslationHelp mTranslationHelp = null;
+    private TranslationHelp mTranslationQuestion = null;
+    private TranslationHelp mTranslationNote = null;
 
     @Override
     ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String chapterId, String frameId, Bundle extras) {
@@ -129,14 +132,12 @@ public class ReviewModeFragment extends ViewModeFragment {
                         }
                         ReviewModeAdapter.ViewHolder sample = (ReviewModeAdapter.ViewHolder) getViewHolderSample();
                         if (sample != null) {
-                            if (mTranslationNoteId != null) {
-                                // TODO: 11/2/16 we need a way to restore the note
-//                                onTranslationNoteClick(mChapterId, mFrameId, mTranslationNoteId, sample.getResourceCardWidth());
+                            if (mTranslationNote != null) {
+                                onTranslationNoteClick(mTranslationNote, sample.getResourceCardWidth());
                             } else if (mTranslationWordId != null) {
                                 onTranslationWordClick(mResourceContainerSlug, mTranslationWordId, sample.getResourceCardWidth());
-                            } else if (mCheckingQuestionId != null) {
-                                // TODO: we need a way to restore the question
-                                //onCheckingQuestionClick(mChapterId, mFrameId, mCheckingQuestionId, sample.getResourceCardWidth());
+                            } else if (mTranslationQuestion != null) {
+                                onCheckingQuestionClick(mTranslationQuestion, sample.getResourceCardWidth());
                             }
                         }
                     }
@@ -200,7 +201,7 @@ public class ReviewModeFragment extends ViewModeFragment {
 
     @Override
     public void onCheckingQuestionClick(TranslationHelp question, int width) {
-        renderCheckingQuestion(question);
+        renderTranslationQuestion(question);
         openResourcesDrawer(width);
     }
 
@@ -517,6 +518,7 @@ public class ReviewModeFragment extends ViewModeFragment {
      * @param note
      */
     private void renderTranslationNote(TranslationHelp note) {
+        mTranslationNote = note;
         mTranslationWordId = null;
         mTranslationNoteId = null;
         mFrameId = null;
@@ -602,16 +604,15 @@ public class ReviewModeFragment extends ViewModeFragment {
     }
 
     /**
-     * Prepares the resources drawer with the checking question
-     * @param question
+     * Prepares the resources drawer with the translation question
+     * @param question the question to be displayed
      */
-    private void renderCheckingQuestion(TranslationHelp question) {
+    private void renderTranslationQuestion(TranslationHelp question) {
         mTranslationWordId = null;
         mTranslationNoteId = null;
-        mTranslationHelp = question;
+        mTranslationQuestion = question;
 
         // these are deprecated
-        mCheckingQuestionId = null;
         mFrameId = null;
         mChapterId = null;
 
@@ -652,17 +653,16 @@ public class ReviewModeFragment extends ViewModeFragment {
         if(savedInstanceState != null) {
             mResourcesOpen = savedInstanceState.getBoolean(STATE_RESOURCES_OPEN, false);
             mResourcesDrawerOpen = savedInstanceState.getBoolean(STATE_RESOURCES_DRAWER_OPEN, false);
-
-            if(savedInstanceState.containsKey(STATE_NOTE_ID)) {
-                mTranslationNoteId = savedInstanceState.getString(STATE_NOTE_ID);
-                mChapterId = savedInstanceState.getString(STATE_CHAPTER_ID);
-                mFrameId = savedInstanceState.getString(STATE_FRAME_ID);
-            } else if(savedInstanceState.containsKey(STATE_WORD_ID)) {
+            if(savedInstanceState.containsKey(STATE_WORD_ID)) {
                 mTranslationWordId = savedInstanceState.getString(STATE_WORD_ID);
-            } else if(savedInstanceState.containsKey(STATE_QUESTION_ID)) {
-                mCheckingQuestionId = savedInstanceState.getString(STATE_QUESTION_ID);
-                mChapterId = savedInstanceState.getString(STATE_CHAPTER_ID);
-                mFrameId = savedInstanceState.getString(STATE_FRAME_ID);
+            } else if(savedInstanceState.containsKey(STATE_HELP_TYPE)) {
+                String type = savedInstanceState.getString(STATE_HELP_TYPE);
+                TranslationHelp help = new TranslationHelp(savedInstanceState.getString(STATE_HELP_TITLE), savedInstanceState.getString(STATE_HELP_TITLE));
+                if(type != null && type.equals("tn")) {
+                    mTranslationNote = help;
+                } else if(type != null && type.equals("tq")) {
+                    mTranslationQuestion = help;
+                }
             }
             if(savedInstanceState.containsKey(STATE_RESOURCE_CONTAINER_SLUG)) {
                 mResourceContainerSlug = savedInstanceState.getString(STATE_RESOURCE_CONTAINER_SLUG);
@@ -679,19 +679,18 @@ public class ReviewModeFragment extends ViewModeFragment {
         } else {
             out.remove(STATE_WORD_ID);
         }
-        if(mTranslationNoteId != null) {
-            out.putString(STATE_NOTE_ID, mTranslationNoteId);
-            out.putString(STATE_CHAPTER_ID, mChapterId);
-            out.putString(STATE_FRAME_ID, mFrameId);
+        if(mTranslationNote != null) {
+            out.putString(STATE_HELP_TITLE, mTranslationNote.title);
+            out.putString(STATE_HELP_BODY, mTranslationNote.body);
+            out.putString(STATE_HELP_TYPE, "tn");
+        } else if(mTranslationQuestion != null) {
+            out.putString(STATE_HELP_TITLE, mTranslationQuestion.title);
+            out.putString(STATE_HELP_BODY, mTranslationQuestion.body);
+            out.putString(STATE_HELP_TYPE, "tq");
         } else {
-            out.remove(STATE_NOTE_ID);
-        }
-        if(mCheckingQuestionId != null) {
-            out.putString(STATE_QUESTION_ID, mCheckingQuestionId);
-            out.putString(STATE_CHAPTER_ID, mChapterId);
-            out.putString(STATE_FRAME_ID, mFrameId);
-        } else {
-            out.remove(STATE_QUESTION_ID);
+            out.remove(STATE_HELP_TITLE);
+            out.remove(STATE_HELP_BODY);
+            out.remove(STATE_HELP_TYPE);
         }
         out.putString(STATE_RESOURCE_CONTAINER_SLUG, mResourceContainerSlug);
         super.onSaveInstanceState(out);
