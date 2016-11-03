@@ -215,23 +215,18 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      * @return
      */
     protected ResourceContainer getSelectedResourceContainer() {
-        try {
-            return mLibrary.open(mSourceTranslation.resourceContainerSlug);
-        } catch (Exception e) {
-            // We perform checks when loading so this should never happen
-            e.printStackTrace();
-            return null;
-        }
+        return ContainerCache.cache(mLibrary, mSourceTranslation.resourceContainerSlug);
     }
 
     /**
      * Scrolls to the given frame
-     * @param chapterId
-     * @param frameId
+     * // TODO: 11/2/16 this does not scroll to the correct chunk. see obs 1:15. it seems to always be 2 off.
+     * @param chapterSlug
+     * @param chunkSlug
      */
-    public void scrollToFrame(String chapterId, String frameId) {
+    public void scrollToChunk(String chapterSlug, String chunkSlug) {
         closeKeyboard();
-        int position = mAdapter.getItemPosition(chapterId, frameId);
+        int position = mAdapter.getItemPosition(chapterSlug, chunkSlug);
         if(position != -1) {
             mLayoutManager.scrollToPosition(position);
             if(mListener != null) mListener.onScrollProgress(position);
@@ -384,12 +379,12 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     @Override
-    public void onTranslationNoteClick(String chapterId, String frameId, String translationNoteId, int width) {
+    public void onTranslationNoteClick(TranslationHelp note, int width) {
 
     }
 
     @Override
-    public void onCheckingQuestionClick(String chapterId, String frameId, String checkingQuestionId, int width) {
+    public void onCheckingQuestionClick(TranslationHelp question, int width) {
 
     }
 
