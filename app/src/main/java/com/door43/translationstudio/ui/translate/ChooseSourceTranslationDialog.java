@@ -21,6 +21,7 @@ import android.widget.ListView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.ContainerCache;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.tasks.DownloadResourceContainerTask;
@@ -33,6 +34,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
@@ -197,11 +199,11 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
                     // add selected source translations
                     String[] sourceTranslationSlugs = App.getSelectedSourceTranslations(mTargetTranslation.getId());
                     for (String slug : sourceTranslationSlugs) {
-                        Translation st = mLibrary.index().getTranslation(slug);
+                        Translation st = mLibrary.index.getTranslation(slug);
                         if (st != null) addSourceTranslation(st, true);
                     }
 
-                    List<Translation> availableTranslations = mLibrary.index().findTranslations(null, mTargetTranslation.getProjectId(), null, "book", "all", App.MIN_CHECKING_LEVEL, -1);
+                    List<Translation> availableTranslations = mLibrary.index.findTranslations(null, mTargetTranslation.getProjectId(), null, "book", null, App.MIN_CHECKING_LEVEL, -1);
                     for (Translation sourceTranslation : availableTranslations) {
                         addSourceTranslation(sourceTranslation, false);
                     }
@@ -255,6 +257,10 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
         TaskManager.clearTask(task);
         if(task instanceof DownloadResourceContainerTask) {
             final DownloadResourceContainerTask t = (DownloadResourceContainerTask)task;
+            for(ResourceContainer rc:t.getDownloadedContainers()) {
+                // reset cached containers that were downloaded
+                ContainerCache.remove(rc.slug);
+            }
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {
                 @Override

@@ -172,10 +172,10 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     }
 
     @Override
-    public int getItemPosition(String chapterSlug, String frameSlug) {
+    public int getItemPosition(String chapterSlug, String chunkSlug) {
         for(int i = 0; i < mFilteredItems.size(); i ++) {
             ListItem item = mFilteredItems.get(i);
-            if(item.isChunk() && item.chapterSlug.equals(chapterSlug) && item.chunkSlug.equals(frameSlug)) {
+            if(item.isChunk() && item.chapterSlug.equals(chapterSlug) && item.chunkSlug.equals(chunkSlug)) {
                 return i;
             }
         }
