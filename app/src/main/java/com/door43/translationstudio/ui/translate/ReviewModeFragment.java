@@ -48,6 +48,8 @@ import org.unfoldingword.door43client.models.SourceLanguage;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -221,9 +223,11 @@ public class ReviewModeFragment extends ViewModeFragment {
             ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), R.layout.list_clickable_text);
             final ResourceContainer rc = ContainerCache.get(mResourceContainerSlug);
             if(rc != null) {
-                final String[] chapters = rc.chapters();
+                String[] chapters = rc.chapters();
+                final List<String> words = Arrays.asList(chapters);
+                Collections.sort(words);
                 Pattern titlePattern = Pattern.compile("#(.*)");
-                for(String slug:chapters) {
+                for(String slug:words) {
                     // get title and add to adapter
                     Matcher match = titlePattern.matcher(rc.readChunk(slug, "01"));
                     if(match.find()) {
@@ -236,7 +240,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                 list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        String slug = chapters[position];
+                        String slug = words.get(position);
                         renderTranslationWord(rc.slug, slug);
                     }
                 });
@@ -596,7 +600,7 @@ public class ReviewModeFragment extends ViewModeFragment {
             });
 
             title.setText(note.title);
-            SourceLanguage sourceLanguage = library.index().getSourceLanguage(sourceTranslation.language.slug);
+            SourceLanguage sourceLanguage = library.index.getSourceLanguage(sourceTranslation.language.slug);
             Typography.format(getActivity(), TranslationType.SOURCE, title, sourceLanguage.slug, sourceLanguage.direction);
 
             descriptionView.setText(renderer.render(note.body));
