@@ -247,9 +247,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         String errorLog = "";
 
         for (String book : books) {
-
             verifyBookTOC(book);
-
             if(!mErrorLog.isEmpty()) {
                 errorLog += "Errors in book '" + book + "':\n" + mErrorLog + "\n\n";
             }
@@ -629,6 +627,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         HashMap<String, List<String>> mChunks = parsedChunks.chunks;
 
         int versificationIndex = 0;
+        int lastChapter = -1;
 
         for (int i = 0; i < sourceToc.size(); i++) {
             Map tocChapter = sourceToc.get(i);
@@ -637,6 +636,13 @@ public class ExportUsfmTest extends InstrumentationTestCase {
             if(chapterInt < 0) { // skip if not number
                 continue;
             }
+
+            if(lastChapter >= 0) {
+                if(chapterInt <= lastChapter) {
+                    addErrorMsg("versification chunks are out of order chapter '" + chapterSlug + "' should be greater than '" + lastChapter + "'\n");
+                }
+            }
+            lastChapter = chapterInt;
 
             if(versificationIndex >= mChapters.size()) {
                 addErrorMsg("missing chunk for versification '" + versificationIndex + "'\n");
@@ -654,14 +660,19 @@ public class ExportUsfmTest extends InstrumentationTestCase {
 
             boolean chunkErrors = false;
 
-            if(tocChunks.size() != versificationChunks.size()) {
-                addErrorMsg("For chapter '" + chapterSlug + "' toc chunk count is '" + tocChunks.size() + "' but versification chunk count is '" + versificationChunks.size() + "'\n");
+            int offset = 0;
+            while(strToInt(tocChunks.get(offset), -1) < 0) {
+                offset++;
+            }
+
+            if((tocChunks.size()-offset) != versificationChunks.size()) {
+                addErrorMsg("For chapter '" + chapterSlug + "' toc chunk count is '" + (tocChunks.size()-offset) + "' but versification chunk count is '" + versificationChunks.size() + "'\n");
                 chunkErrors = true;
             }
 
-            int limit = tocChunks.size() < versificationChunks.size() ? tocChunks.size() : versificationChunks.size();
+            int limit = (tocChunks.size()-offset) < versificationChunks.size() ? tocChunks.size()-offset : versificationChunks.size();
             for(int j = 0; j < limit; j++) {
-                String tocVerse = tocChunks.get(j);
+                String tocVerse = tocChunks.get(j+offset);
                 String versificationVerse = versificationChunks.get(j);
                 if(strToInt(tocVerse,-1) != strToInt(versificationVerse,-1)) {
                     addErrorMsg("For chapter '" + chapterSlug + "' toc chunk " + i + " is '" + tocVerse + "' but versification chunk is '" + versificationVerse + "'\n");
