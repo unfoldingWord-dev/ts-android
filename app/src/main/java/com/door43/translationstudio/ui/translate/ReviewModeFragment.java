@@ -442,6 +442,8 @@ public class ReviewModeFragment extends ViewModeFragment {
 
             seeAlsoView.removeAllViews();
             seeAlsoTitle.setVisibility(View.GONE);
+            examplesView.removeAllViews();
+            examplesTitle.setVisibility(View.GONE);
             if(rc.config != null && rc.config.containsKey(chapterSlug)) {
                 Map chapterConfig = (Map<String, List<String>> )rc.config.get(chapterSlug);
                 if(chapterConfig.containsKey("see_also")) {
@@ -468,7 +470,6 @@ public class ReviewModeFragment extends ViewModeFragment {
                     }
                     if(relatedSlugs.size() > 0) seeAlsoTitle.setVisibility(View.VISIBLE);
                 }
-                examplesTitle.setVisibility(View.GONE);
                 if(chapterConfig.containsKey("examples")) {
                     List<String> exampleSlugs = (List<String>)chapterConfig.get("examples");
                     for(String exampleSlug:exampleSlugs) {
