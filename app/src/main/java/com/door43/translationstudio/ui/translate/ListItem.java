@@ -24,7 +24,8 @@ public abstract class ListItem {
     public CharSequence renderedSourceText = null;
     public String targetText;
     public CharSequence renderedTargetText = null;
-    public TranslationFormat translationFormat;
+    public TranslationFormat sourceTranslationFormat;
+    public TranslationFormat targetTranslationFormat;
     public boolean isComplete = false;
     public boolean hasMergeConflicts = false;
     public boolean isEditing = false;
@@ -117,7 +118,7 @@ public abstract class ListItem {
                 }
                 title += " " + Integer.parseInt(chapterSlug);
             }
-            String verseSpan = Frame.parseVerseTitle(sourceText, translationFormat);
+            String verseSpan = Frame.parseVerseTitle(sourceText, targetTranslationFormat);
             if(verseSpan.isEmpty()) {
                 title += ":" + Integer.parseInt(chunkSlug);
             } else {
@@ -157,7 +158,8 @@ public abstract class ListItem {
             if (this.sourceText == null) {
                 this.sourceText = sourceContainer.readChunk(chapterSlug, chunkSlug);
             }
-            this.translationFormat = TranslationFormat.parse(sourceContainer.contentMimeType);
+            this.sourceTranslationFormat = TranslationFormat.parse(sourceContainer.contentMimeType);
+            this.targetTranslationFormat = targetTranslation.getFormat();
             // TODO: 10/1/16 this will be simplified once we migrate target translations to resource containers
             if (chapterSlug.equals("front")) {
                 // project stuff
@@ -178,7 +180,7 @@ public abstract class ListItem {
                     this.targetText = ct.reference;
                     this.isComplete = ct.isReferenceFinished();
                 } else {
-                    this.ft = targetTranslation.getFrameTranslation(chapterSlug, chunkSlug, this.translationFormat);
+                    this.ft = targetTranslation.getFrameTranslation(chapterSlug, chunkSlug, this.targetTranslationFormat);
                     this.targetText = ft.body;
                     this.isComplete = ft.isFinished();
                 }

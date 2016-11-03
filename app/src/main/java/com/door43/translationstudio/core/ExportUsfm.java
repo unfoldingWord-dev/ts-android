@@ -3,17 +3,29 @@ package com.door43.translationstudio.core;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.util.FileUtilities;
+import com.door43.util.StringUtilities;
 import com.door43.util.Zip;
 
+import org.eclipse.jgit.util.StringUtils;
+import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.Translation;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 
 import org.unfoldingword.resourcecontainer.Project;
 
@@ -173,7 +185,7 @@ public class ExportUsfm {
                 String languageId = targetTranslation.getTargetLanguageId();
                 String languageName = targetTranslation.getTargetLanguageName();
                 ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
-                Project project = App.getLibrary().index().getProject(languageId, targetTranslation.getProjectId());
+                Project project = App.getLibrary().index.getProject(languageId, targetTranslation.getProjectId(), true);
 
                 String bookName = bookCode; // default name
                 if( (project != null) && (project.name != null)) {
@@ -215,22 +227,36 @@ public class ExportUsfm {
                 ps.println(shortBookID);
             }
 
+            ArrayList<FrameTranslation> frameList = sortFrameTranslations(frames);
+            int startChunk = 0;
+            if(frameList.size() > 0) {
+                FrameTranslation frame = frameList.get(0);
+                int verseID = strToInt(frame.getId(),0);
+                if((verseID == 0)) {
+                    String text = frame.body;
+                    ps.print(text);
+                    startChunk++;
+                }
+           }
+
+            int chapterInt = strToInt(chapter.getId(),0);
+            if(chapterInt != 0) {
+                String chapterNumber = "\\c " + chapter.getId();
+                ps.println(chapterNumber);
+            }
+
             if((chapter.title != null) && (!chapter.title.isEmpty())) {
                 String chapterTitle = "\\cl " + chapter.title;
                 ps.println(chapterTitle);
             }
 
-            String chapterNumber = "\\c " + chapter.getId();
-            ps.println(chapterNumber);
-
-            if( (chapter.reference != null) && (!chapter.title.isEmpty())) {
+            if( (chapter.reference != null) && (!chapter.reference.isEmpty())) {
                 String chapterRef = "\\cd " + chapter.reference;
                 ps.println(chapterRef);
             }
 
-            // frames
-            for(FrameTranslation frame:frames) {
-
+            for (int i = startChunk; i < frameList.size(); i++) {
+                FrameTranslation frame = frameList.get(i);
                 String text = frame.body;
 
                 // text
@@ -263,6 +289,56 @@ public class ExportUsfm {
         }
         FileUtilities.deleteQuietly(tempDir);
         return destFile;
+    }
+
+    /**
+     * sort the frames
+     * @param frames
+     * @return
+     */
+    public static ArrayList<FrameTranslation> sortFrameTranslations(FrameTranslation[] frames) {
+        // sort frames
+        ArrayList<FrameTranslation> frameList = new ArrayList<FrameTranslation>(Arrays.asList(frames));
+        Collections.sort(frameList, new Comparator<FrameTranslation>() { // do numeric sort
+            @Override
+            public int compare(FrameTranslation lhs, FrameTranslation rhs) {
+                Integer lhInt = getChunkOrder(lhs.getId());
+                Integer rhInt = getChunkOrder(rhs.getId());
+                return lhInt.compareTo(rhInt);
+            }
+        });
+        return frameList;
+    }
+
+    /**
+     *
+     * @param chunkID
+     * @return
+     */
+    public static Integer getChunkOrder(String chunkID) {
+        if("00".equals(chunkID)) { // special treatment for chunk 00 to move to end of list
+            return 99999;
+        }
+        if("back".equalsIgnoreCase(chunkID)){
+            return 9999999; // back is moved to very end
+        }
+        return strToInt(chunkID, -1); // if not numeric, then will move to top of list and leave order unchanged
+    }
+
+    /**
+     * do string to integer with default value on conversion error
+     * @param value
+     * @param defaultValue
+     * @return
+     */
+    public static int strToInt(String value, int defaultValue) {
+        try {
+            int retValue = Integer.parseInt(value);
+            return retValue;
+        } catch (Exception e) {
+//            Log.d(TAG, "Cannot convert to int: " + value);
+        }
+        return defaultValue;
     }
 
     public interface OnResultsListener {

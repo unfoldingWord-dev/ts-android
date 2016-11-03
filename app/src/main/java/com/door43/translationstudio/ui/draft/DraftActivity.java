@@ -58,7 +58,7 @@ public class DraftActivity extends BaseActivity implements SimpleTaskWatcher.OnF
             String targetTranslationId = extras.getString(EXTRA_TARGET_TRANSLATION_ID, null);
             mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
             if(mTargetTranslation != null) {
-                draftTranslations = mLibrary.index().findTranslations(mTargetTranslation.getTargetLanguage().slug, mTargetTranslation.getProjectId(), null, "book", "all", 0, -1);
+                draftTranslations = mLibrary.index().findTranslations(mTargetTranslation.getTargetLanguage().slug, mTargetTranslation.getProjectId(), null, "book", null, 0, -1);
             } else {
                 throw new InvalidParameterException("a valid target translation id is required");
             }
