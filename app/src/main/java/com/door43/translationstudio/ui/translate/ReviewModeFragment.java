@@ -48,6 +48,8 @@ import org.unfoldingword.door43client.models.SourceLanguage;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -64,8 +66,10 @@ public class ReviewModeFragment extends ViewModeFragment {
     private static final String STATE_NOTE_ID = "state_note_id";
     private static final String STATE_CHAPTER_ID = "state_chapter_id";
     private static final String STATE_FRAME_ID = "state_frame_id";
-    private static final String STATE_QUESTION_ID = "state_question_id";
     private static final String STATE_RESOURCE_CONTAINER_SLUG = "container-slug";
+    private static final String STATE_HELP_TITLE = "state_help_title";
+    private static final String STATE_HELP_BODY = "state_help_body";
+    private static final String STATE_HELP_TYPE = "state_help_type";
     private boolean mResourcesOpen = false;
     private boolean mResourcesDrawerOpen = false;
     private CardView mResourcesDrawer;
@@ -80,6 +84,8 @@ public class ReviewModeFragment extends ViewModeFragment {
 
     private String mResourceContainerSlug;
     private ResourceContainer mSourceContainer = null;
+    private TranslationHelp mTranslationQuestion = null;
+    private TranslationHelp mTranslationNote = null;
 
     @Override
     ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String chapterId, String frameId, Bundle extras) {
@@ -128,12 +134,12 @@ public class ReviewModeFragment extends ViewModeFragment {
                         }
                         ReviewModeAdapter.ViewHolder sample = (ReviewModeAdapter.ViewHolder) getViewHolderSample();
                         if (sample != null) {
-                            if (mTranslationNoteId != null) {
-                                onTranslationNoteClick(mChapterId, mFrameId, mTranslationNoteId, sample.getResourceCardWidth());
+                            if (mTranslationNote != null) {
+                                onTranslationNoteClick(mTranslationNote, sample.getResourceCardWidth());
                             } else if (mTranslationWordId != null) {
                                 onTranslationWordClick(mResourceContainerSlug, mTranslationWordId, sample.getResourceCardWidth());
-                            } else if (mCheckingQuestionId != null) {
-                                onCheckingQuestionClick(mChapterId, mFrameId, mCheckingQuestionId, sample.getResourceCardWidth());
+                            } else if (mTranslationQuestion != null) {
+                                onCheckingQuestionClick(mTranslationQuestion, sample.getResourceCardWidth());
                             }
                         }
                     }
@@ -190,14 +196,14 @@ public class ReviewModeFragment extends ViewModeFragment {
     }
 
     @Override
-    public void onTranslationNoteClick(String chapterId, String frameId, String translatioNoteId, int width) {
-        renderTranslationNote(chapterId, frameId, translatioNoteId);
+    public void onTranslationNoteClick(TranslationHelp note, int width) {
+        renderTranslationNote(note);
         openResourcesDrawer(width);
     }
 
     @Override
-    public void onCheckingQuestionClick(String chapterId, String frameId, String checkingQuestionId, int width) {
-        renderCheckingQuestion(chapterId, frameId, checkingQuestionId);
+    public void onCheckingQuestionClick(TranslationHelp question, int width) {
+        renderTranslationQuestion(question);
         openResourcesDrawer(width);
     }
 
@@ -217,9 +223,11 @@ public class ReviewModeFragment extends ViewModeFragment {
             ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), R.layout.list_clickable_text);
             final ResourceContainer rc = ContainerCache.get(mResourceContainerSlug);
             if(rc != null) {
-                final String[] chapters = rc.chapters();
+                String[] chapters = rc.chapters();
+                final List<String> words = Arrays.asList(chapters);
+                Collections.sort(words);
                 Pattern titlePattern = Pattern.compile("#(.*)");
-                for(String slug:chapters) {
+                for(String slug:words) {
                     // get title and add to adapter
                     Matcher match = titlePattern.matcher(rc.readChunk(slug, "01"));
                     if(match.find()) {
@@ -232,7 +240,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                 list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        String slug = chapters[position];
+                        String slug = words.get(position);
                         renderTranslationWord(rc.slug, slug);
                     }
                 });
@@ -295,7 +303,7 @@ public class ReviewModeFragment extends ViewModeFragment {
 //                        }
 //                    } else if(((LinkSpan)span).getType().equals("p")) {
 //                        PassageLinkSpan link = (PassageLinkSpan) span;
-//                        scrollToFrame(link.getChapterId(), link.getFrameId());
+//                        scrollToChunk(link.getChapterId(), link.getFrameId());
 //                    }
 //                }
 //
@@ -321,7 +329,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                         onTranslationArticleClick(link.getVolume(), link.getManual(), link.getId(), mResourcesDrawer.getLayoutParams().width);
                     } else if (span instanceof PassageLinkSpan) {
                         PassageLinkSpan link = (PassageLinkSpan) span;
-                        scrollToFrame(link.getChapterId(), link.getFrameId());
+                        scrollToChunk(link.getChapterId(), link.getFrameId());
                     }
                 }
 
@@ -419,7 +427,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                     } else if(((LinkSpan)span).getType().equals("p")) {
                         String url = span.getMachineReadable().toString();
                         PassageLinkSpan link = new PassageLinkSpan("", url);
-                        scrollToFrame(link.getChapterId(), link.getFrameId());
+                        scrollToChunk(link.getChapterId(), link.getFrameId());
                     }
                 }
 
@@ -434,6 +442,8 @@ public class ReviewModeFragment extends ViewModeFragment {
 
             seeAlsoView.removeAllViews();
             seeAlsoTitle.setVisibility(View.GONE);
+            examplesView.removeAllViews();
+            examplesTitle.setVisibility(View.GONE);
             if(rc.config != null && rc.config.containsKey(chapterSlug)) {
                 Map chapterConfig = (Map<String, List<String>> )rc.config.get(chapterSlug);
                 if(chapterConfig.containsKey("see_also")) {
@@ -460,7 +470,6 @@ public class ReviewModeFragment extends ViewModeFragment {
                     }
                     if(relatedSlugs.size() > 0) seeAlsoTitle.setVisibility(View.VISIBLE);
                 }
-                examplesTitle.setVisibility(View.GONE);
                 if(chapterConfig.containsKey("examples")) {
                     List<String> exampleSlugs = (List<String>)chapterConfig.get("examples");
                     for(String exampleSlug:exampleSlugs) {
@@ -468,17 +477,22 @@ public class ReviewModeFragment extends ViewModeFragment {
                         if(slugs.length != 2) continue;
                         if(mSourceContainer == null) continue;
                         String projectTitle = mSourceContainer.readChunk("front", "title");
-                        String verseTitle = Frame.parseVerseTitle(mSourceContainer.readChunk(slugs[0], slugs[1]), TranslationFormat.parse(mSourceContainer.contentMimeType));
+
+                        // get verse title
+                        String verseTitle = formatNumber(slugs[1]);
+                        if(mSourceContainer.contentMimeType.equals("text/usfm")) {
+                            verseTitle = Frame.parseVerseTitle(mSourceContainer.readChunk(slugs[0], slugs[1]), TranslationFormat.parse(mSourceContainer.contentMimeType));
+                        }
 
                         LinearLayout exampleView = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_example_item, null);
                         TextView referenceView = (TextView)exampleView.findViewById(R.id.reference);
                         HtmlTextView passageView = (HtmlTextView)exampleView.findViewById(R.id.passage);
-                        referenceView.setText(projectTitle + " " + formatNumber(slugs[0]) + ":" + verseTitle);
+                        referenceView.setText(projectTitle.trim() + " " + formatNumber(slugs[0]) + ":" + verseTitle);
                         passageView.setHtmlFromString(mSourceContainer.readChunk(slugs[0], slugs[1]), true);
                         exampleView.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                scrollToFrame(slugs[0], slugs[1]);
+                                scrollToChunk(slugs[0], slugs[1]);
                             }
                         });
                         Typography.formatSub(getActivity(), TranslationType.SOURCE, referenceView, rc.language.slug, rc.language.direction);
@@ -511,17 +525,18 @@ public class ReviewModeFragment extends ViewModeFragment {
 
     /**
      * Prepares the resources drawer with the translation note
-     * @param noteId
+     * @param note
      */
-    private void renderTranslationNote(String chapterId, String frameId, String noteId) {
+    private void renderTranslationNote(TranslationHelp note) {
+        mTranslationNote = note;
         mTranslationWordId = null;
-        mTranslationNoteId = noteId;
-        mFrameId = frameId;
-        mChapterId = chapterId;
+        mTranslationNoteId = null;
+        mFrameId = null;
+        mChapterId = null;
 
         final Door43Client library = App.getLibrary();
         final ResourceContainer sourceTranslation = getSelectedResourceContainer();
-        TranslationNote note = null;//getPreferredNote(sourceTranslation, chapterId, frameId, noteId);
+//        TranslationNote note = null;//getPreferredNote(sourceTranslation, chapterId, frameId, noteId);
         if(mResourcesDrawerContent != null) {
             mResourcesDrawerContent.setVisibility(View.GONE);
         }
@@ -575,7 +590,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                     } else if(((LinkSpan)span).getType().equals("p")) {
                         String url = span.getMachineReadable().toString();
                         PassageLinkSpan link = new PassageLinkSpan("", url);
-                        scrollToFrame(link.getChapterId(), link.getFrameId());
+                        scrollToChunk(link.getChapterId(), link.getFrameId());
                     }
                 }
 
@@ -585,11 +600,11 @@ public class ReviewModeFragment extends ViewModeFragment {
                 }
             });
 
-            title.setText(note.getTitle());
-            SourceLanguage sourceLanguage = library.index().getSourceLanguage(sourceTranslation.language.slug);
+            title.setText(note.title);
+            SourceLanguage sourceLanguage = library.index.getSourceLanguage(sourceTranslation.language.slug);
             Typography.format(getActivity(), TranslationType.SOURCE, title, sourceLanguage.slug, sourceLanguage.direction);
 
-            descriptionView.setText(renderer.render(note.getBody()));
+            descriptionView.setText(renderer.render(note.body));
             Typography.formatSub(getActivity(), TranslationType.SOURCE, descriptionView, sourceLanguage.slug, sourceLanguage.direction);
             descriptionView.setMovementMethod(LocalLinkMovementMethod.getInstance());
 
@@ -599,20 +614,22 @@ public class ReviewModeFragment extends ViewModeFragment {
     }
 
     /**
-     * Prepares the resources drawer with the checking question
-     * @param questionId
+     * Prepares the resources drawer with the translation question
+     * @param question the question to be displayed
      */
-    private void renderCheckingQuestion(String chapterId, String frameId, String questionId) {
+    private void renderTranslationQuestion(TranslationHelp question) {
         mTranslationWordId = null;
         mTranslationNoteId = null;
-        mCheckingQuestionId = questionId;
-        mFrameId = frameId;
-        mChapterId = chapterId;
+        mTranslationQuestion = question;
+
+        // these are deprecated
+        mFrameId = null;
+        mChapterId = null;
 
         final Door43Client library = App.getLibrary();
         ResourceContainer sourceTranslation = getSelectedResourceContainer();
-        CheckingQuestion question = null;//getPreferredQuestion(sourceTranslation, chapterId, frameId, questionId);
-        SourceLanguage sourceLanguage = library.index().getSourceLanguage(sourceTranslation.language.slug);
+//        CheckingQuestion question = null;//getPreferredQuestion(sourceTranslation, chapterId, frameId, questionId);
+        SourceLanguage sourceLanguage = library.index.getSourceLanguage(sourceTranslation.language.slug);
         if(mResourcesDrawerContent != null && question != null) {
             mResourcesDrawerContent.setVisibility(View.GONE);
         }
@@ -629,28 +646,10 @@ public class ReviewModeFragment extends ViewModeFragment {
             TextView answerTitle = (TextView)view.findViewById(R.id.answer_title);
             Typography.formatTitle(getActivity(), TranslationType.SOURCE, answerTitle, sourceLanguage.slug, sourceLanguage.direction);
             TextView answerView = (TextView)view.findViewById(R.id.answer);
-            TextView referencesTitle = (TextView)view.findViewById(R.id.references_title);
-            Typography.formatTitle(getActivity(), TranslationType.SOURCE, referencesTitle, sourceLanguage.slug, sourceLanguage.direction);
-            LinearLayout referencesLayout = (LinearLayout)view.findViewById(R.id.references);
 
-            referencesLayout.removeAllViews();
-            for(final CheckingQuestion.Reference reference:question.getReferences()) {
-                TextView referenceView = (TextView) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_reference_item, null);
-//                Frame frame = library.getFrame(sourceTranslation, reference.getChapterId(), reference.getFrameId());
-//                referenceView.setText(sourceTranslation.getProjectTitle() + " " + Integer.parseInt(reference.getChapterId()) + ":" + frame.getTitle());
-                Typography.formatSub(getActivity(), TranslationType.SOURCE, referenceView, sourceLanguage.slug, sourceLanguage.direction);
-                referenceView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        scrollToFrame(reference.getChapterId(), reference.getFrameId());
-                    }
-                });
-                referencesLayout.addView(referenceView);
-            }
-
-            questionView.setText(question.getQuestion());
+            questionView.setText(question.title);
             Typography.formatSub(getActivity(), TranslationType.SOURCE, questionView, sourceLanguage.slug, sourceLanguage.direction);
-            answerView.setText(question.getAnswer());
+            answerView.setText(question.body);
             Typography.formatSub(getActivity(), TranslationType.SOURCE, answerView, sourceLanguage.slug, sourceLanguage.direction);
 
             mScrollingResourcesDrawerContent.removeAllViews();
@@ -664,17 +663,16 @@ public class ReviewModeFragment extends ViewModeFragment {
         if(savedInstanceState != null) {
             mResourcesOpen = savedInstanceState.getBoolean(STATE_RESOURCES_OPEN, false);
             mResourcesDrawerOpen = savedInstanceState.getBoolean(STATE_RESOURCES_DRAWER_OPEN, false);
-
-            if(savedInstanceState.containsKey(STATE_NOTE_ID)) {
-                mTranslationNoteId = savedInstanceState.getString(STATE_NOTE_ID);
-                mChapterId = savedInstanceState.getString(STATE_CHAPTER_ID);
-                mFrameId = savedInstanceState.getString(STATE_FRAME_ID);
-            } else if(savedInstanceState.containsKey(STATE_WORD_ID)) {
+            if(savedInstanceState.containsKey(STATE_WORD_ID)) {
                 mTranslationWordId = savedInstanceState.getString(STATE_WORD_ID);
-            } else if(savedInstanceState.containsKey(STATE_QUESTION_ID)) {
-                mCheckingQuestionId = savedInstanceState.getString(STATE_QUESTION_ID);
-                mChapterId = savedInstanceState.getString(STATE_CHAPTER_ID);
-                mFrameId = savedInstanceState.getString(STATE_FRAME_ID);
+            } else if(savedInstanceState.containsKey(STATE_HELP_TYPE)) {
+                String type = savedInstanceState.getString(STATE_HELP_TYPE);
+                TranslationHelp help = new TranslationHelp(savedInstanceState.getString(STATE_HELP_TITLE), savedInstanceState.getString(STATE_HELP_TITLE));
+                if(type != null && type.equals("tn")) {
+                    mTranslationNote = help;
+                } else if(type != null && type.equals("tq")) {
+                    mTranslationQuestion = help;
+                }
             }
             if(savedInstanceState.containsKey(STATE_RESOURCE_CONTAINER_SLUG)) {
                 mResourceContainerSlug = savedInstanceState.getString(STATE_RESOURCE_CONTAINER_SLUG);
@@ -691,19 +689,18 @@ public class ReviewModeFragment extends ViewModeFragment {
         } else {
             out.remove(STATE_WORD_ID);
         }
-        if(mTranslationNoteId != null) {
-            out.putString(STATE_NOTE_ID, mTranslationNoteId);
-            out.putString(STATE_CHAPTER_ID, mChapterId);
-            out.putString(STATE_FRAME_ID, mFrameId);
+        if(mTranslationNote != null) {
+            out.putString(STATE_HELP_TITLE, mTranslationNote.title);
+            out.putString(STATE_HELP_BODY, mTranslationNote.body);
+            out.putString(STATE_HELP_TYPE, "tn");
+        } else if(mTranslationQuestion != null) {
+            out.putString(STATE_HELP_TITLE, mTranslationQuestion.title);
+            out.putString(STATE_HELP_BODY, mTranslationQuestion.body);
+            out.putString(STATE_HELP_TYPE, "tq");
         } else {
-            out.remove(STATE_NOTE_ID);
-        }
-        if(mCheckingQuestionId != null) {
-            out.putString(STATE_QUESTION_ID, mCheckingQuestionId);
-            out.putString(STATE_CHAPTER_ID, mChapterId);
-            out.putString(STATE_FRAME_ID, mFrameId);
-        } else {
-            out.remove(STATE_QUESTION_ID);
+            out.remove(STATE_HELP_TITLE);
+            out.remove(STATE_HELP_BODY);
+            out.remove(STATE_HELP_TYPE);
         }
         out.putString(STATE_RESOURCE_CONTAINER_SLUG, mResourceContainerSlug);
         super.onSaveInstanceState(out);

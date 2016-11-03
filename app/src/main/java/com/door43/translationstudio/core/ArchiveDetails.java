@@ -153,7 +153,7 @@ public class ArchiveDetails {
                     if (targetLanguageDirection == null) {
                         targetLanguageDirection = "ltr";
                     }
-                    TargetLanguage tl = library.index().getTargetLanguage(targetLanguageSlug);
+                    TargetLanguage tl = library.index.getTargetLanguage(targetLanguageSlug);
                     if (tl != null) {
                         targetLanguageName = tl.name;
                     } else {
@@ -163,7 +163,7 @@ public class ArchiveDetails {
                     // get project
                     String projectName = null;
                     String projectSlug = projectJson.getString("id");
-                    Project project = library.index().getProject(preferredLocale, projectSlug, true);
+                    Project project = library.index.getProject(preferredLocale, projectSlug, true);
                     if (project != null) {
                         projectName = project.name;
                     } else {
