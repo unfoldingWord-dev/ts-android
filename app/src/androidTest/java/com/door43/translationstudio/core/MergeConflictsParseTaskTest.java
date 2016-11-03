@@ -4,14 +4,11 @@ import android.content.Context;
 import android.test.InstrumentationTestCase;
 import android.util.Log;
 
-import com.door43.translationstudio.rendering.MergeConflictHandler;
-import com.door43.translationstudio.tasks.ParseMergeConflictsTask;
-import com.door43.translationstudio.ui.translate.ReviewModeAdapter;
+import com.door43.translationstudio.tasks.MergeConflictsParseTask;
 import com.door43.util.FileUtilities;
 
 import org.unfoldingword.tools.logger.Logger;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -21,24 +18,17 @@ import java.util.List;
 /**
  * Created by blm on 7/25/16.
  */
-public class MergeConflictHandlerTest extends InstrumentationTestCase {
+public class MergeConflictsParseTaskTest extends InstrumentationTestCase {
 
-    public static final String TAG = MergeConflictHandlerTest.class.getSimpleName();
-    File mTempFolder;
+    public static final String TAG = MergeConflictsParseTaskTest.class.getSimpleName();
     private Context mTestContext;
     private String mTestText;
     private String mExpectedText;
     private List<String> mExpectedTexts = new ArrayList<>();
-    private String mExpectedHeadText;
-    private String mExpectedTailText;
     private List<String>  mParsedText = new ArrayList<>();
-    private boolean mExpectFullBlockMergeConflict;
-    private boolean mExpectNested;
-    private boolean mFoundFullBlockMergeConflict;
-    private boolean mFoundNested;
     private int mExpectedConflictCount;
     private int mFoundConflictCount;
-    private List<ReviewModeAdapter.MergeConflictCard> mLastMergeConflictCards;
+    private List<CharSequence> mLastMergeConflictCards;
 
     @Override
     public void setUp() throws Exception {
@@ -54,8 +44,6 @@ public class MergeConflictHandlerTest extends InstrumentationTestCase {
     public void test01ProcessFullConflict() throws Exception {
         //given
         String testId = "merge/full_conflict";
-        mExpectFullBlockMergeConflict = false;
-        mExpectNested = false;
         mExpectedConflictCount = 2;
 
         //when
@@ -68,8 +56,6 @@ public class MergeConflictHandlerTest extends InstrumentationTestCase {
     public void test02ProcessTwoConflict() throws Exception {
         //given
         String testId = "merge/two_conflict";
-        mExpectFullBlockMergeConflict = false;
-        mExpectNested = false;
         mExpectedConflictCount = 2;
 
         //when
@@ -82,8 +68,6 @@ public class MergeConflictHandlerTest extends InstrumentationTestCase {
     public void test03ProcessPartialConflict() throws Exception {
         //given
         String testId = "merge/partial_conflict";
-        mExpectFullBlockMergeConflict = false;
-        mExpectNested = false;
         mExpectedConflictCount = 2;
 
         //when
@@ -96,8 +80,6 @@ public class MergeConflictHandlerTest extends InstrumentationTestCase {
     public void test04ProcessNestedHeadConflict() throws Exception {
         //given
         String testId = "merge/head_nested_conflict";
-        mExpectFullBlockMergeConflict = false;
-        mExpectNested = true;
         mExpectedConflictCount = 3;
 
         //when
@@ -110,8 +92,6 @@ public class MergeConflictHandlerTest extends InstrumentationTestCase {
     public void test05ProcessNestedTailConflict() throws Exception {
         //given
         String testId = "merge/tail_nested_conflict";
-        mExpectFullBlockMergeConflict = false;
-        mExpectNested = true;
         mExpectedConflictCount = 3;
 
         //when
@@ -124,8 +104,6 @@ public class MergeConflictHandlerTest extends InstrumentationTestCase {
     public void test06ProcessNotFullNestedConflict() throws Exception {
         //given
         String testId = "merge/not_full_double_nested_conflict";
-        mExpectFullBlockMergeConflict = false;
-        mExpectNested = true;
         mExpectedConflictCount = 4;
 
         //when
@@ -138,8 +116,6 @@ public class MergeConflictHandlerTest extends InstrumentationTestCase {
     public void test07ProcessNotFullEndNestedConflict() throws Exception {
         //given
         String testId = "merge/not_full_double_nested_conflict_end";
-        mExpectFullBlockMergeConflict = false;
-        mExpectNested = true;
         mExpectedConflictCount = 4;
 
         //when
@@ -153,8 +129,6 @@ public class MergeConflictHandlerTest extends InstrumentationTestCase {
         //given
         String testTextFile = "merge/partial_conflict_part1.data";
         String expectTextFile = "merge/partial_conflict_part1.data";
-        mExpectFullBlockMergeConflict = false;
-        mExpectNested = false;
         mExpectedConflictCount = 1;
 
         //when
@@ -215,8 +189,6 @@ public class MergeConflictHandlerTest extends InstrumentationTestCase {
     public void test13ProcessFullTripleNestedConflict() throws Exception {
         //given
         String testId = "merge/full_triple_nested";
-        mExpectFullBlockMergeConflict = false;
-        mExpectNested = false;
         mExpectedConflictCount = 5;
 
         //when
@@ -241,8 +213,6 @@ public class MergeConflictHandlerTest extends InstrumentationTestCase {
             String expected = mExpectedTexts.get(i);
             verifyProcessedText(id + ": Conflict text " + i, expected, got);
         }
-
-        assertEquals(id + ": FullBlockMergeConflict", mExpectFullBlockMergeConflict, mFoundFullBlockMergeConflict);
     }
 
     private void doRenderMergeConflicts( String testId) throws IOException {
@@ -254,20 +224,20 @@ public class MergeConflictHandlerTest extends InstrumentationTestCase {
 
         if(mExpectedConflictCount != mFoundConflictCount) {
             for (int i = 0; i < mLastMergeConflictCards.size(); i++) {
-                ReviewModeAdapter.MergeConflictCard conflict = mLastMergeConflictCards.get(i);
-                Log.d(TAG, "conflict card " + i + ":\n" + conflict.text );
+                CharSequence conflict = mLastMergeConflictCards.get(i);
+                Log.d(TAG, "conflict card " + i + ":\n" + conflict );
             }
             assertEquals("conflict count", mExpectedConflictCount, mFoundConflictCount);
         }
     }
 
     private void doRenderMergeConflicts(String testTextFile, String expectTextFile ) throws IOException {
-        String text = doRenderMergeConflict(MergeConflictHandler.MERGE_HEAD_PART, testTextFile, expectTextFile );
+        String text = doRenderMergeConflict(1, testTextFile, expectTextFile );
         mParsedText.add(text);
         mExpectedTexts.add(mExpectedText);
 
         if(mLastMergeConflictCards.size() > 1) {
-            text = doRenderMergeConflict(MergeConflictHandler.MERGE_TAIL_PART, testTextFile, expectTextFile);
+            text = doRenderMergeConflict(2, testTextFile, expectTextFile);
             mParsedText.add(text);
             mExpectedTexts.add(mExpectedText);
         }
@@ -279,7 +249,7 @@ public class MergeConflictHandlerTest extends InstrumentationTestCase {
         assertNotNull(mTestText);
         assertFalse(mTestText.isEmpty());
 
-        boolean conflicted = MergeConflictHandler.isMergeConflicted(mTestText);
+        boolean conflicted = MergeConflictsParseTask.isMergeConflicted(mTestText);
         return conflicted;
     }
 
@@ -299,25 +269,14 @@ public class MergeConflictHandlerTest extends InstrumentationTestCase {
         assertNotNull(mExpectedText);
         assertFalse(mExpectedText.isEmpty());
 
-        ParseMergeConflictsTask parseTask = new ParseMergeConflictsTask(1, mTestText);
+        MergeConflictsParseTask parseTask = new MergeConflictsParseTask(mTestText);
         parseTask.start();
         mLastMergeConflictCards = parseTask.getMergeConflictItems();
-        mFoundNested = false;
-        mFoundFullBlockMergeConflict = parseTask.isFullMergeConflict();
         mFoundConflictCount = mLastMergeConflictCards.size();
         if(mFoundConflictCount >= sourceGroup) {
-            return mLastMergeConflictCards.get(sourceGroup - 1).text.toString();
+            return mLastMergeConflictCards.get(sourceGroup - 1).toString();
         }
         return null;
-
-//        MergeConflictHandler renderer = new MergeConflictHandler();
-//        renderer.renderMergeConflict(mTestText, sourceGroup);
-//        String out = renderer.getConflictPart(sourceGroup).toString();
-
-//        mFoundFullBlockMergeConflict = renderer.isFullBlockMergeConflict();
-//        mFoundNested = renderer.isNested(sourceGroup);
-
-//        return out;
     }
 
     private void verifyProcessedText(String id, String expectedText, String out) {

@@ -9,7 +9,6 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.ui.publish.ValidationItem;
-import com.door43.translationstudio.rendering.MergeConflictHandler;
 
 import org.json.JSONException;
 import org.unfoldingword.door43client.models.*;
@@ -77,7 +76,7 @@ public class ValidationTask extends ManagedTask {
 
             // validate project title
             if(chapterSlug.equals("front")) {
-                if (MergeConflictHandler.isMergeConflicted(projectTranslation.getTitle()) || chunks.contains("title") && !projectTranslation.isTitleFinished()) {
+                if (MergeConflictsParseTask.isMergeConflicted(projectTranslation.getTitle()) || chunks.contains("title") && !projectTranslation.isTitleFinished()) {
                     mValidations.add(ValidationItem.generateInvalidGroup(projectTitle, sourceLanguage));
                     mValidations.add(ValidationItem.generateInvalidFrame(projectTitle, sourceLanguage, projectTranslation.getTitle(), targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, "0", "0"));
                 }
@@ -89,12 +88,12 @@ public class ValidationTask extends ManagedTask {
             List<ValidationItem> frameValidations = new ArrayList<>();
 
             ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(chapterSlug);
-            if(MergeConflictHandler.isMergeConflicted(chapterTranslation.title) || chunks.contains("title") && !chapterTranslation.isTitleFinished()) {
+            if(MergeConflictsParseTask.isMergeConflicted(chapterTranslation.title) || chunks.contains("title") && !chapterTranslation.isTitleFinished()) {
                 chapterIsValid = false;
                 frameValidations.add(ValidationItem.generateInvalidFrame(container.readChunk(chapterSlug, "title"), sourceLanguage, chapterTranslation.title, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapterSlug, "00"));
             }
 
-            if(MergeConflictHandler.isMergeConflicted(chapterTranslation.reference) || chunks.contains("reference") && !chapterTranslation.isReferenceFinished()) {
+            if(MergeConflictsParseTask.isMergeConflicted(chapterTranslation.reference) || chunks.contains("reference") && !chapterTranslation.isReferenceFinished()) {
                 chapterIsValid = false;
                     frameValidations.add(ValidationItem.generateInvalidFrame(container.readChunk(chapterSlug, "reference"), sourceLanguage, chapterTranslation.reference, targetLanguage, TranslationFormat.DEFAULT, mTargetTranslationId, chapterSlug, "00"));
             }
@@ -108,7 +107,7 @@ public class ValidationTask extends ManagedTask {
                 if(lastValidFrameIndex == -1 && (frameTranslation.isFinished() || chunkText.isEmpty())) {
                     // start new valid range
                     lastValidFrameIndex = j;
-                } else if(MergeConflictHandler.isMergeConflicted(frameTranslation.body) || !(frameTranslation.isFinished() || chunkText.isEmpty()) || (frameTranslation.isFinished() || chunkText.isEmpty()) && j == chunks.size() - 1){
+                } else if(MergeConflictsParseTask.isMergeConflicted(frameTranslation.body) || !(frameTranslation.isFinished() || chunkText.isEmpty()) || (frameTranslation.isFinished() || chunkText.isEmpty()) && j == chunks.size() - 1){
                     // close valid range
                     if(lastValidFrameIndex > -1) {
                         int previousFrameIndex = j - 1;
