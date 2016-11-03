@@ -247,9 +247,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         String errorLog = "";
 
         for (String book : books) {
-
             verifyBookTOC(book);
-
             if(!mErrorLog.isEmpty()) {
                 errorLog += "Errors in book '" + book + "':\n" + mErrorLog + "\n\n";
             }
@@ -629,6 +627,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         HashMap<String, List<String>> mChunks = parsedChunks.chunks;
 
         int versificationIndex = 0;
+        int lastChapter = -1;
 
         for (int i = 0; i < sourceToc.size(); i++) {
             Map tocChapter = sourceToc.get(i);
@@ -637,6 +636,13 @@ public class ExportUsfmTest extends InstrumentationTestCase {
             if(chapterInt < 0) { // skip if not number
                 continue;
             }
+
+            if(lastChapter >= 0) {
+                if(chapterInt <= lastChapter) {
+                    addErrorMsg("versification chunks are out of order chapter '" + chapterSlug + "' should be greater than '" + lastChapter + "'\n");
+                }
+            }
+            lastChapter = chapterInt;
 
             if(versificationIndex >= mChapters.size()) {
                 addErrorMsg("missing chunk for versification '" + versificationIndex + "'\n");
