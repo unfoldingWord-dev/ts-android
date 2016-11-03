@@ -185,7 +185,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
 
         // Prompt for different source if this one is empty
-        if(mItems.size() == 0) {
+        if(mSourceContainer != null && mItems.size() == 0) {
             getListener().onNewSourceTranslationTabClick();
         }
 
