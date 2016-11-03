@@ -263,10 +263,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     @Override
-    public int getItemPosition(String chapterId, String frameId) {
+    public int getItemPosition(String chapterSlug, String chunkSlug) {
         for(int i = 0; i < mFilteredItems.size(); i ++) {
             ReviewListItem item = (ReviewListItem) mFilteredItems.get(i);
-            if(item.isChunk() && item.chapterSlug.equals(chapterId) && item.chunkSlug.equals(frameId)) {
+            if(item.chapterSlug.equals(chapterSlug) && item.chunkSlug.equals(chunkSlug)) {
                 return i;
             }
         }
@@ -351,63 +351,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
     }
 
-    /**
-     * Returns the preferred translation notes.
-     * if none exist in the source language it will return the english version
-     * @param frame
-     * @return
-     */
-    private static TranslationNote[] getPreferredNotes(ResourceContainer sourceTranslation, String frame) {
-        Door43Client library = App.getLibrary();
-//        TranslationNote[] notes = library.getTranslationNotes(sourceTranslation, frame.getChapterId(), frame.getId());
-//        if(notes.length == 0 && !sourceTranslation.language.slug.equals("en")) {
-//            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.project.slug, "en");
-//            notes = library.getTranslationNotes(defaultSourceTranslation, frame.getChapterId(), frame.getId());
-//        }
-        return new TranslationNote[0];
-    }
-
-    /**
-     * Returns the preferred translation words.
-     * if none exist in the source language it will return the english version
-     * @param sourceTranslation
-     * @param frame
-     * @return
-     */
-    private static TranslationWord[] getPreferredWords(ResourceContainer sourceTranslation, String frame) {
-        Door43Client library = App.getLibrary();
-//        TranslationWord[] words = library.getTranslationWords(sourceTranslation, frame.getChapterId(), frame.getId());
-//        if(words.length == 0 && !sourceTranslation.language.slug.equals("en")) {
-//            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.project.slug, "en");
-//            words = library.getTranslationWords(defaultSourceTranslation, frame.getChapterId(), frame.getId());
-//        }
-        return new TranslationWord[0];
-    }
-
-    /**
-     * Returns the preferred checking questions.
-     * if none exist in the source language it will return the english version
-     * @param sourceTranslation
-     * @param chapterId
-     * @param frameId
-     * @return
-     */
-    private static CheckingQuestion[] getPreferredQuestions(ResourceContainer sourceTranslation, String chapterId, String frameId) {
-        Door43Client library = App.getLibrary();
-//        CheckingQuestion[] questions = library.getCheckingQuestions(sourceTranslation, chapterId, frameId);
-//        if(questions.length == 0 && !sourceTranslation.language.slug.equals("en")) {
-//            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.project.slug, "en");
-//            questions = library.getCheckingQuestions(defaultSourceTranslation, chapterId, frameId);
-//        }
-        return new CheckingQuestion[0];
-    }
-
     private void renderSourceCard(final int position, final ReviewListItem item, final ViewHolder holder) {
         ManagedTask oldTask = TaskManager.getTask(holder.currentSourceTaskId);
         TaskManager.cancelTask(oldTask);
         TaskManager.clearTask(oldTask);
         if(item.renderedSourceText == null) {
-            holder.mSourceBody.setText("");
+            holder.mSourceBody.setText(item.sourceText);
+            holder.mSourceBody.setVisibility(View.INVISIBLE);
             ManagedTask task = new ManagedTask() {
                 @Override
                 public void start() {
@@ -429,6 +379,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             @Override
                             public void run() {
                                 holder.mSourceBody.setText(item.renderedSourceText);
+                                holder.mSourceBody.setVisibility(View.VISIBLE);
                             }
                         });
                     }
@@ -437,6 +388,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             holder.currentSourceTaskId = TaskManager.addTask(task);
         } else {
             holder.mSourceBody.setText(item.renderedSourceText);
+            holder.mSourceBody.setVisibility(View.VISIBLE);
         }
 
         renderTabs(holder);
@@ -592,8 +544,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         TaskManager.cancelTask(oldtask);
         TaskManager.clearTask(oldtask);
         if(item.renderedTargetText == null) {
-            holder.mTargetEditableBody.setText("");
-            holder.mTargetBody.setText("");
+            holder.mTargetEditableBody.setText(item.targetText);
+            holder.mTargetEditableBody.setVisibility(View.INVISIBLE);
+            holder.mTargetBody.setText(item.targetText);
+            holder.mTargetBody.setVisibility(View.INVISIBLE);
             ManagedTask task = new ManagedTask() {
                 @Override
                 public void start() {
@@ -622,10 +576,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                 if(item.isEditing) {
                                     // edit mode
                                     holder.mTargetEditableBody.setText(item.renderedTargetText);
+                                    holder.mTargetEditableBody.setVisibility(View.VISIBLE);
                                     holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
                                 } else {
                                     // verse marker mode
                                     holder.mTargetBody.setText(item.renderedTargetText);
+                                    holder.mTargetBody.setVisibility(View.VISIBLE);
                                     holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() {
                                         @Override
                                         public boolean onTouch(View v, MotionEvent event) {
@@ -645,10 +601,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         } else if(item.isEditing) {
             // editing mode
             holder.mTargetEditableBody.setText(item.renderedTargetText);
+            holder.mTargetEditableBody.setVisibility(View.VISIBLE);
             holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
         } else {
             // verse marker mode
             holder.mTargetBody.setText(item.renderedTargetText);
+            holder.mTargetBody.setVisibility(View.VISIBLE);
             holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {

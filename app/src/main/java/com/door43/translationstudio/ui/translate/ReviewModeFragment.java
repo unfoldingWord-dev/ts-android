@@ -299,7 +299,7 @@ public class ReviewModeFragment extends ViewModeFragment {
 //                        }
 //                    } else if(((LinkSpan)span).getType().equals("p")) {
 //                        PassageLinkSpan link = (PassageLinkSpan) span;
-//                        scrollToFrame(link.getChapterId(), link.getFrameId());
+//                        scrollToChunk(link.getChapterId(), link.getFrameId());
 //                    }
 //                }
 //
@@ -325,7 +325,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                         onTranslationArticleClick(link.getVolume(), link.getManual(), link.getId(), mResourcesDrawer.getLayoutParams().width);
                     } else if (span instanceof PassageLinkSpan) {
                         PassageLinkSpan link = (PassageLinkSpan) span;
-                        scrollToFrame(link.getChapterId(), link.getFrameId());
+                        scrollToChunk(link.getChapterId(), link.getFrameId());
                     }
                 }
 
@@ -423,7 +423,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                     } else if(((LinkSpan)span).getType().equals("p")) {
                         String url = span.getMachineReadable().toString();
                         PassageLinkSpan link = new PassageLinkSpan("", url);
-                        scrollToFrame(link.getChapterId(), link.getFrameId());
+                        scrollToChunk(link.getChapterId(), link.getFrameId());
                     }
                 }
 
@@ -472,7 +472,12 @@ public class ReviewModeFragment extends ViewModeFragment {
                         if(slugs.length != 2) continue;
                         if(mSourceContainer == null) continue;
                         String projectTitle = mSourceContainer.readChunk("front", "title");
-                        String verseTitle = Frame.parseVerseTitle(mSourceContainer.readChunk(slugs[0], slugs[1]), TranslationFormat.parse(mSourceContainer.contentMimeType));
+
+                        // get verse title
+                        String verseTitle = formatNumber(slugs[1]);
+                        if(mSourceContainer.contentMimeType.equals("text/usfm")) {
+                            verseTitle = Frame.parseVerseTitle(mSourceContainer.readChunk(slugs[0], slugs[1]), TranslationFormat.parse(mSourceContainer.contentMimeType));
+                        }
 
                         LinearLayout exampleView = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_example_item, null);
                         TextView referenceView = (TextView)exampleView.findViewById(R.id.reference);
@@ -482,7 +487,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                         exampleView.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                scrollToFrame(slugs[0], slugs[1]);
+                                scrollToChunk(slugs[0], slugs[1]);
                             }
                         });
                         Typography.formatSub(getActivity(), TranslationType.SOURCE, referenceView, rc.language.slug, rc.language.direction);
@@ -580,7 +585,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                     } else if(((LinkSpan)span).getType().equals("p")) {
                         String url = span.getMachineReadable().toString();
                         PassageLinkSpan link = new PassageLinkSpan("", url);
-                        scrollToFrame(link.getChapterId(), link.getFrameId());
+                        scrollToChunk(link.getChapterId(), link.getFrameId());
                     }
                 }
 

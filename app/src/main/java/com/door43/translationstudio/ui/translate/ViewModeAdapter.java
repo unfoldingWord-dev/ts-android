@@ -146,11 +146,11 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
 
     /**
      * Returns the position of an item in the adapter.
-     * @param chapterId
-     * @param frameId
+     * @param chapterSlug
+     * @param chunkSlug
      * @return -1 if no item is found
      */
-    public abstract int getItemPosition(String chapterId, String frameId);
+    public abstract int getItemPosition(String chapterSlug, String chunkSlug);
 
     /**
      * Restarts the auto commit timer
@@ -168,7 +168,7 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
         void onTranslationArticleClick(String volume, String manual, String slug, int width);
         void onTranslationNoteClick(TranslationHelp note, int width);
         void onCheckingQuestionClick(TranslationHelp question, int width);
-        void scrollToFrame(String chapterSlug, String frameSlug);
+        void scrollToChunk(String chapterSlug, String frameSlug);
         void restartAutoCommitTimer();
         void onSearching(boolean enable);
         void onDataSetChanged(int count);

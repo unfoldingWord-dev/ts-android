@@ -220,12 +220,13 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
 
     /**
      * Scrolls to the given frame
-     * @param chapterId
-     * @param frameId
+     * // TODO: 11/2/16 this does not scroll to the correct chunk. see obs 1:15. it seems to always be 2 off.
+     * @param chapterSlug
+     * @param chunkSlug
      */
-    public void scrollToFrame(String chapterId, String frameId) {
+    public void scrollToChunk(String chapterSlug, String chunkSlug) {
         closeKeyboard();
-        int position = mAdapter.getItemPosition(chapterId, frameId);
+        int position = mAdapter.getItemPosition(chapterSlug, chunkSlug);
         if(position != -1) {
             mLayoutManager.scrollToPosition(position);
             if(mListener != null) mListener.onScrollProgress(position);
