@@ -140,4 +140,13 @@ public class ContainerCache {
         }
         return links;
     }
+
+    /**
+     * Removes a resource container from the cache
+     * @param resourceContainerSlug the slug of the resource container that will be removed
+     */
+    public static void remove(String resourceContainerSlug) {
+        sInstance.resourceContainers.remove(resourceContainerSlug);
+        sInstance.inspectedContainers.remove(resourceContainerSlug);
+    }
 }

@@ -21,6 +21,7 @@ import android.widget.ListView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.ContainerCache;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.tasks.DownloadResourceContainerTask;
@@ -33,6 +34,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
@@ -255,6 +257,10 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
         TaskManager.clearTask(task);
         if(task instanceof DownloadResourceContainerTask) {
             final DownloadResourceContainerTask t = (DownloadResourceContainerTask)task;
+            for(ResourceContainer rc:t.getDownloadedContainers()) {
+                // reset cached containers that were downloaded
+                ContainerCache.remove(rc.slug);
+            }
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {
                 @Override

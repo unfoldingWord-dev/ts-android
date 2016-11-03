@@ -166,17 +166,27 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         setListStartPosition(0);
 
         if(mSourceContainer != null) {
-            for (Map tocChapter : (List<Map>) mSourceContainer.toc) {
-                String chapterSlug = (String) tocChapter.get("chapter");
-                this.mChapters.add(chapterSlug);
-                List<String> tocChunks = (List) tocChapter.get("chunks");
-                for (String chunkSlug : tocChunks) {
-                    if (chapterSlug.equals(startingChapterSlug) && chunkSlug.equals(startingChunkSlug)) {
-                        setListStartPosition(mItems.size());
+            if(mSourceContainer.toc instanceof List) {
+                for (Map tocChapter : (List<Map>) mSourceContainer.toc) {
+                    String chapterSlug = (String) tocChapter.get("chapter");
+                    this.mChapters.add(chapterSlug);
+                    List<String> tocChunks = (List) tocChapter.get("chunks");
+                    for (String chunkSlug : tocChunks) {
+                        if (chapterSlug.equals(startingChapterSlug) && chunkSlug.equals(startingChunkSlug)) {
+                            setListStartPosition(mItems.size());
+                        }
+                        mItems.add(new ReviewListItem(chapterSlug, chunkSlug));
                     }
-                    mItems.add(new ReviewListItem(chapterSlug, chunkSlug));
                 }
+            } else {
+                Logger.w("ReviewModeAdapter", "Expected a List for the TOC but found something else in " + mSourceContainer.slug);
+
             }
+        }
+
+        // Prompt for different source if this one is empty
+        if(mItems.size() == 0) {
+            getListener().onNewSourceTranslationTabClick();
         }
 
         mFilteredItems = mItems;

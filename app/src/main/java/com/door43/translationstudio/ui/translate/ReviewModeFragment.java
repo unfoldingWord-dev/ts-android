@@ -477,7 +477,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                         LinearLayout exampleView = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_example_item, null);
                         TextView referenceView = (TextView)exampleView.findViewById(R.id.reference);
                         HtmlTextView passageView = (HtmlTextView)exampleView.findViewById(R.id.passage);
-                        referenceView.setText(projectTitle + " " + formatNumber(slugs[0]) + ":" + verseTitle);
+                        referenceView.setText(projectTitle.trim() + " " + formatNumber(slugs[0]) + ":" + verseTitle);
                         passageView.setHtmlFromString(mSourceContainer.readChunk(slugs[0], slugs[1]), true);
                         exampleView.setOnClickListener(new View.OnClickListener() {
                             @Override
