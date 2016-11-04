@@ -33,21 +33,6 @@ public class TargetLanguageAdapter extends BaseAdapter {
         }
     }
 
-    /**
-     * Adds the target languages to the adapter with the option to be sorted or not
-     * @param targetLanguages
-     * @param sorted
-     */
-    public TargetLanguageAdapter(List<TargetLanguage> targetLanguages, boolean sorted) {
-        if(targetLanguages != null) {
-            if(sorted) {
-                Collections.sort(targetLanguages);
-            }
-            mTargetLanguages = targetLanguages.toArray(new TargetLanguage[targetLanguages.size()]);
-            mFilteredTargetLanguages = mTargetLanguages;
-        }
-    }
-
     @Override
     public int getCount() {
         if(mFilteredTargetLanguages != null) {
