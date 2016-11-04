@@ -19,6 +19,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.Project;
@@ -223,12 +224,12 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
                         Translation t = App.getLibrary().index.getTranslation(sourceTranslationSlugs[0]);
                         if(t != null) {
                             sourceLanguageSlug = t.language.slug;
-                        } else {
-                            // try using the next available source
-                            Project p = App.getLibrary().index.getProject(Locale.getDefault().getLanguage(), targetTranslationSlug);
-                            if(p != null) {
-                                sourceLanguageSlug = p.languageSlug;
-                            }
+                        }
+                    } else {
+                        // try using the next available source
+                        Project p = App.getLibrary().index.getProject(Locale.getDefault().getLanguage(), targetTranslationSlug);
+                        if(p != null) {
+                            sourceLanguageSlug = p.languageSlug;
                         }
                     }
                     serverService.offerTargetTranslation(peer, sourceLanguageSlug, targetTranslationSlug);
@@ -518,6 +519,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
 
     @Override
     public void onServerServiceError(Throwable e) {
+        Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
         Logger.e(this.getClass().getName(), "Server service encountered an exception: " + e.getMessage(), e);
     }
 
