@@ -27,6 +27,7 @@ import com.door43.translationstudio.ui.dialogs.BackupDialog;
 
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.SourceLanguage;
+import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.resourcecontainer.Resource;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
@@ -35,6 +36,7 @@ import org.unfoldingword.tools.taskmanager.ThreadableUI;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 
 /**
@@ -64,60 +66,63 @@ public class TargetTranslationInfoDialog extends DialogFragment {
         }
 
         final Door43Client library = App.getLibrary();
-
-        TextView title = (TextView)v.findViewById(R.id.title);
-        TextView projectTitle = (TextView)v.findViewById(R.id.project_title);
-        Project p = library.index().getProject(App.getDeviceLanguageCode(), mTargetTranslation.getProjectId(), true);
-        SourceLanguage sourceLanguage = library.index().getSourceLanguage(p.languageSlug);
-        List<Resource> resources = library.index().getResources(sourceLanguage.slug, p.slug);
-        ResourceContainer resourceContainer;
-        try {
-            resourceContainer = library.open(sourceLanguage.slug, p.slug, resources.get(0).slug);
-        } catch (Exception e) {
-            Logger.e("TargetTranslationInfoDialog", "Failed to open the container", e);
+        if(library == null) {
+            Logger.w("TargetTranslationInfoDialog", "Could not load library");
             dismiss();
             return v;
         }
-        String projectTitleString = null;
-        projectTitleString = resourceContainer.readChunk("front", "title");
-        if(projectTitleString != null) {
-            title.setText(projectTitleString + " - " + mTargetTranslation.getTargetLanguageName());
-            projectTitle.setText(projectTitleString + " (" + mTargetTranslation.getProjectId() + ")");
+
+        TextView titleView = (TextView)v.findViewById(R.id.title);
+        TextView projectTitleView = (TextView)v.findViewById(R.id.project_title);
+        TextView languageTitleView = (TextView)v.findViewById(R.id.language_title);
+
+//        Project p = library.index.getProject(App.getDeviceLanguageCode(), mTargetTranslation.getProjectId(), true);
+//        SourceLanguage sourceLanguage = library.index.getSourceLanguage(p.languageSlug);
+//        List<Resource> resources = library.index.getResources(sourceLanguage.slug, p.slug);
+
+        // Load a source translation
+        Translation sourceTranslation;
+        List<Translation> translations = library.index.findTranslations(Locale.getDefault().getLanguage(), mTargetTranslation.getProjectId(), null, "book", null, App.MIN_CHECKING_LEVEL, -1);
+        if(translations.size() == 0) {
+            Logger.w("TargetTranslationInfoDialog", "Could not find source for target " + mTargetTranslation);
+            dismiss();
+            return v;
         } else {
-            title.setText(mTargetTranslation.getProjectId() + " - " + mTargetTranslation.getTargetLanguageName());
-            projectTitle.setText(mTargetTranslation.getProjectId());
+            sourceTranslation = translations.get(0);
         }
 
-        TextView languageTitle = (TextView)v.findViewById(R.id.language_title);
-        languageTitle.setText(mTargetTranslation.getTargetLanguageName() + " (" + mTargetTranslation.getTargetLanguageId() + ")");
+
+        titleView.setText(sourceTranslation.project.name + " - " + mTargetTranslation.getTargetLanguageName());
+        projectTitleView.setText(sourceTranslation.project.name + " (" + sourceTranslation.project.slug + ")");
+        languageTitleView.setText(mTargetTranslation.getTargetLanguageName() + " (" + mTargetTranslation.getTargetLanguageId() + ")");
 
         final TextView progressView = (TextView)v.findViewById(R.id.progress);
-        final ThreadableUI task = new ThreadableUI(getActivity()) {
-            private int progress = 0;
-
-            @Override
-            public void onStop() {
-
-            }
-
-            @Override
-            public void run() {
-                // TODO: 9/28/16 this should use the task instead
-//                progress = Math.round(library.getTranslationProgress(mTargetTranslation) * 100);
-            }
-
-            @Override
-            public void onPostExecute() {
-                if (!isInterrupted()) {
-                    mTranslationProgressWasCalculated = true;
-                    mTranslationProgress = progress;
-                    progressView.setText(progress + "%");
-                }
-            }
-        };
+//        final ThreadableUI task = new ThreadableUI(getActivity()) {
+//            private int progress = 0;
+//
+//            @Override
+//            public void onStop() {
+//
+//            }
+//
+//            @Override
+//            public void run() {
+//                // TODO: 9/28/16 this should use the task instead
+////                progress = Math.round(library.getTranslationProgress(mTargetTranslation) * 100);
+//            }
+//
+//            @Override
+//            public void onPostExecute() {
+//                if (!isInterrupted()) {
+//                    mTranslationProgressWasCalculated = true;
+//                    mTranslationProgress = progress;
+//                    progressView.setText(progress + "%");
+//                }
+//            }
+//        };
         if(!mTranslationProgressWasCalculated) {
             progressView.setText("");
-            task.start();
+//            task.start();
         } else {
             progressView.setText(mTranslationProgress + "%");
         }
@@ -128,30 +133,30 @@ public class TargetTranslationInfoDialog extends DialogFragment {
         if(translators != null) {
             translatorsView.setText(translators);
         }
-        // TODO: 10/1/2015 support displaying multiple translators
 
-        TextView publishView = (TextView)v.findViewById(R.id.publish_state);
-        publishView.setText("");
-        int statusID = 0;
-        switch (mTargetTranslation.getPublishedStatus()) {
-            case NOT_PUBLISHED:
-                statusID = R.string.publish_status_not;
-                break;
-
-            case IS_CURRENT:
-                statusID = R.string.publish_status_current;
-                break;
-
-            case NOT_CURRENT:
-                statusID = R.string.publish_status_not_current;
-                break;
-
-            default:
-            case ERROR:
-                statusID = R.string.error;
-                break;
-        }
-        publishView.setText(statusID);
+        // TODO: 11/4/16 we no longer publish, but perhaps we can indicate if the project has been backed up to door43?
+//        TextView publishView = (TextView)v.findViewById(R.id.publish_state);
+//        publishView.setText("");
+//        int statusID = 0;
+//        switch (mTargetTranslation.getPublishedStatus()) {
+//            case NOT_PUBLISHED:
+//                statusID = R.string.publish_status_not;
+//                break;
+//
+//            case IS_CURRENT:
+//                statusID = R.string.publish_status_current;
+//                break;
+//
+//            case NOT_CURRENT:
+//                statusID = R.string.publish_status_not_current;
+//                break;
+//
+//            default:
+//            case ERROR:
+//                statusID = R.string.error;
+//                break;
+//        }
+//        publishView.setText(statusID);
 
         TextView changeButton = (TextView)v.findViewById(R.id.change_language);
         changeButton.setOnClickListener(new View.OnClickListener() {
@@ -175,7 +180,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
                     .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            task.stop();
+//                            task.stop();
                             if(mTargetTranslation != null) {
                                 mTranslator.deleteTargetTranslation(mTargetTranslation.getId());
                                 App.clearTargetTranslationSettings(mTargetTranslation.getId());

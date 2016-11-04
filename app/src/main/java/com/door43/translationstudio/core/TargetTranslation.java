@@ -1110,8 +1110,10 @@ public class TargetTranslation {
 
     /**
      * Returns the status of the this target translation's published state
+     * @deprecated We are no longer tagging pushes.
      * @return
      */
+    @Deprecated
     public PublishStatus getPublishedStatus()  {
         try {
             RevCommit lastTag = getLastPublishedTag();
