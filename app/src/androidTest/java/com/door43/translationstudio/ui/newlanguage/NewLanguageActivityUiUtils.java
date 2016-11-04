@@ -22,6 +22,7 @@ import android.support.test.espresso.ViewInteraction;
 import android.support.test.espresso.matcher.BoundedMatcher;
 import android.support.test.rule.ActivityTestRule;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 
 import com.door43.translationstudio.App;
@@ -58,6 +59,7 @@ import static org.junit.Assert.*;
  */
 public class NewLanguageActivityUiUtils {
 
+    public static final String TAG = NewLanguageActivityUiUtils.class.getSimpleName();
     private String mStringToBetyped;
     Context mTestContext;
     Context mAppContext;
@@ -217,6 +219,16 @@ public class NewLanguageActivityUiUtils {
     /**
      * verify that missing non-required answer dialog is displayed
      */
+    protected void thenShouldHaveNewLanguageDialog() {
+        assertNotNull(onView(withText(R.string.title_activity_language_selector)));
+        String prompt = mAppContext.getResources().getString(R.string.new_language_confirmation);
+        String[] promptParts = prompt.split("\"");
+        assertNotNull(onView(withText(promptParts[0])));
+    }
+
+    /**
+     * verify that missing non-required answer dialog is displayed
+     */
     protected void thenShouldHaveMissingAnswerDialog() {
         assertNotNull(onView(withText(R.string.answers_missing_title)));
         assertNotNull(onView(withText(R.string.answers_missing_continue)));
@@ -272,6 +284,26 @@ public class NewLanguageActivityUiUtils {
         if(doDone) {
             onView(withId(R.id.done_button)).perform(click());
         }
+    }
+
+    /**
+     * fill pagesup to fillToPage
+     * @param fillToPage
+     * @param hideKeyboard
+     * * @param requiredOnly
+     * @param valueForBooleans
+
+     */
+    protected void fillUpToPage(int fillToPage, boolean hideKeyboard, boolean requiredOnly, boolean valueForBooleans, boolean doNext) {
+        for(int i = 0; i < fillToPage - 1; i++) {
+            Log.d(TAG,"Filling page: " + (i+1));
+            verifyNavButtonSettings(pageCount(), i);
+            fillPage(i, true, requiredOnly, valueForBooleans, hideKeyboard);
+            Log.d(TAG,"Now on page: " + i);
+        }
+        Log.d(TAG,"Filling page: " + fillToPage);
+        verifyNavButtonSettings(pageCount(), fillToPage - 1);
+        fillPage(fillToPage - 1, doNext, requiredOnly, valueForBooleans, hideKeyboard);
     }
 
     /**
@@ -404,7 +436,7 @@ public class NewLanguageActivityUiUtils {
         verifyButtons(pageNum, questionNum, false, false); // should not be set yet
         String questionText = pager.getPage(pageNum).getQuestion(questionNum).text;
         Matcher<View> parent = allOf(withClassName(endsWith("RadioGroup")), hasSibling(withText(questionText)));
-
+        onView(withId(R.id.recycler_view)).perform(RecyclerViewActions.scrollToPosition(questionNum));
         int resource = value ? R.id.radio_button_yes : R.id.radio_button_no;
         int oppositeResource = !value ? R.id.radio_button_yes : R.id.radio_button_no;
         ViewInteraction interaction = onView(allOf(withId(resource), withParent(parent)));
