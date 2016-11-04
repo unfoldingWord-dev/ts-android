@@ -245,7 +245,7 @@ public class TargetTranslationInfoDialog extends DialogFragment implements Manag
                 @Override
                 public void run() {
                     if(progressView != null) {
-                        long progress = Math.round(((TranslationProgressTask) task).getProgress() * 100);
+                        int progress = Math.round((float)((TranslationProgressTask) task).getProgress() * 100);
                         progressView.setText(progress + "%");
                     }
                 }

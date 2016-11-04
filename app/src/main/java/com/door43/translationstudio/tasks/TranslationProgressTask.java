@@ -18,7 +18,7 @@ public class TranslationProgressTask extends ManagedTask {
     public static final String TASK_ID = "translation-progress";
     private double progress = 0.0;
 
-    private final TargetTranslation targetTranslation;
+    public final TargetTranslation targetTranslation;
 
     public TranslationProgressTask(TargetTranslation targetTranslation) {
         this.targetTranslation = targetTranslation;
