@@ -10,6 +10,7 @@ import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.ui.publish.ValidationItem;
 import com.door43.translationstudio.rendering.MergeConflictHandler;
+import com.door43.util.StringUtilities;
 
 import org.json.JSONException;
 import org.unfoldingword.door43client.models.*;
@@ -121,14 +122,14 @@ public class ValidationTask extends ManagedTask {
                             previousFrame = container.readChunk(chapterSlug, chunks.get(previousFrameIndex));
                             String lastValidText = "";
                             lastValidText = container.readChunk(chapterSlug, chunks.get(lastValidFrameIndex));
-                            String frameTitle = projectTitle + " " + Integer.parseInt(chapterSlug);
+                            String frameTitle = projectTitle + " " + StringUtilities.formatNumber(chapterSlug);
                             frameTitle += ":" + Frame.getStartVerse(lastValidText, format) + "-" + Frame.getEndVerse(previousFrame, format);
                             frameValidations.add(ValidationItem.generateValidFrame(frameTitle, sourceLanguage, true));
                         } else {
                             String lastValidFrame = chunks.get(lastValidFrameIndex);
                             String lastValidText = "";
                             lastValidText = container.readChunk(chapterSlug, chunks.get(lastValidFrameIndex));
-                            String frameTitle = projectTitle + " " + Integer.parseInt(chapterSlug);
+                            String frameTitle = projectTitle + " " + StringUtilities.formatNumber(chapterSlug);
                             frameTitle += ":" + Frame.getStartVerse(lastValidText, format);
                             if(!Frame.getStartVerse(lastValidText, format).equals(Frame.getEndVerse(lastValidText, format))) {
                                 frameTitle += "-" + Frame.getEndVerse(lastValidText, format);
@@ -141,7 +142,7 @@ public class ValidationTask extends ManagedTask {
                     // add invalid frame
                     if(!(frameTranslation.isFinished() || chunkText.isEmpty())) {
                         chapterIsValid = false;
-                        String frameTitle = projectTitle + " " + Integer.parseInt(chapterSlug);
+                        String frameTitle = projectTitle + " " + StringUtilities.formatNumber(chapterSlug);
                         frameTitle += ":" + Frame.getStartVerse(chunkText, format);
                         if (!Frame.getStartVerse(chunkText, format).equals(Frame.getEndVerse(chunkText, format))) {
                             frameTitle += "-" + Frame.getEndVerse(chunkText, format);
@@ -166,11 +167,11 @@ public class ValidationTask extends ManagedTask {
                         // range
                         String previousChapterSlug = chapters[previousChapterIndex];
                         String lastValidChapterSlug = chapters[lastValidChapterIndex];
-                        String chapterTitle = projectTitle + " " + Integer.parseInt(lastValidChapterSlug) + "-" + Integer.parseInt(previousChapterSlug);
+                        String chapterTitle = projectTitle + " " + StringUtilities.formatNumber(lastValidChapterSlug) + "-" + StringUtilities.formatNumber(previousChapterSlug);
                         chapterValidations.add(ValidationItem.generateValidGroup(chapterTitle, sourceLanguage, true));
                     } else {
                         String lastValidChapter = chapters[lastValidChapterIndex];
-                        String chapterTitle  = projectTitle + " " + Integer.parseInt(lastValidChapter);
+                        String chapterTitle  = projectTitle + " " + StringUtilities.formatNumber(lastValidChapter);
                         chapterValidations.add(ValidationItem.generateValidGroup(chapterTitle, sourceLanguage, false));
                     }
                     lastValidChapterIndex = -1;
@@ -181,7 +182,7 @@ public class ValidationTask extends ManagedTask {
                     String chapterTitle = "";
                     chapterTitle = container.readChunk(chapterSlug, "title");
                     if (chapterTitle.isEmpty()) {
-                        chapterTitle = projectTitle + " " + Integer.parseInt(chapterSlug);
+                        chapterTitle = projectTitle + " " + StringUtilities.formatNumber(chapterSlug);
                     }
                     chapterValidations.add(ValidationItem.generateInvalidGroup(chapterTitle, sourceLanguage));
 
