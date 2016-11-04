@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 
 import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
@@ -374,11 +375,11 @@ public class ServerService extends NetworkService {
         TargetTranslation targetTranslation = App.getTranslator().getTargetTranslation(targetTranslationSlug);
         if(targetTranslation != null) {
             try {
-                ResourceContainer container = library.open(sourceLanguageSlug, targetTranslation.getProjectId(), targetTranslation.getResourceSlug());
+                Project p = App.getLibrary().index.getProject(sourceLanguageSlug, targetTranslation.getProjectId(), true);
                 JSONObject json = new JSONObject();
                 json.put("target_translation_id", targetTranslation.getId());
                 json.put("package_version", TargetTranslation.PACKAGE_VERSION);
-                json.put("project_name", container.readChunk("front", "title"));
+                json.put("project_name", p.name);
                 json.put("target_language_name", targetTranslation.getTargetLanguageName());
                 json.put("progress", 0); // we don't use this right now
                 Request request = new Request(Request.Type.AlertTargetTranslation, json);
@@ -390,6 +391,9 @@ public class ServerService extends NetworkService {
             }
         } else {
             // invalid target translation
+            if (listener != null) {
+                listener.onServerServiceError(new Exception("Invalid target translation: " + targetTranslationSlug));
+            }
         }
     }
 
