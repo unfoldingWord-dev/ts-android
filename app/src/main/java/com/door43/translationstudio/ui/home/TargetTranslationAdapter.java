@@ -18,9 +18,12 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.tasks.CalculateTargetTranslationProgressTask;
 
 import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
+
+import com.door43.translationstudio.tasks.TranslationProgressTask;
 import com.door43.widget.ViewUtil;
 import com.filippudak.ProgressPieView.ProgressPieView;
 
@@ -49,7 +52,7 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
 
     /**
      * Adds a listener to be called when the info button is called
-     * @param listener
+     * @param listener the listener to be added
      */
     public void setOnInfoClickListener(OnInfoClickListener listener) {
         mInfoClickListener = listener;
@@ -94,17 +97,17 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
 
         // calculate translation progress
         if(!mTranslationProgressCalculated.contains(targetTranslation.getId())) {
-            String taskId = CalculateTargetTranslationProgressTask.TASK_ID + targetTranslation.getId();
-            CalculateTargetTranslationProgressTask calcTask = (CalculateTargetTranslationProgressTask) TaskManager.getTask(taskId);
-            if(calcTask != null) {
+            String taskId = TranslationProgressTask.TASK_ID + targetTranslation.getId();
+            TranslationProgressTask progressTask = (TranslationProgressTask) TaskManager.getTask(taskId);
+            if(progressTask != null) {
                 // attach listener
-                calcTask.removeAllOnFinishedListener();
-                calcTask.addOnFinishedListener(this);
+                progressTask.removeAllOnFinishedListener();
+                progressTask.addOnFinishedListener(this);
             } else {
-                calcTask = new CalculateTargetTranslationProgressTask(library, targetTranslation);
-                calcTask.addOnFinishedListener(this);
-                TaskManager.addTask(calcTask, CalculateTargetTranslationProgressTask.TASK_ID + targetTranslation.getId());
-                TaskManager.groupTask(calcTask, "calc-translation-progress");
+                progressTask = new TranslationProgressTask(targetTranslation);
+                progressTask.addOnFinishedListener(this);
+                TaskManager.addTask(progressTask, TranslationProgressTask.TASK_ID + targetTranslation.getId());
+                TaskManager.groupTask(progressTask, "calc-translation-progress");
             }
         } else {
             holder.setProgress(mTranslationProgress.get(targetTranslation.getId()));
@@ -146,24 +149,22 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
     @Override
     public void onTaskFinished(ManagedTask task) {
         TaskManager.clearTask(task);
-        // save progress
-        final int progress = ((CalculateTargetTranslationProgressTask)task).translationProgress;
-        final TargetTranslation targetTranslation = ((CalculateTargetTranslationProgressTask)task).targetTranslation;
-        mTranslationProgress.put(targetTranslation.getId(), progress);
-        mTranslationProgressCalculated.add(targetTranslation.getId());
 
-        // update view holders
-        for(final ViewHolder holder:holders) {
-            if(holder.currentTargetTranslation.getId().endsWith(targetTranslation.getId())) {
-                Handler hand = new Handler(Looper.getMainLooper());
-                hand.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        holder.setProgress(progress);
-                    }
-                });
-                break;
-            }
+        if(task instanceof TranslationProgressTask) {
+            // save progress
+            double progressLong = ((TranslationProgressTask) task).getProgress();
+            final int progress = Math.round((float)progressLong * 100);
+            final TargetTranslation targetTranslation = ((TranslationProgressTask) task).targetTranslation;
+            mTranslationProgress.put(targetTranslation.getId(), progress);
+            mTranslationProgressCalculated.add(targetTranslation.getId());
+
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    notifyDataSetChanged();
+                }
+            });
         }
     }
 
