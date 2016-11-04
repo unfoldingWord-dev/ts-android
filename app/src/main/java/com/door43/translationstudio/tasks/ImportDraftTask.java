@@ -2,7 +2,6 @@ package com.door43.translationstudio.tasks;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 
 import org.unfoldingword.resourcecontainer.ResourceContainer;

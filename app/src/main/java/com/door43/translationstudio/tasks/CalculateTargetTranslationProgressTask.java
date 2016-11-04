@@ -1,7 +1,6 @@
 package com.door43.translationstudio.tasks;
 
 import com.door43.translationstudio.App;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 
 import org.unfoldingword.door43client.Door43Client;
@@ -9,9 +8,6 @@ import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
-/**
- * Created by joel on 5/20/16.
- */
 public class CalculateTargetTranslationProgressTask extends ManagedTask {
 
     public static final String TASK_ID = "calculate_target_translation_progress";
