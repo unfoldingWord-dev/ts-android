@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.Question;
+import org.unfoldingword.door43client.models.Questionnaire;
 import org.unfoldingword.tools.logger.Logger;
 
 import android.app.Activity;
@@ -85,7 +86,21 @@ public class NewLanguageActivityUiUtils {
                 e.printStackTrace();
             }
         }
-        pager = new QuestionnairePager(App.getLibrary().index().getQuestionnaires().get(0));
+        List<Questionnaire> questionnaires = App.getLibrary().index().getQuestionnaires();
+        if(questionnaires.size() > 0) {
+            Questionnaire q = questionnaires.get(0);
+            List<Question> questions = App.getLibrary().index.getQuestions(q.tdId);
+            pager = new QuestionnairePager(q);
+            pager.loadQuestions(questions);
+        }
+    }
+
+    /**
+     * get number of pages in questionnaire
+     * @return
+     */
+    public int pageCount() {
+        return pager.size();
     }
 
     /**
@@ -195,12 +210,8 @@ public class NewLanguageActivityUiUtils {
      * verify that missing required answer dialog is displayed
      */
     protected void thenShouldHaveRequiredAnswerDialog() {
-        ViewInteraction vi = onView(withText(R.string.invalid_entry_title));
-        assertNotNull(vi);
-//        String warning = mAppContext.getResources().getString(R.string.missing_question_answer);
-//        String[] lines = warning.split("\n");
-//        warning = lines[0];
-//        onView(withId(R.id.dialog_content)).check(matches(withText(startsWith(warning))));
+        ViewInteraction vi = onView(withText(R.string.missing_question_answer));
+        vi.check(matches(withText(R.string.missing_question_answer)));
     }
 
     /**

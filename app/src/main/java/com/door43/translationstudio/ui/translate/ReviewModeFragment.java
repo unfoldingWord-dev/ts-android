@@ -22,15 +22,11 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.CheckingQuestion;
 import com.door43.translationstudio.core.ContainerCache;
 import com.door43.translationstudio.core.Frame;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TranslationArticle;
 import com.door43.translationstudio.core.TranslationFormat;
-import com.door43.translationstudio.core.TranslationNote;
 import com.door43.translationstudio.core.TranslationType;
-import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.rendering.HtmlRenderer;
 import com.door43.translationstudio.rendering.LinkToHtmlRenderer;
@@ -704,57 +700,6 @@ public class ReviewModeFragment extends ViewModeFragment {
         }
         out.putString(STATE_RESOURCE_CONTAINER_SLUG, mResourceContainerSlug);
         super.onSaveInstanceState(out);
-    }
-
-    /**
-     * Returns the preferred translation notes.
-     * if none exist in the source language it will return the english version
-     * @param chapterId
-     * @param frameId
-     * @return
-     */
-    private static TranslationNote getPreferredNote(SourceTranslation sourceTranslation, String chapterId, String frameId, String noteId) {
-        Door43Client library = App.getLibrary();
-        TranslationNote note = null;//library.getTranslationNote(sourceTranslation, chapterId, frameId, noteId);
-        if(note == null && !sourceTranslation.language.slug.equals("en")) {
-//            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
-//            note = library.getTranslationNote(defaultSourceTranslation, chapterId, frameId, noteId);
-        }
-        return note;
-    }
-
-    /**
-     * Returns the preferred translation words.
-     * if none exist in the source language it will return the english version
-     * @param sourceTranslation
-     * @return
-     */
-    private static TranslationWord getPreferredWord(SourceTranslation sourceTranslation, String wordId) {
-        Door43Client library = App.getLibrary();
-        TranslationWord word = null;//library.getTranslationWord(sourceTranslation, wordId);
-        if(word == null && !sourceTranslation.language.slug.equals("en")) {
-//            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
-//            word = library.getTranslationWord(defaultSourceTranslation, wordId);
-        }
-        return word;
-    }
-
-    /**
-     * Returns the preferred checking question.
-     * if none exist in the source language it will return the english version
-     * @param sourceTranslation
-     * @param chapterId
-     * @param frameId
-     * @return
-     */
-    private static CheckingQuestion getPreferredQuestion(SourceTranslation sourceTranslation, String chapterId, String frameId, String questionId) {
-        Door43Client library = App.getLibrary();
-        CheckingQuestion question = null;//library.getCheckingQuestion(sourceTranslation, chapterId, frameId, questionId);
-        if(question == null && !sourceTranslation.language.slug.equals("en")) {
-//            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
-//            question = library.getCheckingQuestion(defaultSourceTranslation, chapterId, frameId, questionId);
-        }
-        return question;
     }
 
     /**
