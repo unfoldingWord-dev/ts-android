@@ -43,7 +43,7 @@ public class TargetLanguageAdapter extends BaseAdapter {
             if(sorted) {
                 Collections.sort(targetLanguages);
             }
-            targetLanguages.toArray(new TargetLanguage[targetLanguages.size()]);
+            mTargetLanguages = targetLanguages.toArray(new TargetLanguage[targetLanguages.size()]);
             mFilteredTargetLanguages = mTargetLanguages;
         }
     }
