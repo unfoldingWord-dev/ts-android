@@ -33,8 +33,8 @@ public class MergeConflictsParseTask extends ManagedTask {
     private List<CharSequence> mMergeConflictItems = null;
 
     private Matcher mMatcher;
-    private CharSequence mHeadText = "";
-    private CharSequence mTailText = "";
+    private List<CharSequence> mHeadText = null;
+    private List<CharSequence> mTailText = null;
 
     /**
      * do a merge of translations
@@ -52,11 +52,7 @@ public class MergeConflictsParseTask extends ManagedTask {
         boolean fullMergeConflict = false;
 
         boolean found = parseMergeConflicts(mSearchText);
-
         if (found) {
-            mMergeConflictItems.add(mHeadText);
-            mMergeConflictItems.add(mTailText);
-
             // look for nested changes
             boolean changeFound = true;
             while (changeFound) {
@@ -72,16 +68,6 @@ public class MergeConflictsParseTask extends ManagedTask {
                             mMergeConflictItems.remove(i); // remove the original since it has been split
                             i--; // back up
 
-                            int count = lookForMultipleMiddles(mHeadText);
-                            if (count == 0) {
-                                mMergeConflictItems.add(mHeadText);
-                            }
-                            if (mTailText != null) {
-                                count = lookForMultipleMiddles(mTailText);
-                                if (count == 0) {
-                                    mMergeConflictItems.add(mTailText);
-                                }
-                            }
                         } else {
                             Logger.e(TASK_ID, "Failed to extract merge conflict from: " + mergeText);
                         }
@@ -105,36 +91,6 @@ public class MergeConflictsParseTask extends ManagedTask {
         }
     }
 
-    public int lookForMultipleMiddles(CharSequence searchText) {
-        int splitCount = 0;
-
-        if (searchText == null) {
-            return 0;
-        }
-        boolean mergeConflicted = isMergeConflicted(searchText);
-        if (mergeConflicted) { // if we have more unprocessed merges, then skip
-            return 0;
-        }
-
-        Matcher mMatcher = MergeConflictPatternMiddle.matcher(searchText);
-        int startPos = 0;
-        CharSequence text = null;
-        while (mMatcher.find(startPos)) {
-            text = searchText.subSequence(startPos, mMatcher.start());
-            mMergeConflictItems.add(text);
-            splitCount++;
-            startPos = mMatcher.end();
-        }
-
-        if (splitCount > 0) {
-            text = searchText.subSequence(startPos, searchText.length());
-            mMergeConflictItems.add(text);
-            splitCount++;
-        }
-
-        return splitCount;
-    }
-
     /**
      * parse nested merge conflicts
      *
@@ -155,33 +111,119 @@ public class MergeConflictsParseTask extends ManagedTask {
             return false;
         }
 
-        mHeadText = "";
-        mTailText = "";
+        mHeadText = new ArrayList<>();
+        mTailText = new ArrayList<>();
 
         while (found) {
             CharSequence text = mMatcher.group(1);
             if (text == null) {
                 text = "";
             }
-            mHeadText = TextUtils.concat(mHeadText, searchText.subSequence(startPos, mMatcher.start()), text);
+            List<CharSequence> middles = extractMiddles(text, mHeadText.size());
+            for (int i = 0; i < middles.size(); i++) {
+                if(mHeadText.size() <= i) {
+                    mHeadText.add("");
+                }
+
+                CharSequence headText = mHeadText.get(i);
+                headText = TextUtils.concat(headText, searchText.subSequence(startPos, mMatcher.start()), middles.get(i));
+                mHeadText.set(i, headText);
+            }
+
             text = mMatcher.group(2);
-            if (text == null) {
+            if ((text == null)  && (mTailText.size() <= 0)) {
                 haveFirstPartOnly = true;
             } else {
-                mTailText = TextUtils.concat(mTailText, searchText.subSequence(startPos, mMatcher.start()), text);
-            }
+                if (text == null) {
+                    text = "";
+                }
+
+                middles = extractMiddles(text, mTailText.size());
+                for (int i = 0; i < middles.size(); i++) {
+                    if(mTailText.size() <= i) {
+                        mTailText.add("");
+                    }
+
+                    CharSequence tailText = mTailText.get(i);
+                    tailText = TextUtils.concat(tailText, searchText.subSequence(startPos, mMatcher.start()), middles.get(i));
+                    mTailText.set(i, tailText);
+                }
+             }
 
             startPos = mMatcher.end();
             found = mMatcher.find(startPos);
         }
-        mHeadText = TextUtils.concat(mHeadText, searchText.subSequence(startPos, searchText.length()));
-        if (!haveFirstPartOnly) {
-            mTailText = TextUtils.concat(mTailText, searchText.subSequence(startPos, searchText.length()));
-        } else {
-            mTailText = null;
+
+        CharSequence endText = searchText.subSequence(startPos, searchText.length());
+
+        for (int i = 0; i < mHeadText.size(); i++) {
+            CharSequence headText = mHeadText.get(i);
+            headText = TextUtils.concat(headText, endText);
+            mMergeConflictItems.add(headText);
         }
+
+        for (int i = 0; i < mTailText.size(); i++) {
+            CharSequence tailText = mTailText.get(i);
+            tailText = TextUtils.concat(tailText, endText);
+            mMergeConflictItems.add(tailText);
+        }
+
         return true;
     }
+
+    /**
+     * normally there is just one middle divider, but in multiway merges there can be more.  So we check for these.
+     * @param searchText
+     * @param desiredCount
+     * @return
+     */
+    public List<CharSequence> extractMiddles(CharSequence searchText, int desiredCount) {
+        List<CharSequence> middles = lookForMultipleMiddles(searchText);
+
+        // if no middle markers found, we just use the searchText
+        if(middles.size() == 0) {
+            middles.add(searchText);
+        }
+
+        // normalize the middles count to match previous
+        while(middles.size() < desiredCount) {
+            middles.add(middles.get(0)); // clone
+        }
+
+        return middles;
+    }
+
+    /**
+     * search for middle markers within text
+     * @param searchText
+     * @return
+     */
+    public List<CharSequence> lookForMultipleMiddles(CharSequence searchText) {
+        List<CharSequence> middles = new ArrayList<>();
+
+        if (searchText == null) {
+            return middles;
+        }
+        boolean mergeConflicted = isMergeConflicted(searchText);
+        if (mergeConflicted) { // if we have more unprocessed merges, then skip
+            return middles;
+        }
+
+        Matcher mMatcher = MergeConflictPatternMiddle.matcher(searchText);
+        int startPos = 0;
+        CharSequence text = null;
+        while (mMatcher.find(startPos)) {
+            text = searchText.subSequence(startPos, mMatcher.start());
+            middles.add(text);
+            startPos = mMatcher.end();
+        }
+
+        text = searchText.subSequence(startPos, searchText.length());
+        middles.add(text);
+
+        return middles;
+    }
+
 
     /**
      * Detects merge conflict tags

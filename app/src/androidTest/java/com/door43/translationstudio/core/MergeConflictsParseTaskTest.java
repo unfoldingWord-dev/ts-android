@@ -135,7 +135,7 @@ public class MergeConflictsParseTaskTest extends InstrumentationTestCase {
         doRenderMergeConflicts(testTextFile, expectTextFile);
 
         //then
-        verifyRenderText("test07ProcessNoConflict");
+        verifyRenderText("test08ProcessNoConflict");
     }
 
     public void test09DetectTwoMergeConflict() throws Exception {
@@ -186,19 +186,42 @@ public class MergeConflictsParseTaskTest extends InstrumentationTestCase {
         assertEquals(expectedConflict, conflicted);
     }
 
-    public void test13ProcessFullTripleNestedConflict() throws Exception {
+    public void test13ProcessFullFiveWayNestedConflict() throws Exception {
         //given
-        String testId = "merge/full_triple_nested";
+        String testId = "merge/full_five_way_nested";
         mExpectedConflictCount = 5;
 
         //when
         doRenderMergeConflicts(testId);
 
         //then
-        verifyRenderText("test02ProcessTwoConflict");
+        verifyRenderText("test13ProcessFullFiveWayNestedConflict");
     }
 
 
+    public void test14ProcessNotFullFiveWayNestedConflict() throws Exception {
+        //given
+        String testId = "merge/not_full_five_way_nested";
+        mExpectedConflictCount = 5;
+
+        //when
+        doRenderMergeConflicts(testId);
+
+        //then
+        verifyRenderText("test14ProcessNotFullFiveWayNestedConflict");
+    }
+
+    public void test15ProcessNotFullFiveWayNestedConflictComplex() throws Exception {
+        //given
+        String testId = "merge/not_full_five_way_nested_complex";
+        mExpectedConflictCount = 5;
+
+        //when
+        doRenderMergeConflicts(testId);
+
+        //then
+        verifyRenderText("test15ProcessNotFullFiveWayNestedConflictComplex");
+    }
 
     private void verifyRenderText(String id) {
 
