@@ -9,16 +9,15 @@ import java.util.List;
  * The event buffer provides a simple way to registers objects
  * to receive one-way events.
  *
- * A sample usecase would be to register an activity
+ * A sample use case would be to register an activity
  * to receive events from a dialog
  */
 public class EventBuffer {
-    // TODO: 10/7/16 this is static final which will not work :(
     private List<OnEventListener> listeners = new ArrayList<>();
 
     /**
      * Adds a listener to the event buffer
-     * @param listener
+     * @param listener the listener that will be added
      */
     public final void addOnEventListener(OnEventListener listener) {
         if(!listeners.contains(listener) && listener != null) {
@@ -28,7 +27,7 @@ public class EventBuffer {
 
     /**
      * Removes a listener from the event buffer
-     * @param listener
+     * @param listener the listener that will be removed
      */
     public final void removeOnEventListener(OnEventListener listener) {
         if(listener != null) {
@@ -75,7 +74,7 @@ public class EventBuffer {
 
         /**
          * Returns the event buffer for the class
-         * @return
+         * @return the event buffer used for communication
          */
         EventBuffer getEventBuffer();
     }

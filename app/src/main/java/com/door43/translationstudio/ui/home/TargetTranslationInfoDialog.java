@@ -7,6 +7,8 @@ import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +22,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.NativeSpeaker;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.tasks.TranslationProgressTask;
 import com.door43.translationstudio.ui.dialogs.PrintDialog;
 import com.door43.translationstudio.ui.newtranslation.NewTargetTranslationActivity;
 import com.door43.translationstudio.ui.publish.PublishActivity;
@@ -27,28 +30,31 @@ import com.door43.translationstudio.ui.dialogs.BackupDialog;
 
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.SourceLanguage;
+import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.resourcecontainer.Resource;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
+import org.unfoldingword.tools.taskmanager.ManagedTask;
+import org.unfoldingword.tools.taskmanager.TaskManager;
 import org.unfoldingword.tools.taskmanager.ThreadableUI;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 
 /**
  * Displays detailed information about a target translation
  */
-public class TargetTranslationInfoDialog extends DialogFragment {
+public class TargetTranslationInfoDialog extends DialogFragment implements ManagedTask.OnFinishedListener {
 
     public static final String ARG_TARGET_TRANSLATION_ID = "arg_target_translation_id";
     public static final int CHANGE_TARGET_TRANSLATION_LANGUAGE = 2;
     private TargetTranslation mTargetTranslation;
     private Translator mTranslator;
     private OnDeleteListener mListener;
-    private int mTranslationProgress = 0;
-    private boolean mTranslationProgressWasCalculated = false;
+    private TextView progressView = null;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -69,94 +75,51 @@ public class TargetTranslationInfoDialog extends DialogFragment {
         }
 
         final Door43Client library = App.getLibrary();
-
-        TextView title = (TextView)v.findViewById(R.id.title);
-        TextView projectTitle = (TextView)v.findViewById(R.id.project_title);
-        Project p = library.index().getProject(App.getDeviceLanguageCode(), mTargetTranslation.getProjectId(), true);
-        SourceLanguage sourceLanguage = library.index().getSourceLanguage(p.languageSlug);
-        List<Resource> resources = library.index().getResources(sourceLanguage.slug, p.slug);
-        ResourceContainer resourceContainer;
-        try {
-            resourceContainer = library.open(sourceLanguage.slug, p.slug, resources.get(0).slug);
-        } catch (Exception e) {
-            Logger.e("TargetTranslationInfoDialog", "Failed to open the container", e);
+        if(library == null) {
+            Logger.w("TargetTranslationInfoDialog", "Could not load library");
             dismiss();
             return v;
         }
-        String projectTitleString = null;
-        projectTitleString = resourceContainer.readChunk("front", "title");
-        if(projectTitleString != null) {
-            title.setText(projectTitleString + " - " + mTargetTranslation.getTargetLanguageName());
-            projectTitle.setText(projectTitleString + " (" + mTargetTranslation.getProjectId() + ")");
+
+        TextView titleView = (TextView)v.findViewById(R.id.title);
+        TextView projectTitleView = (TextView)v.findViewById(R.id.project_title);
+        TextView languageTitleView = (TextView)v.findViewById(R.id.language_title);
+        this.progressView = (TextView)v.findViewById(R.id.progress);
+
+        // Load a source translation
+        Translation sourceTranslation;
+        List<Translation> translations = library.index.findTranslations(Locale.getDefault().getLanguage(), mTargetTranslation.getProjectId(), null, "book", null, App.MIN_CHECKING_LEVEL, -1);
+        if(translations.size() == 0) {
+            Logger.w("TargetTranslationInfoDialog", "Could not find source for target " + mTargetTranslation);
+            dismiss();
+            return v;
         } else {
-            title.setText(mTargetTranslation.getProjectId() + " - " + mTargetTranslation.getTargetLanguageName());
-            projectTitle.setText(mTargetTranslation.getProjectId());
+            sourceTranslation = translations.get(0);
         }
 
-        TextView languageTitle = (TextView)v.findViewById(R.id.language_title);
-        languageTitle.setText(mTargetTranslation.getTargetLanguageName() + " (" + mTargetTranslation.getTargetLanguageId() + ")");
 
-        final TextView progressView = (TextView)v.findViewById(R.id.progress);
-        final ThreadableUI task = new ThreadableUI(getActivity()) {
-            private int progress = 0;
+        titleView.setText(sourceTranslation.project.name + " - " + mTargetTranslation.getTargetLanguageName());
+        projectTitleView.setText(sourceTranslation.project.name + " (" + sourceTranslation.project.slug + ")");
+        languageTitleView.setText(mTargetTranslation.getTargetLanguageName() + " (" + mTargetTranslation.getTargetLanguageId() + ")");
 
-            @Override
-            public void onStop() {
-
-            }
-
-            @Override
-            public void run() {
-                // TODO: 9/28/16 this should use the task instead
-//                progress = Math.round(library.getTranslationProgress(mTargetTranslation) * 100);
-            }
-
-            @Override
-            public void onPostExecute() {
-                if (!isInterrupted()) {
-                    mTranslationProgressWasCalculated = true;
-                    mTranslationProgress = progress;
-                    progressView.setText(progress + "%");
-                }
-            }
-        };
-        if(!mTranslationProgressWasCalculated) {
-            progressView.setText("");
-            task.start();
+        // calculate translation progress
+        progressView.setText("");
+        ManagedTask task = TaskManager.getTask(TranslationProgressTask.TASK_ID);
+        if(task == null) {
+            task = new TranslationProgressTask(mTargetTranslation);
+            task.addOnFinishedListener(this);
+            TaskManager.addTask(task, TranslationProgressTask.TASK_ID);
         } else {
-            progressView.setText(mTranslationProgress + "%");
+            task.addOnFinishedListener(this);
         }
 
+        // list translators
         TextView translatorsView = (TextView)v.findViewById(R.id.translators);
         translatorsView.setText("");
         String translators = getTranslaterNames("\n");
         if(translators != null) {
             translatorsView.setText(translators);
         }
-        // TODO: 10/1/2015 support displaying multiple translators
-
-        TextView publishView = (TextView)v.findViewById(R.id.publish_state);
-        publishView.setText("");
-        int statusID = 0;
-        switch (mTargetTranslation.getPublishedStatus()) {
-            case NOT_PUBLISHED:
-                statusID = R.string.publish_status_not;
-                break;
-
-            case IS_CURRENT:
-                statusID = R.string.publish_status_current;
-                break;
-
-            case NOT_CURRENT:
-                statusID = R.string.publish_status_not_current;
-                break;
-
-            default:
-            case ERROR:
-                statusID = R.string.error;
-                break;
-        }
-        publishView.setText(statusID);
 
         TextView changeButton = (TextView)v.findViewById(R.id.change_language);
         changeButton.setOnClickListener(new View.OnClickListener() {
@@ -180,7 +143,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
                     .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            task.stop();
+//                            task.stop();
                             if(mTargetTranslation != null) {
                                 mTranslator.deleteTargetTranslation(mTargetTranslation.getId());
                                 App.clearTargetTranslationSettings(mTargetTranslation.getId());
@@ -278,6 +241,23 @@ public class TargetTranslationInfoDialog extends DialogFragment {
         mListener = listener;
     }
 
+    @Override
+    public void onTaskFinished(final ManagedTask task) {
+        TaskManager.clearTask(task);
+        if(task instanceof TranslationProgressTask) {
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    if(progressView != null) {
+                        int progress = Math.round((float)((TranslationProgressTask) task).getProgress() * 100);
+                        progressView.setText(progress + "%");
+                    }
+                }
+            });
+        }
+    }
+
     public interface OnDeleteListener {
         void onDeleteTargetTranslation(String targetTranslationId);
     }
@@ -320,5 +300,13 @@ public class TargetTranslationInfoDialog extends DialogFragment {
 
             dismiss();
         }
+    }
+
+    public void onDestroy() {
+        ManagedTask task = TaskManager.getTask(TranslationProgressTask.TASK_ID);
+        if(task != null) {
+            task.removeOnFinishedListener(this);
+        }
+        super.onDestroy();
     }
 }
