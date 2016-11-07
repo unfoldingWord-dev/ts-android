@@ -69,6 +69,44 @@ public class QuestionnaireActivityUiTest extends NewLanguageActivityUiUtils {
 
 
     @Test
+    public void fillAllPagesNotRequired() throws Exception {
+
+        //given
+        int pageNum = 0;
+        int fillToPage = pageCount();
+        boolean hideKeyboard = false;
+        boolean requiredOnly = false;
+        boolean valueForBooleans = true;
+        mActivityRule.launchActivity(new Intent());
+        verifyPageLayout(pageCount(), pageNum);
+
+        //when
+        fillUpToPage(fillToPage, hideKeyboard, requiredOnly, valueForBooleans, false);
+
+        //then
+        verifyPageLayout(pageCount(), fillToPage - 1);
+    }
+
+    @Test
+    public void fillAllPagesRequiredOnly() throws Exception {
+
+        //given
+        int pageNum = 0;
+        int fillToPage = pageCount();
+        boolean hideKeyboard = false;
+        boolean requiredOnly = true;
+        boolean valueForBooleans = true;
+        mActivityRule.launchActivity(new Intent());
+        verifyPageLayout(pageCount(), pageNum);
+
+        //when
+        fillUpToPage(fillToPage, hideKeyboard, requiredOnly, valueForBooleans, false);
+
+        //then
+        verifyPageLayout(pageCount(), fillToPage - 1);
+    }
+
+    @Test
     public void requiredAnswerContinue() throws Exception {
 
         //given
