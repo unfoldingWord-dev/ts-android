@@ -48,7 +48,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements SimpleTas
     private static final String STATE_REPOSITORIES = "state_repositories";
     private static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
     private SimpleTaskWatcher taskWatcher;
-    private RestoreFromCloudAdapter adapter;
+    private TranslationRepositoryAdapter adapter;
     private Translator translator;
     private List<Repository> repositories = new ArrayList<>();
     private String cloneSSHUrl;
@@ -80,7 +80,7 @@ public class RestoreFromDoor43Dialog extends DialogFragment implements SimpleTas
         });
 
         ListView list = (ListView) v.findViewById(R.id.list);
-        adapter = new RestoreFromCloudAdapter();
+        adapter = new TranslationRepositoryAdapter();
         list.setAdapter(adapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
