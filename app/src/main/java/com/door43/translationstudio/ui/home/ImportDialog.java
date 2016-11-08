@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.ImageButton;
 
 import org.unfoldingword.tools.logger.Logger;
 
@@ -71,6 +72,14 @@ public class ImportDialog extends DialogFragment {
         Button importFromFriend = (Button)v.findViewById(R.id.import_from_device);
         Button importDoor43Button = (Button)v.findViewById(R.id.import_from_door43);
         Button importResourceContainerButton = (Button)v.findViewById(R.id.import_resource_container);
+
+        v.findViewById(R.id.infoButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://help.door43.org/en/knowledgebase/9-translationstudio"));
+                startActivity(browserIntent);
+            }
+        });
 
         if(savedInstanceState != null) {
             // check if returning from device alias dialog
