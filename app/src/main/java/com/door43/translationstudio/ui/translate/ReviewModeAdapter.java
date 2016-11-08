@@ -383,6 +383,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
             });
             holder.currentSourceTaskId = TaskManager.addTask(task);
+            TaskManager.groupTask(task,TAG);
         } else {
             holder.mSourceBody.setText(item.renderedSourceText);
             holder.mSourceBody.setVisibility(View.VISIBLE);
@@ -456,7 +457,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 applyNewCompiledText(selectedText.toString(), holder, item);
                 item.hasMergeConflicts = MergeConflictHandler.isMergeConflicted(selectedText.toString());
                 reOpenItem(item);
-                notifyDataSetChanged();
+                triggerNotifyDataSetChanged();
             }
         });
 
@@ -595,6 +596,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
             });
             holder.currentTargetTaskId = TaskManager.addTask(task);
+            TaskManager.groupTask(task,TAG);
         } else if(item.isEditing) {
             // editing mode
             holder.mTargetEditableBody.setText(item.renderedTargetText);
@@ -752,7 +754,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         if (opened) {
             item.renderedTargetText = null;
             item.isComplete = false;
-            notifyDataSetChanged();
+            triggerNotifyDataSetChanged();
         } else {
             // TODO: 10/27/2015 notify user the frame could not be completed.
         }
@@ -1178,7 +1180,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
                             App.closeKeyboard(mContext);
                             item.hasMergeConflicts = MergeConflictHandler.isMergeConflicted(text);
-                            notifyDataSetChanged();
+                            triggerNotifyDataSetChanged();
 
                             if(holder.mTargetEditableBody != null) {
                                 holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
@@ -1240,7 +1242,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
                             App.closeKeyboard(mContext);
                             item.hasMergeConflicts = MergeConflictHandler.isMergeConflicted(text);
-                            notifyDataSetChanged();
+                            triggerNotifyDataSetChanged();
 
                             if(holder.mTargetEditableBody != null) {
                                 holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
@@ -1765,6 +1767,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         });
         holder.currentResourceTaskId = TaskManager.addTask(task);
+        TaskManager.groupTask(task,TAG);
 
         // tap to open resources
         if(!mResourcesOpened) {
@@ -2375,5 +2378,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     @Override
     public boolean hasFilter() {
         return true;
+    }
+
+    /**
+     * calls notify dataset changed and triggers some other actions
+     */
+    @Override
+    protected void triggerNotifyDataSetChanged() {
+        TaskManager.killGroup(TAG);
+        super.triggerNotifyDataSetChanged();
     }
 }
