@@ -289,8 +289,8 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         }
         // re-connect to dialog fragments
         Fragment dialog = getFragmentManager().findFragmentByTag(UpdateLibraryDialog.TAG);
-        if(dialog != null) {
-            ((UpdateLibraryDialog)dialog).getEventBuffer().addOnEventListener(this);
+        if(dialog != null && dialog instanceof EventBuffer.OnEventTalker) {
+            ((EventBuffer.OnEventTalker)dialog).getEventBuffer().addOnEventListener(this);
         }
     }
 
@@ -311,7 +311,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         }
         ft.addToBackStack(null);
         // attach to any available event buffers
-        if(dialog instanceof EventBuffer.OnEventTalker) {
+        if(dialog != null && dialog instanceof EventBuffer.OnEventTalker) {
             ((EventBuffer.OnEventTalker)dialog).getEventBuffer().addOnEventListener(this);
         }
         dialog.show(ft, tag);
@@ -770,6 +770,10 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     @Override
     public void onDestroy() {
         if(progressDialog != null) progressDialog.dismiss();
+        Fragment dialog = getFragmentManager().findFragmentByTag(UpdateLibraryDialog.TAG);
+        if(dialog instanceof EventBuffer.OnEventTalker) {
+            ((EventBuffer.OnEventTalker)dialog).getEventBuffer().removeOnEventListener(this);
+        }
         super.onDestroy();
     }
 

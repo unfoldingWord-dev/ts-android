@@ -98,7 +98,7 @@
   <string name="no_projects_available_on_server">Ямар ч төсөл энэ сервер дээр байдаг</string>
   <string name="downloading">Татаж</string>
   <string name="confirm_import">Оруулахыг хүссэн зүйлээ баталгаажуулна уу.</string>
-  <string name="waiting_for_device">Төхөөрөмжийн хүлээж байна</string>
+  <string name="waiting_for_another_device">Төхөөрөмжийн хүлээж байна</string>
   <string name="label_back">Буцах</string>
   <string name="bug_report">Хэрэв та энэ програмыг нь тулгарч байгаа асуудлыг тайлбарлах болно.</string>
   <string name="terms_additional">Мөн та нар итгэл болон бичгийн орчуулга заавар тайланд хүлээн зөвшөөрсөн байх шаардлагатай.</string>

@@ -101,7 +101,7 @@
   <string name="no_projects_available_on_server">ഇല്ല പദ്ധതികൾ ഈ സെർവറിൽ ലഭ്യമാണ്</string>
   <string name="downloading">ഡൗൺലോഡുചെയ്യുന്നു</string>
   <string name="confirm_import">നിങ്ങൾ ഇംപോർട്ട് ചെയ്യാൻ ആഗ്രഹിക്കുന്ന എന്തു ദയവായി സ്ഥിരീകരിക്കുക.</string>
-  <string name="waiting_for_device">ഉപകരണം കാത്തിരിക്കുന്നു</string>
+  <string name="waiting_for_another_device">ഉപകരണം കാത്തിരിക്കുന്നു</string>
   <string name="label_back">തിരികെ</string>
   <string name="bug_report">നിങ്ങൾ ഈ അപ്ലിക്കേഷൻ ഉപയോഗിച്ച് നേരിടുന്ന പ്രശ്നം വിവരിക്കുക.</string>
   <string name="terms_additional">വിശ്വാസവും പരിഭാഷയെ മാർഗ്ഗനിർദ്ദേശങ്ങൾ മൊഴി അംഗീകരിക്കേണ്ടതുണ്ട്.</string>

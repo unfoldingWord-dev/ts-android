@@ -24,7 +24,7 @@
     <item android:id="@+id/action_publish"
         android:title="@string/title_review"
         android:orderInCategory="130"
-        android:icon="@drawable/ic_cloud_done_black_24dp"
+        android:icon="@drawable/ic_done_all_black_24dp"
         app:showAsAction="never" />
 
     <item android:id="@+id/action_backup"

@@ -51,7 +51,6 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
     private OnClickListener mListener;
     private ChooseSourceTranslationAdapter mAdapter;
     private Door43Client mLibrary;
-    public static final boolean ENABLE_DRAFTS = false;
     private ProgressDialog downloadDialog = null;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

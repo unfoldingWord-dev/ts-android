@@ -50,7 +50,6 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.CheckingQuestion;
 import com.door43.translationstudio.core.ContainerCache;
 import com.door43.translationstudio.core.FileHistory;
 import com.door43.translationstudio.core.Frame;
@@ -59,10 +58,8 @@ import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.tasks.CalculateTargetTranslationProgressTask;
 import com.door43.translationstudio.tasks.CheckForMergeConflictsTask;
 import com.door43.widget.LinedEditText;
-import com.door43.translationstudio.core.TranslationNote;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
-import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.rendering.Clickables;

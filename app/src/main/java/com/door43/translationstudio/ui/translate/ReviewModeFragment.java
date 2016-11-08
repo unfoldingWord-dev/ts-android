@@ -34,6 +34,7 @@ import com.door43.translationstudio.ui.spannables.ArticleLinkSpan;
 import com.door43.translationstudio.ui.spannables.LinkSpan;
 import com.door43.translationstudio.ui.spannables.PassageLinkSpan;
 import com.door43.translationstudio.ui.spannables.Span;
+import com.door43.util.StringUtilities;
 
 import org.apmem.tools.layouts.FlowLayout;
 import org.sufficientlysecure.htmltextview.HtmlTextView;
@@ -475,7 +476,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                         String projectTitle = mSourceContainer.readChunk("front", "title");
 
                         // get verse title
-                        String verseTitle = formatNumber(slugs[1]);
+                        String verseTitle = StringUtilities.formatNumber(slugs[1]);
                         if(mSourceContainer.contentMimeType.equals("text/usfm")) {
                             verseTitle = Frame.parseVerseTitle(mSourceContainer.readChunk(slugs[0], slugs[1]), TranslationFormat.parse(mSourceContainer.contentMimeType));
                         }
@@ -483,7 +484,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                         LinearLayout exampleView = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_example_item, null);
                         TextView referenceView = (TextView)exampleView.findViewById(R.id.reference);
                         HtmlTextView passageView = (HtmlTextView)exampleView.findViewById(R.id.passage);
-                        referenceView.setText(projectTitle.trim() + " " + formatNumber(slugs[0]) + ":" + verseTitle);
+                        referenceView.setText(projectTitle.trim() + " " + StringUtilities.formatNumber(slugs[0]) + ":" + verseTitle);
                         passageView.setHtmlFromString(mSourceContainer.readChunk(slugs[0], slugs[1]), true);
                         exampleView.setOnClickListener(new View.OnClickListener() {
                             @Override
@@ -504,19 +505,6 @@ public class ReviewModeFragment extends ViewModeFragment {
             mScrollingResourcesDrawerContent.removeAllViews();
             mScrollingResourcesDrawerContent.addView(view);
         }
-    }
-
-    /**
-     * Returns a string formatted as an integer (removes the leading 0's
-     * Otherwise it returns the original value
-     * @param value
-     * @return
-     */
-    private String formatNumber(String value) {
-        try {
-            return Integer.parseInt(value) + "";
-        } catch (Exception e) {}
-        return value;
     }
 
     /**
@@ -624,7 +612,6 @@ public class ReviewModeFragment extends ViewModeFragment {
 
         final Door43Client library = App.getLibrary();
         ResourceContainer sourceTranslation = getSelectedResourceContainer();
-//        CheckingQuestion question = null;//getPreferredQuestion(sourceTranslation, chapterId, frameId, questionId);
         SourceLanguage sourceLanguage = library.index.getSourceLanguage(sourceTranslation.language.slug);
         if(mResourcesDrawerContent != null && question != null) {
             mResourcesDrawerContent.setVisibility(View.GONE);

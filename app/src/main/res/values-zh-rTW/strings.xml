@@ -98,7 +98,7 @@
   <string name="no_projects_available_on_server">任何項目都可以在此服務器上</string>
   <string name="downloading">下載</string>
   <string name="confirm_import">請確認您要導入什麼。</string>
-  <string name="waiting_for_device">等待裝置</string>
+  <string name="waiting_for_another_device">等待裝置</string>
   <string name="label_back">背部</string>
   <string name="bug_report">描述你遇到這個程序的問題。</string>
   <string name="terms_additional">你必須同意的信仰和翻譯準則的聲明。</string>

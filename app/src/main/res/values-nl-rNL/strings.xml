@@ -91,7 +91,7 @@
   <string name="no_projects_available_on_server">Geen projecten zijn beschikbaar op deze server</string>
   <string name="downloading">Downloaden</string>
   <string name="confirm_import">Gelieve te bevestigen wat je wilt importeren.</string>
-  <string name="waiting_for_device">Wachten op het toestel</string>
+  <string name="waiting_for_another_device">Wachten op het toestel</string>
   <string name="label_back">Terug</string>
   <string name="bug_report">Beschrijf het probleem dat u ondervindt met deze app.</string>
   <string name="terms_additional">En je moet akkoord gaan met de verklaring van het geloof en de vertaling richtlijnen.</string>

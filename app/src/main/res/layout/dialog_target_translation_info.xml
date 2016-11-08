@@ -130,27 +130,27 @@
                         android:text="Joel Lonbeck"/>
                 </LinearLayout>
 
-                <LinearLayout
-                    android:orientation="horizontal"
-                    android:layout_width="match_parent"
-                    android:paddingTop="@dimen/dialog_controls_margin"
-                    android:paddingBottom="@dimen/dialog_controls_margin"
-                    android:layout_height="wrap_content">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="@color/dark_secondary_text"
-                        android:textSize="@dimen/body"
-                        android:text="@string/publish_state"
-                        android:paddingRight="10dp"/>
-                    <TextView
-                        android:id="@+id/publish_state"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textColor="@color/dark_primary_text"
-                        android:textSize="@dimen/body"
-                        android:text="Not Published"/>
-                </LinearLayout>
+                <!--<LinearLayout-->
+                    <!--android:orientation="horizontal"-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:paddingTop="@dimen/dialog_controls_margin"-->
+                    <!--android:paddingBottom="@dimen/dialog_controls_margin"-->
+                    <!--android:layout_height="wrap_content">-->
+                    <!--<TextView-->
+                        <!--android:layout_width="wrap_content"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--android:textColor="@color/dark_secondary_text"-->
+                        <!--android:textSize="@dimen/body"-->
+                        <!--android:text="@string/publish_state"-->
+                        <!--android:paddingRight="10dp"/>-->
+                    <!--<TextView-->
+                        <!--android:id="@+id/publish_state"-->
+                        <!--android:layout_width="match_parent"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--android:textColor="@color/dark_primary_text"-->
+                        <!--android:textSize="@dimen/body"-->
+                        <!--android:text="Not Published"/>-->
+                <!--</LinearLayout>-->
             </LinearLayout>
         </LinearLayout>
     </ScrollView>
@@ -193,7 +193,7 @@
                 <ImageButton
                     android:id="@+id/publish_button"
                     android:layout_marginLeft="@dimen/dialog_controls_margin"
-                    android:src="@drawable/ic_cloud_done_black_24dp"
+                    android:src="@drawable/ic_done_all_black_24dp"
                     style="@style/Widget.Alert.Button"/>
 
                 <ImageButton

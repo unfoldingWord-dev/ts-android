@@ -98,7 +98,7 @@
   <string name="no_projects_available_on_server">कुनै परियोजनाहरू यस सर्भर मा उपलब्ध छन्</string>
   <string name="downloading">डाउनलोडहुँदैछ</string>
   <string name="confirm_import">तपाईं के आयात गर्न चाहनुहुन्छ पुष्टि गर्नुहोस्।</string>
-  <string name="waiting_for_device">उपकरणको लागि प्रतीक्षा गर्दै</string>
+  <string name="waiting_for_another_device">उपकरणको लागि प्रतीक्षा गर्दै</string>
   <string name="label_back">फिर्ता</string>
   <string name="bug_report">तपाईं यस अनुप्रयोग संग अनुभव गर्दै समस्याको वर्णन।</string>
   <string name="terms_additional">अनि तपाईं विश्वास र अनुवाद दिशानिर्देश को बयान गर्न सहमत हुनुपर्छ।</string>

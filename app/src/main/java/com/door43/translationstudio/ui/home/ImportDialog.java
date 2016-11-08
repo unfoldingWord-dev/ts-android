@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.ImageButton;
 
 import org.unfoldingword.tools.logger.Logger;
 
@@ -66,11 +67,19 @@ public class ImportDialog extends DialogFragment {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         View v = inflater.inflate(R.layout.dialog_import, container, false);
 
-        final Button restoreDoor43Button = (Button)v.findViewById(R.id.restore_from_door43);
-        Button importFromSDButton = (Button)v.findViewById(R.id.import_from_sd);
-        Button importFromSDUsfmButton = (Button)v.findViewById(R.id.import_from_sd_usfm);
-        Button importFromFriend = (Button)v.findViewById(R.id.import_from_friend);
+        Button importFromSDButton = (Button)v.findViewById(R.id.import_target_translation);
+        Button importFromSDUsfmButton = (Button)v.findViewById(R.id.import_usfm);
+        Button importFromFriend = (Button)v.findViewById(R.id.import_from_device);
         Button importDoor43Button = (Button)v.findViewById(R.id.import_from_door43);
+        Button importResourceContainerButton = (Button)v.findViewById(R.id.import_resource_container);
+
+        v.findViewById(R.id.infoButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://help.door43.org/en/knowledgebase/9-translationstudio"));
+                startActivity(browserIntent);
+            }
+        });
 
         if(savedInstanceState != null) {
             // check if returning from device alias dialog
@@ -80,11 +89,18 @@ public class ImportDialog extends DialogFragment {
             mTargetTranslationID = savedInstanceState.getString(STATE_DIALOG_TRANSLATION_ID, null);
         }
 
+        importResourceContainerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // TODO: 11/7/16 provide ui for selecting resource container
+            }
+        });
+
         importDoor43Button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // make sure we have a gogs user
-                if(App.getProfile().gogsUser == null) {
+                if(App.getProfile() == null || App.getProfile().gogsUser == null) {
                     Door43LoginDialog dialog = new Door43LoginDialog();
                     showDialogFragment(dialog, Door43LoginDialog.TAG);
                     return;
@@ -93,22 +109,6 @@ public class ImportDialog extends DialogFragment {
                 // open dialog for browsing repositories
                 ImportFromDoor43Dialog dialog = new ImportFromDoor43Dialog();
                 showDialogFragment(dialog, ImportFromDoor43Dialog.TAG);
-            }
-        });
-
-        restoreDoor43Button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // make sure we have a gogs user
-                if(App.getProfile().gogsUser == null) {
-                    Door43LoginDialog dialog = new Door43LoginDialog();
-                    showDialogFragment(dialog, Door43LoginDialog.TAG);
-                    return;
-                }
-
-                // open dialog for browsing repositories
-                RestoreFromDoor43Dialog dialog = new RestoreFromDoor43Dialog();
-                showDialogFragment(dialog, RestoreFromDoor43Dialog.TAG);
             }
         });
         importFromSDButton.setOnClickListener(new View.OnClickListener() {
