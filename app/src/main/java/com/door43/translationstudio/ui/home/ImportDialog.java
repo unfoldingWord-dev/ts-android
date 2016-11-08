@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.Toast;
 
 import org.unfoldingword.resourcecontainer.ContainerTools;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
@@ -272,27 +273,63 @@ public class ImportDialog extends DialogFragment {
         } else if (requestCode == IMPORT_RCONTAINER_REQUEST) {
             if (resultCode == Activity.RESULT_OK && data != null) {
                 Uri uri = data.getData();
-                File dir = new File(uri.getPath());
+                final File dir = new File(uri.getPath());
                 if(!dir.isDirectory()) {
-                    // TODO: 11/8/16 notify not a directory
+                    Toast.makeText(getActivity(), R.string.not_a_source_text, Toast.LENGTH_SHORT).show();
                     return;
                 }
 
+                // check that it's a valid container
+                // TODO: 11/8/16 this should be done in a task for better performance
+                ResourceContainer externalContainer;
                 try {
-                    ResourceContainer container = ResourceContainer.load(dir);
+                    externalContainer = ResourceContainer.load(dir);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    // TODO: notify not a valid resource container
+                    Toast.makeText(getActivity(), R.string.not_a_source_text, Toast.LENGTH_SHORT).show();
                     return;
                 }
+
+                // check if we already have it
+                // TODO: 11/8/16 support screen rotation
                 try {
-                    App.getLibrary().importResourceContainer(dir);
+                    App.getLibrary().open(externalContainer.slug);
+                    new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                            .setTitle(R.string.confirm)
+                            .setMessage(String.format(getResources().getString(R.string.overwrite_content), externalContainer.language.name + " - " + externalContainer.project.name + " - " + externalContainer.resource.name))
+                            .setNegativeButton(R.string.menu_cancel, null)
+                            .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    importResourceContainer(dir);
+                                }
+                            })
+                            .show();
                 } catch (Exception e) {
                     e.printStackTrace();
-                    // TODO: 11/8/16 notify failed to import
-                    return;
+                    // no conflicts. import
+                    importResourceContainer(dir);
                 }
             }
+        }
+    }
+
+    /**
+     * Imports a resource container into the app
+     * TODO: this should be performed in a task for better performance
+     * @param dir
+     */
+    private void importResourceContainer(File dir) {
+        try {
+            ResourceContainer container = App.getLibrary().importResourceContainer(dir);
+            new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                    .setTitle(R.string.success)
+                    .setMessage(R.string.title_import_Success)
+                    .setPositiveButton(R.string.dismiss, null)
+                    .show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(getActivity(), R.string.could_not_import, Toast.LENGTH_SHORT).show();
         }
     }
 
