@@ -103,6 +103,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         // validate parameters
         Bundle args = getIntent().getExtras();
         final String targetTranslationId = args.getString(App.EXTRA_TARGET_TRANSLATION_ID, null);
+        mMergeConflictFilterEnabled = args.getBoolean(App.EXTRA_START_WITH_MERGE_FILTER, false);
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         if (mTargetTranslation == null) {
             Logger.e(TAG ,"A valid target translation id is required. Received '" + targetTranslationId + "' but the translation could not be found");

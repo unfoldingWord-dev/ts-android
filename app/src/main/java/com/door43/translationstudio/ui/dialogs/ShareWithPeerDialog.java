@@ -633,17 +633,11 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
     }
 
     private void doManualMerge() {
-        // ask parent activity to navigate to a new activity
+        // ask parent activity to navigate to target translation review mode with merge filter on
         Intent intent = new Intent(getActivity(), TargetTranslationActivity.class);
         Bundle args = new Bundle();
         args.putString(App.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslationID);
-
-        MergeConflictsParseTask.CardLocation location = MergeConflictsParseTask.findFirstMergeConflict( mTargetTranslationID );
-        if(location != null) {
-            args.putString(App.EXTRA_CHAPTER_ID, location.chapterID);
-            args.putString(App.EXTRA_FRAME_ID, location.frameID);
-        }
-
+        args.putBoolean(App.EXTRA_START_WITH_MERGE_FILTER, true);
         args.putInt(App.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.ordinal());
         intent.putExtras(args);
         startActivity(intent);

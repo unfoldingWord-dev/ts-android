@@ -427,13 +427,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         Intent intent = new Intent(this, TargetTranslationActivity.class);
         Bundle args = new Bundle();
         args.putString(App.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslationID);
-
-        MergeConflictsParseTask.CardLocation location = MergeConflictsParseTask.findFirstMergeConflict( mTargetTranslationID );
-        if(location != null) {
-            args.putString(App.EXTRA_CHAPTER_ID, location.chapterID);
-            args.putString(App.EXTRA_FRAME_ID, location.frameID);
-        }
-
+        args.putBoolean(App.EXTRA_START_WITH_MERGE_FILTER, true);
         args.putInt(App.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.ordinal());
         intent.putExtras(args);
         startActivity(intent);

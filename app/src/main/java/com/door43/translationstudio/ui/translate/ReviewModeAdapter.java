@@ -814,6 +814,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
         if (opened) {
             item.renderedTargetText = null;
+            item.isComplete = false;
             notifyDataSetChanged();
         } else {
             // TODO: 10/27/2015 notify user the frame could not be completed.
@@ -1409,6 +1410,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.failed_to_commit_chunk, Snackbar.LENGTH_LONG);
                 ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
                 snack.show();
+            } else {
+                item.isComplete = true;
             }
         }
 
