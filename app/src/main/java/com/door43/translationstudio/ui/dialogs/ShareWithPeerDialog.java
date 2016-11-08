@@ -31,9 +31,9 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.network.Peer;
+import com.door43.translationstudio.tasks.MergeConflictsParseTask;
 import com.door43.translationstudio.ui.home.HomeActivity;
 import com.door43.translationstudio.ui.translate.TargetTranslationActivity;
-import com.door43.translationstudio.rendering.MergeConflictHandler;
 import com.door43.translationstudio.services.BroadcastListenerService;
 import com.door43.translationstudio.services.BroadcastService;
 import com.door43.translationstudio.services.ClientService;
@@ -638,7 +638,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
         Bundle args = new Bundle();
         args.putString(App.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslationID);
 
-        MergeConflictHandler.CardLocation location = MergeConflictHandler.findFirstMergeConflict( mTargetTranslationID );
+        MergeConflictsParseTask.CardLocation location = MergeConflictsParseTask.findFirstMergeConflict( mTargetTranslationID );
         if(location != null) {
             args.putString(App.EXTRA_CHAPTER_ID, location.chapterID);
             args.putString(App.EXTRA_FRAME_ID, location.frameID);

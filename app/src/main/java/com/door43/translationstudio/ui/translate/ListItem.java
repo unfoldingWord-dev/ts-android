@@ -7,7 +7,7 @@ import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.ProjectTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
-import com.door43.translationstudio.rendering.MergeConflictHandler;
+import com.door43.translationstudio.tasks.MergeConflictsParseTask;
 
 import org.unfoldingword.door43client.models.TargetLanguage;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
@@ -185,7 +185,7 @@ public abstract class ListItem {
                     this.isComplete = ft.isFinished();
                 }
             }
-            this.hasMergeConflicts = MergeConflictHandler.isMergeConflicted(this.targetText);
+            this.hasMergeConflicts = MergeConflictsParseTask.isMergeConflicted(this.targetText);
         }
     }
 }

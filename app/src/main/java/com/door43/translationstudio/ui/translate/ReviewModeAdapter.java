@@ -55,6 +55,7 @@ import com.door43.translationstudio.core.FileHistory;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.TranslationType;
+import com.door43.translationstudio.tasks.MergeConflictsParseTask;
 import com.door43.translationstudio.tasks.CalculateTargetTranslationProgressTask;
 import com.door43.translationstudio.tasks.CheckForMergeConflictsTask;
 import com.door43.widget.LinedEditText;
@@ -64,7 +65,6 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.rendering.Clickables;
 import com.door43.translationstudio.rendering.DefaultRenderer;
-import com.door43.translationstudio.rendering.MergeConflictHandler;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.ClickableRenderingEngine;
 import com.door43.translationstudio.ui.spannables.NoteSpan;
@@ -354,8 +354,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 Typography.format(mContext, TranslationType.TARGET, holder.mTargetBody, mTargetLanguage.slug, mTargetLanguage.direction);
                 Typography.format(mContext, TranslationType.TARGET, holder.mTargetEditableBody, mTargetLanguage.slug, mTargetLanguage.direction);
             } else {
-                Typography.format(mContext, TranslationType.TARGET, holder.mHeadText, mTargetLanguage.slug, mTargetLanguage.direction);
-                Typography.format(mContext, TranslationType.TARGET, holder.mTailText, mTargetLanguage.slug, mTargetLanguage.direction);
                 Typography.formatSub(mContext, TranslationType.TARGET, holder.mConflictText, mTargetLanguage.slug, mTargetLanguage.direction);
             }
         }
@@ -414,84 +412,133 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // render title
         holder.mTargetTitle.setText(item.getTargetTitle());
 
-        showMergeConflictIcon(true, mMergeConflictFilterEnabled);
-
-        MergeConflictHandler renderer = new MergeConflictHandler();
-        int mergeConflictColor = mContext.getResources().getColor(CONFLICT_COLOR);
-        renderer.renderMergeConflict(item.targetText, mergeConflictColor);
-        item.headText = renderer.getConflictPart(MergeConflictHandler.MERGE_HEAD_PART);
-        item.tailText = renderer.getConflictPart(MergeConflictHandler.MERGE_TAIL_PART);
-        item.isFullMergeConflict = renderer.isFullBlockMergeConflict();
-        if(item.isFullMergeConflict) { // if whole string is different, no need to highlight differing lines, so change to regular text color
-            SpannableStringBuilder span = new SpannableStringBuilder(item.headText);
-            span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_primary_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            item.headText = span;
-
-            span = new SpannableStringBuilder(item.tailText);
-            span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_primary_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            item.tailText = span;
+        if(holder.mMergeConflictLayout == null) { // sanity check
+            return;
         }
 
-        Typography.formatSub(mContext, TranslationType.SOURCE, holder.mHeadText, mSourceContainer.language.slug, mSourceContainer.language.direction);
-        Typography.formatSub(mContext, TranslationType.SOURCE, holder.mTailText, mSourceContainer.language.slug, mSourceContainer.language.direction);
+        item.mergeItemSelected = -1;
 
-        if(mInitialTextSize == 0) { // see if we need to initialize values
-            mMarginInitialLeft = leftMargin(holder.mHeadText);
-            mInitialTextSize = holder.mHeadText.getTextSize();
-        }
-        displayMergeConflictSelectionState(false, false, holder, item);
+        MergeConflictsParseTask parseTask = new MergeConflictsParseTask(item.targetText);
+        parseTask.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
+            @Override
+            public void onTaskFinished(final ManagedTask task) {
+                TaskManager.clearTask(task);
+
+                Handler hand = new Handler(Looper.getMainLooper());
+                hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        displayMergeConflictsOnTargetCard((MergeConflictsParseTask) task, item, holder);
+                    }
+                });
+            }
+        });
+        TaskManager.addTask(parseTask);
+
         holder.mConflictText.setVisibility(View.VISIBLE);
         holder.mButtonBar.setVisibility(View.GONE);
-
-        holder.mHeadText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                displayMergeConflictSelectionState(true, false, holder, item);
-            }
-        });
-
-        holder.mTailText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                displayMergeConflictSelectionState(false, true, holder, item);
-            }
-        });
 
         holder.mCancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                displayMergeConflictSelectionState(false, false, holder, item);
+                item.mergeItemSelected = -1;
+                displayMergeConflictSelectionState(holder, item);
             }
         });
 
         holder.mConfirmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CharSequence selectedText = mMergeHeadSelected ? item.headText : item.tailText;
-                applyNewCompiledText(selectedText.toString(), holder, item);
-                item.hasMergeConflicts = MergeConflictHandler.isMergeConflicted(selectedText.toString());
-                reOpenItem(item);
-                updateMergeConflict();
-                notifyDataSetChanged();
+                if((item.mergeItemSelected >= 0) && (item.mergeItemSelected < item.mergeItems.size()) ) {
+                    CharSequence selectedText = item.mergeItems.get(item.mergeItemSelected);
+                    applyNewCompiledText(selectedText.toString(), holder, item);
+                    reOpenItem(item);
+                    item.hasMergeConflicts = MergeConflictsParseTask.isMergeConflicted(selectedText);
+                    item.mergeItemSelected = -1;
+                    updateMergeConflict();
+                    notifyDataSetChanged();
+                }
             }
         });
 
         holder.mUndoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                undoTextInTarget(holder, (ReviewListItem) item);
+                undoTextInTarget(holder, item);
             }
         });
         holder.mRedoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                redoTextInTarget(holder, (ReviewListItem) item);
+                redoTextInTarget(holder, item);
             }
         });
 
         prepareUndoRedoUI(holder, item);
         holder.mUndoButton.setVisibility(View.GONE);
         holder.mRedoButton.setVisibility(View.GONE);
+    }
+
+    /**
+     * set up the merge conflicts on the card
+     * @param task
+     * @param item
+     * @param holder
+     */
+    private void displayMergeConflictsOnTargetCard(MergeConflictsParseTask task, final ReviewListItem item, final ViewHolder holder) {
+        item.mergeItems = task.getMergeConflictItems();
+
+        if(holder.mMergeText != null) { // if previously rendered (could be recycled view)
+            while (holder.mMergeText.size() > item.mergeItems.size()) { // if too many items, remove extras
+                int lastPosition = holder.mMergeText.size() - 1;
+                TextView v = holder.mMergeText.get(lastPosition);
+                holder.mMergeConflictLayout.removeView(v);
+                holder.mMergeText.remove(lastPosition);
+            }
+        } else {
+            holder.mMergeText = new ArrayList<>();
+        }
+
+        int tailColor = mContext.getResources().getColor(R.color.tail_background);
+
+        for(int i = 0; i < item.mergeItems.size(); i++) {
+            CharSequence mergeConflictCard = item.mergeItems.get(i);
+
+            boolean createNewCard = (i >= holder.mMergeText.size());
+
+            TextView textView = null;
+            if(createNewCard) {
+                // create new card
+                textView = (TextView) LayoutInflater.from(mContext).inflate(R.layout.fragment_merge_card, holder.mMergeConflictLayout, false);
+                holder.mMergeConflictLayout.addView(textView);
+                holder.mMergeText.add(textView);
+
+                if (i % 2 == 1) { //every other card is different color
+                    textView.setBackgroundColor(tailColor);
+                }
+            } else {
+                textView = holder.mMergeText.get(i); // get previously created card
+            }
+
+            if(mInitialTextSize == 0) { // see if we need to initialize values
+                mInitialTextSize = Typography.getFontSize(mContext, TranslationType.SOURCE);
+                mMarginInitialLeft = leftMargin(textView);
+            }
+
+            Typography.format(mContext, TranslationType.SOURCE, textView, mSourceContainer.language.slug, mSourceContainer.language.direction);
+
+            final int pos = i;
+
+            textView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    item.mergeItemSelected = pos;
+                    displayMergeConflictSelectionState(holder, item);
+                }
+            });
+        }
+
+        displayMergeConflictSelectionState(holder, item);
     }
 
     /**
@@ -774,23 +821,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     * get either the head or tail merge text with highlighting
-     * @param text
-     * @param getHead
-     * @return
-     */
-    private CharSequence getMergeText(CharSequence text, boolean getHead) {
-        MergeConflictHandler renderer = new MergeConflictHandler();
-        int mergeConflictColor = mContext.getResources().getColor(CONFLICT_COLOR);
-        renderer.renderMergeConflict(text, mergeConflictColor);
-        if(getHead) {
-            return renderer.getConflictPart(MergeConflictHandler.MERGE_HEAD_PART);
-        } else {
-            return renderer.getConflictPart(MergeConflictHandler.MERGE_TAIL_PART);
-        }
-    }
-
-    /**
      * get the left margin for view
      * @param v
      * @return
@@ -803,46 +833,30 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * set merge conflict selection state
-     * @param selectHead
-     * @param selectTail
      * @param holder
      * @param item
      */
-    private void displayMergeConflictSelectionState(boolean selectHead, boolean selectTail, ViewHolder holder, ReviewListItem item) {
-        mMergeHeadSelected = selectHead;
-        mMergeTailSelected = selectTail;
+    private void displayMergeConflictSelectionState(ViewHolder holder, ReviewListItem item) {
+        for(int i = 0; i < item.mergeItems.size(); i++ ) {
+            CharSequence mergeConflictCard = item.mergeItems.get(i);
+            TextView textView = holder.mMergeText.get(i);
 
-        if(mMergeHeadSelected || mMergeTailSelected) {
-            if(mMergeHeadSelected) {
-                displayMergeSelectionState(DisplayState.SELECTED, holder.mHeadText, item.headText);
-                displayMergeSelectionState(DisplayState.DESELECTED, holder.mTailText, formatDeselected(item, GET_TAIL));
-                holder.mConflictText.setVisibility(View.GONE);
-                holder.mButtonBar.setVisibility(View.VISIBLE);
+            if (item.mergeItemSelected >= 0) {
+                if (item.mergeItemSelected == i) {
+                    displayMergeSelectionState(DisplayState.SELECTED, textView, mergeConflictCard);
+                    holder.mConflictText.setVisibility(View.GONE);
+                    holder.mButtonBar.setVisibility(View.VISIBLE);
+                } else {
+                    displayMergeSelectionState(DisplayState.DESELECTED, textView, mergeConflictCard);
+                    holder.mConflictText.setVisibility(View.GONE);
+                    holder.mButtonBar.setVisibility(View.VISIBLE);
+                }
+
             } else {
-                displayMergeSelectionState(DisplayState.DESELECTED, holder.mHeadText, formatDeselected(item, GET_HEAD));
-                displayMergeSelectionState(DisplayState.SELECTED, holder.mTailText, item.tailText);
-                holder.mConflictText.setVisibility(View.GONE);
-                holder.mButtonBar.setVisibility(View.VISIBLE);
+                displayMergeSelectionState(DisplayState.NORMAL, textView, mergeConflictCard);
+                holder.mConflictText.setVisibility(View.VISIBLE);
+                holder.mButtonBar.setVisibility(View.GONE);
             }
-
-        } else {
-            displayMergeSelectionState(DisplayState.NORMAL, holder.mHeadText, item.headText);
-            displayMergeSelectionState(DisplayState.NORMAL, holder.mTailText, item.tailText);
-            holder.mConflictText.setVisibility(View.VISIBLE);
-            holder.mButtonBar.setVisibility(View.GONE);
-        }
-    }
-
-    private CharSequence formatDeselected(ReviewListItem item, boolean getHead) {
-        if(item.isFullMergeConflict) { // gray out everyithing
-            CharSequence text = getHead ? item.headText : item.tailText;
-            SpannableStringBuilder span = new SpannableStringBuilder(text);
-            span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_disabled_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            return span;
-        } else { // partial merge conflict, so set text gray and then highlight differing merge text
-            SpannableStringBuilder span = new SpannableStringBuilder(item.targetText);
-            span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_disabled_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            return getMergeText(span, getHead);
         }
     }
 
@@ -866,9 +880,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             case DESELECTED:
                 setLeftRightMargins( view, 2 * mMarginInitialLeft); // grow margins to de-emphasize
-                // contents of text has already been grayed out to de-emphasize
+                span = new SpannableStringBuilder(text);
+                // set text gray to de-emphasize
+                span.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.dark_disabled_text)), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 view.setTextSize(TypedValue.COMPLEX_UNIT_SP, mInitialTextSize * 0.8f); // shrink text to de-emphasize
-                view.setText(text);
+                view.setText(span);
                 break;
 
             case NORMAL:
@@ -1192,7 +1208,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             applyChangedText(text, holder, item);
 
                             App.closeKeyboard(mContext);
-                            item.hasMergeConflicts = MergeConflictHandler.isMergeConflicted(text);
+                            item.hasMergeConflicts = MergeConflictsParseTask.isMergeConflicted(text);
                             notifyDataSetChanged();
                             updateMergeConflict();
 
@@ -1255,7 +1271,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             applyChangedText(text, holder, item);
 
                             App.closeKeyboard(mContext);
-                            item.hasMergeConflicts = MergeConflictHandler.isMergeConflicted(text);
+                            item.hasMergeConflicts = MergeConflictsParseTask.isMergeConflicted(text);
                             notifyDataSetChanged();
                             updateMergeConflict();
 
@@ -2308,8 +2324,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public TextView mSourceBody;
         public int currentResourceTaskId = -1;
         public int currentSourceTaskId = -1;
-        public final TextView mHeadText;
-        public final TextView mTailText;
+        public List<TextView> mMergeText;
+        public final LinearLayout mMergeConflictLayout;
         public final TextView mConflictText;
         public final LinearLayout mButtonBar;
         public final Button mCancelButton;
@@ -2339,8 +2355,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             mDoneSwitch = (Switch)v.findViewById(R.id.done_button);
             mTranslationTabs.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
             mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);
-            mHeadText = (TextView)v.findViewById(R.id.merge_head);
-            mTailText = (TextView)v.findViewById(R.id.merge_tail);
+            mMergeConflictLayout = (LinearLayout)v.findViewById(R.id.merge_cards);
             mConflictText = (TextView)v.findViewById(R.id.conflict_label);
             mButtonBar = (LinearLayout)v.findViewById(R.id.button_bar);
             mCancelButton = (Button) v.findViewById(R.id.cancel_button);
@@ -2368,6 +2383,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public List<Link> wordLinks = new ArrayList<>();
         public List<Link> questionLinks = new ArrayList<>();
         public List<Link> noteLinks = new ArrayList<>();
+        private List<CharSequence> mergeItems;
+        private int mergeItemSelected;
 
         public ReviewListItem(String chapterSlug, String chunkSlug) {
             super(chapterSlug, chunkSlug);

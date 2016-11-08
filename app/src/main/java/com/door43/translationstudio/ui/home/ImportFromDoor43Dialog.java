@@ -26,8 +26,8 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.tasks.MergeConflictsParseTask;
 import com.door43.translationstudio.ui.translate.TargetTranslationActivity;
-import com.door43.translationstudio.rendering.MergeConflictHandler;
 import com.door43.translationstudio.tasks.AdvancedGogsRepoSearchTask;
 import com.door43.translationstudio.tasks.CloneRepositoryTask;
 import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
@@ -321,7 +321,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         Bundle args = new Bundle();
         args.putString(App.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
 
-        MergeConflictHandler.CardLocation location = MergeConflictHandler.findFirstMergeConflict( mTargetTranslation.getId());
+        MergeConflictsParseTask.CardLocation location = MergeConflictsParseTask.findFirstMergeConflict( mTargetTranslation.getId());
         if(location != null) {
             args.putString(App.EXTRA_CHAPTER_ID, location.chapterID);
             args.putString(App.EXTRA_FRAME_ID, location.frameID);
