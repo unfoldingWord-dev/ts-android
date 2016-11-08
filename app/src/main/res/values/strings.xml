@@ -154,7 +154,6 @@
     <string name="crash_details">What were you doing just before the app crashed?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
-    <string name="export_to_device" translatable="false">Export to nearby device</string>
     <!-- This is the translation guidelines that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we can find a reliable source -->
     <string name="translation_guidlines" translatable="false">
 <![CDATA[
@@ -213,7 +212,8 @@
     </string>
     <string name="view_statement_of_faith">Statement of Faith</string>
     <string name="view_translation_guidelines">Translation Guidelines</string>
-    <string name="import_from_friend" translatable="false">Import from friend</string>
+    <string name="import_from_device" translatable="false">Import From Another Device</string>
+    <string name="export_to_device" translatable="false">Export To Another Device</string>
     <!-- Indicates the user should click on the item in order to connect to the server -->
     <string name="click_to_connect" translatable="false">Click to connect</string>
     <!-- Indicates the peer has connected to the server -->
@@ -233,7 +233,7 @@
     <string name="mb_downloaded">MB downloaded</string>
     <string name="image_large_download">Downloading images will take several megabytes. Are you sure you want to include images?</string>
     <string name="confirm_import">Please confirm import data</string>
-    <string name="waiting_for_device">Waiting for device</string>
+    <string name="waiting_for_another_device">Waiting for another device</string>
     <string name="label_back">Back</string>
     <string name="bug_report">Describe the problem you are experiencing</string>
     <string name="project_library">Library</string>
@@ -608,7 +608,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="action_download_updates">Download updates</string>
     <string name="list_may_be_outdated">The list may be out of date</string>
     <string name="label_import">Import</string>
-    <string name="label_import_restore">Import/Restore</string>
+    <string name="label_import_options">Import Options</string>
     <string name="import_from_online">Import from Online (requires internet)</string>
     <string name="automatic_backups">Automatic Backups</string>
     <string name="export_to_sd">Export to SD Card</string>
@@ -784,7 +784,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="building_manifest">Building Manifest</string>
     <string name="reading_usfm">Reading USFM</string>
     <string name="importing_usfm">Importing USFM</string>
-    <string name="import_from_sd_usfm">Import USFM from SD Card</string>
+    <string name="import_usfm_file">Import USFM File</string>
     <string name="invalid_book_name_prompt">\'<xliff:g example="Mark.usfm" id="file_name">%1$s</xliff:g>\'\nhas invalid book name: \'<xliff:g example="marc" id="book_name">%2$s</xliff:g>\'\nDo you wish to select a book name?</string>
     <string name="missing_book_name_prompt">\'<xliff:g example="Mark.usfm" id="file_name">%1$s</xliff:g>\'\nis missing book name\nDo you wish to select a book name?</string>
     <string name="could_not_parse">Could not parse \'<xliff:g example="Mark.usfm" id="file_name">%1$s</xliff:g>\'</string>
@@ -896,4 +896,6 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="warn_existing_target_translation">You are already translating <xliff:g example="Genesis" id="project">%1$s</xliff:g> into <xliff:g example="English" id="target_language">%2$s</xliff:g>.  Do you want to merge projects?</string>
     <string name="rename_canceled">Rename cancelled</string>
     <string name="merge">Merge</string>
+    <string name="import_project_file">Import Project File</string>
+    <string name="import_source_text">Import Source Text</string>
 </resources>

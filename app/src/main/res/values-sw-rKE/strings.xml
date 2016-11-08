@@ -91,7 +91,7 @@
   <string name="no_projects_available_on_server">Hakuna miradi zinapatikana kwenye seva hii</string>
   <string name="downloading">Kupakua</string>
   <string name="confirm_import">Tafadhali kuthibitisha nini unataka kuagiza.</string>
-  <string name="waiting_for_device">Kusubiri kwa ajili ya kifaa</string>
+  <string name="waiting_for_another_device">Kusubiri kwa ajili ya kifaa</string>
   <string name="label_back">Back</string>
   <string name="bug_report">Kuelezea tatizo unasumbuliwa na programu hii.</string>
   <string name="terms_additional">Na lazima kukubaliana na kauli ya miongozo imani na tafsiri.</string>

@@ -9,26 +9,43 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="@dimen/dialog_content_margin"
+        android:layout_marginTop="@dimen/dialog_content_margin"
+        android:layout_marginBottom="@dimen/dialog_content_margin"
         android:layout_above="@+id/linearLayout2">
 
-        <TextView
-            android:id="@+id/title"
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_marginLeft="@dimen/dialog_content_margin"
+            android:layout_marginRight="@dimen/dialog_content_margin"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/backup_to_friend"
-            android:textColor="@color/dark_primary_text"
-            android:textSize="@dimen/headline" />
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/backup_to_friend"
+                android:textColor="@color/dark_primary_text"
+                android:textSize="@dimen/headline" />
+
+            <TextView
+                android:id="@+id/target_translation_title"
+                android:text="Open Bible Stories - Afaraf"
+                android:textSize="@dimen/title"
+                android:textColor="@color/dark_secondary_text"
+                android:layout_marginBottom="@dimen/dialog_content_margin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
 
         <TextView
-            android:id="@+id/target_translation_title"
-            android:text="Open Bible Stories - Afaraf"
-            android:textSize="@dimen/title"
+            android:id="@+id/no_peers_notice"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textAlignment="center"
+            android:gravity="center"
             android:textColor="@color/dark_secondary_text"
-            android:layout_marginBottom="@dimen/dialog_content_margin"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
+            android:text="@string/waiting_for_another_device"/>
         <ListView
             android:id="@id/list"
             android:dividerHeight="1px"
@@ -49,7 +66,7 @@
         <Button
             android:id="@+id/dismiss_button"
             android:layout_marginLeft="@dimen/dialog_controls_margin"
-            android:text="@string/dismiss"
+            android:text="@string/title_cancel"
             style="@style/Widget.Alert.Button"/>
     </LinearLayout>
 </RelativeLayout>

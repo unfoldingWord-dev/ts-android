@@ -612,7 +612,6 @@ public class ReviewModeFragment extends ViewModeFragment {
 
         final Door43Client library = App.getLibrary();
         ResourceContainer sourceTranslation = getSelectedResourceContainer();
-//        CheckingQuestion question = null;//getPreferredQuestion(sourceTranslation, chapterId, frameId, questionId);
         SourceLanguage sourceLanguage = library.index.getSourceLanguage(sourceTranslation.language.slug);
         if(mResourcesDrawerContent != null && question != null) {
             mResourcesDrawerContent.setVisibility(View.GONE);

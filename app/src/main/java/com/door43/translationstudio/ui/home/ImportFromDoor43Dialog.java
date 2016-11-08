@@ -60,7 +60,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
     public static final String STATE_TARGET_TRANSLATION = "state_target_translation";
 
     private SimpleTaskWatcher taskWatcher;
-    private RestoreFromCloudAdapter adapter;
+    private TranslationRepositoryAdapter adapter;
     private Translator translator;
     private List<Repository> repositories = new ArrayList<>();
     private String mCloneHtmlUrl;
@@ -120,7 +120,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
         });
 
         ListView list = (ListView) v.findViewById(R.id.list);
-        adapter = new RestoreFromCloudAdapter();
+        adapter = new TranslationRepositoryAdapter();
         list.setAdapter(adapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

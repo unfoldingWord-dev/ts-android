@@ -91,7 +91,7 @@
   <string name="no_projects_available_on_server">Tidak ada proyek yang tersedia di server ini</string>
   <string name="downloading">Download</string>
   <string name="confirm_import">Mohon konfirmasi apa yang ingin Anda impor.</string>
-  <string name="waiting_for_device">Menunggu perangkat</string>
+  <string name="waiting_for_another_device">Menunggu perangkat</string>
   <string name="label_back">Kembali</string>
   <string name="bug_report">Jelaskan masalah yang Anda alami dengan aplikasi ini.</string>
   <string name="terms_additional">Dan Anda harus menyetujui pernyataan iman dan terjemahan pedoman.</string>

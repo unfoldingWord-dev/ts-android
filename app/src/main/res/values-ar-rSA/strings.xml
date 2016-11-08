@@ -91,7 +91,7 @@
   <string name="no_projects_available_on_server">لم المشروعات المتاحة على هذا الخادم</string>
   <string name="downloading">تحميل</string>
   <string name="confirm_import">يرجى تأكيد ما كنت ترغب في استيراد.</string>
-  <string name="waiting_for_device">ينتظر الجهاز</string>
+  <string name="waiting_for_another_device">ينتظر الجهاز</string>
   <string name="label_back">إلى الوراء</string>
   <string name="bug_report">وصف المشكلة التي تواجهها مع هذا التطبيق.</string>
   <string name="terms_additional">ويجب أن توافق على بيان المبادئ التوجيهية الإيمان والترجمة.</string>
