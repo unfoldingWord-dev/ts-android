@@ -91,7 +91,7 @@
   <string name="no_projects_available_on_server">Không có dự án có sẵn trên máy chủ này</string>
   <string name="downloading">Tải về</string>
   <string name="confirm_import">Hãy xác nhận những gì bạn muốn nhập.</string>
-  <string name="waiting_for_device">Chờ đợi cho thiết bị</string>
+  <string name="waiting_for_another_device">Chờ đợi cho thiết bị</string>
   <string name="label_back">Trở lại</string>
   <string name="bug_report">Mô tả các vấn đề bạn đang gặp phải với ứng dụng này.</string>
   <string name="terms_additional">Và bạn phải đồng ý với tuyên bố của đức tin và hướng dẫn dịch.</string>

@@ -91,7 +91,7 @@
   <string name="no_projects_available_on_server">Hiçbir proje bu sunucuda kullanılabilir</string>
   <string name="downloading">İndirme</string>
   <string name="confirm_import">Almak istediğiniz ne onaylayın.</string>
-  <string name="waiting_for_device">Cihaz için bekleniyor</string>
+  <string name="waiting_for_another_device">Cihaz için bekleniyor</string>
   <string name="label_back">Geri</string>
   <string name="bug_report">Bu uygulama ile karşılaştığınız sorunu açıklayın.</string>
   <string name="terms_additional">Ve inanç ve çeviri kurallarına tablosuna kabul etmeniz gerekir.</string>

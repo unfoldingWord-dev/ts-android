@@ -48,7 +48,6 @@ import java.security.InvalidParameterException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 
@@ -164,6 +163,8 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
     private boolean shutDownServices = true;
     private String deviceAlias;
     private TargetTranslation targetTranslation = null;
+    private ListView peerListView = null;
+    private View noticeView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
@@ -194,7 +195,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
         TextView subTitle = (TextView)v.findViewById(R.id.target_translation_title);
 
         if(operationMode == MODE_SERVER) {
-            title.setText(getResources().getString(R.string.backup_to_friend));
+            title.setText(getResources().getString(R.string.export_to_device));
 
             // get project title
             Project p = App.getLibrary().index.getProject(Locale.getDefault().getLanguage(), targetTranslation.getProjectId(), true);
@@ -204,14 +205,15 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
                 subTitle.setText(targetTranslation.getProjectId() + " - " + targetTranslation.getTargetLanguageName());
             }
         } else {
-            title.setText(getResources().getString(R.string.import_from_friend));
+            title.setText(getResources().getString(R.string.import_from_device));
             subTitle.setText("");
         }
 
-        ListView list = (ListView)v.findViewById(R.id.list);
+        this.noticeView = v.findViewById(R.id.no_peers_notice);
+        this.peerListView = (ListView)v.findViewById(R.id.list);
         adapter = new PeerAdapter(getActivity());
-        list.setAdapter(adapter);
-        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        peerListView.setAdapter(adapter);
+        peerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 final Peer peer = adapter.getItem(position);
@@ -407,6 +409,15 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
      * @param peers
      */
     public void updatePeerList(ArrayList<Peer> peers) {
+        if(peers.size() == 0) {
+            // display no peer notice
+            if(peerListView != null) peerListView.setVisibility(View.GONE);
+            if(noticeView != null) noticeView.setVisibility(View.VISIBLE);
+        } else {
+            // display peer list
+            if(peerListView != null) peerListView.setVisibility(View.VISIBLE);
+            if(noticeView != null) noticeView.setVisibility(View.GONE);
+        }
         if(adapter != null) {
             adapter.setPeers(peers);
         }

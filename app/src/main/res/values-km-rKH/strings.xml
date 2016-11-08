@@ -98,7 +98,7 @@
   <string name="no_projects_available_on_server">គ្មាន​គម្រោង​គឺ​អាច​រក​បាន​នៅ​លើ​ម៉ាស៊ីន​បម្រើ​នេះ</string>
   <string name="downloading">ទាញ​យក</string>
   <string name="confirm_import">សូម​បញ្ជាក់​នូវ​អ្វី​ដែល​អ្នក​ចង់​នាំចូល​។</string>
-  <string name="waiting_for_device">កំពុង​រង់ចាំ​ឧបករណ៍</string>
+  <string name="waiting_for_another_device">កំពុង​រង់ចាំ​ឧបករណ៍</string>
   <string name="label_back">ត្រឡប់​វិញ</string>
   <string name="bug_report">រៀបរាប់​ពី​បញ្ហា​ដែល​អ្នក​កំពុង​ជួប​ប្រទះ​ជា​មួយ​នឹង​កម្មវិធី​នេះ​។</string>
   <string name="terms_additional">ហើយ​អ្នក​ត្រូវ​តែ​យល់​ព្រម​ទៅ​នឹង​សេចក្តី​ថ្លែង​ការណ៍​នៃ​សេចក្ដី​ជំនឿ​និង​គោលការណ៍​ណែនាំ​បកប្រែ​។</string>
