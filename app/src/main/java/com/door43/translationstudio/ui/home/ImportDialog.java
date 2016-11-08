@@ -16,12 +16,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
-import android.widget.ImageButton;
 
+import org.unfoldingword.resourcecontainer.ContainerTools;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
-import com.door43.translationstudio.ui.ImportFileChooserActivity;
+import com.door43.translationstudio.ui.filechooser.FileChooserActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
@@ -36,6 +37,8 @@ import com.door43.util.FileUtilities;
 import com.door43.widget.ViewUtil;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -43,8 +46,9 @@ import java.io.InputStream;
  */
 public class ImportDialog extends DialogFragment {
 
-    private static final int IMPORT_PROJECT_FROM_SD_REQUEST = 142;
-    private static final int IMPORT_USFM_PROJECT_FROM_SD_REQUEST = 143;
+    private static final int IMPORT_TRANSLATION_REQUEST = 142;
+    private static final int IMPORT_USFM_REQUEST = 143;
+    private static final int IMPORT_RCONTAINER_REQUEST = 144;
     public static final String TAG = "importDialog";
     private static final String STATE_SETTING_DEVICE_ALIAS = "state_setting_device_alias";
     public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
@@ -92,7 +96,11 @@ public class ImportDialog extends DialogFragment {
         importResourceContainerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO: 11/7/16 provide ui for selecting resource container
+                Intent intent = new Intent(getActivity(), FileChooserActivity.class);
+                Bundle args = new Bundle();
+                args.putString(FileChooserActivity.EXTRA_MODE, FileChooserActivity.SelectionMode.DIRECTORY.name());
+                intent.putExtras(args);
+                startActivityForResult(intent, IMPORT_RCONTAINER_REQUEST);
             }
         });
 
@@ -180,19 +188,19 @@ public class ImportDialog extends DialogFragment {
 
     private void doImportFromSdCard(boolean doingUsfmImport) {
         String typeStr = null;
-        Intent intent = new Intent(getActivity(), ImportFileChooserActivity.class);
+        Intent intent = new Intent(getActivity(), FileChooserActivity.class);
         isDocumentFile = SdUtils.isSdCardPresentLollipop();
         if(isDocumentFile) {
-            typeStr = ImportFileChooserActivity.SD_CARD_TYPE;
+            typeStr = FileChooserActivity.SD_CARD_TYPE;
         } else {
-            typeStr = ImportFileChooserActivity.INTERNAL_TYPE;
+            typeStr = FileChooserActivity.INTERNAL_TYPE;
         }
 
         intent.setType(typeStr);
         if(doingUsfmImport) {
-            intent.putExtra(ImportFileChooserActivity.EXTRAS_ACCEPTED_EXTENSIONS, "usfm");
+            intent.putExtra(FileChooserActivity.EXTRAS_ACCEPTED_EXTENSIONS, "usfm");
         }
-        startActivityForResult(intent, doingUsfmImport ? IMPORT_USFM_PROJECT_FROM_SD_REQUEST : IMPORT_PROJECT_FROM_SD_REQUEST);
+        startActivityForResult(intent, doingUsfmImport ? IMPORT_USFM_REQUEST : IMPORT_TRANSLATION_REQUEST);
     }
 
     @Override
@@ -241,8 +249,8 @@ public class ImportDialog extends DialogFragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == IMPORT_PROJECT_FROM_SD_REQUEST) {
-            if ((resultCode == Activity.RESULT_OK) && (data != null)) {
+        if (requestCode == IMPORT_TRANSLATION_REQUEST) {
+            if (resultCode == Activity.RESULT_OK && data != null) {
                 if (isDocumentFile) {
                     Uri uri = data.getData();
                     importUri(uri);
@@ -251,14 +259,38 @@ public class ImportDialog extends DialogFragment {
                     importFile(file);
                 }
             }
-        } else if (requestCode == IMPORT_USFM_PROJECT_FROM_SD_REQUEST) {
-            if ((resultCode == Activity.RESULT_OK) && (data != null)) {
+        } else if (requestCode == IMPORT_USFM_REQUEST) {
+            if (resultCode == Activity.RESULT_OK && data != null) {
                 if (isDocumentFile) {
                     Uri uri = data.getData();
                     doUsfmImportUri(uri);
                 } else {
                     String path = data.getData().getPath();
                     doUsfmImportFile(path);
+                }
+            }
+        } else if (requestCode == IMPORT_RCONTAINER_REQUEST) {
+            if (resultCode == Activity.RESULT_OK && data != null) {
+                Uri uri = data.getData();
+                File dir = new File(uri.getPath());
+                if(!dir.isDirectory()) {
+                    // TODO: 11/8/16 notify not a directory
+                    return;
+                }
+
+                try {
+                    ResourceContainer container = ResourceContainer.load(dir);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    // TODO: notify not a valid resource container
+                    return;
+                }
+                try {
+                    App.getLibrary().importResourceContainer(dir);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    // TODO: 11/8/16 notify failed to import
+                    return;
                 }
             }
         }

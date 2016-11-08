@@ -1,4 +1,4 @@
-package com.door43.translationstudio.ui;
+package com.door43.translationstudio.ui.filechooser;
 
 import android.app.Activity;
 import android.content.Context;
@@ -22,8 +22,7 @@ import android.widget.Toast;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.ui.filebrowser.DocumentFileBrowserAdapter;
-import com.door43.translationstudio.ui.filebrowser.DocumentFileItem;
+import com.door43.translationstudio.ui.BaseActivity;
 import com.door43.util.SdUtils;
 
 import java.io.File;
@@ -31,12 +30,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by blm on 12/31/15.
+ * Displays files on the device that the user can select.
  */
-public class ImportFileChooserActivity extends BaseActivity {
+public class FileChooserActivity extends BaseActivity {
+    public static final String EXTRA_MODE = "selection-mode";
+    public static final String EXTRA_FILTERS = "file-filters";
 
     public static final String EXTRAS_ACCEPTED_EXTENSIONS = "extras_accepted_file_extensions";
-
     public static final String FOLDER_KEY = "folder";
     public static final String FILE_PATH_KEY = "file_path";
     public static final String SD_CARD_TYPE = "sd_card";
@@ -49,17 +49,41 @@ public class ImportFileChooserActivity extends BaseActivity {
     private Button mConfirmButton;
     private TextView mCurrentFolder;
     private ListView mFileList;
-    private DocumentFileBrowserAdapter mAdapter;
+    private FileChooserAdapter mAdapter;
 
     private DocumentFile mCurrentDir;
-    private String mType;
 
+    @Deprecated
     private String[] mAcceptedExtensions = { Translator.ARCHIVE_EXTENSION };
+
+    private SelectionMode mode;
+    private String filters;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_choose_import_file);
+
+        // load configuration
+        Intent intent = getIntent();
+        Bundle args = intent.getExtras();
+        if(args != null) {
+            // mode
+            try {
+                mode = SelectionMode.valueOf(args.getString(EXTRA_MODE, SelectionMode.FILE.name()));
+            } catch (IllegalArgumentException e) {
+                mode = SelectionMode.FILE;
+            }
+
+            // filters
+            filters = args.getString(EXTRA_FILTERS, "*/*");
+
+            // deprecated
+            String extensions = args.getString(EXTRAS_ACCEPTED_EXTENSIONS, null);
+            if (extensions != null) {
+                mAcceptedExtensions = extensions.split(",");
+            }
+        }
 
         mUpButton = (ImageButton) findViewById(R.id.up_folder_button);
         mInternalButton = (Button) findViewById(R.id.internal_button);
@@ -89,17 +113,24 @@ public class ImportFileChooserActivity extends BaseActivity {
                 boolean itemSelected = false;
                 DocumentFileItem selectedItem = null;
                 int position = mFileList.getCheckedItemPosition();
-                if (position >= 0) {
+                // validate the file
+                if (mode != SelectionMode.DIRECTORY && position >= 0) {
                     selectedItem = mAdapter.getItem(position);
                     if (isUsableFileName(selectedItem)) {
                         itemSelected = true;
                     }
                 }
 
+                // return the current directory
+                if(mode == SelectionMode.DIRECTORY) {
+                    itemSelected = true;
+                    selectedItem = DocumentFileItem.getInstance(FileChooserActivity.this, mCurrentDir);
+                }
+
                 if (itemSelected) {
                     returnSelectedFile(selectedItem);
                 } else {
-                    new AlertDialog.Builder(ImportFileChooserActivity.this, R.style.AppTheme_Dialog)
+                    new AlertDialog.Builder(FileChooserActivity.this, R.style.AppTheme_Dialog)
                         .setTitle(R.string.title_activity_file_explorer)
                         .setMessage(R.string.no_item_selected)
                         .setPositiveButton(R.string.confirm, null)
@@ -126,13 +157,13 @@ public class ImportFileChooserActivity extends BaseActivity {
             @Override
             public void onClick(View view) {
                 if (SdUtils.doWeNeedToRequestSdCardAccess()) {
-                    new AlertDialog.Builder(ImportFileChooserActivity.this, R.style.AppTheme_Dialog)
+                    new AlertDialog.Builder(FileChooserActivity.this, R.style.AppTheme_Dialog)
                         .setTitle(R.string.enable_sd_card_access_title)
                         .setMessage(Html.fromHtml(getResources().getString(R.string.enable_sd_card_access)))
                         .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                SdUtils.triggerStorageAccessFramework(ImportFileChooserActivity.this);
+                                SdUtils.triggerStorageAccessFramework(FileChooserActivity.this);
                             }
                         })
                         .setNegativeButton(R.string.label_skip, null)
@@ -152,7 +183,7 @@ public class ImportFileChooserActivity extends BaseActivity {
                     mFileList.clearChoices();
                     loadDocFileList(selectedItem.file);
                     return;
-                } else {   // file item selected
+                } else if(mode != SelectionMode.DIRECTORY) {   // file item selected
                     if (isUsableFileName(selectedItem)) {
                         mAdapter.setSelectedPosition(position);
                         mFileList.setItemChecked(position, true);
@@ -165,16 +196,6 @@ public class ImportFileChooserActivity extends BaseActivity {
                 mFileList.clearChoices();
             }
         });
-
-        Intent intent = getIntent();
-        mType = intent.getType();
-        Bundle args = intent.getExtras();
-        if(args != null) {
-            String extenstions = args.getString(EXTRAS_ACCEPTED_EXTENSIONS, null);
-            if (extenstions != null) {
-                mAcceptedExtensions = extenstions.split(",");
-            }
-        }
 
         showFolderFromSdCard();
     }
@@ -311,7 +332,7 @@ public class ImportFileChooserActivity extends BaseActivity {
      */
     private void loadDocFileList(DocumentFile dir) {
 
-        mAdapter = new DocumentFileBrowserAdapter();
+        mAdapter = new FileChooserAdapter(this.mode, this.filters);
         mFileList.setAdapter(mAdapter);
 
         Context context = App.context();
@@ -335,11 +356,7 @@ public class ImportFileChooserActivity extends BaseActivity {
                         continue; // skip if not readable
                     }
 
-                    if (f.isDirectory()) {
-                        fileList.add(DocumentFileItem.getInstance(context, f));
-                    } else {
-                        fileList.add(DocumentFileItem.getInstance(context, f));
-                    }
+                    fileList.add(DocumentFileItem.getInstance(context, f));
                 }
 
                 // add up button
@@ -390,6 +407,12 @@ public class ImportFileChooserActivity extends BaseActivity {
                     .setPositiveButton(R.string.label_ok, null)
                     .show();
         }
+    }
+
+    public enum SelectionMode {
+        DIRECTORY,
+        FILE,
+        MULTI_SELECT_FILE
     }
 }
 

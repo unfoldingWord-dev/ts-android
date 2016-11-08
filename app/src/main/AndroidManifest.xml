@@ -70,7 +70,7 @@
             android:launchMode="singleTop"
             android:label="@string/title_activity_crash_reporter" />
         <activity
-            android:name=".ui.ImportFileChooserActivity"
+            android:name=".ui.filechooser.FileChooserActivity"
             android:label="@string/title_file_browser" />
         <activity
             android:name=".ui.devtools.DeveloperToolsActivity"
