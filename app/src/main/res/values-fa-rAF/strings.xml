@@ -98,7 +98,7 @@
   <string name="no_projects_available_on_server">هیچ پروژه قابل دسترس در این سرور می باشد</string>
   <string name="downloading">دانلود</string>
   <string name="confirm_import">لطفا تأیید کنید آنچه شما می خواهید به واردات.</string>
-  <string name="waiting_for_device">منتظر دستگاه</string>
+  <string name="waiting_for_another_device">منتظر دستگاه</string>
   <string name="label_back">پشت</string>
   <string name="bug_report">شرح مشکل شما با این برنامه تجربه.</string>
   <string name="terms_additional">و شما باید به بیانیه ای از دستورالعمل های ایمان و ترجمه به توافق برسند.</string>

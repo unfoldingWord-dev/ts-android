@@ -98,7 +98,7 @@
   <string name="no_projects_available_on_server">No hay proyectos disponibles en este servidor</string>
   <string name="downloading">Descarga de</string>
   <string name="confirm_import">Por favor, confirma lo que desea importar.</string>
-  <string name="waiting_for_device">Esperando al dispositivo</string>
+  <string name="waiting_for_another_device">Esperando al dispositivo</string>
   <string name="label_back">Espalda</string>
   <string name="bug_report">Describa el problema que está experimentando con esta aplicación.</string>
   <string name="terms_additional">Y usted debe estar de acuerdo con la declaración de las directrices de fe y de traducción.</string>

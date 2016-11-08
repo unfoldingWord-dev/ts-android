@@ -98,7 +98,7 @@
   <string name="no_projects_available_on_server">በሰርቨሩ ላይ ምንም ዓይነት ፕሮጄክቶች የሉም።</string>
   <string name="downloading">እያወረደ ነው።</string>
   <string name="confirm_import">እባክዎ ወደ ውስጥ የገባውን መረጃ ያረጋግጡ</string>
-  <string name="waiting_for_device">መሣሪያውን እየጠበቀ ነው።</string>
+  <string name="waiting_for_another_device">መሣሪያውን እየጠበቀ ነው።</string>
   <string name="label_back">ወደኋላ መልስ</string>
   <string name="bug_report">ያጋጠመዎትን ችግር ይግለጹ</string>
   <string name="terms_additional">በእምነት አንቀጽ እና በትርጉም መመሪያዎቹ  መስማማት አለብዎት።</string>

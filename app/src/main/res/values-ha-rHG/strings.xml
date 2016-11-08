@@ -98,7 +98,7 @@
   <string name="no_projects_available_on_server">Babu ayyukan suna samuwa a kan wannan uwar garken</string>
   <string name="downloading">Downloading</string>
   <string name="confirm_import">Don Allah tabbatar da abin da ka so ka shigo.</string>
-  <string name="waiting_for_device">Jiran na\'urar</string>
+  <string name="waiting_for_another_device">Jiran na\'urar</string>
   <string name="label_back">Back</string>
   <string name="bug_report">Bayyana matsalar da kake fuskantar da wannan app.</string>
   <string name="terms_additional">Kuma dole ne ka yarda da maganar bangaskiya da translation jagororin.</string>

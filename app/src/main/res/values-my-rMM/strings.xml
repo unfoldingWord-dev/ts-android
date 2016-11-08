@@ -98,7 +98,7 @@
   <string name="no_projects_available_on_server">အဘယ်သူမျှမစီမံကိန်းများကိုဒီဆာဗာပေါ်တွင်ရရှိနိုင်ပါသည်</string>
   <string name="downloading">Download လုပ်ခြင်း</string>
   <string name="confirm_import">သင်တင်သွင်းလိုလိုချင်တာတွေကိုအတည်ပြုပေးပါ။</string>
-  <string name="waiting_for_device">device တွေအတွက်စောင့်ဆိုင်းနေ</string>
+  <string name="waiting_for_another_device">device တွေအတွက်စောင့်ဆိုင်းနေ</string>
   <string name="label_back">ပြန်.</string>
   <string name="bug_report">ဒီ app ကိုအတူတွေ့ကြုံနေရတဲ့ပြဿနာကိုဖော်ပြပါ။</string>
   <string name="terms_additional">တဖန်သင်တို့ယုံကြည်ခြင်းနှင့်ဘာသာပြန်လမ်းညွှန်ကြေညာချက်ရန်သဘောတူရပါမည်။</string>

@@ -91,7 +91,7 @@
   <string name="no_projects_available_on_server">సంఖ్య ప్రాజెక్టులు ఈ సర్వర్లో లభ్యమవుతాయి</string>
   <string name="downloading">డౌన్లోడింగ్</string>
   <string name="confirm_import">మీరు దిగుమతి ఏమి నిర్ధారించండి.</string>
-  <string name="waiting_for_device">పరికరం కోసం వేచి</string>
+  <string name="waiting_for_another_device">పరికరం కోసం వేచి</string>
   <string name="label_back">తిరిగి</string>
   <string name="bug_report">మీరు ఈ అనువర్తనం తో ఎదుర్కొంటున్న సమస్యను వివరించండి.</string>
   <string name="terms_additional">మీరు విశ్వాసం మరియు అనువాద మార్గదర్శకాలను ప్రకటన అంగీకరించాలి.</string>

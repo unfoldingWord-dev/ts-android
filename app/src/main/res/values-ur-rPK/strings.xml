@@ -98,7 +98,7 @@
   <string name="no_projects_available_on_server">کوئی منصوبوں اس سرور پر دستیاب ہیں</string>
   <string name="downloading">ڈاؤن لوڈ کرنا</string>
   <string name="confirm_import">آپ کو درآمد کرنے کے لئے کیا چاہتے ہیں براہ کرم تصدیق کریں.</string>
-  <string name="waiting_for_device">آلہ کے لئے انتظار کر رہے ہیں</string>
+  <string name="waiting_for_another_device">آلہ کے لئے انتظار کر رہے ہیں</string>
   <string name="label_back">پیچھے اگلا،</string>
   <string name="bug_report">آپ اس اپلی کیشن کے ساتھ سامنا کر رہے ہیں مسئلہ بیان.</string>
   <string name="terms_additional">اور اگر تم ایمان اور ترجمہ ہدایات کے بیان سے متفق ہونا ضروری.</string>
