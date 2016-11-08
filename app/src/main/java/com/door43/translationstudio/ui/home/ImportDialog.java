@@ -21,6 +21,7 @@ import android.widget.ImageButton;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
+import com.door43.translationstudio.tasks.MergeConflictsParseTask;
 import com.door43.translationstudio.ui.ImportFileChooserActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TranslationViewMode;
@@ -30,7 +31,6 @@ import com.door43.translationstudio.ui.ImportUsfmActivity;
 import com.door43.translationstudio.ui.dialogs.Door43LoginDialog;
 import com.door43.translationstudio.ui.dialogs.ShareWithPeerDialog;
 import com.door43.translationstudio.ui.translate.TargetTranslationActivity;
-import com.door43.translationstudio.rendering.MergeConflictHandler;
 import com.door43.util.SdUtils;
 import com.door43.util.FileUtilities;
 import com.door43.widget.ViewUtil;
@@ -344,7 +344,7 @@ public class ImportDialog extends DialogFragment {
         Bundle args = new Bundle();
         args.putString(App.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslationID);
 
-        MergeConflictHandler.CardLocation location = MergeConflictHandler.findFirstMergeConflict( mTargetTranslationID );
+        MergeConflictsParseTask.CardLocation location = MergeConflictsParseTask.findFirstMergeConflict( mTargetTranslationID );
         if(location != null) {
             args.putString(App.EXTRA_CHAPTER_ID, location.chapterID);
             args.putString(App.EXTRA_FRAME_ID, location.frameID);
