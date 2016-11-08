@@ -129,8 +129,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private CharSequence filterConstraint = null;
     private TranslationFilter.FilterSubject filterSubject = null;
 
-    private boolean mMergeHeadSelected = false;
-    private boolean mMergeTailSelected = false;
     private float mInitialTextSize = 0;
     private int mMarginInitialLeft = 0;
     private Map<String, String[]> mSortedChunks = new HashMap<>();
@@ -455,8 +453,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     reOpenItem(item);
                     item.hasMergeConflicts = MergeConflictsParseTask.isMergeConflicted(selectedText);
                     item.mergeItemSelected = -1;
+                    item.isEditing = false;
                     updateMergeConflict();
-                    notifyDataSetChanged();
                 }
             }
         });
@@ -2492,16 +2490,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             final boolean mergeConflictFound = mergeConflictsTask.hasMergeConflict();
             boolean doMergeFiltering = mergeConflictFound && mMergeConflictFilterEnabled;
-            boolean conflictCountChanged = mergeConflictsTask.getConflictCount() != mFilteredItems.size();
-            boolean needToUpdateFilter = (doMergeFiltering != mMergeConflictFilterOn) || conflictCountChanged;
+            final boolean conflictCountChanged = mergeConflictsTask.getConflictCount() != mFilteredItems.size();
+            final boolean needToUpdateFilter = (doMergeFiltering != mMergeConflictFilterOn) || conflictCountChanged;
 
             Handler hand = new Handler(Looper.getMainLooper());
-            final boolean finalNeedToUpdateFilter = needToUpdateFilter;
             hand.post(new Runnable() {
                 @Override
                 public void run() {
                     showMergeConflictIcon(mergeConflictFound, mMergeConflictFilterEnabled);
-                    if (finalNeedToUpdateFilter) {
+                    if (needToUpdateFilter) {
                         setMergeConflictFilter(mMergeConflictFilterEnabled);
                     }
                 }
