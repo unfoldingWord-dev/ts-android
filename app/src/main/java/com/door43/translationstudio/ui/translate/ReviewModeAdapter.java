@@ -308,8 +308,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
      @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
-        holder.currentPosition = position;
         final ReviewListItem item = (ReviewListItem) mFilteredItems.get(position);
+        holder.currentItem = item;
 
         // open/close resources
         if(mResourcesOpened) {
@@ -366,24 +366,25 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             };
             task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
                 @Override
-                public void onTaskFinished(ManagedTask task) {
+                public void onTaskFinished(final ManagedTask task) {
                     TaskManager.clearTask(task);
-                    CharSequence data = (CharSequence)task.getResult();
+                    final CharSequence data = (CharSequence)task.getResult();
                     item.renderedSourceText = data;
-                    if(!task.isCanceled() && data != null && position == holder.currentPosition) {
-                        Handler hand = new Handler(Looper.getMainLooper());
-                        hand.post(new Runnable() {
-                            @Override
-                            public void run() {
+
+                    Handler hand = new Handler(Looper.getMainLooper());
+                    hand.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(!task.isCanceled() && data != null && item == holder.currentItem) {
                                 holder.mSourceBody.setText(item.renderedSourceText);
                                 holder.mSourceBody.setVisibility(View.VISIBLE);
                             }
-                        });
-                    }
+                        }
+                    });
                 }
             });
             holder.currentSourceTaskId = TaskManager.addTask(task);
-            TaskManager.groupTask(task,TAG);
+
         } else {
             holder.mSourceBody.setText(item.renderedSourceText);
             holder.mSourceBody.setVisibility(View.VISIBLE);
@@ -562,16 +563,17 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             };
             task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
                 @Override
-                public void onTaskFinished(ManagedTask task) {
+                public void onTaskFinished(final ManagedTask task) {
                     TaskManager.clearTask(task);
-                    CharSequence data = (CharSequence)task.getResult();
+                    final CharSequence data = (CharSequence)task.getResult();
                     item.renderedTargetText = data;
-                    if(!task.isCanceled() && data != null && position == holder.currentPosition) {
-                        Handler hand = new Handler(Looper.getMainLooper());
-                        hand.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                if(item.isEditing) {
+
+                    Handler hand = new Handler(Looper.getMainLooper());
+                    hand.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(!task.isCanceled() && data != null && item == holder.currentItem) {
+                                if (item.isEditing) {
                                     // edit mode
                                     holder.mTargetEditableBody.setText(item.renderedTargetText);
                                     holder.mTargetEditableBody.setVisibility(View.VISIBLE);
@@ -591,12 +593,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                     ViewUtil.makeLinksClickable(holder.mTargetBody);
                                 }
                             }
-                        });
-                    }
+                        }
+                    });
                 }
             });
             holder.currentTargetTaskId = TaskManager.addTask(task);
-            TaskManager.groupTask(task,TAG);
+
         } else if(item.isEditing) {
             // editing mode
             holder.mTargetEditableBody.setText(item.renderedTargetText);
@@ -1677,19 +1679,20 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         };
         task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
             @Override
-            public void onTaskFinished(ManagedTask task) {
-                Map<String, Object> data = (Map<String, Object>)task.getResult();
-                if(!task.isCanceled() && data != null && position == holder.currentPosition) {
-                    final List<TranslationHelp> notes = (List<TranslationHelp>)data.get("notes");
-                    final List<Link> words = (List<Link>) data.get("words");
-                    final List<TranslationHelp> questions = (List<TranslationHelp>)data.get("questions");
+            public void onTaskFinished(final ManagedTask task) {
+                final Map<String, Object> data = (Map<String, Object>)task.getResult();
 
-                    // TODO: cache the links
+                final List<TranslationHelp> notes = (List<TranslationHelp>)data.get("notes");
+                final List<Link> words = (List<Link>) data.get("words");
+                final List<TranslationHelp> questions = (List<TranslationHelp>)data.get("questions");
 
-                    Handler hand = new Handler(Looper.getMainLooper());
-                    hand.post(new Runnable() {
-                        @Override
-                        public void run() {
+                // TODO: cache the links
+
+                Handler hand = new Handler(Looper.getMainLooper());
+                hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!task.isCanceled() && data != null && item == holder.currentItem) {
                             holder.mResourceTabs.setOnTabSelectedListener(null);
                             holder.mResourceTabs.removeAllTabs();
                             if(notes.size() > 0) {
@@ -1762,12 +1765,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                 }
                             });
                         }
-                    });
-                }
+                    }
+                });
             }
         });
         holder.currentResourceTaskId = TaskManager.addTask(task);
-        TaskManager.groupTask(task,TAG);
 
         // tap to open resources
         if(!mResourcesOpened) {
@@ -2253,7 +2255,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public int currentPosition = -1;
+        public ReviewListItem currentItem = null;
         public final ImageButton mAddNoteButton;
         public final ImageButton mUndoButton;
         public final ImageButton mRedoButton;
@@ -2380,12 +2382,4 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         return true;
     }
 
-    /**
-     * calls notify dataset changed and triggers some other actions
-     */
-    @Override
-    protected void triggerNotifyDataSetChanged() {
-        TaskManager.killGroup(TAG);
-        super.triggerNotifyDataSetChanged();
-    }
 }
