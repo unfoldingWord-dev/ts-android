@@ -1,4 +1,4 @@
-package com.door43.translationstudio.ui.filebrowser;
+package com.door43.translationstudio.ui.filechooser;
 
 import android.content.Context;
 import android.support.v4.provider.DocumentFile;
@@ -27,6 +27,22 @@ public class DocumentFileItem {
         this.file = file;
         this.isUpButton = isUpButton;
         this.context = context;
+    }
+
+    /**
+     * Checks if this item is a directory
+     * @return true if a directory
+     */
+    public boolean isDirectory() {
+        return this.file != null && file.isDirectory();
+    }
+
+    /**
+     * Checks if this item is a file
+     * @return true if a file
+     */
+    public boolean isFile() {
+        return this.file != null && file.isFile();
     }
 
     /**

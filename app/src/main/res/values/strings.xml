@@ -898,4 +898,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="merge">Merge</string>
     <string name="import_project_file">Import Project File</string>
     <string name="import_source_text">Import Source Text</string>
+    <string name="not_a_source_text">Not a source text</string>
+    <string name="could_not_import">Could not import</string>
+    <string name="overwrite_content">Overwrite <xliff:g example="English - Genesis - Unlocked Literal Bible" id="content">%1$s</xliff:g>?</string>
 </resources>

@@ -16,13 +16,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
-import android.widget.ImageButton;
+import android.widget.Toast;
 
+import org.unfoldingword.resourcecontainer.ContainerTools;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
+import com.door43.translationstudio.ui.filechooser.FileChooserActivity;
 import com.door43.translationstudio.tasks.MergeConflictsParseTask;
-import com.door43.translationstudio.ui.ImportFileChooserActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
@@ -36,6 +38,8 @@ import com.door43.util.FileUtilities;
 import com.door43.widget.ViewUtil;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -43,8 +47,9 @@ import java.io.InputStream;
  */
 public class ImportDialog extends DialogFragment {
 
-    private static final int IMPORT_PROJECT_FROM_SD_REQUEST = 142;
-    private static final int IMPORT_USFM_PROJECT_FROM_SD_REQUEST = 143;
+    private static final int IMPORT_TRANSLATION_REQUEST = 142;
+    private static final int IMPORT_USFM_REQUEST = 143;
+    private static final int IMPORT_RCONTAINER_REQUEST = 144;
     public static final String TAG = "importDialog";
     private static final String STATE_SETTING_DEVICE_ALIAS = "state_setting_device_alias";
     public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
@@ -92,7 +97,11 @@ public class ImportDialog extends DialogFragment {
         importResourceContainerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO: 11/7/16 provide ui for selecting resource container
+                Intent intent = new Intent(getActivity(), FileChooserActivity.class);
+                Bundle args = new Bundle();
+                args.putString(FileChooserActivity.EXTRA_MODE, FileChooserActivity.SelectionMode.DIRECTORY.name());
+                intent.putExtras(args);
+                startActivityForResult(intent, IMPORT_RCONTAINER_REQUEST);
             }
         });
 
@@ -180,19 +189,19 @@ public class ImportDialog extends DialogFragment {
 
     private void doImportFromSdCard(boolean doingUsfmImport) {
         String typeStr = null;
-        Intent intent = new Intent(getActivity(), ImportFileChooserActivity.class);
+        Intent intent = new Intent(getActivity(), FileChooserActivity.class);
         isDocumentFile = SdUtils.isSdCardPresentLollipop();
         if(isDocumentFile) {
-            typeStr = ImportFileChooserActivity.SD_CARD_TYPE;
+            typeStr = FileChooserActivity.SD_CARD_TYPE;
         } else {
-            typeStr = ImportFileChooserActivity.INTERNAL_TYPE;
+            typeStr = FileChooserActivity.INTERNAL_TYPE;
         }
 
         intent.setType(typeStr);
         if(doingUsfmImport) {
-            intent.putExtra(ImportFileChooserActivity.EXTRAS_ACCEPTED_EXTENSIONS, "usfm");
+            intent.putExtra(FileChooserActivity.EXTRAS_ACCEPTED_EXTENSIONS, "usfm");
         }
-        startActivityForResult(intent, doingUsfmImport ? IMPORT_USFM_PROJECT_FROM_SD_REQUEST : IMPORT_PROJECT_FROM_SD_REQUEST);
+        startActivityForResult(intent, doingUsfmImport ? IMPORT_USFM_REQUEST : IMPORT_TRANSLATION_REQUEST);
     }
 
     @Override
@@ -241,8 +250,8 @@ public class ImportDialog extends DialogFragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == IMPORT_PROJECT_FROM_SD_REQUEST) {
-            if ((resultCode == Activity.RESULT_OK) && (data != null)) {
+        if (requestCode == IMPORT_TRANSLATION_REQUEST) {
+            if (resultCode == Activity.RESULT_OK && data != null) {
                 if (isDocumentFile) {
                     Uri uri = data.getData();
                     importUri(uri);
@@ -251,8 +260,8 @@ public class ImportDialog extends DialogFragment {
                     importFile(file);
                 }
             }
-        } else if (requestCode == IMPORT_USFM_PROJECT_FROM_SD_REQUEST) {
-            if ((resultCode == Activity.RESULT_OK) && (data != null)) {
+        } else if (requestCode == IMPORT_USFM_REQUEST) {
+            if (resultCode == Activity.RESULT_OK && data != null) {
                 if (isDocumentFile) {
                     Uri uri = data.getData();
                     doUsfmImportUri(uri);
@@ -261,6 +270,66 @@ public class ImportDialog extends DialogFragment {
                     doUsfmImportFile(path);
                 }
             }
+        } else if (requestCode == IMPORT_RCONTAINER_REQUEST) {
+            if (resultCode == Activity.RESULT_OK && data != null) {
+                Uri uri = data.getData();
+                final File dir = new File(uri.getPath());
+                if(!dir.isDirectory()) {
+                    Toast.makeText(getActivity(), R.string.not_a_source_text, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // check that it's a valid container
+                // TODO: 11/8/16 this should be done in a task for better performance
+                ResourceContainer externalContainer;
+                try {
+                    externalContainer = ResourceContainer.load(dir);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(getActivity(), R.string.not_a_source_text, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // check if we already have it
+                // TODO: 11/8/16 support screen rotation
+                try {
+                    App.getLibrary().open(externalContainer.slug);
+                    new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                            .setTitle(R.string.confirm)
+                            .setMessage(String.format(getResources().getString(R.string.overwrite_content), externalContainer.language.name + " - " + externalContainer.project.name + " - " + externalContainer.resource.name))
+                            .setNegativeButton(R.string.menu_cancel, null)
+                            .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    importResourceContainer(dir);
+                                }
+                            })
+                            .show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    // no conflicts. import
+                    importResourceContainer(dir);
+                }
+            }
+        }
+    }
+
+    /**
+     * Imports a resource container into the app
+     * TODO: this should be performed in a task for better performance
+     * @param dir
+     */
+    private void importResourceContainer(File dir) {
+        try {
+            ResourceContainer container = App.getLibrary().importResourceContainer(dir);
+            new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                    .setTitle(R.string.success)
+                    .setMessage(R.string.title_import_Success)
+                    .setPositiveButton(R.string.dismiss, null)
+                    .show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(getActivity(), R.string.could_not_import, Toast.LENGTH_SHORT).show();
         }
     }
 

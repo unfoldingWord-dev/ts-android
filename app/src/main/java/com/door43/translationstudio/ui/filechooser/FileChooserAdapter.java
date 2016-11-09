@@ -1,4 +1,4 @@
-package com.door43.translationstudio.ui.filebrowser;
+package com.door43.translationstudio.ui.filechooser;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -28,10 +28,17 @@ import java.util.List;
 /**
  * Handles the rendering of the file browser activity
  */
-public class DocumentFileBrowserAdapter extends BaseAdapter {
+public class FileChooserAdapter extends BaseAdapter {
 
+    private final FileChooserActivity.SelectionMode mode;
+    private final String filters;
     private List<DocumentFileItem> mFiles = new ArrayList<>();
     private int mSelectedPosition = -1;
+
+    public FileChooserAdapter(FileChooserActivity.SelectionMode mode, String filters) {
+        this.mode = mode;
+        this.filters = filters;
+    }
 
     public void loadFiles(Context context, List<DocumentFileItem> files) {
         final Door43Client library = App.getLibrary();
@@ -135,7 +142,6 @@ public class DocumentFileBrowserAdapter extends BaseAdapter {
         private final ImageView icon;
         private final TextView title;
         private final LinearLayout archiveDetails;
-//        public ThreadableUI inspectThread;
 
         public ViewHolder(View v) {
             this.title = (TextView)v.findViewById(R.id.title);

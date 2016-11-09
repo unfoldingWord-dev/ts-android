@@ -1003,4 +1003,12 @@ public class App extends Application {
     public static boolean hasImages() {
         return false;
     }
+
+    /**
+     * Generates a unique temporary directory
+     * @return a new directory
+     */
+    public static File makeTempDirectory() {
+        return new File(context().getExternalCacheDir(), System.currentTimeMillis() + "_tmp");
+    }
 }
