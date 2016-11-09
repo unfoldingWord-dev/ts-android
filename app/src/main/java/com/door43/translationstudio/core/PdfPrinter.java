@@ -107,7 +107,7 @@ public class PdfPrinter extends PdfPageEventHelper {
     }
 
     public File print() throws Exception {
-        File tempFile = File.createTempFile(targetTranslation.getId(), "pdf");
+        File tempFile = File.createTempFile(targetTranslation.getId(), ".pdf");
 
         Document document = new Document(PageSize.LETTER, HORIZONTAL_PADDING, HORIZONTAL_PADDING, VERTICAL_PADDING, VERTICAL_PADDING);
         writer = PdfWriter.getInstance(document, new FileOutputStream(tempFile));
@@ -233,8 +233,7 @@ public class PdfPrinter extends PdfPageEventHelper {
 //        cell.addElement(chapter);
         table.addCell(cell);
 
-        // place chapter title on it's own page
-        document.newPage();
+        document.add(new Paragraph(" \n\n")); // put whitespace between chapter title and text
 //        document.add(table);
         document.add(chapter);
 
@@ -245,8 +244,6 @@ public class PdfPrinter extends PdfPageEventHelper {
         template.setTextMatrix(50 - baseFont.getWidthPoint(String.valueOf(writer.getPageNumber()), PAGE_NUMBER_FONT_SIZE), 0);
         template.showText(String.valueOf(writer.getPageNumber()));
         template.endText();
-
-        document.newPage();
     }
 
     /**
