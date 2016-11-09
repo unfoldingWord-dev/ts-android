@@ -126,6 +126,8 @@ public class PdfPrinter extends PdfPageEventHelper {
     private void addTOC(Document document) throws DocumentException {
         document.newPage();
 
+        document.resetPageCount(); // disable page numbering for this page (TOC)
+
         String toc = App.context().getResources().getString(R.string.table_of_contents);
         com.itextpdf.text.Chapter intro = new com.itextpdf.text.Chapter(new Paragraph(toc, chapterFont), 0);
         intro.setNumberDepth(0);
@@ -175,6 +177,9 @@ public class PdfPrinter extends PdfPageEventHelper {
      * @throws DocumentException
      */
     private void addTitlePage(Document document) throws DocumentException {
+
+        document.resetPageCount(); // disable page numbering for this page (title)
+
         Paragraph preface = new Paragraph();
         preface.setAlignment(Element.ALIGN_CENTER);
         addEmptyLine(preface, 1);
@@ -395,7 +400,12 @@ public class PdfPrinter extends PdfPageEventHelper {
     public void onEndPage(PdfWriter writer, Document document) {
         PdfContentByte cb = writer.getDirectContent();
         cb.saveState();
-        String text = "" + writer.getPageNumber();
+
+        String pageNumberShown = "";
+        int pageNumber = writer.getPageNumber();
+        if(pageNumber > 0) { // only add page number if above zero
+            pageNumberShown += pageNumber;
+        }
 
         // place page number just within the margin
         float textBase = document.bottom() - PAGE_NUMBER_FONT_SIZE;
@@ -403,7 +413,7 @@ public class PdfPrinter extends PdfPageEventHelper {
         cb.beginText();
         cb.setFontAndSize(baseFont, PAGE_NUMBER_FONT_SIZE);
         cb.setTextMatrix((document.right() / 2) + HORIZONTAL_PADDING / 2, textBase);
-        cb.showText(text);
+        cb.showText(pageNumberShown);
         cb.endText();
         cb.restoreState();
     }
@@ -435,6 +445,7 @@ public class PdfPrinter extends PdfPageEventHelper {
 
         // place license title on it's own page
         document.newPage();
+        document.resetPageCount(); // disable page numbering for this page (license)
         document.add(chapter);
 
         // translate simple html to paragraphs
