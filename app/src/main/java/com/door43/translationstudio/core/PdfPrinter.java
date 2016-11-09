@@ -124,6 +124,8 @@ public class PdfPrinter extends PdfPageEventHelper {
     }
 
     private void addTOC(Document document) throws DocumentException {
+        document.newPage();
+
         String toc = App.context().getResources().getString(R.string.table_of_contents);
         com.itextpdf.text.Chapter intro = new com.itextpdf.text.Chapter(new Paragraph(toc, chapterFont), 0);
         intro.setNumberDepth(0);
@@ -148,7 +150,6 @@ public class PdfPrinter extends PdfPageEventHelper {
                 }
             });
         }
-        document.newPage();
     }
 
     /**
@@ -200,7 +201,6 @@ public class PdfPrinter extends PdfPageEventHelper {
         table.addCell(cell);
 
         document.add(table);
-        document.newPage();
     }
 
     private String chapterTitle(ChapterTranslation c) {
@@ -214,6 +214,7 @@ public class PdfPrinter extends PdfPageEventHelper {
     }
 
     private void addChapterPage(Document document, ChapterTranslation c) throws DocumentException {
+
         // title
         String title = chapterTitle(c);
         Anchor anchor = new Anchor(title, chapterFont);
@@ -230,12 +231,10 @@ public class PdfPrinter extends PdfPageEventHelper {
         cell.setBorder(Rectangle.NO_BORDER);
         cell.setMinimumHeight(document.getPageSize().getHeight() - VERTICAL_PADDING * 2);
         cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-//        cell.addElement(chapter);
         table.addCell(cell);
 
-        document.add(new Paragraph(" \n\n")); // put whitespace between chapter title and text
-//        document.add(table);
         document.add(chapter);
+        document.add(new Paragraph(" ")); // put whitespace between chapter title and text
 
         // update TOC
         PdfTemplate template = tocPlaceholder.get(title);
@@ -252,11 +251,14 @@ public class PdfPrinter extends PdfPageEventHelper {
      */
     private void addContent(Document document) throws DocumentException, IOException {
         for(ChapterTranslation c:targetTranslation.getChapterTranslations()) {
-            if(includeIncomplete || c.isTitleFinished() || sourceContainer.readChunk(c.getId(), "title").isEmpty()) {
-                addChapterPage(document, c);
+            boolean chapter0 = "00".equals(c.getId());
+            if(!chapter0) {
+                if (includeIncomplete || c.isTitleFinished() || sourceContainer.readChunk(c.getId(), "title").isEmpty()) {
+                    addChapterPage(document, c);
+                }
             }
 
-            // chapter body
+            // get chapter body
             FrameTranslation[] frames = targetTranslation.getFrameTranslations(c.getId(), this.format);
             ArrayList<FrameTranslation> frameList = ExportUsfm.sortFrameTranslations(frames);
             for(FrameTranslation f: frameList) {
@@ -431,7 +433,7 @@ public class PdfPrinter extends PdfPageEventHelper {
 //        cell.addElement(chapter);
         table.addCell(cell);
 
-        // place chapter title on it's own page
+        // place license title on it's own page
         document.newPage();
         document.add(chapter);
 
@@ -448,8 +450,6 @@ public class PdfPrinter extends PdfPageEventHelper {
         parseHtml( document, license, 0);
 
         nextParagraph(document);
-
-        document.newPage();
     }
 
     /**
