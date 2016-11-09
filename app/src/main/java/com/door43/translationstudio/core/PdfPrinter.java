@@ -125,7 +125,6 @@ public class PdfPrinter extends PdfPageEventHelper {
 
     private void addTOC(Document document) throws DocumentException {
         document.newPage();
-
         document.resetPageCount(); // disable page numbering for this page (TOC)
 
         String toc = App.context().getResources().getString(R.string.table_of_contents);
@@ -177,7 +176,6 @@ public class PdfPrinter extends PdfPageEventHelper {
      * @throws DocumentException
      */
     private void addTitlePage(Document document) throws DocumentException {
-
         document.resetPageCount(); // disable page numbering for this page (title)
 
         Paragraph preface = new Paragraph();
@@ -219,7 +217,6 @@ public class PdfPrinter extends PdfPageEventHelper {
     }
 
     private void addChapterPage(Document document, ChapterTranslation c) throws DocumentException {
-
         // title
         String title = chapterTitle(c);
         Anchor anchor = new Anchor(title, chapterFont);
@@ -257,7 +254,7 @@ public class PdfPrinter extends PdfPageEventHelper {
     private void addContent(Document document) throws DocumentException, IOException {
         for(ChapterTranslation c:targetTranslation.getChapterTranslations()) {
             boolean chapter0 = "00".equals(c.getId());
-            if(!chapter0) {
+            if(!chapter0) { // if chapter 00, then skip title since that was already printed as first page.
                 if (includeIncomplete || c.isTitleFinished() || sourceContainer.readChunk(c.getId(), "title").isEmpty()) {
                     addChapterPage(document, c);
                 }
