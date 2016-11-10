@@ -1,5 +1,6 @@
 package com.door43.translationstudio.ui.dialogs;
 
+import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -15,6 +16,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.door43.translationstudio.App;
@@ -23,7 +25,9 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.tasks.DownloadImagesTask;
 import com.door43.translationstudio.tasks.PrintPDFTask;
+import com.door43.translationstudio.ui.filechooser.FileChooserActivity;
 import com.door43.util.FileUtilities;
+import com.door43.util.SdUtils;
 
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.resourcecontainer.Project;
@@ -34,8 +38,11 @@ import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.security.InvalidParameterException;
 import java.util.List;
 
@@ -45,6 +52,7 @@ import java.util.List;
 public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnFinishedListener, SimpleTaskWatcher.OnCanceledListener {
 
     public static final String TAG = "printDialog";
+    private static final int SELECT_PDF_FOLDER_REQUEST = 314;
     public static final String ARG_TARGET_TRANSLATION_ID = "arg_target_translation_id";
     public static final String STATE_INCLUDE_IMAGES = "include_images";
     public static final String STATE_INCLUDE_INCOMPLETE = "include_incomplete";
@@ -60,6 +68,10 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
     private CheckBox includeIncompleteCheckBox;
     private SimpleTaskWatcher taskWatcher;
     private File mExportFile;
+    private boolean isPdfOutputToDocumentFile;
+    private Uri mPdfOutputUri;
+    private File mPdfOutputFolder;
+
 
     @Override
     public void onDestroyView() {
@@ -143,25 +155,7 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
             public void onClick(View v) {
                 includeImages = includeImagesCheckBox.isChecked();
                 includeIncompleteFrames = includeIncompleteCheckBox.isChecked();
-                if(includeImages && !App.hasImages()) {
-                    new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
-                            .setTitle(R.string.use_internet_confirmation)
-                            .setMessage(R.string.image_large_download)
-                            .setNegativeButton(R.string.title_cancel, null)
-                            .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    DownloadImagesTask task = new DownloadImagesTask();
-                                    taskWatcher.watch(task);
-                                    TaskManager.addTask(task, DownloadImagesTask.TASK_ID);
-                                }
-                            })
-                            .show();
-                } else {
-                    PrintPDFTask task = new PrintPDFTask(mTargetTranslation.getId(), mExportFile, includeImages, includeIncompleteFrames);
-                    taskWatcher.watch(task);
-                    TaskManager.addTask(task, PrintPDFTask.TASK_ID);
-                }
+                doSelectDestinationFolder();
             }
         });
 
@@ -175,6 +169,97 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
         }
 
         return v;
+    }
+
+    /**
+     * let user select output folder
+     */
+    private void doSelectDestinationFolder() {
+        String typeStr = null;
+        Intent intent = new Intent(getActivity(), FileChooserActivity.class);
+        isPdfOutputToDocumentFile = SdUtils.isSdCardPresentLollipop();
+        if(isPdfOutputToDocumentFile) {
+            typeStr = FileChooserActivity.SD_CARD_TYPE;
+        } else {
+            typeStr = FileChooserActivity.INTERNAL_TYPE;
+        }
+
+        intent.setType(typeStr);
+        Bundle args = new Bundle();
+        args.putString(FileChooserActivity.EXTRA_MODE, FileChooserActivity.SelectionMode.DIRECTORY.name());
+        intent.putExtras(args);
+        startActivityForResult(intent, SELECT_PDF_FOLDER_REQUEST);
+    }
+
+    /**
+     * start PDF printing (prompt for internet usage if images selected)
+     */
+    private void startPdfPrinting() {
+        if(includeImages && !App.hasImages()) {
+            new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                    .setTitle(R.string.use_internet_confirmation)
+                    .setMessage(R.string.image_large_download)
+                    .setNegativeButton(R.string.title_cancel, null)
+                    .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            DownloadImagesTask task = new DownloadImagesTask();
+                            taskWatcher.watch(task);
+                            TaskManager.addTask(task, DownloadImagesTask.TASK_ID);
+                        }
+                    })
+                    .show();
+        } else {
+            PrintPDFTask task = new PrintPDFTask(mTargetTranslation.getId(), mExportFile, includeImages, includeIncompleteFrames);
+            taskWatcher.watch(task);
+            TaskManager.addTask(task, PrintPDFTask.TASK_ID);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, final Intent data) {
+        if (requestCode == SELECT_PDF_FOLDER_REQUEST) {
+            if (resultCode == Activity.RESULT_OK && data != null) {
+
+                // TODO: 11/10/16 prompt for name
+
+                LayoutInflater inflater = LayoutInflater.from(getActivity());
+                final View filenameFragment = inflater.inflate(R.layout.fragment_pdf_output_filename, null);
+                if(filenameFragment != null) {
+                    final EditText filenameText = (EditText) filenameFragment.findViewById(R.id.filename_text);
+                    if ((filenameText != null)) {
+                        filenameText.setText(mExportFile.getName());
+
+                        // pop up file name prompt
+                        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                                .setTitle(R.string.pdf_output_filename_title_prompt)
+                                .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        String filename = filenameText.getText().toString();
+
+                                        if (isPdfOutputToDocumentFile) {
+                                            Uri destinationFolder = data.getData();
+                                            mPdfOutputUri = Uri.withAppendedPath(destinationFolder, filename);
+                                        } else {
+                                            File destinationFolder = new File(data.getData().getPath());
+                                            mPdfOutputFolder = new File(destinationFolder, filename);
+                                        }
+                                        startPdfPrinting();
+                                    }
+                                })
+                                .setNegativeButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                })
+                                .setView(filenameFragment)
+                                .show();
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -245,13 +330,24 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
         } else if(task instanceof PrintPDFTask) {
             if(((PrintPDFTask)task).isSuccess()) {
 
-                // copy to downloads folder
-                File downloadsDir = App.getPublicDownloadsDirectory();
-                if(downloadsDir.exists()) {
+                if (isPdfOutputToDocumentFile) {
                     try {
-                        FileUtilities.copyFile(mExportFile, new File(downloadsDir, mExportFile.getName()));
+                        OutputStream outputStream = App.context().getContentResolver().openOutputStream(mPdfOutputUri);
+                        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);
+
+                        FileInputStream fis = new FileInputStream(mExportFile);
+                        int bytes = FileUtilities.copy(fis, bufferedOutputStream);
+                        bufferedOutputStream.close();
+                        fis.close();
+                    } catch (Exception e) {
+                        Logger.e(TAG, "Failed to copy the PDF file to: " + mPdfOutputUri, e);
+                    }
+
+                } else { // destination is regular file
+                    try {
+                        FileUtilities.copyFile(mExportFile, mPdfOutputFolder);
                     } catch (IOException e) {
-                        Logger.e(TAG, "Failed to copy the PDF file", e);
+                        Logger.e(TAG, "Failed to copy the PDF file to: " + mPdfOutputFolder, e);
                     }
                 }
 
