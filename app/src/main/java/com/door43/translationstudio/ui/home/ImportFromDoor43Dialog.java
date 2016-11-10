@@ -26,8 +26,8 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.tasks.MergeConflictsParseTask;
 import com.door43.translationstudio.ui.translate.TargetTranslationActivity;
-import com.door43.translationstudio.rendering.MergeConflictHandler;
 import com.door43.translationstudio.tasks.AdvancedGogsRepoSearchTask;
 import com.door43.translationstudio.tasks.CloneRepositoryTask;
 import com.door43.translationstudio.tasks.RegisterSSHKeysTask;
@@ -316,17 +316,11 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
      * open review mode to let user resolve conflict
      */
     private void doManualMerge() {
-        // ask parent activity to navigate to a new activity
+        // ask parent activity to navigate to target translation review mode with merge filter on
         Intent intent = new Intent(getActivity(), TargetTranslationActivity.class);
         Bundle args = new Bundle();
         args.putString(App.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
-
-        MergeConflictHandler.CardLocation location = MergeConflictHandler.findFirstMergeConflict( mTargetTranslation.getId());
-        if(location != null) {
-            args.putString(App.EXTRA_CHAPTER_ID, location.chapterID);
-            args.putString(App.EXTRA_FRAME_ID, location.frameID);
-        }
-
+        args.putBoolean(App.EXTRA_START_WITH_MERGE_FILTER, true);
         args.putInt(App.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.ordinal());
         intent.putExtras(args);
         startActivity(intent);

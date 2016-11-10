@@ -286,6 +286,12 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         if(mListener != null) mListener.onDataSetChanged(count);
     }
 
+    public void onEnableMergeConflict(boolean showConflicted, boolean active) {
+        if(mListener != null) {
+            mListener.onEnableMergeConflict(showConflicted, active);
+        }
+    }
+
     /**
      * gets item count of adapter
      * @return
@@ -339,6 +345,17 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         task.setArgs(args);
         task.addOnFinishedListener(this);
         TaskManager.addTask(task, TASK_ID_OPEN_SOURCE);
+    }
+
+    /**
+     * enable/disable merge conflict filter in adapter
+     * @param enableFilter
+     */
+    public final void setMergeConflictFilter(boolean enableFilter) {
+        if(getAdapter() != null) {
+            getAdapter().setMergeConflictFilter(enableFilter);
+            getAdapter().triggerNotifyDataSetChanged();
+        }
     }
 
     /**
@@ -665,5 +682,11 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
          * @param enable
          */
         void onSearching(boolean enable);
+
+        /**
+         * enable/disable merge conflict indicator
+         * @param showConflicted
+         */
+        void onEnableMergeConflict(boolean showConflicted, boolean active);
     }
 }
