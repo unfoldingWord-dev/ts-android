@@ -29,6 +29,7 @@ import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
+import com.door43.translationstudio.tasks.MergeConflictsParseTask;
 import com.door43.util.EventBuffer;
 import com.door43.translationstudio.ui.ProfileActivity;
 import com.door43.translationstudio.R;
@@ -42,7 +43,6 @@ import com.door43.translationstudio.ui.BaseActivity;
 import com.door43.translationstudio.ui.newtranslation.NewTargetTranslationActivity;
 import com.door43.translationstudio.ui.dialogs.FeedbackDialog;
 import com.door43.translationstudio.ui.translate.TargetTranslationActivity;
-import com.door43.translationstudio.rendering.MergeConflictHandler;
 import com.door43.translationstudio.tasks.ExamineImportsForCollisionsTask;
 import com.door43.translationstudio.tasks.ImportProjectsTask;
 import org.unfoldingword.tools.taskmanager.SimpleTaskWatcher;
@@ -427,13 +427,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         Intent intent = new Intent(this, TargetTranslationActivity.class);
         Bundle args = new Bundle();
         args.putString(App.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslationID);
-
-        MergeConflictHandler.CardLocation location = MergeConflictHandler.findFirstMergeConflict( mTargetTranslationID );
-        if(location != null) {
-            args.putString(App.EXTRA_CHAPTER_ID, location.chapterID);
-            args.putString(App.EXTRA_FRAME_ID, location.frameID);
-        }
-
+        args.putBoolean(App.EXTRA_START_WITH_MERGE_FILTER, true);
         args.putInt(App.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.ordinal());
         intent.putExtras(args);
         startActivity(intent);

@@ -122,6 +122,14 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
     }
 
     /**
+     * enable/disable merge conflict filter in adapter
+     * @param enableFilter
+     */
+    public void setMergeConflictFilter(boolean enableFilter) {
+        // Override this in your adapter to enable merge conflict filtering
+    }
+
+    /**
      * Checks if filtering is enabled for this adapter.
      * Override this to customize filtering.
      * @return
@@ -172,5 +180,6 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
         void restartAutoCommitTimer();
         void onSearching(boolean enable);
         void onDataSetChanged(int count);
+        void onEnableMergeConflict(boolean showConflicted, boolean active);
     }
 }

@@ -42,6 +42,17 @@
             android:src="@drawable/icon_check_inactive"
             android:background="?attr/selectableItemBackground"
             android:layout_gravity="center" />
+
+        <ImageButton
+            android:id="@+id/warn_merge_conflict"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:padding="16dp"
+            android:src="@drawable/ic_assignment_late_white_24dp"
+            android:background="?attr/selectableItemBackground"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+
     </LinearLayout>
 
     <!-- middle -->
