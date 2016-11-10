@@ -202,7 +202,7 @@ public class TargetTranslationMigrator {
         File[] chapters = path.listFiles(new FileFilter() {
             @Override
             public boolean accept(File file) {
-                return file.isDirectory() && !file.getName().equals(".git");
+                return file.isDirectory() && !file.getName().equals(".git") && !file.getName().equals("cache");
             }
         });
         // migrate 00 chunk
@@ -213,22 +213,10 @@ public class TargetTranslationMigrator {
             for (File dir : chapters) {
                 File chunk00 = new File(dir, "00.txt");
                 if (chunk00.exists()) {
-                    String chunkId = "";
 
                     // find verse in source text
                     String[] chunkIds = container.chunks(dir.getName());
-                    String lastChunk = largestIntVal(chunkIds);
-                    String text = container.readChunk(dir.getName(), lastChunk);
-                    Pattern pattern = Pattern.compile("\\\\v\\s(\\d+(-\\d+)?)\\s?");
-                    Matcher matcher = pattern.matcher(text);
-                    if(matcher.find()) {
-                        String verse = matcher.group(1);
-                        String[] verses = verse.split("-");
-                        chunkId = verses[0];
-                    } else {
-                        // we can't find a matching verse so skip
-                        continue;
-                    }
+                    String chunkId = largestIntVal(chunkIds);
 
                     // move the chunk
                     File chunk = new File(dir, chunkId + ".txt");
