@@ -63,7 +63,7 @@ deploy:
     secure: DQPVq3oXh0odcvgcUPPgrGQYAP9Ke+9x3vhSxGwSglLV6MWJ7PBT49iNlqglJqBj6YguMtydbHKm77y0G3ZJgQ08olkNza3Uq/iOOZjmlirNjXRlOiIxS9DSpc1dqCF+djbmEb6SB41P2WQnTHpLB5q4q6pw5Bw3egDWdu/QxQA=
 # develop branch
 - provider: surge
-  project: "app/build/outputs/apk/release.apk"
+  project: "app/build/outputs/apk/"
   domain: develop.ts-android.surge.sh
   skip_cleanup: true
   on:
@@ -71,7 +71,7 @@ deploy:
     condition: "-f app/build/outputs/apk/release.apk"
 # catch-all brach
 - provider: surge
-  project: "app/build/outputs/apk/release.apk"
+  project: "app/build/outputs/apk/"
   domain: sandbox.ts-android.surge.sh
   skip_cleanup: true
   on:
@@ -80,7 +80,7 @@ deploy:
     condition: "-f app/build/outputs/apk/release.apk && $TRAVIS_BRANCH != develop && ! ($TRAVIS_BRANCH =~ ^release-.*$) && $TRAVIS_BRANCH != master"
 # release branch
 - provider: surge
-  project: "app/build/outputs/apk/release.apk"
+  project: "app/build/outputs/apk/"
   domain: release.ts-android.surge.sh
   skip_cleanup: true
   on:
