@@ -63,8 +63,10 @@ task generateReleaseHtml << {
 //    if(System.env.TRAVIS == 'true') {
     println('Preparing release docs');
     def index = new File('app/release/index.html');
-    def html  = '<link rel="stylesheet" href="style.css">';
-    html += '<h1>tS Desktop build #<span id="build-num">' + android.defaultConfig.versionCode + '</span></h1><ul>';
+    def html  = '<head><link rel="stylesheet" href="style.css">' +
+            '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+            '</head>';
+    html += '<h1>tS Android build #<span id="build-num">' + android.defaultConfig.versionCode + '</span></h1><ul>';
     if(System.env.TRAVIS_COMMIT) {
         def branch = System.env.TRAVIS_BRANCH;
         def commit = System.env.TRAVIS_COMMIT;
