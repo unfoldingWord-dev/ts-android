@@ -71,7 +71,7 @@ task generateReleaseHtml << {
         def buildNumber = System.env.TRAVIS_BUILD_NUMBER;
         def buildId = System.env.TRAVIS_BUILD_ID;
         def repoSlug = System.env.TRAVIS_REPO_SLUG;
-        html += '<h2><a href="https://github.com/' + repoSlug + '/commit/' + commit + '" target="_blank">Commit ${commit.substring(0, 7)} on ' + branch + '</a></h2>';
+        html += '<h2><a href="https://github.com/' + repoSlug + '/commit/' + commit + '" target="_blank">Commit ' + commit.substring(0, 7) + ' on ' + branch + '</a></h2>';
         html += '<h2><a href="https://travis-ci.org/' + repoSlug + '/builds/' + buildId + '" target="_blank">Travis build #' + buildNumber + '</a></h2>';
     } else {
         println('Run on travis for complete output.');
