@@ -9,9 +9,15 @@ cache:
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
 sudo: false
+branches:
+  except:
+    - master
 env:
   global:
   - GRADLE_OPTS="-Xms128m"
+  - secure: R61XmjAE1j2w1ynoBud6mliJX5Y73u9ncyVaSM9LajclYAEWRWD7n/bvAf8rfI/Al1FeLIedscMsfgdpBc4Lu+USO4NnH2cpjrWXQmU5xTF3sHSKK9a+jzHxa7kZQf+e2uePO39Ty7FypxBJ01Zsuiv6/Hv3PVpufZU60sywg/E=
+  - secure: hiF+Sfpzc4C2Kxg+VgOHQ6ITPJRRwQJ802b6wnZy7Z1Ta9Gl01AgOFGWkf2raq4cQMlWw82UfiL7dEJ/bHwsEo3PoBMVhRG1AjiTY3dpoiKUjlX3MAl4SCZtBjmBN+4QT8HGOruhlKBG3xLNryg1UhjSbThPnw1rI//Be3IWH+o=
+  - secure: TVM/SM0AXEVRKDFoLWhJy3zaCnlcOTxasWuufnnWPS1yyROPMUzel40OlByc4RJs0s7L7EPyFloBjF0hAwFB+KnPFsyrnLqvLto3egWEcfnA1rIjN98bM4y2qIF1TIuV7/DFIk5YJFhlDC8amc6l82yKtkdDb2LD4k0TKx3fySc=
   matrix:
   - ANDROID_TARGET=android-21  ANDROID_ABI=armeabi-v7a
 android:
@@ -26,6 +32,10 @@ android:
   - extra-android-support
   - addon-google_apis-google-19
   - sys-img-armeabi-v7a-android-19
+before_install:
+- if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then openssl aes-256-cbc -K $encrypted_f97207d0a082_key
+  -iv $encrypted_f97207d0a082_iv -in translationstudio.keystore.enc -out translationstudio.keystore
+  -d; fi
 before_script:
 - chmod +x gradlew
 - echo no | android create avd --force -n test -t $ANDROID_TARGET --abi $ANDROID_ABI
@@ -35,12 +45,15 @@ before_script:
 - adb shell input keyevent 82 &
 script:
 - travis_wait ./gradlew connectedAndroidTest -Pandroid.testInstrumentationRunnerArguments.size=medium --continue --stacktrace
+after_success:
+- test $TRAVIS_TEST_RESULT == 0 && $TRAVIS_PULL_REQUEST == "false"
 - ./gradlew assembleRelease
 deploy:
+# test fairy
+- provider: testfairy
   on:
     all_branches: true
   skip_cleanup: true
-  provider: testfairy
   api-key:
     secure: Ly2BzebfVJmzCQa954vjiSlobVRWrk4A3q/99GzkjnfxdyCW8NecPzd7UHV+JpbRpD8Fs5P1WJ7CMKjEEGNX5Y/lQYdHhVCqkkPz1zy3FOHWgKH3DNB6JppQRHaYW0v+U0smr+Tzs/ht1uOuZ6OauJs5GohR3q/FjMPygK0wMfQ=
   app-file: app/build/outputs/apk/release.apk
@@ -50,7 +63,42 @@ deploy:
     secure: DQPVq3oXh0odcvgcUPPgrGQYAP9Ke+9x3vhSxGwSglLV6MWJ7PBT49iNlqglJqBj6YguMtydbHKm77y0G3ZJgQ08olkNza3Uq/iOOZjmlirNjXRlOiIxS9DSpc1dqCF+djbmEb6SB41P2WQnTHpLB5q4q6pw5Bw3egDWdu/QxQA=
   aliaspass:
     secure: DQPVq3oXh0odcvgcUPPgrGQYAP9Ke+9x3vhSxGwSglLV6MWJ7PBT49iNlqglJqBj6YguMtydbHKm77y0G3ZJgQ08olkNza3Uq/iOOZjmlirNjXRlOiIxS9DSpc1dqCF+djbmEb6SB41P2WQnTHpLB5q4q6pw5Bw3egDWdu/QxQA=
-before_install:
-- if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then openssl aes-256-cbc -K $encrypted_f97207d0a082_key
-  -iv $encrypted_f97207d0a082_iv -in translationstudio.keystore.enc -out translationstudio.keystore
-  -d; fi
+# develop branch
+- provider: surge
+  project: "app/build/outputs/apk/release.apk"
+  domain: develop.ts-android.surge.sh
+  skip_cleanup: true
+  on:
+    branch: develop
+    condition: "-f app/build/outputs/apk/release.apk"
+# catch-all brach
+- provider: surge
+  project: "app/build/outputs/apk/release.apk"
+  domain: sandbox.ts-android.surge.sh
+  skip_cleanup: true
+  on:
+    all_branches: true
+    tags: false
+    condition: "-f app/build/outputs/apk/release.apk && $TRAVIS_BRANCH != develop && ! ($TRAVIS_BRANCH =~ ^release-.*$) && $TRAVIS_BRANCH != master"
+# release branch
+- provider: surge
+  project: "app/build/outputs/apk/release.apk"
+  domain: release.ts-android.surge.sh
+  skip_cleanup: true
+  on:
+    all_branches: true
+    tags: false
+    condition: "-f app/build/outputs/apk/release.apk && $TRAVIS_BRANCH =~ ^release-.*$"
+# tagged releases
+- provider: releases
+  api_key:
+    secure: brjmL3cyCTr6swNCqka2fkc41j+PO2tqXZhE9QyNoDEXcxR1FOwPoPut/8h4N/pISfkf2FibtsWqThhW1Xz1pVNNMBlHRblJsSecfvXOtn7kneCsAV+QBngbPuA8OKzfhXTUeIQNlIpfG+rwlDg28wOthDI/7ADBOYgGQWeOd7o=
+  file:
+    - app/build/outputs/apk/release.apk
+  file_glob: true
+  skip_cleanup: true
+  overwrite: true
+  on:
+    tags: true
+    repo: unfoldingWord-dev/ts-android
+    condition: "-f app/build/outputs/apk/release.apk"
