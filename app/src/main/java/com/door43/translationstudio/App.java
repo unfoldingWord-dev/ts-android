@@ -97,6 +97,13 @@ public class App extends Application {
         configureLogger(minLogLevel);
 
         File dir = new File(publicDir(), "crashes");
+        if(!dir.exists()) {
+            try {
+                FileUtilities.forceMkdir(dir);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         Logger.registerGlobalExceptionHandler(dir);
 
         // initialize default settings
