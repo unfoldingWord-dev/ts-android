@@ -68,7 +68,6 @@ deploy:
   skip_cleanup: true
   on:
     branch: develop
-    condition: "-f app/build/outputs/apk/release.apk"
 # catch-all brach
 - provider: surge
   project: "app/build/outputs/apk/"
@@ -77,7 +76,7 @@ deploy:
   on:
     all_branches: true
     tags: false
-    condition: "-f app/build/outputs/apk/release.apk && $TRAVIS_BRANCH != develop && ! ($TRAVIS_BRANCH =~ ^release-.*$) && $TRAVIS_BRANCH != master"
+    condition: "$TRAVIS_BRANCH != develop && ! ($TRAVIS_BRANCH =~ ^release-.*$) && $TRAVIS_BRANCH != master"
 # release branch
 - provider: surge
   project: "app/build/outputs/apk/"
@@ -86,17 +85,16 @@ deploy:
   on:
     all_branches: true
     tags: false
-    condition: "-f app/build/outputs/apk/release.apk && $TRAVIS_BRANCH =~ ^release-.*$"
+    condition: "$TRAVIS_BRANCH =~ ^release-.*$"
 # tagged releases
 - provider: releases
   api_key:
     secure: brjmL3cyCTr6swNCqka2fkc41j+PO2tqXZhE9QyNoDEXcxR1FOwPoPut/8h4N/pISfkf2FibtsWqThhW1Xz1pVNNMBlHRblJsSecfvXOtn7kneCsAV+QBngbPuA8OKzfhXTUeIQNlIpfG+rwlDg28wOthDI/7ADBOYgGQWeOd7o=
   file:
-    - app/build/outputs/apk/release.apk
+    - app/build/outputs/apk/*.apk
   file_glob: true
   skip_cleanup: true
   overwrite: true
   on:
     tags: true
     repo: unfoldingWord-dev/ts-android
-    condition: "-f app/build/outputs/apk/release.apk"

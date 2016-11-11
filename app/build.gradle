@@ -39,9 +39,9 @@ android {
         applicationVariants.all { variant ->
             variant.outputs.each { output ->
                 def apk = output.outputFile;
-                //def newName = "tS_" + defaultConfig.versionName + "_build" + defaultConfig.versionCode + ".apk";
-                def newName = "release.apk";
-                output.outputFile = new File(apk.parentFile, newName);
+                def newName = "tS_" + defaultConfig.versionName + "_build" + defaultConfig.versionCode + ".apk";
+//                def newName = "release.apk";
+                output.outputFile = new File(new File(apk.parentFile, 'release'), newName);
             }
         }
     }
@@ -49,6 +49,10 @@ android {
         disable 'MissingTranslation'
         disable 'ExtraTranslation'
     }
+    task finalize {
+        println('do some extra stuff here!');
+    }
+    build.finalizedBy(finalize);
 }
 
 if (System.env.TRAVIS == 'true') {
