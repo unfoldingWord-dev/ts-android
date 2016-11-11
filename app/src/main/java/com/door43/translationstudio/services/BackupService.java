@@ -103,6 +103,12 @@ public class BackupService extends Service {
             String[] targetTranslations = translator.getTargetTranslationFileNames();
             for (String filename : targetTranslations) {
 
+                try {
+                    Thread.sleep(300); // add delay to ease background processing and also ease the memory footprint
+                } catch (Exception e) {
+                    Logger.e(TAG, "sleep problem");
+                }
+
                 TargetTranslation t = translator.getTargetTranslation(filename);
                 if(t == null) { // skip if not valid
                     Logger.i(TAG, "runBackup: skipping invalid translation: " + filename);
