@@ -104,35 +104,14 @@
 
                 </FrameLayout>
 
-                <TextView
+                <LinearLayout
+                    android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Name"
-                    android:ems="10"
-                    android:id="@+id/merge_head"
-                    android:layout_weight="1"
-                    android:layout_marginTop="@dimen/dialog_controls_margin"
-                    android:background="@color/head_background"
-                    android:padding="@dimen/dialog_controls_margin"
-                    android:textIsSelectable="false"
-                    android:clickable="false"
-                    android:layout_marginLeft="@dimen/dialog_controls_margin"
-                    android:layout_marginRight="@dimen/dialog_controls_margin" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Name"
-                    android:ems="10"
-                    android:id="@+id/merge_tail"
-                    android:layout_weight="1"
-                    android:background="@color/tail_background"
-                    android:padding="@dimen/dialog_controls_margin"
-                    android:textIsSelectable="false"
-                    android:clickable="false"
-                    android:layout_marginLeft="@dimen/dialog_controls_margin"
-                    android:layout_marginRight="@dimen/dialog_controls_margin"
-                    android:layout_marginTop="@dimen/dialog_controls_margin" />
+                    android:id="@+id/merge_cards"
+                    android:visibility="visible"
+                    android:weightSum="1">
+                </LinearLayout>
 
                 <LinearLayout
                     android:visibility="gone"

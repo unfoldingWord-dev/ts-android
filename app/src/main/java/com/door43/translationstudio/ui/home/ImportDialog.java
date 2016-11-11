@@ -24,6 +24,7 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.ui.filechooser.FileChooserActivity;
+import com.door43.translationstudio.tasks.MergeConflictsParseTask;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
@@ -32,7 +33,6 @@ import com.door43.translationstudio.ui.ImportUsfmActivity;
 import com.door43.translationstudio.ui.dialogs.Door43LoginDialog;
 import com.door43.translationstudio.ui.dialogs.ShareWithPeerDialog;
 import com.door43.translationstudio.ui.translate.TargetTranslationActivity;
-import com.door43.translationstudio.rendering.MergeConflictHandler;
 import com.door43.util.SdUtils;
 import com.door43.util.FileUtilities;
 import com.door43.widget.ViewUtil;
@@ -408,17 +408,11 @@ public class ImportDialog extends DialogFragment {
      * open review mode to let user resolve conflict
      */
     private void doManualMerge() {
-        // ask parent activity to navigate to a new activity
+        // ask parent activity to navigate to target translation review mode with merge filter on
         Intent intent = new Intent(getActivity(), TargetTranslationActivity.class);
         Bundle args = new Bundle();
         args.putString(App.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslationID);
-
-        MergeConflictHandler.CardLocation location = MergeConflictHandler.findFirstMergeConflict( mTargetTranslationID );
-        if(location != null) {
-            args.putString(App.EXTRA_CHAPTER_ID, location.chapterID);
-            args.putString(App.EXTRA_FRAME_ID, location.frameID);
-        }
-
+        args.putBoolean(App.EXTRA_START_WITH_MERGE_FILTER, true);
         args.putInt(App.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.ordinal());
         intent.putExtras(args);
         startActivity(intent);

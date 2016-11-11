@@ -61,6 +61,7 @@ public class App extends Application {
     public static final String PREFERENCES_TAG = "com.door43.translationstudio";
     public static final String EXTRA_SOURCE_DRAFT_TRANSLATION_ID = "extra_source_translation_id";
     public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
+    public static final String EXTRA_START_WITH_MERGE_FILTER = "start_with_merge_filter";
     public static final String EXTRA_CHAPTER_ID = "extra_chapter_id";
     public static final String EXTRA_FRAME_ID = "extra_frame_id";
     public static final String EXTRA_VIEW_MODE = "extra_view_mode_id";
