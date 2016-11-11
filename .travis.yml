@@ -50,14 +50,14 @@ after_success:
 deploy:
 # develop branch
 - provider: surge
-  project: "app/build/outputs/apk/"
+  project: "./app/release/"
   domain: develop.ts-android.surge.sh
   skip_cleanup: true
   on:
     branch: develop
 # catch-all brach
 - provider: surge
-  project: "app/build/outputs/apk/"
+  project: "./app/release/"
   domain: sandbox.ts-android.surge.sh
   skip_cleanup: true
   on:
@@ -66,7 +66,7 @@ deploy:
     condition: "$TRAVIS_BRANCH != develop && ! ($TRAVIS_BRANCH =~ ^release-.*$) && $TRAVIS_BRANCH != master"
 # release branch
 - provider: surge
-  project: "app/build/outputs/apk/"
+  project: "./app/release/"
   domain: release.ts-android.surge.sh
   skip_cleanup: true
   on:
@@ -78,7 +78,7 @@ deploy:
   api_key:
     secure: brjmL3cyCTr6swNCqka2fkc41j+PO2tqXZhE9QyNoDEXcxR1FOwPoPut/8h4N/pISfkf2FibtsWqThhW1Xz1pVNNMBlHRblJsSecfvXOtn7kneCsAV+QBngbPuA8OKzfhXTUeIQNlIpfG+rwlDg28wOthDI/7ADBOYgGQWeOd7o=
   file:
-    - app/build/outputs/apk/*.apk
+    - ./app/release/*.apk
   file_glob: true
   skip_cleanup: true
   overwrite: true
@@ -92,7 +92,7 @@ deploy:
   skip_cleanup: true
   api-key:
     secure: Ly2BzebfVJmzCQa954vjiSlobVRWrk4A3q/99GzkjnfxdyCW8NecPzd7UHV+JpbRpD8Fs5P1WJ7CMKjEEGNX5Y/lQYdHhVCqkkPz1zy3FOHWgKH3DNB6JppQRHaYW0v+U0smr+Tzs/ht1uOuZ6OauJs5GohR3q/FjMPygK0wMfQ=
-  app-file: app/build/outputs/apk/*.apk
+  app-file: ./app/release/*.apk
   file_glob: true
   keystore-file: translationstudio.keystore
   alias: translationstudio
