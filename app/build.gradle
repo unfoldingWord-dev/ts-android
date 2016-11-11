@@ -41,7 +41,7 @@ android {
                 def apk = output.outputFile;
                 def newName = "tS_" + defaultConfig.versionName + "_build" + defaultConfig.versionCode + ".apk";
 //                def newName = "release.apk";
-                output.outputFile = new File(new File(apk.parentFile, 'release'), newName);
+                output.outputFile = new File('app/release/' + newName);
             }
         }
     }
@@ -49,10 +49,27 @@ android {
         disable 'MissingTranslation'
         disable 'ExtraTranslation'
     }
-    task finalize {
-        println('do some extra stuff here!');
+}
+
+task generateReleaseHtml << {
+//    if(System.env.TRAVIS == 'true') {
+    println('Preparing release docs');
+    def index = new File('app/release/index.html');
+    def html  = '<link rel="stylesheet" href="style.css">';
+    html += '<h1>tS Desktop build #<span id="build-num">' + android.defaultConfig.versionCode + '</span></h1><ul>';
+    if(System.env.TRAVIS_COMMIT) {
+        def branch = System.env.TRAVIS_BRANCH;
+        def commit = System.env.TRAVIS_COMMIT;
+        def buildNumber = System.env.TRAVIS_BUILD_NUMBER;
+        def buildId = System.env.TRAVIS_BUILD_ID;
+        def repoSlug = System.env.TRAVIS_REPO_SLUG;
+        html += '<h2><a href="https://github.com/' + repoSlug + '/commit/' + commit + '" target="_blank">Commit ${commit.substring(0, 7)} on ' + branch + '</a></h2>';
+        html += '<h2><a href="https://travis-ci.org/' + repoSlug + '/builds/' + buildId + '" target="_blank">Travis build #' + buildNumber + '</a></h2>';
+    } else {
+        println('Run on travis for complete output.');
     }
-    build.finalizedBy(finalize);
+    html += '<li class="ok">Android <span class="status">success</span> <a href="tS_' + android.defaultConfig.versionName + '_build' + android.defaultConfig.versionCode + '.apk" class="build-link" data-os="android">Download</a></li>';
+    index.text = html;
 }
 
 if (System.env.TRAVIS == 'true') {

@@ -46,6 +46,7 @@ script:
 after_success:
 - test $TRAVIS_TEST_RESULT == 0 && $TRAVIS_PULL_REQUEST == "false"
 - ./gradlew assembleRelease
+- ./gradlew -q generateReleaseHtml
 deploy:
 # test fairy
 - provider: testfairy
