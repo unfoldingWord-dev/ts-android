@@ -160,6 +160,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        // TODO: 11/1/16 the activity should return the language and let the calling activity perform the merge
                         mDialogShown = DialogShown.NONE;
                         MergeTargetTranslationTask mergeTask = new MergeTargetTranslationTask(existingTranslation, sourceTargetTranslation, true);
                         taskWatcher.watch(mergeTask);
