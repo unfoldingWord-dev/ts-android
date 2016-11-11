@@ -6,11 +6,13 @@ import com.door43.translationstudio.App;
 import com.door43.translationstudio.rendering.USXtoUSFMConverter;
 import com.door43.util.FileUtilities;
 import com.door43.util.Manifest;
+import com.door43.util.StringUtilities;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.Resource;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
@@ -21,6 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.unfoldingword.door43client.models.TargetLanguage;
 
@@ -92,6 +96,9 @@ public class TargetTranslationMigrator {
                 case 6:
                     migratedDir = v6(migratedDir);
                     if (migratedDir == null) break;
+                case 7:
+                    migratedDir = v7(migratedDir);
+                    if (migratedDir == null) break;
                 default:
                     if (migratedDir != null && !validateTranslationType(migratedDir)) {
                         migratedDir = null;
@@ -102,12 +109,12 @@ public class TargetTranslationMigrator {
             migratedDir = null;
         }
         if(migratedDir != null) {
-            // import new langauge requests
+            // import new language requests
             TargetTranslation tt = TargetTranslation.open(targetTranslationDir);
             if(tt != null) {
                 NewLanguageRequest newRequest = tt.getNewLanguageRequest();
                 if(newRequest != null) {
-                    TargetLanguage approvedTargetLanguage = App.getLibrary().index().getApprovedTargetLanguage(newRequest.tempLanguageCode);
+                    TargetLanguage approvedTargetLanguage = App.getLibrary().index.getApprovedTargetLanguage(newRequest.tempLanguageCode);
                     if(approvedTargetLanguage != null) {
                         // this language request has already been approved so let's migrate it
                         try {
@@ -150,17 +157,17 @@ public class TargetTranslationMigrator {
                     }
                 } else {
                     // make missing language codes usable even if we can't find the new language request
-                    TargetLanguage tl = App.getLibrary().index().getTargetLanguage(tt.getTargetLanguageId());
+                    TargetLanguage tl = App.getLibrary().index.getTargetLanguage(tt.getTargetLanguageId());
                     if(tl == null) {
                         Logger.i(TAG, "Importing missing language code " + tt.getTargetLanguageId() + " from " + tt.getId());
                         TargetLanguage tempLanguage = new TargetLanguage(tt.getTargetLanguageId(),
                                 tt.getTargetLanguageName(),
                                 "",
-                                tt.getTargetLanguageDirection().toString(),
+                                tt.getTargetLanguageDirection(),
                                 tt.getTargetLanguageRegion(),
                                 false);
                         try {
-                            App.getLibrary().index().addTempTargetLanguage(tempLanguage);
+                            App.getLibrary().index.addTempTargetLanguage(tempLanguage);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -173,12 +180,96 @@ public class TargetTranslationMigrator {
 
     /**
      * current version
+     * @param path the path to the translation directory
+     * @return the path to the translation directory
+     * @throws Exception
+     */
+    private static File v7(File path) throws Exception {
+        return path;
+    }
+
+    /**
+     * Fixes the chunk 00.txt bug and moves front matter out of the 00 directory and into the
+     * front directory.
      * @param path
      * @return
      * @throws Exception
      */
     private static File v6(File path) throws Exception {
+        File manifestFile = new File(path, MANIFEST_FILE);
+        JSONObject manifest = new JSONObject(FileUtilities.readFileToString(manifestFile));
+        String projectSlug = manifest.getJSONObject("project").getString("id");
+        File[] chapters = path.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File file) {
+                return file.isDirectory() && !file.getName().equals(".git") && !file.getName().equals("cache");
+            }
+        });
+        // migrate 00 chunk
+        // TRICKY: ts android only supports book translations right now
+        List<Translation> translations = App.getLibrary().index.findTranslations(null, projectSlug, null, "book", null, 3, -1);
+        if(translations.size() > 0) {
+            ResourceContainer container = App.getLibrary().open(translations.get(0).resourceContainerSlug);
+            for (File dir : chapters) {
+                File chunk00 = new File(dir, "00.txt");
+                if (chunk00.exists()) {
+
+                    // find verse in source text
+                    String[] chunkIds = container.chunks(dir.getName());
+                    String chunkId = largestIntVal(chunkIds);
+
+                    // move the chunk
+                    File chunk = new File(dir, chunkId + ".txt");
+                    if (FileUtilities.moveOrCopyQuietly(chunk00, chunk)) {
+                        FileUtilities.deleteQuietly(chunk00);
+
+                        // migrate finished chunks
+                        if (manifest.has("finished_chunks")) {
+                            JSONArray finished = manifest.getJSONArray("finished_chunks");
+                            String finished_chunk00 = dir.getName() + "-00";
+                            JSONArray newFinished = new JSONArray();
+                            for (int i = 0; i < finished.length(); i++) {
+                                if (finished.getString(i).equals(finished_chunk00)) {
+                                    newFinished.put(dir.getName() + "-" + chunkId);
+                                } else {
+                                    newFinished.put(finished.get(i));
+                                }
+                            }
+                            manifest.put("finished_chunks", newFinished);
+                        }
+                    }
+                }
+            }
+        }
+
+        // migrate 00 chapter
+        File chapter00 = new File(path, "00");
+        if(chapter00.exists() && chapter00.isDirectory()) {
+            if(FileUtilities.moveOrCopyQuietly(chapter00, new File(path, "front"))) {
+                FileUtilities.deleteQuietly(chapter00);
+            }
+        }
+
+        manifest.put("package_version", 7);
+        FileUtilities.writeStringToFile(manifestFile, manifest.toString(2));
         return path;
+    }
+
+    /**
+     * Returns the largest numeric value in the list
+     * @param list a list of strings to compare
+     * @return the largest numeric string
+     */
+    private static String largestIntVal(String[] list) {
+        String largest = null;
+        for(String item:list) {
+            try {
+                if (largest == null || Integer.parseInt(item) > Integer.parseInt(largest)) {
+                    largest = item;
+                }
+            } catch (NumberFormatException e) {}
+        }
+        return largest;
     }
 
     /**

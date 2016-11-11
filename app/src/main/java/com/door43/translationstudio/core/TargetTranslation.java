@@ -54,7 +54,7 @@ import java.util.TimeZone;
  */
 public class TargetTranslation {
     public static final String TAG = TargetTranslation.class.getSimpleName();
-    public static final int PACKAGE_VERSION = 6; // the version of the target translation implementation
+    public static final int PACKAGE_VERSION = 7; // the version of the target translation implementation
     public static final String LICENSE_FILE = "LICENSE.md";
     public static final String OBS_LICENSE_FILE = "OBS_LICENSE.md";
 

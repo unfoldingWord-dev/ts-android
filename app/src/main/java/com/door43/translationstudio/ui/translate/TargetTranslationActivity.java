@@ -64,9 +64,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private static final String TAG = "TranslationActivity";
 
     private static final long COMMIT_INTERVAL = 2 * 60 * 1000; // commit changes every 2 minutes
-    public static final String STATE_SEARCH_ENABLED = "state_search_enabled";
     public static final int SEARCH_START_DELAY = 1000;
+    public static final String STATE_SEARCH_ENABLED = "state_search_enabled";
     public static final String STATE_SEARCH_TEXT = "state_search_text";
+    public static final String STATE_HAVE_MERGE_CONFLICT = "state_have_merge_conflict";
+    public static final String STATE_MERGE_CONFLICT_FILTER_ENABLED = "state_merge_conflict_filter_enabled";
     private Fragment mFragment;
     private SeekBar mSeekBar;
     private ViewGroup mGraduations;
@@ -87,7 +89,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private boolean mEnableGrids = false;
     private int mSeekbarMultiplier = 1; // allows for more granularity in setting position if cards are few
     private int mOldItemCount = 1; // so we can update the seekbar maximum when item count has changed
-
+    private ImageButton mMergeConflict;
+    private boolean mHaveMergeConflict = false;
+    private boolean mMergeConflictFilterEnabled = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,6 +103,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         // validate parameters
         Bundle args = getIntent().getExtras();
         final String targetTranslationId = args.getString(App.EXTRA_TARGET_TRANSLATION_ID, null);
+        mMergeConflictFilterEnabled = args.getBoolean(App.EXTRA_START_WITH_MERGE_FILTER, false);
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         if (mTargetTranslation == null) {
             Logger.e(TAG ,"A valid target translation id is required. Received '" + targetTranslationId + "' but the translation could not be found");
@@ -142,6 +147,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mReadButton = (ImageButton) findViewById(R.id.action_read);
         mChunkButton = (ImageButton) findViewById(R.id.action_chunk);
         mReviewButton = (ImageButton) findViewById(R.id.action_review);
+        mMergeConflict = (ImageButton) findViewById(R.id.warn_merge_conflict);
 
         setupSidebarModeIcons();
 
@@ -174,6 +180,13 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         // set up menu items
         mMoreButton = (ImageButton) findViewById(R.id.action_more);
         buildMenu();
+
+        mMergeConflict.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setMergeConflictFilter(!mMergeConflictFilterEnabled); //toggle state
+            }
+        });
 
         mReadButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -208,11 +221,47 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         if(savedInstanceState != null) {
             mSearchEnabled = savedInstanceState.getBoolean(STATE_SEARCH_ENABLED, false);
             mSearchString = savedInstanceState.getString(STATE_SEARCH_TEXT, null);
+            mHaveMergeConflict = savedInstanceState.getBoolean(STATE_HAVE_MERGE_CONFLICT, false);
+            mMergeConflictFilterEnabled = savedInstanceState.getBoolean(STATE_MERGE_CONFLICT_FILTER_ENABLED, false);
         }
 
         setSearchBarVisibility(mSearchEnabled);
-
         restartAutoCommitTimer();
+    }
+
+    /**
+     * enable/disable merge conflict filter in adapter
+     * @param enableFilter
+     */
+    private void setMergeConflictFilter(final boolean enableFilter) {
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                mMergeConflictFilterEnabled = enableFilter;
+                if(mFragment instanceof ViewModeFragment) {
+                    ((ViewModeFragment) mFragment).setMergeConflictFilter(enableFilter);
+                }
+                onEnableMergeConflict(mHaveMergeConflict, mMergeConflictFilterEnabled);
+            }
+        });
+    }
+
+    @Override
+    /**
+     * called by adapter to set state for merge conflict icon
+     */
+    public void onEnableMergeConflict(boolean showConflicted, boolean active) {
+        mHaveMergeConflict = showConflicted;
+        mMergeConflictFilterEnabled = active;
+        if(mMergeConflict != null) {
+            mMergeConflict.setVisibility(showConflicted ? View.VISIBLE : View.GONE);
+            if(active) {
+                mMergeConflict.setImageResource(R.drawable.ic_assignment_late_white_24dp);
+            } else {
+                mMergeConflict.setImageResource(R.drawable.ic_assignment_late_white_inactive_24dp);
+            }
+        }
     }
 
     private void setUpSeekBar() {
@@ -320,7 +369,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         if( mSearchEnabled ) {
             out.putString(STATE_SEARCH_TEXT, searchText);
         }
-
+        out.putBoolean(STATE_HAVE_MERGE_CONFLICT, mHaveMergeConflict);
+        out.putBoolean(STATE_MERGE_CONFLICT_FILTER_ENABLED, mMergeConflictFilterEnabled);
         super.onSaveInstanceState(out);
     }
 
@@ -673,6 +723,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         super.onResume();
         notifyDatasetChanged();
         buildMenu();
+        setMergeConflictFilter(mMergeConflictFilterEnabled); // restore last state
     }
 
     public void closeKeyboard() {
