@@ -65,6 +65,7 @@ public class Translator {
             @Override
             public boolean accept(File dir, String filename) {
                 if(!filename.equalsIgnoreCase("cache") && new File(dir, filename).isDirectory()) {
+                    Logger.i(Translator.class.getSimpleName(), "Reading " + translations.size() + " :" + filename);
                     TargetTranslation translation = getTargetTranslation(filename);
                     if (translation != null) {
                         translations.add(translation);
