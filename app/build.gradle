@@ -38,6 +38,9 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             testProguardFile('proguard-rules.pro')
+            if (System.getenv("TRAVIS")) {
+                signingConfig signingConfigs.release
+            }
         }
         debug {
             minifyEnabled true
@@ -60,7 +63,6 @@ android {
 }
 
 task generateReleaseHtml << {
-//    if(System.env.TRAVIS == 'true') {
     println('Preparing release docs');
     def index = new File('app/release/index.html');
     def html  = '<head><link rel="stylesheet" href="style.css">' +
