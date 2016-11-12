@@ -49,9 +49,9 @@ android {
         }
         applicationVariants.all { variant ->
             variant.outputs.each { output ->
-                def apk = output.outputFile;
-                def newName = "tS_" + defaultConfig.versionName + "_build" + defaultConfig.versionCode + ".apk";
-//                def newName = "release.apk";
+//                def apk = output.outputFile;
+//                def newName = "tS_" + defaultConfig.versionName + "_build" + defaultConfig.versionCode + ".apk";
+                def newName = "release.apk";
                 output.outputFile = new File('app/release/' + newName);
             }
         }
@@ -68,7 +68,7 @@ task generateReleaseHtml << {
     def html  = '<head><link rel="stylesheet" href="style.css">' +
             '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
             '</head>';
-    html += '<h1>tS Android build #<span id="build-num">' + android.defaultConfig.versionCode + '</span></h1><ul>';
+    html += '<h1>tS Android build #<span id="build-num">' + android.defaultConfig.versionCode + '</span> (v' + android.defaultConfig.versionName + ')</h1><ul>';
     if(System.env.TRAVIS_COMMIT) {
         def branch = System.env.TRAVIS_BRANCH;
         def commit = System.env.TRAVIS_COMMIT;
@@ -80,7 +80,7 @@ task generateReleaseHtml << {
     } else {
         println('Run on travis for complete output.');
     }
-    html += '<li class="ok">Android <span class="status">success</span> <a href="tS_' + android.defaultConfig.versionName + '_build' + android.defaultConfig.versionCode + '.apk" class="build-link" data-os="android">Download</a></li>';
+    html += '<li class="ok">Android <span class="status">success</span> <a href="release.apk" class="build-link" data-os="android">Download</a></li>';
     index.text = html;
 }
 
