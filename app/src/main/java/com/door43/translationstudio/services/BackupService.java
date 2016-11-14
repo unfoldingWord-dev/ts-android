@@ -104,7 +104,7 @@ public class BackupService extends Service {
             for (String filename : targetTranslations) {
 
                 try {
-                    Thread.sleep(300); // add delay to ease background processing and also ease the memory footprint
+                    Thread.sleep(300); // add delay to ease background processing and also slow the memory thrashing in background
                 } catch (Exception e) {
                     Logger.e(TAG, "sleep problem");
                 }
