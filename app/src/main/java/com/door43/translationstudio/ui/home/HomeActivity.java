@@ -820,8 +820,8 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                     });
                 }
 
-                // dismiss if finished
-                if(task.isFinished()) {
+                // dismiss if finished or cancelled
+                if(task.isFinished() || task.isCanceled()) {
                     progressDialog.dismiss();
                     return;
                 }

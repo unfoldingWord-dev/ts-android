@@ -25,6 +25,11 @@ public class UpdateSourceTask extends ManagedTask {
                 public void onProgress(String tag, long max, long complete) {
                     maxProgress = (int)max;
                     publishProgress((float)complete/(float)max, tag);
+
+                    // TODO: 11/14/16 - this is a hack to interrupt download by throwing an exception.  Need a cleaner way to interrupt Door43Client
+                    if(UpdateSourceTask.this.isCanceled()) {
+                        int n = 1/0; // generate exception
+                    }
                 }
             });
             success = true;
