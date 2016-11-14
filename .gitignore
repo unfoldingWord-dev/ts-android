@@ -18,6 +18,8 @@ gen/
 # Gradle files
 .gradle/
 build/
+/app/release/*.apk
+/app/release/*.html
 
 # Local configuration file (sdk path, etc)
 local.properties
