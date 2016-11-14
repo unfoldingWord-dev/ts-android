@@ -55,17 +55,16 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
         ImageButton newTabButton = (ImageButton) rootView.findViewById(R.id.newTabButton);
         LinearLayout secondaryNewTabButton = (LinearLayout) rootView.findViewById(R.id.secondaryNewTabButton);
         TextView translationTitle = (TextView) rootView.findViewById(R.id.source_translation_title);
-        Project p = mLibrary.index().getProject(App.getDeviceLanguageCode(), targetTranslation.getProjectId(), true);
-        List<Resource> resources = mLibrary.index().getResources(p.languageSlug, p.slug);
-        ResourceContainer  resourceContainer = null;
         try {
-            resourceContainer = mLibrary.open(p.languageSlug, p.slug, resources.get(0).slug);
+            Project p = mLibrary.index().getProject(App.getDeviceLanguageCode(), targetTranslation.getProjectId(), true);
+            List<Resource> resources = mLibrary.index().getResources(p.languageSlug, p.slug);
+            ResourceContainer  resourceContainer = mLibrary.open(p.languageSlug, p.slug, resources.get(0).slug);
+//        SourceLanguage sourceLanguage = mLibrary.getPreferredSourceLanguage(targetTranslation.getProjectId(), App.getDeviceLanguageCode());
+            translationTitle.setText(resourceContainer.readChunk("front", "title") + " - " + targetTranslation.getTargetLanguageName());
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.e(FirstTabFragment.class.getSimpleName(),"Error getting resource container for '"+ targetTranslationId + "' and project '" + targetTranslation.getProjectId() + "'",e);
         }
 
-//        SourceLanguage sourceLanguage = mLibrary.getPreferredSourceLanguage(targetTranslation.getProjectId(), App.getDeviceLanguageCode());
-        translationTitle.setText(resourceContainer.readChunk("front", "title") + " - " + targetTranslation.getTargetLanguageName());
 
         View.OnClickListener clickListener = new View.OnClickListener() {
             @Override
