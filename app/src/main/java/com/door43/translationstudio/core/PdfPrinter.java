@@ -223,7 +223,7 @@ public class PdfPrinter extends PdfPageEventHelper {
         anchor.setName(c.title);
         Paragraph chapterParagraph = new Paragraph(anchor);
         chapterParagraph.setAlignment(Element.ALIGN_CENTER);
-        com.itextpdf.text.Chapter chapter = new com.itextpdf.text.Chapter(chapterParagraph, Integer.parseInt(c.getId()));
+        com.itextpdf.text.Chapter chapter = new com.itextpdf.text.Chapter(chapterParagraph, Util.strToInt(c.getId(), 0));
         chapter.setNumberDepth(0);
 
         // table for vertical alignment
@@ -253,7 +253,7 @@ public class PdfPrinter extends PdfPageEventHelper {
      */
     private void addContent(Document document) throws DocumentException, IOException {
         for(ChapterTranslation c:targetTranslation.getChapterTranslations()) {
-            boolean chapter0 = "00".equals(c.getId());
+            boolean chapter0 = (Util.strToInt(c.getId(), 0) == 0);
             if(!chapter0) { // if chapter 00, then skip title since that was already printed as first page.
                 if (includeIncomplete || c.isTitleFinished() || sourceContainer.readChunk(c.getId(), "title").isEmpty()) {
                     addChapterPage(document, c);
