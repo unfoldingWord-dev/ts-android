@@ -92,7 +92,7 @@ public class BackupService extends Service {
     }
 
     /**
-     * Performs the backup if nessesary
+     * Performs the backup if necessary
      */
     private void runBackup() {
         boolean backupPerformed = false;
@@ -100,8 +100,20 @@ public class BackupService extends Service {
                     == PackageManager.PERMISSION_GRANTED) {
             Translator translator = App.getTranslator();
             Logger.i(TAG, "runBackup: Backing up all target translations");
-            TargetTranslation[] targetTranslations = translator.getTargetTranslations();
-            for (TargetTranslation t : targetTranslations) {
+            String[] targetTranslations = translator.getTargetTranslationFileNames();
+            for (String filename : targetTranslations) {
+
+                try {
+                    Thread.sleep(300); // add delay to ease background processing and also slow the memory thrashing in background
+                } catch (Exception e) {
+                    Logger.e(TAG, "sleep problem");
+                }
+
+                TargetTranslation t = translator.getTargetTranslation(filename);
+                if(t == null) { // skip if not valid
+                    Logger.i(TAG, "runBackup: skipping invalid translation: " + filename);
+                    continue;
+                }
 
                 Logger.i(TAG, "runBackup: Backing up: " + t.getId());
 

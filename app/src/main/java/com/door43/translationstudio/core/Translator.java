@@ -82,6 +82,52 @@ public class Translator {
     }
 
     /**
+     * Returns an array of all active translation IDs - this does not hold in memory each manifest.  Requires less memory to just get a count of items.
+     * @return
+     */
+    public String[] getTargetTranslationIDs() {
+        Logger.i(TAG, "getTargetTranslationIDs: Reading all target translations");
+        final List<String> translations = new ArrayList<>();
+        mRootDir.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String filename) {
+                if(!filename.equalsIgnoreCase("cache") && new File(dir, filename).isDirectory()) {
+                    Logger.i(TAG, "getTargetTranslationIDs: Reading " + translations.size() + " : " + filename);
+                    TargetTranslation translation = getTargetTranslation(filename);
+                    if (translation != null) {
+                        translations.add(translation.getId());
+                    }
+                }
+                return false;
+            }
+        });
+
+        Logger.i(TAG, "getTargetTranslationIDs: Finished Reading all target translations");
+        return translations.toArray(new String[translations.size()]);
+    }
+
+    /**
+     * Returns an array of all translation File names - this does not verify the list.
+     * @return
+     */
+    public String[] getTargetTranslationFileNames() {
+        Logger.i(TAG, "getTargetTranslationFileNames: Reading all target translations");
+        final List<String> translations = new ArrayList<>();
+        mRootDir.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String filename) {
+                if(!filename.equalsIgnoreCase("cache") && new File(dir, filename).isDirectory()) {
+                    translations.add(filename);
+                }
+                return false;
+            }
+        });
+
+        Logger.i(TAG, "getTargetTranslationFileNames: Finished Reading all target translations");
+        return translations.toArray(new String[translations.size()]);
+    }
+
+    /**
      * Returns the local translations cache directory.
      * This is where import and export operations can expand files.
      * @return
