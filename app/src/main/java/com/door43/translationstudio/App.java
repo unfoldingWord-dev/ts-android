@@ -97,6 +97,13 @@ public class App extends Application {
         configureLogger(minLogLevel);
 
         File dir = new File(publicDir(), "crashes");
+        if(!dir.exists()) {
+            try {
+                FileUtilities.forceMkdir(dir);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         Logger.registerGlobalExceptionHandler(dir);
 
         // initialize default settings
@@ -490,8 +497,8 @@ public class App extends Application {
                         ArchiveDetails downloadsDetails = ArchiveDetails.newInstance(downloadsBackup, "en", getLibrary());
                         ArchiveDetails publicDetails = ArchiveDetails.newInstance(publicBackup, "en", getLibrary());
                         // TRICKY: we only generate backups with a single target translation inside.
-                        if(downloadsDetails != null && downloadsDetails.targetTranslationDetails[0].commitHash.equals(targetTranslation.getCommitHash())
-                            && publicDetails != null && publicDetails.targetTranslationDetails[0].commitHash.equals(targetTranslation.getCommitHash())) {
+                        if( getCommitHash(downloadsDetails).equals(targetTranslation.getCommitHash())
+                            && getCommitHash(publicDetails).equals(targetTranslation.getCommitHash())) {
                             return false;
                         }
                     }
@@ -508,6 +515,21 @@ public class App extends Application {
             }
         }
         return false;
+    }
+
+    /**
+     * safe fetch of commit hash
+     * @param details
+     * @return
+     */
+    static private String getCommitHash(ArchiveDetails details) {
+        String commitHash = null;
+        if((details == null) || (details.targetTranslationDetails.length == 0)) {
+            commitHash =  ""; // will not match existing commit hash
+        } else {
+            commitHash =  details.targetTranslationDetails[0].commitHash;
+        }
+        return commitHash;
     }
 
     /**
