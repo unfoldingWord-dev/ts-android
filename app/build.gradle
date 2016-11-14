@@ -48,11 +48,13 @@ android {
             testProguardFile('proguard-rules.pro')
         }
         applicationVariants.all { variant ->
-            variant.outputs.each { output ->
-//                def apk = output.outputFile;
-//                def newName = "tS_" + defaultConfig.versionName + "_build" + defaultConfig.versionCode + ".apk";
-                def newName = "release.apk";
-                output.outputFile = new File('app/release/' + newName);
+            if(variant.buildType.name == "release") {
+                variant.outputs.each { output ->
+                    def newName = "release.apk";
+                    def outDir = new File('app/release/');
+                    outDir.mkdirs();
+                    output.outputFile = new File(outDir, newName);
+                }
             }
         }
     }
