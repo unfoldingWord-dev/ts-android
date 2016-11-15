@@ -231,6 +231,7 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
         intent.setType(typeStr);
         Bundle args = new Bundle();
         args.putString(FileChooserActivity.EXTRA_MODE, FileChooserActivity.SelectionMode.DIRECTORY.name());
+        args.putString(FileChooserActivity.EXTRA_TITLE, getActivity().getResources().getString(R.string.choose_destination_folder));
         intent.putExtras(args);
         startActivityForResult(intent, SELECT_PDF_FOLDER_REQUEST);
     }

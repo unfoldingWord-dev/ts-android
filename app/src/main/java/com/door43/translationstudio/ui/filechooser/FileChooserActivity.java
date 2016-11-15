@@ -33,9 +33,9 @@ import java.util.List;
  * Displays files on the device that the user can select.
  */
 public class FileChooserActivity extends BaseActivity {
-    public static final String EXTRA_MODE = "selection-mode";
-    public static final String EXTRA_FILTERS = "file-filters";
-
+    public static final String EXTRA_MODE = "extras_selection-mode";
+    public static final String EXTRA_FILTERS = "extras_file-filters";
+    public static final String EXTRA_TITLE = "extras_title";
     public static final String EXTRAS_ACCEPTED_EXTENSIONS = "extras_accepted_file_extensions";
     public static final String FOLDER_KEY = "folder";
     public static final String FILE_PATH_KEY = "file_path";
@@ -64,6 +64,8 @@ public class FileChooserActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_choose_import_file);
 
+        String title = null;
+
         // load configuration
         Intent intent = getIntent();
         Bundle args = intent.getExtras();
@@ -83,6 +85,7 @@ public class FileChooserActivity extends BaseActivity {
             if (extensions != null) {
                 mAcceptedExtensions = extensions.split(",");
             }
+            title = args.getString(EXTRA_TITLE, null);
         }
 
         mUpButton = (ImageButton) findViewById(R.id.up_folder_button);
@@ -93,7 +96,11 @@ public class FileChooserActivity extends BaseActivity {
         mCurrentFolder = (TextView) findViewById(R.id.current_folder);
         mFileList = (ListView) findViewById(R.id.file_list);
 
-        setTitle(R.string.title_activity_file_explorer);
+        if(title != null) {
+            setTitle(title);  // use title if given
+        } else {
+            setTitle(R.string.title_activity_file_explorer);
+        }
 
         File sdCardFolder = SdUtils.getSdCardDirectory();
         boolean haveSDCard = sdCardFolder != null;
