@@ -62,6 +62,7 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
     public static final int INVALID = -1;
     public static final String STATE_OUTPUT_TO_DOCUMENT_FILE = "state_output_to_document_file";
     public static final String STATE_OUTPUT_FOLDER_URI = "state_output_folder_uri";
+    public static final String STATE_OUTPUT_FILENAME = "state_output_filename";
     private Translator translator;
     private TargetTranslation mTargetTranslation;
     private Door43Client library;
@@ -76,6 +77,7 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
     private Uri mDestinationFolderUri;
     private String mDestinationFilename;
     private DialogShown mAlertShown = DialogShown.NONE;
+    private AlertDialog mPrompt;
 
 
     @Override
@@ -83,6 +85,9 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
         taskWatcher.stop();
         taskWatcher.setOnCanceledListener(null);
         taskWatcher.setOnFinishedListener(null);
+        if(mPrompt != null) {
+            mPrompt.dismiss();
+        }
         super.onDestroyView();
     }
 
@@ -114,6 +119,7 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
             mAlertShown = DialogShown.fromInt(savedInstanceState.getInt(STATE_DIALOG_SHOWN, INVALID), DialogShown.NONE);
             isPdfOutputToDocumentFile = savedInstanceState.getBoolean(STATE_OUTPUT_TO_DOCUMENT_FILE, false);
             mDestinationFolderUri = Uri.parse(savedInstanceState.getString(STATE_OUTPUT_FOLDER_URI, ""));
+            mDestinationFilename = savedInstanceState.getString(STATE_OUTPUT_FILENAME, null);
         }
 
         TextView projectTitle = (TextView)v.findViewById(R.id.project_title);
@@ -176,36 +182,37 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
             taskWatcher.watch(printTask);
         }
 
-        return v;
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
         restoreDialogs();
+        return v;
     }
 
     /**
      * Restores dialogs
      */
     private void restoreDialogs() {
-        // restore alert dialogs
-        switch(mAlertShown) {
-            case INTERNET_PROMPT:
-                showInternetUsePrompt();
-                break;
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
 
-            case FILENAME_PROMPT:
-                showPdfFilenamePrompt();
-                break;
+                // restore alert dialogs
+                switch(mAlertShown) {
+                    case INTERNET_PROMPT:
+                        showInternetUsePrompt();
+                        break;
 
-            case NONE:
-                break;
+                    case FILENAME_PROMPT:
+                        showPdfFilenamePrompt();
+                        break;
 
-            default:
-                Logger.e(TAG,"Unsupported restore dialog: " + mAlertShown.toString());
-                break;
-        }
+                    case NONE:
+                        break;
+
+                    default:
+                        Logger.e(TAG,"Unsupported restore dialog: " + mAlertShown.toString());
+                        break;
+                }
+            }
+        });
     }
 
     /**
@@ -288,10 +295,10 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
         if(filenameFragment != null) {
             final EditText filenameText = (EditText) filenameFragment.findViewById(R.id.filename_text);
             if ((filenameText != null)) {
-                filenameText.setText(mExportFile.getName());
+                filenameText.setText( mDestinationFilename != null ? mDestinationFilename : mExportFile.getName()); // restore previous data, or set to default value
 
                 // pop up file name prompt
-                new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                mPrompt = new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                         .setTitle(R.string.pdf_output_filename_title_prompt)
                         .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                             @Override
@@ -305,6 +312,7 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 mAlertShown = DialogShown.NONE;
+                                mDestinationFilename = null;
                                 dialog.dismiss();
                             }
                         })
@@ -320,6 +328,15 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
         out.putBoolean(STATE_INCLUDE_INCOMPLETE, includeIncompleteFrames);
         out.putInt(STATE_DIALOG_SHOWN, mAlertShown.getValue());
         out.putBoolean(STATE_OUTPUT_TO_DOCUMENT_FILE, isPdfOutputToDocumentFile);
+
+        if((mAlertShown == DialogShown.FILENAME_PROMPT)
+                && (mPrompt != null)) {
+
+            final EditText filenameText = (EditText) mPrompt.findViewById(R.id.filename_text);
+            mDestinationFilename = filenameText.getText().toString();
+        }
+        out.putString(STATE_OUTPUT_FILENAME, mDestinationFilename);
+
         if(mDestinationFolderUri != null) {
             out.putString(STATE_OUTPUT_FOLDER_URI, mDestinationFolderUri.toString());
         }
