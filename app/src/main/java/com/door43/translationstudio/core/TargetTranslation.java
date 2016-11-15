@@ -45,8 +45,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 
 /**
@@ -435,6 +437,8 @@ public class TargetTranslation {
      */
     public void addSourceTranslation(Translation translation, int modifiedAt) throws JSONException {
         JSONArray sourceTranslationsJson = manifest.getJSONArray(FIELD_SOURCE_TRANSLATIONS);
+        sourceTranslationsJson = cleanupDuplicateSources(sourceTranslationsJson);
+
         // check for duplicate
         boolean foundDuplicate = false;
         for(int i = 0; i < sourceTranslationsJson.length(); i ++) {
@@ -454,6 +458,47 @@ public class TargetTranslation {
             sourceTranslationsJson.put(translationJson);
             manifest.put(FIELD_SOURCE_TRANSLATIONS, sourceTranslationsJson);
         }
+    }
+
+    /**
+     * cleanup in case we have duplicates in the list
+     * @param sourceTranslationsJson
+     * @return
+     * @throws JSONException
+     */
+    private JSONArray cleanupDuplicateSources(JSONArray sourceTranslationsJson) throws JSONException {
+        boolean doCleanup = false;
+        Map<String, JSONObject> sources = new HashMap<>();
+
+        int length = sourceTranslationsJson.length();
+        for (int i = 0; i < length; i++) {
+            Object object = sourceTranslationsJson.get(i);
+            if(!(object instanceof JSONObject)) {
+                doCleanup = true; // invalid type, skip
+                continue;
+            }
+            JSONObject obj = (JSONObject) object;
+
+            String sourceLanguageSlug = obj.getString("language_id");
+            String resourceSlug = obj.getString("resource_id");
+
+            String containerSlug = ContainerTools.makeSlug(sourceLanguageSlug, this.projectId, resourceSlug);
+            if(sources.containsKey(containerSlug)) {
+                doCleanup = true; // duplicate
+            }
+            sources.put(containerSlug, obj); // save most recent
+        }
+
+        if(doCleanup) {
+            JSONArray newSourceTranslationsJson = new JSONArray();
+            for (Map.Entry<String, JSONObject> source : sources.entrySet()) {
+                newSourceTranslationsJson.put(source.getValue());
+            }
+            sourceTranslationsJson = newSourceTranslationsJson;
+            Logger.i(TAG, "Cleaning up from " + length + " items to " + newSourceTranslationsJson.length());
+            manifest.put(FIELD_SOURCE_TRANSLATIONS, sourceTranslationsJson);
+        }
+        return sourceTranslationsJson;
     }
 
     /**
