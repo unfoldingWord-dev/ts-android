@@ -1,14 +1,17 @@
 package com.door43.translationstudio.ui.home;
 
+import android.app.ActivityManager;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
@@ -101,7 +104,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 // use current fragment
                 mFragment = getFragmentManager().findFragmentById(R.id.fragment_container);
             } else {
-                if (mTranslator.getTargetTranslations().length > 0) {
+                if (mTranslator.getTargetTranslationIDs().length > 0) {
                     mFragment = new TargetTranslationListFragment();
                     mFragment.setArguments(getIntent().getExtras());
                 } else {
@@ -211,7 +214,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         super.onResume();
         App.setLastFocusTargetTranslation(null);
 
-        int numTranslations = mTranslator.getTargetTranslations().length;
+        int numTranslations = mTranslator.getTargetTranslationIDs().length;
         if(numTranslations > 0 && mFragment instanceof WelcomeFragment) {
             // display target translations list
             mFragment = new TargetTranslationListFragment();
@@ -261,6 +264,20 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         mTargetTranslationWithUpdates = App.getNotifyTargetTranslationWithUpdates();
         if(mTargetTranslationWithUpdates != null && task == null) {
             showTranslationUpdatePrompt(mTargetTranslationWithUpdates);
+        }
+
+        ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
+        if(am != null) {
+            int memoryLimit = am.getMemoryClass();
+            Logger.i(TAG, "application memory limit: " + memoryLimit);
+            ActivityManager.MemoryInfo info = new ActivityManager.MemoryInfo();
+            am.getMemoryInfo(info);
+            Logger.i(TAG, "available memory on the system: " + info.availMem);
+            Logger.i(TAG, "low memory state on the system: " + info.lowMemory);
+            Logger.i(TAG, "low memory threshold on the system: " + info.threshold);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                Logger.i(TAG, "total memory on the system: " + info.totalMem);
+            }
         }
 
         restoreDialogs();
@@ -689,7 +706,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
 
     @Override
     public void onItemDeleted(String targetTranslationId) {
-        if(mTranslator.getTargetTranslations().length > 0) {
+        if(mTranslator.getTargetTranslationIDs().length > 0) {
             ((TargetTranslationListFragment) mFragment).reloadList();
         } else {
             // display welcome screen

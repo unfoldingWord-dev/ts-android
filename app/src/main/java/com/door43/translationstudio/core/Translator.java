@@ -36,6 +36,7 @@ public class Translator {
     private static final int TSTUDIO_PACKAGE_VERSION = 2;
     private static final String GENERATOR_NAME = "ts-android";
     public static final String ARCHIVE_EXTENSION = "tstudio";
+    public static final String TAG = Translator.class.getName();
 
     private final File mRootDir;
     private final Context mContext;
@@ -60,11 +61,13 @@ public class Translator {
      * @return
      */
     public TargetTranslation[] getTargetTranslations() {
+        Logger.i(TAG, "getTargetTranslations: Reading all target translations");
         final List<TargetTranslation> translations = new ArrayList<>();
         mRootDir.list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
                 if(!filename.equalsIgnoreCase("cache") && new File(dir, filename).isDirectory()) {
+                    Logger.i(TAG, "getTargetTranslations: Reading " + translations.size() + " : " + filename);
                     TargetTranslation translation = getTargetTranslation(filename);
                     if (translation != null) {
                         translations.add(translation);
@@ -74,7 +77,54 @@ public class Translator {
             }
         });
 
+        Logger.i(TAG, "getTargetTranslations: Finished Reading all target translations");
         return translations.toArray(new TargetTranslation[translations.size()]);
+    }
+
+    /**
+     * Returns an array of all active translation IDs - this does not hold in memory each manifest.  Requires less memory to just get a count of items.
+     * @return
+     */
+    public String[] getTargetTranslationIDs() {
+        Logger.i(TAG, "getTargetTranslationIDs: Reading all target translations");
+        final List<String> translations = new ArrayList<>();
+        mRootDir.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String filename) {
+                if(!filename.equalsIgnoreCase("cache") && new File(dir, filename).isDirectory()) {
+                    Logger.i(TAG, "getTargetTranslationIDs: Reading " + translations.size() + " : " + filename);
+                    TargetTranslation translation = getTargetTranslation(filename);
+                    if (translation != null) {
+                        translations.add(translation.getId());
+                    }
+                }
+                return false;
+            }
+        });
+
+        Logger.i(TAG, "getTargetTranslationIDs: Finished Reading all target translations");
+        return translations.toArray(new String[translations.size()]);
+    }
+
+    /**
+     * Returns an array of all translation File names - this does not verify the list.
+     * @return
+     */
+    public String[] getTargetTranslationFileNames() {
+        Logger.i(TAG, "getTargetTranslationFileNames: Reading all target translations");
+        final List<String> translations = new ArrayList<>();
+        mRootDir.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String filename) {
+                if(!filename.equalsIgnoreCase("cache") && new File(dir, filename).isDirectory()) {
+                    translations.add(filename);
+                }
+                return false;
+            }
+        });
+
+        Logger.i(TAG, "getTargetTranslationFileNames: Finished Reading all target translations");
+        return translations.toArray(new String[translations.size()]);
     }
 
     /**
@@ -137,6 +187,7 @@ public class Translator {
      */
     public TargetTranslation getTargetTranslation(String targetTranslationId) {
         if(targetTranslationId != null) {
+            Logger.i(TAG, "getTargetTranslation: Reading :" + targetTranslationId);
             File targetTranslationDir = new File(mRootDir, targetTranslationId);
             TargetTranslation targetTranslation = TargetTranslation.open(targetTranslationDir);
             setTargetTranslationAuthor(targetTranslation);
