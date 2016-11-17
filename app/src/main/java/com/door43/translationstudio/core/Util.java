@@ -114,4 +114,21 @@ public class Util {
     public static Date dateFromUnixTime(long unix) {
         return new Date(unix * 1000L);
     }
+
+    /**
+     * do string to integer with default value on conversion error
+     * @param value
+     * @param defaultValue
+     * @return
+     */
+    public static int strToInt(String value, int defaultValue) {
+        try {
+            int retValue = Integer.parseInt(value);
+            return retValue;
+        } catch (Exception e) {
+//            Log.d(TAG, "Cannot convert to int: " + value);
+        }
+        return defaultValue;
+    }
+
 }

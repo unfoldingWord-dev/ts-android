@@ -231,7 +231,7 @@ public class ExportUsfm {
             int startChunk = 0;
             if(frameList.size() > 0) {
                 FrameTranslation frame = frameList.get(0);
-                int verseID = strToInt(frame.getId(),0);
+                int verseID = Util.strToInt(frame.getId(),0);
                 if((verseID == 0)) {
                     String text = frame.body;
                     ps.print(text);
@@ -239,7 +239,7 @@ public class ExportUsfm {
                 }
            }
 
-            int chapterInt = strToInt(chapter.getId(),0);
+            int chapterInt = Util.strToInt(chapter.getId(),0);
             if(chapterInt != 0) {
                 String chapterNumber = "\\c " + chapter.getId();
                 ps.println(chapterNumber);
@@ -322,23 +322,7 @@ public class ExportUsfm {
         if("back".equalsIgnoreCase(chunkID)){
             return 9999999; // back is moved to very end
         }
-        return strToInt(chunkID, -1); // if not numeric, then will move to top of list and leave order unchanged
-    }
-
-    /**
-     * do string to integer with default value on conversion error
-     * @param value
-     * @param defaultValue
-     * @return
-     */
-    public static int strToInt(String value, int defaultValue) {
-        try {
-            int retValue = Integer.parseInt(value);
-            return retValue;
-        } catch (Exception e) {
-//            Log.d(TAG, "Cannot convert to int: " + value);
-        }
-        return defaultValue;
+        return Util.strToInt(chunkID, -1); // if not numeric, then will move to top of list and leave order unchanged
     }
 
     public interface OnResultsListener {

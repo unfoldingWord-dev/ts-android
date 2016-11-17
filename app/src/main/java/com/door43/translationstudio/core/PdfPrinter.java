@@ -107,7 +107,7 @@ public class PdfPrinter extends PdfPageEventHelper {
     }
 
     public File print() throws Exception {
-        File tempFile = File.createTempFile(targetTranslation.getId(), "pdf");
+        File tempFile = File.createTempFile(targetTranslation.getId(), ".pdf");
 
         Document document = new Document(PageSize.LETTER, HORIZONTAL_PADDING, HORIZONTAL_PADDING, VERTICAL_PADDING, VERTICAL_PADDING);
         writer = PdfWriter.getInstance(document, new FileOutputStream(tempFile));
@@ -124,6 +124,9 @@ public class PdfPrinter extends PdfPageEventHelper {
     }
 
     private void addTOC(Document document) throws DocumentException {
+        document.newPage();
+        document.resetPageCount(); // disable page numbering for this page (TOC)
+
         String toc = App.context().getResources().getString(R.string.table_of_contents);
         com.itextpdf.text.Chapter intro = new com.itextpdf.text.Chapter(new Paragraph(toc, chapterFont), 0);
         intro.setNumberDepth(0);
@@ -148,7 +151,6 @@ public class PdfPrinter extends PdfPageEventHelper {
                 }
             });
         }
-        document.newPage();
     }
 
     /**
@@ -174,6 +176,8 @@ public class PdfPrinter extends PdfPageEventHelper {
      * @throws DocumentException
      */
     private void addTitlePage(Document document) throws DocumentException {
+        document.resetPageCount(); // disable page numbering for this page (title)
+
         Paragraph preface = new Paragraph();
         preface.setAlignment(Element.ALIGN_CENTER);
         addEmptyLine(preface, 1);
@@ -200,7 +204,6 @@ public class PdfPrinter extends PdfPageEventHelper {
         table.addCell(cell);
 
         document.add(table);
-        document.newPage();
     }
 
     private String chapterTitle(ChapterTranslation c) {
@@ -220,7 +223,7 @@ public class PdfPrinter extends PdfPageEventHelper {
         anchor.setName(c.title);
         Paragraph chapterParagraph = new Paragraph(anchor);
         chapterParagraph.setAlignment(Element.ALIGN_CENTER);
-        com.itextpdf.text.Chapter chapter = new com.itextpdf.text.Chapter(chapterParagraph, Integer.parseInt(c.getId()));
+        com.itextpdf.text.Chapter chapter = new com.itextpdf.text.Chapter(chapterParagraph, Util.strToInt(c.getId(), 0));
         chapter.setNumberDepth(0);
 
         // table for vertical alignment
@@ -230,13 +233,10 @@ public class PdfPrinter extends PdfPageEventHelper {
         cell.setBorder(Rectangle.NO_BORDER);
         cell.setMinimumHeight(document.getPageSize().getHeight() - VERTICAL_PADDING * 2);
         cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-//        cell.addElement(chapter);
         table.addCell(cell);
 
-        // place chapter title on it's own page
-        document.newPage();
-//        document.add(table);
         document.add(chapter);
+        document.add(new Paragraph(" ")); // put whitespace between chapter title and text
 
         // update TOC
         PdfTemplate template = tocPlaceholder.get(title);
@@ -245,8 +245,6 @@ public class PdfPrinter extends PdfPageEventHelper {
         template.setTextMatrix(50 - baseFont.getWidthPoint(String.valueOf(writer.getPageNumber()), PAGE_NUMBER_FONT_SIZE), 0);
         template.showText(String.valueOf(writer.getPageNumber()));
         template.endText();
-
-        document.newPage();
     }
 
     /**
@@ -255,11 +253,14 @@ public class PdfPrinter extends PdfPageEventHelper {
      */
     private void addContent(Document document) throws DocumentException, IOException {
         for(ChapterTranslation c:targetTranslation.getChapterTranslations()) {
-            if(includeIncomplete || c.isTitleFinished() || sourceContainer.readChunk(c.getId(), "title").isEmpty()) {
-                addChapterPage(document, c);
+            boolean chapter0 = (Util.strToInt(c.getId(), 0) == 0);
+            if(!chapter0) { // if chapter 00, then skip title since that was already printed as first page.
+                if (includeIncomplete || c.isTitleFinished() || sourceContainer.readChunk(c.getId(), "title").isEmpty()) {
+                    addChapterPage(document, c);
+                }
             }
 
-            // chapter body
+            // get chapter body
             FrameTranslation[] frames = targetTranslation.getFrameTranslations(c.getId(), this.format);
             ArrayList<FrameTranslation> frameList = ExportUsfm.sortFrameTranslations(frames);
             for(FrameTranslation f: frameList) {
@@ -396,7 +397,12 @@ public class PdfPrinter extends PdfPageEventHelper {
     public void onEndPage(PdfWriter writer, Document document) {
         PdfContentByte cb = writer.getDirectContent();
         cb.saveState();
-        String text = "" + writer.getPageNumber();
+
+        String pageNumberShown = "";
+        int pageNumber = writer.getPageNumber();
+        if(pageNumber > 0) { // only add page number if above zero
+            pageNumberShown += pageNumber;
+        }
 
         // place page number just within the margin
         float textBase = document.bottom() - PAGE_NUMBER_FONT_SIZE;
@@ -404,7 +410,7 @@ public class PdfPrinter extends PdfPageEventHelper {
         cb.beginText();
         cb.setFontAndSize(baseFont, PAGE_NUMBER_FONT_SIZE);
         cb.setTextMatrix((document.right() / 2) + HORIZONTAL_PADDING / 2, textBase);
-        cb.showText(text);
+        cb.showText(pageNumberShown);
         cb.endText();
         cb.restoreState();
     }
@@ -434,8 +440,9 @@ public class PdfPrinter extends PdfPageEventHelper {
 //        cell.addElement(chapter);
         table.addCell(cell);
 
-        // place chapter title on it's own page
+        // place license title on it's own page
         document.newPage();
+        document.resetPageCount(); // disable page numbering for this page (license)
         document.add(chapter);
 
         // translate simple html to paragraphs
@@ -451,8 +458,6 @@ public class PdfPrinter extends PdfPageEventHelper {
         parseHtml( document, license, 0);
 
         nextParagraph(document);
-
-        document.newPage();
     }
 
     /**

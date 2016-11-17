@@ -703,15 +703,15 @@ public class ImportUsfm {
             //extract chapters
             List<String> foundChapters = new ArrayList<>();
             for (String chapter : mChunks.keySet()) {
-                if(strToInt(chapter, 0) > 0) {
+                if(Util.strToInt(chapter, 0) > 0) {
                     foundChapters.add(chapter);
                 }
             }
             Collections.sort(foundChapters, new Comparator<String>() { // do numeric sort
                 @Override
                 public int compare(String lhs, String rhs) {
-                    Integer lhInt = strToInt(lhs, -1);
-                    Integer rhInt = strToInt(rhs, -1);
+                    Integer lhInt = Util.strToInt(lhs, -1);
+                    Integer rhInt = Util.strToInt(rhs, -1);
                     return lhInt.compareTo(rhInt);
                 }
             });
@@ -720,22 +720,6 @@ public class ImportUsfm {
         }
 
         return new ParsedChunks(mChunks, mChapters, success);
-    }
-
-    /**
-     * do string to integer with default value on conversion error
-     * @param value
-     * @param defaultValue
-     * @return
-     */
-    public static int strToInt(String value, int defaultValue) {
-        try {
-            int retValue = Integer.parseInt(value);
-            return retValue;
-        } catch (Exception e) {
-//            Log.d(TAG, "Cannot convert to int: " + value);
-        }
-        return defaultValue;
     }
 
     /**
@@ -1117,16 +1101,16 @@ public class ImportUsfm {
      */
     private String getChapterFolderName(String findChapter) {
         try {
-            int chapter = strToInt(findChapter,-1);
+            int chapter = Util.strToInt(findChapter,-1);
             if (chapter > 0) { // first check in expected location
                 String chapterN = mChapters.get(chapter - 1);
-                if (strToInt(chapterN,-1) == chapter) {
+                if (Util.strToInt(chapterN,-1) == chapter) {
                     return getRightFileNameLength(chapterN);
                 }
             }
 
             for (String chapterN : mChapters) { //search for chapter match
-                if (strToInt(chapterN,-1) == chapter) {
+                if (Util.strToInt(chapterN,-1) == chapter) {
                     return getRightFileNameLength(chapterN);
                 }
             }
@@ -1144,7 +1128,7 @@ public class ImportUsfm {
      * @return
      */
     public static String getRightFileNameLength(String fileName) {
-        Integer numericalValue = strToInt(fileName, -1);
+        Integer numericalValue = Util.strToInt(fileName, -1);
         if((numericalValue >= 0) && (numericalValue < 100) && (fileName.length() != 2)) {
             fileName = "00" + fileName; // make sure has leading zeroes
             fileName = fileName.substring(fileName.length()-2); // trim down extra leading zeros
@@ -1162,7 +1146,7 @@ public class ImportUsfm {
         List<String> chunks = getVerseBreaks(findChapter);
         for (int i = 0; i < chunks.size(); i++) {
             String firstVerseFile = chunks.get(i);
-            if (strToInt(firstVerse,0) ==  strToInt(firstVerseFile,0)) {
+            if (Util.strToInt(firstVerse,0) ==  Util.strToInt(firstVerseFile,0)) {
                 return getRightFileNameLength(firstVerseFile);
             }
         }
