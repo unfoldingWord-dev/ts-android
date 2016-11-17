@@ -1,8 +1,15 @@
 package com.door43.translationstudio.ui.translate;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.TextUtils;
+import android.text.style.ImageSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -124,7 +131,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         mSectionHeader = new TreeSet<>();
 
         // build list
-        ViewItem selectedHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.selected), null, false, false);
+        ViewItem selectedHeader = new ChooseSourceTranslationAdapter.ViewItem(getSelectedText(), null, false, false);
         mSortedData.add(selectedHeader);
         mSectionHeader.add(mSortedData.size() - 1);
         for(String id:mSelected) {
@@ -136,13 +143,50 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         for(String id:mAvailable) {
             mSortedData.add(mData.get(id));
         }
-        ViewItem downloadableHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.available_online), null, false, false);
+        ViewItem downloadableHeader = new ChooseSourceTranslationAdapter.ViewItem(getDownloadableText(), null, false, false);
         mSortedData.add(downloadableHeader);
         mSectionHeader.add(mSortedData.size() - 1);
         for(String id:mDownloadable) {
             mSortedData.add(mData.get(id));
         }
         notifyDataSetChanged();
+    }
+
+    /**
+     * create text for selected separator
+     * @return
+     */
+    private CharSequence getSelectedText() {
+        CharSequence text = mContext.getResources().getString(R.string.selected);
+        SpannableStringBuilder refresh = createImageSpannable(R.drawable.ic_refresh_black_24dp);
+        CharSequence warning = mContext.getResources().getString(R.string.requires_internet);
+        SpannableStringBuilder wifi = createImageSpannable(R.drawable.ic_wifi_black_18dp);
+        return TextUtils.concat(text, "    ", refresh, " ", warning, " ", wifi); // combine all on one line
+    }
+
+    /**
+     * create text for selected separator
+     * @return
+     */
+    private CharSequence getDownloadableText() {
+        CharSequence text = mContext.getResources().getString(R.string.available_online);
+        CharSequence warning = mContext.getResources().getString(R.string.requires_internet);
+        SpannableStringBuilder wifi = createImageSpannable(R.drawable.ic_wifi_black_18dp);
+        return TextUtils.concat(text, "    ", warning, " ", wifi); // combine all on one line
+    }
+
+    /**
+     * create an image spannable
+     * @param resource
+     * @return
+     */
+    private SpannableStringBuilder createImageSpannable(int resource) {
+        SpannableStringBuilder refresh = new SpannableStringBuilder(" ");
+        Bitmap refreshImage = BitmapFactory.decodeResource(App.context().getResources(), resource);
+        BitmapDrawable refreshBackground = new BitmapDrawable(App.context().getResources(), refreshImage);
+        refreshBackground.setBounds(0, 0, refreshBackground.getMinimumWidth(), refreshBackground.getMinimumHeight());
+        refresh.setSpan(new ImageSpan(refreshBackground), 0, refresh.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return refresh;
     }
 
     @Override
@@ -158,6 +202,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
                     v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_select_source_translation_list_header, null);
                     holder = new ViewHolder();
                     holder.titleView = (TextView)v;
+                    holder.titleView.setTransformationMethod(null);
                     break;
                 case TYPE_ITEM_SELECTABLE:
                     v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_select_source_translation_list_item, null);
@@ -310,7 +355,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
     }
 
     public static class ViewItem {
-        public final String title;
+        public final CharSequence title;
         public final String containerSlug;
         public final Translation sourceTranslation;
         public boolean selected;
@@ -318,7 +363,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         public boolean hasUpdates;
         public boolean checkedUpdates = false;
 
-        public ViewItem(String title, Translation sourceTranslation, boolean selected, boolean downloaded) {
+        public ViewItem(CharSequence title, Translation sourceTranslation, boolean selected, boolean downloaded) {
             this.title = title;
             this.selected = selected;
             this.sourceTranslation = sourceTranslation;
