@@ -38,6 +38,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
     private Map<String, ViewItem> mData = new HashMap<>();
     private List<String> mSelected = new ArrayList<>();
     private List<String> mAvailable = new ArrayList<>();
+    private List<String> mDownloadable = new ArrayList<>();
     private List<ViewItem> mSortedData = new ArrayList<>();
     private TreeSet<Integer> mSectionHeader = new TreeSet<>();
 
@@ -60,6 +61,8 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
             mData.put(item.containerSlug, item);
             if(item.selected  && item.downloaded) {
                 mSelected.add(item.containerSlug);
+            } else if(!item.downloaded) {
+                mDownloadable.add(item.containerSlug);
             } else {
                 mAvailable.add(item.containerSlug);
             }
@@ -131,6 +134,12 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         mSortedData.add(availableHeader);
         mSectionHeader.add(mSortedData.size() - 1);
         for(String id:mAvailable) {
+            mSortedData.add(mData.get(id));
+        }
+        ViewItem downloadableHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.available_online), null, false, false);
+        mSortedData.add(downloadableHeader);
+        mSectionHeader.add(mSortedData.size() - 1);
+        for(String id:mDownloadable) {
             mSortedData.add(mData.get(id));
         }
         notifyDataSetChanged();
@@ -244,6 +253,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         item.selected = true;
         mSelected.remove(item.containerSlug);
         mAvailable.remove(item.containerSlug);
+        mDownloadable.remove(item.containerSlug);
         mSelected.add(item.containerSlug);
     }
 
@@ -252,6 +262,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         item.selected = false;
         mSelected.remove(item.containerSlug);
         mAvailable.remove(item.containerSlug);
+        mDownloadable.remove(item.containerSlug);
         mAvailable.add(item.containerSlug);
     }
 
@@ -266,7 +277,8 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
             item.downloaded = false;
             item.selected = false;
             mSelected.remove(item.containerSlug);
-            if(!mAvailable.contains(item.containerSlug)) mAvailable.add(item.containerSlug);
+            mAvailable.remove(item.containerSlug);
+            if(!mDownloadable.contains(item.containerSlug)) mDownloadable.add(item.containerSlug);
         }
         sort();
     }
@@ -280,6 +292,11 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         if(item != null) {
             item.hasUpdates = false;
             item.downloaded = true;
+            if(item.selected) {
+                select(position);
+            } else {
+                deselect(position);
+            }
         }
         sort();
     }

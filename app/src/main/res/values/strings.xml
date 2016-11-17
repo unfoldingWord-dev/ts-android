@@ -910,4 +910,5 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="updating_sources">Checking for New and Updated Source Texts. This may take a while. Please wait...</string>
     <string name="update_languages_success"><xliff:g example="6" id="new">%1$d</xliff:g> Target Languages have been added.</string>
     <string name="updating_languages">Checking for new Target Languages. This may take a while. Please wait...</string>
+    <string name="available_online">Available Online</string>
 </resources>
