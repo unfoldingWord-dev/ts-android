@@ -4,6 +4,7 @@ import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.ui.SettingsActivity;
 
+import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
@@ -28,13 +29,14 @@ public class UpdateSourceTask extends ManagedTask {
         updatedCnt = 0;
         addedCnt = 0;
 
-        List<Translation> availableTranslationsAll = App.getLibrary().index.findTranslations(null, null, null, "book", null, App.MIN_CHECKING_LEVEL, -1);
-        Map<String,String> updated = new HashMap<>();
+        Door43Client library = App.getLibrary();
+        List<Translation> availableTranslationsAll = library.index.findTranslations(null, null, null, "book", null, App.MIN_CHECKING_LEVEL, -1);
+        Map<String,Integer> previouslyUpdated = new HashMap<>();
 
         for (Translation t : availableTranslationsAll) {
             String id = t.resourceContainerSlug;
-            String pubDate = t.resource.pubDate;
-            updated.put(id, pubDate);
+            int lastModifiedOnServer = library.getResourceContainerLastModified(t.language.slug, t.project.slug, t.resource.slug);
+            previouslyUpdated.put(id, lastModifiedOnServer);
         }
 
         availableTranslationsAll = null; // free up memory while downloading
@@ -60,16 +62,27 @@ public class UpdateSourceTask extends ManagedTask {
         }
 
         if(success) { // check for changes
-            availableTranslationsAll = App.getLibrary().index.findTranslations(null, null, null, "book", null, App.MIN_CHECKING_LEVEL, -1);
+            library = App.getLibrary();
+            availableTranslationsAll = library.index.findTranslations(null, null, null, "book", null, App.MIN_CHECKING_LEVEL, -1);
 
             for (Translation t : availableTranslationsAll) {
+                if(UpdateSourceTask.this.isCanceled()) {
+                    break;
+                }
+                
                 String id = t.resourceContainerSlug;
-                if(updated.containsKey(id)) {
-                    if(!t.resource.pubDate.equals(updated.get(id))) {
-                        updatedCnt++;
+                if(previouslyUpdated.containsKey(id)) {
+                    try {
+                        int lastModifiedOnServer = library.getResourceContainerLastModified(t.language.slug, t.project.slug, t.resource.slug);
+                        Integer previousUpdate = previouslyUpdated.get(id);
+                        if (lastModifiedOnServer > previousUpdate) {
+                            updatedCnt++; // update times have changed
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 } else {
-                    addedCnt++;
+                    addedCnt++; // new entry
                 }
             }
         }
@@ -82,5 +95,13 @@ public class UpdateSourceTask extends ManagedTask {
 
     public boolean isSuccess() {
         return success;
+    }
+
+    public int getAddedCnt() {
+        return addedCnt;
+    }
+
+    public int getUpdatedCnt() {
+        return updatedCnt;
     }
 }

@@ -863,6 +863,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
 
                 int titleID = R.string.success;
                 int msgID = R.string.update_success;
+                String message = null;
 
                 if(task.isCanceled()) {
                     titleID = R.string.error;
@@ -871,14 +872,26 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 if(!isTaskSuccess(task)) {
                     titleID = R.string.error;
                     msgID = R.string.options_update_failed;
+                } else { // success
+                    if(task instanceof UpdateSourceTask) {
+                        UpdateSourceTask updTask = (UpdateSourceTask) task;
+                        message = String.format(getResources().getString(R.string.update_sources_success), updTask.getAddedCnt(), updTask.getUpdatedCnt());
+                    }
                 }
 
                 // notify update is done
+                AlertDialog.Builder dlg =
                 new AlertDialog.Builder(HomeActivity.this, R.style.AppTheme_Dialog)
-                        .setTitle(titleID)
-                        .setMessage(msgID)
-                        .setPositiveButton(R.string.dismiss, null)
-                        .show();
+                    .setTitle(titleID)
+                    .setPositiveButton(R.string.dismiss, null);
+
+                if(message == null) {
+                    dlg.setMessage(msgID);
+                } else {
+                    dlg.setMessage(message);
+                }
+
+                dlg.show();
             }
         });
     }
