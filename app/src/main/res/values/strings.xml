@@ -375,7 +375,7 @@
     <string name="confirm_delete_project">Delete this project? You can download it again later.</string>
     <string name="cannot_delete_project_with_translations">You cannot delete a project you are translating.</string>
     <string name="missing_project">The project is missing</string>
-    <string name="menu_update_library">Update Library</string>
+    <string name="menu_update_library">Update</string>
     <string name="questions">Questions</string>
     <string name="references">References</string>
     <string name="question">Question</string>
@@ -608,7 +608,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="action_download_updates">Download updates</string>
     <string name="list_may_be_outdated">The list may be out of date</string>
     <string name="label_import">Import</string>
-    <string name="label_import_options">Import Options</string>
+    <string name="label_import_options">Import</string>
     <string name="import_from_online">Import from Online (requires internet)</string>
     <string name="automatic_backups">Automatic Backups</string>
     <string name="export_to_sd">Export to SD Card</string>
@@ -879,12 +879,12 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="merge_conflict_title">Merge Conflict</string>
     <string name="import_merge_conflict">Merge conflict on Import - Click OK to resolve</string>
     <string name="label_change">change</string>
-    <string name="update_languages">Update Languages</string>
-    <string name="update_source">Update Source</string>
+    <string name="update_languages">Get New Target Languages</string>
+    <string name="update_source">Check for New and Updated Source Texts</string>
     <string name="update_all">Update All</string>
     <string name="time_very_slow">Takes awhile</string>
-    <string name="time_slow">Takes a few minutes</string>
-    <string name="time_fast">Takes a few seconds</string>
+    <string name="time_slow">May take many minutes (or longer)</string>
+    <string name="time_fast">May take a few minutes (or longer)</string>
     <string name="update_options">Update Options</string>
     <string name="missing_source">Missing source translation</string>
     <string name="update_success">The update finished successfully</string>
@@ -905,4 +905,9 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="choose_destination_folder">Choose Destination Folder:</string>
     <string name="options_update_failed">The update failed.  Check your Internet connection.</string>
     <string name="update_cancelled">The update was cancelled</string>
+    <string name="update_menu_requires_internet">Requires internet Connection\nThese updates may take a while.</string>
+    <string name="update_sources_success"><xliff:g example="6" id="new">%1$d</xliff:g> New Source Texts and <xliff:g example="10" id="updated">%2$d</xliff:g> Updated Source Texts are available to be downloaded.</string>
+    <string name="updating_sources">Checking for New and Updated Source Texts. This may take a while. Please wait...</string>
+    <string name="update_languages_success"><xliff:g example="6" id="new">%1$d</xliff:g> Target Languages have been added.</string>
+    <string name="updating_languages">Checking for new Target Languages. This may take a while. Please wait...</string>
 </resources>

@@ -796,10 +796,12 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             switch (tag) {
                 case UpdateLibraryDialog.EVENT_UPDATE_LANGUAGES:
                     task = new UpdateCatalogsTask();
+                    ((UpdateCatalogsTask)task).setPrefix(this.getResources().getString(R.string.updating_languages));
                     taskId = UpdateCatalogsTask.TASK_ID;
                     break;
                 case UpdateLibraryDialog.EVENT_UPDATE_SOURCE:
                     task = new UpdateSourceTask();
+                    ((UpdateSourceTask)task).setPrefix(this.getResources().getString(R.string.updating_languages));
                     taskId = UpdateSourceTask.TASK_ID;
                     break;
                 case UpdateLibraryDialog.EVENT_UPDATE_ALL:
@@ -876,10 +878,14 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         hand.post(new Runnable() {
             @Override
             public void run() {
-                if(progressDialog != null) progressDialog.dismiss();
+                if(progressDialog != null) {
+                    progressDialog.dismiss();
+                    progressDialog = null;
+                }
 
                 int titleID = R.string.success;
                 int msgID = R.string.update_success;
+                String message = null;
 
                 if(task.isCanceled()) {
                     titleID = R.string.error;
@@ -888,14 +894,30 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 if(!isTaskSuccess(task)) {
                     titleID = R.string.error;
                     msgID = R.string.options_update_failed;
+                } else { // success
+                    if(task instanceof UpdateSourceTask) {
+                        UpdateSourceTask updTask = (UpdateSourceTask) task;
+                        message = String.format(getResources().getString(R.string.update_sources_success), updTask.getAddedCnt(), updTask.getUpdatedCnt());
+                    }
+                    if(task instanceof UpdateCatalogsTask) {
+                        UpdateCatalogsTask updTask = (UpdateCatalogsTask) task;
+                        message = String.format(getResources().getString(R.string.update_languages_success), updTask.getAddedCnt());
+                    }
                 }
 
                 // notify update is done
+                AlertDialog.Builder dlg =
                 new AlertDialog.Builder(HomeActivity.this, R.style.AppTheme_Dialog)
-                        .setTitle(titleID)
-                        .setMessage(msgID)
-                        .setPositiveButton(R.string.dismiss, null)
-                        .show();
+                    .setTitle(titleID)
+                    .setPositiveButton(R.string.dismiss, null);
+
+                if(message == null) {
+                    dlg.setMessage(msgID);
+                } else {
+                    dlg.setMessage(message);
+                }
+
+                dlg.show();
             }
         });
     }
