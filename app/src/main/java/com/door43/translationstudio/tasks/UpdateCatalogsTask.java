@@ -25,7 +25,7 @@ public class UpdateCatalogsTask extends ManagedTask {
 
                     // TODO: 11/14/16 - this is a hack to interrupt download by throwing an exception.  Need a cleaner way to interrupt Door43Client
                     if(UpdateCatalogsTask.this.isCanceled()) {
-                        int n = 1/0; // generate exception
+                        throw new RuntimeException("Cancelled");
                     }
                 }
             });

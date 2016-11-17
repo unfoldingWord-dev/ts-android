@@ -859,7 +859,10 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         hand.post(new Runnable() {
             @Override
             public void run() {
-                if(progressDialog != null) progressDialog.dismiss();
+                if(progressDialog != null) {
+                    progressDialog.dismiss();
+                    progressDialog = null;
+                }
 
                 int titleID = R.string.success;
                 int msgID = R.string.update_success;
