@@ -21,13 +21,15 @@ public class UpdateSourceTask extends ManagedTask {
     private boolean success = false;
     private int updatedCnt = 0;
     private int addedCnt = 0;
+    private String prefix;
 
     @Override
     public void start() {
-        publishProgress(-1, "");
-
         updatedCnt = 0;
         addedCnt = 0;
+        success = false;
+
+        publishProgress(-1, "");
 
         Door43Client library = App.getLibrary();
         List<Translation> availableTranslationsAll = library.index.findTranslations(null, null, null, "book", null, App.MIN_CHECKING_LEVEL, -1);
@@ -48,6 +50,11 @@ public class UpdateSourceTask extends ManagedTask {
                 @Override
                 public void onProgress(String tag, long max, long complete) {
                     maxProgress = (int)max;
+
+                    if(prefix != null) {
+                        tag = prefix + tag;
+                    }
+
                     publishProgress((float)complete/(float)max, tag);
 
                     // TODO: 11/14/16 - this is a hack to interrupt download by throwing an exception.  Need a cleaner way to interrupt Door43Client
@@ -103,5 +110,13 @@ public class UpdateSourceTask extends ManagedTask {
 
     public int getUpdatedCnt() {
         return updatedCnt;
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix + "  ";
     }
 }

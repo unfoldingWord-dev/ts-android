@@ -779,10 +779,12 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             switch (tag) {
                 case UpdateLibraryDialog.EVENT_UPDATE_LANGUAGES:
                     task = new UpdateCatalogsTask();
+                    ((UpdateCatalogsTask)task).setPrefix(this.getResources().getString(R.string.updating_languages));
                     taskId = UpdateCatalogsTask.TASK_ID;
                     break;
                 case UpdateLibraryDialog.EVENT_UPDATE_SOURCE:
                     task = new UpdateSourceTask();
+                    ((UpdateSourceTask)task).setPrefix(this.getResources().getString(R.string.updating_languages));
                     taskId = UpdateSourceTask.TASK_ID;
                     break;
                 case UpdateLibraryDialog.EVENT_UPDATE_ALL:
@@ -879,6 +881,10 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                     if(task instanceof UpdateSourceTask) {
                         UpdateSourceTask updTask = (UpdateSourceTask) task;
                         message = String.format(getResources().getString(R.string.update_sources_success), updTask.getAddedCnt(), updTask.getUpdatedCnt());
+                    }
+                    if(task instanceof UpdateCatalogsTask) {
+                        UpdateCatalogsTask updTask = (UpdateCatalogsTask) task;
+                        message = String.format(getResources().getString(R.string.update_languages_success), updTask.getAddedCnt());
                     }
                 }
 

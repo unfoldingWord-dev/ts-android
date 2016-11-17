@@ -905,4 +905,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="update_cancelled">The update was cancelled</string>
     <string name="update_menu_requires_internet">Requires internet Connection\nThese updates may take a while.</string>
     <string name="update_sources_success"><xliff:g example="6" id="new">%1$d</xliff:g> New Source Texts and <xliff:g example="10" id="updated">%2$d</xliff:g> Updated Source Texts are available to be downloaded.</string>
+    <string name="updating_sources">Checking for New and Updated Source Texts. This may take a while. Please wait...</string>
+    <string name="update_languages_success"><xliff:g example="6" id="new">%1$d</xliff:g> Target Languages have been added.</string>
+    <string name="updating_languages">Checking for new Target Languages. This may take a while. Please wait...</string>
 </resources>
