@@ -829,10 +829,16 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                     progressDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
                     progressDialog.setTitle(R.string.updating);
                     progressDialog.setMessage("");
+
+                    progressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            TaskManager.cancelTask(task);
+                        }
+                    });
                 }
 
-                // dismiss if finished
-                if(task.isFinished()) {
+                // dismiss if finished or cancelled
+                if(task.isFinished() || task.isCanceled()) {
                     progressDialog.dismiss();
                     return;
                 }
@@ -863,7 +869,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     }
 
     @Override
-    public void onTaskFinished(ManagedTask task) {
+    public void onTaskFinished(final ManagedTask task) {
         TaskManager.clearTask(task);
 
         Handler hand = new Handler(Looper.getMainLooper());
@@ -872,16 +878,40 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             public void run() {
                 if(progressDialog != null) progressDialog.dismiss();
 
+                int titleID = R.string.success;
+                int msgID = R.string.update_success;
+
+                if(task.isCanceled()) {
+                    titleID = R.string.error;
+                    msgID = R.string.update_cancelled;
+                } else
+                if(!isTaskSuccess(task)) {
+                    titleID = R.string.error;
+                    msgID = R.string.options_update_failed;
+                }
+
                 // notify update is done
-                // TODO: 10/10/16 check if task was success
-                // TODO: 10/10/16 check if the task was canceled
                 new AlertDialog.Builder(HomeActivity.this, R.style.AppTheme_Dialog)
-                        .setTitle(R.string.success)
-                        .setMessage(R.string.update_success)
+                        .setTitle(titleID)
+                        .setMessage(msgID)
                         .setPositiveButton(R.string.dismiss, null)
                         .show();
             }
         });
+    }
+
+    private boolean isTaskSuccess(ManagedTask task) {
+        boolean success = false;
+        if(task instanceof UpdateAllTask) {
+            success = ((UpdateAllTask) task).isSuccess();
+        } else
+        if(task instanceof UpdateCatalogsTask) {
+            success = ((UpdateCatalogsTask) task).isSuccess();
+        } else
+        if(task instanceof UpdateSourceTask) {
+            success = ((UpdateSourceTask) task).isSuccess();
+        }
+        return success;
     }
 
     @Override
