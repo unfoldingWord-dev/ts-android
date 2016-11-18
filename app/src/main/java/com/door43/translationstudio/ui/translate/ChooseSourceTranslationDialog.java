@@ -153,10 +153,13 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
                 new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                         .setTitle(R.string.warning_title)
                         .setMessage(R.string.update_warning)
-                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                        .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                // TODO: 11/18/16 need to handle
+                                if(mListener != null) {
+                                    mListener.onUpdateSources();
+                                }
+                                dismiss();
                             }
                         })
                         .setNegativeButton(R.string.menu_cancel, null)
@@ -344,6 +347,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
     public interface OnClickListener {
         void onCancelTabsDialog(String targetTranslationId);
         void onConfirmTabsDialog(String targetTranslationId, List<String> sourceTranslationIds);
+        void onUpdateSources();
     }
 
     @Override
