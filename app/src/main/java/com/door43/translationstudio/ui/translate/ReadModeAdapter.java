@@ -93,6 +93,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         mSourceContainer = sourceContainer;
         this.chapters = new ArrayList<>();
         this.chunks = new HashMap<>();
+        mLayoutBuildNumber++; // force resetting of fonts
 
         setListStartPosition(0);
 
