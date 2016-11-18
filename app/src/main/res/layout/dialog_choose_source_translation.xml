@@ -30,7 +30,8 @@
             android:padding="16dp"
             android:textSize="@dimen/button"
             android:background="?attr/selectableItemBackground"
-            android:gravity="left" />
+            android:gravity="left"
+            android:layout_marginRight="@dimen/dialog_content_margin" />
 
         <Button
             android:id="@+id/cancelButton"
@@ -41,7 +42,8 @@
             android:padding="16dp"
             android:textSize="@dimen/button"
             android:background="?attr/selectableItemBackground"
-            android:gravity="center_horizontal" />
+            android:gravity="center_horizontal"
+            android:layout_marginLeft="@dimen/dialog_content_margin" />
 
         <Button
             android:id="@+id/confirmButton"
