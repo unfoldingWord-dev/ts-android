@@ -113,6 +113,13 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
 
     }
 
+    /**
+     * user has selected to update sources
+     */
+    public void onUpdateSources() {
+        if(mListener != null) mListener.onUpdateSources();
+    }
+
     @Override
     public void onConfirmTabsDialog(String targetTranslationId, List<String> sourceTranslationIds) {
         String[] oldSourceTranslationIds = App.getSelectedSourceTranslations(targetTranslationId);
@@ -147,5 +154,10 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
 
     public interface OnEventListener {
         void onHasSourceTranslations();
+
+        /**
+         * user has selected to update sources
+         */
+        void onUpdateSources();
     }
 }

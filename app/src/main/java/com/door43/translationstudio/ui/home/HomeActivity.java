@@ -66,6 +66,7 @@ import java.text.NumberFormat;
 
 public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFinishedListener, WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener, EventBuffer.OnEventListener, ManagedTask.OnProgressListener, ManagedTask.OnFinishedListener, DialogInterface.OnCancelListener {
     private static final int NEW_TARGET_TRANSLATION_REQUEST = 1;
+    private static final int TARGET_TRANSLATION_VIEW_REQUEST = 101;
     public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
     public static final String STATE_DIALOG_TRANSLATION_ID = "state_dialog_translationID";
     public static final String TAG = HomeActivity.class.getSimpleName();
@@ -399,7 +400,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                             public void onClick(DialogInterface dialog, int which) {
                                 Intent intent = new Intent(HomeActivity.this, TargetTranslationActivity.class);
                                 intent.putExtra(App.EXTRA_TARGET_TRANSLATION_ID, ((PullTargetTranslationTask)task).targetTranslation.getId());
-                                startActivity(intent);
+                                startActivityForResult(intent, TARGET_TRANSLATION_VIEW_REQUEST);
                             }
                         })
                         .show();
@@ -447,7 +448,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         args.putBoolean(App.EXTRA_START_WITH_MERGE_FILTER, true);
         args.putInt(App.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.ordinal());
         intent.putExtras(args);
-        startActivity(intent);
+        startActivityForResult(intent, TARGET_TRANSLATION_VIEW_REQUEST);
     }
 
     public void showAuthFailure() {
@@ -613,7 +614,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
 
                 Intent intent = new Intent(HomeActivity.this, TargetTranslationActivity.class);
                 intent.putExtra(App.EXTRA_TARGET_TRANSLATION_ID, data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID));
-                startActivity(intent);
+                startActivityForResult(intent, TARGET_TRANSLATION_VIEW_REQUEST);
             } else if( NewTargetTranslationActivity.RESULT_DUPLICATE == resultCode ) {
                 // display duplicate notice to user
                 String targetTranslationId = data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID);
@@ -628,6 +629,15 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 Snackbar snack = Snackbar.make(findViewById(android.R.id.content), getResources().getString(R.string.error), Snackbar.LENGTH_LONG);
                 ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                 snack.show();
+            }
+        } else if(TARGET_TRANSLATION_VIEW_REQUEST == requestCode ) {
+            if(TargetTranslationActivity.RESULT_DO_UPDATE == resultCode ) {
+                ManagedTask task = new UpdateSourceTask();
+                ((UpdateSourceTask)task).setPrefix(this.getResources().getString(R.string.updating_languages));
+                String taskId = UpdateSourceTask.TASK_ID;
+                task.addOnProgressListener(this);
+                task.addOnFinishedListener(this);
+                TaskManager.addTask(task, taskId);
             }
         }
     }
@@ -737,7 +747,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         } else {
             Intent intent = new Intent(HomeActivity.this, TargetTranslationActivity.class);
             intent.putExtra(App.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
-            startActivity(intent);
+            startActivityForResult(intent, TARGET_TRANSLATION_VIEW_REQUEST);
         }
     }
 

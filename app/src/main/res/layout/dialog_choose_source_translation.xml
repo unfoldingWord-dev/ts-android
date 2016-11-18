@@ -19,8 +19,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:gravity="right"
-        android:id="@+id/controlsLayout">
+        android:id="@+id/controlsLayout"
+        android:gravity="right">
+        <Button
+            android:id="@+id/updateButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/update_sources_label"
+            android:textColor="?attr/colorAccent"
+            android:padding="16dp"
+            android:textSize="@dimen/button"
+            android:background="?attr/selectableItemBackground"
+            android:gravity="left"
+            android:layout_marginRight="@dimen/dialog_content_margin" />
+
         <Button
             android:id="@+id/cancelButton"
             android:layout_width="wrap_content"
@@ -29,7 +41,9 @@
             android:textColor="?attr/colorAccent"
             android:padding="16dp"
             android:textSize="@dimen/button"
-            android:background="?attr/selectableItemBackground"/>
+            android:background="?attr/selectableItemBackground"
+            android:gravity="center_horizontal"
+            android:layout_marginLeft="@dimen/dialog_content_margin" />
 
         <Button
             android:id="@+id/confirmButton"
@@ -39,6 +53,8 @@
             android:textColor="?attr/colorAccent"
             android:padding="16dp"
             android:textSize="@dimen/button"
-            android:background="?attr/selectableItemBackground"/>
+            android:background="?attr/selectableItemBackground"
+            android:gravity="right"
+            android:layout_gravity="right" />
     </LinearLayout>
 </RelativeLayout>

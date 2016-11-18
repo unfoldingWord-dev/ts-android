@@ -69,6 +69,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     public static final String STATE_SEARCH_TEXT = "state_search_text";
     public static final String STATE_HAVE_MERGE_CONFLICT = "state_have_merge_conflict";
     public static final String STATE_MERGE_CONFLICT_FILTER_ENABLED = "state_merge_conflict_filter_enabled";
+    public static final int RESULT_DO_UPDATE = 42;
     private Fragment mFragment;
     private SeekBar mSeekBar;
     private ViewGroup mGraduations;
@@ -922,6 +923,13 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         return Integer.toString(position + 1);
     }
 
+    /**
+     * user has selected to update sources
+     */
+    public void onUpdateSources() {
+        setResult(RESULT_DO_UPDATE);
+        finish();
+    }
 
     private boolean displaySeekBarAsInverted() {
         return mSeekBar instanceof VerticalSeekBar;
