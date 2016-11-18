@@ -164,6 +164,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     @Override
     void setSourceContainer(ResourceContainer sourceContainer) {
         mSourceContainer = sourceContainer;
+        mLayoutBuildNumber++; // force resetting of fonts
 
         this.mChapters = new ArrayList();
         mItems = new ArrayList<>();

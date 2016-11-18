@@ -96,6 +96,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     @Override
     public void setSourceContainer(ResourceContainer sourceContainer) {
         mSourceContainer = sourceContainer;
+        mLayoutBuildNumber++; // force resetting of fonts
 
         this.mChapters = new ArrayList();
         mItems = new ArrayList<>();
