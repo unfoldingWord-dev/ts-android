@@ -91,17 +91,12 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
                     final ChooseSourceTranslationAdapter.ViewItem item = mAdapter.getItem(position);
                     if(item.hasUpdates || !item.downloaded) {
                         // download
-                        String format;
-                        if(item.hasUpdates) {
-                            format = getResources().getString(R.string.update_source_language);
-                        } else {
-                            format = getResources().getString(R.string.download_source_language);
-                        }
+                        String format = getResources().getString(R.string.download_source_language);
                         String message = String.format(format, item.title);
                         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                                 .setTitle(R.string.title_download_source_language)
                                 .setMessage(message)
-                                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
                                         DownloadResourceContainerTask task = new DownloadResourceContainerTask(item.sourceTranslation);
@@ -136,7 +131,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
                     new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                             .setTitle(R.string.label_delete)
                             .setMessage(R.string.confirm_delete_project)
-                            .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     mLibrary.delete(item.containerSlug);
@@ -151,6 +146,23 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
             }
         });
 
+        Button updateButton = (Button) v.findViewById(R.id.updateButton);
+        updateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                        .setTitle(R.string.warning_title)
+                        .setMessage(R.string.update_warning)
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                // TODO: 11/18/16 need to handle
+                            }
+                        })
+                        .setNegativeButton(R.string.menu_cancel, null)
+                        .show();
+            }
+        });
         Button cancelButton = (Button) v.findViewById(R.id.cancelButton);
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
