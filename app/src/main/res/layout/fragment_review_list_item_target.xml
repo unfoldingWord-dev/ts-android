@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/target_translation_card"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_weight="0.255"
+    card_view:cardElevation="2dp"
+    android:layout_marginLeft="@dimen/dialog_controls_margin"
+    android:layout_marginRight="@dimen/dialog_controls_margin"
+    android:layout_marginTop="@dimen/card_margin"
+    android:layout_marginBottom="@dimen/card_margin"
+    android:padding="0dp"
+    android:clickable="true"
+    tools:showIn="@layout/fragment_review_list_item">
+
+    <com.door43.widget.LinedLinearLayout
+        android:id="@+id/target_translation_inner_card"
+        android:orientation="vertical"
+        style="@style/Widget.CardContent.Skinny"
+        android:background="@drawable/paper_repeating"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="0dp"
+        android:padding="0dp"
+        android:gravity="top">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="0dp"
+            android:padding="0dp">
+
+            <FrameLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/card_tab_height"
+                android:layout_marginTop="0dp"
+                android:layout_marginBottom="@dimen/dialog_controls_margin"
+                android:layout_marginLeft="@dimen/card_margin"
+                android:layout_marginRight="@dimen/card_margin"
+                android:padding="0dp">
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:padding="0dp">
+
+                    <ImageButton
+                        android:id="@+id/undo_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="left|center_vertical"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_undo_black_24dp"
+                        android:layout_weight="0"
+                        android:paddingLeft="@dimen/dialog_controls_margin"
+                        android:paddingRight="@dimen/dialog_controls_margin" />
+
+                    <ImageButton
+                        android:id="@+id/redo_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="left|center_vertical"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_redo_black_24dp"
+                        android:layout_weight="0"
+                        android:paddingLeft="@dimen/dialog_controls_margin"
+                        android:paddingRight="@dimen/dialog_controls_margin" />
+
+                    <ImageButton
+                        android:id="@+id/add_note_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="left|center_vertical"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_note_add_black_24dp"
+                        android:layout_weight="0"
+                        android:paddingLeft="@dimen/dialog_controls_margin"
+                        android:paddingRight="@dimen/dialog_controls_margin" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textSize="@dimen/title"
+                        android:layout_gravity="left|center_vertical"
+                        android:layout_marginLeft="@dimen/dialog_controls_margin"
+                        android:layout_marginRight="@dimen/dialog_controls_margin"
+                        android:textColor="@color/dark_secondary_text"
+                        android:text="John 1:1-3 - Afaraf"
+                        android:id="@+id/target_translation_title"
+                        android:layout_weight="1"
+                        android:gravity="center_vertical" />
+
+                    <ImageButton
+                        android:id="@+id/edit_translation_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical|right"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_mode_edit_black_24dp"
+                        android:adjustViewBounds="false"
+                        android:layout_weight="0"
+                        android:paddingLeft="@dimen/dialog_controls_margin"
+                        android:paddingRight="@dimen/dialog_controls_margin" />
+
+                </LinearLayout>
+            </FrameLayout>
+
+            <com.door43.widget.KeyboardlessEditText
+                android:id="@+id/target_translation_body"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="this is the tflkjlksjsd\nlkjsdlfkjsdlkjsfdl\nlksjsdlfkjsdlkjsfdl\nlksjsdlfkjsdlkjsfdlkjsfdl\nlksjdlfkjsd"
+                android:textSize="@dimen/body"
+                android:inputType="textMultiLine"
+                android:gravity="top"
+                android:background="@null"
+                android:layout_margin="@dimen/card_margin"
+                android:padding="0dp"
+                android:textColor="@color/dark_primary_text" />
+
+            <com.door43.widget.LinedEditText
+                android:visibility="gone"
+                android:id="@+id/target_translation_editable_body"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="this is the tflkjlksjsd\nlkjsdlfkjsdlkjsfdl\nlksjsdlfkjsdlkjsfdl\nlksjsdlfkjsdlkjsfdlkjsfdl\nlksjdlfkjsd"
+                android:textSize="@dimen/body"
+                android:inputType="textMultiLine"
+                android:gravity="top"
+                android:background="@null"
+                android:layout_marginTop="@dimen/dialog_controls_margin"
+                android:layout_marginBottom="0dp"
+                android:layout_marginLeft="@dimen/card_margin"
+                android:layout_marginRight="@dimen/card_margin"
+                android:textColor="@color/dark_primary_text" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="bottom">
+
+            <Switch
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/mark_done"
+                android:id="@+id/done_button"
+                android:layout_gravity="left|center_vertical"
+                android:checked="true"
+                android:textColor="@color/dark_secondary_text"
+                android:layout_marginLeft="@dimen/dialog_content_margin"
+                android:layout_marginRight="@dimen/dialog_content_margin"
+                android:layout_marginBottom="@dimen/dialog_content_margin"
+                android:textSize="@dimen/body" />
+
+
+        </LinearLayout>
+
+    </com.door43.widget.LinedLinearLayout>
+</android.support.v7.widget.CardView>
+
+    

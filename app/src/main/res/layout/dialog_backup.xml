@@ -16,7 +16,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/backup"
+            android:text="@string/title_upload_export"
             android:textColor="@color/dark_primary_text"
             android:layout_marginBottom="@dimen/dialog_content_margin"
             android:textSize="@dimen/headline"
@@ -28,36 +28,182 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <Button
-                android:id="@+id/backup_to_sd"
+            <LinearLayout
+                android:id="@+id/backup_to_cloud"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/backup_to_sd"
-                android:drawableLeft="@drawable/icon_export_sd_dark"
-                android:drawableStart="@drawable/icon_export_sd_dark"
-                android:gravity="left|center_vertical"
-                android:drawablePadding="10dp"
-                android:textColor="@color/dark_primary_text"
-                android:textAllCaps="false"
-                style="@style/Widget.Button.Secondary" />
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:contextClickable="true"
+                android:layout_marginBottom="@dimen/dialog_controls_margin">
+
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/backup_to_door43"
+                    android:drawableLeft="@drawable/ic_backup_secondary_24dp"
+                    android:drawableStart="@drawable/ic_backup_secondary_24dp"
+                    android:drawablePadding="10dp"
+                    android:textColor="@color/dark_primary_text"
+                    android:textAllCaps="false"
+                    style="@style/Widget.Button.Secondary"
+                    android:focusable="false"
+                    android:clickable="false"
+                    android:duplicateParentState="true"
+                    android:gravity="left|center_vertical" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/tip_backup_to_door43"
+                    android:textColor="@color/dark_primary_text"
+                    android:textAllCaps="false"
+                    android:focusable="false"
+                    android:clickable="false"
+                    android:duplicateParentState="true"
+                    android:gravity="start"
+                    android:textSize="@dimen/caption"
+                    android:layout_marginLeft="@dimen/dialog_content_margin" />
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="1px"
                 android:background="@color/list_separator"/>
 
-            <Button
-                android:id="@+id/backup_to_cloud"
+            <LinearLayout
+                android:id="@+id/export_to_usfm"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/backup_to_door43"
-                android:drawableLeft="@drawable/ic_backup_secondary_24dp"
-                android:drawableStart="@drawable/ic_backup_secondary_24dp"
-                android:gravity="left|center_vertical"
-                android:drawablePadding="10dp"
-                android:textColor="@color/dark_primary_text"
-                android:textAllCaps="false"
-                style="@style/Widget.Button.Secondary" />
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:contextClickable="true"
+                android:layout_marginBottom="@dimen/dialog_controls_margin"
+                android:visibility="visible">
+
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/export_to_usfm"
+                    android:drawableLeft="@drawable/icon_export_sd_dark"
+                    android:drawableStart="@drawable/icon_export_sd_dark"
+                    android:drawablePadding="10dp"
+                    android:textColor="@color/dark_primary_text"
+                    android:textAllCaps="false"
+                    style="@style/Widget.Button.Secondary"
+                    android:focusable="false"
+                    android:clickable="false"
+                    android:duplicateParentState="true"
+                    android:gravity="left|center_vertical" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/tip_export_to_usfm"
+                    android:textColor="@color/dark_primary_text"
+                    android:textAllCaps="false"
+                    android:focusable="false"
+                    android:clickable="false"
+                    android:duplicateParentState="true"
+                    android:gravity="start"
+                    android:textSize="@dimen/caption"
+                    android:layout_marginLeft="@dimen/dialog_content_margin" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/export_to_usfm_separator"
+                android:layout_width="match_parent"
+                android:layout_height="1px"
+                android:background="@color/list_separator" />
+
+            <LinearLayout
+                android:id="@+id/export_to_pdf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:contextClickable="true"
+                android:layout_marginBottom="@dimen/dialog_controls_margin">
+
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/export_to_pdf"
+                    android:drawableLeft="@drawable/icon_export_sd_dark"
+                    android:drawableStart="@drawable/icon_export_sd_dark"
+                    android:drawablePadding="10dp"
+                    android:textColor="@color/dark_primary_text"
+                    android:textAllCaps="false"
+                    style="@style/Widget.Button.Secondary"
+                    android:focusable="false"
+                    android:clickable="false"
+                    android:duplicateParentState="true"
+                    android:gravity="left|center_vertical" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/tip_export_to_pdf"
+                    android:textColor="@color/dark_primary_text"
+                    android:textAllCaps="false"
+                    android:focusable="false"
+                    android:clickable="false"
+                    android:duplicateParentState="true"
+                    android:gravity="start"
+                    android:textSize="@dimen/caption"
+                    android:layout_marginLeft="@dimen/dialog_content_margin" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="1px"
+                android:background="@color/list_separator"/>
+
+            <LinearLayout
+                android:id="@+id/backup_to_sd"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:contextClickable="true"
+                android:layout_marginBottom="@dimen/dialog_controls_margin">
+
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/backup_to_sd"
+                    android:drawableLeft="@drawable/icon_export_sd_dark"
+                    android:drawableStart="@drawable/icon_export_sd_dark"
+                    android:drawablePadding="10dp"
+                    android:textColor="@color/dark_primary_text"
+                    android:textAllCaps="false"
+                    style="@style/Widget.Button.Secondary"
+                    android:focusable="false"
+                    android:clickable="false"
+                    android:duplicateParentState="true"
+                    android:gravity="left|center_vertical" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/tip_backup_to_sd"
+                    android:textColor="@color/dark_primary_text"
+                    android:textAllCaps="false"
+                    android:focusable="false"
+                    android:clickable="false"
+                    android:duplicateParentState="true"
+                    android:gravity="start"
+                    android:textSize="@dimen/caption"
+                    android:layout_marginLeft="@dimen/dialog_content_margin" />
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"

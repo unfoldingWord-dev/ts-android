@@ -91,7 +91,7 @@
   <string name="no_projects_available_on_server">Không có dự án có sẵn trên máy chủ này</string>
   <string name="downloading">Tải về</string>
   <string name="confirm_import">Hãy xác nhận những gì bạn muốn nhập.</string>
-  <string name="waiting_for_device">Chờ đợi cho thiết bị</string>
+  <string name="waiting_for_another_device">Chờ đợi cho thiết bị</string>
   <string name="label_back">Trở lại</string>
   <string name="bug_report">Mô tả các vấn đề bạn đang gặp phải với ứng dụng này.</string>
   <string name="terms_additional">Và bạn phải đồng ý với tuyên bố của đức tin và hướng dẫn dịch.</string>
@@ -117,7 +117,7 @@
   <string name="languages">Ngôn ngữ</string>
   <string name="drafts">Dịch nháp</string>
   <string name="use_internet_confirmation">Điều này sẽ sử dụng kết nối internet của bạn để tải thông tin từ các máy chủ, tiếp tục không?</string>
-  <string name="update_projects">Dự án cập nhật</string>
+  <string name="update_library">Dự án cập nhật</string>
   <string name="update_projects_description">Xem và tải về các bản cập nhật có sẵn từ máy chủ</string>
   <string name="action_download_all">Tải về tất cả</string>
   <string name="title_activity_project_updates">Dự án cập nhật</string>

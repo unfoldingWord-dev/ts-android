@@ -98,7 +98,7 @@
   <string name="no_projects_available_on_server">هیچ پروژه قابل دسترس در این سرور می باشد</string>
   <string name="downloading">دانلود</string>
   <string name="confirm_import">لطفا تأیید کنید آنچه شما می خواهید به واردات.</string>
-  <string name="waiting_for_device">منتظر دستگاه</string>
+  <string name="waiting_for_another_device">منتظر دستگاه</string>
   <string name="label_back">پشت</string>
   <string name="bug_report">شرح مشکل شما با این برنامه تجربه.</string>
   <string name="terms_additional">و شما باید به بیانیه ای از دستورالعمل های ایمان و ترجمه به توافق برسند.</string>
@@ -124,7 +124,7 @@
   <string name="languages">زبان</string>
   <string name="drafts">پیش نویسهای ترجمه</string>
   <string name="use_internet_confirmation">این اتصال به اینترنت خود را به دانلود اطلاعات از سرور استفاده کنید، ادامه دهید؟</string>
-  <string name="update_projects">پروژه های به روز رسانی</string>
+  <string name="update_library">پروژه های به روز رسانی</string>
   <string name="update_projects_description">مشاهده و دانلود به روز رسانی در دسترس از سرور</string>
   <string name="action_download_all">دانلود همه</string>
   <string name="title_activity_project_updates">پروژه به روز رسانی</string>

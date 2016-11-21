@@ -1,25 +1,15 @@
 package com.door43.translationstudio.rendering;
 
-import android.graphics.Typeface;
 import android.os.Build;
-import android.text.Editable;
-import android.text.Layout;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
-import android.text.style.AlignmentSpan;
-import android.text.style.StyleSpan;
 
-import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.spannables.USFMChar;
-import com.door43.translationstudio.spannables.USFMNoteSpan;
-import com.door43.translationstudio.spannables.USFMVerseSpan;
-import com.door43.translationstudio.spannables.USXChar;
-import com.door43.translationstudio.spannables.USXNoteSpan;
-import com.door43.translationstudio.spannables.Span;
-import com.door43.translationstudio.spannables.USXVersePinSpan;
-import com.door43.translationstudio.spannables.USXVerseSpan;
+import com.door43.translationstudio.ui.spannables.USFMChar;
+import com.door43.translationstudio.ui.spannables.USFMNoteSpan;
+import com.door43.translationstudio.ui.spannables.USFMVerseSpan;
+import com.door43.translationstudio.ui.spannables.USXChar;
+import com.door43.translationstudio.ui.spannables.USXNoteSpan;
+import com.door43.translationstudio.ui.spannables.Span;
+import com.door43.translationstudio.ui.spannables.USXVerseSpan;
 
 import java.util.ArrayList;
 import java.util.List;

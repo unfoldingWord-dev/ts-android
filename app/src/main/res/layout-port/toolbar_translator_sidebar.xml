@@ -2,6 +2,8 @@
 <LinearLayout
     android:id="@+id/leftToolbar"
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:hint="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:background="?attr/colorPrimary"
@@ -55,7 +57,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <SeekBar
+            <com.door43.widget.SeekbarHintReversed
                 android:id="@+id/action_seek"
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
@@ -63,7 +65,11 @@
                 android:thumbTint="@color/white"
                 android:progressTint="@color/white"
                 android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp" />
+                android:layout_marginRight="16dp"
+                hint:xOffset="0dp"
+                hint:yOffset="0dp"
+                hint:popupLayout="@layout/seekbar_hint_popup"
+                hint:popupStyle="follow" />
 
             <LinearLayout
                 android:id="@+id/action_seek_graduations"

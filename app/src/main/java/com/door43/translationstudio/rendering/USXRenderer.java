@@ -8,13 +8,14 @@ import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.AlignmentSpan;
+import android.text.style.BackgroundColorSpan;
 import android.text.style.StyleSpan;
 
-import com.door43.translationstudio.spannables.USXChar;
-import com.door43.translationstudio.spannables.USXNoteSpan;
-import com.door43.translationstudio.spannables.Span;
-import com.door43.translationstudio.spannables.USXVersePinSpan;
-import com.door43.translationstudio.spannables.USXVerseSpan;
+import com.door43.translationstudio.ui.spannables.USXChar;
+import com.door43.translationstudio.ui.spannables.USXNoteSpan;
+import com.door43.translationstudio.ui.spannables.Span;
+import com.door43.translationstudio.ui.spannables.USXVersePinSpan;
+import com.door43.translationstudio.ui.spannables.USXVerseSpan;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +33,15 @@ public class USXRenderer extends ClickableRenderingEngine {
     private Span.OnClickListener mVerseListener;
     private boolean mRenderLinebreaks = false;
     private boolean mRenderVerses = true;
+    private String mSearch;
+    private int mHighlightColor = 0;
     private int[] mExpectedVerseRange = new int[0];
     private boolean mSuppressLeadingMajorSectionHeadings = false;
+    public static String beginParagraphStyle = "<para\\s+style=\"[\\w\\d]*\"\\s*>";
+    public static Pattern beginParagraphPattern =  Pattern.compile(beginParagraphStyle);
+    public static String endParagraphStyle = "<\\/para>";
+    public static Pattern endParagraphPattern =  Pattern.compile(endParagraphStyle);
+
 
     /**
      * Creates a new usx rendering engine without any listeners
@@ -67,6 +75,21 @@ public class USXRenderer extends ClickableRenderingEngine {
      */
     public void setLinebreaksEnabled(boolean enable) {
         mRenderLinebreaks = enable;
+    }
+
+    /**
+     * If set to not null matched strings will be highlighted.
+     *
+     * @param searchString - null is disable
+     * @param highlightColor
+     */
+    public void setSearchString(CharSequence searchString, int highlightColor) {
+        mHighlightColor = highlightColor;
+        if((searchString != null) && (searchString.length() > 0) ) {
+            mSearch = searchString.toString().toLowerCase();
+        } else {
+            mSearch = null;
+        }
     }
 
     /**
@@ -111,9 +134,11 @@ public class USXRenderer extends ClickableRenderingEngine {
         out = renderPoeticLine(out);
         out = renderRightAlignedPoeticLine(out);
         out = renderVerse(out);
+        out = renderHighlightSearch(out);
         out = renderNote(out);
         out = renderChapterLabel(out);
         out = renderSelah(out);
+        out = renderBrokenMarkers(out);
 
         return out;
     }
@@ -182,6 +207,41 @@ public class USXRenderer extends ClickableRenderingEngine {
         out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
         return out;
     }
+
+    /**
+     * Renders section headings.
+     * @param in
+     * @return
+     */
+    public CharSequence renderHighlightSearch(CharSequence in) {
+        if(mSearch == null) {
+            return in;
+        }
+
+        CharSequence out = "";
+        String lowerCaseText = in.toString().toLowerCase();
+        int lastIndex = 0;
+
+        while(lastIndex < in.length()) {
+            if(isStopped()) return in;
+
+            int pos = lowerCaseText.indexOf(mSearch, lastIndex);
+            if(pos < 0) {
+                break;
+            }
+
+            SpannableStringBuilder span = new SpannableStringBuilder(in.subSequence(pos, pos + mSearch.length()));
+            span.setSpan(new BackgroundColorSpan(mHighlightColor), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            out = TextUtils.concat(out, in.subSequence(lastIndex, pos), span);
+
+            lastIndex = pos + mSearch.length();
+        }
+
+        out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
+        return out;
+    }
+
     /**
      * Renders major section headings.
      * @param in
@@ -229,7 +289,7 @@ public class USXRenderer extends ClickableRenderingEngine {
         out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
         return out;
     }
-    
+
     /**
      * Strips out new lines and replaces them with a single space
      * @param in
@@ -393,6 +453,37 @@ public class USXRenderer extends ClickableRenderingEngine {
                 }
             }
         }
+        return out;
+    }
+
+    /**
+     * Renders all paragraph tags
+     * @param in
+     * @return
+     */
+    public CharSequence renderBrokenMarkers(CharSequence in) {
+        CharSequence out = "";
+        out = removePattern( in, beginParagraphPattern);
+        out = removePattern( out, endParagraphPattern);
+        return out;
+    }
+
+    /**
+     * Renders all paragraph tags
+     * @param in
+     * @return
+     */
+    public CharSequence removePattern(CharSequence in, Pattern pattern) {
+        Matcher matcher = pattern.matcher(in);
+        CharSequence out = "";
+        int lastIndex = 0;
+        while(matcher.find()) {
+            if(isStopped()) return in;
+
+            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()));
+            lastIndex = matcher.end();
+        }
+        out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
         return out;
     }
 

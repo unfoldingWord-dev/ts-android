@@ -91,7 +91,7 @@
   <string name="no_projects_available_on_server">Nenhum projeto estão disponíveis neste servidor</string>
   <string name="downloading">Downloading</string>
   <string name="confirm_import">Por favor, confirme que você deseja importar.</string>
-  <string name="waiting_for_device">Aguardando dispositivo</string>
+  <string name="waiting_for_another_device">Aguardando dispositivo</string>
   <string name="label_back">De volta</string>
   <string name="bug_report">Descreva o problema que está ocorrendo com este app.</string>
   <string name="terms_additional">E você deve concordar com a declaração de orientações religiosas e de tradução.</string>
@@ -117,7 +117,7 @@
   <string name="languages">Idiomas</string>
   <string name="drafts">Tradução Rascunhos</string>
   <string name="use_internet_confirmation">Isto irá usar sua conexão de internet para baixar informações do servidor, continuar?</string>
-  <string name="update_projects">Projetos de atualização</string>
+  <string name="update_library">Projetos de atualização</string>
   <string name="update_projects_description">Ver e importar as atualizações disponíveis a partir do servidor</string>
   <string name="action_download_all">Baixar tudo</string>
   <string name="title_activity_project_updates">Projeto Updates</string>

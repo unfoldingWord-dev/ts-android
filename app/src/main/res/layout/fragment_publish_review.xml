@@ -193,7 +193,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical|right"
             style="@style/Widget.Button.Blue"
-            android:text="@string/next_step"
+            android:text="@string/next"
             android:layout_marginRight="@dimen/dialog_content_margin" />
 
     </LinearLayout>

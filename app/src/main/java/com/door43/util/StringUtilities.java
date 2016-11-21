@@ -11,6 +11,20 @@ import android.util.Pair;
  * Created by joel on 1/14/2015.
  */
 public class StringUtilities {
+
+    /**
+     * Returns a string formatted as an integer (removes the leading 0's
+     * Otherwise it returns the original value
+     * @param value the string to format
+     * @return the number formatted string
+     */
+    public static String formatNumber(String value) {
+        try {
+            return Integer.parseInt(value) + "";
+        } catch (Exception e) {}
+        return value;
+    }
+
     /**
      * Splits a string by delimiter into two pieces
      * @param string the string to split

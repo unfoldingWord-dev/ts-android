@@ -1,8 +1,8 @@
 package com.door43.translationstudio.git;
 
+import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.SettingsActivity;
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.ui.SettingsActivity;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
@@ -21,13 +21,13 @@ public class GitSessionFactory extends JschConfigSessionFactory {
     @Override
     protected void configure(Host arg0, Session session) {
         session.setConfig("StrictHostKeyChecking", "no");
-        session.setPort(Integer.parseInt(AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER_PORT, AppContext.context().getResources().getString(R.string.pref_default_git_server_port))));
+        session.setPort(Integer.parseInt(App.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER_PORT, App.context().getResources().getString(R.string.pref_default_git_server_port))));
     }
 
     @Override
     protected JSch createDefaultJSch(FS fs) throws JSchException {
         JSch jsch = new JSch();
-        File sshDir = AppContext.context().getKeysFolder();
+        File sshDir = App.getKeysFolder();
         for (File file : sshDir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File file, String s) {

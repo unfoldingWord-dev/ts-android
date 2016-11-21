@@ -3,6 +3,7 @@ package com.door43.util;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.unfoldingword.tools.logger.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -105,7 +106,7 @@ public class Manifest {
         try {
             return mManifest.getJSONArray(key);
         } catch (JSONException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             return new JSONArray();
         }
     }
@@ -215,6 +216,7 @@ public class Manifest {
     public void load() {
         String contents = "";
         try {
+            Logger.i(this.getClass().getName(), "reading file '" + mManifestFile + "' size: " + (mManifestFile.length()/1024) + "K");
             contents = FileUtilities.readFileToString(mManifestFile);
         } catch (IOException e) {
             e.printStackTrace();

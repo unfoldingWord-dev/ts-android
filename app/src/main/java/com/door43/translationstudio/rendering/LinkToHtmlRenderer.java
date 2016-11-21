@@ -4,9 +4,9 @@ import android.text.TextUtils;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import com.door43.translationstudio.spannables.ArticleLinkSpan;
-import com.door43.translationstudio.spannables.PassageLinkSpan;
-import com.door43.translationstudio.spannables.Span;
+import com.door43.translationstudio.ui.spannables.ArticleLinkSpan;
+import com.door43.translationstudio.ui.spannables.PassageLinkSpan;
+import com.door43.translationstudio.ui.spannables.Span;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
