@@ -2034,7 +2034,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             ClickableRenderingEngine renderer = Clickables.setupRenderingGroup(format, renderingGroup, verseClickListener, noteClickListener, true);
             renderer.setLinebreaksEnabled(true);
-            renderer.setPopulateVerseMarkers(Frame.getVerseRange(item.sourceText, item.targetTranslationFormat));
+            renderer.setPopulateVerseMarkers(Frame.getVerseRange(item.sourceText, item.sourceTranslationFormat));
             if(enableSearch) {
                 renderingGroup.setSearchString(filterConstraint, HIGHLIGHT_COLOR);
             }
