@@ -627,13 +627,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 public void onTaskFinished(final ManagedTask task) {
                     TaskManager.clearTask(task);
                     final CharSequence data = (CharSequence)task.getResult();
-                    item.renderedTargetText = data;
 
                     Handler hand = new Handler(Looper.getMainLooper());
                     hand.post(new Runnable() {
                         @Override
                         public void run() {
                             if(!task.isCanceled() && data != null && item == holder.currentItem) {
+                                item.renderedTargetText = data;
                                 if (item.isEditing) {
                                     // edit mode
                                     holder.mTargetEditableBody.setText(item.renderedTargetText);
@@ -651,6 +651,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                             return true;
                                         }
                                     });
+                                    setFinishedMode(item, holder);
                                     ViewUtil.makeLinksClickable(holder.mTargetBody);
                                 }
                             }
@@ -750,17 +751,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mDoneSwitch.setOnCheckedChangeListener(null);
 
         // display as finished
-        if(item.isComplete) {
-            holder.mEditButton.setVisibility(View.GONE);
-            holder.mUndoButton.setVisibility(View.GONE);
-            holder.mRedoButton.setVisibility(View.GONE);
-            holder.mAddNoteButton.setVisibility(View.GONE);
-            holder.mDoneSwitch.setChecked(true);
-            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
-        } else {
-            holder.mEditButton.setVisibility(View.VISIBLE);
-            holder.mDoneSwitch.setChecked(false);
-        }
+        setFinishedMode(item, holder);
 
         // done buttons
         holder.mDoneSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -797,6 +788,25 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
             }
         });
+    }
+
+    /**
+     * set the UI to reflect the finished mode
+     * @param item
+     * @param holder
+     */
+    private void setFinishedMode(ReviewListItem item, ViewHolder holder) {
+        if(item.isComplete) {
+            holder.mEditButton.setVisibility(View.GONE);
+            holder.mUndoButton.setVisibility(View.GONE);
+            holder.mRedoButton.setVisibility(View.GONE);
+            holder.mAddNoteButton.setVisibility(View.GONE);
+            holder.mDoneSwitch.setChecked(true);
+            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
+        } else {
+            holder.mEditButton.setVisibility(View.VISIBLE);
+            holder.mDoneSwitch.setChecked(false);
+        }
     }
 
     /**
