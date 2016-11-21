@@ -118,7 +118,7 @@ public abstract class ListItem {
                 }
                 title += " " + Integer.parseInt(chapterSlug);
             }
-            String verseSpan = Frame.parseVerseTitle(sourceText, targetTranslationFormat);
+            String verseSpan = Frame.parseVerseTitle(sourceText, sourceTranslationFormat);
             if(verseSpan.isEmpty()) {
                 title += ":" + Integer.parseInt(chunkSlug);
             } else {
