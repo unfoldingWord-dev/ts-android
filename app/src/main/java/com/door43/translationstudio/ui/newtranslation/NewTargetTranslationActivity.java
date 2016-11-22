@@ -22,6 +22,7 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.translationstudio.tasks.MergeTargetTranslationTask;
 import com.door43.translationstudio.ui.SettingsActivity;
 import com.door43.translationstudio.core.NewLanguageRequest;
@@ -458,7 +459,11 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             int results = RESULT_ERROR;
 
             if(MergeTargetTranslationTask.Status.MERGE_CONFLICTS == status) {
-                results = RESULT_MERGE_CONFLICT;
+                if(MergeConflictsHandler.isMergeConflicted(mergeTask.getDestinationTranslation().getId())) {
+                    results = RESULT_MERGE_CONFLICT;
+                } else {
+                    results = RESULT_OK;
+                }
             } else if(MergeTargetTranslationTask.Status.SUCCESS == status) {
                 results = RESULT_OK;
             }

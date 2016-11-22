@@ -21,12 +21,12 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.translationstudio.core.Profile;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.tasks.MergeConflictsParseTask;
 import com.door43.translationstudio.ui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.tasks.AdvancedGogsRepoSearchTask;
 import com.door43.translationstudio.tasks.CloneRepositoryTask;
@@ -227,7 +227,9 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                             try {
                                 boolean success = existingTargetTranslation.merge(tempPath);
                                 if(!success) {
-                                   showMergeConflict(existingTargetTranslation);
+                                    if(MergeConflictsHandler.isMergeConflicted(existingTargetTranslation.getId())) {
+                                        showMergeConflict(existingTargetTranslation);
+                                    }
                                 }
                             } catch (Exception e) {
                                 Logger.e(this.getClass().getName(), "Failed to merge the target translation", e);

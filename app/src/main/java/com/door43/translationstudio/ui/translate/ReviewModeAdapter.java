@@ -54,9 +54,9 @@ import com.door43.translationstudio.core.ContainerCache;
 import com.door43.translationstudio.core.FileHistory;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
+import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.tasks.MergeConflictsParseTask;
-import com.door43.translationstudio.tasks.CalculateTargetTranslationProgressTask;
 import com.door43.translationstudio.tasks.CheckForMergeConflictsTask;
 import com.door43.widget.LinedEditText;
 import com.door43.translationstudio.core.TargetTranslation;
@@ -453,7 +453,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     CharSequence selectedText = item.mergeItems.get(item.mergeItemSelected);
                     applyNewCompiledText(selectedText.toString(), holder, item);
                     reOpenItem(item);
-                    item.hasMergeConflicts = MergeConflictsParseTask.isMergeConflicted(selectedText);
+                    item.hasMergeConflicts = MergeConflictsHandler.isMergeConflicted(selectedText);
                     item.mergeItemSelected = -1;
                     item.isEditing = false;
                     updateMergeConflict();
@@ -1221,7 +1221,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             applyChangedText(text, holder, item);
 
                             App.closeKeyboard(mContext);
-                            item.hasMergeConflicts = MergeConflictsParseTask.isMergeConflicted(text);
+                            item.hasMergeConflicts = MergeConflictsHandler.isMergeConflicted(text);
                             triggerNotifyDataSetChanged();
                             updateMergeConflict();
 
@@ -1284,7 +1284,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             applyChangedText(text, holder, item);
 
                             App.closeKeyboard(mContext);
-                            item.hasMergeConflicts = MergeConflictsParseTask.isMergeConflicted(text);
+                            item.hasMergeConflicts = MergeConflictsHandler.isMergeConflicted(text);
                             triggerNotifyDataSetChanged();
                             updateMergeConflict();
 

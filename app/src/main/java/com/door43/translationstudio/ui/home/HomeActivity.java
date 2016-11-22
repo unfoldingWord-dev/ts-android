@@ -32,7 +32,7 @@ import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
-import com.door43.translationstudio.tasks.MergeConflictsParseTask;
+import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.util.EventBuffer;
 import com.door43.translationstudio.ui.ProfileActivity;
 import com.door43.translationstudio.R;
@@ -363,9 +363,20 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 @Override
                 public void run() {
                     Translator.ImportResults importResults = importTask.getImportResults();
-                    boolean success = importResults.isSuccess();
+                    final boolean success = importResults.isSuccess();
                     if(success && importResults.mergeConflict) {
-                        showMergeConflict(importResults.importedSlug);
+                        MergeConflictsHandler.backgroundTestForConflictedChunks(importResults.importedSlug, new MergeConflictsHandler.OnMergeConflictListener() {
+                            @Override
+                            public void onNoMergeConflict(String targetTranslationId) {
+                                showImportResults(mExamineTask.mContentUri.toString(), mExamineTask.mProjectsFound, success);
+                            }
+
+                            @Override
+                            public void onMergeConflict(String targetTranslationId) {
+                                showMergeConflict(targetTranslationId);
+                            }
+                        });
+
                     } else {
                         showImportResults(mExamineTask.mContentUri.toString(), mExamineTask.mProjectsFound, success);
                     }

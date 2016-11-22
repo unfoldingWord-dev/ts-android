@@ -4,10 +4,10 @@ import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.FileHistory;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
+import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.translationstudio.core.ProjectTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
-import com.door43.translationstudio.tasks.MergeConflictsParseTask;
 
 import org.unfoldingword.door43client.models.TargetLanguage;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
@@ -185,7 +185,7 @@ public abstract class ListItem {
                     this.isComplete = ft.isFinished();
                 }
             }
-            this.hasMergeConflicts = MergeConflictsParseTask.isMergeConflicted(this.targetText);
+            this.hasMergeConflicts = MergeConflictsHandler.isMergeConflicted(this.targetText);
         }
     }
 }

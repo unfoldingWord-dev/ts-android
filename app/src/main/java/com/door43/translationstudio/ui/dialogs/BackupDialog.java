@@ -27,6 +27,7 @@ import org.unfoldingword.tools.logger.Logger;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.ExportUsfm;
+import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
@@ -530,7 +531,17 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                 TaskManager.addTask(repoTask, CreateRepositoryTask.TASK_ID);
             } else if(status == PullTargetTranslationTask.Status.MERGE_CONFLICTS) {
                 Logger.i(this.getClass().getName(), "The server contains conflicting changes for " + targetTranslation.getId());
-                showMergeConflict(targetTranslation);
+                MergeConflictsHandler.backgroundTestForConflictedChunks(targetTranslation.getId(), new MergeConflictsHandler.OnMergeConflictListener() {
+                    @Override
+                    public void onNoMergeConflict(String targetTranslationId) {
+                        // do nothing
+                    }
+
+                    @Override
+                    public void onMergeConflict(String targetTranslationId) {
+                        showMergeConflict(targetTranslation);
+                    }
+                });
             } else {
                 notifyBackupFailed(targetTranslation);
             }

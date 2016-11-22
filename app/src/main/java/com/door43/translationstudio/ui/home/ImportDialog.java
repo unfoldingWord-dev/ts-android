@@ -18,13 +18,12 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.Toast;
 
-import org.unfoldingword.resourcecontainer.ContainerTools;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
+import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.translationstudio.ui.filechooser.FileChooserActivity;
-import com.door43.translationstudio.tasks.MergeConflictsParseTask;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
@@ -362,14 +361,24 @@ public class ImportDialog extends DialogFragment {
      * import selected file
      * @param file
      */
-    private void importFile(File file) {
+    private void importFile(final File file) {
         if (FileUtilities.getExtension(file.getName()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
             try {
                 Logger.i(this.getClass().getName(), "Importing internal file: " + file.toString());
                 final Translator translator = App.getTranslator();
                 final Translator.ImportResults importResults = translator.importArchive(file);
                 if(importResults.isSuccess() && importResults.mergeConflict) {
-                    showMergeConflict(importResults.importedSlug);
+                    MergeConflictsHandler.backgroundTestForConflictedChunks(importResults.importedSlug, new MergeConflictsHandler.OnMergeConflictListener() {
+                        @Override
+                        public void onNoMergeConflict(String targetTranslationId) {
+                            showImportResults(R.string.import_success, file.toString());
+                        }
+
+                        @Override
+                        public void onMergeConflict(String targetTranslationId) {
+                            showMergeConflict(importResults.importedSlug);
+                        }
+                    });
                 }
                 else {
                     showImportResults(R.string.import_success, file.toString());
@@ -423,7 +432,7 @@ public class ImportDialog extends DialogFragment {
      * import selected uri
      * @param uri
      */
-    private void importUri(Uri uri) {
+    private void importUri(final Uri uri) {
         if(FileUtilities.getExtension(uri.getPath()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
             try {
                 Logger.i(this.getClass().getName(), "Importing SD card: " + uri);
@@ -431,7 +440,17 @@ public class ImportDialog extends DialogFragment {
                 final Translator translator = App.getTranslator();
                 final Translator.ImportResults importResults = translator.importArchive(in);
                 if(importResults.isSuccess() && importResults.mergeConflict) {
-                    showMergeConflict(importResults.importedSlug); //
+                    MergeConflictsHandler.backgroundTestForConflictedChunks(importResults.importedSlug, new MergeConflictsHandler.OnMergeConflictListener() {
+                        @Override
+                        public void onNoMergeConflict(String targetTranslationId) {
+                            showImportResults(R.string.import_success, SdUtils.getPathString(uri.toString()));
+                        }
+
+                        @Override
+                        public void onMergeConflict(String targetTranslationId) {
+                            showMergeConflict(importResults.importedSlug);
+                        }
+                    });
                 }
                 else {
                     showImportResults(R.string.import_success, SdUtils.getPathString(uri.toString()));
