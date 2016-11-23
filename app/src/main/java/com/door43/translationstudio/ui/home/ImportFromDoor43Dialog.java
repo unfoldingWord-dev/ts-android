@@ -227,7 +227,7 @@ public class ImportFromDoor43Dialog extends DialogFragment implements SimpleTask
                             try {
                                 boolean success = existingTargetTranslation.merge(tempPath);
                                 if(!success) {
-                                    if(MergeConflictsHandler.isMergeConflicted(existingTargetTranslation.getId())) {
+                                    if(MergeConflictsHandler.isTranslationMergeConflicted(existingTargetTranslation.getId())) {
                                         showMergeConflict(existingTargetTranslation);
                                     }
                                 }

@@ -4,11 +4,13 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.door43.translationstudio.App;
+import com.door43.translationstudio.tasks.MergeConflictsParseTask;
 import com.door43.translationstudio.ui.home.ImportDialog;
 
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,6 +22,32 @@ public class MergeConflictsHandler {
     public static final String MergeConflictHead = "(?:<<<<<<< HEAD.*\\n)";
     public static Pattern MergeConflictPatternHead = Pattern.compile(MergeConflictHead);
 
+
+    /**
+     * Split the merge conflict into a list of the options
+     *
+     * @param text
+     * @return
+     */
+    static public List<CharSequence> getMergeConflictItems(String text) {
+        MergeConflictsParseTask task = new MergeConflictsParseTask(text);
+        task.start();
+        return task.getMergeConflictItems();
+    }
+
+    /**
+     * Split the merge conflict into a list of the options
+     *
+     * @param text
+     * @return
+     */
+    static public CharSequence getMergeConflictItemsHead(String text) {
+        List<CharSequence> items = getMergeConflictItems(text);
+        if( (items == null) || (items.size() <= 0) ) {
+            return null;
+        }
+        return items.get(0);
+    }
 
     /**
      * Detects merge conflict tags
@@ -42,7 +70,7 @@ public class MergeConflictsHandler {
      * @param targetTranslationId
      * @return
      */
-    static public boolean isMergeConflicted(String targetTranslationId) {
+    static public boolean isTranslationMergeConflicted(String targetTranslationId) {
         if(targetTranslationId == null) {
             return false;
         }
@@ -50,7 +78,15 @@ public class MergeConflictsHandler {
         Translator translator = App.getTranslator();
 
         TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationId);
+        if(targetTranslation == null) {
+            return false;
+        }
+
         ProjectTranslation pt = targetTranslation.getProjectTranslation();
+        if(pt == null) {
+            return false;
+        }
+
         if(isMergeConflicted(pt.getTitle())) {
             return true;
         }
@@ -87,7 +123,7 @@ public class MergeConflictsHandler {
             public void start() {
                 try {
                     if(interrupted()) return;
-                    boolean conflicted = MergeConflictsHandler.isMergeConflicted(targetTranslationId);
+                    boolean conflicted = MergeConflictsHandler.isTranslationMergeConflicted(targetTranslationId);
                     setResult(conflicted);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -109,7 +145,7 @@ public class MergeConflictsHandler {
                             if(finalConflicted) {
                                 listener.onMergeConflict(targetTranslationId);
                             } else {
-                                listener.onMergeConflict(targetTranslationId);
+                                listener.onNoMergeConflict(targetTranslationId);
                             }
                         }
                     });

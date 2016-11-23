@@ -95,26 +95,42 @@ public abstract class ListItem {
      * Returns the title of the list item
      * @return
      */
+    private String getUnConflictedText(String text) {
+        if(MergeConflictsHandler.isMergeConflicted(text)) {
+            CharSequence unConflictedText = MergeConflictsHandler.getMergeConflictItemsHead(text);
+            if(unConflictedText == null) {
+                unConflictedText = "";
+            }
+            return unConflictedText.toString();
+        }
+        return text;
+    }
+
+    /**
+     * Returns the title of the list item
+     * @return
+     */
     public String getTargetTitle() {
         if(isProjectTitle()) {
-            return targetLanguage.name;
+            return getUnConflictedText(targetLanguage.name);
         } else if(isChapter()) {
-            if(!pt.getTitle().trim().isEmpty()) {
-                return pt.getTitle().trim() + " - " + targetLanguage.name;
+            String ptTitle = getUnConflictedText(pt.getTitle()).trim();
+            if(!ptTitle.isEmpty()) {
+                return ptTitle + " - " + targetLanguage.name;
             } else {
-                return sourceContainer.project.name.trim() + " - " + targetLanguage.name;
+                return getUnConflictedText(sourceContainer.project.name).trim() + " - " + targetLanguage.name;
             }
         } else {
             // use chapter title
-            String title = ct.title.trim();
+            String title = getUnConflictedText(ct.title).trim();
             if(title.isEmpty()) {
-                title = sourceContainer.readChunk(chapterSlug, "title").trim();
+                title = getUnConflictedText(sourceContainer.readChunk(chapterSlug, "title")).trim();
             }
             // use project title
             if(title.isEmpty()) {
-                title = pt.getTitle().trim();
+                title = getUnConflictedText(pt.getTitle()).trim();
                 if(title.isEmpty()) {
-                    title = sourceContainer.project.name.trim();
+                    title = getUnConflictedText(sourceContainer.project.name).trim();
                 }
                 title += " " + Integer.parseInt(chapterSlug);
             }

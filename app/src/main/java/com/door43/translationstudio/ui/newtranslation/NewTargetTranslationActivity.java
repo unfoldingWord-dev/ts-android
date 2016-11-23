@@ -459,7 +459,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             int results = RESULT_ERROR;
 
             if(MergeTargetTranslationTask.Status.MERGE_CONFLICTS == status) {
-                if(MergeConflictsHandler.isMergeConflicted(mergeTask.getDestinationTranslation().getId())) {
+                if(MergeConflictsHandler.isTranslationMergeConflicted(mergeTask.getDestinationTranslation().getId())) {
                     results = RESULT_MERGE_CONFLICT;
                 } else {
                     results = RESULT_OK;
