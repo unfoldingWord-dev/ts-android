@@ -4,10 +4,10 @@ import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.FileHistory;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
+import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.translationstudio.core.ProjectTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
-import com.door43.translationstudio.tasks.MergeConflictsParseTask;
 
 import org.unfoldingword.door43client.models.TargetLanguage;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
@@ -92,29 +92,46 @@ public abstract class ListItem {
     }
 
     /**
+     * Removes merge conflicts in text (uses first option)
+     * @param text
+     * @return
+     */
+    private String removeConflicts(String text) {
+        if(MergeConflictsHandler.isMergeConflicted(text)) {
+            CharSequence unConflictedText = MergeConflictsHandler.getMergeConflictItemsHead(text);
+            if(unConflictedText == null) {
+                unConflictedText = "";
+            }
+            return unConflictedText.toString();
+        }
+        return text;
+    }
+
+    /**
      * Returns the title of the list item
      * @return
      */
     public String getTargetTitle() {
         if(isProjectTitle()) {
-            return targetLanguage.name;
+            return removeConflicts(targetLanguage.name);
         } else if(isChapter()) {
-            if(!pt.getTitle().trim().isEmpty()) {
-                return pt.getTitle().trim() + " - " + targetLanguage.name;
+            String ptTitle = removeConflicts(pt.getTitle()).trim();
+            if(!ptTitle.isEmpty()) {
+                return ptTitle + " - " + targetLanguage.name;
             } else {
-                return sourceContainer.project.name.trim() + " - " + targetLanguage.name;
+                return removeConflicts(sourceContainer.project.name).trim() + " - " + targetLanguage.name;
             }
         } else {
             // use chapter title
-            String title = ct.title.trim();
+            String title = removeConflicts(ct.title).trim();
             if(title.isEmpty()) {
-                title = sourceContainer.readChunk(chapterSlug, "title").trim();
+                title = removeConflicts(sourceContainer.readChunk(chapterSlug, "title")).trim();
             }
             // use project title
             if(title.isEmpty()) {
-                title = pt.getTitle().trim();
+                title = removeConflicts(pt.getTitle()).trim();
                 if(title.isEmpty()) {
-                    title = sourceContainer.project.name.trim();
+                    title = removeConflicts(sourceContainer.project.name).trim();
                 }
                 title += " " + Integer.parseInt(chapterSlug);
             }
@@ -185,7 +202,7 @@ public abstract class ListItem {
                     this.isComplete = ft.isFinished();
                 }
             }
-            this.hasMergeConflicts = MergeConflictsParseTask.isMergeConflicted(this.targetText);
+            this.hasMergeConflicts = MergeConflictsHandler.isMergeConflicted(this.targetText);
         }
     }
 }

@@ -3,6 +3,8 @@ package com.door43.translationstudio.tasks;
 import android.os.Process;
 import android.text.TextUtils;
 
+import com.door43.translationstudio.core.MergeConflictsHandler;
+
 import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
@@ -26,8 +28,6 @@ public class MergeConflictsParseTask extends ManagedTask {
     public static Pattern MergeConflictPatternFallback = Pattern.compile(MergeConflictFallback);
     public static final String MergeConflictMiddle = "(?:=======.*\\n)";
     public static Pattern MergeConflictPatternMiddle = Pattern.compile(MergeConflictMiddle);
-    public static final String MergeConflictHead = "(?:<<<<<<< HEAD.*\\n)";
-    public static Pattern MergeConflictPatternHead = Pattern.compile(MergeConflictHead);
 
     final private String mSearchText;
     private List<CharSequence> mMergeConflictItems = null;
@@ -60,7 +60,7 @@ public class MergeConflictsParseTask extends ManagedTask {
 
                 for (int i = 0; i < mMergeConflictItems.size(); i++) {
                     CharSequence mergeText = mMergeConflictItems.get(i);
-                    boolean mergeConflicted = isMergeConflicted(mergeText);
+                    boolean mergeConflicted = MergeConflictsHandler.isMergeConflicted(mergeText);
                     if (mergeConflicted) {
                         changeFound = true;
                         found = parseMergeConflicts(mergeText);
@@ -204,7 +204,7 @@ public class MergeConflictsParseTask extends ManagedTask {
         if (searchText == null) {
             return middles;
         }
-        boolean mergeConflicted = isMergeConflicted(searchText);
+        boolean mergeConflicted = MergeConflictsHandler.isMergeConflicted(searchText);
         if (mergeConflicted) { // if we have more unprocessed merges, then skip
             return middles;
         }
@@ -225,35 +225,9 @@ public class MergeConflictsParseTask extends ManagedTask {
     }
 
 
-    /**
-     * Detects merge conflict tags
-     *
-     * @param text
-     * @return
-     */
-    static public boolean isMergeConflicted(CharSequence text) {
-        if ((text != null) && (text.length() > 0)) {
-            Matcher matcher = MergeConflictPatternHead.matcher(text);
-            boolean matchFound = matcher.find();
-            return matchFound;
-        }
-        return false;
-    }
 
     public List<CharSequence> getMergeConflictItems() {
         return mMergeConflictItems;
-    }
-
-    /**
-     * search for first merge conflict
-     * TODO: instead of this we need to take users to a filtered mode that just displays the merge conflicts
-     *
-     * @param targetTranslationId
-     * @return
-     */
-    @Deprecated
-    static public CardLocation findFirstMergeConflict(String targetTranslationId) {
-        return null;
     }
 
     static public class CardLocation {
