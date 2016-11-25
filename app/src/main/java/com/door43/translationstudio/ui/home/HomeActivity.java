@@ -33,6 +33,7 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.core.MergeConflictsHandler;
+import com.door43.translationstudio.tasks.CheckForLatestReleaseTask;
 import com.door43.util.EventBuffer;
 import com.door43.translationstudio.ui.ProfileActivity;
 import com.door43.translationstudio.R;
@@ -825,10 +826,14 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                     ((UpdateSourceTask)task).setPrefix(this.getResources().getString(R.string.updating_languages));
                     taskId = UpdateSourceTask.TASK_ID;
                     break;
-                case UpdateLibraryDialog.EVENT_UPDATE_ALL:
+                case UpdateLibraryDialog.EVENT_VIEW_UPDATED:
+                    // TODO: 11/24/16 view updated
+                    return;
+                case UpdateLibraryDialog.EVENT_UPDATE_APP:
                 default:
-                    task = new UpdateAllTask();
-                    taskId = UpdateAllTask.TASK_ID;
+                    task = new CheckForLatestReleaseTask();
+                    taskId = CheckForLatestReleaseTask.TASK_ID;
+                    break;
             }
             task.addOnProgressListener(this);
             task.addOnFinishedListener(this);
@@ -899,46 +904,65 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         hand.post(new Runnable() {
             @Override
             public void run() {
-                if(progressDialog != null) {
-                    progressDialog.dismiss();
-                    progressDialog = null;
-                }
-
-                int titleID = R.string.success;
-                int msgID = R.string.update_success;
-                String message = null;
-
-                if(task.isCanceled()) {
-                    titleID = R.string.error;
-                    msgID = R.string.update_cancelled;
-                } else
-                if(!isTaskSuccess(task)) {
-                    titleID = R.string.error;
-                    msgID = R.string.options_update_failed;
-                } else { // success
-                    if(task instanceof UpdateSourceTask) {
-                        UpdateSourceTask updTask = (UpdateSourceTask) task;
-                        message = String.format(getResources().getString(R.string.update_sources_success), updTask.getAddedCnt(), updTask.getUpdatedCnt());
+                if(task instanceof CheckForLatestReleaseTask) {
+                    CheckForLatestReleaseTask checkForLatestReleaseTask = (CheckForLatestReleaseTask) task;
+                    if (progressDialog != null) {
+                        progressDialog.dismiss();
+                        progressDialog = null;
                     }
-                    if(task instanceof UpdateCatalogsTask) {
-                        UpdateCatalogsTask updTask = (UpdateCatalogsTask) task;
-                        message = String.format(getResources().getString(R.string.update_languages_success), updTask.getAddedCnt());
+
+                    CheckForLatestReleaseTask.Release release = checkForLatestReleaseTask.getLatestRelease();
+                    if (release == null) {
+                        new AlertDialog.Builder(HomeActivity.this, R.style.AppTheme_Dialog)
+                                .setTitle(R.string.check_for_updates)
+                                .setMessage(R.string.have_latest_app_update)
+                                .setPositiveButton(R.string.label_ok, null)
+                                .show();
+                    } else { // have newer
+                        SettingsActivity.promptUserToDownloadLatestVersion(HomeActivity.this, checkForLatestReleaseTask.getLatestRelease());
                     }
-                }
 
-                // notify update is done
-                AlertDialog.Builder dlg =
-                new AlertDialog.Builder(HomeActivity.this, R.style.AppTheme_Dialog)
-                    .setTitle(titleID)
-                    .setPositiveButton(R.string.dismiss, null);
-
-                if(message == null) {
-                    dlg.setMessage(msgID);
                 } else {
-                    dlg.setMessage(message);
-                }
+                    if (progressDialog != null) {
+                        progressDialog.dismiss();
+                        progressDialog = null;
+                    }
 
-                dlg.show();
+                    int titleID = R.string.success;
+                    int msgID = R.string.update_success;
+                    String message = null;
+
+                    if (task.isCanceled()) {
+                        titleID = R.string.error;
+                        msgID = R.string.update_cancelled;
+                    } else if (!isTaskSuccess(task)) {
+                        titleID = R.string.error;
+                        msgID = R.string.options_update_failed;
+                    } else { // success
+                        if (task instanceof UpdateSourceTask) {
+                            UpdateSourceTask updTask = (UpdateSourceTask) task;
+                            message = String.format(getResources().getString(R.string.update_sources_success), updTask.getAddedCnt(), updTask.getUpdatedCnt());
+                        }
+                        if (task instanceof UpdateCatalogsTask) {
+                            UpdateCatalogsTask updTask = (UpdateCatalogsTask) task;
+                            message = String.format(getResources().getString(R.string.update_languages_success), updTask.getAddedCnt());
+                        }
+                    }
+
+                    // notify update is done
+                    AlertDialog.Builder dlg =
+                            new AlertDialog.Builder(HomeActivity.this, R.style.AppTheme_Dialog)
+                                    .setTitle(titleID)
+                                    .setPositiveButton(R.string.dismiss, null);
+
+                    if (message == null) {
+                        dlg.setMessage(msgID);
+                    } else {
+                        dlg.setMessage(message);
+                    }
+
+                    dlg.show();
+                }
             }
         });
     }

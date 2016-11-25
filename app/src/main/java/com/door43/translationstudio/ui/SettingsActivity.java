@@ -1,6 +1,7 @@
 package com.door43.translationstudio.ui;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -390,7 +391,7 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
                                 .setPositiveButton(R.string.label_ok, null)
                                 .show();
                     } else { // have newer
-                        promptUserToDownloadLatestVersion(checkForLatestReleaseTask.getLatestRelease());
+                        promptUserToDownloadLatestVersion(SettingsActivity.this, checkForLatestReleaseTask.getLatestRelease());
                     }
                 }
             });
@@ -400,14 +401,14 @@ public class SettingsActivity extends PreferenceActivity implements ManagedTask.
     /**
      * ask the user if they want to download the latest version
      */
-    private void promptUserToDownloadLatestVersion(final CheckForLatestReleaseTask.Release release) {
-        new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
+    static public void promptUserToDownloadLatestVersion(final Activity activity, final CheckForLatestReleaseTask.Release release) {
+        new AlertDialog.Builder(activity, R.style.AppTheme_Dialog)
                 .setTitle(R.string.apk_update_available)
                 .setMessage(R.string.download_latest_apk)
                 .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        CrashReporterActivity.getLatestAppVersion(SettingsActivity.this, release);
+                        CrashReporterActivity.getLatestAppVersion(activity, release);
                     }
                 })
                 .setNegativeButton(R.string.title_cancel, null)

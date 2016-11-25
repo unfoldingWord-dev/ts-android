@@ -1,6 +1,8 @@
 package com.door43.translationstudio.ui.home;
 
 import android.app.DialogFragment;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +20,8 @@ public class UpdateLibraryDialog extends DialogFragment implements EventBuffer.O
     public static final int EVENT_UPDATE_LANGUAGES = 1;
     public static final int EVENT_UPDATE_SOURCE = 2;
     public static final int EVENT_UPDATE_ALL = 3;
+    public static final int EVENT_VIEW_UPDATED = 4;
+    public static final int EVENT_UPDATE_APP = 5;
     public static final String TAG = "update-library-dialog";
     private EventBuffer eventBuffer = new EventBuffer();
 
@@ -26,22 +30,37 @@ public class UpdateLibraryDialog extends DialogFragment implements EventBuffer.O
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         View v = inflater.inflate(R.layout.dialog_update_library, container, false);
 
+        v.findViewById(R.id.infoButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://help.door43.org/en/knowledgebase/9-translationstudio/docs/5-update-options"));
+                startActivity(browserIntent);
+            }
+        });
+
         v.findViewById(R.id.update_languages).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 eventBuffer.write(UpdateLibraryDialog.this, EVENT_UPDATE_LANGUAGES, null);
             }
         });
+        v.findViewById(R.id.view_updated_source).setVisibility(View.GONE);
+//        v.findViewById(R.id.view_updated_source).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                eventBuffer.write(UpdateLibraryDialog.this, EVENT_VIEW_UPDATED, null);
+//            }
+//        });
         v.findViewById(R.id.update_source).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 eventBuffer.write(UpdateLibraryDialog.this, EVENT_UPDATE_SOURCE, null);
             }
         });
-        v.findViewById(R.id.update_all).setOnClickListener(new View.OnClickListener() {
+        v.findViewById(R.id.update_app).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                eventBuffer.write(UpdateLibraryDialog.this, EVENT_UPDATE_ALL, null);
+                eventBuffer.write(UpdateLibraryDialog.this, EVENT_UPDATE_APP, null);
             }
         });
         v.findViewById(R.id.dismiss_button).setOnClickListener(new View.OnClickListener() {
