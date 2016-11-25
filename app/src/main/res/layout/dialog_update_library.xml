@@ -13,14 +13,28 @@
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/dialog_content_margin">
 
-        <TextView
+        <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/update_options"
-            android:textColor="@color/dark_primary_text"
-            android:layout_marginBottom="@dimen/dialog_controls_margin"
-            android:textAlignment="center"
-            android:textSize="@dimen/headline" />
+            android:gravity="center_horizontal">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/update_options"
+                android:layout_marginBottom="@dimen/dialog_controls_margin"
+                android:textColor="@color/dark_primary_text"
+                android:textAlignment="center"
+                android:textSize="@dimen/headline"
+                android:layout_gravity="top"
+                android:id="@+id/title" />
+            <ImageButton
+                android:id="@+id/infoButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/card_margin"
+                android:background="@drawable/ic_info_black_24dp"/>
+        </LinearLayout>
 
         <LinearLayout
             android:orientation="horizontal"

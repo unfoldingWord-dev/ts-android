@@ -30,9 +30,13 @@ public class UpdateLibraryDialog extends DialogFragment implements EventBuffer.O
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         View v = inflater.inflate(R.layout.dialog_update_library, container, false);
 
-        // TODO: 11/24/16 add info icon with action:
-//        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://help.door43.org/en/knowledgebase/9-translationstudio/docs/5-update-options"));
-//        getActivity().startActivity(browserIntent);
+        v.findViewById(R.id.infoButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://help.door43.org/en/knowledgebase/9-translationstudio/docs/5-update-options"));
+                startActivity(browserIntent);
+            }
+        });
 
         v.findViewById(R.id.update_languages).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -40,12 +44,13 @@ public class UpdateLibraryDialog extends DialogFragment implements EventBuffer.O
                 eventBuffer.write(UpdateLibraryDialog.this, EVENT_UPDATE_LANGUAGES, null);
             }
         });
-        v.findViewById(R.id.view_updated_source).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                eventBuffer.write(UpdateLibraryDialog.this, EVENT_VIEW_UPDATED, null);
-            }
-        });
+        v.findViewById(R.id.view_updated_source).setVisibility(View.GONE);
+//        v.findViewById(R.id.view_updated_source).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                eventBuffer.write(UpdateLibraryDialog.this, EVENT_VIEW_UPDATED, null);
+//            }
+//        });
         v.findViewById(R.id.update_source).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
