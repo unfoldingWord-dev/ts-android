@@ -28,12 +28,14 @@ import android.widget.PopupMenu;
 import org.eclipse.jgit.merge.MergeStrategy;
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.TargetLanguage;
+import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.translationstudio.tasks.CheckForLatestReleaseTask;
+import com.door43.translationstudio.tasks.FindNewAndUpdatedSourcesTask;
 import com.door43.util.EventBuffer;
 import com.door43.translationstudio.ui.ProfileActivity;
 import com.door43.translationstudio.R;
@@ -64,6 +66,7 @@ import com.door43.widget.ViewUtil;
 
 import java.io.File;
 import java.text.NumberFormat;
+import java.util.List;
 
 public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFinishedListener, WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener, EventBuffer.OnEventListener, ManagedTask.OnProgressListener, ManagedTask.OnFinishedListener, DialogInterface.OnCancelListener {
     private static final int NEW_TARGET_TRANSLATION_REQUEST = 1;
@@ -827,8 +830,9 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                     taskId = UpdateSourceTask.TASK_ID;
                     break;
                 case UpdateLibraryDialog.EVENT_VIEW_UPDATED:
-                    // TODO: 11/24/16 view updated
-                    return;
+                    task = new FindNewAndUpdatedSourcesTask();
+                    taskId = FindNewAndUpdatedSourcesTask.TASK_ID;
+                    break;
                 case UpdateLibraryDialog.EVENT_UPDATE_APP:
                 default:
                     task = new CheckForLatestReleaseTask();
@@ -904,7 +908,25 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         hand.post(new Runnable() {
             @Override
             public void run() {
-                if(task instanceof CheckForLatestReleaseTask) {
+                if(task instanceof FindNewAndUpdatedSourcesTask) {
+                    FindNewAndUpdatedSourcesTask changedSourcesTask = (FindNewAndUpdatedSourcesTask) task;
+                    if (progressDialog != null) {
+                        progressDialog.dismiss();
+                        progressDialog = null;
+                    }
+
+                    List<Translation> changedSources = changedSourcesTask.getChangedSources();
+                    if( (changedSources == null) || (changedSources.size() == 0) ) {
+                        new AlertDialog.Builder(HomeActivity.this, R.style.AppTheme_Dialog)
+                                .setTitle(R.string.check_for_updates)
+                                .setMessage(R.string.all_up_to_date)
+                                .setPositiveButton(R.string.label_ok, null)
+                                .show();
+                    } else { // have changed items
+                        // TODO: 11/26/16 show changed
+                    }
+
+                } else if(task instanceof CheckForLatestReleaseTask) {
                     CheckForLatestReleaseTask checkForLatestReleaseTask = (CheckForLatestReleaseTask) task;
                     if (progressDialog != null) {
                         progressDialog.dismiss();

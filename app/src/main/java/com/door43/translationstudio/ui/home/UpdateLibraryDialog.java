@@ -44,13 +44,12 @@ public class UpdateLibraryDialog extends DialogFragment implements EventBuffer.O
                 eventBuffer.write(UpdateLibraryDialog.this, EVENT_UPDATE_LANGUAGES, null);
             }
         });
-        v.findViewById(R.id.view_updated_source).setVisibility(View.GONE);
-//        v.findViewById(R.id.view_updated_source).setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                eventBuffer.write(UpdateLibraryDialog.this, EVENT_VIEW_UPDATED, null);
-//            }
-//        });
+        v.findViewById(R.id.view_updated_source).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                eventBuffer.write(UpdateLibraryDialog.this, EVENT_VIEW_UPDATED, null);
+            }
+        });
         v.findViewById(R.id.update_source).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
