@@ -6,11 +6,12 @@ import com.door43.translationstudio.ui.SettingsActivity;
 
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.Translation;
+import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 /**
  * Indexes all of the source meta from the api
@@ -33,12 +34,11 @@ public class UpdateSourceTask extends ManagedTask {
 
         Door43Client library = App.getLibrary();
         List<Translation> availableTranslationsAll = library.index.findTranslations(null, null, null, "book", null, App.MIN_CHECKING_LEVEL, -1);
-        Map<String,Integer> previouslyUpdated = new HashMap<>();
+        Set<String> initialSources = new HashSet<>();
 
         for (Translation t : availableTranslationsAll) {
             String id = t.resourceContainerSlug;
-            int lastModifiedOnServer = library.getResourceContainerLastModified(t.language.slug, t.project.slug, t.resource.slug);
-            previouslyUpdated.put(id, lastModifiedOnServer);
+            initialSources.add(id);
         }
 
         availableTranslationsAll = null; // free up memory while downloading
@@ -78,12 +78,19 @@ public class UpdateSourceTask extends ManagedTask {
                 }
                 
                 String id = t.resourceContainerSlug;
-                if(previouslyUpdated.containsKey(id)) {
+                if(initialSources.contains(id)) {
                     try {
-                        int lastModifiedOnServer = library.getResourceContainerLastModified(t.language.slug, t.project.slug, t.resource.slug);
-                        Integer previousUpdate = previouslyUpdated.get(id);
-                        if (lastModifiedOnServer > previousUpdate) {
-                            updatedCnt++; // update times have changed
+                        int lastUpdatedDate = FindNewAndUpdatedSourcesTask.getLastUpdated(t);
+                        if(lastUpdatedDate > 0) {
+                            int lastModifiedOnServer = library.getResourceContainerLastModified(t.language.slug, t.project.slug, t.resource.slug);
+                            if(lastModifiedOnServer > lastUpdatedDate) {
+                                updatedCnt++;
+                            }
+                            if(lastModifiedOnServer < 0) {
+                                Logger.i(TASK_ID,"Could not get server modified time: " + t.resourceContainerSlug);
+                            }
+                        } else { // could not get date
+                            updatedCnt++;
                         }
                     } catch (Exception e) {
                         e.printStackTrace();

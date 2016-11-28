@@ -826,7 +826,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                     break;
                 case UpdateLibraryDialog.EVENT_UPDATE_SOURCE:
                     task = new UpdateSourceTask();
-                    ((UpdateSourceTask)task).setPrefix(this.getResources().getString(R.string.updating_languages));
+                    ((UpdateSourceTask)task).setPrefix(this.getResources().getString(R.string.update_warning));
                     taskId = UpdateSourceTask.TASK_ID;
                     break;
                 case UpdateLibraryDialog.EVENT_VIEW_UPDATED:
