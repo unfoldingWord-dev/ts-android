@@ -26,6 +26,7 @@ public class FindNewAndUpdatedSourcesTask extends ManagedTask {
     private int addedCnt = 0;
     private String prefix;
     private List<Translation> changedSources;
+    static private File containersDir = new File(App.publicDir(), "resource_containers");
 
     @Override
     public void start() {
@@ -33,47 +34,73 @@ public class FindNewAndUpdatedSourcesTask extends ManagedTask {
         success = false;
         changedSources = new ArrayList<>();
         int count = 0;
-        Calendar calendar = Calendar.getInstance();
 
         publishProgress(-1, "");
-
-        File containersDir = new File(App.publicDir(), "resource_containers");
 
         Door43Client library = App.getLibrary();
         List<Translation> availableTranslations = library.index.findTranslations(null, null, null, "book", null, App.MIN_CHECKING_LEVEL, -1);
 
-        int length = availableTranslations.size();
+        maxProgress = availableTranslations.size();
         for (Translation sourceTranslation : availableTranslations) {
-            publishProgress((float)count++/length, "");
+            if((++count % 4) == 0) {
+                publishProgress((float)count/ maxProgress, sourceTranslation.resourceContainerSlug);
+            }
 
             // TODO: 11/26/16 add unchanged items to list
             boolean isDownloaded = library.exists(sourceTranslation.resourceContainerSlug);
             if(!isDownloaded) {
                 changedSources.add(sourceTranslation);
-            } else { // check change
-                File directory = new File(containersDir, sourceTranslation.resourceContainerSlug);
-                File archive = new File(directory + "." + ResourceContainer.fileExtension);
-                if(!archive.exists()) {
-                    changedSources.add(sourceTranslation);
-                } else {
-                    long modified = archive.lastModified();
-                    calendar.setTimeInMillis(modified);
+                continue;
+            }
 
-                    int lastUpdated = calendar.get(Calendar.YEAR) * 10000
-                            + calendar.get(Calendar.MONTH) * 100
-                            + calendar.get(Calendar.DAY_OF_MONTH);
-                    int lastModifiedOnServer = library.getResourceContainerLastModified(sourceTranslation.language.slug, sourceTranslation.project.slug, sourceTranslation.resource.slug);
-                    if(lastModifiedOnServer > lastUpdated) {
-                        changedSources.add(sourceTranslation);
-                    }
-                    if(lastModifiedOnServer < 0) {
-                        Logger.i(TASK_ID,"Could not get server modified time: " + sourceTranslation.resourceContainerSlug);
-                    }
+            int lastUpdatedDate = getLastUpdated(sourceTranslation);
+            if(lastUpdatedDate > 0) {
+                int lastModifiedOnServer = library.getResourceContainerLastModified(sourceTranslation.language.slug, sourceTranslation.project.slug, sourceTranslation.resource.slug);
+                if(lastModifiedOnServer > lastUpdatedDate) {
+                    changedSources.add(sourceTranslation);
                 }
+                if(lastModifiedOnServer < 0) {
+                    Logger.i(TASK_ID,"Could not get server modified time: " + sourceTranslation.resourceContainerSlug);
+                }
+            } else { // could not get
+                changedSources.add(sourceTranslation);
             }
         }
 
         success = true;
+    }
+
+    /**
+     * gets the modified time.  First checks if resource is unzipped before openning resource
+     *   If resource is not unzipped, we use the file time of the compressed resource file.
+     *   Otherwise it takes very long and uses a lot of memory to unzip 700 resource files.
+     * @param sourceTranslation
+     * @return
+     */
+    static public int getLastUpdated(Translation sourceTranslation) {
+        int lastUpdated = -1;
+        File directory = new File(containersDir, sourceTranslation.resourceContainerSlug);
+        if(directory.exists() && directory.isDirectory()) {
+            try {
+                ResourceContainer container = App.getLibrary().open(sourceTranslation.resourceContainerSlug);
+                return container.modifiedAt;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        File archive = new File(directory + "." + ResourceContainer.fileExtension);
+        if(archive.exists()) {
+
+            long modified = archive.lastModified();
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(modified);
+
+            lastUpdated = calendar.get(Calendar.YEAR) * 10000
+                    + calendar.get(Calendar.MONTH) * 100
+                    + calendar.get(Calendar.DAY_OF_MONTH);
+        }
+        return lastUpdated;
     }
 
     @Override

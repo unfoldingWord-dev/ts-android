@@ -924,6 +924,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                                 .show();
                     } else { // have changed items
                         // TODO: 11/26/16 show changed
+                        Logger.i(TAG, "Found " + changedSources.size() + " changed items");
                     }
 
                 } else if(task instanceof CheckForLatestReleaseTask) {
