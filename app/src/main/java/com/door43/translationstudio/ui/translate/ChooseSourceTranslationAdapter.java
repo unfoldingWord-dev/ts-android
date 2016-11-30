@@ -231,10 +231,11 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
 
         // load update status
         final ViewHolder staticHolder = holder;
+        staticHolder.currentPosition = position;
         ManagedTask oldTask = TaskManager.getTask(holder.currentTaskId);
         TaskManager.cancelTask(oldTask);
         TaskManager.clearTask(oldTask);
-        if(!item.checkedUpdates && !item.downloaded) {
+        if(!item.checkedUpdates && item.downloaded) {
             ManagedTask task = new ManagedTask() {
                 @Override
                 public void start() {
@@ -250,22 +251,25 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
             };
             task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
                 @Override
-                public void onTaskFinished(ManagedTask task) {
+                public void onTaskFinished(final ManagedTask task) {
                     TaskManager.clearTask(task);
                     boolean hasUpdates = false;
                     if(task.getResult() != null) hasUpdates = (boolean)task.getResult();
                     item.hasUpdates = hasUpdates;
-                    if(!task.isCanceled() && position == staticHolder.currentPosition) {
+                    item.checkedUpdates = true;
                         Handler hand = new Handler(Looper.getMainLooper());
                         hand.post(new Runnable() {
                             @Override
                             public void run() {
-                                notifyDataSetChanged();
+                                if(!task.isCanceled() && position == staticHolder.currentPosition) {
+                                    notifyDataSetChanged();
+                                }
                             }
                         });
-                    }
+
                 }
             });
+            holder.currentTaskId = TaskManager.addTask(task);
         }
 
         holder.titleView.setText(item.title);
