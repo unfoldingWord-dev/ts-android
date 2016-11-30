@@ -916,4 +916,5 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="update_warning">Checking for new and updated source texts will close this project. This requires an Internet Connection.</string>
     <string name="view_updated_source">View New and Updated Source Texts</string>
     <string name="check_app_update">Check for Update to translationStudio</string>
+    <string name="all_up_to_date">All Source Texts already up to date!</string>
 </resources>
