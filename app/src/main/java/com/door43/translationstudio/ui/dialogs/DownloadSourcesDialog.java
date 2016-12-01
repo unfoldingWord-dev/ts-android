@@ -88,8 +88,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                         progressDialog = null;
                     }
 
-                    List<Translation> availableSources = availableSourcesTask.getSources();
-                    Logger.i(TAG, "Found " + availableSources.size() + " sources");
+                    mAdapter.setData(availableSourcesTask);
                 }
             }
         });

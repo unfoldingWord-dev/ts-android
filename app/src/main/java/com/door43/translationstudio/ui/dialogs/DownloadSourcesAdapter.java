@@ -4,8 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.os.Handler;
-import android.os.Looper;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -19,9 +17,11 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.tasks.GetAvailableSourcesTask;
 import com.door43.widget.ViewUtil;
 
 import org.unfoldingword.door43client.models.Translation;
+import org.unfoldingword.tools.logger.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,12 +40,13 @@ public class DownloadSourcesAdapter  extends BaseAdapter {
     private Map<String, ViewItem> mData = new HashMap<>();
     private List<String> mSelected = new ArrayList<>();
     private List<ViewItem> mSortedData = new ArrayList<>();
-    private List<Translation> availableTranslations;
+    private List<Translation> availableSources;
     private Map<String,Set<Integer>> byLanguage;
     private Map<String,Set<Integer>> otBooks;
     private Map<String,Set<Integer>> ntBooks;
     private Map<String,Set<Integer>> other;
 
+    private FilterType filterOn = FilterType.byLanguage;
 
     public DownloadSourcesAdapter(Context context) {
         mContext = context;
@@ -61,10 +62,22 @@ public class DownloadSourcesAdapter  extends BaseAdapter {
      * If the item id matches an existing item it will be skipped
 a     * @param item
      */
-    public void addItem(final ViewItem item) {
-        if(!mData.containsKey(item.containerSlug)) {
-            mData.put(item.containerSlug, item);
+    public void setData(GetAvailableSourcesTask task) {
+        if(task != null) {
+            availableSources = task.getSources();
+            Logger.i(TAG, "Found " + availableSources.size() + " sources");
+
+            byLanguage = task.getByLanguage();
+            otBooks = task.getOtBooks();
+            ntBooks = task.getNtBooks();
+            other = task.getOther();
+
+            sort();
         }
+    }
+
+    public void setFilterOn(FilterType filterOn) {
+        this.filterOn = filterOn;
     }
 
     @Override
@@ -99,6 +112,22 @@ a     * @param item
      * Resorts the data
      */
     public void sort() {
+        switch (filterOn) {
+            case byLanguage:
+            default:
+                mData = new HashMap<>();
+                Map<String,Set<Integer>> sortSet = byLanguage;
+                for (String key : sortSet.keySet()) {
+                    Set<Integer> items = sortSet.get(key);
+                    if((items != null)  && (items.size() > 0)) {
+                        int index = items.iterator().next();
+                        Translation sourceTranslation = availableSources.get(index);
+                        String title = sourceTranslation.language.name + "  (" + sourceTranslation.language.slug + ")";
+                        ViewItem newItem = new ViewItem(title, sourceTranslation, false, false);
+                        mSortedData.add(newItem);
+                    }
+                }
+        }
         notifyDataSetChanged();
     }
 
@@ -236,6 +265,35 @@ a     * @param item
             }
             this.downloaded = downloaded;
             this.error = false;
+        }
+    }
+
+    /**
+     * enum that keeps track of current state of USFM import
+     */
+    public enum FilterType {
+        byLanguage(0),
+        oldTestament(1),
+        newTestament(2),
+        other(3);
+
+        private int _value;
+
+        FilterType(int Value) {
+            this._value = Value;
+        }
+
+        public int getValue() {
+            return _value;
+        }
+
+        public static FilterType fromInt(int i) {
+            for (FilterType b : FilterType.values()) {
+                if (b.getValue() == i) {
+                    return b;
+                }
+            }
+            return null;
         }
     }
 }
