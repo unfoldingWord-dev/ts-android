@@ -9,9 +9,9 @@ import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 /**
  * Indexes all of the source meta from the api
@@ -29,19 +29,35 @@ public class UpdateSourceTask extends ManagedTask {
         updatedCnt = 0;
         addedCnt = 0;
         success = false;
+        int count = 0;
 
         publishProgress(-1, "");
 
         Door43Client library = App.getLibrary();
         List<Translation> availableTranslationsAll = library.index.findTranslations(null, null, null, "book", null, App.MIN_CHECKING_LEVEL, -1);
-        Set<String> initialSources = new HashSet<>();
+        Map<String,Integer> previouslyUpdated = new HashMap<>();
 
+        int length = availableTranslationsAll.size();
+        maxProgress = (int)length;
         for (Translation t : availableTranslationsAll) {
+
+            if( ++count % 16 == 0) {
+                publishProgress((float)count/(float)length, "");
+
+                if(UpdateSourceTask.this.isCanceled()) {
+                    success = false;
+                    return;
+                }
+            }
+
             String id = t.resourceContainerSlug;
-            initialSources.add(id);
+            int lastModifiedOnServer = library.getResourceContainerLastModified(t.language.slug, t.project.slug, t.resource.slug);
+            previouslyUpdated.put(id, lastModifiedOnServer);
         }
 
         availableTranslationsAll = null; // free up memory while downloading
+
+        publishProgress(-1, "");
 
         try {
             String server = App.getPref(SettingsActivity.KEY_PREF_MEDIA_SERVER, App.getRes(R.string.pref_default_media_server));
@@ -69,28 +85,36 @@ public class UpdateSourceTask extends ManagedTask {
         }
 
         if(success) { // check for changes
+            publishProgress(-1, "");
+
             library = App.getLibrary();
             availableTranslationsAll = library.index.findTranslations(null, null, null, "book", null, App.MIN_CHECKING_LEVEL, -1);
+
+            length = availableTranslationsAll.size();
+            maxProgress = (int)length;
+            count = 0;
 
             for (Translation t : availableTranslationsAll) {
                 if(UpdateSourceTask.this.isCanceled()) {
                     break;
                 }
-                
+
+                if( ++count % 16 == 0) {
+                    publishProgress((float)count/(float)length, "");
+
+                    if(UpdateSourceTask.this.isCanceled()) {
+                        success = false;
+                        return;
+                    }
+                }
+
                 String id = t.resourceContainerSlug;
-                if(initialSources.contains(id)) {
+                if(previouslyUpdated.containsKey(id)) {
                     try {
-                        int lastUpdatedDate = FindNewAndUpdatedSourcesTask.getLastUpdated(t);
-                        if(lastUpdatedDate > 0) {
-                            int lastModifiedOnServer = library.getResourceContainerLastModified(t.language.slug, t.project.slug, t.resource.slug);
-                            if(lastModifiedOnServer > lastUpdatedDate) {
-                                updatedCnt++;
-                            }
-                            if(lastModifiedOnServer < 0) {
-                                Logger.i(TASK_ID,"Could not get server modified time: " + t.resourceContainerSlug);
-                            }
-                        } else { // could not get date
-                            updatedCnt++;
+                        int lastModifiedOnServer = library.getResourceContainerLastModified(t.language.slug, t.project.slug, t.resource.slug);
+                        Integer previousUpdate = previouslyUpdated.get(id);
+                        if (lastModifiedOnServer > previousUpdate) {
+                            updatedCnt++; // update times have changed
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
