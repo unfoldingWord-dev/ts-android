@@ -36,6 +36,7 @@ import com.door43.translationstudio.App;
 import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.translationstudio.tasks.CheckForLatestReleaseTask;
 import com.door43.translationstudio.tasks.GetAvailableSourcesTask;
+import com.door43.translationstudio.ui.dialogs.DownloadSourcesDialog;
 import com.door43.util.EventBuffer;
 import com.door43.translationstudio.ui.ProfileActivity;
 import com.door43.translationstudio.R;
@@ -816,6 +817,20 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     @Override
     public void onEventBufferEvent(EventBuffer.OnEventTalker talker, int tag, Bundle args) {
         if(talker instanceof UpdateLibraryDialog) {
+
+            if(tag == UpdateLibraryDialog.EVENT_DOWNLOAD_SOURCES) {
+                FragmentTransaction ft = getFragmentManager().beginTransaction();
+                Fragment prev = getFragmentManager().findFragmentByTag(DownloadSourcesDialog.TAG);
+                if (prev != null) {
+                    ft.remove(prev);
+                }
+                ft.addToBackStack(null);
+
+                DownloadSourcesDialog dialog = new DownloadSourcesDialog();
+                dialog.show(ft, DownloadSourcesDialog.TAG);
+                return;
+            }
+
             ManagedTask task;
             String taskId;
             switch (tag) {
@@ -828,10 +843,6 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                     task = new UpdateSourceTask();
                     ((UpdateSourceTask)task).setPrefix(this.getResources().getString(R.string.update_warning));
                     taskId = UpdateSourceTask.TASK_ID;
-                    break;
-                case UpdateLibraryDialog.EVENT_DOWNLOAD_SOURCES:
-                    task = new GetAvailableSourcesTask();
-                    taskId = GetAvailableSourcesTask.TASK_ID;
                     break;
                 case UpdateLibraryDialog.EVENT_UPDATE_APP:
                 default:
@@ -909,14 +920,14 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             @Override
             public void run() {
                 if(task instanceof GetAvailableSourcesTask) {
-                    GetAvailableSourcesTask changedSourcesTask = (GetAvailableSourcesTask) task;
+                    GetAvailableSourcesTask availableSourcesTask = (GetAvailableSourcesTask) task;
                     if (progressDialog != null) {
                         progressDialog.dismiss();
                         progressDialog = null;
                     }
 
-                    List<Translation> changedSources = changedSourcesTask.getSources();
-                    Logger.i(TAG, "Found " + changedSources.size() + " changed items");
+                    List<Translation> availableSources = availableSourcesTask.getSources();
+                    Logger.i(TAG, "Found " + availableSources.size() + " sources");
 
                 } else if(task instanceof CheckForLatestReleaseTask) {
                     CheckForLatestReleaseTask checkForLatestReleaseTask = (CheckForLatestReleaseTask) task;

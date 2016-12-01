@@ -37,12 +37,11 @@ public class UpdateSourceTask extends ManagedTask {
         List<Translation> availableTranslationsAll = library.index.findTranslations(null, null, null, "book", null, App.MIN_CHECKING_LEVEL, -1);
         Map<String,Integer> previouslyUpdated = new HashMap<>();
 
-        int length = availableTranslationsAll.size();
-        maxProgress = (int)length;
+        maxProgress = availableTranslationsAll.size();
         for (Translation t : availableTranslationsAll) {
 
             if( ++count % 16 == 0) {
-                publishProgress((float)count/(float)length, "");
+                publishProgress((float)count/maxProgress, "");
 
                 if(UpdateSourceTask.this.isCanceled()) {
                     success = false;
@@ -90,8 +89,7 @@ public class UpdateSourceTask extends ManagedTask {
             library = App.getLibrary();
             availableTranslationsAll = library.index.findTranslations(null, null, null, "book", null, App.MIN_CHECKING_LEVEL, -1);
 
-            length = availableTranslationsAll.size();
-            maxProgress = (int)length;
+            maxProgress = availableTranslationsAll.size();
             count = 0;
 
             for (Translation t : availableTranslationsAll) {
@@ -100,7 +98,7 @@ public class UpdateSourceTask extends ManagedTask {
                 }
 
                 if( ++count % 16 == 0) {
-                    publishProgress((float)count/(float)length, "");
+                    publishProgress((float)count/maxProgress, "");
 
                     if(UpdateSourceTask.this.isCanceled()) {
                         success = false;
