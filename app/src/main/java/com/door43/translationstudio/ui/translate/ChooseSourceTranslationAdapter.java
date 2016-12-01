@@ -257,16 +257,16 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
                     if(task.getResult() != null) hasUpdates = (boolean)task.getResult();
                     item.hasUpdates = hasUpdates;
                     item.checkedUpdates = true;
-                        Handler hand = new Handler(Looper.getMainLooper());
-                        hand.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                if(!task.isCanceled() && position == staticHolder.currentPosition) {
-                                    notifyDataSetChanged();
-                                }
-                            }
-                        });
 
+                    Handler hand = new Handler(Looper.getMainLooper());
+                    hand.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(!task.isCanceled() && position == staticHolder.currentPosition) {
+                                notifyDataSetChanged();
+                            }
+                        }
+                    });
                 }
             });
             holder.currentTaskId = TaskManager.addTask(task);

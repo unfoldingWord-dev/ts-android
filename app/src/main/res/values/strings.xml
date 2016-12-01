@@ -879,8 +879,8 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="merge_conflict_title">Merge Conflict</string>
     <string name="import_merge_conflict">Merge conflict on Import - Click OK to resolve</string>
     <string name="label_change">change</string>
-    <string name="update_languages">Get New Target Languages</string>
-    <string name="update_source">Check for New and Updated Source Texts</string>
+    <string name="update_languages">Update List of Available Target Languages</string>
+    <string name="update_source">Update List of Available Source Texts</string>
     <string name="update_all">Update All</string>
     <string name="time_very_slow">Takes awhile</string>
     <string name="time_slow">May take many minutes (or longer)</string>
@@ -914,7 +914,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="update_sources_label">Check for new and updated sources</string>
     <string name="warning_title">Warning</string>
     <string name="update_warning">Checking for new and updated source texts will close this project. This requires an Internet Connection.</string>
-    <string name="view_updated_source">View New and Updated Source Texts</string>
+    <string name="download_sources">Download Available Source Texts</string>
     <string name="check_app_update">Check for Update to translationStudio</string>
     <string name="all_up_to_date">All Source Texts already up to date!</string>
 </resources>
