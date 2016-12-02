@@ -563,12 +563,14 @@ a     * @param task
     public static class FilterStep {
         public final SelectionType selection;
         public String label;
+        public String old_label;
         public String filter;
 
         public FilterStep(SelectionType selection, String label) {
             this.selection = selection;
             this.label = label;
             filter = null;
+            old_label = null;
         }
     }
 

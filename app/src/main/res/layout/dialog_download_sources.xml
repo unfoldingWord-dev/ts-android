@@ -25,6 +25,19 @@
                 android:src="@drawable/ic_arrow_back_black_24dp"
                 android:background="?attr/selectableItemBackgroundBorderless"/>
 
+            <TextView
+                android:layout_gravity="center_vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:textStyle="italic"
+                android:textColor="@color/dark_secondary_text"
+                android:textSize="@dimen/title"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:paddingRight="16dp"
+                android:id="@+id/nav_text" />
+
             <EditText
                 android:layout_gravity="center_vertical"
                 android:layout_width="match_parent"

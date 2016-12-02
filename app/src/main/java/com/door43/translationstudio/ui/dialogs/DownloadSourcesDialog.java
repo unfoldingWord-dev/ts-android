@@ -15,6 +15,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
@@ -39,10 +40,11 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
     private ProgressDialog progressDialog = null;
     private DownloadSourcesAdapter mAdapter;
     private List<DownloadSourcesAdapter.FilterStep> mSteps;
+    private TextView mNavText;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
-        View v = inflater.inflate(R.layout.dialog_choose_source_translation, container, false);
+        View v = inflater.inflate(R.layout.dialog_download_sources, container, false);
 
         mLibrary = App.getLibrary();
         mSteps = new ArrayList<>();
@@ -55,17 +57,35 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         task.addOnFinishedListener(this);
         TaskManager.addTask(task, GetAvailableSourcesTask.TASK_ID);
 
+        mNavText = (TextView) v.findViewById(R.id.nav_text);
+
         EditText searchView = (EditText) v.findViewById(R.id.search_text);
         searchView.setHint(R.string.choose_source_translations);
         searchView.setEnabled(false);
         ImageButton searchBackButton = (ImageButton) v.findViewById(R.id.search_back_button);
+        searchBackButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mSteps.size() > 1) {
+                    DownloadSourcesAdapter.FilterStep lastStep = mSteps.get(mSteps.size() - 1);
+                    mSteps.remove(lastStep);
+                    lastStep = mSteps.get(mSteps.size() - 1);
+                    lastStep.filter = null;
+                    lastStep.label = lastStep.old_label;
+                    setFilter();
+                } else {
+                    dismiss();
+                }
+            }
+        });
+
 //        searchBackButton.setVisibility(View.GONE);
         ImageView searchIcon = (ImageView) v.findViewById(R.id.search_mag_icon);
         searchIcon.setVisibility(View.GONE);
         // TODO: set up search
 
         mAdapter = new DownloadSourcesAdapter(getActivity());
-        mAdapter.setFilterSteps(mSteps);
+        setFilter();
 
         ListView listView = (ListView) v.findViewById(R.id.list);
         listView.setAdapter(mAdapter);
@@ -75,6 +95,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                 if((mAdapter != null) && (mSteps != null) && (mSteps.size() > 0)) {
                     DownloadSourcesAdapter.FilterStep currentStep = mSteps.get(mSteps.size() - 1);
                     DownloadSourcesAdapter.ViewItem item = mAdapter.getItem(position);
+                    currentStep.old_label = currentStep.label;
                     currentStep.label = item.title.toString();
                     currentStep.filter = item.filter;
 
@@ -121,11 +142,25 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                         mAdapter.toggleSelection(position);
                         return;
                     }
-                    mAdapter.setFilterSteps(mSteps);
+                    setFilter();
                 }
             }
         });
         return v;
+    }
+
+    private void setFilter() {
+        if(mNavText != null) {
+            String navText = "";
+            for (DownloadSourcesAdapter.FilterStep mStep : mSteps) {
+                if(!navText.isEmpty()) {
+                    navText += " > ";
+                }
+                navText += mStep.label;
+            }
+            mNavText.setText(navText);
+        }
+        mAdapter.setFilterSteps(mSteps);
     }
 
     /**
