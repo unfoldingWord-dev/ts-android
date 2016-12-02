@@ -7,11 +7,10 @@ import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -25,10 +24,10 @@ public class GetAvailableSourcesTask extends ManagedTask {
     private int maxProgress = 0;
     private boolean success = false;
     private List<Translation> availableTranslations;
-    private Map<String,Set<Integer>> byLanguage;
-    private Map<String,Set<Integer>> otBooks;
-    private Map<String,Set<Integer>> ntBooks;
-    private Map<String,Set<Integer>> other;
+    private Map<String,List<Integer>> byLanguage;
+    private Map<String,List<Integer>> otBooks;
+    private Map<String,List<Integer>> ntBooks;
+    private Map<String,List<Integer>> other;
 
     private static String[] ntBookList = { "mat" , "mrk", "luk", "jhn", "act", "rom", "1co", "2co",
                                             "gal", "eph", "php", "col", "1th", "2th", "1ti", "2ti",
@@ -54,13 +53,13 @@ public class GetAvailableSourcesTask extends ManagedTask {
 
         ntBooks = new LinkedHashMap<>();
         for (String book : ntBookList) {
-            Set<Integer> books = new HashSet<>();
+            List<Integer> books = new ArrayList<>();
             ntBooks.put(book, books);
         }
 
         otBooks = new LinkedHashMap<>();
         for (String book : otBookList) {
-            Set<Integer> books = new HashSet<>();
+            List<Integer> books = new ArrayList<>();
             otBooks.put(book, books);
         }
         other = new LinkedHashMap<>();
@@ -81,11 +80,11 @@ public class GetAvailableSourcesTask extends ManagedTask {
             String language = t.language.slug;
 
             //add to language
-            Set<Integer> translations;
+            List<Integer> translations;
             if(byLanguage.containsKey(language)) {
                 translations =  byLanguage.get(language);
             } else {
-                translations = new HashSet<>();
+                translations = new ArrayList<>();
                 byLanguage.put(language, translations);
             }
 
@@ -94,18 +93,18 @@ public class GetAvailableSourcesTask extends ManagedTask {
             //add to book list
             String book = t.project.slug;
             if(ntBooks.containsKey(book)) { // if NT book
-                Set<Integer> books = ntBooks.get(book);
+                List<Integer> books = ntBooks.get(book);
                 books.add(i);
             }
             else if(otBooks.containsKey(book)) { // if OT book
-                Set<Integer> books = otBooks.get(book);
+                List<Integer> books = otBooks.get(book);
                 books.add(i);
             } else { // other
-                Set<Integer> books;
+                List<Integer> books;
                 if(other.containsKey(book)) {
                    books = other.get(book);
                 } else {
-                    books = new HashSet<>();
+                    books = new ArrayList<>();
                     other.put(book, books);
                 }
                 books.add(i);
@@ -136,19 +135,19 @@ public class GetAvailableSourcesTask extends ManagedTask {
         this.prefix = prefix + "  ";
     }
 
-    public Map<String, Set<Integer>> getOther() {
+    public Map<String, List<Integer>> getOther() {
         return other;
     }
 
-    public Map<String, Set<Integer>> getNtBooks() {
+    public Map<String, List<Integer>> getNtBooks() {
         return ntBooks;
     }
 
-    public Map<String, Set<Integer>> getOtBooks() {
+    public Map<String, List<Integer>> getOtBooks() {
         return otBooks;
     }
 
-    public Map<String, Set<Integer>> getByLanguage() {
+    public Map<String, List<Integer>> getByLanguage() {
         return byLanguage;
     }
 

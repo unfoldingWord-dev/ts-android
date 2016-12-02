@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by blm on 12/1/16.
@@ -36,17 +35,22 @@ import java.util.Set;
 public class DownloadSourcesAdapter  extends BaseAdapter {
 
     public static final String TAG = DownloadSourcesAdapter.class.getSimpleName();
+    public static final int TYPE_ITEM_SINGLE_SELECTION = 0;
+    public static final int TYPE_ITEM_TOGGLEABLE = 1;
     private final Context mContext;
     private Map<String, ViewItem> mData = new HashMap<>();
     private List<String> mSelected = new ArrayList<>();
     private List<ViewItem> mSortedData = new ArrayList<>();
     private List<Translation> availableSources;
-    private Map<String,Set<Integer>> byLanguage;
-    private Map<String,Set<Integer>> otBooks;
-    private Map<String,Set<Integer>> ntBooks;
-    private Map<String,Set<Integer>> other;
+    private Map<String,List<Integer>> byLanguage;
+    private Map<String,List<Integer>> otBooks;
+    private Map<String,List<Integer>> ntBooks;
+    private Map<String,List<Integer>> other;
 
-    private FilterType filterOn = FilterType.byLanguage;
+    private static int[] bookTypeNameList = { R.string.old_testament_label, R.string.new_testament_label, R.string.other };
+    private static int[] bookTypeIconList = { R.drawable.ic_library_books_black_24dp, R.drawable.ic_library_books_black_24dp, R.drawable.ic_local_library_black_24dp };
+
+    private SelectionType selectBy = SelectionType.newTestament; // byLanguage;
 
     public DownloadSourcesAdapter(Context context) {
         mContext = context;
@@ -58,9 +62,8 @@ public class DownloadSourcesAdapter  extends BaseAdapter {
     }
 
     /**
-     * Adds an item to the list
-     * If the item id matches an existing item it will be skipped
-a     * @param item
+     * Loads data from task
+a     * @param task
      */
     public void setData(GetAvailableSourcesTask task) {
         if(task != null) {
@@ -76,8 +79,8 @@ a     * @param item
         }
     }
 
-    public void setFilterOn(FilterType filterOn) {
-        this.filterOn = filterOn;
+    public void setSelectBy(SelectionType selectBy) {
+        this.selectBy = selectBy;
     }
 
     @Override
@@ -104,31 +107,100 @@ a     * @param item
     }
 
     @Override
+    public int getItemViewType(int position) {
+        int type = TYPE_ITEM_SINGLE_SELECTION;
+        switch (selectBy) {
+            case byLanguage:
+            case newTestament:
+            case oldTestament:
+            case other:
+                type = TYPE_ITEM_SINGLE_SELECTION;
+                break;
+        }
+        return type;
+    }
+
+    @Override
     public int getViewTypeCount() {
-        return 1;
+        return 2;
     }
 
     /**
      * Resorts the data
      */
     public void sort() {
-        switch (filterOn) {
+        Map<String,List<Integer>> sortSet;
+        switch (selectBy) {
+            case oldTestament:
+                sortBy(otBooks);
+                break;
+
+            case newTestament:
+                sortBy(ntBooks);
+                break;
+
+            case other:
+                sortBy(other);
+                break;
+
+            case book_type:
+                mSortedData = new ArrayList<>();
+                for(int i = 0; i < bookTypeNameList.length; i++) {
+                    String title = mContext.getResources().getString(bookTypeNameList[i]);
+                    ViewItem newItem = new ViewItem(title, null, false, false);
+                    newItem.icon = bookTypeIconList[i];
+                    mSortedData.add(newItem);
+                }
+                break;
+
             case byLanguage:
             default:
-                mData = new HashMap<>();
-                Map<String,Set<Integer>> sortSet = byLanguage;
+                sortSet = byLanguage;
+                mSortedData = new ArrayList<>();
                 for (String key : sortSet.keySet()) {
-                    Set<Integer> items = sortSet.get(key);
+                    List<Integer> items = sortSet.get(key);
                     if((items != null)  && (items.size() > 0)) {
-                        int index = items.iterator().next();
-                        Translation sourceTranslation = availableSources.get(index);
-                        String title = sourceTranslation.language.name + "  (" + sourceTranslation.language.slug + ")";
-                        ViewItem newItem = new ViewItem(title, sourceTranslation, false, false);
-                        mSortedData.add(newItem);
+                        int index = items.get(0);
+                        if((index >= 0) && (index < availableSources.size())) {
+                            Translation sourceTranslation = availableSources.get(index);
+                            String title = sourceTranslation.language.name + "  (" + sourceTranslation.language.slug + ")";
+                            ViewItem newItem = new ViewItem(title, sourceTranslation, false, false);
+                            mSortedData.add(newItem);
+                        }
                     }
                 }
+                break;
         }
         notifyDataSetChanged();
+    }
+
+    /**
+     * created sorted list based in sortSet
+     * @param sortSet
+     */
+    private void sortBy(Map<String, List<Integer>> sortSet) {
+        mSortedData = new ArrayList<>();
+        for (String key : sortSet.keySet()) {
+            List<Integer> items = sortSet.get(key);
+            if((items != null)  && (items.size() > 0)) {
+                int index = 0;
+                Translation sourceTranslation = null;
+                String title = null;
+                for (int i = 0; i < items.size(); i++) {
+                    index = items.get(i);
+                    sourceTranslation = availableSources.get(index);
+                    title = sourceTranslation.project.name + "  (" + sourceTranslation.project.slug + ")";
+                    if(sourceTranslation.language.slug.equals("en")) {
+                        break;
+                    }
+                }
+
+                if(sourceTranslation != null) {
+                    ViewItem newItem = new ViewItem(title, sourceTranslation, false, false);
+                    mSortedData.add(newItem);
+                }
+            }
+        }
     }
 
     /**
@@ -172,13 +244,21 @@ a     * @param item
     public View getView(final int position, View convertView, ViewGroup parent) {
         View v = convertView;
         ViewHolder holder = null;
+        int rowType = getItemViewType(position);
         final ViewItem item = getItem(position);
 
         if(convertView == null) {
-            v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_select_source_item, null);
+            switch (rowType) {
+                case TYPE_ITEM_SINGLE_SELECTION:
+                    v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_select_source_item, null);
+                    break;
+                default:
+                    v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_toggle_source_item, null);
+                    break;
+            }
             holder = new ViewHolder();
             holder.titleView = (TextView)v.findViewById(R.id.title);
-            holder.checkboxView = (ImageView) v.findViewById(R.id.checkBoxView);
+            holder.imageView = (ImageView) v.findViewById(R.id.item_icon);
 
             v.setTag(holder);
         } else {
@@ -187,14 +267,22 @@ a     * @param item
 
         holder.titleView.setText(item.title);
 
-        if (item.selected) {
-            holder.checkboxView.setBackgroundResource(R.drawable.ic_check_box_black_24dp);
-            ViewUtil.tintViewDrawable(holder.checkboxView, parent.getContext().getResources().getColor(R.color.accent));
-            // display checked
+        if(rowType == TYPE_ITEM_TOGGLEABLE) {
+            if (item.selected) {
+                holder.imageView.setBackgroundResource(R.drawable.ic_check_box_black_24dp);
+                ViewUtil.tintViewDrawable(holder.imageView, parent.getContext().getResources().getColor(R.color.accent));
+                // display checked
+            } else {
+                holder.imageView.setBackgroundResource(R.drawable.ic_check_box_outline_blank_black_24dp);
+                ViewUtil.tintViewDrawable(holder.imageView, parent.getContext().getResources().getColor(R.color.dark_primary_text));
+                // display unchecked
+            }
         } else {
-            holder.checkboxView.setBackgroundResource(R.drawable.ic_check_box_outline_blank_black_24dp);
-            ViewUtil.tintViewDrawable(holder.checkboxView, parent.getContext().getResources().getColor(R.color.dark_primary_text));
-            // display unchecked
+            if(selectBy == SelectionType.book_type) {
+                holder.imageView.setImageDrawable(mContext.getResources().getDrawable(item.icon));
+            } else {
+                holder.imageView.setVisibility(View.GONE);
+            }
         }
 
         return v;
@@ -241,7 +329,7 @@ a     * @param item
 
     public static class ViewHolder {
         public TextView titleView;
-        public ImageView checkboxView;
+        public ImageView imageView;
         public Object currentTaskId;
         public int currentPosition;
     }
@@ -253,6 +341,7 @@ a     * @param item
         public boolean selected;
         public boolean downloaded;
         public boolean error;
+        public int icon;
 
         public ViewItem(CharSequence title, Translation sourceTranslation, boolean selected, boolean downloaded) {
             this.title = title;
@@ -264,22 +353,24 @@ a     * @param item
                 this.containerSlug = null;
             }
             this.downloaded = downloaded;
-            this.error = false;
+            error = false;
+            icon = 0;
         }
     }
 
     /**
      * enum that keeps track of current state of USFM import
      */
-    public enum FilterType {
+    public enum SelectionType {
         byLanguage(0),
         oldTestament(1),
         newTestament(2),
-        other(3);
+        other(3),
+        book_type(4);
 
         private int _value;
 
-        FilterType(int Value) {
+        SelectionType(int Value) {
             this._value = Value;
         }
 
@@ -287,8 +378,8 @@ a     * @param item
             return _value;
         }
 
-        public static FilterType fromInt(int i) {
-            for (FilterType b : FilterType.values()) {
+        public static SelectionType fromInt(int i) {
+            for (SelectionType b : SelectionType.values()) {
                 if (b.getValue() == i) {
                     return b;
                 }

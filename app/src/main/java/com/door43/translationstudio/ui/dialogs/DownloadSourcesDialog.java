@@ -21,13 +21,11 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.tasks.GetAvailableSourcesTask;
 
 import org.unfoldingword.door43client.Door43Client;
-import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.text.NumberFormat;
-import java.util.List;
 
 /**
  * Created by blm on 12/1/16.
@@ -56,8 +54,9 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         searchView.setHint(R.string.choose_source_translations);
         searchView.setEnabled(false);
         ImageButton searchBackButton = (ImageButton) v.findViewById(R.id.search_back_button);
-        searchBackButton.setVisibility(View.GONE);
+//        searchBackButton.setVisibility(View.GONE);
         ImageView searchIcon = (ImageView) v.findViewById(R.id.search_mag_icon);
+        searchIcon.setVisibility(View.GONE);
         // TODO: set up search
 
         mAdapter = new DownloadSourcesAdapter(getActivity());
@@ -67,7 +66,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
-
+                mAdapter.toggleSelection(position);
             }
         });
         return v;
