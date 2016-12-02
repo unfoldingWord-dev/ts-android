@@ -46,8 +46,8 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
 
         mLibrary = App.getLibrary();
         mSteps = new ArrayList<>();
-//        addStep(DownloadSourcesAdapter.SelectionType.language, R.string.choose_language);
-        addStep(DownloadSourcesAdapter.SelectionType.book_type, R.string.choose_category);
+        addStep(DownloadSourcesAdapter.SelectionType.language, R.string.choose_language);
+//        addStep(DownloadSourcesAdapter.SelectionType.book_type, R.string.choose_category);
 
         ManagedTask task = new GetAvailableSourcesTask();
         ((GetAvailableSourcesTask)task).setPrefix(this.getResources().getString(R.string.loading_sources));

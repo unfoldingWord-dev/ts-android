@@ -193,6 +193,24 @@ a     * @param task
                 mSortedData = new ArrayList<>();
                 for(int i = 0; i < bookTypeNameList.length; i++) {
                     Integer id = bookTypeNameList[i];
+                    if(languageFilter != null) {
+                        boolean found = false;
+                        switch (id) {
+                            case R.string.old_testament_label:
+                                found = isLanguageInCategory(byLanguage, otBooks);
+                                break;
+                            case R.string.new_testament_label:
+                                found = isLanguageInCategory(byLanguage, ntBooks);
+                                break;
+                            default:
+                            case R.string.other_label:
+                                found = isLanguageInCategory(byLanguage, other);
+                                break;
+                        }
+                        if(!found) { // if category is not found, skip
+                            continue;
+                        }
+                    }
                     String title = mContext.getResources().getString(id);
                     ViewItem newItem = new ViewItem(title, id.toString(), null, false, false);
                     newItem.icon = bookTypeIconList[i];
@@ -219,6 +237,29 @@ a     * @param task
                 break;
         }
         notifyDataSetChanged();
+    }
+
+    /**
+     * check if category contains the language
+     * @param sortSet
+     * @param category
+     * @return
+     */
+    private boolean isLanguageInCategory(Map<String, List<Integer>> sortSet, Map<String, List<Integer>> category) {
+        boolean found = false;
+        if(sortSet.containsKey(languageFilter)) {
+            List<Integer> items = sortSet.get(languageFilter);
+            for (Integer index : items) {
+                if ((index >= 0) && (index < availableSources.size())) {
+                    Translation sourceTranslation = availableSources.get(index);
+                    if (category.containsKey(sourceTranslation.project.slug)) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return found;
     }
 
     /**
@@ -304,7 +345,7 @@ a     * @param task
                         }
 
                         String filter = sourceTranslation.resourceContainerSlug;
-                        String title = sourceTranslation.language.name + "  (" + sourceTranslation.language.slug + ") - " + sourceTranslation.project.name + "  (" + sourceTranslation.project.slug + ")";
+                        String title = sourceTranslation.project.name + "  (" + sourceTranslation.project.slug + ") - " + sourceTranslation.resource.name + "  (" + sourceTranslation.language.slug + ")";
 
                         ViewItem newItem = new ViewItem(title, filter, sourceTranslation, false, false);
                         mSortedData.add(newItem);
