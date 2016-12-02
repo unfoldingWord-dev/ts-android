@@ -72,6 +72,7 @@ a     * @param task
      */
     public void setData(GetAvailableSourcesTask task) {
         if(task != null) {
+            mSelected = new ArrayList<>();
             availableSources = task.getSources();
             Logger.i(TAG, "Found " + availableSources.size() + " sources");
 

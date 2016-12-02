@@ -6,6 +6,11 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +28,7 @@ import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.tasks.GetAvailableSourcesTask;
 
 import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
@@ -62,16 +68,12 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         EditText searchView = (EditText) v.findViewById(R.id.search_text);
         searchView.setHint(R.string.choose_source_translations);
         searchView.setEnabled(false);
-        ImageButton searchBackButton = (ImageButton) v.findViewById(R.id.search_back_button);
-        searchBackButton.setOnClickListener(new View.OnClickListener() {
+        ImageButton backButton = (ImageButton) v.findViewById(R.id.search_back_button);
+        backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mSteps.size() > 1) {
-                    DownloadSourcesAdapter.FilterStep lastStep = mSteps.get(mSteps.size() - 1);
-                    mSteps.remove(lastStep);
-                    lastStep = mSteps.get(mSteps.size() - 1);
-                    lastStep.filter = null;
-                    lastStep.label = lastStep.old_label;
+                    removeLastStep();
                     setFilter();
                 } else {
                     dismiss();
@@ -79,7 +81,6 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             }
         });
 
-//        searchBackButton.setVisibility(View.GONE);
         ImageView searchIcon = (ImageView) v.findViewById(R.id.search_mag_icon);
         searchIcon.setVisibility(View.GONE);
         // TODO: set up search
@@ -149,16 +150,56 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         return v;
     }
 
+    /**
+     * remove the last step from stack
+     */
+    private void removeLastStep() {
+        DownloadSourcesAdapter.FilterStep lastStep = mSteps.get(mSteps.size() - 1);
+        mSteps.remove(lastStep);
+        lastStep = mSteps.get(mSteps.size() - 1);
+        lastStep.filter = null;
+        lastStep.label = lastStep.old_label;
+    }
+
+    /**
+     * display the nav label and show choices to user
+     *
+     */
     private void setFilter() {
         if(mNavText != null) {
-            String navText = "";
-            for (DownloadSourcesAdapter.FilterStep mStep : mSteps) {
-                if(!navText.isEmpty()) {
-                    navText += " > ";
+            CharSequence navText = "";
+            for (int i = 0; i < mSteps.size(); i++) {
+                DownloadSourcesAdapter.FilterStep step = mSteps.get(i);
+
+                CharSequence sep = "";
+                if(navText.length() > 0) { // if we already have text, need to insert a separator
+                    sep = " > ";
                 }
-                navText += mStep.label;
+
+                SpannableStringBuilder span = new SpannableStringBuilder(step.label);
+                boolean lastItem = (i >= (mSteps.size()-1));
+                if(!lastItem) {
+
+                    // insert a clickable span
+                    span.setSpan(new SpannableStringBuilder(step.label), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    final int resetToStep = i;
+                    ClickableSpan clickSpan = new ClickableSpan() {
+                        @Override
+                        public void onClick(View widget) {
+                            Logger.i(TAG, "click on item: " + resetToStep);
+                            while(mSteps.size() > resetToStep + 1) {
+                                removeLastStep();
+                            }
+                            setFilter();
+                        }
+                    };
+                    span.setSpan(clickSpan, 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                }
+
+                navText = TextUtils.concat(navText, sep, span);
             }
             mNavText.setText(navText);
+            mNavText.setMovementMethod(LinkMovementMethod.getInstance()); // enable clicking on TextView
         }
         mAdapter.setFilterSteps(mSteps);
     }
