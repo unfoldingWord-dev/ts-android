@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.tasks.GetAvailableSourcesTask;
 import com.door43.widget.ViewUtil;
 
@@ -24,9 +25,12 @@ import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.tools.logger.Logger;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 
 /**
  * Created by blm on 12/1/16.
@@ -47,10 +51,11 @@ public class DownloadSourcesAdapter  extends BaseAdapter {
     private Map<String,List<Integer>> ntBooks;
     private Map<String,List<Integer>> other;
 
-    private static int[] bookTypeNameList = { R.string.old_testament_label, R.string.new_testament_label, R.string.other };
+    private static int[] bookTypeNameList = { R.string.old_testament_label, R.string.new_testament_label, R.string.other_label};
     private static int[] bookTypeIconList = { R.drawable.ic_library_books_black_24dp, R.drawable.ic_library_books_black_24dp, R.drawable.ic_local_library_black_24dp };
 
-    private SelectionType selectBy = SelectionType.newTestament; // byLanguage;
+    private SelectionType selectBy = SelectionType.newTestament; // language;
+    private List<DownloadSourcesAdapter.FilterStep> mSteps;
 
     public DownloadSourcesAdapter(Context context) {
         mContext = context;
@@ -79,8 +84,9 @@ a     * @param task
         }
     }
 
-    public void setSelectBy(SelectionType selectBy) {
-        this.selectBy = selectBy;
+    public void setFilterSteps(List<DownloadSourcesAdapter.FilterStep> steps) {
+        mSteps = steps;
+        sort();
     }
 
     @Override
@@ -98,7 +104,7 @@ a     * @param task
         } else {
             select(position);
         }
-        sort();
+        notifyDataSetChanged();
     }
 
     @Override
@@ -110,11 +116,16 @@ a     * @param task
     public int getItemViewType(int position) {
         int type = TYPE_ITEM_SINGLE_SELECTION;
         switch (selectBy) {
-            case byLanguage:
+            case language:
             case newTestament:
             case oldTestament:
             case other:
                 type = TYPE_ITEM_SINGLE_SELECTION;
+                break;
+
+            case source_filtered_by_language:
+            case source_filtered_by_book:
+                type = TYPE_ITEM_TOGGLEABLE;
                 break;
         }
         return type;
@@ -125,12 +136,47 @@ a     * @param task
         return 2;
     }
 
+    private String languageFilter;
+    private String bookFilter;
     /**
      * Resorts the data
      */
     public void sort() {
+
+        if((mSteps == null) // make sure we have data to sort
+            || (mSteps.size() <= 0)
+            || (availableSources == null)
+            || (availableSources.size() <= 0) ){
+            return;
+        }
+
+        selectBy = mSteps.get(mSteps.size()-1).selection;
+
+        for (int i = 0; i < mSteps.size() - 1; i++) { // see if we have filter data
+            FilterStep step = mSteps.get(i);
+            switch (step.selection) {
+                case language:
+                    languageFilter = step.filter;
+                    break;
+                case oldTestament:
+                case newTestament:
+                case other:
+                case book_type:
+                    bookFilter = step.filter;
+                    break;
+            }
+        }
+
         Map<String,List<Integer>> sortSet;
         switch (selectBy) {
+            case source_filtered_by_language:
+                filterByLanguage();
+                break;
+
+            case source_filtered_by_book:
+                filterByBook();
+                break;
+
             case oldTestament:
                 sortBy(otBooks);
                 break;
@@ -146,14 +192,15 @@ a     * @param task
             case book_type:
                 mSortedData = new ArrayList<>();
                 for(int i = 0; i < bookTypeNameList.length; i++) {
-                    String title = mContext.getResources().getString(bookTypeNameList[i]);
-                    ViewItem newItem = new ViewItem(title, null, false, false);
+                    Integer id = bookTypeNameList[i];
+                    String title = mContext.getResources().getString(id);
+                    ViewItem newItem = new ViewItem(title, id.toString(), null, false, false);
                     newItem.icon = bookTypeIconList[i];
                     mSortedData.add(newItem);
                 }
                 break;
 
-            case byLanguage:
+            case language:
             default:
                 sortSet = byLanguage;
                 mSortedData = new ArrayList<>();
@@ -164,7 +211,7 @@ a     * @param task
                         if((index >= 0) && (index < availableSources.size())) {
                             Translation sourceTranslation = availableSources.get(index);
                             String title = sourceTranslation.language.name + "  (" + sourceTranslation.language.slug + ")";
-                            ViewItem newItem = new ViewItem(title, sourceTranslation, false, false);
+                            ViewItem newItem = new ViewItem(title, sourceTranslation.language.slug, sourceTranslation, false, false);
                             mSortedData.add(newItem);
                         }
                     }
@@ -172,6 +219,116 @@ a     * @param task
                 break;
         }
         notifyDataSetChanged();
+    }
+
+    /**
+     * only show selections that match book
+     */
+    private void filterByBook() {
+        Map<String, List<Integer>> sortSet;
+        List<Integer> languageResources = null;
+        mSortedData = new ArrayList<>();
+
+        if(ntBooks.containsKey(bookFilter)) {
+            languageResources = ntBooks.get(bookFilter);
+        }
+        if(languageResources == null) {
+            if(otBooks.containsKey(bookFilter)) {
+                languageResources = otBooks.get(bookFilter);
+            }
+        }
+        if(languageResources == null) {
+            if(other.containsKey(bookFilter)) {
+                languageResources = other.get(bookFilter);
+            }
+        }
+
+        for (Integer index : languageResources) {
+            if ((index >= 0) && (index < availableSources.size())) {
+                Translation sourceTranslation = availableSources.get(index);
+
+                String filter = sourceTranslation.resourceContainerSlug;
+                String title = sourceTranslation.language.name + "  (" + sourceTranslation.language.slug + ") - " + sourceTranslation.project.name + "  (" + sourceTranslation.project.slug + ")";
+
+                ViewItem newItem = new ViewItem(title, filter, sourceTranslation, false, false);
+                mSortedData.add(newItem);
+            }
+        }
+
+        Collections.sort(mSortedData, new Comparator<ViewItem>() { // do numeric sort
+            @Override
+            public int compare(ViewItem lhs, ViewItem rhs) {
+                return lhs.filter.compareTo(rhs.filter);
+            }
+        });
+    }
+
+    /**
+     * only show selections that match language
+     */
+    private void filterByLanguage() {
+        Map<String, List<Integer>> sortSet;
+        Map<String,List<Integer>> filterSet = byLanguage;
+        mSortedData = new ArrayList<>();
+
+        int category = Util.strToInt(bookFilter,0);
+        switch(category) {
+            case R.string.old_testament_label:
+                sortSet = otBooks;
+                break;
+            case R.string.new_testament_label:
+                sortSet = ntBooks;
+                break;
+            case R.string.other_label:
+            default:
+                sortSet = other;
+                break;
+        }
+
+        for (String key : filterSet.keySet()) {
+            if(languageFilter != null) {
+                if(!key.equals(languageFilter)) { // skip over if not matching filter
+                    continue;
+                }
+            }
+            List<Integer> items = filterSet.get(key);
+            if((items != null)  && (items.size() > 0)) {
+                for (Integer index : items) {
+                    if ((index >= 0) && (index < availableSources.size())) {
+                        Translation sourceTranslation = availableSources.get(index);
+
+                        if(sortSet != null) {
+                            if(!sortSet.containsKey(sourceTranslation.project.slug)) { // if not in right category then skip
+                                continue;
+                            }
+                        }
+
+                        String filter = sourceTranslation.resourceContainerSlug;
+                        String title = sourceTranslation.language.name + "  (" + sourceTranslation.language.slug + ") - " + sourceTranslation.project.name + "  (" + sourceTranslation.project.slug + ")";
+
+                        ViewItem newItem = new ViewItem(title, filter, sourceTranslation, false, false);
+                        mSortedData.add(newItem);
+                    }
+                }
+            }
+        }
+
+        if(sortSet != null) {
+            List<ViewItem> unOrdered = mSortedData;
+            mSortedData = new ArrayList<>();
+
+            for (String book : sortSet.keySet() ) {
+                for (int i = 0; i < unOrdered.size(); i++) {
+                    ViewItem viewItem = unOrdered.get(i);
+                    Translation sourceTranslation = viewItem.sourceTranslation;
+                    if(book.equals(sourceTranslation.project.slug)) {
+                        mSortedData.add(viewItem);
+                        unOrdered.remove(viewItem);
+                        i--;
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -186,17 +343,19 @@ a     * @param task
                 int index = 0;
                 Translation sourceTranslation = null;
                 String title = null;
+                String filter = null;
                 for (int i = 0; i < items.size(); i++) {
                     index = items.get(i);
                     sourceTranslation = availableSources.get(index);
-                    title = sourceTranslation.project.name + "  (" + sourceTranslation.project.slug + ")";
+                    filter = sourceTranslation.project.slug;
+                    title = sourceTranslation.project.name + "  (" + filter + ")";
                     if(sourceTranslation.language.slug.equals("en")) {
                         break;
                     }
                 }
 
                 if(sourceTranslation != null) {
-                    ViewItem newItem = new ViewItem(title, sourceTranslation, false, false);
+                    ViewItem newItem = new ViewItem(title, filter, sourceTranslation, false, false);
                     mSortedData.add(newItem);
                 }
             }
@@ -342,8 +501,9 @@ a     * @param task
         public boolean downloaded;
         public boolean error;
         public int icon;
+        public String filter;
 
-        public ViewItem(CharSequence title, Translation sourceTranslation, boolean selected, boolean downloaded) {
+        public ViewItem(CharSequence title, String filter, Translation sourceTranslation, boolean selected, boolean downloaded) {
             this.title = title;
             this.selected = selected;
             this.sourceTranslation = sourceTranslation;
@@ -353,8 +513,21 @@ a     * @param task
                 this.containerSlug = null;
             }
             this.downloaded = downloaded;
+            this.filter = filter;
             error = false;
             icon = 0;
+        }
+    }
+
+    public static class FilterStep {
+        public final SelectionType selection;
+        public String label;
+        public String filter;
+
+        public FilterStep(SelectionType selection, String label) {
+            this.selection = selection;
+            this.label = label;
+            filter = null;
         }
     }
 
@@ -362,11 +535,13 @@ a     * @param task
      * enum that keeps track of current state of USFM import
      */
     public enum SelectionType {
-        byLanguage(0),
+        language(0),
         oldTestament(1),
         newTestament(2),
         other(3),
-        book_type(4);
+        book_type(4),
+        source_filtered_by_language(5),
+        source_filtered_by_book(6);
 
         private int _value;
 

@@ -18,14 +18,16 @@ import android.widget.ListView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.tasks.GetAvailableSourcesTask;
 
 import org.unfoldingword.door43client.Door43Client;
-import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by blm on 12/1/16.
@@ -36,19 +38,22 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
     private Door43Client mLibrary;
     private ProgressDialog progressDialog = null;
     private DownloadSourcesAdapter mAdapter;
+    private List<DownloadSourcesAdapter.FilterStep> mSteps;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         View v = inflater.inflate(R.layout.dialog_choose_source_translation, container, false);
 
         mLibrary = App.getLibrary();
+        mSteps = new ArrayList<>();
+//        addStep(DownloadSourcesAdapter.SelectionType.language, R.string.choose_language);
+        addStep(DownloadSourcesAdapter.SelectionType.book_type, R.string.choose_category);
 
         ManagedTask task = new GetAvailableSourcesTask();
         ((GetAvailableSourcesTask)task).setPrefix(this.getResources().getString(R.string.loading_sources));
         task.addOnProgressListener(this);
         task.addOnFinishedListener(this);
         TaskManager.addTask(task, GetAvailableSourcesTask.TASK_ID);
-
 
         EditText searchView = (EditText) v.findViewById(R.id.search_text);
         searchView.setHint(R.string.choose_source_translations);
@@ -60,16 +65,78 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         // TODO: set up search
 
         mAdapter = new DownloadSourcesAdapter(getActivity());
+        mAdapter.setFilterSteps(mSteps);
 
         ListView listView = (ListView) v.findViewById(R.id.list);
         listView.setAdapter(mAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
-                mAdapter.toggleSelection(position);
+                if((mAdapter != null) && (mSteps != null) && (mSteps.size() > 0)) {
+                    DownloadSourcesAdapter.FilterStep currentStep = mSteps.get(mSteps.size() - 1);
+                    DownloadSourcesAdapter.ViewItem item = mAdapter.getItem(position);
+                    currentStep.label = item.title.toString();
+                    currentStep.filter = item.filter;
+
+                    if(mSteps.size() < 2) { // if we haven't set up last step
+                        switch (currentStep.selection) {
+                            default:
+                            case language:
+                                addStep(DownloadSourcesAdapter.SelectionType.book_type, R.string.choose_category);
+                                break;
+
+                            case oldTestament:
+                            case newTestament:
+                            case other:
+                                addStep(DownloadSourcesAdapter.SelectionType.language, R.string.choose_language);
+                                break;
+
+                            case book_type:
+                                int bookTypeSelected = Util.strToInt(currentStep.filter, R.string.other_label);
+                                switch (bookTypeSelected) {
+                                    case R.string.old_testament_label:
+                                        addStep(DownloadSourcesAdapter.SelectionType.oldTestament, R.string.choose_book);
+                                        break;
+                                    case R.string.new_testament_label:
+                                        addStep(DownloadSourcesAdapter.SelectionType.newTestament, R.string.choose_book);
+                                        break;
+                                    default:
+                                    case R.string.other_label:
+                                        addStep(DownloadSourcesAdapter.SelectionType.other, R.string.choose_book);
+                                        break;
+                                }
+                                break;
+                        }
+                    } else if(mSteps.size() < 3) { // set up last step
+                        DownloadSourcesAdapter.FilterStep firstStep = mSteps.get(0);
+                        switch (firstStep.selection) {
+                            case language:
+                                addStep(DownloadSourcesAdapter.SelectionType.source_filtered_by_language, R.string.choose_sources);
+                                break;
+                            default:
+                                addStep(DownloadSourcesAdapter.SelectionType.source_filtered_by_book, R.string.choose_sources);
+                                break;
+                        }
+                    } else { // at last step, do toggling
+                        mAdapter.toggleSelection(position);
+                        return;
+                    }
+                    mAdapter.setFilterSteps(mSteps);
+                }
             }
         });
         return v;
+    }
+
+    /**
+     * add step to sequence
+     * @param selection
+     * @param prompt
+     */
+    private void addStep(DownloadSourcesAdapter.SelectionType selection, int prompt) {
+        String promptStr = getResources().getString(prompt);
+        DownloadSourcesAdapter.FilterStep step = new DownloadSourcesAdapter.FilterStep(selection, promptStr);
+        mSteps.add(step);
     }
 
     @Override

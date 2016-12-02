@@ -920,5 +920,9 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="loading_sources">Loading Source Texts\nPlease wait...</string>
     <string name="old_testament_label">Old Testament</string>
     <string name="new_testament_label">New Testament</string>
-    <string name="other">Other</string>
+    <string name="other_label">Other</string>
+    <string name="choose_language">Choose a Language</string>
+    <string name="choose_category">Choose a Category</string>
+    <string name="choose_sources">Choose Source(s)</string>
+    <string name="choose_book">Choose a Book</string>
 </resources>
