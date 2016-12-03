@@ -8,7 +8,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
-import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.view.LayoutInflater;
@@ -16,7 +15,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.AdapterView;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -46,11 +44,11 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
     private ProgressDialog progressDialog = null;
     private DownloadSourcesAdapter mAdapter;
     private List<DownloadSourcesAdapter.FilterStep> mSteps;
-    private TextView mNavText;
+    private View v;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
-        View v = inflater.inflate(R.layout.dialog_download_sources, container, false);
+        v = inflater.inflate(R.layout.dialog_download_sources, container, false);
 
         mLibrary = App.getLibrary();
         mSteps = new ArrayList<>();
@@ -63,11 +61,9 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         task.addOnFinishedListener(this);
         TaskManager.addTask(task, GetAvailableSourcesTask.TASK_ID);
 
-        mNavText = (TextView) v.findViewById(R.id.nav_text);
-
-        EditText searchView = (EditText) v.findViewById(R.id.search_text);
-        searchView.setHint(R.string.choose_source_translations);
-        searchView.setEnabled(false);
+//        EditText searchView = (EditText) v.findViewById(R.id.search_text);
+//        searchView.setHint(R.string.choose_source_translations);
+//        searchView.setEnabled(false);
         ImageButton backButton = (ImageButton) v.findViewById(R.id.search_back_button);
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -166,43 +162,124 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
      *
      */
     private void setFilter() {
-        if(mNavText != null) {
-            CharSequence navText = "";
-            for (int i = 0; i < mSteps.size(); i++) {
-                DownloadSourcesAdapter.FilterStep step = mSteps.get(i);
-
-                CharSequence sep = "";
-                if(navText.length() > 0) { // if we already have text, need to insert a separator
-                    sep = " > ";
-                }
-
-                SpannableStringBuilder span = new SpannableStringBuilder(step.label);
-                boolean lastItem = (i >= (mSteps.size()-1));
-                if(!lastItem) {
-
-                    // insert a clickable span
-                    span.setSpan(new SpannableStringBuilder(step.label), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    final int resetToStep = i;
-                    ClickableSpan clickSpan = new ClickableSpan() {
-                        @Override
-                        public void onClick(View widget) {
-                            Logger.i(TAG, "click on item: " + resetToStep);
-                            while(mSteps.size() > resetToStep + 1) {
-                                removeLastStep();
-                            }
-                            setFilter();
-                        }
-                    };
-                    span.setSpan(clickSpan, 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                }
-
-                navText = TextUtils.concat(navText, sep, span);
-            }
-            mNavText.setText(navText);
-            mNavText.setMovementMethod(LinkMovementMethod.getInstance()); // enable clicking on TextView
+        for (int step = 0; step < 3; step++) {
+            setNavBarStep(step);
         }
+
         mAdapter.setFilterSteps(mSteps);
     }
+
+    /**
+     * set text at nav bar poisition
+     * @param stepIndex
+     */
+    private void setNavBarStep(int stepIndex) {
+        CharSequence navText = getTextForStep(stepIndex);
+
+        int viewPosition = stepIndex * 2 + 1;
+
+        setNavPosition(navText, viewPosition);
+
+        CharSequence sep = null;
+        if (navText != null) { // if we have something at this position, then add separator
+            sep = ">";
+        }
+        setNavPosition(sep, viewPosition - 1);
+    }
+
+    /**
+     * get text for position
+     * @param stepIndex
+     * @return
+     */
+    private CharSequence getTextForStep(int stepIndex) {
+        CharSequence navText = null;
+        boolean enable = stepIndex < mSteps.size();
+        if (enable) {
+            navText = null;
+
+            DownloadSourcesAdapter.FilterStep step = mSteps.get(stepIndex);
+
+            SpannableStringBuilder span = new SpannableStringBuilder(step.label);
+            boolean lastItem = (stepIndex >= (mSteps.size() - 1));
+            if (!lastItem) {
+
+                // insert a clickable span
+                span.setSpan(new SpannableStringBuilder(step.label), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                final int resetToStep = stepIndex;
+                ClickableSpan clickSpan = new ClickableSpan() {
+                    @Override
+                    public void onClick(View widget) {
+                        Logger.i(TAG, "clicked on item: " + resetToStep);
+                        while (mSteps.size() > resetToStep + 1) {
+                            removeLastStep();
+                        }
+                        setFilter();
+                    }
+                };
+                span.setSpan(clickSpan, 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+
+            navText = span;
+        }
+        return navText;
+    }
+
+    /**
+     * set text at position, or hide view if text is null
+     * @param text
+     * @param position
+     */
+    private void setNavPosition(CharSequence text, int position) {
+        TextView view = getTextView( position);
+        if(view != null) {
+            if(text != null) {
+                view.setText(text);
+                view.setVisibility(View.VISIBLE);
+                view.setMovementMethod(LinkMovementMethod.getInstance()); // enable clicking on TextView
+            } else {
+                view.setText("");
+                view.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    /**
+     * find text view for position
+     * @param position
+     * @return
+     */
+    private TextView getTextView(int position) {
+
+        int resID = 0;
+        switch (position) {
+            case 1:
+                resID = R.id.nav_text1;
+                break;
+
+            case 2:
+                resID = R.id.nav_text2;
+                break;
+
+            case 3:
+                resID = R.id.nav_text3;
+                break;
+
+            case 4:
+                resID = R.id.nav_text4;
+                break;
+
+            case 5:
+                resID = R.id.nav_text5;
+                break;
+
+            default:
+                return null;
+        }
+        TextView searchView = (TextView) v.findViewById(resID);
+        return searchView;
+    }
+
 
     /**
      * add step to sequence

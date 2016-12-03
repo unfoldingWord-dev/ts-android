@@ -27,7 +27,7 @@
 
             <TextView
                 android:layout_gravity="center_vertical"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@null"
                 android:textStyle="italic"
@@ -35,23 +35,61 @@
                 android:textSize="@dimen/title"
                 android:paddingTop="16dp"
                 android:paddingBottom="16dp"
-                android:paddingRight="16dp"
-                android:id="@+id/nav_text" />
+                android:paddingRight="@dimen/dialog_controls_margin"
+                android:id="@+id/nav_text1" />
 
-            <EditText
+            <TextView
                 android:layout_gravity="center_vertical"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@null"
-                android:hint="Search for something"
                 android:textStyle="italic"
                 android:textColor="@color/dark_secondary_text"
                 android:textSize="@dimen/title"
                 android:paddingTop="16dp"
                 android:paddingBottom="16dp"
-                android:paddingRight="16dp"
-                android:singleLine="true"
-                android:id="@+id/search_text" />
+                android:paddingRight="@dimen/dialog_controls_margin"
+                android:id="@+id/nav_text2" />
+
+            <TextView
+                android:layout_gravity="center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:textStyle="italic"
+                android:textColor="@color/dark_secondary_text"
+                android:textSize="@dimen/title"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:paddingRight="@dimen/dialog_controls_margin"
+                android:id="@+id/nav_text3" />
+
+            <TextView
+                android:layout_gravity="center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:textStyle="italic"
+                android:textColor="@color/dark_secondary_text"
+                android:textSize="@dimen/title"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:paddingRight="@dimen/dialog_controls_margin"
+                android:id="@+id/nav_text4" />
+
+            <TextView
+                android:layout_gravity="center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:textStyle="italic"
+                android:textColor="@color/dark_secondary_text"
+                android:textSize="@dimen/title"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:paddingRight="@dimen/dialog_controls_margin"
+                android:id="@+id/nav_text5" />
+
         </LinearLayout>
 
         <ImageView
