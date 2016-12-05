@@ -15,9 +15,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.AdapterView;
+import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RadioButton;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.App;
@@ -45,6 +48,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
     private DownloadSourcesAdapter mAdapter;
     private List<DownloadSourcesAdapter.FilterStep> mSteps;
     private View v;
+    RelativeLayout mSelectionBar;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -52,8 +56,6 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
 
         mLibrary = App.getLibrary();
         mSteps = new ArrayList<>();
-        addStep(DownloadSourcesAdapter.SelectionType.language, R.string.choose_language);
-//        addStep(DownloadSourcesAdapter.SelectionType.book_type, R.string.choose_category);
 
         ManagedTask task = new GetAvailableSourcesTask();
         ((GetAvailableSourcesTask)task).setPrefix(this.getResources().getString(R.string.loading_sources));
@@ -77,12 +79,36 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             }
         });
 
+        RadioButton byLanguageButton = (RadioButton) v.findViewById(R.id.byLanguage);
+        byLanguageButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked) {
+                    mSteps = new ArrayList<>(); // clear existing filter and start over
+                    addStep(DownloadSourcesAdapter.SelectionType.language, R.string.choose_language);
+                    setFilter();
+                }
+            }
+        });
+        RadioButton byBookButton = (RadioButton) v.findViewById(R.id.byBook);
+        byBookButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked) {
+                    mSteps = new ArrayList<>(); // clear existing filter and start over
+                    addStep(DownloadSourcesAdapter.SelectionType.book_type, R.string.choose_category);
+                    setFilter();
+                }
+            }
+        });
+
+        mSelectionBar = (RelativeLayout) v.findViewById(R.id.selection_bar);
+
         ImageView searchIcon = (ImageView) v.findViewById(R.id.search_mag_icon);
         searchIcon.setVisibility(View.GONE);
         // TODO: set up search
 
         mAdapter = new DownloadSourcesAdapter(getActivity());
-        setFilter();
 
         ListView listView = (ListView) v.findViewById(R.id.list);
         listView.setAdapter(mAdapter);
@@ -143,6 +169,8 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                 }
             }
         });
+
+        byLanguageButton.setChecked(true);
         return v;
     }
 
@@ -166,11 +194,13 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             setNavBarStep(step);
         }
 
+        boolean selectDownloads = (mSteps.size() == 3);
+        mSelectionBar.setVisibility(selectDownloads ? View.VISIBLE : View.GONE);
         mAdapter.setFilterSteps(mSteps);
     }
 
     /**
-     * set text at nav bar poisition
+     * set text at nav bar position
      * @param stepIndex
      */
     private void setNavBarStep(int stepIndex) {

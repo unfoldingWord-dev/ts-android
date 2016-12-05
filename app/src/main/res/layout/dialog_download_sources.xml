@@ -6,10 +6,53 @@
 
     <FrameLayout
         android:focusableInTouchMode="true"
+        android:id="@+id/filter_bar"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/dialog_controls_margin"
+        android:paddingRight="@dimen/dialog_controls_margin"
+        android:layout_centerHorizontal="true"
+        android:paddingTop="@dimen/dialog_controls_margin"
+        >
+
+        <RadioGroup
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:text="@string/by_language_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/byLanguage"
+                android:layout_weight="1"
+                android:layout_marginLeft="@dimen/dialog_content_margin" />
+
+            <RadioButton
+                android:text="@string/by_book_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/byBook"
+                android:layout_weight="1"
+                android:layout_marginLeft="@dimen/dialog_content_margin" />
+        </RadioGroup>
+
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="@color/list_separator"
+        android:layout_above="@+id/search_bar"/>
+
+    <FrameLayout
+        android:focusableInTouchMode="true"
         android:id="@+id/search_bar"
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/filter_bar"
         android:paddingLeft="16dp"
         android:paddingRight="16dp">
 
@@ -100,11 +143,64 @@
             android:background="@drawable/ic_search_black_24dp"/>
     </FrameLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="@color/list_separator"
+        android:layout_below="@+id/search_bar"/>
+
+    <RelativeLayout
+        android:focusableInTouchMode="true"
+        android:id="@+id/selection_bar"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/dialog_controls_margin"
+        android:paddingRight="@dimen/dialog_controls_margin"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/search_bar"
+        android:paddingTop="@dimen/dialog_controls_margin"
+        >
+
+        <CheckBox
+            android:text="@string/select_all_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/select_all"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="@dimen/dialog_content_margin" />
+
+        <CheckBox
+            android:text="@string/unselect_all_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/unselect_all"
+            android:layout_toRightOf="@+id/select_all"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="@dimen/dialog_content_margin"
+            android:layout_marginRight="@dimen/dialog_content_margin" />
+
+        <Button
+            android:text="@string/download"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/button"
+            android:layout_toRightOf="@+id/unselect_all"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="@dimen/dialog_content_margin" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="@color/list_separator"
+        android:layout_below="@+id/selection_bar"
+        android:id="@+id/selection_bar_separator" />
+
     <ListView
         android:id="@+id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/search_bar"
-        android:layout_above="@+id/controlsLayout" />
+        android:layout_below="@+id/selection_bar" />
 
 </RelativeLayout>

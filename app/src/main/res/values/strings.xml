@@ -925,4 +925,8 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="choose_category">Choose a Category</string>
     <string name="choose_sources">Choose Source(s)</string>
     <string name="choose_book">Choose a Book</string>
+    <string name="by_language_label">By Language</string>
+    <string name="by_book_label">By Book</string>
+    <string name="select_all_label">Select All</string>
+    <string name="unselect_all_label">Unselect All</string>
 </resources>
