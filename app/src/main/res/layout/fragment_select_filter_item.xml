@@ -5,14 +5,15 @@
     android:paddingRight="16dp"
     android:paddingLeft="16dp"
     android:paddingTop="10dp"
-    android:paddingBottom="10dp">
+    android:paddingBottom="10dp"
+    android:weightSum="1">
 
 
     <ImageView
         android:layout_gravity="center_vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/ic_check_box_outline_blank_black_24dp"
+        android:background="@drawable/ic_info_white_24dp"
         android:id="@+id/item_icon"
         android:layout_marginRight="@dimen/card_margin" />
 
@@ -25,5 +26,12 @@
         android:textColor="@color/dark_primary_text"
         android:text="English - Unlocked Literal Bible"
         android:id="@+id/title" />
+
+    <ImageView
+        android:layout_gravity="center_vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/ic_chevron_right_black_24dp" />
+
 
 </LinearLayout>

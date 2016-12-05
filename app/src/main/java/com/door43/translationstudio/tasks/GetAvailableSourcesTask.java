@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * searches resources to find new and updated resources.
+ * finds available sources.  Then organizes the sources into languages, and book category (i.e. OT, NT, other)
  */
 
 
@@ -27,7 +27,7 @@ public class GetAvailableSourcesTask extends ManagedTask {
     private Map<String,List<Integer>> byLanguage;
     private Map<String,List<Integer>> otBooks;
     private Map<String,List<Integer>> ntBooks;
-    private Map<String,List<Integer>> other;
+    private Map<String,List<Integer>> otherBooks;
 
     private static String[] ntBookList = { "mat" , "mrk", "luk", "jhn", "act", "rom", "1co", "2co",
                                             "gal", "eph", "php", "col", "1th", "2th", "1ti", "2ti",
@@ -51,18 +51,20 @@ public class GetAvailableSourcesTask extends ManagedTask {
         byLanguage = new TreeMap<>();
         maxProgress = availableTranslations.size();
 
+        // initialize NT book list
         ntBooks = new LinkedHashMap<>();
         for (String book : ntBookList) {
             List<Integer> books = new ArrayList<>();
             ntBooks.put(book, books);
         }
 
+        // initialize OT book list
         otBooks = new LinkedHashMap<>();
         for (String book : otBookList) {
             List<Integer> books = new ArrayList<>();
             otBooks.put(book, books);
         }
-        other = new LinkedHashMap<>();
+        otherBooks = new LinkedHashMap<>();
 
         for (int i = 0; i < maxProgress; i++) {
             Translation t = availableTranslations.get(i);
@@ -101,11 +103,11 @@ public class GetAvailableSourcesTask extends ManagedTask {
                 books.add(i);
             } else { // other
                 List<Integer> books;
-                if(other.containsKey(book)) {
-                   books = other.get(book);
+                if(otherBooks.containsKey(book)) { // if book already present, add source to it
+                   books = otherBooks.get(book);
                 } else {
-                    books = new ArrayList<>();
-                    other.put(book, books);
+                    books = new ArrayList<>();  // if book not present, create new book entry
+                    otherBooks.put(book, books);
                 }
                 books.add(i);
             }
@@ -136,7 +138,7 @@ public class GetAvailableSourcesTask extends ManagedTask {
     }
 
     public Map<String, List<Integer>> getOther() {
-        return other;
+        return otherBooks;
     }
 
     public Map<String, List<Integer>> getNtBooks() {
