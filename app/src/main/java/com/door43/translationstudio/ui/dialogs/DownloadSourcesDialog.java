@@ -28,9 +28,11 @@ import android.widget.TextView;
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Util;
+import com.door43.translationstudio.tasks.DownloadResourceContainerTask;
 import com.door43.translationstudio.tasks.GetAvailableSourcesTask;
 
 import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
@@ -45,6 +47,7 @@ import java.util.List;
 
 public class DownloadSourcesDialog extends DialogFragment implements ManagedTask.OnFinishedListener, ManagedTask.OnProgressListener {
     public static final String TAG = DownloadSourcesDialog.class.getSimpleName();
+    private static final String TASK_DOWNLOAD_SOURCES = "download-sources";
     private Door43Client mLibrary;
     private ProgressDialog progressDialog = null;
     private DownloadSourcesAdapter mAdapter;
@@ -115,7 +118,10 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked) {
-                    // TODO: 12/5/16
+                    if(mAdapter != null) {
+                        mAdapter.forceSelection( true, false);
+                        onSelectionChanged();
+                    }
                 }
             }
         });
@@ -124,7 +130,10 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked) {
-                    // TODO: 12/5/16
+                    if(mAdapter != null) {
+                        mAdapter.forceSelection( false, true);
+                        onSelectionChanged();
+                    }
                 }
             }
         });
@@ -132,7 +141,15 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         downloadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: 12/5/16
+                if(mAdapter != null) {
+                    List<String> selected = mAdapter.getSelected();
+                    if((selected != null) && (selected.size() > 0)) {
+                        DownloadResourceContainerTask task = new DownloadResourceContainerTask(selected);
+                        task.addOnFinishedListener(DownloadSourcesDialog.this);
+                        task.addOnProgressListener(DownloadSourcesDialog.this);
+                        TaskManager.addTask(task, TASK_DOWNLOAD_SOURCES);
+                    }
+                }
             }
         });
 
@@ -390,12 +407,21 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             public void run() {
                 if(task instanceof GetAvailableSourcesTask) {
                     GetAvailableSourcesTask availableSourcesTask = (GetAvailableSourcesTask) task;
+                    mAdapter.setData(availableSourcesTask);
+
                     if (progressDialog != null) {
                         progressDialog.dismiss();
                         progressDialog = null;
                     }
+                } else if(task instanceof DownloadResourceContainerTask) {
+                    DownloadResourceContainerTask downloadSourcesTask = (DownloadResourceContainerTask) task;
+                    List<ResourceContainer> containers = downloadSourcesTask.getDownloadedContainers();
+                    // TODO: 12/5/16 process results
 
-                    mAdapter.setData(availableSourcesTask);
+                    if (progressDialog != null) {
+                        progressDialog.dismiss();
+                        progressDialog = null;
+                    }
                 }
             }
         });

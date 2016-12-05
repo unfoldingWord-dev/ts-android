@@ -483,7 +483,9 @@ a     * @param task
         ViewItem item = getItem(position);
         if(item != null) {
             item.selected = true;
-            mSelected.add(item.containerSlug);
+            if(!mSelected.contains(item.containerSlug)) { // make sure we don't add entry twice (particularly during select all)
+                mSelected.add(item.containerSlug);
+            }
         }
     }
 
@@ -517,6 +519,27 @@ a     * @param task
             item.error = true;
         }
     }
+
+    /**
+     * used to force selection of all or none of the items
+     * @param selectAll
+     * @param selectNone
+     */
+    public void forceSelection(boolean selectAll, boolean selectNone) {
+        if(selectAll) {
+            for (int i = 0; i < mItems.size(); i++) {
+                select(i);
+            }
+        }
+        if(selectNone) {
+            for (int i = 0; i < mItems.size(); i++) {
+                deselect(i);
+            }
+        }
+        notifyDataSetChanged();
+    }
+
+
 
     public static class ViewHolder {
         public TextView titleView;
