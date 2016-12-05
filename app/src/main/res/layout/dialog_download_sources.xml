@@ -184,7 +184,7 @@
             android:text="@string/download"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/button"
+            android:id="@+id/download_button"
             android:layout_toRightOf="@+id/unselect_all"
             android:layout_centerVertical="true"
             android:layout_marginLeft="@dimen/dialog_content_margin" />

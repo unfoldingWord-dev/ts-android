@@ -64,7 +64,6 @@ a     * @param task
      */
     public void setData(GetAvailableSourcesTask task) {
         if(task != null) {
-            mSelected = new ArrayList<>();
             mAvailableSources = task.getSources();
             Logger.i(TAG, "Found " + mAvailableSources.size() + " sources");
 
@@ -119,10 +118,20 @@ a     * @param task
         return 2;
     }
 
+    public List<String> getSelected() {
+        return mSelected;
+    }
+
+    public List<ViewItem> getItems() {
+        return mItems;
+    }
+
     /**
      * Resorts the data
      */
     public void initializeSelections() {
+
+        mSelected = new ArrayList<>(); // clear selections
 
         if((mSteps == null) // make sure we have data to sort
             || (mSteps.size() <= 0)

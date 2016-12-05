@@ -15,6 +15,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -48,7 +50,11 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
     private DownloadSourcesAdapter mAdapter;
     private List<DownloadSourcesAdapter.FilterStep> mSteps;
     private View v;
-    RelativeLayout mSelectionBar;
+    private RelativeLayout mSelectionBar;
+    private CheckBox selectAllButton;
+    private CheckBox unSelectAllButton;
+    private Button downloadButton;
+
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -103,6 +109,32 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         });
 
         mSelectionBar = (RelativeLayout) v.findViewById(R.id.selection_bar);
+
+        selectAllButton = (CheckBox) v.findViewById(R.id.select_all);
+        selectAllButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked) {
+                    // TODO: 12/5/16
+                }
+            }
+        });
+        unSelectAllButton = (CheckBox) v.findViewById(R.id.unselect_all);
+        unSelectAllButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked) {
+                    // TODO: 12/5/16
+                }
+            }
+        });
+        downloadButton = (Button) v.findViewById(R.id.download_button);
+        downloadButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: 12/5/16
+            }
+        });
 
         ImageView searchIcon = (ImageView) v.findViewById(R.id.search_mag_icon);
         searchIcon.setVisibility(View.GONE);
@@ -163,6 +195,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                         }
                     } else { // at last step, do toggling
                         mAdapter.toggleSelection(position);
+                        onSelectionChanged();
                         return;
                     }
                     setFilter();
@@ -172,6 +205,28 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
 
         byLanguageButton.setChecked(true);
         return v;
+    }
+
+    /**
+     * update controls for selection state
+     */
+    public void onSelectionChanged() {
+        if(mAdapter != null) {
+            List<String> selected = mAdapter.getSelected();
+            List<DownloadSourcesAdapter.ViewItem> items = mAdapter.getItems();
+            boolean allSelected = (selected.size() >= items.size()) && (selected.size() > 0);
+            selectAllButton.setEnabled(!allSelected);
+            if(!allSelected) {
+                selectAllButton.setChecked(false);
+            }
+            boolean noneSelected = selected.size() == 0;
+            unSelectAllButton.setEnabled(!noneSelected);
+            if(noneSelected) {
+                unSelectAllButton.setChecked(false);
+            }
+
+            downloadButton.setEnabled(!noneSelected);
+        }
     }
 
     /**
@@ -197,6 +252,9 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         boolean selectDownloads = (mSteps.size() == 3);
         mSelectionBar.setVisibility(selectDownloads ? View.VISIBLE : View.GONE);
         mAdapter.setFilterSteps(mSteps);
+        if(selectDownloads) {
+            onSelectionChanged();
+        }
     }
 
     /**
