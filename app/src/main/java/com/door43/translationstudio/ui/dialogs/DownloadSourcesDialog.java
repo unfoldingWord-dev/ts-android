@@ -28,11 +28,11 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.tasks.DownloadResourceContainerTask;
 import com.door43.translationstudio.tasks.GetAvailableSourcesTask;
 
 import org.unfoldingword.door43client.Door43Client;
+import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
@@ -405,7 +405,6 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         return searchView;
     }
 
-
     /**
      * add step to sequence
      * @param selection
@@ -438,26 +437,21 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                     List<ResourceContainer> containers = downloadSourcesTask.getDownloadedContainers();
 
                     int successCount = 0;
-                    List<String> failed = ((List) ((ArrayList) mAdapter.getSelected()).clone());
                     List<DownloadSourcesAdapter.ViewItem> items = mAdapter.getItems();
 
                     for (ResourceContainer container : containers) {
                         Logger.i(TAG, "Received: " + container.slug);
 
-                        if(failed.contains(container.slug)) {
-                            successCount++;
-                            failed.remove(container.slug); // remove successful downloads from failed list
-
-                            int pos = mAdapter.findPosition(container.slug);
-                            if(pos >= 0) {
-                                mAdapter.markItemDownloaded(pos);
-                            }
+                        int pos = mAdapter.findPosition(container.slug);
+                        if(pos >= 0) {
+                            mAdapter.markItemDownloaded(pos);
                         }
                     }
 
-                    for (String container : failed) {
-                        Logger.e(TAG, "Download failed: " + container);
-                        int pos = mAdapter.findPosition(container);
+                    List<Translation> failed = downloadSourcesTask.getFailedDownloads();
+                    for (Translation translation : failed) {
+                        Logger.e(TAG, "Download failed: " + translation.resourceContainerSlug);
+                        int pos = mAdapter.findPosition(translation.resourceContainerSlug);
                         if(pos >= 0) {
                             mAdapter.markItemError(pos);
                         }

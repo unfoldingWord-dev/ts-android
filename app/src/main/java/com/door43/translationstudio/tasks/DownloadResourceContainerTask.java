@@ -16,6 +16,7 @@ import java.util.List;
 public class DownloadResourceContainerTask extends ManagedTask {
     public final List<String> translationIDs;
     private List<ResourceContainer> downloadedContainers = new ArrayList<>();
+    private List<Translation> failedDownloads = new ArrayList<>();
     private int maxProgress = 0;
     private boolean downloadTranslationWords = true;
 
@@ -40,6 +41,8 @@ public class DownloadResourceContainerTask extends ManagedTask {
     @Override
     public void start() {
         success = true;
+        downloadedContainers.clear();
+        failedDownloads.clear();
         maxProgress = translationIDs.size();
         publishProgress(-1, "");
 
@@ -57,6 +60,7 @@ public class DownloadResourceContainerTask extends ManagedTask {
                 downloadedContainers.add(rc);
                 passSuccess = true;
             } catch (Exception e) {
+                failedDownloads.add(translation);
                 e.printStackTrace();
             }
 
@@ -118,5 +122,13 @@ public class DownloadResourceContainerTask extends ManagedTask {
      */
     public List<ResourceContainer> getDownloadedContainers() {
         return downloadedContainers;
+    }
+
+    /**
+     * Returns the translations that failed to download
+     * @return
+     */
+    public List<Translation> getFailedDownloads() {
+        return failedDownloads;
     }
 }
