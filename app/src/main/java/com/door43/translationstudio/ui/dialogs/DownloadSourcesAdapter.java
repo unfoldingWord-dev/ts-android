@@ -122,6 +122,27 @@ a     * @param task
         return mSelected;
     }
 
+    public SelectedState getSelectedState() {
+        boolean allSelected = true;
+        boolean noneSelected = true;
+        for (ViewItem item : mItems) {
+            if(!item.downloaded) { // ignore items already downloaded
+                if (item.selected) {
+                    noneSelected = false;
+                } else {
+                    allSelected = false;
+                }
+            }
+        }
+
+        if(noneSelected) {
+            return SelectedState.none;
+        } else if(allSelected) {
+            return SelectedState.all;
+        }
+        return SelectedState.not_empty;
+    }
+
     public List<ViewItem> getItems() {
         return mItems;
     }
@@ -132,6 +153,8 @@ a     * @param task
     public void initializeSelections() {
 
         mSelected = new ArrayList<>(); // clear selections
+        mBookFilter = null; // clear filters
+        mLanguageFilter = null;
 
         if((mSteps == null) // make sure we have data to sort
             || (mSteps.size() <= 0)
@@ -429,6 +452,7 @@ a     * @param task
                 default:
                     v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_select_download_source_item, null);
                     holder.titleView2 = (TextView)v.findViewById(R.id.title2);
+                    holder.errorView = (ImageView) v.findViewById(R.id.error_icon);
                     break;
             }
             holder.titleView = (TextView)v.findViewById(R.id.title);
@@ -446,7 +470,11 @@ a     * @param task
         }
 
         if(rowType == TYPE_ITEM_SOURCE_SELECTION) {
-            if (item.selected) {
+            holder.errorView.setVisibility(item.error ? View.VISIBLE : View.GONE);
+            if(item.downloaded) {
+                holder.imageView.setBackgroundResource(R.drawable.ic_done_black_24dp);
+                ViewUtil.tintViewDrawable(holder.imageView, parent.getContext().getResources().getColor(R.color.green));
+            } else if (item.selected) {
                 holder.imageView.setBackgroundResource(R.drawable.ic_check_box_black_24dp);
                 ViewUtil.tintViewDrawable(holder.imageView, parent.getContext().getResources().getColor(R.color.accent));
                 // display checked
@@ -482,9 +510,11 @@ a     * @param task
     public void select(int position) {
         ViewItem item = getItem(position);
         if(item != null) {
-            item.selected = true;
-            if(!mSelected.contains(item.containerSlug)) { // make sure we don't add entry twice (particularly during select all)
-                mSelected.add(item.containerSlug);
+            if(!item.downloaded) {
+                item.selected = true;
+                if (!mSelected.contains(item.containerSlug)) { // make sure we don't add entry twice (particularly during select all)
+                    mSelected.add(item.containerSlug);
+                }
             }
         }
     }
@@ -498,6 +528,21 @@ a     * @param task
     }
 
     /**
+     * search items for position that matches slug
+     * @param slug
+     * @return
+     */
+    public int findPosition(String slug) {
+        for (int i = 0; i < mItems.size(); i++) {
+            ViewItem item = mItems.get(i);
+            if(item.containerSlug.equals(slug)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
      * marks an item as downloaded
      * @param position
      */
@@ -506,6 +551,7 @@ a     * @param task
         if(item != null) {
             item.downloaded = true;
             item.error = false;
+            deselect(position);
         }
     }
 
@@ -545,6 +591,7 @@ a     * @param task
         public TextView titleView;
         public TextView titleView2;
         public ImageView imageView;
+        public ImageView errorView;
         public Object currentTaskId;
         public int currentPosition;
     }
@@ -627,5 +674,11 @@ a     * @param task
             }
             return null;
         }
+    }
+
+    public enum SelectedState {
+        all,
+        none,
+        not_empty;
     }
 }

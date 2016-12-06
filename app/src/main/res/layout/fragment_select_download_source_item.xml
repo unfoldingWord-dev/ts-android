@@ -17,6 +17,16 @@
         android:layout_marginRight="@dimen/card_margin"
         android:layout_weight="0" />
 
+    <ImageView
+        android:layout_gravity="center_vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/ic_error_black_24dp"
+        android:id="@+id/error_icon"
+        android:layout_marginRight="@dimen/card_margin"
+        android:layout_weight="0"
+        android:backgroundTint="@color/danger" />
+
     <TextView
         android:layout_gravity="left"
         android:layout_width="wrap_content"

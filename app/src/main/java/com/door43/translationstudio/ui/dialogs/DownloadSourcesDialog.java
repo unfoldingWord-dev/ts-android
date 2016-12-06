@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v7.app.AlertDialog;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
@@ -20,9 +21,9 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioButton;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.App;
@@ -53,7 +54,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
     private DownloadSourcesAdapter mAdapter;
     private List<DownloadSourcesAdapter.FilterStep> mSteps;
     private View v;
-    private RelativeLayout mSelectionBar;
+    private LinearLayout mSelectionBar;
     private CheckBox selectAllButton;
     private CheckBox unSelectAllButton;
     private Button downloadButton;
@@ -111,7 +112,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             }
         });
 
-        mSelectionBar = (RelativeLayout) v.findViewById(R.id.selection_bar);
+        mSelectionBar = (LinearLayout) v.findViewById(R.id.selection_bar);
 
         selectAllButton = (CheckBox) v.findViewById(R.id.select_all);
         selectAllButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -212,7 +213,20 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                         }
                     } else { // at last step, do toggling
                         mAdapter.toggleSelection(position);
-                        onSelectionChanged();
+                        DownloadSourcesAdapter.SelectedState selectedState = mAdapter.getSelectedState();
+                        switch (selectedState) {
+                            case all:
+                                selectAllButton.setChecked(true);
+                                break;
+
+                            case none:
+                                unSelectAllButton.setChecked(true);
+                                break;
+
+                            default:
+                                onSelectionChanged();
+                                break;
+                        }
                         return;
                     }
                     setFilter();
@@ -229,20 +243,22 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
      */
     public void onSelectionChanged() {
         if(mAdapter != null) {
-            List<String> selected = mAdapter.getSelected();
-            List<DownloadSourcesAdapter.ViewItem> items = mAdapter.getItems();
-            boolean allSelected = (selected.size() >= items.size()) && (selected.size() > 0);
+            DownloadSourcesAdapter.SelectedState selectedState = mAdapter.getSelectedState();
+            boolean allSelected = (selectedState == DownloadSourcesAdapter.SelectedState.all);
             selectAllButton.setEnabled(!allSelected);
             if(!allSelected) {
                 selectAllButton.setChecked(false);
             }
-            boolean noneSelected = selected.size() == 0;
+            boolean noneSelected = (selectedState == DownloadSourcesAdapter.SelectedState.none);
             unSelectAllButton.setEnabled(!noneSelected);
-            if(noneSelected) {
+            if(!noneSelected) {
                 unSelectAllButton.setChecked(false);
             }
 
-            downloadButton.setEnabled(!noneSelected);
+            boolean downloadSelect = !noneSelected;
+            downloadButton.setEnabled(downloadSelect);
+            int backgroundColor = downloadSelect ? R.color.accent : R.color.light_gray;
+            downloadButton.setBackgroundColor(getResources().getColor(backgroundColor));
         }
     }
 
@@ -416,12 +432,55 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                 } else if(task instanceof DownloadResourceContainerTask) {
                     DownloadResourceContainerTask downloadSourcesTask = (DownloadResourceContainerTask) task;
                     List<ResourceContainer> containers = downloadSourcesTask.getDownloadedContainers();
-                    // TODO: 12/5/16 process results
+
+                    int successCount = 0;
+                    List<String> failed = ((List) ((ArrayList) mAdapter.getSelected()).clone());
+                    List<DownloadSourcesAdapter.ViewItem> items = mAdapter.getItems();
+
+                    for (ResourceContainer container : containers) {
+                        Logger.i(TAG, "Received: " + container.slug);
+
+                        if(failed.contains(container.slug)) {
+                            successCount++;
+                            failed.remove(container.slug); // remove successful downloads from failed list
+
+                            int pos = mAdapter.findPosition(container.slug);
+                            if(pos >= 0) {
+                                mAdapter.markItemDownloaded(pos);
+                            }
+                        }
+                    }
+
+                    for (String container : failed) {
+                        Logger.e(TAG, "Download failed: " + container);
+                        int pos = mAdapter.findPosition(container);
+                        if(pos >= 0) {
+                            mAdapter.markItemError(pos);
+                        }
+                    }
+
+                    boolean canceled = downloadSourcesTask.isCanceled();
+                    String downloads = getActivity().getResources().getString(R.string.downloads_success,successCount);
+                    String errors = "";
+                    if((failed.size() > 1) && !canceled) {
+                        errors = "\n" + getActivity().getResources().getString(R.string.downloads_fail, failed.size());
+                    }
+
+                    mAdapter.notifyDataSetChanged();
+                    onSelectionChanged();
 
                     if (progressDialog != null) {
                         progressDialog.dismiss();
                         progressDialog = null;
                     }
+
+                    int title = canceled ? R.string.download_cancelled : R.string.download_complete;
+
+                    new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                            .setTitle(title)
+                            .setMessage(downloads + errors)
+                            .setPositiveButton(R.string.label_close, null)
+                            .show();
                 }
             }
         });

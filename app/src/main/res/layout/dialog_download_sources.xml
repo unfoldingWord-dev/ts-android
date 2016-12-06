@@ -149,18 +149,17 @@
         android:background="@color/list_separator"
         android:layout_below="@+id/search_bar"/>
 
-    <RelativeLayout
+    <LinearLayout
         android:focusableInTouchMode="true"
         android:id="@+id/selection_bar"
         xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingLeft="@dimen/dialog_controls_margin"
-        android:paddingRight="@dimen/dialog_controls_margin"
-        android:layout_centerHorizontal="true"
         android:layout_below="@+id/search_bar"
-        android:paddingTop="@dimen/dialog_controls_margin"
-        >
+        android:orientation="horizontal"
+        android:gravity="center_vertical|center_horizontal"
+        android:background="@drawable/border"
+        android:padding="@dimen/dialog_controls_margin">
 
         <CheckBox
             android:text="@string/select_all_label"
@@ -168,7 +167,8 @@
             android:layout_height="wrap_content"
             android:id="@+id/select_all"
             android:layout_centerVertical="true"
-            android:layout_marginRight="@dimen/dialog_content_margin" />
+            android:layout_marginRight="@dimen/dialog_content_margin"
+            android:gravity="center_vertical|center_horizontal" />
 
         <CheckBox
             android:text="@string/unselect_all_label"
@@ -187,8 +187,9 @@
             android:id="@+id/download_button"
             android:layout_toRightOf="@+id/unselect_all"
             android:layout_centerVertical="true"
-            android:layout_marginLeft="@dimen/dialog_content_margin" />
-    </RelativeLayout>
+            android:layout_marginLeft="@dimen/dialog_content_margin"
+            style="@style/Widget.Button.Blue" />
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"

@@ -4,10 +4,7 @@ import android.os.Bundle;
 
 import com.door43.translationstudio.App;
 
-import com.door43.translationstudio.core.Translator;
-
 import org.unfoldingword.door43client.models.Translation;
-import org.unfoldingword.resourcecontainer.ContainerTools;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
