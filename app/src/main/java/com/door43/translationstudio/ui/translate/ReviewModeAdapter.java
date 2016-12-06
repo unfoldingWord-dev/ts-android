@@ -54,9 +54,9 @@ import com.door43.translationstudio.core.ContainerCache;
 import com.door43.translationstudio.core.FileHistory;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
+import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.translationstudio.core.TranslationType;
 import com.door43.translationstudio.tasks.MergeConflictsParseTask;
-import com.door43.translationstudio.tasks.CalculateTargetTranslationProgressTask;
 import com.door43.translationstudio.tasks.CheckForMergeConflictsTask;
 import com.door43.widget.LinedEditText;
 import com.door43.translationstudio.core.TargetTranslation;
@@ -164,6 +164,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     @Override
     void setSourceContainer(ResourceContainer sourceContainer) {
         mSourceContainer = sourceContainer;
+        mLayoutBuildNumber++; // force resetting of fonts
 
         this.mChapters = new ArrayList();
         mItems = new ArrayList<>();
@@ -452,7 +453,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     CharSequence selectedText = item.mergeItems.get(item.mergeItemSelected);
                     applyNewCompiledText(selectedText.toString(), holder, item);
                     reOpenItem(item);
-                    item.hasMergeConflicts = MergeConflictsParseTask.isMergeConflicted(selectedText);
+                    item.hasMergeConflicts = MergeConflictsHandler.isMergeConflicted(selectedText);
                     item.mergeItemSelected = -1;
                     item.isEditing = false;
                     updateMergeConflict();
@@ -626,13 +627,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 public void onTaskFinished(final ManagedTask task) {
                     TaskManager.clearTask(task);
                     final CharSequence data = (CharSequence)task.getResult();
-                    item.renderedTargetText = data;
 
                     Handler hand = new Handler(Looper.getMainLooper());
                     hand.post(new Runnable() {
                         @Override
                         public void run() {
                             if(!task.isCanceled() && data != null && item == holder.currentItem) {
+                                item.renderedTargetText = data;
                                 if (item.isEditing) {
                                     // edit mode
                                     holder.mTargetEditableBody.setText(item.renderedTargetText);
@@ -650,6 +651,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                             return true;
                                         }
                                     });
+                                    setFinishedMode(item, holder);
                                     ViewUtil.makeLinksClickable(holder.mTargetBody);
                                 }
                             }
@@ -749,17 +751,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mDoneSwitch.setOnCheckedChangeListener(null);
 
         // display as finished
-        if(item.isComplete) {
-            holder.mEditButton.setVisibility(View.GONE);
-            holder.mUndoButton.setVisibility(View.GONE);
-            holder.mRedoButton.setVisibility(View.GONE);
-            holder.mAddNoteButton.setVisibility(View.GONE);
-            holder.mDoneSwitch.setChecked(true);
-            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
-        } else {
-            holder.mEditButton.setVisibility(View.VISIBLE);
-            holder.mDoneSwitch.setChecked(false);
-        }
+        setFinishedMode(item, holder);
 
         // done buttons
         holder.mDoneSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -796,6 +788,25 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
             }
         });
+    }
+
+    /**
+     * set the UI to reflect the finished mode
+     * @param item
+     * @param holder
+     */
+    private void setFinishedMode(ReviewListItem item, ViewHolder holder) {
+        if(item.isComplete) {
+            holder.mEditButton.setVisibility(View.GONE);
+            holder.mUndoButton.setVisibility(View.GONE);
+            holder.mRedoButton.setVisibility(View.GONE);
+            holder.mAddNoteButton.setVisibility(View.GONE);
+            holder.mDoneSwitch.setChecked(true);
+            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
+        } else {
+            holder.mEditButton.setVisibility(View.VISIBLE);
+            holder.mDoneSwitch.setChecked(false);
+        }
     }
 
     /**
@@ -1210,7 +1221,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             applyChangedText(text, holder, item);
 
                             App.closeKeyboard(mContext);
-                            item.hasMergeConflicts = MergeConflictsParseTask.isMergeConflicted(text);
+                            item.hasMergeConflicts = MergeConflictsHandler.isMergeConflicted(text);
                             triggerNotifyDataSetChanged();
                             updateMergeConflict();
 
@@ -1273,7 +1284,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             applyChangedText(text, holder, item);
 
                             App.closeKeyboard(mContext);
-                            item.hasMergeConflicts = MergeConflictsParseTask.isMergeConflicted(text);
+                            item.hasMergeConflicts = MergeConflictsHandler.isMergeConflicted(text);
                             triggerNotifyDataSetChanged();
                             updateMergeConflict();
 
@@ -2023,7 +2034,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             ClickableRenderingEngine renderer = Clickables.setupRenderingGroup(format, renderingGroup, verseClickListener, noteClickListener, true);
             renderer.setLinebreaksEnabled(true);
-            renderer.setPopulateVerseMarkers(Frame.getVerseRange(item.sourceText, item.targetTranslationFormat));
+            renderer.setPopulateVerseMarkers(Frame.getVerseRange(item.sourceText, item.sourceTranslationFormat));
             if(enableSearch) {
                 renderingGroup.setSearchString(filterConstraint, HIGHLIGHT_COLOR);
             }

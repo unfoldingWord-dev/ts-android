@@ -1,14 +1,17 @@
 package com.door43.translationstudio.ui.home;
 
+import android.app.ActivityManager;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
@@ -29,7 +32,8 @@ import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
-import com.door43.translationstudio.tasks.MergeConflictsParseTask;
+import com.door43.translationstudio.core.MergeConflictsHandler;
+import com.door43.translationstudio.tasks.CheckForLatestReleaseTask;
 import com.door43.util.EventBuffer;
 import com.door43.translationstudio.ui.ProfileActivity;
 import com.door43.translationstudio.R;
@@ -63,6 +67,7 @@ import java.text.NumberFormat;
 
 public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFinishedListener, WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener, EventBuffer.OnEventListener, ManagedTask.OnProgressListener, ManagedTask.OnFinishedListener, DialogInterface.OnCancelListener {
     private static final int NEW_TARGET_TRANSLATION_REQUEST = 1;
+    private static final int TARGET_TRANSLATION_VIEW_REQUEST = 101;
     public static final String STATE_DIALOG_SHOWN = "state_dialog_shown";
     public static final String STATE_DIALOG_TRANSLATION_ID = "state_dialog_translationID";
     public static final String TAG = HomeActivity.class.getSimpleName();
@@ -101,7 +106,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 // use current fragment
                 mFragment = getFragmentManager().findFragmentById(R.id.fragment_container);
             } else {
-                if (mTranslator.getTargetTranslations().length > 0) {
+                if (mTranslator.getTargetTranslationIDs().length > 0) {
                     mFragment = new TargetTranslationListFragment();
                     mFragment.setArguments(getIntent().getExtras());
                 } else {
@@ -211,7 +216,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         super.onResume();
         App.setLastFocusTargetTranslation(null);
 
-        int numTranslations = mTranslator.getTargetTranslations().length;
+        int numTranslations = mTranslator.getTargetTranslationIDs().length;
         if(numTranslations > 0 && mFragment instanceof WelcomeFragment) {
             // display target translations list
             mFragment = new TargetTranslationListFragment();
@@ -261,6 +266,20 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         mTargetTranslationWithUpdates = App.getNotifyTargetTranslationWithUpdates();
         if(mTargetTranslationWithUpdates != null && task == null) {
             showTranslationUpdatePrompt(mTargetTranslationWithUpdates);
+        }
+
+        ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
+        if(am != null) {
+            int memoryLimit = am.getMemoryClass();
+            Logger.i(TAG, "application memory limit: " + memoryLimit);
+            ActivityManager.MemoryInfo info = new ActivityManager.MemoryInfo();
+            am.getMemoryInfo(info);
+            Logger.i(TAG, "available memory on the system: " + info.availMem);
+            Logger.i(TAG, "low memory state on the system: " + info.lowMemory);
+            Logger.i(TAG, "low memory threshold on the system: " + info.threshold);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                Logger.i(TAG, "total memory on the system: " + info.totalMem);
+            }
         }
 
         restoreDialogs();
@@ -345,9 +364,20 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 @Override
                 public void run() {
                     Translator.ImportResults importResults = importTask.getImportResults();
-                    boolean success = importResults.isSuccess();
+                    final boolean success = importResults.isSuccess();
                     if(success && importResults.mergeConflict) {
-                        showMergeConflict(importResults.importedSlug);
+                        MergeConflictsHandler.backgroundTestForConflictedChunks(importResults.importedSlug, new MergeConflictsHandler.OnMergeConflictListener() {
+                            @Override
+                            public void onNoMergeConflict(String targetTranslationId) {
+                                showImportResults(mExamineTask.mContentUri.toString(), mExamineTask.mProjectsFound, success);
+                            }
+
+                            @Override
+                            public void onMergeConflict(String targetTranslationId) {
+                                showMergeConflict(targetTranslationId);
+                            }
+                        });
+
                     } else {
                         showImportResults(mExamineTask.mContentUri.toString(), mExamineTask.mProjectsFound, success);
                     }
@@ -382,7 +412,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                             public void onClick(DialogInterface dialog, int which) {
                                 Intent intent = new Intent(HomeActivity.this, TargetTranslationActivity.class);
                                 intent.putExtra(App.EXTRA_TARGET_TRANSLATION_ID, ((PullTargetTranslationTask)task).targetTranslation.getId());
-                                startActivity(intent);
+                                startActivityForResult(intent, TARGET_TRANSLATION_VIEW_REQUEST);
                             }
                         })
                         .show();
@@ -430,7 +460,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         args.putBoolean(App.EXTRA_START_WITH_MERGE_FILTER, true);
         args.putInt(App.EXTRA_VIEW_MODE, TranslationViewMode.REVIEW.ordinal());
         intent.putExtras(args);
-        startActivity(intent);
+        startActivityForResult(intent, TARGET_TRANSLATION_VIEW_REQUEST);
     }
 
     public void showAuthFailure() {
@@ -596,7 +626,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
 
                 Intent intent = new Intent(HomeActivity.this, TargetTranslationActivity.class);
                 intent.putExtra(App.EXTRA_TARGET_TRANSLATION_ID, data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID));
-                startActivity(intent);
+                startActivityForResult(intent, TARGET_TRANSLATION_VIEW_REQUEST);
             } else if( NewTargetTranslationActivity.RESULT_DUPLICATE == resultCode ) {
                 // display duplicate notice to user
                 String targetTranslationId = data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID);
@@ -611,6 +641,15 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                 Snackbar snack = Snackbar.make(findViewById(android.R.id.content), getResources().getString(R.string.error), Snackbar.LENGTH_LONG);
                 ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                 snack.show();
+            }
+        } else if(TARGET_TRANSLATION_VIEW_REQUEST == requestCode ) {
+            if(TargetTranslationActivity.RESULT_DO_UPDATE == resultCode ) {
+                ManagedTask task = new UpdateSourceTask();
+                ((UpdateSourceTask)task).setPrefix(this.getResources().getString(R.string.updating_languages));
+                String taskId = UpdateSourceTask.TASK_ID;
+                task.addOnProgressListener(this);
+                task.addOnFinishedListener(this);
+                TaskManager.addTask(task, taskId);
             }
         }
     }
@@ -689,7 +728,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
 
     @Override
     public void onItemDeleted(String targetTranslationId) {
-        if(mTranslator.getTargetTranslations().length > 0) {
+        if(mTranslator.getTargetTranslationIDs().length > 0) {
             ((TargetTranslationListFragment) mFragment).reloadList();
         } else {
             // display welcome screen
@@ -720,7 +759,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         } else {
             Intent intent = new Intent(HomeActivity.this, TargetTranslationActivity.class);
             intent.putExtra(App.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
-            startActivity(intent);
+            startActivityForResult(intent, TARGET_TRANSLATION_VIEW_REQUEST);
         }
     }
 
@@ -779,16 +818,22 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             switch (tag) {
                 case UpdateLibraryDialog.EVENT_UPDATE_LANGUAGES:
                     task = new UpdateCatalogsTask();
+                    ((UpdateCatalogsTask)task).setPrefix(this.getResources().getString(R.string.updating_languages));
                     taskId = UpdateCatalogsTask.TASK_ID;
                     break;
                 case UpdateLibraryDialog.EVENT_UPDATE_SOURCE:
                     task = new UpdateSourceTask();
+                    ((UpdateSourceTask)task).setPrefix(this.getResources().getString(R.string.updating_languages));
                     taskId = UpdateSourceTask.TASK_ID;
                     break;
-                case UpdateLibraryDialog.EVENT_UPDATE_ALL:
+                case UpdateLibraryDialog.EVENT_VIEW_UPDATED:
+                    // TODO: 11/24/16 view updated
+                    return;
+                case UpdateLibraryDialog.EVENT_UPDATE_APP:
                 default:
-                    task = new UpdateAllTask();
-                    taskId = UpdateAllTask.TASK_ID;
+                    task = new CheckForLatestReleaseTask();
+                    taskId = CheckForLatestReleaseTask.TASK_ID;
+                    break;
             }
             task.addOnProgressListener(this);
             task.addOnFinishedListener(this);
@@ -812,10 +857,16 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                     progressDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
                     progressDialog.setTitle(R.string.updating);
                     progressDialog.setMessage("");
+
+                    progressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            TaskManager.cancelTask(task);
+                        }
+                    });
                 }
 
-                // dismiss if finished
-                if(task.isFinished()) {
+                // dismiss if finished or cancelled
+                if(task.isFinished() || task.isCanceled()) {
                     progressDialog.dismiss();
                     return;
                 }
@@ -846,25 +897,88 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     }
 
     @Override
-    public void onTaskFinished(ManagedTask task) {
+    public void onTaskFinished(final ManagedTask task) {
         TaskManager.clearTask(task);
 
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
             public void run() {
-                if(progressDialog != null) progressDialog.dismiss();
+                if(task instanceof CheckForLatestReleaseTask) {
+                    CheckForLatestReleaseTask checkForLatestReleaseTask = (CheckForLatestReleaseTask) task;
+                    if (progressDialog != null) {
+                        progressDialog.dismiss();
+                        progressDialog = null;
+                    }
 
-                // notify update is done
-                // TODO: 10/10/16 check if task was success
-                // TODO: 10/10/16 check if the task was canceled
-                new AlertDialog.Builder(HomeActivity.this, R.style.AppTheme_Dialog)
-                        .setTitle(R.string.success)
-                        .setMessage(R.string.update_success)
-                        .setPositiveButton(R.string.dismiss, null)
-                        .show();
+                    CheckForLatestReleaseTask.Release release = checkForLatestReleaseTask.getLatestRelease();
+                    if (release == null) {
+                        new AlertDialog.Builder(HomeActivity.this, R.style.AppTheme_Dialog)
+                                .setTitle(R.string.check_for_updates)
+                                .setMessage(R.string.have_latest_app_update)
+                                .setPositiveButton(R.string.label_ok, null)
+                                .show();
+                    } else { // have newer
+                        SettingsActivity.promptUserToDownloadLatestVersion(HomeActivity.this, checkForLatestReleaseTask.getLatestRelease());
+                    }
+
+                } else {
+                    if (progressDialog != null) {
+                        progressDialog.dismiss();
+                        progressDialog = null;
+                    }
+
+                    int titleID = R.string.success;
+                    int msgID = R.string.update_success;
+                    String message = null;
+
+                    if (task.isCanceled()) {
+                        titleID = R.string.error;
+                        msgID = R.string.update_cancelled;
+                    } else if (!isTaskSuccess(task)) {
+                        titleID = R.string.error;
+                        msgID = R.string.options_update_failed;
+                    } else { // success
+                        if (task instanceof UpdateSourceTask) {
+                            UpdateSourceTask updTask = (UpdateSourceTask) task;
+                            message = String.format(getResources().getString(R.string.update_sources_success), updTask.getAddedCnt(), updTask.getUpdatedCnt());
+                        }
+                        if (task instanceof UpdateCatalogsTask) {
+                            UpdateCatalogsTask updTask = (UpdateCatalogsTask) task;
+                            message = String.format(getResources().getString(R.string.update_languages_success), updTask.getAddedCnt());
+                        }
+                    }
+
+                    // notify update is done
+                    AlertDialog.Builder dlg =
+                            new AlertDialog.Builder(HomeActivity.this, R.style.AppTheme_Dialog)
+                                    .setTitle(titleID)
+                                    .setPositiveButton(R.string.dismiss, null);
+
+                    if (message == null) {
+                        dlg.setMessage(msgID);
+                    } else {
+                        dlg.setMessage(message);
+                    }
+
+                    dlg.show();
+                }
             }
         });
+    }
+
+    private boolean isTaskSuccess(ManagedTask task) {
+        boolean success = false;
+        if(task instanceof UpdateAllTask) {
+            success = ((UpdateAllTask) task).isSuccess();
+        } else
+        if(task instanceof UpdateCatalogsTask) {
+            success = ((UpdateCatalogsTask) task).isSuccess();
+        } else
+        if(task instanceof UpdateSourceTask) {
+            success = ((UpdateSourceTask) task).isSuccess();
+        }
+        return success;
     }
 
     @Override

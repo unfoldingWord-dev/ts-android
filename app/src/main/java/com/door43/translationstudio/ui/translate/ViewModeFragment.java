@@ -602,6 +602,13 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         if(mListener != null) mListener.onSearching(isSearching);
     }
 
+    /**
+     * user has selected to update sources
+     */
+    public void onUpdateSources() {
+        if(mListener != null) mListener.onUpdateSources();
+    }
+
     @Override
     public void onTaskFinished(final ManagedTask task) {
         TaskManager.clearTask(task);
@@ -688,5 +695,10 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
          * @param showConflicted
          */
         void onEnableMergeConflict(boolean showConflicted, boolean active);
+
+        /**
+         * user has selected to update sources
+         */
+        void onUpdateSources();
     }
 }

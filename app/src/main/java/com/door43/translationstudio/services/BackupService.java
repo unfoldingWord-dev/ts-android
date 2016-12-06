@@ -30,6 +30,7 @@ import java.util.TimerTask;
  * For now this service is backup the translations to two locations for added peace of mind.
  */
 public class BackupService extends Service {
+    public static final String TAG = BackupService.class.getName();
     private final Timer sTimer = new Timer();
     private static boolean sRunning = false;
 
@@ -87,42 +88,64 @@ public class BackupService extends Service {
             sTimer.cancel();
         }
         sRunning = false;
-        Logger.i(this.getClass().getName(), "stopping backup service");
+        Logger.i(TAG, "stopping backup service");
     }
 
     /**
-     * Performs the backup if nessesary
+     * Performs the backup if necessary
      */
     private void runBackup() {
         boolean backupPerformed = false;
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
             Translator translator = App.getTranslator();
-            TargetTranslation[] targetTranslations = translator.getTargetTranslations();
-            for (TargetTranslation t : targetTranslations) {
+            Logger.i(TAG, "runBackup: Backing up all target translations");
+            String[] targetTranslations = translator.getTargetTranslationFileNames();
+            for (String filename : targetTranslations) {
+
+                try {
+                    Thread.sleep(300); // add delay to ease background processing and also slow the memory thrashing in background
+                } catch (Exception e) {
+                    Logger.e(TAG, "sleep problem");
+                }
+
+                TargetTranslation t = translator.getTargetTranslation(filename);
+                if(t == null) { // skip if not valid
+                    Logger.i(TAG, "runBackup: skipping invalid translation: " + filename);
+                    continue;
+                }
+
+                Logger.i(TAG, "runBackup: Backing up: " + t.getId());
 
                 // commit pending changes
                 try {
                     t.commitSync();
                 } catch (Exception e) {
-                    Logger.e(this.getClass().getName(), "Failed to commit changes before backing up", e);
+                    Logger.e(TAG, "runBackup: Failed to commit changes before backing up", e);
                     continue;
                 }
 
                 // run backup if there are translations
                 if (t.numTranslated() > 0) {
+                    boolean success = false;
                     try {
-                        backupPerformed = App.backupTargetTranslation(t, false) ? true : backupPerformed;
+                        success = App.backupTargetTranslation(t, false) ? true : backupPerformed;
+                        if(success) {
+                            backupPerformed = success;
+                        }
                     } catch (Exception e) {
-                        Logger.e(this.getClass().getName(), "Failed to backup the target translation " + t.getId(), e);
+                        Logger.e(TAG, "runBackup: Failed to backup the target translation " + t.getId(), e);
                     }
+
+                    Logger.i(TAG, "runBackup: Back up success= " + success);
                 }
             }
             if (backupPerformed) {
                 onBackupComplete();
             }
+            Logger.i(TAG, "runBackup: backup finished, backupPerformed= " + backupPerformed);
         } else {
-            Logger.i(this.getClass().getName(), "Missing permission to write to external storage. Automatic backups skipped.");
+            Logger.e(TAG, "runBackup: Missing permission to write to external storage. Automatic backups skipped.");
         }
     }
 

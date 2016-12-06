@@ -13,14 +13,28 @@
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/dialog_content_margin">
 
-        <TextView
+        <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/update_options"
-            android:textColor="@color/dark_primary_text"
-            android:layout_marginBottom="@dimen/dialog_controls_margin"
-            android:textAlignment="center"
-            android:textSize="@dimen/headline" />
+            android:gravity="center_horizontal">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/update_options"
+                android:layout_marginBottom="@dimen/dialog_controls_margin"
+                android:textColor="@color/dark_primary_text"
+                android:textAlignment="center"
+                android:textSize="@dimen/headline"
+                android:layout_gravity="top"
+                android:id="@+id/title" />
+            <ImageButton
+                android:id="@+id/infoButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/card_margin"
+                android:background="@drawable/ic_info_black_24dp"/>
+        </LinearLayout>
 
         <LinearLayout
             android:orientation="horizontal"
@@ -30,67 +44,33 @@
             android:paddingEnd="16dp"
             android:paddingRight="16dp"
             android:gravity="center">
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="5dp"
-                android:layout_marginEnd="5dp"
-                android:background="@drawable/ic_wifi_black_18dp"/>
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/caption"
                 android:layout_gravity="center"
                 android:textColor="@color/dark_secondary_text"
-                android:text="@string/requires_internet"/>
+                android:text="@string/update_menu_requires_internet"
+                android:textAlignment="center" />
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:layout_marginEnd="5dp"
+                android:background="@drawable/ic_wifi_black_18dp"/>
         </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:background="@color/list_separator"/>
 
         <LinearLayout
             android:orientation="vertical"
             android:id="@+id/formLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-
-            <LinearLayout
-                android:id="@+id/update_languages"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:clickable="true"
-                android:focusable="true"
-                android:background="?attr/selectableItemBackground"
-                android:contextClickable="true"
-                android:paddingBottom="@dimen/dialog_controls_margin">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/update_languages"
-                    android:textColor="@color/dark_primary_text"
-                    android:focusable="false"
-                    android:clickable="false"
-                    android:textAllCaps="false"
-                    android:gravity="left"
-                    android:background="@null"
-                    android:duplicateParentState="true"
-                    style="@style/Widget.Alert.Button.Secondary"/>
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/time_fast"
-                    android:textColor="@color/dark_secondary_text"
-                    android:focusable="false"
-                    android:clickable="false"
-                    android:duplicateParentState="true"
-                    android:layout_marginLeft="@dimen/dialog_content_margin"
-                    android:textSize="@dimen/caption"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="1px"
-                android:background="@color/list_separator"/>
 
             <LinearLayout
                 android:id="@+id/update_source"
@@ -135,7 +115,7 @@
                 android:background="@color/list_separator"/>
 
             <LinearLayout
-                android:id="@+id/update_all"
+                android:id="@+id/view_updated_source"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -144,6 +124,111 @@
                 android:background="?attr/selectableItemBackground"
                 android:contextClickable="true"
                 android:paddingBottom="@dimen/dialog_controls_margin">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/view_updated_source"
+                    android:textColor="@color/dark_primary_text"
+                    android:focusable="false"
+                    android:clickable="false"
+                    android:textAllCaps="false"
+                    android:gravity="left"
+                    android:background="@null"
+                    android:duplicateParentState="true"
+                    style="@style/Widget.Alert.Button.Secondary"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="1px"
+                android:background="@color/list_separator"/>
+
+            <LinearLayout
+                android:id="@+id/update_languages"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
+                android:contextClickable="true"
+                android:paddingBottom="@dimen/dialog_controls_margin">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/update_languages"
+                    android:textColor="@color/dark_primary_text"
+                    android:focusable="false"
+                    android:clickable="false"
+                    android:textAllCaps="false"
+                    android:gravity="left"
+                    android:background="@null"
+                    android:duplicateParentState="true"
+                    style="@style/Widget.Alert.Button.Secondary"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/time_fast"
+                    android:textColor="@color/dark_secondary_text"
+                    android:focusable="false"
+                    android:clickable="false"
+                    android:duplicateParentState="true"
+                    android:layout_marginLeft="@dimen/dialog_content_margin"
+                    android:textSize="@dimen/caption"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="1px"
+                android:background="@color/list_separator"/>
+
+            <LinearLayout
+                android:id="@+id/update_app"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
+                android:contextClickable="true"
+                android:paddingBottom="@dimen/dialog_controls_margin">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/check_app_update"
+                    android:textColor="@color/dark_primary_text"
+                    android:focusable="false"
+                    android:clickable="false"
+                    android:textAllCaps="false"
+                    android:gravity="left"
+                    android:background="@null"
+                    android:duplicateParentState="true"
+                    style="@style/Widget.Alert.Button.Secondary"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="1px"
+                android:background="@color/list_separator"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:id="@+id/update_all"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
+                android:contextClickable="true"
+                android:paddingBottom="@dimen/dialog_controls_margin"
+                android:visibility="gone">
 
                 <TextView
                     android:layout_width="match_parent"

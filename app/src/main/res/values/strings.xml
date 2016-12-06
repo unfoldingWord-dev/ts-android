@@ -375,7 +375,7 @@
     <string name="confirm_delete_project">Delete this project? You can download it again later.</string>
     <string name="cannot_delete_project_with_translations">You cannot delete a project you are translating.</string>
     <string name="missing_project">The project is missing</string>
-    <string name="menu_update_library">Update Library</string>
+    <string name="menu_update_library">Update</string>
     <string name="questions">Questions</string>
     <string name="references">References</string>
     <string name="question">Question</string>
@@ -608,7 +608,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="action_download_updates">Download updates</string>
     <string name="list_may_be_outdated">The list may be out of date</string>
     <string name="label_import">Import</string>
-    <string name="label_import_options">Import Options</string>
+    <string name="label_import_options">Import</string>
     <string name="import_from_online">Import from Online (requires internet)</string>
     <string name="automatic_backups">Automatic Backups</string>
     <string name="export_to_sd">Export to SD Card</string>
@@ -864,7 +864,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="tip_backup_to_sd">Creates a copy of your project file</string>
     <string name="draft_translation">Draft Level <xliff:g example="3" id="checking_level">%1$d</xliff:g>: <xliff:g example="Pig Latin" id="language">%2$s</xliff:g></string>
     <string name="title_download_source_language">Download from Online</string>
-    <string name="download_source_language">Do you want to download \'<xliff:g example="Pig Latin" id="language">%1$s</xliff:g>\' from Online (requires internet)?</string>
+    <string name="download_source_language">Download \'<xliff:g example="Pig Latin" id="language">%1$s</xliff:g>\' now? This requires an Internet Connection?</string>
     <string name="downloading_source">Downloading source <xliff:g example="en" id="source_language">%1$s</xliff:g></string>
     <string name="title_export_usfm">Export to USFM</string>
     <string name="export_usfm_by_chapter">Do you want the USFM output separated into chapters or do you want the whole book as a single file?</string>
@@ -879,12 +879,12 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="merge_conflict_title">Merge Conflict</string>
     <string name="import_merge_conflict">Merge conflict on Import - Click OK to resolve</string>
     <string name="label_change">change</string>
-    <string name="update_languages">Update Languages</string>
-    <string name="update_source">Update Source</string>
+    <string name="update_languages">Get New Target Languages</string>
+    <string name="update_source">Check for New and Updated Source Texts</string>
     <string name="update_all">Update All</string>
     <string name="time_very_slow">Takes awhile</string>
-    <string name="time_slow">Takes a few minutes</string>
-    <string name="time_fast">Takes a few seconds</string>
+    <string name="time_slow">May take many minutes (or longer)</string>
+    <string name="time_fast">May take a few minutes (or longer)</string>
     <string name="update_options">Update Options</string>
     <string name="missing_source">Missing source translation</string>
     <string name="update_success">The update finished successfully</string>
@@ -901,4 +901,20 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="not_a_source_text">Not a source text</string>
     <string name="could_not_import">Could not import</string>
     <string name="overwrite_content">Overwrite <xliff:g example="English - Genesis - Unlocked Literal Bible" id="content">%1$s</xliff:g>?</string>
+    <string name="pdf_output_filename_title_prompt">Enter Print to PDF file name:</string>
+    <string name="choose_destination_folder">Choose Destination Folder:</string>
+    <string name="options_update_failed">The update failed.  Check your Internet connection.</string>
+    <string name="update_cancelled">The update was cancelled</string>
+    <string name="update_menu_requires_internet">Requires internet Connection\nThese updates may take a while.</string>
+    <string name="update_sources_success"><xliff:g example="6" id="new">%1$d</xliff:g> New Source Texts and <xliff:g example="10" id="updated">%2$d</xliff:g> Updated Source Texts are available to be downloaded.</string>
+    <string name="updating_sources">Checking for New and Updated Source Texts. This may take a while. Please wait...</string>
+    <string name="update_languages_success"><xliff:g example="6" id="new">%1$d</xliff:g> Target Languages have been added.</string>
+    <string name="updating_languages">Checking for new Target Languages. This may take a while. Please wait...</string>
+    <string name="available_online">Available Online</string>
+    <string name="update_sources_label">Check for new and updated sources</string>
+    <string name="warning_title">Warning</string>
+    <string name="update_warning">Checking for new and updated source texts will close this project. This requires an Internet Connection.</string>
+    <string name="view_updated_source">View New and Updated Source Texts</string>
+    <string name="check_app_update">Check for Update to translationStudio</string>
+    <string name="all_up_to_date">All Source Texts already up to date!</string>
 </resources>

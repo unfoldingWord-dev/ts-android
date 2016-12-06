@@ -24,11 +24,13 @@ public class Typography {
      * @param direction the reading direction of the text
      */
     public static void format(Context context, TranslationType translationType, TextView view, String languageCode, String direction) {
-        Typeface typeface = getTypeface(context, translationType, languageCode, direction);
-        float fontSize = getFontSize(context, translationType);
+        if(view != null) {
+            Typeface typeface = getTypeface(context, translationType, languageCode, direction);
+            float fontSize = getFontSize(context, translationType);
 
-        view.setTypeface(typeface, 0);
-        view.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
+            view.setTypeface(typeface, 0);
+            view.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
+        }
     }
 
     /**
@@ -42,11 +44,13 @@ public class Typography {
      * @param direction the reading direction of the text
      */
     public static void formatTitle(Context context, TranslationType translationType, TextView view, String languageCode, String direction) {
-        Typeface typeface = getTypeface(context, translationType, languageCode, direction);
-        float fontSize = getFontSize(context, translationType) * 1.3f;
+        if(view != null) {
+            Typeface typeface = getTypeface(context, translationType, languageCode, direction);
+            float fontSize = getFontSize(context, translationType) * 1.3f;
 
-        view.setTypeface(typeface, Typeface.BOLD);
-        view.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
+            view.setTypeface(typeface, Typeface.BOLD);
+            view.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
+        }
     }
 
     /**
@@ -60,11 +64,13 @@ public class Typography {
      * @param direction the reading direction of the text
      */
     public static void formatSub(Context context, TranslationType translationType, TextView view, String languageCode, String direction) {
-        Typeface typeface = getTypeface(context, translationType, languageCode, direction);
-        float fontSize = getFontSize(context, translationType) * .7f;
+        if(view != null) {
+            Typeface typeface = getTypeface(context, translationType, languageCode, direction);
+            float fontSize = getFontSize(context, translationType) * .7f;
 
-        view.setTypeface(typeface, 0);
-        view.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
+            view.setTypeface(typeface, 0);
+            view.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
+        }
     }
 
     /**

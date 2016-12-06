@@ -272,7 +272,7 @@ public class MergeConflictsParseTaskTest extends InstrumentationTestCase {
         assertNotNull(mTestText);
         assertFalse(mTestText.isEmpty());
 
-        boolean conflicted = MergeConflictsParseTask.isMergeConflicted(mTestText);
+        boolean conflicted = MergeConflictsHandler.isMergeConflicted(mTestText);
         return conflicted;
     }
 

@@ -130,6 +130,7 @@ public class UpdateAppTask extends ManagedTask {
         });
         if(dirs != null) {
             for (File tt : dirs) {
+                Logger.i(this.getClass().getSimpleName(),"Migrating: "+ tt);
                 if (TargetTranslationMigrator.migrate(tt) == null) {
                     Logger.w(this.getClass().getName(), "Failed to migrate the target translation " + tt.getName());
                 }

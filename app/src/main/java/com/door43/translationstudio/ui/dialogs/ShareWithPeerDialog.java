@@ -27,11 +27,11 @@ import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.network.Peer;
-import com.door43.translationstudio.tasks.MergeConflictsParseTask;
 import com.door43.translationstudio.ui.home.HomeActivity;
 import com.door43.translationstudio.ui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.services.BroadcastListenerService;
@@ -604,18 +604,36 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
             @Override
             public void run() {
                 if(importResults.isSuccess() && importResults.mergeConflict) {
-                    showMergeConflict(importResults.importedSlug);
+                    MergeConflictsHandler.backgroundTestForConflictedChunks(importResults.importedSlug, new MergeConflictsHandler.OnMergeConflictListener() {
+                        @Override
+                        public void onNoMergeConflict(String targetTranslationId) {
+                            showShareSuccess(name);
+                        }
+
+                        @Override
+                        public void onMergeConflict(String targetTranslationId) {
+                            showMergeConflict(targetTranslationId);
+                        }
+                    });
                 } else {
-                    new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
-                            .setTitle(R.string.success)
-                            .setMessage(String.format(getResources().getString(R.string.success_import_target_translation), name))
-                            .setPositiveButton(R.string.dismiss, null)
-                            .show();
-                    // TODO: 12/1/2015 this is a bad hack
-                    ((HomeActivity) getActivity()).notifyDatasetChanged();
+                    showShareSuccess(name);
                 }
             }
         });
+    }
+
+    /**
+     * show share success
+     * @param name
+     */
+    private void showShareSuccess(String name) {
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                .setTitle(R.string.success)
+                .setMessage(String.format(getResources().getString(R.string.success_import_target_translation), name))
+                .setPositiveButton(R.string.dismiss, null)
+                .show();
+        // TODO: 12/1/2015 this is a bad hack
+        ((HomeActivity) getActivity()).notifyDatasetChanged();
     }
 
     public void showMergeConflict(String targetTranslationID) {
