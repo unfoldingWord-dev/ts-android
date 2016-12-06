@@ -27,7 +27,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/byLanguage"
                 android:layout_weight="1"
-                android:layout_marginLeft="@dimen/dialog_content_margin" />
+                android:layout_marginRight="@dimen/dialog_content_margin" />
 
             <RadioButton
                 android:text="@string/by_book_label"
@@ -159,7 +159,9 @@
         android:orientation="horizontal"
         android:gravity="center_vertical|center_horizontal"
         android:background="@drawable/border"
-        android:padding="@dimen/dialog_controls_margin">
+        android:padding="@dimen/dialog_controls_margin"
+        android:layout_marginLeft="1dp"
+        android:layout_marginRight="1dp">
 
         <CheckBox
             android:text="@string/select_all_label"

@@ -4,6 +4,7 @@ import com.door43.translationstudio.App;
 
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.Translation;
+import org.unfoldingword.resourcecontainer.Resource;
 import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
@@ -27,6 +28,7 @@ public class GetAvailableSourcesTask extends ManagedTask {
     private Map<String,List<Integer>> byLanguage;
     private Map<String,List<Integer>> otBooks;
     private Map<String,List<Integer>> ntBooks;
+    private Map<String,List<Integer>> taBooks;
     private Map<String,List<Integer>> otherBooks;
 
     private static String[] ntBookList = { "mat" , "mrk", "luk", "jhn", "act", "rom", "1co", "2co",
@@ -47,7 +49,7 @@ public class GetAvailableSourcesTask extends ManagedTask {
         publishProgress(-1, "");
 
         Door43Client library = App.getLibrary();
-        availableTranslations = library.index.findTranslations(null, null, null, "book", null, App.MIN_CHECKING_LEVEL, -1);
+        availableTranslations = library.index.findTranslations(null, null, null, null, null, App.MIN_CHECKING_LEVEL, -1);
         byLanguage = new TreeMap<>();
         maxProgress = availableTranslations.size();
 
@@ -65,6 +67,7 @@ public class GetAvailableSourcesTask extends ManagedTask {
             otBooks.put(book, books);
         }
         otherBooks = new LinkedHashMap<>();
+        taBooks = new LinkedHashMap<>();
 
         for (int i = 0; i < maxProgress; i++) {
             Translation t = availableTranslations.get(i);
@@ -102,18 +105,32 @@ public class GetAvailableSourcesTask extends ManagedTask {
                 List<Integer> books = otBooks.get(book);
                 books.add(i);
             } else { // other
-                List<Integer> books;
-                if(otherBooks.containsKey(book)) { // if book already present, add source to it
-                   books = otherBooks.get(book);
+                if("ta-".equals(book.substring(0,3))) {
+                    addToOtherBook(taBooks, i, book);
                 } else {
-                    books = new ArrayList<>();  // if book not present, create new book entry
-                    otherBooks.put(book, books);
+                    addToOtherBook(otherBooks, i, book);
                 }
-                books.add(i);
             }
         }
 
         success = true;
+    }
+
+    /**
+     * add index to book list
+     * @param booksList
+     * @param i
+     * @param book
+     */
+    private void addToOtherBook(Map<String,List<Integer>> booksList, int i, String book) {
+        List<Integer> books;
+        if(booksList.containsKey(book)) { // if book already present, add source to it
+           books = booksList.get(book);
+        } else {
+            books = new ArrayList<>();  // if book not present, create new book entry
+            booksList.put(book, books);
+        }
+        books.add(i);
     }
 
     @Override
@@ -147,6 +164,10 @@ public class GetAvailableSourcesTask extends ManagedTask {
 
     public Map<String, List<Integer>> getOtBooks() {
         return otBooks;
+    }
+
+    public Map<String, List<Integer>> getTaBooks() {
+        return taBooks;
     }
 
     public Map<String, List<Integer>> getByLanguage() {

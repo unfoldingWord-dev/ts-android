@@ -1,12 +1,9 @@
 package com.door43.translationstudio.tasks;
 
-import android.os.Bundle;
-
 import com.door43.translationstudio.App;
 
 import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
-import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.util.ArrayList;
@@ -20,6 +17,7 @@ public class DownloadResourceContainerTask extends ManagedTask {
     public final List<String> translationIDs;
     private List<ResourceContainer> downloadedContainers = new ArrayList<>();
     private int maxProgress = 0;
+    private boolean downloadTranslationWords = true;
 
     /**
      * For keeping track of who this task is being performed for
@@ -31,10 +29,12 @@ public class DownloadResourceContainerTask extends ManagedTask {
     public DownloadResourceContainerTask(Translation translation) {
         translationIDs = new ArrayList<>();
         translationIDs.add(translation.resourceContainerSlug);
+        downloadTranslationWords = true;
     }
 
-    public DownloadResourceContainerTask(List<String> resourceContainerSlugs) {
+    public DownloadResourceContainerTask(List<String> resourceContainerSlugs, boolean downloadTranslationWords) {
         translationIDs = resourceContainerSlugs;
+        this.downloadTranslationWords = downloadTranslationWords;
     }
 
     @Override
@@ -64,16 +64,18 @@ public class DownloadResourceContainerTask extends ManagedTask {
                 // also download helps
                 if (!translation.resource.slug.equals("tw") || !translation.resource.slug.equals("tn") || !translation.resource.slug.equals("tq")) {
                     // TODO: 11/2/16 only download these if there is an update
-                    try {
-                        if (translation.project.slug.equals("obs")) {
-                            ResourceContainer rc = App.getLibrary().download(translation.language.slug, "bible-obs", "tw");
-                            downloadedContainers.add(rc);
-                        } else {
-                            ResourceContainer rc = App.getLibrary().download(translation.language.slug, "bible", "tw");
-                            downloadedContainers.add(rc);
+                    if(downloadTranslationWords) {
+                        try {
+                            if (translation.project.slug.equals("obs")) {
+                                ResourceContainer rc = App.getLibrary().download(translation.language.slug, "bible-obs", "tw");
+                                downloadedContainers.add(rc);
+                            } else {
+                                ResourceContainer rc = App.getLibrary().download(translation.language.slug, "bible", "tw");
+                                downloadedContainers.add(rc);
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
                     try {
                         ResourceContainer rc = App.getLibrary().download(translation.language.slug, translation.project.slug, "tn");
@@ -88,7 +90,9 @@ public class DownloadResourceContainerTask extends ManagedTask {
                         e.printStackTrace();
                     }
                 }
-            } else {
+            }
+
+            if(!passSuccess){
                 success = false;
             }
         }

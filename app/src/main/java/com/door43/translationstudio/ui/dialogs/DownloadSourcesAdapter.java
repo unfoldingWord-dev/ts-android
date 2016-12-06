@@ -39,10 +39,11 @@ public class DownloadSourcesAdapter  extends BaseAdapter {
     private Map<String,List<Integer>> mByLanguage;
     private Map<String,List<Integer>> mOtBooks;
     private Map<String,List<Integer>> mNtBooks;
+    private Map<String,List<Integer>> mTaBooks;
     private Map<String,List<Integer>> mOtherBooks;
 
-    private static int[] BookTypeNameList = { R.string.old_testament_label, R.string.new_testament_label, R.string.other_label};
-    private static int[] BookTypeIconList = { R.drawable.ic_library_books_black_24dp, R.drawable.ic_library_books_black_24dp, R.drawable.ic_local_library_black_24dp };
+    private static int[] BookTypeNameList = { R.string.old_testament_label, R.string.new_testament_label, R.string.ta_label, R.string.other_label};
+    private static int[] BookTypeIconList = { R.drawable.ic_library_books_black_24dp, R.drawable.ic_library_books_black_24dp, R.drawable.ic_local_library_black_24dp, R.drawable.ic_local_library_black_24dp };
 
     private SelectionType mSelectionType = SelectionType.language;
     private List<DownloadSourcesAdapter.FilterStep> mSteps;
@@ -71,6 +72,7 @@ a     * @param task
             mOtBooks = task.getOtBooks();
             mNtBooks = task.getNtBooks();
             mOtherBooks = task.getOther();
+            mTaBooks = task.getTaBooks();
             initializeSelections();
         }
     }
@@ -101,7 +103,7 @@ a     * @param task
             case language:
             case newTestament:
             case oldTestament:
-            case other:
+            case other_book:
                 type = TYPE_ITEM_FILTER_SELECTION;
                 break;
 
@@ -173,7 +175,7 @@ a     * @param task
                     break;
                 case oldTestament:
                 case newTestament:
-                case other:
+                case other_book:
                 case book_type:
                     mBookFilter = step.filter;
                     break;
@@ -190,15 +192,19 @@ a     * @param task
                 break;
 
             case oldTestament:
-                getBooksInCategory(mOtBooks);
+                getBooksInCategory(mOtBooks, false);
                 break;
 
             case newTestament:
-                getBooksInCategory(mNtBooks);
+                getBooksInCategory(mNtBooks, false);
                 break;
 
-            case other:
-                getBooksInCategory(mOtherBooks);
+            case translationAcademy:
+                getBooksInCategory(mTaBooks, true);
+                break;
+
+            case other_book:
+                getBooksInCategory(mOtherBooks, true);
                 break;
 
             case book_type:
@@ -248,6 +254,9 @@ a     * @param task
                         break;
                     case R.string.new_testament_label:
                         found = isLanguageInCategory(mByLanguage, mNtBooks);
+                        break;
+                    case R.string.ta_label:
+                        found = isLanguageInCategory(mByLanguage, mTaBooks);
                         break;
                     default:
                     case R.string.other_label:
@@ -305,9 +314,18 @@ a     * @param task
             }
         }
         if(sourceList == null) {
+            if(mTaBooks.containsKey(mBookFilter)) {
+                sourceList = mTaBooks.get(mBookFilter);
+            }
+        }
+        if(sourceList == null) {
             if(mOtherBooks.containsKey(mBookFilter)) {
                 sourceList = mOtherBooks.get(mBookFilter);
             }
+        }
+
+        if(sourceList == null) {
+            return;
         }
 
         for (Integer index : sourceList) {
@@ -333,6 +351,27 @@ a     * @param task
     }
 
     /**
+     * gets the selection type based on filter
+     * @param categoryFilter
+     * @return
+     */
+    public SelectionType getCategoryForFilter(String categoryFilter) {
+        int bookTypeSelected = Util.strToInt(categoryFilter, R.string.other_label);
+        switch (bookTypeSelected) {
+            case R.string.old_testament_label:
+                return SelectionType.oldTestament;
+            case R.string.new_testament_label:
+                return  SelectionType.newTestament;
+            case R.string.ta_label:
+                return SelectionType.translationAcademy;
+            default:
+            case R.string.other_label:
+                break;
+        }
+        return SelectionType.other_book;
+    }
+
+    /**
      * create list of source selections that match language and category
      */
     private void getSourcesForLanguageAndCategory() {
@@ -340,15 +379,18 @@ a     * @param task
         mItems = new ArrayList<>();
 
         //get book list for category
-        int category = Util.strToInt(mBookFilter,0);
+        SelectionType category = getCategoryForFilter(mBookFilter);
         switch(category) {
-            case R.string.old_testament_label:
+            case oldTestament:
                 sortSet = mOtBooks;
                 break;
-            case R.string.new_testament_label:
+            case newTestament:
                 sortSet = mNtBooks;
                 break;
-            case R.string.other_label:
+            case translationAcademy:
+                sortSet = mTaBooks;
+                break;
+            case other_book:
             default:
                 sortSet = mOtherBooks;
                 break;
@@ -405,10 +447,11 @@ a     * @param task
     }
 
     /**
-     * create ordered list based on category
+     * create ordered list based on category, optionally sort
      * @param bookType
+     * @param sort
      */
-    private void getBooksInCategory(Map<String, List<Integer>> bookType) {
+    private void getBooksInCategory(Map<String, List<Integer>> bookType, boolean sort) {
         mItems = new ArrayList<>();
         for (String key : bookType.keySet()) {
             List<Integer> items = bookType.get(key);
@@ -432,6 +475,15 @@ a     * @param task
                     mItems.add(newItem);
                 }
             }
+        }
+
+        if(sort) {
+            Collections.sort(mItems, new Comparator<ViewItem>() { // do numeric sort
+                @Override
+                public int compare(ViewItem lhs, ViewItem rhs) {
+                    return lhs.title.toString().compareTo(rhs.title.toString());
+                }
+            });
         }
     }
 
@@ -486,6 +538,7 @@ a     * @param task
         } else {
             if(mSelectionType == SelectionType.book_type) {
                 holder.imageView.setImageDrawable(mContext.getResources().getDrawable(item.icon));
+                holder.imageView.setVisibility(View.VISIBLE);
             } else {
                 holder.imageView.setVisibility(View.GONE);
             }
@@ -651,10 +704,11 @@ a     * @param task
         language(0),
         oldTestament(1),
         newTestament(2),
-        other(3),
-        book_type(4),
-        source_filtered_by_language(5),
-        source_filtered_by_book(6);
+        translationAcademy(3),
+        other_book(4),
+        book_type(5),
+        source_filtered_by_language(6),
+        source_filtered_by_book(7);
 
         private int _value;
 

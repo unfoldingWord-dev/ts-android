@@ -145,7 +145,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                 if(mAdapter != null) {
                     List<String> selected = mAdapter.getSelected();
                     if((selected != null) && (selected.size() > 0)) {
-                        DownloadResourceContainerTask task = new DownloadResourceContainerTask(selected);
+                        DownloadResourceContainerTask task = new DownloadResourceContainerTask(selected, false);
                         task.addOnFinishedListener(DownloadSourcesDialog.this);
                         task.addOnProgressListener(DownloadSourcesDialog.this);
                         TaskManager.addTask(task, TASK_DOWNLOAD_SOURCES);
@@ -181,22 +181,26 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
 
                             case oldTestament:
                             case newTestament:
-                            case other:
+                            case translationAcademy:
+                            case other_book:
                                 addStep(DownloadSourcesAdapter.SelectionType.language, R.string.choose_language);
                                 break;
 
                             case book_type:
-                                int bookTypeSelected = Util.strToInt(currentStep.filter, R.string.other_label);
-                                switch (bookTypeSelected) {
-                                    case R.string.old_testament_label:
+                                DownloadSourcesAdapter.SelectionType category = mAdapter.getCategoryForFilter(currentStep.filter);
+                                switch (category) {
+                                    case oldTestament:
                                         addStep(DownloadSourcesAdapter.SelectionType.oldTestament, R.string.choose_book);
                                         break;
-                                    case R.string.new_testament_label:
+                                    case newTestament:
                                         addStep(DownloadSourcesAdapter.SelectionType.newTestament, R.string.choose_book);
                                         break;
+                                    case translationAcademy:
+                                        addStep(DownloadSourcesAdapter.SelectionType.translationAcademy, R.string.choose_book);
+                                        break;
                                     default:
-                                    case R.string.other_label:
-                                        addStep(DownloadSourcesAdapter.SelectionType.other, R.string.choose_book);
+                                    case other_book:
+                                        addStep(DownloadSourcesAdapter.SelectionType.other_book, R.string.choose_book);
                                         break;
                                 }
                                 break;
