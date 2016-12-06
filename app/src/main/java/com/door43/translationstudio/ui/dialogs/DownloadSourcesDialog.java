@@ -466,7 +466,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                     boolean canceled = downloadSourcesTask.isCanceled();
                     String downloads = getActivity().getResources().getString(R.string.downloads_success,successCount);
                     String errors = "";
-                    if((failed.size() > 1) && !canceled) {
+                    if((failed.size() > 0) && !canceled) {
                         errors = "\n" + getActivity().getResources().getString(R.string.downloads_fail, failed.size());
                     }
 

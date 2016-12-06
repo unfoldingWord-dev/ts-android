@@ -1,6 +1,7 @@
 package com.door43.translationstudio.ui.dialogs;
 
 import android.content.Context;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +35,8 @@ public class DownloadSourcesAdapter  extends BaseAdapter {
     public static final int TYPE_ITEM_SOURCE_SELECTION = 1;
     private final Context mContext;
     private List<String> mSelected = new ArrayList<>();
+    private List<String> mDownloaded = new ArrayList<>();
+    private List<String> mDownloadError = new ArrayList<>();
     private List<ViewItem> mItems = new ArrayList<>();
     private List<Translation> mAvailableSources;
     private Map<String,List<Integer>> mByLanguage;
@@ -337,6 +340,13 @@ a     * @param task
                 String project = sourceTranslation.project.name + "  (" + sourceTranslation.project.slug + ")";
 
                 ViewItem newItem = new ViewItem(language, project, filter, sourceTranslation, false, false);
+
+                if(mDownloaded.contains(newItem.containerSlug)) {
+                    newItem.downloaded = true;
+                }
+                if(mDownloadError.contains(newItem.containerSlug)) {
+                    newItem.error = true;
+                }
                 mItems.add(newItem);
             }
         }
@@ -419,6 +429,13 @@ a     * @param task
                         String resource = sourceTranslation.resource.name + "  (" + sourceTranslation.language.slug + ")";
 
                         ViewItem newItem = new ViewItem(project, resource, filter, sourceTranslation, false, false);
+
+                        if(mDownloaded.contains(newItem.containerSlug)) {
+                            newItem.downloaded = true;
+                        }
+                        if(mDownloadError.contains(newItem.containerSlug)) {
+                            newItem.error = true;
+                        }
                         mItems.add(newItem);
                     }
                 }
@@ -523,6 +540,18 @@ a     * @param task
 
         if(rowType == TYPE_ITEM_SOURCE_SELECTION) {
             holder.errorView.setVisibility(item.error ? View.VISIBLE : View.GONE);
+            if(item.error) {
+                holder.errorView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        new AlertDialog.Builder(mContext, R.style.AppTheme_Dialog)
+                                .setTitle(R.string.download_failed)
+                                .setMessage(R.string.source_not_found)
+                                .setPositiveButton(R.string.label_close, null)
+                                .show();
+                    }
+                });
+            }
             if(item.downloaded) {
                 holder.imageView.setBackgroundResource(R.drawable.ic_done_black_24dp);
                 ViewUtil.tintViewDrawable(holder.imageView, parent.getContext().getResources().getColor(R.color.green));
@@ -605,6 +634,11 @@ a     * @param task
             item.downloaded = true;
             item.error = false;
             deselect(position);
+
+            if(!mDownloaded.contains(item.containerSlug)) {
+                mDownloaded.add(item.containerSlug);
+            }
+            mDownloadError.remove(item.containerSlug);
         }
     }
 
@@ -616,6 +650,11 @@ a     * @param task
         ViewItem item = getItem(position);
         if(item != null) {
             item.error = true;
+
+            if(!mDownloadError.contains(item.containerSlug)) {
+                mDownloadError.add(item.containerSlug);
+            }
+            mDownloaded.remove(item.containerSlug);
         }
     }
 
