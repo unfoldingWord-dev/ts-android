@@ -52,6 +52,7 @@ public class DownloadSourcesAdapter  extends BaseAdapter {
     private List<DownloadSourcesAdapter.FilterStep> mSteps;
     private String mLanguageFilter;
     private String mBookFilter;
+    private String mSearch = null;
 
     public DownloadSourcesAdapter(Context context) {
         mContext = context;
@@ -83,9 +84,20 @@ a     * @param task
     /**
      * loads the filter stages (e.g. filter by language, and then by category)
      * @param steps
+     * @param search - string to search for
      */
-    public void setFilterSteps(List<DownloadSourcesAdapter.FilterStep> steps) {
+    public void setFilterSteps(List<DownloadSourcesAdapter.FilterStep> steps, String search) {
         mSteps = steps;
+        mSearch = search;
+        initializeSelections();
+    }
+
+    /**
+     * loads the filter stages (e.g. filter by language, and then by category)
+     * @param search - string to search for
+     */
+    public void setSearch(String search) {
+        mSearch = search;
         initializeSelections();
     }
 
@@ -238,6 +250,31 @@ a     * @param task
                     mItems.add(newItem);
                 }
             }
+        }
+        if((mSearch != null) && !mSearch.isEmpty()) {
+            List<ViewItem> filteredItems = new ArrayList<>();
+
+            // filter by language code
+            for (int i = 0; i < mItems.size(); i++) {
+                ViewItem item = mItems.get(i);
+                String code = item.sourceTranslation.language.slug;
+                if(code.substring(0, mSearch.length()).equalsIgnoreCase(mSearch)) {
+                    filteredItems.add(item);
+                    mItems.remove(i); // remove from original list so no double entries
+                    i--; // back up so we don't skip next item
+                }
+            }
+
+            // filter by language name
+            for (int i = 0; i < mItems.size(); i++) {
+                ViewItem item = mItems.get(i);
+                String name = item.sourceTranslation.language.name;
+                if(name.substring(0, mSearch.length()).equalsIgnoreCase(mSearch)) {
+                    filteredItems.add(item);
+                }
+            }
+
+            mItems = filteredItems;
         }
     }
 

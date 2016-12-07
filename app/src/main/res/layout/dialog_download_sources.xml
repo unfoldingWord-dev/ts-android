@@ -66,7 +66,8 @@
                 android:layout_gravity="left|center_vertical"
                 android:paddingRight="16dp"
                 android:src="@drawable/ic_arrow_back_black_24dp"
-                android:background="?attr/selectableItemBackgroundBorderless"/>
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:paddingLeft="16dp" />
 
             <TextView
                 android:layout_gravity="center_vertical"
@@ -132,6 +133,29 @@
                 android:paddingBottom="16dp"
                 android:paddingRight="@dimen/dialog_controls_margin"
                 android:id="@+id/nav_text5" />
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_focused_blue"
+                android:id="@+id/search_text_border">
+
+                <EditText
+                    android:layout_gravity="center_vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/search_for_language"
+                    android:textStyle="italic"
+                    android:textColor="@color/dark_secondary_text"
+                    android:textSize="@dimen/title"
+                    android:paddingBottom="16dp"
+                    android:singleLine="true"
+                    android:id="@+id/search_text"
+                    android:layout_marginLeft="16dp"
+                    android:layout_weight="1"
+                    android:layout_marginRight="16dp" />
+            </LinearLayout>
 
         </LinearLayout>
 

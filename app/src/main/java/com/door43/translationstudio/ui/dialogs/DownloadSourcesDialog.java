@@ -7,8 +7,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v7.app.AlertDialog;
+import android.text.Editable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.view.LayoutInflater;
@@ -19,6 +21,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -58,7 +61,10 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
     private CheckBox selectAllButton;
     private CheckBox unSelectAllButton;
     private Button downloadButton;
-
+    private ImageView searchIcon;
+    private EditText searchText;
+    private String searchString;
+    private LinearLayout searchTextBorder;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -73,9 +79,6 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         task.addOnFinishedListener(this);
         TaskManager.addTask(task, GetAvailableSourcesTask.TASK_ID);
 
-//        EditText searchView = (EditText) v.findViewById(R.id.search_text);
-//        searchView.setHint(R.string.choose_source_translations);
-//        searchView.setEnabled(false);
         ImageButton backButton = (ImageButton) v.findViewById(R.id.search_back_button);
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -94,6 +97,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked) {
+                    searchString = null;
                     mSteps = new ArrayList<>(); // clear existing filter and start over
                     addStep(DownloadSourcesAdapter.SelectionType.language, R.string.choose_language);
                     setFilter();
@@ -154,9 +158,10 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             }
         });
 
-        ImageView searchIcon = (ImageView) v.findViewById(R.id.search_mag_icon);
-        searchIcon.setVisibility(View.GONE);
-        // TODO: set up search
+        searchIcon = (ImageView) v.findViewById(R.id.search_mag_icon);
+        searchText = (EditText) v.findViewById(R.id.search_text);
+        searchTextBorder = (LinearLayout) v.findViewById(R.id.search_text_border);
+        searchString = null;
 
         mAdapter = new DownloadSourcesAdapter(getActivity());
 
@@ -166,6 +171,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
                 if((mAdapter != null) && (mSteps != null) && (mSteps.size() > 0)) {
+                    searchString = null;
                     DownloadSourcesAdapter.FilterStep currentStep = mSteps.get(mSteps.size() - 1);
                     DownloadSourcesAdapter.ViewItem item = mAdapter.getItem(position);
                     currentStep.old_label = currentStep.label;
@@ -286,12 +292,78 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             setNavBarStep(step);
         }
 
+        // setup selection bar
         boolean selectDownloads = (mSteps.size() == 3);
         mSelectionBar.setVisibility(selectDownloads ? View.VISIBLE : View.GONE);
-        mAdapter.setFilterSteps(mSteps);
+        mAdapter.setFilterSteps(mSteps, searchString);
         if(selectDownloads) {
             onSelectionChanged();
         }
+
+        //set up nav/search bar
+        boolean enable_language_search = (mSteps.size() == 1)
+                                        && (mSteps.get(0).selection == DownloadSourcesAdapter.SelectionType.language);
+        if(enable_language_search) {
+            setupLanguageSearch();
+        } else {
+            searchIcon.setVisibility(View.GONE);
+            showNavbar(true);
+        }
+
+        searchTextBorder.setVisibility(View.GONE);
+        searchText.setVisibility(View.GONE);
+        searchText.setEnabled(false);
+        if(searchTextWatcher != null) {
+            searchText.removeTextChangedListener(searchTextWatcher);
+            searchTextWatcher = null;
+        }
+
+        TextView nav1 = getTextView(1);
+        nav1.setOnClickListener(null);
+    }
+
+    private TextWatcher searchTextWatcher;
+
+    /**
+     * setup UI for doing language search
+     */
+    private void setupLanguageSearch() {
+        searchIcon.setVisibility(View.VISIBLE);
+        searchIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showNavbar(false);
+                searchTextBorder.setVisibility(View.VISIBLE);
+                searchText.setVisibility(View.VISIBLE);
+                searchText.setEnabled(true);
+                searchText.setText("");
+
+                if(searchTextWatcher != null) {
+                    searchText.removeTextChangedListener(searchTextWatcher);
+                }
+
+                searchTextWatcher = new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                        if (mAdapter != null) {
+                            searchString = s.toString();
+                            mAdapter.setSearch(searchString);
+                        }
+                    }
+                };
+                searchText.addTextChangedListener(searchTextWatcher);
+            }
+        });
     }
 
     /**
@@ -369,6 +441,19 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         }
     }
 
+    /**
+     * show/hide navbar items
+     * @param enable
+     */
+    private void showNavbar(boolean enable) {
+        int visibility = enable ? View.VISIBLE : View.GONE;
+        for (int i = 1; i <= 5; i++) {
+            TextView v = getTextView(i);
+            if(v != null) {
+                v.setVisibility(visibility);
+            }
+        }
+    }
     /**
      * find text view for position
      * @param position
