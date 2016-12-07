@@ -380,17 +380,19 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     TaskManager.clearTask(task);
                     final CharSequence data = (CharSequence)task.getResult();
                     item.renderedSourceText = data;
+                    if(!task.isCanceled() && data != null && item == holder.currentItem) {
 
-                    Handler hand = new Handler(Looper.getMainLooper());
-                    hand.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if(!task.isCanceled() && data != null && item == holder.currentItem) {
-                                holder.mSourceBody.setText(item.renderedSourceText);
-                                holder.mSourceBody.setVisibility(View.VISIBLE);
+                        Handler hand = new Handler(Looper.getMainLooper());
+                        hand.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (!task.isCanceled() && data != null && item == holder.currentItem) {
+                                    holder.mSourceBody.setText(item.renderedSourceText);
+                                    holder.mSourceBody.setVisibility(View.VISIBLE);
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
                 }
             });
             holder.currentSourceTaskId = TaskManager.addTask(task);
@@ -627,36 +629,40 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 public void onTaskFinished(final ManagedTask task) {
                     TaskManager.clearTask(task);
                     final CharSequence data = (CharSequence)task.getResult();
+                    if(!task.isCanceled() && data != null && item == holder.currentItem) {
 
-                    Handler hand = new Handler(Looper.getMainLooper());
-                    hand.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if(!task.isCanceled() && data != null && item == holder.currentItem) {
-                                item.renderedTargetText = data;
-                                if (item.isEditing) {
-                                    // edit mode
-                                    holder.mTargetEditableBody.setText(item.renderedTargetText);
-                                    holder.mTargetEditableBody.setVisibility(View.VISIBLE);
-                                    holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
+                        Handler hand = new Handler(Looper.getMainLooper());
+                        hand.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (!task.isCanceled() && data != null && item == holder.currentItem) {
+                                    item.renderedTargetText = data;
+                                    if (item.isEditing) {
+                                        // edit mode
+                                        holder.mTargetEditableBody.setText(item.renderedTargetText);
+                                        holder.mTargetEditableBody.setVisibility(View.VISIBLE);
+                                        holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
+                                    } else {
+                                        // verse marker mode
+                                        holder.mTargetBody.setText(item.renderedTargetText);
+                                        holder.mTargetBody.setVisibility(View.VISIBLE);
+                                        holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() {
+                                            @Override
+                                            public boolean onTouch(View v, MotionEvent event) {
+                                                v.onTouchEvent(event);
+                                                v.clearFocus();
+                                                return true;
+                                            }
+                                        });
+                                        setFinishedMode(item, holder);
+                                        ViewUtil.makeLinksClickable(holder.mTargetBody);
+                                    }
                                 } else {
-                                    // verse marker mode
-                                    holder.mTargetBody.setText(item.renderedTargetText);
-                                    holder.mTargetBody.setVisibility(View.VISIBLE);
-                                    holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() {
-                                        @Override
-                                        public boolean onTouch(View v, MotionEvent event) {
-                                            v.onTouchEvent(event);
-                                            v.clearFocus();
-                                            return true;
-                                        }
-                                    });
-                                    setFinishedMode(item, holder);
-                                    ViewUtil.makeLinksClickable(holder.mTargetBody);
+                                    Logger.e(TAG, "Render failed: task.isCanceled()=" + task.isCanceled() + ", (data==null)=" + (data == null) + ", (item!=holder.currentItem)=" + (item != holder.currentItem));
                                 }
                             }
-                        }
-                    });
+                        });
+                    }
                 }
             });
             holder.currentTargetTaskId = TaskManager.addTask(task);
