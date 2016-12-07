@@ -341,11 +341,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         if(item != null) {
             item.hasUpdates = false;
             item.downloaded = true;
-            if(item.selected) {
-                select(position);
-            } else {
-                deselect(position);
-            }
+            select(position); // auto select download item
         }
         sort();
     }

@@ -78,7 +78,12 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
         ImageButton searchBackButton = (ImageButton) v.findViewById(R.id.search_back_button);
         searchBackButton.setVisibility(View.GONE);
         ImageView searchIcon = (ImageView) v.findViewById(R.id.search_mag_icon);
-        // TODO: set up search
+        searchIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: 12/7/16
+            }
+        });
 
         mAdapter = new ChooseSourceTranslationAdapter(getActivity());
 
