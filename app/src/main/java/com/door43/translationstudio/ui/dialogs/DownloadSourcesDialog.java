@@ -336,6 +336,8 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                 searchTextBorder.setVisibility(View.VISIBLE);
                 searchText.setVisibility(View.VISIBLE);
                 searchText.setEnabled(true);
+                searchText.requestFocus();
+                App.showKeyboard(getActivity(), searchText, false);
                 searchText.setText("");
 
                 if(searchTextWatcher != null) {

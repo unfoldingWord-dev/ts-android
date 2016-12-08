@@ -255,22 +255,24 @@ a     * @param task
             List<ViewItem> filteredItems = new ArrayList<>();
 
             // filter by language code
-            for (int i = 0; i < mItems.size(); i++) {
-                ViewItem item = mItems.get(i);
+            for (ViewItem item : mItems) {
                 String code = item.sourceTranslation.language.slug;
-                if(code.substring(0, mSearch.length()).equalsIgnoreCase(mSearch)) {
-                    filteredItems.add(item);
-                    mItems.remove(i); // remove from original list so no double entries
-                    i--; // back up so we don't skip next item
+                if(code.length() >= mSearch.length()) {
+                    if (code.substring(0, mSearch.length()).equalsIgnoreCase(mSearch)) {
+                        filteredItems.add(item);
+                    }
                 }
             }
 
             // filter by language name
-            for (int i = 0; i < mItems.size(); i++) {
-                ViewItem item = mItems.get(i);
+            for (ViewItem item : mItems) {
                 String name = item.sourceTranslation.language.name;
-                if(name.substring(0, mSearch.length()).equalsIgnoreCase(mSearch)) {
-                    filteredItems.add(item);
+                if(name.length() >= mSearch.length()) {
+                    if (name.substring(0, mSearch.length()).equalsIgnoreCase(mSearch)) {
+                        if (!filteredItems.contains(item)) { // prevent duplicates
+                            filteredItems.add(item);
+                        }
+                    }
                 }
             }
 
