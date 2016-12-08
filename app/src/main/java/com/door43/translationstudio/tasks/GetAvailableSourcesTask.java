@@ -49,7 +49,11 @@ public class GetAvailableSourcesTask extends ManagedTask {
         publishProgress(-1, "");
 
         Door43Client library = App.getLibrary();
-        availableTranslations = library.index.findTranslations(null, null, null, null, null, App.MIN_CHECKING_LEVEL, -1);
+        availableTranslations = library.index.findTranslations(null, null, null, "book", null, App.MIN_CHECKING_LEVEL, -1);
+        List<Translation> tw  = library.index.findTranslations(null, null, null, "dict", null, App.MIN_CHECKING_LEVEL, -1);
+        availableTranslations.addAll(tw);
+        List<Translation> man  = library.index.findTranslations(null, null, null, "man", null, App.MIN_CHECKING_LEVEL, -1);
+        availableTranslations.addAll(man);
         byLanguage = new TreeMap<>();
         maxProgress = availableTranslations.size();
 

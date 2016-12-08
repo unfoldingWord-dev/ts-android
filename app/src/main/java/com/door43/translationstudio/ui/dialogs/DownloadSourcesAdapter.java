@@ -14,6 +14,7 @@ import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.tasks.GetAvailableSourcesTask;
 import com.door43.widget.ViewUtil;
 
+import org.json.JSONObject;
 import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.tools.logger.Logger;
 
@@ -772,6 +773,52 @@ a     * @param task
             this.label = label;
             filter = null;
             old_label = null;
+        }
+
+        private FilterStep(SelectionType selection, String label, String filter, String old_label) {
+            this.selection = selection;
+            this.label = label;
+            this.filter = filter;
+            this.old_label = old_label;
+        }
+
+        public JSONObject toJson() {
+            try {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.putOpt("selection", selection.getValue());
+                jsonObject.putOpt("label", label);
+                jsonObject.putOpt("old_label", old_label);
+                jsonObject.putOpt("filter", filter);
+
+                return jsonObject;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        static FilterStep generate(JSONObject jsonObject) {
+            try {
+                SelectionType selection = SelectionType.fromInt((int) getOpt(jsonObject,"selection"));
+                String label = (String) getOpt(jsonObject,"label");
+                String old_label = (String) getOpt(jsonObject,"old_label");
+                String filter = (String) getOpt(jsonObject,"filter");
+                return new FilterStep( selection, label, filter, old_label);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        static Object getOpt(JSONObject json, String key) {
+            try {
+                if(json.has(key)) {
+                    return json.get(key);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
         }
     }
 

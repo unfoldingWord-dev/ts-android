@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -31,9 +32,11 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.tasks.DownloadResourceContainerTask;
+import com.door43.translationstudio.tasks.DownloadResourceContainersTask;
 import com.door43.translationstudio.tasks.GetAvailableSourcesTask;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
@@ -51,7 +54,9 @@ import java.util.List;
 
 public class DownloadSourcesDialog extends DialogFragment implements ManagedTask.OnFinishedListener, ManagedTask.OnProgressListener {
     public static final String TAG = DownloadSourcesDialog.class.getSimpleName();
+    public static final String STATE_SEARCH_STRING = "state_search_string";
     private static final String TASK_DOWNLOAD_SOURCES = "download-sources";
+    public static final String STATE_FILTER_STEPS = "state_filter_steps";
     private Door43Client mLibrary;
     private ProgressDialog progressDialog = null;
     private DownloadSourcesAdapter mAdapter;
@@ -149,7 +154,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                 if(mAdapter != null) {
                     List<String> selected = mAdapter.getSelected();
                     if((selected != null) && (selected.size() > 0)) {
-                        DownloadResourceContainerTask task = new DownloadResourceContainerTask(selected, false);
+                        DownloadResourceContainersTask task = new DownloadResourceContainersTask(selected);
                         task.addOnFinishedListener(DownloadSourcesDialog.this);
                         task.addOnProgressListener(DownloadSourcesDialog.this);
                         TaskManager.addTask(task, TASK_DOWNLOAD_SOURCES);
@@ -246,6 +251,34 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
 
         byLanguageButton.setChecked(true);
         return v;
+    }
+
+    @Override
+    public void onResume() {
+        super.onStart();
+
+        // widen dialog to accommodate more text
+        int height = getResources().getDisplayMetrics().heightPixels;
+        int width = getResources().getDisplayMetrics().widthPixels;
+        float screenWidthFactor = 0.5f; // landscape mode
+        if(height > width) { // if portrait mode
+            screenWidthFactor = 0.75f;
+        }
+        getDialog().getWindow().setLayout((int) (width * screenWidthFactor), WindowManager.LayoutParams.MATCH_PARENT);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle out) {
+
+        JSONArray stepsArray = new JSONArray();
+        for (DownloadSourcesAdapter.FilterStep step : mSteps) {
+            JSONObject jsonObject = step.toJson();
+            stepsArray.put(jsonObject);
+        }
+        out.putString(STATE_FILTER_STEPS, stepsArray.toString());
+        out.putString(STATE_SEARCH_STRING, searchString);
+
+        super.onSaveInstanceState(out);
     }
 
     /**
@@ -519,8 +552,8 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                         progressDialog.dismiss();
                         progressDialog = null;
                     }
-                } else if(task instanceof DownloadResourceContainerTask) {
-                    DownloadResourceContainerTask downloadSourcesTask = (DownloadResourceContainerTask) task;
+                } else if(task instanceof DownloadResourceContainersTask) {
+                    DownloadResourceContainersTask downloadSourcesTask = (DownloadResourceContainersTask) task;
                     List<ResourceContainer> containers = downloadSourcesTask.getDownloadedContainers();
 
                     int successCount = 0;
