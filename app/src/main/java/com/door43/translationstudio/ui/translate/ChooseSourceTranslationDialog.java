@@ -92,7 +92,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
             @Override
             public void afterTextChanged(Editable s) {
                 if (mAdapter != null) {
-                    mAdapter.setSearch(s.toString());
+                    mAdapter.applySearch(s.toString());
                 }
             }
         });

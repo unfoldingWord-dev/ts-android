@@ -129,7 +129,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
     /**
      * applies search string and resorts list
      */
-    public void setSearch(String search) {
+    public void applySearch(String search) {
         mSearchText = search;
         sort();
     }
@@ -146,32 +146,32 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         mSortedData.add(selectedHeader);
         mSectionHeader.add(mSortedData.size() - 1);
 
-        List<ViewItem> section = addLanguagesFrom(mSelected, null); // do not restrict selections by search string
+        List<ViewItem> section = getViewItems(mSelected, null); // do not restrict selections by search string
         mSortedData.addAll(section);
 
         ViewItem availableHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.available), null, false, false);
         mSortedData.add(availableHeader);
         mSectionHeader.add(mSortedData.size() - 1);
 
-        section = addLanguagesFrom(mAvailable, mSearchText);
+        section = getViewItems(mAvailable, mSearchText);
         mSortedData.addAll(section);
 
         ViewItem downloadableHeader = new ChooseSourceTranslationAdapter.ViewItem(getDownloadableText(), null, false, false);
         mSortedData.add(downloadableHeader);
         mSectionHeader.add(mSortedData.size() - 1);
 
-        section = addLanguagesFrom(mDownloadable, mSearchText);
+        section = getViewItems(mDownloadable, mSearchText);
         mSortedData.addAll(section);
 
         notifyDataSetChanged();
     }
 
     /**
-     * get ViewItem from data list and apply any search filters
+     * get ViewItems from data list and apply any search filters
      * @param data
      * @return
      */
-    private List<ViewItem> addLanguagesFrom(List<String> data, String searchText) {
+    private List<ViewItem> getViewItems(List<String> data, String searchText) {
         List<ViewItem> section = new ArrayList<>();
         for(String id:data) {
             section.add(mData.get(id));
