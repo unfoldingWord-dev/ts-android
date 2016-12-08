@@ -192,6 +192,7 @@ a     * @param task
                 case oldTestament:
                 case newTestament:
                 case other_book:
+                case translationAcademy:
                 case book_type:
                     mBookFilter = step.filter;
                     break;

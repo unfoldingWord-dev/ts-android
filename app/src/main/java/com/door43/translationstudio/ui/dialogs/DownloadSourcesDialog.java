@@ -554,12 +554,11 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                     }
                 } else if(task instanceof DownloadResourceContainersTask) {
                     DownloadResourceContainersTask downloadSourcesTask = (DownloadResourceContainersTask) task;
-                    List<ResourceContainer> containers = downloadSourcesTask.getDownloadedContainers();
+                    List<ResourceContainer> downloadedContainers = downloadSourcesTask.getDownloadedContainers();
 
-                    int successCount = 0;
                     List<DownloadSourcesAdapter.ViewItem> items = mAdapter.getItems();
 
-                    for (ResourceContainer container : containers) {
+                    for (ResourceContainer container : downloadedContainers) {
                         Logger.i(TAG, "Received: " + container.slug);
 
                         int pos = mAdapter.findPosition(container.slug);
@@ -578,7 +577,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                     }
 
                     boolean canceled = downloadSourcesTask.isCanceled();
-                    String downloads = getActivity().getResources().getString(R.string.downloads_success,successCount);
+                    String downloads = getActivity().getResources().getString(R.string.downloads_success,downloadedContainers.size());
                     String errors = "";
                     if((failed.size() > 0) && !canceled) {
                         errors = "\n" + getActivity().getResources().getString(R.string.downloads_fail, failed.size());
