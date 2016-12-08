@@ -8,6 +8,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -51,7 +53,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
     private OnClickListener mListener;
     private ChooseSourceTranslationAdapter mAdapter;
     private Door43Client mLibrary;
-    private ProgressDialog downloadDialog = null;
+    private ProgressDialog downloadDialog;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -72,16 +74,37 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
             }
         }
 
-        EditText searchView = (EditText) v.findViewById(R.id.search_text);
-        searchView.setHint(R.string.choose_source_translations);
-        searchView.setEnabled(false);
+        final EditText searchText = (EditText) v.findViewById(R.id.search_text);
+        searchText.setHint(R.string.choose_source_translations);
+        searchText.setEnabled(true);
+        searchText.setFocusable(true);
+        searchText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (mAdapter != null) {
+                    mAdapter.setSearch(s.toString());
+                }
+            }
+        });
+
         ImageButton searchBackButton = (ImageButton) v.findViewById(R.id.search_back_button);
         searchBackButton.setVisibility(View.GONE);
         ImageView searchIcon = (ImageView) v.findViewById(R.id.search_mag_icon);
         searchIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: 12/7/16
+                searchText.requestFocus();
+                App.showKeyboard(getActivity(),searchText, false);
             }
         });
 
@@ -204,7 +227,6 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
         });
 
         loadData();
-
         return v;
     }
 
@@ -250,7 +272,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment implements Man
      * @param selected
      */
     private void addSourceTranslation(final Translation sourceTranslation, final boolean selected) {
-        final String title = sourceTranslation.language.name + " - " + sourceTranslation.resource.name;
+        final String title = sourceTranslation.language.name + " (" + sourceTranslation.language.slug + ") - " + sourceTranslation.resource.name;
 
         final boolean isDownloaded = mLibrary.exists(sourceTranslation.resourceContainerSlug);
         Handler hand = new Handler(Looper.getMainLooper());
