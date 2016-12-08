@@ -27,6 +27,8 @@ import org.unfoldingword.tools.taskmanager.ManagedTask;
 import org.unfoldingword.tools.taskmanager.TaskManager;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +50,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
     private List<String> mDownloadable = new ArrayList<>();
     private List<ViewItem> mSortedData = new ArrayList<>();
     private TreeSet<Integer> mSectionHeader = new TreeSet<>();
+    private String mSearchText;
 
     public ChooseSourceTranslationAdapter(Context context) {
         mContext = context;
@@ -124,6 +127,14 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
     }
 
     /**
+     * applies search string and resorts list
+     */
+    public void applySearch(String search) {
+        mSearchText = search;
+        sort();
+    }
+
+    /**
      * Resorts the data
      */
     public void sort() {
@@ -134,22 +145,88 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         ViewItem selectedHeader = new ChooseSourceTranslationAdapter.ViewItem(getSelectedText(), null, false, false);
         mSortedData.add(selectedHeader);
         mSectionHeader.add(mSortedData.size() - 1);
-        for(String id:mSelected) {
-            mSortedData.add(mData.get(id));
-        }
+
+        List<ViewItem> section = getViewItems(mSelected, null); // do not restrict selections by search string
+        mSortedData.addAll(section);
+
         ViewItem availableHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.available), null, false, false);
         mSortedData.add(availableHeader);
         mSectionHeader.add(mSortedData.size() - 1);
-        for(String id:mAvailable) {
-            mSortedData.add(mData.get(id));
-        }
+
+        section = getViewItems(mAvailable, mSearchText);
+        mSortedData.addAll(section);
+
         ViewItem downloadableHeader = new ChooseSourceTranslationAdapter.ViewItem(getDownloadableText(), null, false, false);
         mSortedData.add(downloadableHeader);
         mSectionHeader.add(mSortedData.size() - 1);
-        for(String id:mDownloadable) {
-            mSortedData.add(mData.get(id));
-        }
+
+        section = getViewItems(mDownloadable, mSearchText);
+        mSortedData.addAll(section);
+
         notifyDataSetChanged();
+    }
+
+    /**
+     * get ViewItems from data list and apply any search filters
+     * @param data
+     * @return
+     */
+    private List<ViewItem> getViewItems(List<String> data, String searchText) {
+        List<ViewItem> section = new ArrayList<>();
+        for(String id:data) {
+            section.add(mData.get(id));
+        }
+
+        // sort by language code
+        Collections.sort(section, new Comparator<ViewItem>() { // do numeric sort
+            @Override
+            public int compare(ViewItem lhs, ViewItem rhs) {
+                return lhs.sourceTranslation.language.slug.compareTo(rhs.sourceTranslation.language.slug);
+            }
+        });
+
+        if((searchText != null) && (!searchText.isEmpty())) {
+            List<ViewItem> filtered = new ArrayList<>();
+
+            // filter by language code
+            for (ViewItem item : section) {
+                String code = item.sourceTranslation.language.slug;
+                if(code.length() >= searchText.length()) {
+                    if (code.substring(0, searchText.length()).equalsIgnoreCase(searchText)) {
+                        filtered.add(item);
+                    }
+                }
+            }
+
+            // filter by language name
+            for (ViewItem item : section) {
+                String name = item.sourceTranslation.language.name;
+                if(name.length() >= searchText.length()) {
+                    if (name.substring(0, searchText.length()).equalsIgnoreCase(searchText)) {
+                        if (!filtered.contains(item)) { // prevent duplicates
+                            filtered.add(item);
+                        }
+                    }
+                }
+            }
+
+            // filter by resource name
+            for (ViewItem item : section) {
+                String[] parts = item.sourceTranslation.resource.name.split("-");
+                for (String part : parts) { // handle sections separately
+                    String name = part.trim();
+                    if(name.length() >= searchText.length()) {
+                        if (name.substring(0, searchText.length()).equalsIgnoreCase(searchText)) {
+                            if (!filtered.contains(item)) { // prevent duplicates
+                                filtered.add(item);
+                            }
+                        }
+                    }
+                }
+            }
+            section = filtered;
+        }
+        return section;
     }
 
     /**
@@ -341,11 +418,7 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         if(item != null) {
             item.hasUpdates = false;
             item.downloaded = true;
-            if(item.selected) {
-                select(position);
-            } else {
-                deselect(position);
-            }
+            select(position); // auto select download item
         }
         sort();
     }

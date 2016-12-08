@@ -911,7 +911,7 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="update_languages_success"><xliff:g example="6" id="new">%1$d</xliff:g> Target Languages have been added.</string>
     <string name="updating_languages">Checking for new Target Languages. This may take a while. Please wait...</string>
     <string name="available_online">Available Online</string>
-    <string name="update_sources_label">Check for new and updated sources</string>
+    <string name="update_sources_label">Exit to Update Source Text List</string>
     <string name="warning_title">Warning</string>
     <string name="update_warning">Checking for new and updated source texts will close this project. This requires an Internet Connection.</string>
     <string name="view_updated_source">View New and Updated Source Texts</string>
