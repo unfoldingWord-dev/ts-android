@@ -22,7 +22,7 @@ public class UpdateLibraryDialog extends DialogFragment implements EventBuffer.O
     public static final int EVENT_UPDATE_LANGUAGES = 1;
     public static final int EVENT_UPDATE_SOURCE = 2;
     public static final int EVENT_UPDATE_ALL = 3;
-    public static final int EVENT_DOWNLOAD_SOURCES = 4;
+    public static final int EVENT_SELECT_DOWNLOAD_SOURCES = 4;
     public static final int EVENT_UPDATE_APP = 5;
     public static final String TAG = "update-library-dialog";
     private EventBuffer eventBuffer = new EventBuffer();
@@ -49,7 +49,7 @@ public class UpdateLibraryDialog extends DialogFragment implements EventBuffer.O
         v.findViewById(R.id.download_sources).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                eventBuffer.write(UpdateLibraryDialog.this, EVENT_DOWNLOAD_SOURCES, null);
+                eventBuffer.write(UpdateLibraryDialog.this, EVENT_SELECT_DOWNLOAD_SOURCES, null);
             }
         });
         v.findViewById(R.id.update_source).setOnClickListener(new View.OnClickListener() {

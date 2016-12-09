@@ -72,7 +72,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
     private CheckBox mUnSelectAllButton;
     private Button mDownloadButton;
     private ImageView mSearchIcon;
-    private EditText mSearchText;
+    private EditText mSearchEditText;
     private String mSearchString;
     private LinearLayout mSearchTextBorder;
     private RadioButton mByLanguageButton;
@@ -149,7 +149,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         });
 
         mSearchIcon = (ImageView) v.findViewById(R.id.search_mag_icon);
-        mSearchText = (EditText) v.findViewById(R.id.search_text);
+        mSearchEditText = (EditText) v.findViewById(R.id.search_text);
         mSearchTextBorder = (LinearLayout) v.findViewById(R.id.search_text_border);
         mSearchString = null;
 
@@ -391,10 +391,10 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         }
 
         mSearchTextBorder.setVisibility(View.GONE);
-        mSearchText.setVisibility(View.GONE);
-        mSearchText.setEnabled(false);
+        mSearchEditText.setVisibility(View.GONE);
+        mSearchEditText.setEnabled(false);
         if(searchTextWatcher != null) {
-            mSearchText.removeTextChangedListener(searchTextWatcher);
+            mSearchEditText.removeTextChangedListener(searchTextWatcher);
             searchTextWatcher = null;
         }
 
@@ -410,40 +410,47 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         mSearchIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showNavbar(false);
-                mSearchTextBorder.setVisibility(View.VISIBLE);
-                mSearchText.setVisibility(View.VISIBLE);
-                mSearchText.setEnabled(true);
-                mSearchText.requestFocus();
-                App.showKeyboard(getActivity(), mSearchText, false);
-                mSearchText.setText("");
-
-                if(searchTextWatcher != null) {
-                    mSearchText.removeTextChangedListener(searchTextWatcher);
-                }
-
-                searchTextWatcher = new TextWatcher() {
-                    @Override
-                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                    }
-
-                    @Override
-                    public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                    }
-
-                    @Override
-                    public void afterTextChanged(Editable s) {
-                        if (mAdapter != null) {
-                            mSearchString = s.toString();
-                            mAdapter.setSearch(mSearchString);
-                        }
-                    }
-                };
-                mSearchText.addTextChangedListener(searchTextWatcher);
+                enableSearchText();
             }
         });
+    }
+
+    /**
+     * enable search text box
+     */
+    private void enableSearchText() {
+        showNavbar(false);
+        mSearchTextBorder.setVisibility(View.VISIBLE);
+        mSearchEditText.setVisibility(View.VISIBLE);
+        mSearchEditText.setEnabled(true);
+        mSearchEditText.requestFocus();
+        App.showKeyboard(getActivity(), mSearchEditText, false);
+        mSearchEditText.setText("");
+
+        if(searchTextWatcher != null) {
+            mSearchEditText.removeTextChangedListener(searchTextWatcher);
+        }
+
+        searchTextWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (mAdapter != null) {
+                    mSearchString = s.toString();
+                    mAdapter.setSearch(mSearchString);
+                }
+            }
+        };
+        mSearchEditText.addTextChangedListener(searchTextWatcher);
     }
 
     /**
@@ -596,6 +603,13 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                         mAdapter.setSelected(mSelected);
                         mAdapter.initializeSelections();
                         onSelectionChanged();
+                    }
+                    if(mSearchString != null) {
+                        enableSearchText();
+                        mSearchEditText.setText(mSearchString);
+                        int endPos = mSearchString.length();
+                        mSearchEditText.setSelection(endPos,endPos);
+                        mAdapter.setSearch(mSearchString);
                     }
 
                     if (mProgressDialog != null) {
