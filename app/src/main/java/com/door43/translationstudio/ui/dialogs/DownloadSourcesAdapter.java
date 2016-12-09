@@ -374,13 +374,12 @@ a     * @param task
 
         for (Integer index : sourceList) {
             if ((index >= 0) && (index < mAvailableSources.size())) {
-                Translation sourceTranslation = mAvailableSources.get(index);
+                Translation source = mAvailableSources.get(index);
+                String filter = source.resourceContainerSlug;
+                String language = source.language.name + "  (" + source.language.slug + ")";
+                String project = source.resource.name + "  (" + source.resource.slug + ")";
 
-                String filter = sourceTranslation.resourceContainerSlug;
-                String language = sourceTranslation.language.name + "  (" + sourceTranslation.language.slug + ")";
-                String project = sourceTranslation.project.name + "  (" + sourceTranslation.project.slug + ")";
-
-                ViewItem newItem = new ViewItem(language, project, filter, sourceTranslation, false, false);
+                ViewItem newItem = new ViewItem(language, project, filter, source, false, false);
 
                 if(mDownloaded.contains(newItem.containerSlug)) {
                     newItem.downloaded = true;
@@ -467,7 +466,7 @@ a     * @param task
 
                         String filter = sourceTranslation.resourceContainerSlug;
                         String project = sourceTranslation.project.name + "  (" + sourceTranslation.project.slug + ")";
-                        String resource = sourceTranslation.resource.name + "  (" + sourceTranslation.language.slug + ")";
+                        String resource = sourceTranslation.resource.name + "  (" + sourceTranslation.resource.slug + ")";
 
                         ViewItem newItem = new ViewItem(project, resource, filter, sourceTranslation, false, false);
 
