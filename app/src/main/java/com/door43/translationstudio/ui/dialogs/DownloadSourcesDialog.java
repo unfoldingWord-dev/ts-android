@@ -80,6 +80,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
     private RadioButton mByBookButton;
     private List<String> mSelected;
     private TextWatcher searchTextWatcher;
+    private int mGetAvailableTaskID = -1;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -92,7 +93,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         ((GetAvailableSourcesTask)task).setPrefix(this.getResources().getString(R.string.loading_sources));
         task.addOnProgressListener(this);
         task.addOnFinishedListener(this);
-        TaskManager.addTask(task, GetAvailableSourcesTask.TASK_ID);
+        mGetAvailableTaskID = TaskManager.addTask(task);
 
         ImageButton backButton = (ImageButton) v.findViewById(R.id.search_back_button);
         backButton.setOnClickListener(new View.OnClickListener() {
@@ -265,6 +266,12 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             List<String> downloadError = savedInstanceState.getStringArrayList(STATE_DOWNLOADED_ERRORS_LIST);
             mAdapter.setDownloadError(downloadError);
             setFilter();
+
+            ManagedTask downloadTask = TaskManager.getTask(TASK_DOWNLOAD_SOURCES);
+            if(downloadTask != null) {
+                downloadTask.addOnProgressListener(this);
+                downloadTask.addOnFinishedListener(this);
+            }
         }
 
         mByLanguageButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -594,11 +601,16 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
     public void onTaskFinished(final ManagedTask task) {
         TaskManager.clearTask(task);
 
+        if((getActivity() == null) || (task.isCanceled())) {
+            return; // if activity changed
+        }
+
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
             public void run() {
                 if(task instanceof GetAvailableSourcesTask) {
+                    mGetAvailableTaskID = -1;
                     GetAvailableSourcesTask availableSourcesTask = (GetAvailableSourcesTask) task;
                     mAdapter.setData(availableSourcesTask);
                     if(mSelected != null) {
@@ -622,8 +634,6 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                     DownloadResourceContainersTask downloadSourcesTask = (DownloadResourceContainersTask) task;
                     List<ResourceContainer> downloadedContainers = downloadSourcesTask.getDownloadedContainers();
 
-                    List<DownloadSourcesAdapter.ViewItem> items = mAdapter.getItems();
-
                     for (ResourceContainer container : downloadedContainers) {
                         Logger.i(TAG, "Received: " + container.slug);
 
@@ -633,10 +643,10 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                         }
                     }
 
-                    List<Translation> failed = downloadSourcesTask.getFailedDownloads();
-                    for (Translation translation : failed) {
-                        Logger.e(TAG, "Download failed: " + translation.resourceContainerSlug);
-                        int pos = mAdapter.findPosition(translation.resourceContainerSlug);
+                    List<String> failed = downloadSourcesTask.getFailedDownloads();
+                    for (String translationID : failed) {
+                        Logger.e(TAG, "Download failed: " + translationID);
+                        int pos = mAdapter.findPosition(translationID);
                         if(pos >= 0) {
                             mAdapter.markItemError(pos);
                         }
@@ -649,6 +659,16 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                         errors = "\n" + getActivity().getResources().getString(R.string.downloads_fail, failed.size());
                     }
 
+                    List<String> failedNotesDownloads = downloadSourcesTask.getFailedNotesDownloads();
+                    if(failedNotesDownloads.size() > 0) {
+                        errors += "\n" + getActivity().getResources().getString(R.string.notes_download_errors, failedNotesDownloads.toString());
+                    }
+
+                    List<String> failedQuestionsDownloads = downloadSourcesTask.getFailedQuestionsDownloads();
+                    if(failedQuestionsDownloads.size() > 0) {
+                        errors += "\n" + getActivity().getResources().getString(R.string.questions_download_errors, failedQuestionsDownloads.toString());
+                    }
+
                     mAdapter.notifyDataSetChanged();
                     onSelectionChanged();
 
@@ -657,7 +677,8 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                         mProgressDialog = null;
                     }
 
-                    int title = canceled ? R.string.download_cancelled : R.string.download_complete;
+                    int title = (!errors.isEmpty()) ? R.string.download_errors : R.string.download_complete;
+                    title = canceled ? R.string.download_cancelled : title;
 
                     new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                             .setTitle(title)
@@ -675,8 +696,21 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         hand.post(new Runnable() {
             @Override
             public void run() {
+                // dismiss if finished or cancelled
+                if(task.isFinished() || task.isCanceled()) {
+                    if(mProgressDialog != null) {
+                        mProgressDialog.dismiss();
+                        mProgressDialog = null;
+                    }
+                    return;
+                }
+
                 // init dialog
                 if(mProgressDialog == null) {
+                    if(getActivity() == null) {
+                        return; // if activity closed
+                    }
+
                     mProgressDialog = new ProgressDialog(getActivity());
                     mProgressDialog.setCancelable(true);
                     mProgressDialog.setCanceledOnTouchOutside(false);
@@ -691,12 +725,6 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                             TaskManager.cancelTask(task);
                         }
                     });
-                }
-
-                // dismiss if finished or cancelled
-                if(task.isFinished() || task.isCanceled()) {
-                    mProgressDialog.dismiss();
-                    return;
                 }
 
                 // progress
@@ -726,13 +754,26 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
 
     @Override
     public void onCancel(DialogInterface dialog) {
-        ManagedTask task = TaskManager.getTask(GetAvailableSourcesTask.TASK_ID);
+        if(mGetAvailableTaskID >= 0) {
+            ManagedTask task = TaskManager.getTask(mGetAvailableTaskID);
+            if (task != null) TaskManager.cancelTask(task);
+        }
+        ManagedTask task = TaskManager.getTask(TASK_DOWNLOAD_SOURCES);
         if(task != null) TaskManager.cancelTask(task);
     }
 
     @Override
     public void onDestroy() {
-        ManagedTask task = TaskManager.getTask(GetAvailableSourcesTask.TASK_ID);
+        if(mGetAvailableTaskID >= 0) {
+            ManagedTask task = TaskManager.getTask(mGetAvailableTaskID);
+            if (task != null) {
+                task.removeOnProgressListener(this);
+                task.removeOnFinishedListener(this);
+                TaskManager.cancelTask(task);
+            }
+        }
+
+        ManagedTask task = TaskManager.getTask(TASK_DOWNLOAD_SOURCES);
         if(task != null) {
             task.removeOnProgressListener(this);
             task.removeOnFinishedListener(this);

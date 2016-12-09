@@ -933,6 +933,9 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="downloads_success"><xliff:g example="6" id="success_count">%1$d</xliff:g> Source Texts have been successfully downloaded.</string>
     <string name="downloads_fail"><xliff:g example="6" id="fail_count">%1$d</xliff:g> download attempts have failed.</string>
     <string name="download_cancelled">Download Cancelled</string>
+    <string name="download_errors">Download Errors</string>
+    <string name="notes_download_errors">Notes failed to download for: <xliff:g example="en_obs,fr_obs" id="fails">%1$s</xliff:g></string>
+    <string name="questions_download_errors">Questions failed to download for: <xliff:g example="en_obs,fr_obs" id="fails">%1$s</xliff:g></string>
     <string name="source_not_found">Source Not Found on Server</string>
     <string name="search_for_language">Search for Language</string>
 </resources>

@@ -2,8 +2,10 @@ package com.door43.translationstudio.tasks;
 
 import com.door43.translationstudio.App;
 
+import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.ResourceContainer;
+import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.util.ArrayList;
@@ -16,13 +18,12 @@ import java.util.List;
 public class DownloadResourceContainersTask extends ManagedTask {
     public final List<String> translationIDs;
     private List<ResourceContainer> downloadedContainers = new ArrayList<>();
-    private List<Translation> failedDownloads = new ArrayList<>();
+    private List<String> failedDownloads = new ArrayList<>();
+    private List<String> failedNotesDownloads = new ArrayList<>();
+    private List<String> failedQuestionsDownloads = new ArrayList<>();
     private int maxProgress = 0;
 
-    /**
-     * For keeping track of who this task is being performed for
-     */
-    public int TAG = -1;
+    public static String TAG = DownloadResourceContainersTask.class.getSimpleName();
 
     private boolean success = false;
 
@@ -39,38 +40,64 @@ public class DownloadResourceContainersTask extends ManagedTask {
         publishProgress(-1, "");
 
         for (int i = 0; i < maxProgress; i++) {
+            Door43Client library = App.getLibrary();
             String resourceContainerSlug = translationIDs.get(i);
             Translation translation = null;
             boolean passSuccess = false;
 
             publishProgress((float)i/maxProgress, resourceContainerSlug);
 
+            Logger.i(TAG, "Loading ID: " + resourceContainerSlug);
+
             try {
-                translation = App.getLibrary().index.getTranslation(resourceContainerSlug);
+                translation = library.index.getTranslation(resourceContainerSlug);
                 if (interrupted() || this.isCanceled()) return;
-                ResourceContainer rc = App.getLibrary().download(translation.language.slug, translation.project.slug, translation.resource.slug);
+                ResourceContainer rc = library.download(translation.language.slug, translation.project.slug, translation.resource.slug);
                 downloadedContainers.add(rc);
+                Logger.i(TAG, "download Success: " + translation.resourceContainerSlug);
                 passSuccess = true;
             } catch (Exception e) {
-                failedDownloads.add(translation);
                 e.printStackTrace();
+                failedDownloads.add(resourceContainerSlug);
+                Logger.i(TAG, "download Failed: " + translation.resourceContainerSlug);
             }
 
             if (passSuccess) {
                 // also download helps
-                if (!translation.resource.slug.equals("tw") || !translation.resource.slug.equals("tn") || !translation.resource.slug.equals("tq")) {
+                String resourceSlug = translation.resource.slug;
+                if (!resourceSlug.equals("tw") && !resourceSlug.equals("tn") && !resourceSlug.equals("tq") && !resourceSlug.equals("udb")) {
                     // TODO: 11/2/16 only download these if there is an update
                     try {
-                        ResourceContainer rc = App.getLibrary().download(translation.language.slug, translation.project.slug, "tn");
-                        downloadedContainers.add(rc);
+                        if (interrupted() || this.isCanceled()) return;
+                        // check if notes present before trying to download
+                        List<Translation> helps = library.index.findTranslations(translation.language.slug, translation.project.slug, "tn", null, null, App.MIN_CHECKING_LEVEL, -1);
+                        for (Translation help : helps) {
+                            Logger.i(TAG, "Loading notes ID: " + help.resourceContainerSlug);
+                            ResourceContainer rc = library.download(help.language.slug, help.project.slug, help.resource.slug);
+                            downloadedContainers.add(rc);
+                            Logger.i(TAG, "notes download Success: " + rc.slug);
+                        }
                     } catch (Exception e) {
                         e.printStackTrace();
+                        String resource = translation.language.slug + "_" + translation.project.slug + "_tn";
+                        Logger.i(TAG, "notes download Failed: " + resource);
+                        failedNotesDownloads.add(resource);
                     }
                     try {
-                        ResourceContainer rc = App.getLibrary().download(translation.language.slug, translation.project.slug, "tq");
-                        downloadedContainers.add(rc);
+                        if (interrupted() || this.isCanceled()) return;
+                        // check if questions present before trying to download
+                        List<Translation> helps = library.index.findTranslations(translation.language.slug, translation.project.slug, "tq", null, null, App.MIN_CHECKING_LEVEL, -1);
+                        for (Translation help : helps) {
+                            Logger.i(TAG, "Loading question ID: " + help.resourceContainerSlug);
+                            ResourceContainer rc = library.download(help.language.slug, help.project.slug, help.resource.slug);
+                            downloadedContainers.add(rc);
+                            Logger.i(TAG, "questions download Success: " + rc.slug);
+                        }
                     } catch (Exception e) {
                         e.printStackTrace();
+                        String resource = translation.language.slug + "_" + translation.project.slug + "_tq";
+                        Logger.i(TAG, "quotes download Failed: " + resource);
+                        failedQuestionsDownloads.add(resource);
                     }
                 }
             }
@@ -107,7 +134,24 @@ public class DownloadResourceContainersTask extends ManagedTask {
      * Returns the translations that failed to download
      * @return
      */
-    public List<Translation> getFailedDownloads() {
+    public List<String> getFailedDownloads() {
         return failedDownloads;
     }
+
+    /**
+     * Returns the notes that failed to download
+     * @return
+     */
+    public List<String> getFailedNotesDownloads() {
+        return failedNotesDownloads;
+    }
+
+    /**
+     * Returns the questions that failed to download
+     * @return
+     */
+    public List<String> getFailedQuestionsDownloads() {
+        return failedQuestionsDownloads;
+    }
+
 }

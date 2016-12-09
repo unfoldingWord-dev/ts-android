@@ -50,9 +50,21 @@ public class GetAvailableSourcesTask extends ManagedTask {
 
         Door43Client library = App.getLibrary();
         availableTranslations = library.index.findTranslations(null, null, null, "book", null, App.MIN_CHECKING_LEVEL, -1);
-        List<Translation> tw  = library.index.findTranslations(null, null, null, "dict", null, App.MIN_CHECKING_LEVEL, -1);
+
+        if(GetAvailableSourcesTask.this.isCanceled()) {
+            success = false;
+            return;
+        }
+
+        List<Translation> tw = library.index.findTranslations(null, null, null, "dict", null, App.MIN_CHECKING_LEVEL, -1);
         availableTranslations.addAll(tw);
-        List<Translation> man  = library.index.findTranslations(null, null, null, "man", null, App.MIN_CHECKING_LEVEL, -1);
+
+        if(GetAvailableSourcesTask.this.isCanceled()) {
+            success = false;
+            return;
+        }
+
+        List<Translation> man = library.index.findTranslations(null, null, null, "man", null, App.MIN_CHECKING_LEVEL, -1);
         availableTranslations.addAll(man);
         byLanguage = new TreeMap<>();
         maxProgress = availableTranslations.size();
@@ -73,16 +85,26 @@ public class GetAvailableSourcesTask extends ManagedTask {
         otherBooks = new LinkedHashMap<>();
         taBooks = new LinkedHashMap<>();
 
+        if(GetAvailableSourcesTask.this.isCanceled()) {
+            success = false;
+            return;
+        }
+
         for (int i = 0; i < maxProgress; i++) {
             Translation t = availableTranslations.get(i);
 
             if( i % 16 == 0) {
-                publishProgress((float)i/maxProgress, prefix);
-
                 if(GetAvailableSourcesTask.this.isCanceled()) {
                     success = false;
                     return;
                 }
+
+                publishProgress((float)i/maxProgress, prefix);
+            }
+
+            if(GetAvailableSourcesTask.this.isCanceled()) {
+                success = false;
+                return;
             }
 
             String id = t.resourceContainerSlug;
