@@ -36,6 +36,7 @@ import com.door43.translationstudio.tasks.DownloadResourceContainersTask;
 import com.door43.translationstudio.tasks.GetAvailableSourcesTask;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.Translation;
@@ -57,19 +58,27 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
     public static final String STATE_SEARCH_STRING = "state_search_string";
     private static final String TASK_DOWNLOAD_SOURCES = "download-sources";
     public static final String STATE_FILTER_STEPS = "state_filter_steps";
+    public static final String STATE_BY_LANGUAGE_FLAG = "state_by_language_flag";
+    public static final String STATE_SELECTED_LIST = "state_selected_list";
+    public static final String STATE_DOWNLOADED_LIST = "state_downloaded_list";
+    public static final String STATE_DOWNLOADED_ERRORS_LIST = "state_downloaded_errors_list";
     private Door43Client mLibrary;
-    private ProgressDialog progressDialog = null;
+    private ProgressDialog mProgressDialog = null;
     private DownloadSourcesAdapter mAdapter;
     private List<DownloadSourcesAdapter.FilterStep> mSteps;
     private View v;
     private LinearLayout mSelectionBar;
-    private CheckBox selectAllButton;
-    private CheckBox unSelectAllButton;
-    private Button downloadButton;
-    private ImageView searchIcon;
-    private EditText searchText;
-    private String searchString;
-    private LinearLayout searchTextBorder;
+    private CheckBox mSelectAllButton;
+    private CheckBox mUnSelectAllButton;
+    private Button mDownloadButton;
+    private ImageView mSearchIcon;
+    private EditText mSearchText;
+    private String mSearchString;
+    private LinearLayout mSearchTextBorder;
+    private RadioButton mByLanguageButton;
+    private RadioButton mByBookButton;
+    private List<String> mSelected;
+    private TextWatcher searchTextWatcher;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -97,34 +106,10 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             }
         });
 
-        RadioButton byLanguageButton = (RadioButton) v.findViewById(R.id.byLanguage);
-        byLanguageButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked) {
-                    searchString = null;
-                    mSteps = new ArrayList<>(); // clear existing filter and start over
-                    addStep(DownloadSourcesAdapter.SelectionType.language, R.string.choose_language);
-                    setFilter();
-                }
-            }
-        });
-        RadioButton byBookButton = (RadioButton) v.findViewById(R.id.byBook);
-        byBookButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked) {
-                    mSteps = new ArrayList<>(); // clear existing filter and start over
-                    addStep(DownloadSourcesAdapter.SelectionType.book_type, R.string.choose_category);
-                    setFilter();
-                }
-            }
-        });
-
         mSelectionBar = (LinearLayout) v.findViewById(R.id.selection_bar);
 
-        selectAllButton = (CheckBox) v.findViewById(R.id.select_all);
-        selectAllButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        mSelectAllButton = (CheckBox) v.findViewById(R.id.select_all);
+        mSelectAllButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked) {
@@ -135,8 +120,8 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                 }
             }
         });
-        unSelectAllButton = (CheckBox) v.findViewById(R.id.unselect_all);
-        unSelectAllButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        mUnSelectAllButton = (CheckBox) v.findViewById(R.id.unselect_all);
+        mUnSelectAllButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked) {
@@ -147,8 +132,8 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                 }
             }
         });
-        downloadButton = (Button) v.findViewById(R.id.download_button);
-        downloadButton.setOnClickListener(new View.OnClickListener() {
+        mDownloadButton = (Button) v.findViewById(R.id.download_button);
+        mDownloadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(mAdapter != null) {
@@ -163,10 +148,10 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             }
         });
 
-        searchIcon = (ImageView) v.findViewById(R.id.search_mag_icon);
-        searchText = (EditText) v.findViewById(R.id.search_text);
-        searchTextBorder = (LinearLayout) v.findViewById(R.id.search_text_border);
-        searchString = null;
+        mSearchIcon = (ImageView) v.findViewById(R.id.search_mag_icon);
+        mSearchText = (EditText) v.findViewById(R.id.search_text);
+        mSearchTextBorder = (LinearLayout) v.findViewById(R.id.search_text_border);
+        mSearchString = null;
 
         mAdapter = new DownloadSourcesAdapter(getActivity());
 
@@ -176,7 +161,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
                 if((mAdapter != null) && (mSteps != null) && (mSteps.size() > 0)) {
-                    searchString = null;
+                    mSearchString = null;
                     DownloadSourcesAdapter.FilterStep currentStep = mSteps.get(mSteps.size() - 1);
                     DownloadSourcesAdapter.ViewItem item = mAdapter.getItem(position);
                     currentStep.old_label = currentStep.label;
@@ -231,11 +216,11 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                         DownloadSourcesAdapter.SelectedState selectedState = mAdapter.getSelectedState();
                         switch (selectedState) {
                             case all:
-                                selectAllButton.setChecked(true);
+                                mSelectAllButton.setChecked(true);
                                 break;
 
                             case none:
-                                unSelectAllButton.setChecked(true);
+                                mUnSelectAllButton.setChecked(true);
                                 break;
 
                             default:
@@ -249,7 +234,63 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             }
         });
 
-        byLanguageButton.setChecked(true);
+        mByLanguageButton = (RadioButton) v.findViewById(R.id.byLanguage);
+        mByBookButton = (RadioButton) v.findViewById(R.id.byBook);
+
+        if(savedInstanceState != null) {
+            String stepsArrayJson = savedInstanceState.getString(STATE_FILTER_STEPS, null);
+            try {
+                JSONArray stepsArray = new JSONArray(stepsArrayJson);
+                for (int i = 0; i < stepsArray.length(); i++) {
+                    JSONObject jsonObject = (JSONObject) stepsArray.get(i);
+                    DownloadSourcesAdapter.FilterStep step = DownloadSourcesAdapter.FilterStep.generate(jsonObject);
+                    mSteps.add(step);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            mSearchString = savedInstanceState.getString(STATE_SEARCH_STRING, null);
+            boolean byLanguage = savedInstanceState.getBoolean(STATE_BY_LANGUAGE_FLAG, true);
+            if(byLanguage) {
+                mByLanguageButton.setChecked(true);
+            } else {
+                mByBookButton.setChecked(true);
+            }
+
+            mSelected = savedInstanceState.getStringArrayList(STATE_SELECTED_LIST);
+            mAdapter.setSelected(mSelected);
+            List<String> downloaded = savedInstanceState.getStringArrayList(STATE_DOWNLOADED_LIST);
+            mAdapter.setDownloaded(downloaded);
+            List<String> downloadError = savedInstanceState.getStringArrayList(STATE_DOWNLOADED_ERRORS_LIST);
+            mAdapter.setDownloadError(downloadError);
+            setFilter();
+        }
+
+        mByLanguageButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked) {
+                    mSearchString = null;
+                    mSteps = new ArrayList<>(); // clear existing filter and start over
+                    addStep(DownloadSourcesAdapter.SelectionType.language, R.string.choose_language);
+                    setFilter();
+                }
+            }
+        });
+        mByBookButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked) {
+                    mSteps = new ArrayList<>(); // clear existing filter and start over
+                    addStep(DownloadSourcesAdapter.SelectionType.book_type, R.string.choose_category);
+                    setFilter();
+                }
+            }
+        });
+
+        if(savedInstanceState == null) {
+            mByLanguageButton.setChecked(true); // setup initial state
+        }
         return v;
     }
 
@@ -262,7 +303,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         int width = getResources().getDisplayMetrics().widthPixels;
         float screenWidthFactor = 0.5f; // landscape mode
         if(height > width) { // if portrait mode
-            screenWidthFactor = 0.75f;
+            screenWidthFactor = 0.85f;
         }
         getDialog().getWindow().setLayout((int) (width * screenWidthFactor), WindowManager.LayoutParams.MATCH_PARENT);
     }
@@ -276,7 +317,13 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             stepsArray.put(jsonObject);
         }
         out.putString(STATE_FILTER_STEPS, stepsArray.toString());
-        out.putString(STATE_SEARCH_STRING, searchString);
+        out.putString(STATE_SEARCH_STRING, mSearchString);
+        out.putBoolean(STATE_BY_LANGUAGE_FLAG, mByLanguageButton.isChecked());
+        if(mAdapter != null) {
+            out.putStringArrayList(STATE_SELECTED_LIST, (ArrayList) mAdapter.getSelected());
+            out.putStringArrayList(STATE_DOWNLOADED_LIST, (ArrayList) mAdapter.getDownloaded());
+            out.putStringArrayList(STATE_DOWNLOADED_ERRORS_LIST, (ArrayList) mAdapter.getDownloadError());
+        }
 
         super.onSaveInstanceState(out);
     }
@@ -288,20 +335,20 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         if(mAdapter != null) {
             DownloadSourcesAdapter.SelectedState selectedState = mAdapter.getSelectedState();
             boolean allSelected = (selectedState == DownloadSourcesAdapter.SelectedState.all);
-            selectAllButton.setEnabled(!allSelected);
+            mSelectAllButton.setEnabled(!allSelected);
             if(!allSelected) {
-                selectAllButton.setChecked(false);
+                mSelectAllButton.setChecked(false);
             }
             boolean noneSelected = (selectedState == DownloadSourcesAdapter.SelectedState.none);
-            unSelectAllButton.setEnabled(!noneSelected);
+            mUnSelectAllButton.setEnabled(!noneSelected);
             if(!noneSelected) {
-                unSelectAllButton.setChecked(false);
+                mUnSelectAllButton.setChecked(false);
             }
 
             boolean downloadSelect = !noneSelected;
-            downloadButton.setEnabled(downloadSelect);
+            mDownloadButton.setEnabled(downloadSelect);
             int backgroundColor = downloadSelect ? R.color.accent : R.color.light_gray;
-            downloadButton.setBackgroundColor(getResources().getColor(backgroundColor));
+            mDownloadButton.setBackgroundColor(getResources().getColor(backgroundColor));
         }
     }
 
@@ -328,7 +375,7 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         // setup selection bar
         boolean selectDownloads = (mSteps.size() == 3);
         mSelectionBar.setVisibility(selectDownloads ? View.VISIBLE : View.GONE);
-        mAdapter.setFilterSteps(mSteps, searchString);
+        mAdapter.setFilterSteps(mSteps, mSearchString);
         if(selectDownloads) {
             onSelectionChanged();
         }
@@ -339,15 +386,15 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         if(enable_language_search) {
             setupLanguageSearch();
         } else {
-            searchIcon.setVisibility(View.GONE);
+            mSearchIcon.setVisibility(View.GONE);
             showNavbar(true);
         }
 
-        searchTextBorder.setVisibility(View.GONE);
-        searchText.setVisibility(View.GONE);
-        searchText.setEnabled(false);
+        mSearchTextBorder.setVisibility(View.GONE);
+        mSearchText.setVisibility(View.GONE);
+        mSearchText.setEnabled(false);
         if(searchTextWatcher != null) {
-            searchText.removeTextChangedListener(searchTextWatcher);
+            mSearchText.removeTextChangedListener(searchTextWatcher);
             searchTextWatcher = null;
         }
 
@@ -355,26 +402,24 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         nav1.setOnClickListener(null);
     }
 
-    private TextWatcher searchTextWatcher;
-
     /**
      * setup UI for doing language search
      */
     private void setupLanguageSearch() {
-        searchIcon.setVisibility(View.VISIBLE);
-        searchIcon.setOnClickListener(new View.OnClickListener() {
+        mSearchIcon.setVisibility(View.VISIBLE);
+        mSearchIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showNavbar(false);
-                searchTextBorder.setVisibility(View.VISIBLE);
-                searchText.setVisibility(View.VISIBLE);
-                searchText.setEnabled(true);
-                searchText.requestFocus();
-                App.showKeyboard(getActivity(), searchText, false);
-                searchText.setText("");
+                mSearchTextBorder.setVisibility(View.VISIBLE);
+                mSearchText.setVisibility(View.VISIBLE);
+                mSearchText.setEnabled(true);
+                mSearchText.requestFocus();
+                App.showKeyboard(getActivity(), mSearchText, false);
+                mSearchText.setText("");
 
                 if(searchTextWatcher != null) {
-                    searchText.removeTextChangedListener(searchTextWatcher);
+                    mSearchText.removeTextChangedListener(searchTextWatcher);
                 }
 
                 searchTextWatcher = new TextWatcher() {
@@ -391,12 +436,12 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                     @Override
                     public void afterTextChanged(Editable s) {
                         if (mAdapter != null) {
-                            searchString = s.toString();
-                            mAdapter.setSearch(searchString);
+                            mSearchString = s.toString();
+                            mAdapter.setSearch(mSearchString);
                         }
                     }
                 };
-                searchText.addTextChangedListener(searchTextWatcher);
+                mSearchText.addTextChangedListener(searchTextWatcher);
             }
         });
     }
@@ -547,10 +592,15 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                 if(task instanceof GetAvailableSourcesTask) {
                     GetAvailableSourcesTask availableSourcesTask = (GetAvailableSourcesTask) task;
                     mAdapter.setData(availableSourcesTask);
+                    if(mSelected != null) {
+                        mAdapter.setSelected(mSelected);
+                        mAdapter.initializeSelections();
+                        onSelectionChanged();
+                    }
 
-                    if (progressDialog != null) {
-                        progressDialog.dismiss();
-                        progressDialog = null;
+                    if (mProgressDialog != null) {
+                        mProgressDialog.dismiss();
+                        mProgressDialog = null;
                     }
                 } else if(task instanceof DownloadResourceContainersTask) {
                     DownloadResourceContainersTask downloadSourcesTask = (DownloadResourceContainersTask) task;
@@ -586,9 +636,9 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
                     mAdapter.notifyDataSetChanged();
                     onSelectionChanged();
 
-                    if (progressDialog != null) {
-                        progressDialog.dismiss();
-                        progressDialog = null;
+                    if (mProgressDialog != null) {
+                        mProgressDialog.dismiss();
+                        mProgressDialog = null;
                     }
 
                     int title = canceled ? R.string.download_cancelled : R.string.download_complete;
@@ -610,17 +660,17 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             @Override
             public void run() {
                 // init dialog
-                if(progressDialog == null) {
-                    progressDialog = new ProgressDialog(getActivity());
-                    progressDialog.setCancelable(true);
-                    progressDialog.setCanceledOnTouchOutside(false);
-                    progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                    progressDialog.setOnCancelListener(DownloadSourcesDialog.this);
-                    progressDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
-                    progressDialog.setTitle(R.string.updating);
-                    progressDialog.setMessage("");
+                if(mProgressDialog == null) {
+                    mProgressDialog = new ProgressDialog(getActivity());
+                    mProgressDialog.setCancelable(true);
+                    mProgressDialog.setCanceledOnTouchOutside(false);
+                    mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                    mProgressDialog.setOnCancelListener(DownloadSourcesDialog.this);
+                    mProgressDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
+                    mProgressDialog.setTitle(R.string.updating);
+                    mProgressDialog.setMessage("");
 
-                    progressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+                    mProgressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             TaskManager.cancelTask(task);
                         }
@@ -629,30 +679,30 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
 
                 // dismiss if finished or cancelled
                 if(task.isFinished() || task.isCanceled()) {
-                    progressDialog.dismiss();
+                    mProgressDialog.dismiss();
                     return;
                 }
 
                 // progress
-                progressDialog.setMax(task.maxProgress());
-                progressDialog.setMessage(message);
+                mProgressDialog.setMax(task.maxProgress());
+                mProgressDialog.setMessage(message);
                 if(progress > 0) {
-                    progressDialog.setIndeterminate(false);
-                    progressDialog.setProgress((int)(progress * progressDialog.getMax()));
-                    progressDialog.setProgressNumberFormat("%1d/%2d");
-                    progressDialog.setProgressPercentFormat(NumberFormat.getPercentInstance());
+                    mProgressDialog.setIndeterminate(false);
+                    mProgressDialog.setProgress((int)(progress * mProgressDialog.getMax()));
+                    mProgressDialog.setProgressNumberFormat("%1d/%2d");
+                    mProgressDialog.setProgressPercentFormat(NumberFormat.getPercentInstance());
                 } else {
-                    progressDialog.setIndeterminate(true);
-                    progressDialog.setProgress(progressDialog.getMax());
-                    progressDialog.setProgressNumberFormat(null);
-                    progressDialog.setProgressPercentFormat(null);
+                    mProgressDialog.setIndeterminate(true);
+                    mProgressDialog.setProgress(mProgressDialog.getMax());
+                    mProgressDialog.setProgressNumberFormat(null);
+                    mProgressDialog.setProgressPercentFormat(null);
                 }
 
                 // show
                 if(task.isFinished()) {
-                    progressDialog.dismiss();
-                } else if(!progressDialog.isShowing()) {
-                    progressDialog.show();
+                    mProgressDialog.dismiss();
+                } else if(!mProgressDialog.isShowing()) {
+                    mProgressDialog.show();
                 }
             }
         });
@@ -672,9 +722,9 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
             task.removeOnFinishedListener(this);
         }
 
-        if (progressDialog != null) {
-            progressDialog.dismiss();
-            progressDialog = null;
+        if (mProgressDialog != null) {
+            mProgressDialog.dismiss();
+            mProgressDialog = null;
         }
 
         super.onDestroy();

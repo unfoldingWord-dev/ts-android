@@ -78,6 +78,7 @@ a     * @param task
             mNtBooks = task.getNtBooks();
             mOtherBooks = task.getOther();
             mTaBooks = task.getTaBooks();
+            mSelected = new ArrayList<>(); // clear selections
             initializeSelections();
         }
     }
@@ -90,6 +91,7 @@ a     * @param task
     public void setFilterSteps(List<DownloadSourcesAdapter.FilterStep> steps, String search) {
         mSteps = steps;
         mSearch = search;
+        mSelected = new ArrayList<>(); // clear selections
         initializeSelections();
     }
 
@@ -140,6 +142,26 @@ a     * @param task
         return mSelected;
     }
 
+    public List<String> getDownloaded() {
+        return mDownloaded;
+    }
+
+    public List<String> getDownloadError() {
+        return mDownloadError;
+    }
+
+    public void setSelected(List<String> mSelected) {
+        this.mSelected = mSelected;
+    }
+
+    public void setDownloaded(List<String> mDownloaded) {
+        this.mDownloaded = mDownloaded;
+    }
+
+    public void setDownloadError(List<String> mDownloadError) {
+        this.mDownloadError = mDownloadError;
+    }
+
     public SelectedState getSelectedState() {
         boolean allSelected = true;
         boolean noneSelected = true;
@@ -170,7 +192,6 @@ a     * @param task
      */
     public void initializeSelections() {
 
-        mSelected = new ArrayList<>(); // clear selections
         mBookFilter = null; // clear filters
         mLanguageFilter = null;
 
@@ -378,16 +399,7 @@ a     * @param task
                 String filter = source.resourceContainerSlug;
                 String language = source.language.name + "  (" + source.language.slug + ")";
                 String project = source.resource.name + "  (" + source.resource.slug + ")";
-
-                ViewItem newItem = new ViewItem(language, project, filter, source, false, false);
-
-                if(mDownloaded.contains(newItem.containerSlug)) {
-                    newItem.downloaded = true;
-                }
-                if(mDownloadError.contains(newItem.containerSlug)) {
-                    newItem.error = true;
-                }
-                mItems.add(newItem);
+                addNewViewItem(language, project, filter, source);
             }
         }
 
@@ -398,6 +410,28 @@ a     * @param task
                 return lhs.filter.compareTo(rhs.filter);
             }
         });
+    }
+
+    /**
+     * create new view item, apply previous state info, and add to list
+     * @param title1
+     * @param title2
+     * @param filter
+     * @param source
+     */
+    private void addNewViewItem(String title1, String title2, String filter, Translation source) {
+        ViewItem newItem = new ViewItem(title1, title2, filter, source, false, false);
+
+        if(mSelected.contains(newItem.containerSlug)) {
+            newItem.selected = true;
+        }
+        if(mDownloaded.contains(newItem.containerSlug)) {
+            newItem.downloaded = true;
+        }
+        if(mDownloadError.contains(newItem.containerSlug)) {
+            newItem.error = true;
+        }
+        mItems.add(newItem);
     }
 
     /**
@@ -456,27 +490,18 @@ a     * @param task
             if((items != null)  && (items.size() > 0)) {
                 for (Integer index : items) {
                     if ((index >= 0) && (index < mAvailableSources.size())) {
-                        Translation sourceTranslation = mAvailableSources.get(index);
+                        Translation source = mAvailableSources.get(index);
 
                         if(sortSet != null) {
-                            if(!sortSet.containsKey(sourceTranslation.project.slug)) { // if not in right category then skip
+                            if(!sortSet.containsKey(source.project.slug)) { // if not in right category then skip
                                 continue;
                             }
                         }
 
-                        String filter = sourceTranslation.resourceContainerSlug;
-                        String project = sourceTranslation.project.name + "  (" + sourceTranslation.project.slug + ")";
-                        String resource = sourceTranslation.resource.name + "  (" + sourceTranslation.resource.slug + ")";
-
-                        ViewItem newItem = new ViewItem(project, resource, filter, sourceTranslation, false, false);
-
-                        if(mDownloaded.contains(newItem.containerSlug)) {
-                            newItem.downloaded = true;
-                        }
-                        if(mDownloadError.contains(newItem.containerSlug)) {
-                            newItem.error = true;
-                        }
-                        mItems.add(newItem);
+                        String filter = source.resourceContainerSlug;
+                        String project = source.project.name + "  (" + source.project.slug + ")";
+                        String resource = source.resource.name + "  (" + source.resource.slug + ")";
+                        addNewViewItem(project, resource, filter, source);
                     }
                 }
             }
@@ -592,17 +617,15 @@ a     * @param task
                     }
                 });
             }
-            if(item.downloaded) {
+            if(item.downloaded) { // display with a green check
                 holder.imageView.setBackgroundResource(R.drawable.ic_done_black_24dp);
                 ViewUtil.tintViewDrawable(holder.imageView, parent.getContext().getResources().getColor(R.color.green));
-            } else if (item.selected) {
+            } else if (item.selected) { // display checked box
                 holder.imageView.setBackgroundResource(R.drawable.ic_check_box_black_24dp);
                 ViewUtil.tintViewDrawable(holder.imageView, parent.getContext().getResources().getColor(R.color.accent));
-                // display checked
-            } else {
+            } else { // display unchecked box
                 holder.imageView.setBackgroundResource(R.drawable.ic_check_box_outline_blank_black_24dp);
                 ViewUtil.tintViewDrawable(holder.imageView, parent.getContext().getResources().getColor(R.color.dark_primary_text));
-                // display unchecked
             }
         } else {
             if(mSelectionType == SelectionType.book_type) {
@@ -716,8 +739,6 @@ a     * @param task
         }
         notifyDataSetChanged();
     }
-
-
 
     public static class ViewHolder {
         public TextView titleView;
