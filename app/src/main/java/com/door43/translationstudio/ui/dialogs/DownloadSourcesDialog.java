@@ -13,6 +13,7 @@ import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -299,12 +300,13 @@ public class DownloadSourcesDialog extends DialogFragment implements ManagedTask
         super.onStart();
 
         // widen dialog to accommodate more text
-        int height = getResources().getDisplayMetrics().heightPixels;
-        int width = getResources().getDisplayMetrics().widthPixels;
-        float screenWidthFactor = 0.5f; // landscape mode
-        if(height > width) { // if portrait mode
-            screenWidthFactor = 0.85f;
-        }
+        int desiredWidth = 750;
+        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+        int width = displayMetrics.widthPixels;
+        float density = displayMetrics.density;
+        float correctedWidth = width / density;
+        float screenWidthFactor = desiredWidth /correctedWidth;
+        screenWidthFactor = Math.min(screenWidthFactor, 1f); // sanity check
         getDialog().getWindow().setLayout((int) (width * screenWidthFactor), WindowManager.LayoutParams.MATCH_PARENT);
     }
 
