@@ -100,7 +100,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/time_slow"
+                    android:text="@string/time_fast"
                     android:textColor="@color/dark_secondary_text"
                     android:focusable="false"
                     android:clickable="false"
@@ -115,7 +115,7 @@
                 android:background="@color/list_separator"/>
 
             <LinearLayout
-                android:id="@+id/view_updated_source"
+                android:id="@+id/download_sources"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -128,7 +128,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/view_updated_source"
+                    android:text="@string/download_sources"
                     android:textColor="@color/dark_primary_text"
                     android:focusable="false"
                     android:clickable="false"
@@ -201,14 +201,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/check_app_update"
-                    android:textColor="@color/dark_primary_text"
+                    android:textColor="@color/accent_dark"
                     android:focusable="false"
                     android:clickable="false"
                     android:textAllCaps="false"
                     android:gravity="left"
                     android:background="@null"
                     android:duplicateParentState="true"
-                    style="@style/Widget.Alert.Button.Secondary"/>
+                    style="@style/Widget.Alert.Button.Secondary"
+                    android:id="@+id/update_app_text" />
 
             </LinearLayout>
 

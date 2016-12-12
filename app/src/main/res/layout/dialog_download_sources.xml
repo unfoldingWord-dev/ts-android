@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="wrap_content"
+    android:background="@color/white"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        android:focusableInTouchMode="true"
+        android:id="@+id/filter_bar"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/dialog_controls_margin"
+        android:paddingRight="@dimen/dialog_controls_margin"
+        android:layout_centerHorizontal="true"
+        android:paddingTop="@dimen/dialog_controls_margin"
+        >
+
+        <RadioGroup
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:text="@string/by_language_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/byLanguage"
+                android:layout_weight="1"
+                android:layout_marginRight="@dimen/dialog_content_margin" />
+
+            <RadioButton
+                android:text="@string/by_book_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/byBook"
+                android:layout_weight="1"
+                android:layout_marginLeft="@dimen/dialog_content_margin" />
+        </RadioGroup>
+
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="@color/list_separator"
+        android:layout_above="@+id/search_bar"/>
+
+    <FrameLayout
+        android:focusableInTouchMode="true"
+        android:id="@+id/search_bar"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/filter_bar"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <ImageButton
+                android:id="@+id/search_back_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left|center_vertical"
+                android:paddingRight="16dp"
+                android:src="@drawable/ic_arrow_back_black_24dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:paddingLeft="16dp" />
+
+            <TextView
+                android:layout_gravity="center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:textStyle="italic"
+                android:textColor="@color/dark_secondary_text"
+                android:textSize="@dimen/title"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:paddingRight="@dimen/dialog_controls_margin"
+                android:id="@+id/nav_text1" />
+
+            <TextView
+                android:layout_gravity="center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:textStyle="italic"
+                android:textColor="@color/dark_secondary_text"
+                android:textSize="@dimen/title"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:paddingRight="@dimen/dialog_controls_margin"
+                android:id="@+id/nav_text2" />
+
+            <TextView
+                android:layout_gravity="center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:textStyle="italic"
+                android:textColor="@color/dark_secondary_text"
+                android:textSize="@dimen/title"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:paddingRight="@dimen/dialog_controls_margin"
+                android:id="@+id/nav_text3" />
+
+            <TextView
+                android:layout_gravity="center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:textStyle="italic"
+                android:textColor="@color/dark_secondary_text"
+                android:textSize="@dimen/title"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:paddingRight="@dimen/dialog_controls_margin"
+                android:id="@+id/nav_text4" />
+
+            <TextView
+                android:layout_gravity="center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:textStyle="italic"
+                android:textColor="@color/dark_secondary_text"
+                android:textSize="@dimen/title"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:paddingRight="@dimen/dialog_controls_margin"
+                android:id="@+id/nav_text5" />
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_focused_blue"
+                android:id="@+id/search_text_border">
+
+                <EditText
+                    android:layout_gravity="center_vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/search_for_language"
+                    android:textStyle="italic"
+                    android:textColor="@color/dark_secondary_text"
+                    android:textSize="@dimen/title"
+                    android:paddingBottom="16dp"
+                    android:singleLine="true"
+                    android:id="@+id/search_text"
+                    android:layout_marginLeft="16dp"
+                    android:layout_weight="1"
+                    android:layout_marginRight="16dp" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/search_mag_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right|center_vertical"
+            android:background="@drawable/ic_search_black_24dp"/>
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="@color/list_separator"
+        android:layout_below="@+id/search_bar"/>
+
+    <LinearLayout
+        android:focusableInTouchMode="true"
+        android:id="@+id/selection_bar"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/search_bar"
+        android:orientation="horizontal"
+        android:gravity="center_vertical|center_horizontal"
+        android:background="@drawable/border"
+        android:padding="@dimen/dialog_controls_margin"
+        android:layout_marginLeft="1dp"
+        android:layout_marginRight="1dp">
+
+        <CheckBox
+            android:text="@string/select_all_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/select_all"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="@dimen/dialog_content_margin"
+            android:gravity="center_vertical|center_horizontal" />
+
+        <CheckBox
+            android:text="@string/unselect_all_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/unselect_all"
+            android:layout_toRightOf="@+id/select_all"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="@dimen/dialog_content_margin"
+            android:layout_marginRight="@dimen/dialog_content_margin" />
+
+        <Button
+            android:text="@string/download"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/download_button"
+            android:layout_toRightOf="@+id/unselect_all"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="@dimen/dialog_content_margin"
+            style="@style/Widget.Button.Blue" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="@color/list_separator"
+        android:layout_below="@+id/selection_bar"
+        android:id="@+id/selection_bar_separator" />
+
+    <ListView
+        android:id="@+id/list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/selection_bar" />
+
+</RelativeLayout>

@@ -43,7 +43,7 @@ public class UpdateCatalogsTask extends ManagedTask {
         try {
             App.getLibrary().updateCatalogs(new org.unfoldingword.door43client.OnProgressListener() {
                 @Override
-                public void onProgress(String tag, long max, long complete) {
+                public boolean onProgress(String tag, long max, long complete) {
                     maxProgress = (int)max;
 
                     if(prefix != null) {
@@ -52,10 +52,11 @@ public class UpdateCatalogsTask extends ManagedTask {
 
                     publishProgress((float)complete/(float)max, tag);
 
-                    // TODO: 11/14/16 - this is a hack to interrupt download by throwing an exception.  Need a cleaner way to interrupt Door43Client
                     if(UpdateCatalogsTask.this.isCanceled()) {
-                        throw new RuntimeException("Cancelled");
+                        Logger.i(this.getClass().getSimpleName(), "Download Cancelled");
+                        return false;
                     }
+                    return true;
                 }
             });
             success = true;

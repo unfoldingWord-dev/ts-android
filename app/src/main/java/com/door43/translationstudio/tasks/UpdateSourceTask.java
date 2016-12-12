@@ -6,6 +6,7 @@ import com.door43.translationstudio.ui.SettingsActivity;
 
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.Translation;
+import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
 import java.util.HashMap;
@@ -28,6 +29,7 @@ public class UpdateSourceTask extends ManagedTask {
         updatedCnt = 0;
         addedCnt = 0;
         success = false;
+        int count = 0;
 
         publishProgress(-1, "");
 
@@ -35,7 +37,18 @@ public class UpdateSourceTask extends ManagedTask {
         List<Translation> availableTranslationsAll = library.index.findTranslations(null, null, null, "book", null, App.MIN_CHECKING_LEVEL, -1);
         Map<String,Integer> previouslyUpdated = new HashMap<>();
 
+        maxProgress = availableTranslationsAll.size();
         for (Translation t : availableTranslationsAll) {
+
+            if( ++count % 16 == 0) {
+                publishProgress((float)count/maxProgress, "");
+
+                if(UpdateSourceTask.this.isCanceled()) {
+                    success = false;
+                    return;
+                }
+            }
+
             String id = t.resourceContainerSlug;
             int lastModifiedOnServer = library.getResourceContainerLastModified(t.language.slug, t.project.slug, t.resource.slug);
             previouslyUpdated.put(id, lastModifiedOnServer);
@@ -43,12 +56,14 @@ public class UpdateSourceTask extends ManagedTask {
 
         availableTranslationsAll = null; // free up memory while downloading
 
+        publishProgress(-1, "");
+
         try {
             String server = App.getPref(SettingsActivity.KEY_PREF_MEDIA_SERVER, App.getRes(R.string.pref_default_media_server));
             String rootApiUrl = server + App.getRes(R.string.root_catalog_api);
             App.getLibrary().updateSources(rootApiUrl, new org.unfoldingword.door43client.OnProgressListener() {
                 @Override
-                public void onProgress(String tag, long max, long complete) {
+                public boolean onProgress(String tag, long max, long complete) {
                     maxProgress = (int)max;
 
                     if(prefix != null) {
@@ -57,10 +72,11 @@ public class UpdateSourceTask extends ManagedTask {
 
                     publishProgress((float)complete/(float)max, tag);
 
-                    // TODO: 11/14/16 - this is a hack to interrupt download by throwing an exception.  Need a cleaner way to interrupt Door43Client
                     if(UpdateSourceTask.this.isCanceled()) {
-                        throw new RuntimeException("Cancelled");
+                        Logger.i(this.getClass().getSimpleName(), "Download Cancelled");
+                        return false;
                     }
+                    return true;
                 }
             });
             success = true;
@@ -69,14 +85,28 @@ public class UpdateSourceTask extends ManagedTask {
         }
 
         if(success) { // check for changes
+            publishProgress(-1, "");
+
             library = App.getLibrary();
             availableTranslationsAll = library.index.findTranslations(null, null, null, "book", null, App.MIN_CHECKING_LEVEL, -1);
+
+            maxProgress = availableTranslationsAll.size();
+            count = 0;
 
             for (Translation t : availableTranslationsAll) {
                 if(UpdateSourceTask.this.isCanceled()) {
                     break;
                 }
-                
+
+                if( ++count % 16 == 0) {
+                    publishProgress((float)count/maxProgress, "");
+
+                    if(UpdateSourceTask.this.isCanceled()) {
+                        success = false;
+                        return;
+                    }
+                }
+
                 String id = t.resourceContainerSlug;
                 if(previouslyUpdated.containsKey(id)) {
                     try {
