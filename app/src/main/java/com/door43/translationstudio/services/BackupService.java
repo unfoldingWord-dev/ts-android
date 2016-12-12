@@ -54,8 +54,7 @@ public class BackupService extends Service {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplication());
         int backupIntervalMinutes = Integer.parseInt(pref.getString(SettingsActivity.KEY_PREF_BACKUP_INTERVAL, getResources().getString(R.string.pref_default_backup_interval)));
         if(backupIntervalMinutes > 0) {
-            int backupInterval = backupIntervalMinutes * 60 * 1000;
-            int delay = 60 * 1000; // wait a minute for the app to finish booting
+            int backupInterval = backupIntervalMinutes * 1000 * 60;
             Logger.i(this.getClass().getName(), "Backups running every " + backupIntervalMinutes + " minute/s");
             sRunning = true;
             sTimer.scheduleAtFixedRate(new TimerTask() {
@@ -63,7 +62,7 @@ public class BackupService extends Service {
                 public void run() {
                     runBackup();
                 }
-            }, delay, backupInterval);
+            }, backupInterval, backupInterval);
             return START_STICKY;
         } else {
             Logger.i(this.getClass().getName(), "Backups are disabled");
