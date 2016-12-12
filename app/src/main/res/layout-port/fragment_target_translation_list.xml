@@ -16,6 +16,84 @@
         android:layout_gravity="center_horizontal"
         android:gravity="center">
 
+        <RelativeLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/dialog_controls_margin"
+                android:gravity="left|center_horizontal"
+                android:layout_gravity="left"
+                android:baselineAligned="false"
+                android:id="@+id/column_sort_layout"
+                android:layout_marginRight="@dimen/dialog_content_margin">
+
+                <TextView
+                    android:text="@string/sort_column"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/dialog_controls_margin"
+                    android:textColor="@color/dark_secondary_text"
+                    android:textAlignment="center"
+                    android:textSize="@dimen/caption"
+                    android:layout_gravity="top"
+                    android:id="@+id/textView4" />
+
+                <Spinner
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/sort_column" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:background="@color/list_separator"/>
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/dialog_controls_margin"
+                android:gravity="right"
+                android:layout_gravity="right"
+                android:layout_toRightOf="@+id/column_sort_layout"
+                android:layout_marginLeft="@dimen/dialog_content_margin">
+
+                <TextView
+                    android:text="@string/sort_projects"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/dialog_controls_margin"
+                    android:textColor="@color/dark_secondary_text"
+                    android:textAlignment="center"
+                    android:textSize="@dimen/caption"
+                    android:layout_gravity="top"
+                    android:id="@+id/textView5" />
+
+                <Spinner
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/sort_projects" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:background="@color/list_separator"/>
+
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"

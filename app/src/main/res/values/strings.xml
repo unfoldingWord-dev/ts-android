@@ -917,4 +917,11 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="view_updated_source">View New and Updated Source Texts</string>
     <string name="check_app_update">Check for Update to translationStudio</string>
     <string name="all_up_to_date">All Source Texts already up to date!</string>
+    <string name="sort_column">Column to Sort By</string>
+    <string name="sort_projects">Sort Project Column By</string>
+    <string name="sort_project_then_language">Project then Language</string>
+    <string name="sort_language_then_project">Language then Project</string>
+    <string name="sort_progress_then_project">Progress then Project</string>
+    <string name="sort_bible_order">Bible Order</string>
+    <string name="sort_alphabetical_order">Alphabetical Order</string>
 </resources>
