@@ -122,7 +122,7 @@ dependencies {
 
     compile 'org.unfoldingword.tools:gogs-client:1.6.0'
     compile 'org.unfoldingword.tools:task-manager:1.5.0'
-    compile 'org.unfoldingword.tools:door43-client:0.8.9'
+    compile 'org.unfoldingword.tools:door43-client:0.8.10'
     compile 'org.unfoldingword.tools:http:2.3.0'
     compile 'org.unfoldingword.tools:logger:2.0.0'
 

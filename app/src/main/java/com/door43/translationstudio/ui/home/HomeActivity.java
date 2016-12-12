@@ -28,12 +28,15 @@ import android.widget.PopupMenu;
 import org.eclipse.jgit.merge.MergeStrategy;
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.TargetLanguage;
+import org.unfoldingword.door43client.models.Translation;
 import org.unfoldingword.resourcecontainer.Project;
 import org.unfoldingword.tools.logger.Logger;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.translationstudio.tasks.CheckForLatestReleaseTask;
+import com.door43.translationstudio.tasks.GetAvailableSourcesTask;
+import com.door43.translationstudio.ui.dialogs.DownloadSourcesDialog;
 import com.door43.util.EventBuffer;
 import com.door43.translationstudio.ui.ProfileActivity;
 import com.door43.translationstudio.R;
@@ -64,6 +67,7 @@ import com.door43.widget.ViewUtil;
 
 import java.io.File;
 import java.text.NumberFormat;
+import java.util.List;
 
 public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFinishedListener, WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener, EventBuffer.OnEventListener, ManagedTask.OnProgressListener, ManagedTask.OnFinishedListener, DialogInterface.OnCancelListener {
     private static final int NEW_TARGET_TRANSLATION_REQUEST = 1;
@@ -813,6 +817,12 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     @Override
     public void onEventBufferEvent(EventBuffer.OnEventTalker talker, int tag, Bundle args) {
         if(talker instanceof UpdateLibraryDialog) {
+
+            if(tag == UpdateLibraryDialog.EVENT_SELECT_DOWNLOAD_SOURCES) {
+                selectDownloadSources();
+                return;
+            }
+
             ManagedTask task;
             String taskId;
             switch (tag) {
@@ -823,12 +833,9 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                     break;
                 case UpdateLibraryDialog.EVENT_UPDATE_SOURCE:
                     task = new UpdateSourceTask();
-                    ((UpdateSourceTask)task).setPrefix(this.getResources().getString(R.string.updating_languages));
+                    ((UpdateSourceTask)task).setPrefix(this.getResources().getString(R.string.updating_sources));
                     taskId = UpdateSourceTask.TASK_ID;
                     break;
-                case UpdateLibraryDialog.EVENT_VIEW_UPDATED:
-                    // TODO: 11/24/16 view updated
-                    return;
                 case UpdateLibraryDialog.EVENT_UPDATE_APP:
                 default:
                     task = new CheckForLatestReleaseTask();
@@ -839,6 +846,22 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             task.addOnFinishedListener(this);
             TaskManager.addTask(task, taskId);
         }
+    }
+
+    /**
+     * bring up UI to select and download sources
+     */
+    private void selectDownloadSources() {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag(DownloadSourcesDialog.TAG);
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        DownloadSourcesDialog dialog = new DownloadSourcesDialog();
+        dialog.show(ft, DownloadSourcesDialog.TAG);
+        return;
     }
 
     @Override
@@ -904,7 +927,17 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         hand.post(new Runnable() {
             @Override
             public void run() {
-                if(task instanceof CheckForLatestReleaseTask) {
+                if(task instanceof GetAvailableSourcesTask) {
+                    GetAvailableSourcesTask availableSourcesTask = (GetAvailableSourcesTask) task;
+                    if (progressDialog != null) {
+                        progressDialog.dismiss();
+                        progressDialog = null;
+                    }
+
+                    List<Translation> availableSources = availableSourcesTask.getSources();
+                    Logger.i(TAG, "Found " + availableSources.size() + " sources");
+
+                } else if(task instanceof CheckForLatestReleaseTask) {
                     CheckForLatestReleaseTask checkForLatestReleaseTask = (CheckForLatestReleaseTask) task;
                     if (progressDialog != null) {
                         progressDialog.dismiss();
@@ -931,6 +964,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                     int titleID = R.string.success;
                     int msgID = R.string.update_success;
                     String message = null;
+                    boolean failed = true;
 
                     if (task.isCanceled()) {
                         titleID = R.string.error;
@@ -939,6 +973,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                         titleID = R.string.error;
                         msgID = R.string.options_update_failed;
                     } else { // success
+                        failed = false;
                         if (task instanceof UpdateSourceTask) {
                             UpdateSourceTask updTask = (UpdateSourceTask) task;
                             message = String.format(getResources().getString(R.string.update_sources_success), updTask.getAddedCnt(), updTask.getUpdatedCnt());
@@ -948,12 +983,20 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                             message = String.format(getResources().getString(R.string.update_languages_success), updTask.getAddedCnt());
                         }
                     }
+                    final boolean finalFailed = failed;
 
                     // notify update is done
                     AlertDialog.Builder dlg =
                             new AlertDialog.Builder(HomeActivity.this, R.style.AppTheme_Dialog)
                                     .setTitle(titleID)
-                                    .setPositiveButton(R.string.dismiss, null);
+                                    .setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            if(!finalFailed) {
+                                                selectDownloadSources(); // if not failed, immediately go to select downloads
+                                            }
+                                        }
+                                    });
 
                     if (message == null) {
                         dlg.setMessage(msgID);

@@ -42,7 +42,7 @@ public class DownloadResourceContainerTask extends ManagedTask {
 
         if(success) {
             // also download helps
-            if(!translation.resource.slug.equals("tw") || !translation.resource.slug.equals("tn") || !translation.resource.slug.equals("tq")) {
+            if(!translation.resource.slug.equals("tw") && !translation.resource.slug.equals("tn") && !translation.resource.slug.equals("tq")) {
                 // TODO: 11/2/16 only download these if there is an update
                 try {
                     if (translation.project.slug.equals("obs")) {
