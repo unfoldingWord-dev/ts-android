@@ -82,14 +82,17 @@ public class LoginDoor43Activity extends AppCompatActivity implements ManagedTas
             App.setProfile(profile);
             finish();
         } else {
+            final boolean networkAvailable = App.isNetworkAvailable();
+
             // login failed
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {
                 @Override
                 public void run() {
+                    int messageId = networkAvailable ? R.string.double_check_credentials : R.string.internet_not_available;
                     new AlertDialog.Builder(LoginDoor43Activity.this, R.style.AppTheme_Dialog)
                             .setTitle(R.string.error)
-                            .setMessage(R.string.double_check_credentials)
+                            .setMessage(messageId)
                             .setPositiveButton(R.string.label_ok, null)
                             .show();
                 }
