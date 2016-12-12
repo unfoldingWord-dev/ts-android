@@ -98,14 +98,14 @@ public class BackupService extends Service {
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
             Translator translator = App.getTranslator();
-            Logger.i(TAG, "runBackup: Backing up all target translations");
+            Logger.i(TAG, "runBackup: Checking if backup is required");
             String[] targetTranslations = translator.getTargetTranslationFileNames();
             for (String filename : targetTranslations) {
 
                 try {
-                    Thread.sleep(300); // add delay to ease background processing and also slow the memory thrashing in background
+                    Thread.sleep(1000); // add delay to ease background processing and also slow the memory thrashing in background
                 } catch (Exception e) {
-                    Logger.e(TAG, "sleep problem");
+                    Logger.e(TAG, "sleep problem", e);
                 }
 
                 TargetTranslation t = translator.getTargetTranslation(filename);
@@ -113,8 +113,6 @@ public class BackupService extends Service {
                     Logger.i(TAG, "runBackup: skipping invalid translation: " + filename);
                     continue;
                 }
-
-                Logger.i(TAG, "runBackup: Backing up: " + t.getId());
 
                 // commit pending changes
                 try {
@@ -126,25 +124,26 @@ public class BackupService extends Service {
 
                 // run backup if there are translations
                 if (t.numTranslated() > 0) {
-                    boolean success = false;
                     try {
-                        success = App.backupTargetTranslation(t, false) ? true : backupPerformed;
+                        boolean success = App.backupTargetTranslation(t, false);
                         if(success) {
-                            backupPerformed = success;
+                            Logger.i(TAG, t.getId() + " was backed up");
+                            backupPerformed = true;
                         }
                     } catch (Exception e) {
                         Logger.e(TAG, "runBackup: Failed to backup the target translation " + t.getId(), e);
                     }
-
-                    Logger.i(TAG, "runBackup: Back up success= " + success);
                 }
             }
             if (backupPerformed) {
                 onBackupComplete();
+                Logger.i(TAG, "backup finished.");
+            } else {
+                Logger.i(TAG, "nothing needed to be backed up");
             }
-            Logger.i(TAG, "runBackup: backup finished, backupPerformed= " + backupPerformed);
+
         } else {
-            Logger.e(TAG, "runBackup: Missing permission to write to external storage. Automatic backups skipped.");
+            Logger.e(TAG, "Missing permission to write to external storage. Automatic backups skipped.");
         }
     }
 
