@@ -2,12 +2,14 @@ package com.door43.translationstudio.ui.home;
 
 import android.app.DialogFragment;
 import android.content.Intent;
+import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.TextView;
 
 import com.door43.util.EventBuffer;
 import com.door43.translationstudio.R;
@@ -20,7 +22,7 @@ public class UpdateLibraryDialog extends DialogFragment implements EventBuffer.O
     public static final int EVENT_UPDATE_LANGUAGES = 1;
     public static final int EVENT_UPDATE_SOURCE = 2;
     public static final int EVENT_UPDATE_ALL = 3;
-    public static final int EVENT_VIEW_UPDATED = 4;
+    public static final int EVENT_SELECT_DOWNLOAD_SOURCES = 4;
     public static final int EVENT_UPDATE_APP = 5;
     public static final String TAG = "update-library-dialog";
     private EventBuffer eventBuffer = new EventBuffer();
@@ -44,19 +46,22 @@ public class UpdateLibraryDialog extends DialogFragment implements EventBuffer.O
                 eventBuffer.write(UpdateLibraryDialog.this, EVENT_UPDATE_LANGUAGES, null);
             }
         });
-        v.findViewById(R.id.view_updated_source).setVisibility(View.GONE);
-//        v.findViewById(R.id.view_updated_source).setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                eventBuffer.write(UpdateLibraryDialog.this, EVENT_VIEW_UPDATED, null);
-//            }
-//        });
+        v.findViewById(R.id.download_sources).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                eventBuffer.write(UpdateLibraryDialog.this, EVENT_SELECT_DOWNLOAD_SOURCES, null);
+            }
+        });
         v.findViewById(R.id.update_source).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 eventBuffer.write(UpdateLibraryDialog.this, EVENT_UPDATE_SOURCE, null);
             }
         });
+
+        TextView updateAppLabel = (TextView) v.findViewById(R.id.update_app_text);
+        updateAppLabel.setPaintFlags(updateAppLabel.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+
         v.findViewById(R.id.update_app).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
