@@ -30,6 +30,8 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
     public static final String TAG = TargetTranslationListFragment.class.getSimpleName();
     private TargetTranslationAdapter mAdapter;
     private OnItemClickListener mListener;
+    private SortProjectColumnType mSortProjectColumn;
+    private SortByColumnType mSortByColumn;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -84,6 +86,10 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                     Logger.i(TAG, "Sort column item selected: " + position);
+                    mSortByColumn = SortByColumnType.fromInt(position);
+                    if(mAdapter != null) {
+                        mAdapter.sort(mSortByColumn, mSortProjectColumn);
+                    }
                 }
 
                 @Override
@@ -106,6 +112,10 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                     Logger.i(TAG, "Sort project column item selected: " + position);
+                    mSortProjectColumn = SortProjectColumnType.fromInt(position);
+                    if(mAdapter != null) {
+                        mAdapter.sort(mSortByColumn, mSortProjectColumn);
+                    }
                 }
 
                 @Override
@@ -148,8 +158,69 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
         mListener.onItemDeleted(targetTranslationId);
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
+
     public interface OnItemClickListener {
         void onItemDeleted(String targetTranslationId);
         void onItemClick(TargetTranslation targetTranslation);
     }
+
+    /**
+     * enum that keeps track of current state of USFM import
+     */
+    public enum SortByColumnType {
+        projectThenLanguage(0),
+        languageThenProject(1),
+        progressThenProject(2);
+
+        private int _value;
+
+        SortByColumnType(int Value) {
+            this._value = Value;
+        }
+
+        public int getValue() {
+            return _value;
+        }
+
+        public static SortByColumnType fromInt(int i) {
+            for (SortByColumnType b : SortByColumnType.values()) {
+                if (b.getValue() == i) {
+                    return b;
+                }
+            }
+            return null;
+        }
+    }
+
+    /**
+     * enum that keeps track of current state of USFM import
+     */
+    public enum SortProjectColumnType {
+        bibleOrder(0),
+        alphabetical(1);
+
+        private int _value;
+
+        SortProjectColumnType(int Value) {
+            this._value = Value;
+        }
+
+        public int getValue() {
+            return _value;
+        }
+
+        public static SortProjectColumnType fromInt(int i) {
+            for (SortProjectColumnType b : SortProjectColumnType.values()) {
+                if (b.getValue() == i) {
+                    return b;
+                }
+            }
+            return null;
+        }
+    }
+
 }
