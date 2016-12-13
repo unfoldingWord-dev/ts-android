@@ -106,6 +106,8 @@ public class App extends Application {
         }
         Logger.registerGlobalExceptionHandler(dir);
 
+        registerActivityLifecycleCallbacks(new LifecycleHandler());
+
         // initialize default settings
         // NOTE: make sure to add any new preference files here in order to have their default values properly loaded.
         PreferenceManager.setDefaultValues(this, R.xml.general_preferences, false);
@@ -116,6 +118,14 @@ public class App extends Application {
         // begins the backup manager service
         Intent backupIntent = new Intent(this, BackupService.class);
         startService(backupIntent);
+    }
+
+    /**
+     * TRICKY: if we want to use this we need to configure configChanges. See http://stackoverflow.com/questions/3667022/checking-if-an-android-application-is-running-in-the-background/13809991#13809991
+     * @return
+     */
+    public static boolean isApplicationInForeground() {
+        return LifecycleHandler.isApplicationInForeground();
     }
 
     public static void configureLogger(int minLogLevel) {
