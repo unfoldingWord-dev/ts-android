@@ -172,14 +172,17 @@ public class FeedbackDialog extends DialogFragment implements ManagedTask.OnFini
                 snack.show();
                 FeedbackDialog.this.dismiss();
             } else { // upload failed
+                final boolean networkAvailable = App.isNetworkAvailable();
+
                 Handler hand = new Handler(Looper.getMainLooper());
                 hand.post(new Runnable() {
                     @Override
                     public void run() {
                         hideLoadingUI();
+                        int messageId = networkAvailable ? R.string.upload_feedback_failed : R.string.internet_not_available;
                         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                                 .setTitle(R.string.upload_failed)
-                                .setMessage(R.string.upload_feedback_failed)
+                                .setMessage(messageId)
                                 .setPositiveButton(R.string.label_ok, null)
                                 .show();
                     }
