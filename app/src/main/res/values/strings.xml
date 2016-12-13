@@ -938,4 +938,5 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="questions_download_errors">Questions failed to download for: <xliff:g example="en_obs,fr_obs" id="fails">%1$s</xliff:g></string>
     <string name="source_not_found">Source Not Found on Server</string>
     <string name="search_for_language">Search for Language</string>
+    <string name="retry_label">Retry</string>
 </resources>
