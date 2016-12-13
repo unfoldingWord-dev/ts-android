@@ -28,10 +28,12 @@ import java.util.List;
 public class TargetTranslationListFragment extends BaseFragment implements TargetTranslationInfoDialog.OnDeleteListener {
 
     public static final String TAG = TargetTranslationListFragment.class.getSimpleName();
+    public static final String STATE_SORT_BY_COLUMN = "state_sort_by_column";
+    public static final String STATE_SORT_PROJECT_COLUMN = "state_sort_project_column";
     private TargetTranslationAdapter mAdapter;
     private OnItemClickListener mListener;
-    private SortProjectColumnType mSortProjectColumn;
-    private SortByColumnType mSortByColumn;
+    private TargetTranslationAdapter.SortProjectColumnType mSortProjectColumn = TargetTranslationAdapter.SortProjectColumnType.bibleOrder;
+    private TargetTranslationAdapter.SortByColumnType mSortByColumn = TargetTranslationAdapter.SortByColumnType.projectThenLanguage;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -72,6 +74,12 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
             }
         });
 
+        if(savedInstanceState != null) {
+            mSortByColumn = TargetTranslationAdapter.SortByColumnType.fromInt(savedInstanceState.getInt(STATE_SORT_BY_COLUMN, mSortByColumn.getValue()));
+            mSortProjectColumn = TargetTranslationAdapter.SortProjectColumnType.fromInt(savedInstanceState.getInt(STATE_SORT_PROJECT_COLUMN, mSortProjectColumn.getValue()));
+        }
+        mAdapter.sort(mSortByColumn, mSortProjectColumn);
+
         Spinner sortColumnSpinner = (Spinner) rootView.findViewById(R.id.sort_column);
         if(sortColumnSpinner != null) {
             List<String> types = new ArrayList<String>();
@@ -81,12 +89,12 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
             ArrayAdapter<String> typesAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, types);
             typesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             sortColumnSpinner.setAdapter(typesAdapter);
-
+            sortColumnSpinner.setSelection(mSortByColumn.getValue());
             sortColumnSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                     Logger.i(TAG, "Sort column item selected: " + position);
-                    mSortByColumn = SortByColumnType.fromInt(position);
+                    mSortByColumn = TargetTranslationAdapter.SortByColumnType.fromInt(position);
                     if(mAdapter != null) {
                         mAdapter.sort(mSortByColumn, mSortProjectColumn);
                     }
@@ -94,7 +102,6 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
 
                 @Override
                 public void onNothingSelected(AdapterView<?> parent) {
-
                 }
             });
         }
@@ -107,12 +114,12 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
             ArrayAdapter<String> typesAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, types);
             typesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             sortProjectSpinner.setAdapter(typesAdapter);
-
+            sortProjectSpinner.setSelection(mSortProjectColumn.getValue());
             sortProjectSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                     Logger.i(TAG, "Sort project column item selected: " + position);
-                    mSortProjectColumn = SortProjectColumnType.fromInt(position);
+                    mSortProjectColumn = TargetTranslationAdapter.SortProjectColumnType.fromInt(position);
                     if(mAdapter != null) {
                         mAdapter.sort(mSortByColumn, mSortProjectColumn);
                     }
@@ -120,7 +127,6 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
 
                 @Override
                 public void onNothingSelected(AdapterView<?> parent) {
-
                 }
             });
         }
@@ -159,68 +165,14 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
+    public void onSaveInstanceState(Bundle out) {
+        out.putInt(STATE_SORT_BY_COLUMN, mSortByColumn.getValue());
+        out.putInt(STATE_SORT_PROJECT_COLUMN, mSortProjectColumn.getValue());
+        super.onSaveInstanceState(out);
     }
 
     public interface OnItemClickListener {
         void onItemDeleted(String targetTranslationId);
         void onItemClick(TargetTranslation targetTranslation);
     }
-
-    /**
-     * enum that keeps track of current state of USFM import
-     */
-    public enum SortByColumnType {
-        projectThenLanguage(0),
-        languageThenProject(1),
-        progressThenProject(2);
-
-        private int _value;
-
-        SortByColumnType(int Value) {
-            this._value = Value;
-        }
-
-        public int getValue() {
-            return _value;
-        }
-
-        public static SortByColumnType fromInt(int i) {
-            for (SortByColumnType b : SortByColumnType.values()) {
-                if (b.getValue() == i) {
-                    return b;
-                }
-            }
-            return null;
-        }
-    }
-
-    /**
-     * enum that keeps track of current state of USFM import
-     */
-    public enum SortProjectColumnType {
-        bibleOrder(0),
-        alphabetical(1);
-
-        private int _value;
-
-        SortProjectColumnType(int Value) {
-            this._value = Value;
-        }
-
-        public int getValue() {
-            return _value;
-        }
-
-        public static SortProjectColumnType fromInt(int i) {
-            for (SortProjectColumnType b : SortProjectColumnType.values()) {
-                if (b.getValue() == i) {
-                    return b;
-                }
-            }
-            return null;
-        }
-    }
-
 }

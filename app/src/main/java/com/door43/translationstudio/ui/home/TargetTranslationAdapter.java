@@ -47,6 +47,8 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
     private Map<String, Integer> mTranslationProgress = new HashMap<>();
     private List<String> mTranslationProgressCalculated = new ArrayList<>();
     private List<ViewHolder> holders = new ArrayList<>();
+    private SortProjectColumnType mSortProjectColumn = SortProjectColumnType.bibleOrder;
+    private SortByColumnType mSortByColumn = SortByColumnType.projectThenLanguage;;
 
     private static List<String> bookList = Arrays.asList(
             "gen" , "exo", "lev", "num", "deu", "jos", "jdg", "rut",
@@ -82,7 +84,13 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
         }
     }
 
-    public void sort(final TargetTranslationListFragment.SortByColumnType sortByColumn, final TargetTranslationListFragment.SortProjectColumnType sortProjectColumn) {
+    public void sort() {
+        sort(mSortByColumn, mSortProjectColumn);
+    }
+
+    public void sort(final SortByColumnType sortByColumn, final SortProjectColumnType sortProjectColumn) {
+        mSortByColumn = sortByColumn;
+        mSortProjectColumn = sortProjectColumn;
         Collections.sort(mTranslations, new Comparator<TargetTranslation>() {
             @Override
             public int compare(TargetTranslation lhs, TargetTranslation rhs) {
@@ -111,7 +119,6 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
             }
         });
 
-
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
@@ -127,8 +134,8 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
      * @param rhs
      * @return
      */
-    private int compareProject(TargetTranslation lhs, TargetTranslation rhs, TargetTranslationListFragment.SortProjectColumnType sortProjectColumn) {
-        if(sortProjectColumn == TargetTranslationListFragment.SortProjectColumnType.bibleOrder) {
+    private int compareProject(TargetTranslation lhs, TargetTranslation rhs, SortProjectColumnType sortProjectColumn) {
+        if(sortProjectColumn == SortProjectColumnType.bibleOrder) {
             int lhsIndex = bookList.indexOf(lhs.getProjectId());
             int rhsIndex = bookList.indexOf(rhs.getProjectId());
             if((lhsIndex == rhsIndex) && (lhsIndex < 0)) { // if not bible books, then compare by name
@@ -240,7 +247,7 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
         mTranslations = Arrays.asList(targetTranslations);
         mTranslationProgress = new HashMap<>();
         mTranslationProgressCalculated = new ArrayList<>();
-        notifyDataSetChanged();
+        sort();
     }
 
     @Override
@@ -259,7 +266,7 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
             hand.post(new Runnable() {
                 @Override
                 public void run() {
-                    notifyDataSetChanged();
+                    sort();
                 }
             });
         }
@@ -291,6 +298,62 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
         public void setProgress(int progress) {
             mProgressView.setProgress(progress);
             mProgressView.setVisibility(View.VISIBLE);
+        }
+    }
+
+
+    /**
+     * enum that keeps track of current state of USFM import
+     */
+    public enum SortByColumnType {
+        projectThenLanguage(0),
+        languageThenProject(1),
+        progressThenProject(2);
+
+        private int _value;
+
+        SortByColumnType(int Value) {
+            this._value = Value;
+        }
+
+        public int getValue() {
+            return _value;
+        }
+
+        public static SortByColumnType fromInt(int i) {
+            for (SortByColumnType b : SortByColumnType.values()) {
+                if (b.getValue() == i) {
+                    return b;
+                }
+            }
+            return null;
+        }
+    }
+
+    /**
+     * enum that keeps track of current state of USFM import
+     */
+    public enum SortProjectColumnType {
+        bibleOrder(0),
+        alphabetical(1);
+
+        private int _value;
+
+        SortProjectColumnType(int Value) {
+            this._value = Value;
+        }
+
+        public int getValue() {
+            return _value;
+        }
+
+        public static SortProjectColumnType fromInt(int i) {
+            for (SortProjectColumnType b : SortProjectColumnType.values()) {
+                if (b.getValue() == i) {
+                    return b;
+                }
+            }
+            return null;
         }
     }
 }
