@@ -120,7 +120,7 @@ dependencies {
     compile 'com.itextpdf:itextpdf:5.5.7'
     compile 'com.facebook.rebound:rebound:0.3.8'
 
-    compile 'org.unfoldingword.tools:gogs-client:1.6.0'
+    compile 'org.unfoldingword.tools:gogs-client:1.6.1'
     compile 'org.unfoldingword.tools:task-manager:1.5.0'
     compile 'org.unfoldingword.tools:door43-client:0.8.10'
     compile 'org.unfoldingword.tools:http:2.3.0'
