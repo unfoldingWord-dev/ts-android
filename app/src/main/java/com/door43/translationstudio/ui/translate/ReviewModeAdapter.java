@@ -103,6 +103,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private static final int TAB_WORDS = 1;
     private static final int TAB_QUESTIONS = 2;
     public static final int HIGHLIGHT_COLOR = Color.YELLOW;
+    public static final String TASK_STRING_SEARCH = "task_string_search";
     private final Door43Client mLibrary;
     private static final int VIEW_TYPE_NORMAL = 0;
     private static final int VIEW_TYPE_CONFLICT = 1;
@@ -135,6 +136,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private boolean mHaveMergeConflict = false;
     private boolean mMergeConflictFilterEnabled = false;
     private boolean mMergeConflictFilterOn = false;
+    private int mChunkSearchMatches = 0;
 
     @Deprecated
     public void setHelpContainers(List<ResourceContainer> helpfulContainers) {
@@ -1728,6 +1730,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
             @Override
             public void onTaskFinished(final ManagedTask task) {
+                if(task.isCanceled()) {
+                    return;
+                }
+
                 final Map<String, Object> data = (Map<String, Object>)task.getResult();
 
                 final List<TranslationHelp> notes = (List<TranslationHelp>)data.get("notes");
@@ -2399,12 +2405,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     private static class ReviewListItem extends ListItem {
-        public CharSequence headText = null;
-        public boolean isFullMergeConflict = false;
-        public CharSequence tailText = null;
-        public List<Link> wordLinks = new ArrayList<>();
-        public List<Link> questionLinks = new ArrayList<>();
-        public List<Link> noteLinks = new ArrayList<>();
+        public boolean hasSearchText = false;
         private List<CharSequence> mergeItems;
         private int mergeItemSelected;
 
@@ -2415,6 +2416,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     @Override
+    /**
+     * technically no longer a filter but now a search that flags items containing search string
+     */
     public void filter(CharSequence constraint, TranslationFilter.FilterSubject subject) {
         this.filterConstraint = constraint;
         this.filterSubject = subject;
@@ -2424,25 +2428,71 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             return;
         }
 
-        // clear the cards displayed since we have new search string
-        mFilteredItems = new ArrayList<>();
-
         getListener().onSearching(true);
-        TranslationFilter filter = new TranslationFilter(mSourceContainer, mTargetTranslation, subject, mItems);
-        filter.setListener(new TranslationFilter.OnMatchListener() {
-            @Override
-            public void onMatch(ListItem item) {
-                if(!mFilteredChapters.contains(item.chapterSlug)) mFilteredChapters.add(item.chapterSlug);
-            }
 
+        ManagedTask oldTask = TaskManager.getTask(TASK_STRING_SEARCH);
+        TaskManager.cancelTask(oldTask);
+        TaskManager.clearTask(oldTask);
+
+        final String matcher = constraint.toString().toLowerCase().trim();
+        final TranslationFilter.FilterSubject subjectFinal = subject;
+
+        ManagedTask task = new ManagedTask() {
             @Override
-            public void onFinished(CharSequence constraint, List<ListItem> results) {
-                mFilteredItems = results;
-                triggerNotifyDataSetChanged();
-                getListener().onSearching(false);
+            public void start() {
+                if(isCanceled()) {
+                    return;
+                }
+
+                Logger.i(TAG, "Search started: " + matcher);
+
+                mChunkSearchMatches = 0;
+                for (int i = 0; i < mFilteredItems.size(); i++) {
+                    if(isCanceled()) {
+                        return;
+                    }
+                    ReviewListItem item = (ReviewListItem) mFilteredItems.get(i);
+
+                    boolean match = false;
+                    if(subjectFinal == TranslationFilter.FilterSubject.TARGET || subjectFinal == TranslationFilter.FilterSubject.BOTH) {
+                        match = item.targetText.toString().toLowerCase().contains(matcher) || match;
+                    }
+                    if(!match) {
+                        if (subjectFinal == TranslationFilter.FilterSubject.SOURCE || subjectFinal == TranslationFilter.FilterSubject.BOTH) {
+                            match = item.sourceText.toString().toLowerCase().contains(matcher) || match;
+                        }
+                    }
+
+                    item.hasSearchText = match;
+                    if(match) {
+                        mChunkSearchMatches++;
+                    }
+                }
+            }
+        };
+        task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
+            @Override
+            public void onTaskFinished(final ManagedTask task) {
+                if(!task.isCanceled()) {
+                    Logger.i(TAG, "Search finished: '" + matcher + "', count: " + mChunkSearchMatches);
+
+                    Handler hand = new Handler(Looper.getMainLooper());
+                    hand.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            notifyDataSetChanged();
+                            OnEventListener listener = getListener();
+                            if(listener != null) {
+                                listener.onSearching(false);
+                            }
+                        }
+                    });
+                } else {
+                    Logger.i(TAG, "Search cancelled: '" + matcher + "'");
+                }
             }
         });
-        filter.filter(constraint);
+        TaskManager.addTask(task, TASK_STRING_SEARCH);
     }
 
     @Override
