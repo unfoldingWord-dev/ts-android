@@ -684,7 +684,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             Spinner type = (Spinner) searchPane.findViewById(R.id.search_type);
             if(type != null) {
                 int pos = type.getSelectedItemPosition();
-                if(pos >= 0) {
+                if(pos == 0) {
                     return TranslationFilter.FilterSubject.SOURCE;
                 }
             }

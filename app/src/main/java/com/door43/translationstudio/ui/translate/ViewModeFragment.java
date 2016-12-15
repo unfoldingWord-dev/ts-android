@@ -187,7 +187,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      * @param position
      */
     public void scrollToPosition(int position) {
-        mLayoutManager.scrollToPosition(position);
+        mLayoutManager.scrollToPositionWithOffset(position, 0);
         if(mListener != null) mListener.onScrollProgress(position);
     }
 

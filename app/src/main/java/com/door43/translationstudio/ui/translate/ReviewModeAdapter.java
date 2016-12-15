@@ -23,6 +23,7 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.TypedValue;
@@ -127,7 +128,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     private List<String> mChapters = new ArrayList<>();
     private List<String> mFilteredChapters = new ArrayList<>();
-    private CharSequence filterConstraint = null;
+    private CharSequence mSearchText = null;
     private TranslationFilter.FilterSubject filterSubject = null;
 
     private float mInitialTextSize = 0;
@@ -140,6 +141,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private int mSearchPosition = 0;
     private int mSearchSubPosition = 0;
     private int mSearchSubPositionItems = 0;
+    private boolean mSearchingTarget = true;
+    private boolean mLastSearchDirectionForward = true;
+
 
     @Deprecated
     public void setHelpContainers(List<ResourceContainer> helpfulContainers) {
@@ -207,7 +211,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         loadTabInfo();
 
-        filter(filterConstraint, filterSubject, mSearchPosition);
+        filter(mSearchText, filterSubject, mSearchPosition);
 
         triggerNotifyDataSetChanged();
         updateMergeConflict();
@@ -393,6 +397,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             public void run() {
                                 if (!task.isCanceled() && data != null && item == holder.currentItem) {
                                     holder.mSourceBody.setText(item.renderedSourceText);
+                                    item.refreshSearchHighlightSource = false;
+                                    int selectPosition = checkForSelectedSearchItem(item, position, false);
+                                    selectCurrentSearchItem(selectPosition, holder.mSourceBody, item.renderedSourceText);
                                     holder.mSourceBody.setVisibility(View.VISIBLE);
                                 }
                             }
@@ -404,6 +411,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         } else {
             holder.mSourceBody.setText(item.renderedSourceText);
             holder.mSourceBody.setVisibility(View.VISIBLE);
+
+            if(item.refreshSearchHighlightSource) {
+                int selectPosition = checkForSelectedSearchItem(item, position, false);
+                selectCurrentSearchItem(selectPosition, holder.mSourceBody, item.renderedSourceText);
+                item.refreshSearchHighlightSource = false;
+            }
         }
 
         renderTabs(holder);
@@ -642,14 +655,18 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             public void run() {
                                 if (!task.isCanceled() && data != null && item == holder.currentItem) {
                                     item.renderedTargetText = data;
+
+                                    int selectPosition = checkForSelectedSearchItem(item, position, true);
                                     if (item.isEditing) {
                                         // edit mode
                                         holder.mTargetEditableBody.setText(item.renderedTargetText);
+                                        selectCurrentSearchItem(selectPosition, holder.mTargetEditableBody, item.renderedTargetText);
                                         holder.mTargetEditableBody.setVisibility(View.VISIBLE);
                                         holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
                                     } else {
                                         // verse marker mode
                                         holder.mTargetBody.setText(item.renderedTargetText);
+                                        selectCurrentSearchItem(selectPosition, holder.mTargetBody, item.renderedTargetText);
                                         holder.mTargetBody.setVisibility(View.VISIBLE);
                                         holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() {
                                             @Override
@@ -676,11 +693,25 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             // editing mode
             holder.mTargetEditableBody.setText(item.renderedTargetText);
             holder.mTargetEditableBody.setVisibility(View.VISIBLE);
+
+            if(item.refreshSearchHighlightTarget) {
+                int selectPosition = checkForSelectedSearchItem(item, position, true);
+                selectCurrentSearchItem(selectPosition, holder.mTargetEditableBody, item.renderedTargetText);
+                item.refreshSearchHighlightTarget = false;
+            }
+
             holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
         } else {
             // verse marker mode
             holder.mTargetBody.setText(item.renderedTargetText);
             holder.mTargetBody.setVisibility(View.VISIBLE);
+
+            if(item.refreshSearchHighlightTarget) {
+                int selectPosition = checkForSelectedSearchItem(item, position, true);
+                selectCurrentSearchItem(selectPosition, holder.mTargetEditableBody, item.renderedTargetText);
+                item.refreshSearchHighlightTarget = false;
+            }
+
             holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
@@ -799,6 +830,46 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
             }
         });
+    }
+
+    /**
+     * check if we have a selected search item in this chunk, returns position if found, -1 if not found
+     * @param item
+     * @param position
+     * @param target
+     * @return
+     */
+    private int checkForSelectedSearchItem(ReviewListItem item, int position, boolean target) {
+        int selectPosition = -1;
+        if(item.hasSearchText && (position == mSearchPosition)) {
+            MatchResults results = null;
+            if (mSearchSubPositionItems < 0) { // if we haven't counted items yet
+                results = findSearchItemInChunkAndPreselect(mLastSearchDirectionForward, item, target);
+            } else if (mSearchSubPositionItems > 0) { // if we have counted items then find the number selected
+                results = getMatchItemN( item, mSearchText, mSearchSubPosition, target);
+            }
+
+            if( (results != null) && (results.foundLocation >= 0)) {
+                selectPosition = results.foundLocation;
+            }
+        }
+        return selectPosition;
+    }
+
+    /**
+     * highlist the current selected search text item at position
+     * @param selectPosition
+     * @param view
+     */
+    private void selectCurrentSearchItem(int selectPosition, TextView view, CharSequence text) {
+        if((selectPosition >= 0)  && (text != null)) {
+            CharSequence selected = text.subSequence(selectPosition, selectPosition + mSearchText.length());
+            SpannableStringBuilder span = new SpannableStringBuilder(selected);
+            span.setSpan(new BackgroundColorSpan(Color.CYAN), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            CharSequence out = TextUtils.concat(text.subSequence(0, selectPosition), span, text.subSequence(selectPosition + mSearchText.length(), text.length()));
+            view.setText(out);
+        }
     }
 
     /**
@@ -1927,7 +1998,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      */
     private CharSequence renderTargetText(String text, TranslationFormat format, final FrameTranslation frameTranslation, final ViewHolder holder, final ReviewListItem item) {
         RenderingGroup renderingGroup = new RenderingGroup();
-        boolean enableSearch = filterConstraint != null && filterSubject != null && filterSubject == TranslationFilter.FilterSubject.TARGET;
+        boolean enableSearch = mSearchText != null && filterSubject != null && filterSubject == TranslationFilter.FilterSubject.TARGET;
         if(Clickables.isClickableFormat(format)) {
             Span.OnClickListener verseClickListener = new Span.OnClickListener() {
                 @Override
@@ -2051,14 +2122,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             renderer.setLinebreaksEnabled(true);
             renderer.setPopulateVerseMarkers(Frame.getVerseRange(item.sourceText, item.sourceTranslationFormat));
             if(enableSearch) {
-                renderingGroup.setSearchString(filterConstraint, HIGHLIGHT_COLOR);
+                renderingGroup.setSearchString(mSearchText, HIGHLIGHT_COLOR);
             }
 
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
             if(enableSearch) {
-                renderingGroup.setSearchString(filterConstraint, HIGHLIGHT_COLOR);
+                renderingGroup.setSearchString(mSearchText, HIGHLIGHT_COLOR);
             }
         }
         if(!text.trim().isEmpty()) {
@@ -2218,7 +2289,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      */
     private CharSequence renderSourceText(String text, TranslationFormat format, final ViewHolder holder, final ReviewListItem item, final boolean editable) {
         RenderingGroup renderingGroup = new RenderingGroup();
-        boolean enableSearch = filterConstraint != null && filterSubject != null && filterSubject == TranslationFilter.FilterSubject.SOURCE;
+        boolean enableSearch = mSearchText != null && filterSubject != null;
         if (Clickables.isClickableFormat(format)) {
             // TODO: add click listeners for verses
             Span.OnClickListener noteClickListener = new Span.OnClickListener() {
@@ -2244,13 +2315,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
 
             if( enableSearch ) {
-                renderingGroup.setSearchString(filterConstraint, HIGHLIGHT_COLOR);
+                renderingGroup.setSearchString(mSearchText, HIGHLIGHT_COLOR);
             }
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
             if( enableSearch ) {
-                renderingGroup.setSearchString(filterConstraint, HIGHLIGHT_COLOR);
+                renderingGroup.setSearchString(mSearchText, HIGHLIGHT_COLOR);
             }
         }
         renderingGroup.init(text);
@@ -2410,28 +2481,58 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private static class ReviewListItem extends ListItem {
         public boolean hasSearchText = false;
         private List<CharSequence> mergeItems;
-        private int mergeItemSelected;
+        private int mergeItemSelected = -1;
+        public int selectItemNum = -1;
+        public boolean refreshSearchHighlightSource = false;
+        public boolean refreshSearchHighlightTarget = false;
 
         public ReviewListItem(String chapterSlug, String chunkSlug) {
             super(chapterSlug, chunkSlug);
         }
+    }
 
+    private static class MatchResults {
+        final private int foundLocation;
+        final private int numberFound;
+        final private boolean needRender;
+
+        public MatchResults(int foundLocation, int numberFound, boolean needRender) {
+            this.foundLocation = foundLocation;
+            this.numberFound = numberFound;
+            this.needRender = needRender;
+        }
     }
 
     /**
-     * move to next/previous search item
-     * @param next if true then find next, otherwise will find previous
+     * move to next (forward/previous) search item
+     * @param forward if true then find next instance, otherwise will find previous
      */
     @Override
-    public void onMoveSearch(boolean next) {
-        Logger.i(TAG, "onMoveSearch next= " + next);
+    public void onMoveSearch(boolean forward) {
+        mLastSearchDirectionForward = forward;
+        Logger.i(TAG, "onMoveSearch forward= " + forward);
 
         int start = Math.min(Math.max(mSearchPosition,0), mFilteredItems.size() - 1);
         int foundPos = -1;
 
-        // TODO: 12/15/16 need to add stepping within chunk
+        if(mSearchSubPositionItems > 0) { // try to find forward item within chunk
+            ReviewListItem item = (ReviewListItem) getItem(mSearchPosition);
+            if(item != null) {
+                if(forward) {
+                    if(++mSearchSubPosition < mSearchSubPositionItems) { // we are still inside chunk
+                        forceSearchRefresh(item);
+                        return;
+                    }
+                } else { // previous
+                    if(--mSearchSubPosition >= 0) { // we are still inside chunk
+                        forceSearchRefresh(item);
+                        return;
+                    }
+                }
+            }
+        }
 
-        if(next) {
+        if(forward) {
             for(int i = start + 1; i < mFilteredItems.size(); i++) {
                 ReviewListItem item = (ReviewListItem) getItem(i);
                 if(item.hasSearchText) {
@@ -2439,7 +2540,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     break;
                 }
             }
-        } else {
+        } else { // previous
             for(int i = start - 1; i >= 0; i--) {
                 ReviewListItem item = (ReviewListItem) getItem(i);
                 if(item.hasSearchText) {
@@ -2453,21 +2554,141 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             Logger.i(TAG, "onMoveSearch foundPos= " + foundPos);
             mSearchPosition = foundPos;
             mSearchSubPosition = 0;
+            mSearchSubPositionItems = -1;
             OnEventListener listener = getListener();
             if(listener != null) {
                 listener.onSetSelectedPosition(foundPos);
             }
+
+            ReviewListItem item = (ReviewListItem) getItem(mSearchPosition);
+            if(item != null) {
+                findSearchItemInChunkAndPreselect(forward, item, mSearchingTarget);
+                triggerNotifyDataSetChanged();
+            }
+        } else { // not found, clear last selection
+            mSearchSubPosition = -1;
+            ReviewListItem item = (ReviewListItem) getItem(mSearchPosition);
+            if(item != null) {
+                forceSearchReRender(item);
+            }
         }
     }
 
+    /**
+     * gets number of string matches within chunk and selects next item
+     * @param forward
+     * @param item
+     * @param target - if true searching target card
+     */
+    private MatchResults findSearchItemInChunkAndPreselect(boolean forward, ReviewListItem item, boolean target) {
+        MatchResults results = getMatchItemN( item, mSearchText, 1000, target); // get item count
+        mSearchSubPositionItems = results.numberFound;
+        mSearchSubPosition = forward ? 0 : (mSearchSubPositionItems - 1);
+        boolean success = !results.needRender;
+        if(!success) {
+            mSearchSubPositionItems = -1; // this will flag to get count after render
+        } else {
+            forceSearchReRender(item);
+        }
+        item.selectItemNum = mSearchSubPosition;
+        return results;
+    }
+
+    /**
+     * cause highlighted search to be refreshed
+     * @param item
+     */
+    private void forceSearchRefresh(ReviewListItem item) {
+        if (mSearchingTarget) {
+            item.refreshSearchHighlightTarget = true;
+        } else {
+            item.refreshSearchHighlightSource = true;
+        }
+        triggerNotifyDataSetChanged();
+    }
+
+    /**
+     * cause search to be redrawn
+     * @param item
+     */
+    private void forceSearchReRender(ReviewListItem item) {
+        if (mSearchingTarget) {
+            item.renderedTargetText = null;
+            item.refreshSearchHighlightTarget = false;
+        } else {
+            item.renderedSourceText = null;
+            item.refreshSearchHighlightSource = false;
+        }
+        triggerNotifyDataSetChanged();
+    }
+
+    /**
+     * search chunk to find the nth match string
+     * @param item
+     * @param match
+     * @param matchNumb
+     * @param target - if true searching target card
+     * @return
+     */
+    private MatchResults getMatchItemN(ReviewListItem item, CharSequence match, int matchNumb, boolean target) {
+        boolean needRender = false;
+        String matcher = match.toString();
+        int length = matcher.length();
+
+        boolean matcherEmpty = (matcher.length() == 0);
+        if(matcherEmpty || (item == null) || (matchNumb < 0)
+                || (target != mSearchingTarget)) {
+            return new MatchResults(-1, -1, needRender);
+        }
+
+        Logger.i(TAG, "Search started: " + matcher);
+
+        int searchStartLocation = 0;
+        int count = 0;
+        int pos = -1;
+
+        while (count <= matchNumb) {
+            pos = -1;
+
+            if (mSearchingTarget) {
+                if (item.renderedTargetText != null) {
+                    pos = item.renderedTargetText.toString().toLowerCase().indexOf(matcher, searchStartLocation);
+                } else {
+                    needRender = true;
+                    break;
+                }
+            }
+            if (!mSearchingTarget) {
+                if(item.renderedSourceText != null) {
+                    pos = item.renderedSourceText.toString().toLowerCase().indexOf(matcher, searchStartLocation);
+                } else {
+                    needRender = true;
+                    break;
+                }
+            }
+
+            if(pos >= 0) {
+                searchStartLocation = pos + length;
+                if(++count > matchNumb) {
+                    return new MatchResults(pos, count, needRender);
+                }
+            } else {
+                break;
+            }
+        }
+
+        return new MatchResults(-1, count, needRender);
+    }
 
     @Override
     /**
      * technically no longer a filter but now a search that flags items containing search string
      */
     public void filter(CharSequence constraint, TranslationFilter.FilterSubject subject, final int initialPosition) {
-        this.filterConstraint = constraint;
+        this.mSearchText = (constraint == null) ? "" : constraint.toString().toLowerCase().trim();
         this.filterSubject = subject;
+
+        mSearchingTarget = subject == TranslationFilter.FilterSubject.TARGET || subject == TranslationFilter.FilterSubject.BOTH;
 
         getListener().onSearching(true, 0);
 
@@ -2475,7 +2696,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         TaskManager.cancelTask(oldTask);
         TaskManager.clearTask(oldTask);
 
-        final String matcher = (constraint == null) ? "" : constraint.toString().toLowerCase().trim();
+        final String matcher = this.mSearchText.toString();
         final TranslationFilter.FilterSubject subjectFinal = subject;
 
         ManagedTask task = new ManagedTask() {
@@ -2488,9 +2709,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 boolean matcherEmpty = (matcher == null) || (matcher.isEmpty());
 
                 Logger.i(TAG, "Search started: " + matcher);
-
-                boolean target = subjectFinal == TranslationFilter.FilterSubject.TARGET || subjectFinal == TranslationFilter.FilterSubject.BOTH;
-                boolean source = subjectFinal == TranslationFilter.FilterSubject.SOURCE || subjectFinal == TranslationFilter.FilterSubject.BOTH;
 
                 mChunkSearchMatches = 0;
                 for (int i = 0; i < mFilteredItems.size(); i++) {
@@ -2506,13 +2724,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     boolean match = false;
 
                     if(!matcherEmpty) {
-                        if (target && (item.targetText != null)) {
+                        if (mSearchingTarget && (item.targetText != null)) {
                             match = item.targetText.toString().toLowerCase().contains(matcher) || match;
                         }
-                        if (!match) {
-                            if (source && (item.sourceText != null)) {
-                                match = item.sourceText.toString().toLowerCase().contains(matcher) || match;
-                            }
+                        if (!mSearchingTarget && (item.sourceText != null)) {
+                            match = item.sourceText.toString().toLowerCase().contains(matcher) || match;
                         }
                     }
 
