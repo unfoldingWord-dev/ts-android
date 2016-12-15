@@ -60,7 +60,7 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
     }
 
     /**
-     * Registeres the click listener
+     * Registers the click listener
      * @param listener
      */
     public void setOnClickListener(OnEventListener listener) {
@@ -117,8 +117,16 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
      * @param constraint the search query
      * @param subject the text that will be searched
      */
-    public void filter(CharSequence constraint, TranslationFilter.FilterSubject subject) {
+    public void filter(CharSequence constraint, TranslationFilter.FilterSubject subject, int initialPosition) {
         // Override this in your adapter to enable searching
+    }
+
+    /**
+     * move to next/previous search item
+     * @param next if true then find next, otherwise will find previous
+     */
+    public void onMoveSearch(boolean next) {
+        // Override this in your adapter to enable next/previous
     }
 
     /**
@@ -167,6 +175,14 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
         mListener.restartAutoCommitTimer();
     }
 
+    /**
+     * called to set new selected position
+     * @param position
+     */
+    protected void onSetSelectedPosition(int position) {
+        mListener.onSetSelectedPosition(position);
+    }
+
     public interface OnEventListener {
         void onSourceTranslationTabClick(String sourceTranslationId);
         void onNewSourceTranslationTabClick();
@@ -178,8 +194,9 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
         void onCheckingQuestionClick(TranslationHelp question, int width);
         void scrollToChunk(String chapterSlug, String frameSlug);
         void restartAutoCommitTimer();
-        void onSearching(boolean enable);
+        void onSearching(boolean enable, int foundCount);
         void onDataSetChanged(int count);
         void onEnableMergeConflict(boolean showConflicted, boolean active);
+        void onSetSelectedPosition(int position);
     }
 }

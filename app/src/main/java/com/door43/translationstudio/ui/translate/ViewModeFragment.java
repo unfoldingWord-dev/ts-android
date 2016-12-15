@@ -135,8 +135,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
             mAdapter.setOnClickListener(this);
 
             if(savedInstanceState == null) {
-                mLayoutManager.scrollToPosition(mAdapter.getListStartPosition());
-                if(mListener != null) mListener.onScrollProgress(mAdapter.getListStartPosition());
+                scrollToPosition(mAdapter.getListStartPosition());
             }
         }
 
@@ -184,6 +183,15 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     /**
+     * scroll panes to go to specific position
+     * @param position
+     */
+    public void scrollToPosition(int position) {
+        mLayoutManager.scrollToPosition(position);
+        if(mListener != null) mListener.onScrollProgress(position);
+    }
+
+    /**
      * get the chapter slug for the position
      * @param position
      */
@@ -228,8 +236,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         closeKeyboard();
         int position = mAdapter.getItemPosition(chapterSlug, chunkSlug);
         if(position != -1) {
-            mLayoutManager.scrollToPosition(position);
-            if(mListener != null) mListener.onScrollProgress(position);
+            scrollToPosition(position);
         }
     }
 
@@ -365,8 +372,18 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      */
     public final void filter(CharSequence constraint, TranslationFilter.FilterSubject subject) {
         if(getAdapter() != null) {
-            getAdapter().filter(constraint, subject);
+            getAdapter().filter(constraint, subject, mLayoutManager.findFirstVisibleItemPosition());
             getAdapter().triggerNotifyDataSetChanged();
+        }
+    }
+
+    /**
+     * move to next/previous search item
+     * @param next if true then find next, otherwise will find previous
+     */
+    public void onMoveSearch(boolean next) {
+        if(getAdapter() != null) {
+            getAdapter().onMoveSearch(next);
         }
     }
 
@@ -597,9 +614,10 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     /**
      * enable/disable the busy indiciator
      * @param isSearching
+     * @param foundCount - number of matches found
      */
-    public void onSearching(boolean isSearching) {
-        if(mListener != null) mListener.onSearching(isSearching);
+    public void onSearching(boolean isSearching, int foundCount) {
+        if(mListener != null) mListener.onSearching(isSearching, foundCount);
     }
 
     /**
@@ -648,6 +666,14 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     /**
+     * called to set new selected position
+     * @param position
+     */
+    public void onSetSelectedPosition(int position) {
+        scrollToPosition(position);
+    }
+
+    /**
      * Allows child classes to perform operations that dependon the source container
      * @param sourceContainer
      */
@@ -687,8 +713,9 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         /**
          * enable/disable busy spinner
          * @param enable
+         * @param foundCount - number of matches found
          */
-        void onSearching(boolean enable);
+        void onSearching(boolean enable, int foundCount);
 
         /**
          * enable/disable merge conflict indicator

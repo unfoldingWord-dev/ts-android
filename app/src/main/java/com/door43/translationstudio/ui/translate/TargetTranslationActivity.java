@@ -93,6 +93,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private ImageButton mMergeConflict;
     private boolean mHaveMergeConflict = false;
     private boolean mMergeConflictFilterEnabled = false;
+    private ImageButton mDownSearch;
+    private ImageButton mUpSearch;
+    private TextView mFoundText;
+    private int mFoundTextFormat;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -149,6 +154,28 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mChunkButton = (ImageButton) findViewById(R.id.action_chunk);
         mReviewButton = (ImageButton) findViewById(R.id.action_review);
         mMergeConflict = (ImageButton) findViewById(R.id.warn_merge_conflict);
+
+        mDownSearch = (ImageButton) findViewById(R.id.down_search);
+        mDownSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                moveSearch(true);
+            }
+        });
+        mUpSearch = (ImageButton) findViewById(R.id.up_search);
+        mUpSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                moveSearch(false);
+            }
+        });
+
+        mFoundTextFormat = R.string.found_in_chunks_short;
+        mFoundText = (TextView) findViewById(R.id.found_short);
+        if(mFoundText == null) {
+            mFoundText = (TextView) findViewById(R.id.found);
+            mFoundTextFormat = R.string.found_in_chunks;
+        }
 
         setupSidebarModeIcons();
 
@@ -501,7 +528,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             if(show) {
                 visibility = View.VISIBLE;
             } else {
-                setSearchSpinner(false);
+                setSearchSpinner(false, 0);
             }
 
             searchPane.setVisibility(visibility);
@@ -609,11 +636,20 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     /**
      * sets the visible state of the search spinner
-     * @param displayed
+     * @param isSearching
+     * @param foundCount - number of matches found
      */
-    private void setSearchSpinner(boolean displayed) {
+    private void setSearchSpinner(boolean isSearching, int foundCount) {
         if(mSearchingSpinner != null) {
-            mSearchingSpinner.setVisibility(displayed ?  View.VISIBLE : View.GONE);
+            mSearchingSpinner.setVisibility(isSearching ? View.VISIBLE : View.GONE);
+
+            boolean showSearchNavigation = !isSearching && (foundCount > 0);
+            mDownSearch.setVisibility( showSearchNavigation ? View.VISIBLE : View.GONE);
+            mUpSearch.setVisibility( showSearchNavigation ? View.VISIBLE : View.GONE);
+
+            String msg = getResources().getString(mFoundTextFormat, foundCount);
+            mFoundText.setVisibility( !isSearching ? View.VISIBLE : View.GONE);
+            mFoundText.setText(msg);
         }
     }
 
@@ -706,6 +742,22 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                     ((ViewModeFragment)mFragment).filter(constraint, getFilterSubject());
                 }
              }
+        });
+    }
+
+    /**
+     * move to next/previous search item
+     * @param next if true then find next, otherwise will find previous
+     */
+    public void moveSearch(final boolean next) {
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                if((mFragment != null) && (mFragment instanceof ViewModeFragment)) {
+                    ((ViewModeFragment)mFragment).onMoveSearch(next);
+                }
+            }
         });
     }
 
@@ -1044,8 +1096,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     @Override
-    public void onSearching(boolean isSearching) {
-        setSearchSpinner(isSearching);
+    public void onSearching(boolean isSearching, int foundCount) {
+        setSearchSpinner(isSearching, foundCount);
     }
 
     @Override

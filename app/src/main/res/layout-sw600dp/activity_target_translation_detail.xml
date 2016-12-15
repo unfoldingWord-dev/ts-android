@@ -5,22 +5,26 @@
     tools:context="com.door43.translationstudio.ui.translate.TargetTranslationActivity">
 
     <LinearLayout
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <include layout="@layout/search_pane_short" />
+        <include layout="@layout/toolbar_translator_sidebar" />
 
         <LinearLayout
-            android:id="@+id/fragment_container"
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" >
+            android:layout_height="match_parent">
+
+            <include layout="@layout/search_pane" />
+
+            <LinearLayout
+                android:id="@+id/fragment_container"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
 
         </LinearLayout>
-
-        <include layout="@layout/toolbar_translator_sidebar" />
 
     </LinearLayout>
 

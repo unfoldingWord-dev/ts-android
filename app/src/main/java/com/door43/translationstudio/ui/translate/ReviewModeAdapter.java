@@ -137,6 +137,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private boolean mMergeConflictFilterEnabled = false;
     private boolean mMergeConflictFilterOn = false;
     private int mChunkSearchMatches = 0;
+    private int mSearchPosition = 0;
+    private int mSearchSubPosition = 0;
+    private int mSearchSubPositionItems = 0;
 
     @Deprecated
     public void setHelpContainers(List<ResourceContainer> helpfulContainers) {
@@ -204,7 +207,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         loadTabInfo();
 
-        filter(filterConstraint, filterSubject);
+        filter(filterConstraint, filterSubject, mSearchPosition);
 
         triggerNotifyDataSetChanged();
         updateMergeConflict();
@@ -2415,26 +2418,64 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     }
 
+    /**
+     * move to next/previous search item
+     * @param next if true then find next, otherwise will find previous
+     */
+    @Override
+    public void onMoveSearch(boolean next) {
+        Logger.i(TAG, "onMoveSearch next= " + next);
+
+        int start = Math.min(Math.max(mSearchPosition,0), mFilteredItems.size() - 1);
+        int foundPos = -1;
+
+        // TODO: 12/15/16 need to add stepping within chunk
+
+        if(next) {
+            for(int i = start + 1; i < mFilteredItems.size(); i++) {
+                ReviewListItem item = (ReviewListItem) getItem(i);
+                if(item.hasSearchText) {
+                    foundPos = i;
+                    break;
+                }
+            }
+        } else {
+            for(int i = start - 1; i >= 0; i--) {
+                ReviewListItem item = (ReviewListItem) getItem(i);
+                if(item.hasSearchText) {
+                    foundPos = i;
+                    break;
+                }
+            }
+        }
+
+        if(foundPos >= 0) {
+            Logger.i(TAG, "onMoveSearch foundPos= " + foundPos);
+            mSearchPosition = foundPos;
+            mSearchSubPosition = 0;
+            OnEventListener listener = getListener();
+            if(listener != null) {
+                listener.onSetSelectedPosition(foundPos);
+            }
+        }
+    }
+
+
     @Override
     /**
      * technically no longer a filter but now a search that flags items containing search string
      */
-    public void filter(CharSequence constraint, TranslationFilter.FilterSubject subject) {
+    public void filter(CharSequence constraint, TranslationFilter.FilterSubject subject, final int initialPosition) {
         this.filterConstraint = constraint;
         this.filterSubject = subject;
-        if(constraint == null || constraint.toString().trim().isEmpty()) {
-            mFilteredItems = mItems;
-            mFilteredChapters = mChapters;
-            return;
-        }
 
-        getListener().onSearching(true);
+        getListener().onSearching(true, 0);
 
         ManagedTask oldTask = TaskManager.getTask(TASK_STRING_SEARCH);
         TaskManager.cancelTask(oldTask);
         TaskManager.clearTask(oldTask);
 
-        final String matcher = constraint.toString().toLowerCase().trim();
+        final String matcher = (constraint == null) ? "" : constraint.toString().toLowerCase().trim();
         final TranslationFilter.FilterSubject subjectFinal = subject;
 
         ManagedTask task = new ManagedTask() {
@@ -2444,27 +2485,46 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     return;
                 }
 
+                boolean matcherEmpty = (matcher == null) || (matcher.isEmpty());
+
                 Logger.i(TAG, "Search started: " + matcher);
+
+                boolean target = subjectFinal == TranslationFilter.FilterSubject.TARGET || subjectFinal == TranslationFilter.FilterSubject.BOTH;
+                boolean source = subjectFinal == TranslationFilter.FilterSubject.SOURCE || subjectFinal == TranslationFilter.FilterSubject.BOTH;
 
                 mChunkSearchMatches = 0;
                 for (int i = 0; i < mFilteredItems.size(); i++) {
                     if(isCanceled()) {
                         return;
                     }
+
                     ReviewListItem item = (ReviewListItem) mFilteredItems.get(i);
+                    if(item == null) {
+                        return;
+                    }
 
                     boolean match = false;
-                    if(subjectFinal == TranslationFilter.FilterSubject.TARGET || subjectFinal == TranslationFilter.FilterSubject.BOTH) {
-                        match = item.targetText.toString().toLowerCase().contains(matcher) || match;
-                    }
-                    if(!match) {
-                        if (subjectFinal == TranslationFilter.FilterSubject.SOURCE || subjectFinal == TranslationFilter.FilterSubject.BOTH) {
-                            match = item.sourceText.toString().toLowerCase().contains(matcher) || match;
+
+                    if(!matcherEmpty) {
+                        if (target && (item.targetText != null)) {
+                            match = item.targetText.toString().toLowerCase().contains(matcher) || match;
                         }
+                        if (!match) {
+                            if (source && (item.sourceText != null)) {
+                                match = item.sourceText.toString().toLowerCase().contains(matcher) || match;
+                            }
+                        }
+                    }
+
+                    if(item.hasSearchText && !match) { // check for search match cleared
+                        item.renderedTargetText = null;  // re-render
+                        item.renderedSourceText = null;  // re-render
                     }
 
                     item.hasSearchText = match;
                     if(match) {
+                        item.renderedTargetText = null;  // re-render
+                        item.renderedSourceText = null;  // re-render
                         mChunkSearchMatches++;
                     }
                 }
@@ -2480,10 +2540,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     hand.post(new Runnable() {
                         @Override
                         public void run() {
-                            notifyDataSetChanged();
+                            mSearchPosition = initialPosition;
+                            mSearchSubPosition = 0;
+                            triggerNotifyDataSetChanged();
                             OnEventListener listener = getListener();
                             if(listener != null) {
-                                listener.onSearching(false);
+                                listener.onSearching(false, mChunkSearchMatches);
                             }
                         }
                     });
