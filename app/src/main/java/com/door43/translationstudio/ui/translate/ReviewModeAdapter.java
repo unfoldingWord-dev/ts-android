@@ -708,7 +708,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             if(item.refreshSearchHighlightTarget) {
                 int selectPosition = checkForSelectedSearchItem(item, position, true);
-                selectCurrentSearchItem(selectPosition, holder.mTargetEditableBody, item.renderedTargetText);
+                selectCurrentSearchItem(selectPosition, holder.mTargetBody, item.renderedTargetText);
                 item.refreshSearchHighlightTarget = false;
             }
 
@@ -845,11 +845,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             MatchResults results = null;
             if (mSearchSubPositionItems < 0) { // if we haven't counted items yet
                 results = findSearchItemInChunkAndPreselect(mLastSearchDirectionForward, item, target);
+                Logger.i(TAG, "Found search items in chunk " + position + ": " + mSearchSubPositionItems);
             } else if (mSearchSubPositionItems > 0) { // if we have counted items then find the number selected
                 results = getMatchItemN( item, mSearchText, mSearchSubPosition, target);
             }
 
             if( (results != null) && (results.foundLocation >= 0)) {
+                Logger.i(TAG, "Highlight at position: " + position + "," + results.foundLocation);
                 selectPosition = results.foundLocation;
             }
         }
@@ -1810,6 +1812,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
                 final Map<String, Object> data = (Map<String, Object>)task.getResult();
 
+                if(data == null) {
+                    return;
+                }
+
                 final List<TranslationHelp> notes = (List<TranslationHelp>)data.get("notes");
                 final List<Link> words = (List<Link>) data.get("words");
                 final List<TranslationHelp> questions = (List<TranslationHelp>)data.get("questions");
@@ -2567,6 +2573,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         } else { // not found, clear last selection
             mSearchSubPosition = -1;
+            if(forward) {
+                mSearchPosition++;
+            } else {
+                mSearchPosition--;
+            }
             ReviewListItem item = (ReviewListItem) getItem(mSearchPosition);
             if(item != null) {
                 forceSearchReRender(item);
