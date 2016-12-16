@@ -2696,18 +2696,20 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * technically no longer a filter but now a search that flags items containing search string
      */
     public void filter(CharSequence constraint, TranslationFilter.FilterSubject subject, final int initialPosition) {
-        this.mSearchText = (constraint == null) ? "" : constraint.toString().toLowerCase().trim();
-        this.filterSubject = subject;
+        mSearchText = (constraint == null) ? "" : constraint.toString().toLowerCase().trim();
+        filterSubject = subject;
 
         mSearchingTarget = subject == TranslationFilter.FilterSubject.TARGET || subject == TranslationFilter.FilterSubject.BOTH;
 
-        getListener().onSearching(true, 0);
+        if(getListener() != null) {
+            getListener().onSearching(true, 0);
+        }
 
         ManagedTask oldTask = TaskManager.getTask(TASK_STRING_SEARCH);
         TaskManager.cancelTask(oldTask);
         TaskManager.clearTask(oldTask);
 
-        final String matcher = this.mSearchText.toString();
+        final String matcher = mSearchText.toString();
         final TranslationFilter.FilterSubject subjectFinal = subject;
 
         ManagedTask task = new ManagedTask() {
@@ -2770,9 +2772,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             mSearchPosition = initialPosition;
                             mSearchSubPosition = 0;
                             triggerNotifyDataSetChanged();
-                            OnEventListener listener = getListener();
-                            if(listener != null) {
-                                listener.onSearching(false, mChunkSearchMatches);
+                            if(getListener() != null) {
+                                getListener().onSearching(false, mChunkSearchMatches);
                             }
                         }
                     });
@@ -2854,6 +2855,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             final boolean needToUpdateFilter = (doMergeFiltering != mMergeConflictFilterOn) || conflictCountChanged;
 
             Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                   filter(mSearchText, filterSubject, mSearchPosition); // update search filter
+                }
+            });
+
             hand.post(new Runnable() {
                 @Override
                 public void run() {

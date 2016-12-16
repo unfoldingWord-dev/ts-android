@@ -65,11 +65,11 @@
         android:id="@+id/found"
         android:layout_weight="0.5"
         android:visibility="visible"
-        android:textColor="@color/dark_secondary_text"
+        android:textColor="@color/dark_primary_text"
         android:textAlignment="center"
-        android:textSize="@dimen/caption"
+        android:textSize="@dimen/body"
         android:layout_gravity="center"
-        />
+        android:gravity="right" />
 
     <ImageButton
         android:layout_width="24dp"

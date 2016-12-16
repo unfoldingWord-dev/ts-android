@@ -939,5 +939,4 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="source_not_found">Source Not Found on Server</string>
     <string name="search_for_language">Search for Language</string>
     <string name="found_in_chunks">Found in <xliff:g example="6" id="found_count">%1$d</xliff:g> chunks</string>
-    <string name="found_in_chunks_short">Found <xliff:g example="6" id="found_count">%1$d</xliff:g></string>
 </resources>

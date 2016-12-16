@@ -170,12 +170,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             }
         });
 
-        mFoundTextFormat = R.string.found_in_chunks_short;
-        mFoundText = (TextView) findViewById(R.id.found_short);
-        if(mFoundText == null) {
-            mFoundText = (TextView) findViewById(R.id.found);
-            mFoundTextFormat = R.string.found_in_chunks;
-        }
+        mFoundText = (TextView) findViewById(R.id.found);
+        mFoundTextFormat = R.string.found_in_chunks;
 
         setupSidebarModeIcons();
 
