@@ -379,7 +379,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 @Override
                 public void start() {
                     setThreadPriority(Thread.MIN_PRIORITY);
-                    if(interrupted()) return;
+                    if(isCanceled()) return;
                     CharSequence text = renderSourceText(item.sourceText, item.sourceTranslationFormat, holder, item, false);
                     setResult(text);
                 }
@@ -387,7 +387,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
                 @Override
                 public void onTaskFinished(final ManagedTask task) {
-                    TaskManager.clearTask(task);
                     final CharSequence data = (CharSequence)task.getResult();
                     item.renderedSourceText = data;
                     if(!task.isCanceled() && data != null && item == holder.currentItem) {
@@ -403,8 +402,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                     selectCurrentSearchItem(position, selectPosition, holder.mSourceBody, item.renderedSourceText);
                                     holder.mSourceBody.setVisibility(View.VISIBLE);
                                 }
+                                TaskManager.clearTask(task);
                             }
                         });
+                    } else {
+                        TaskManager.clearTask(task);
                     }
                 }
             });
@@ -621,10 +623,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         };
 
         // render target body
-        ManagedTask oldtask = TaskManager.getTask(holder.currentTargetTaskId);
-        TaskManager.cancelTask(oldtask);
-        TaskManager.clearTask(oldtask);
         if(item.renderedTargetText == null) {
+            ManagedTask oldtask = TaskManager.getTask(holder.currentTargetTaskId);
+            Logger.i(TAG, "Position " + position + ": Cancelling ID: " + holder.currentTargetTaskId);
+            TaskManager.cancelTask(oldtask);
+            TaskManager.clearTask(oldtask);
+
             holder.mTargetEditableBody.setText(item.targetText);
             holder.mTargetEditableBody.setVisibility(View.INVISIBLE);
             holder.mTargetBody.setText(item.targetText);
@@ -633,7 +637,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 @Override
                 public void start() {
                     setThreadPriority(Thread.MIN_PRIORITY);
-                    if(interrupted()) return;
+                    if(isCanceled()) {
+                        Logger.e(TAG, "Position " + position + ": Render cancelled ID: " + holder.currentTargetTaskId);
+                        return;
+                    }
+                    Logger.i(TAG, "Position " + position + ": Render started ID: " + holder.currentTargetTaskId);
                     CharSequence text;
                     if(item.isComplete || item.isEditing) {
                         text = renderSourceText(item.targetText, item.targetTranslationFormat, holder, item, true);
@@ -646,7 +654,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
                 @Override
                 public void onTaskFinished(final ManagedTask task) {
-                    TaskManager.clearTask(task);
                     final CharSequence data = (CharSequence)task.getResult();
                     if(!task.isCanceled() && data != null && item == holder.currentItem) {
 
@@ -654,6 +661,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         hand.post(new Runnable() {
                             @Override
                             public void run() {
+                                Logger.i(TAG, "Position " + position + ": Render finished ID: " + holder.currentTargetTaskId);
                                 if (!task.isCanceled() && data != null && item == holder.currentItem) {
                                     item.renderedTargetText = data;
 
@@ -681,14 +689,19 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                         ViewUtil.makeLinksClickable(holder.mTargetBody);
                                     }
                                 } else {
-                                    Logger.e(TAG, "Render failed: task.isCanceled()=" + task.isCanceled() + ", (data==null)=" + (data == null) + ", (item!=holder.currentItem)=" + (item != holder.currentItem));
+                                    Logger.e(TAG, "Position " + position + ": ID: " + holder.currentTargetTaskId + ": Render failed after delay: task.isCanceled()=" + task.isCanceled() + ", (data==null)=" + (data == null) + ", (item!=holder.currentItem)=" + (item != holder.currentItem));
                                 }
+                                TaskManager.clearTask(task);
                             }
                         });
+                    } else {
+                        Logger.e(TAG, "Position " + position + ": ID: " + holder.currentTargetTaskId + ": Render failed no delay: task.isCanceled()=" + task.isCanceled() + ", (data==null)=" + (data == null) + ", (item!=holder.currentItem)=" + (item != holder.currentItem));
+                        TaskManager.clearTask(task);
                     }
                 }
             });
             holder.currentTargetTaskId = TaskManager.addTask(task);
+            Logger.i(TAG, "Position " + position + ": Starting task ID: " + holder.currentTargetTaskId);
 
         } else if(item.isEditing) {
             // editing mode
@@ -843,17 +856,17 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private int checkForSelectedSearchItem(ReviewListItem item, int position, boolean target) {
         int selectPosition = -1;
         if(item.hasSearchText && (position == mSearchPosition)) {
-            MatchResults results = null;
             if (mSearchSubPositionItems < 0) { // if we haven't counted items yet
-                results = findSearchItemInChunkAndPreselect(mLastSearchDirectionForward, item, target);
-                Logger.i(TAG, "Found search items in chunk " + position + ": " + mSearchSubPositionItems);
+                findSearchItemInChunkAndPreselect(mLastSearchDirectionForward, item, target);
+                Logger.i(TAG, "Rerendering, Found search items in chunk " + position + ": " + mSearchSubPositionItems);
             } else if (mSearchSubPositionItems > 0) { // if we have counted items then find the number selected
-                results = getMatchItemN( item, mSearchText, mSearchSubPosition, target);
-            }
-
-            if( (results != null) && (results.foundLocation >= 0)) {
-                Logger.i(TAG, "Highlight at position: " + position + "," + results.foundLocation);
-                selectPosition = results.foundLocation;
+                MatchResults results = getMatchItemN( item, mSearchText, mSearchSubPosition, target);
+                if( (results != null) && (results.foundLocation >= 0)) {
+                    Logger.i(TAG, "Highlight at position: " + position + " : " + results.foundLocation);
+                    selectPosition = results.foundLocation;
+                } else {
+                    Logger.i(TAG, "Highlight failed for position: " + position + "; chunk position: " + mSearchSubPosition + "; chunk count: " + mSearchSubPositionItems);
+                }
             }
         }
         return selectPosition;
@@ -865,7 +878,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param selectPosition
      * @param view
      */
-    private void selectCurrentSearchItem(int position, int selectPosition, TextView view, CharSequence text) {
+    private void selectCurrentSearchItem(final int position, int selectPosition, TextView view, CharSequence text) {
         if((selectPosition >= 0)  && (text != null)) {
             CharSequence selected = text.subSequence(selectPosition, selectPosition + mSearchText.length());
             SpannableStringBuilder span = new SpannableStringBuilder(selected);
@@ -879,10 +892,23 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 int lineNumberForLocation = layout.getLineForOffset(selectPosition);
                 int baseline = layout.getLineBaseline(lineNumberForLocation);
                 int ascent = layout.getLineAscent(lineNumberForLocation);
-                int offsetWithinParent = view.getTop();
-                int verticalOffset = baseline + ascent - offsetWithinParent;
+
+                final int verticalOffset = baseline + ascent;
                 Logger.i(TAG, "set position for " + selectPosition + ", scroll to y=" + verticalOffset);
-                onSetSelectedPosition(position, verticalOffset);
+
+                if(verticalOffset < 0) {
+                    Logger.i(TAG,"Negative");
+                }
+
+                Handler hand = new Handler(Looper.getMainLooper());
+                hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        onSetSelectedPosition(position, -verticalOffset);
+                    }
+                });
+            } else {
+                Logger.e(TAG, "cannot get layout for position: " + position);
             }
         }
     }
@@ -1753,7 +1779,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
                 if(getListener() == null) return;
 
-                if(interrupted()) return;
+                if(isCanceled()) return;
                 Map<String, List<String>> config = getChunkConfig(item.chapterSlug, item.chunkSlug);
 
                 if(config.containsKey("words")) {
@@ -1771,7 +1797,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     result.put("words", links);
                 }
 
-                if(interrupted()) return;
+                if(isCanceled()) return;
                 List<TranslationHelp> translationQuestions = new ArrayList<>();
                 List<Translation> questionTranslations = mLibrary.index.findTranslations(mSourceContainer.language.slug, mSourceContainer.project.slug, "tq", "help", null, 0, -1);
                 if(questionTranslations.size() > 0) {
@@ -1795,7 +1821,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     result.put("questions", translationQuestions);
                 }
 
-                if(interrupted()) return;
+                if(isCanceled()) return;
                 List<TranslationHelp> translationNotes = new ArrayList<>();
                 List<Translation> noteTranslations = mLibrary.index.findTranslations(mSourceContainer.language.slug, mSourceContainer.project.slug, "tn", "help", null, 0, -1);
                 if(noteTranslations.size() > 0) {
@@ -2309,6 +2335,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private CharSequence renderSourceText(String text, TranslationFormat format, final ViewHolder holder, final ReviewListItem item, final boolean editable) {
         RenderingGroup renderingGroup = new RenderingGroup();
         boolean enableSearch = mSearchText != null && filterSubject != null;
+        if(editable) { // if rendering of target card
+            enableSearch &= filterSubject == TranslationFilter.FilterSubject.TARGET; // make sure we are searching target
+        } else { // if rendering of source card
+            enableSearch &= filterSubject == TranslationFilter.FilterSubject.SOURCE; // make sure we are searching source
+        }
         if (Clickables.isClickableFormat(format)) {
             // TODO: add click listeners for verses
             Span.OnClickListener noteClickListener = new Span.OnClickListener() {
@@ -2529,14 +2560,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     @Override
     public void onMoveSearch(boolean forward) {
         mLastSearchDirectionForward = forward;
-        Logger.i(TAG, "onMoveSearch forward= " + forward);
+        Logger.i(TAG, "onMoveSearch position " + mSearchPosition + " forward= " + forward);
 
-        int start = Math.min(Math.max(mSearchPosition,0), mFilteredItems.size() - 1);
         int foundPos = -1;
 
         if(mSearchSubPositionItems > 0) { // try to find forward item within chunk
             ReviewListItem item = (ReviewListItem) getItem(mSearchPosition);
-            if(item != null) {
+            if((item != null) && (item.hasSearchText)) {
                 if(forward) {
                     if(++mSearchSubPosition < mSearchSubPositionItems) { // we are still inside chunk
                         forceSearchRefresh(item);
@@ -2552,6 +2582,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
 
         if(forward) {
+            int start = Math.max(mSearchPosition,-1);
             for(int i = start + 1; i < mFilteredItems.size(); i++) {
                 ReviewListItem item = (ReviewListItem) getItem(i);
                 if(item.hasSearchText) {
@@ -2560,6 +2591,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
             }
         } else { // previous
+            int start = Math.min(mSearchPosition, mFilteredItems.size());
             for(int i = start - 1; i >= 0; i--) {
                 ReviewListItem item = (ReviewListItem) getItem(i);
                 if(item.hasSearchText) {
@@ -2585,15 +2617,17 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 triggerNotifyDataSetChanged();
             }
         } else { // not found, clear last selection
+            Logger.i(TAG, "onMoveSearch at end = " + mSearchPosition);
             mSearchSubPosition = -1;
+            ReviewListItem item = (ReviewListItem) getItem(mSearchPosition);
+            if(item != null) {
+                forceSearchReRender(item);
+            }
+
             if(forward) {
                 mSearchPosition++;
             } else {
                 mSearchPosition--;
-            }
-            ReviewListItem item = (ReviewListItem) getItem(mSearchPosition);
-            if(item != null) {
-                forceSearchReRender(item);
             }
         }
     }

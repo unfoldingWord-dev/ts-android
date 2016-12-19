@@ -181,7 +181,9 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
      * @param offset - if greater than or equal to 0, then set specific offset
      */
     protected void onSetSelectedPosition(int position, int offset) {
-        mListener.onSetSelectedPosition(position, offset);
+        if(mListener != null) {
+            mListener.onSetSelectedPosition(position, offset);
+        }
     }
 
     public interface OnEventListener {
