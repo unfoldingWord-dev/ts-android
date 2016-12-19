@@ -178,9 +178,10 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
     /**
      * called to set new selected position
      * @param position
+     * @param offset - if greater than or equal to 0, then set specific offset
      */
-    protected void onSetSelectedPosition(int position) {
-        mListener.onSetSelectedPosition(position);
+    protected void onSetSelectedPosition(int position, int offset) {
+        mListener.onSetSelectedPosition(position, offset);
     }
 
     public interface OnEventListener {
@@ -197,6 +198,6 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
         void onSearching(boolean enable, int foundCount);
         void onDataSetChanged(int count);
         void onEnableMergeConflict(boolean showConflicted, boolean active);
-        void onSetSelectedPosition(int position);
+        void onSetSelectedPosition(int position, int offset);
     }
 }

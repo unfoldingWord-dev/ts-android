@@ -18,6 +18,7 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.Html;
+import android.text.Layout;
 import android.text.Selection;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -399,7 +400,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                     holder.mSourceBody.setText(item.renderedSourceText);
                                     item.refreshSearchHighlightSource = false;
                                     int selectPosition = checkForSelectedSearchItem(item, position, false);
-                                    selectCurrentSearchItem(selectPosition, holder.mSourceBody, item.renderedSourceText);
+                                    selectCurrentSearchItem(position, selectPosition, holder.mSourceBody, item.renderedSourceText);
                                     holder.mSourceBody.setVisibility(View.VISIBLE);
                                 }
                             }
@@ -414,7 +415,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             if(item.refreshSearchHighlightSource) {
                 int selectPosition = checkForSelectedSearchItem(item, position, false);
-                selectCurrentSearchItem(selectPosition, holder.mSourceBody, item.renderedSourceText);
+                selectCurrentSearchItem(position, selectPosition, holder.mSourceBody, item.renderedSourceText);
                 item.refreshSearchHighlightSource = false;
             }
         }
@@ -660,13 +661,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                     if (item.isEditing) {
                                         // edit mode
                                         holder.mTargetEditableBody.setText(item.renderedTargetText);
-                                        selectCurrentSearchItem(selectPosition, holder.mTargetEditableBody, item.renderedTargetText);
+                                        selectCurrentSearchItem(position, selectPosition, holder.mTargetEditableBody, item.renderedTargetText);
                                         holder.mTargetEditableBody.setVisibility(View.VISIBLE);
                                         holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
                                     } else {
                                         // verse marker mode
                                         holder.mTargetBody.setText(item.renderedTargetText);
-                                        selectCurrentSearchItem(selectPosition, holder.mTargetBody, item.renderedTargetText);
+                                        selectCurrentSearchItem(position, selectPosition, holder.mTargetBody, item.renderedTargetText);
                                         holder.mTargetBody.setVisibility(View.VISIBLE);
                                         holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() {
                                             @Override
@@ -696,7 +697,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             if(item.refreshSearchHighlightTarget) {
                 int selectPosition = checkForSelectedSearchItem(item, position, true);
-                selectCurrentSearchItem(selectPosition, holder.mTargetEditableBody, item.renderedTargetText);
+                selectCurrentSearchItem(position, selectPosition, holder.mTargetEditableBody, item.renderedTargetText);
                 item.refreshSearchHighlightTarget = false;
             }
 
@@ -708,7 +709,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             if(item.refreshSearchHighlightTarget) {
                 int selectPosition = checkForSelectedSearchItem(item, position, true);
-                selectCurrentSearchItem(selectPosition, holder.mTargetBody, item.renderedTargetText);
+                selectCurrentSearchItem(position, selectPosition, holder.mTargetBody, item.renderedTargetText);
                 item.refreshSearchHighlightTarget = false;
             }
 
@@ -860,10 +861,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     /**
      * highlist the current selected search text item at position
+     * @param position - list item position
      * @param selectPosition
      * @param view
      */
-    private void selectCurrentSearchItem(int selectPosition, TextView view, CharSequence text) {
+    private void selectCurrentSearchItem(int position, int selectPosition, TextView view, CharSequence text) {
         if((selectPosition >= 0)  && (text != null)) {
             CharSequence selected = text.subSequence(selectPosition, selectPosition + mSearchText.length());
             SpannableStringBuilder span = new SpannableStringBuilder(selected);
@@ -871,6 +873,17 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             CharSequence out = TextUtils.concat(text.subSequence(0, selectPosition), span, text.subSequence(selectPosition + mSearchText.length(), text.length()));
             view.setText(out);
+
+            Layout layout = view.getLayout();
+            if(layout != null) {
+                int lineNumberForLocation = layout.getLineForOffset(selectPosition);
+                int baseline = layout.getLineBaseline(lineNumberForLocation);
+                int ascent = layout.getLineAscent(lineNumberForLocation);
+                int offsetWithinParent = view.getTop();
+                int verticalOffset = baseline + ascent - offsetWithinParent;
+                Logger.i(TAG, "set position for " + selectPosition + ", scroll to y=" + verticalOffset);
+                onSetSelectedPosition(position, verticalOffset);
+            }
         }
     }
 
@@ -2563,7 +2576,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             mSearchSubPositionItems = -1;
             OnEventListener listener = getListener();
             if(listener != null) {
-                listener.onSetSelectedPosition(foundPos);
+                listener.onSetSelectedPosition(foundPos, 0); // coarse scrolling
             }
 
             ReviewListItem item = (ReviewListItem) getItem(mSearchPosition);

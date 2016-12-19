@@ -135,7 +135,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
             mAdapter.setOnClickListener(this);
 
             if(savedInstanceState == null) {
-                scrollToPosition(mAdapter.getListStartPosition());
+                doScrollToPosition(mAdapter.getListStartPosition(), 0);
             }
         }
 
@@ -183,11 +183,12 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     /**
-     * scroll panes to go to specific position
+     * scroll panes to go to specific position with vertical offset
      * @param position
+     * @param offset
      */
-    public void scrollToPosition(int position) {
-        mLayoutManager.scrollToPositionWithOffset(position, 0);
+    public void doScrollToPosition(int position, int offset) {
+        mLayoutManager.scrollToPositionWithOffset(position, offset);
         if(mListener != null) mListener.onScrollProgress(position);
     }
 
@@ -236,7 +237,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         closeKeyboard();
         int position = mAdapter.getItemPosition(chapterSlug, chunkSlug);
         if(position != -1) {
-            scrollToPosition(position);
+            doScrollToPosition(position, 0);
         }
     }
 
@@ -668,9 +669,10 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     /**
      * called to set new selected position
      * @param position
+     * @param offset - if greater than or equal to 0, then set specific offset
      */
-    public void onSetSelectedPosition(int position) {
-        scrollToPosition(position);
+    public void onSetSelectedPosition(int position, int offset) {
+        doScrollToPosition(position, offset);
     }
 
     /**
