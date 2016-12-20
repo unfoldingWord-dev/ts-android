@@ -28,6 +28,9 @@ import com.door43.widget.ViewUtil;
 import com.filippudak.ProgressPieView.ProgressPieView;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,15 +42,29 @@ import org.unfoldingword.resourcecontainer.Resource;
  */
 public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask.OnFinishedListener {
     private final Context mContext;
-    private TargetTranslation[] mTranslations;
+    private List<TargetTranslation> mTranslations;
     private OnInfoClickListener mInfoClickListener = null;
     private Map<String, Integer> mTranslationProgress = new HashMap<>();
     private List<String> mTranslationProgressCalculated = new ArrayList<>();
     private List<ViewHolder> holders = new ArrayList<>();
+    private SortProjectColumnType mSortProjectColumn = SortProjectColumnType.bibleOrder;
+    private SortByColumnType mSortByColumn = SortByColumnType.projectThenLanguage;;
+
+    private static List<String> bookList = Arrays.asList(
+            "gen" , "exo", "lev", "num", "deu", "jos", "jdg", "rut",
+            "1sa", "2sa", "1ki", "2ki", "1ch", "2ch", "ezr", "neh",
+            "est", "job", "psa", "pro", "ecc", "sng", "isa", "jer",
+            "lam", "ezk", "dan", "hos", "jol", "amo", "oba", "jon",
+            "mic", "nam", "hab", "zep", "hag", "zec", "mal",
+            "mat" , "mrk", "luk", "jhn", "act", "rom", "1co", "2co",
+            "gal", "eph", "php", "col", "1th", "2th", "1ti", "2ti",
+            "tit", "phm", "heb", "jas", "1pe", "2pe", "1jn", "2jn",
+            "3jn", "jud", "rev");
+
 
     public TargetTranslationAdapter(Context context) {
         mContext = context;
-        mTranslations = new TargetTranslation[0];
+        mTranslations = new ArrayList<>();
     }
 
     /**
@@ -61,15 +78,79 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
     @Override
     public int getCount() {
         if(mTranslations != null) {
-            return mTranslations.length;
+            return mTranslations.size();
         } else {
             return 0;
         }
     }
 
+    public void sort() {
+        sort(mSortByColumn, mSortProjectColumn);
+    }
+
+    public void sort(final SortByColumnType sortByColumn, final SortProjectColumnType sortProjectColumn) {
+        mSortByColumn = sortByColumn;
+        mSortProjectColumn = sortProjectColumn;
+        Collections.sort(mTranslations, new Comparator<TargetTranslation>() {
+            @Override
+            public int compare(TargetTranslation lhs, TargetTranslation rhs) {
+                int compare;
+                switch (sortByColumn) {
+                    case projectThenLanguage:
+                        compare = compareProject(lhs, rhs, sortProjectColumn);
+                        if(compare == 0) {
+                            compare = lhs.getTargetLanguageName().compareToIgnoreCase(rhs.getTargetLanguageName());
+                        }
+                        return compare;
+                    case languageThenProject:
+                        compare = lhs.getTargetLanguageName().compareToIgnoreCase(rhs.getTargetLanguageName());
+                        if(compare == 0) {
+                            compare = compareProject(lhs, rhs, sortProjectColumn);
+                        }
+                        return compare;
+                    case progressThenProject:
+                    default:
+                        compare = getProgress(rhs) - getProgress(lhs);
+                        if(compare == 0) {
+                            compare = compareProject(lhs, rhs, sortProjectColumn);
+                        }
+                        return compare;
+                }
+            }
+        });
+
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                notifyDataSetChanged();
+            }
+        });
+    }
+
+    /**
+     * compare projects (for use in sorting)
+     * @param lhs
+     * @param rhs
+     * @return
+     */
+    private int compareProject(TargetTranslation lhs, TargetTranslation rhs, SortProjectColumnType sortProjectColumn) {
+        if(sortProjectColumn == SortProjectColumnType.bibleOrder) {
+            int lhsIndex = bookList.indexOf(lhs.getProjectId());
+            int rhsIndex = bookList.indexOf(rhs.getProjectId());
+            if((lhsIndex == rhsIndex) && (lhsIndex < 0)) { // if not bible books, then compare by name
+                return getProjectName(lhs).compareToIgnoreCase(getProjectName(rhs));
+            }
+            return lhsIndex - rhsIndex;
+        }
+
+        // compare project names
+        return getProjectName(lhs).compareToIgnoreCase(getProjectName(rhs));
+    }
+
     @Override
     public TargetTranslation getItem(int position) {
-        return mTranslations[position];
+        return mTranslations.get(position);
     }
 
     @Override
@@ -110,21 +191,11 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
                 TaskManager.groupTask(progressTask, "calc-translation-progress");
             }
         } else {
-            holder.setProgress(mTranslationProgress.get(targetTranslation.getId()));
+            holder.setProgress(getProgress(targetTranslation));
         }
 
         // render view
-        Project project = library.index().getProject(App.getDeviceLanguageCode(), targetTranslation.getProjectId(), true);
-        if(project != null) {
-            if(!targetTranslation.getResourceSlug().equals(Resource.REGULAR_SLUG) && !targetTranslation.getResourceSlug().equals("obs")) {
-                // display the resource type if not a regular resource e.g. this is for a gateway language
-                holder.mTitleView.setText(project.name + " (" + targetTranslation.getResourceSlug() + ")");
-            } else {
-                holder.mTitleView.setText(project.name);
-            }
-        } else {
-            holder.mTitleView.setText(targetTranslation.getProjectId());
-        }
+        holder.mTitleView.setText(getProjectName(targetTranslation));
         holder.mLanguageView.setText(targetTranslation.getTargetLanguageName());
 
         // TODO: finish rendering project icon
@@ -139,11 +210,44 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
         return v;
     }
 
+    /**
+     * get the project name
+     * @param targetTranslation
+     * @return
+     */
+    private String getProjectName(TargetTranslation targetTranslation) {
+        String projectName = "";
+        Project project = App.getLibrary().index().getProject(App.getDeviceLanguageCode(), targetTranslation.getProjectId(), true);
+        if(project != null) {
+            if(!targetTranslation.getResourceSlug().equals(Resource.REGULAR_SLUG) && !targetTranslation.getResourceSlug().equals("obs")) {
+                // display the resource type if not a regular resource e.g. this is for a gateway language
+                projectName = project.name + " (" + targetTranslation.getResourceSlug() + ")";
+            } else {
+                projectName = project.name;
+            }
+        } else {
+            projectName = targetTranslation.getProjectId();
+        }
+        return projectName;
+    }
+
+    /**
+     * get calculated project
+     * @param targetTranslation
+     * @return
+     */
+    private Integer getProgress(TargetTranslation targetTranslation) {
+        if(mTranslationProgressCalculated.contains(targetTranslation.getId())) {
+            return mTranslationProgress.get(targetTranslation.getId());
+        }
+        return -1;
+    }
+
     public void changeData(TargetTranslation[] targetTranslations) {
-        mTranslations = targetTranslations;
+        mTranslations = Arrays.asList(targetTranslations);
         mTranslationProgress = new HashMap<>();
         mTranslationProgressCalculated = new ArrayList<>();
-        notifyDataSetChanged();
+        sort();
     }
 
     @Override
@@ -162,7 +266,7 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
             hand.post(new Runnable() {
                 @Override
                 public void run() {
-                    notifyDataSetChanged();
+                    sort();
                 }
             });
         }
@@ -194,6 +298,62 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
         public void setProgress(int progress) {
             mProgressView.setProgress(progress);
             mProgressView.setVisibility(View.VISIBLE);
+        }
+    }
+
+
+    /**
+     * enum that keeps track of current state of USFM import
+     */
+    public enum SortByColumnType {
+        projectThenLanguage(0),
+        languageThenProject(1),
+        progressThenProject(2);
+
+        private int _value;
+
+        SortByColumnType(int Value) {
+            this._value = Value;
+        }
+
+        public int getValue() {
+            return _value;
+        }
+
+        public static SortByColumnType fromInt(int i) {
+            for (SortByColumnType b : SortByColumnType.values()) {
+                if (b.getValue() == i) {
+                    return b;
+                }
+            }
+            return null;
+        }
+    }
+
+    /**
+     * enum that keeps track of current state of USFM import
+     */
+    public enum SortProjectColumnType {
+        bibleOrder(0),
+        alphabetical(1);
+
+        private int _value;
+
+        SortProjectColumnType(int Value) {
+            this._value = Value;
+        }
+
+        public int getValue() {
+            return _value;
+        }
+
+        public static SortProjectColumnType fromInt(int i) {
+            for (SortProjectColumnType b : SortProjectColumnType.values()) {
+                if (b.getValue() == i) {
+                    return b;
+                }
+            }
+            return null;
         }
     }
 }
