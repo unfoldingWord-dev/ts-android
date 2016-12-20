@@ -872,10 +872,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 if( (results != null) && (results.foundLocation >= 0)) {
                     Logger.i(TAG, "Highlight at position: " + position + " : " + results.foundLocation);
                     selectPosition = results.foundLocation;
-                    checkIfAtSearchLimits();
                 } else {
                     Logger.i(TAG, "Highlight failed for position: " + position + "; chunk position: " + mSearchSubPosition + "; chunk count: " + mSearchSubPositionItems);
                 }
+                checkIfAtSearchLimits();
             }
         }
         return selectPosition;
