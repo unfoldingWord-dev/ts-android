@@ -197,7 +197,7 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
         void onCheckingQuestionClick(TranslationHelp question, int width);
         void scrollToChunk(String chapterSlug, String frameSlug);
         void restartAutoCommitTimer();
-        void onSearching(boolean enable, int foundCount);
+        void onSearching(boolean enable, int foundCount, boolean atEnd, boolean atStart);
         void onDataSetChanged(int count);
         void onEnableMergeConflict(boolean showConflicted, boolean active);
         void onSetSelectedPosition(int position, int offset);

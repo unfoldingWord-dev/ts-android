@@ -105,7 +105,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private static final int TAB_WORDS = 1;
     private static final int TAB_QUESTIONS = 2;
     public static final int HIGHLIGHT_COLOR = Color.YELLOW;
-    public static final String TASK_STRING_SEARCH = "task_string_search";
+    public static final int CURRENT_SEARCH_ITEM_COLOR = Color.CYAN;
     private final Door43Client mLibrary;
     private static final int VIEW_TYPE_NORMAL = 0;
     private static final int VIEW_TYPE_CONFLICT = 1;
@@ -138,13 +138,16 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private boolean mHaveMergeConflict = false;
     private boolean mMergeConflictFilterEnabled = false;
     private boolean mMergeConflictFilterOn = false;
-    private int mChunkSearchMatches = 0;
+    private int mChunkSearchMatchesCounter = 0;
     private int mSearchPosition = 0;
     private int mSearchSubPosition = 0;
     private int mSearchSubPositionItems = 0;
     private boolean mSearchingTarget = true;
     private boolean mLastSearchDirectionForward = true;
-
+    private int mNumberOfChunkMatches = -1;
+    private boolean mAtSearchEnd = true;
+    private boolean mAtSearchStart = true;
+    private int mStringSearchTaskID = -1;
 
     @Deprecated
     public void setHelpContainers(List<ResourceContainer> helpfulContainers) {
@@ -369,7 +372,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     private void renderSourceCard(final int position, final ReviewListItem item, final ViewHolder holder) {
-        ManagedTask oldTask = TaskManager.getTask(holder.currentSourceTaskId);
+        ManagedTask oldTask = TaskManager.getTask(item.currentSourceTaskId);
         TaskManager.cancelTask(oldTask);
         TaskManager.clearTask(oldTask);
         if(item.renderedSourceText == null) {
@@ -387,6 +390,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
                 @Override
                 public void onTaskFinished(final ManagedTask task) {
+                    TaskManager.clearTask(task);
                     final CharSequence data = (CharSequence)task.getResult();
                     item.renderedSourceText = data;
                     if(!task.isCanceled() && data != null && item == holder.currentItem) {
@@ -402,15 +406,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                     selectCurrentSearchItem(position, selectPosition, holder.mSourceBody, item.renderedSourceText);
                                     holder.mSourceBody.setVisibility(View.VISIBLE);
                                 }
-                                TaskManager.clearTask(task);
                             }
                         });
-                    } else {
-                        TaskManager.clearTask(task);
                     }
                 }
             });
-            holder.currentSourceTaskId = TaskManager.addTask(task);
+            item.currentSourceTaskId = TaskManager.addTask(task);
         } else {
             holder.mSourceBody.setText(item.renderedSourceText);
             holder.mSourceBody.setVisibility(View.VISIBLE);
@@ -623,12 +624,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         };
 
         // render target body
+        ManagedTask oldtask = TaskManager.getTask(item.currentTargetTaskId);
+        Logger.i(TAG, "Position " + position + ": Cancelling ID: " + item.currentTargetTaskId);
+        TaskManager.cancelTask(oldtask);
+        TaskManager.clearTask(oldtask);
         if(item.renderedTargetText == null) {
-            ManagedTask oldtask = TaskManager.getTask(holder.currentTargetTaskId);
-            Logger.i(TAG, "Position " + position + ": Cancelling ID: " + holder.currentTargetTaskId);
-            TaskManager.cancelTask(oldtask);
-            TaskManager.clearTask(oldtask);
-
             holder.mTargetEditableBody.setText(item.targetText);
             holder.mTargetEditableBody.setVisibility(View.INVISIBLE);
             holder.mTargetBody.setText(item.targetText);
@@ -638,10 +638,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 public void start() {
                     setThreadPriority(Thread.MIN_PRIORITY);
                     if(isCanceled()) {
-                        Logger.e(TAG, "Position " + position + ": Render cancelled ID: " + holder.currentTargetTaskId);
+                        Logger.e(TAG, "Position " + position + ": Render cancelled ID: " + item.currentTargetTaskId);
                         return;
                     }
-                    Logger.i(TAG, "Position " + position + ": Render started ID: " + holder.currentTargetTaskId);
+                    Logger.i(TAG, "Position " + position + ": Render started ID: " + item.currentTargetTaskId);
                     CharSequence text;
                     if(item.isComplete || item.isEditing) {
                         text = renderSourceText(item.targetText, item.targetTranslationFormat, holder, item, true);
@@ -654,6 +654,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
                 @Override
                 public void onTaskFinished(final ManagedTask task) {
+                    TaskManager.clearTask(task);
                     final CharSequence data = (CharSequence)task.getResult();
                     if(!task.isCanceled() && data != null && item == holder.currentItem) {
 
@@ -661,7 +662,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         hand.post(new Runnable() {
                             @Override
                             public void run() {
-                                Logger.i(TAG, "Position " + position + ": Render finished ID: " + holder.currentTargetTaskId);
+                                Logger.i(TAG, "Position " + position + ": Render finished ID: " + item.currentTargetTaskId);
                                 if (!task.isCanceled() && data != null && item == holder.currentItem) {
                                     item.renderedTargetText = data;
 
@@ -689,19 +690,26 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                         ViewUtil.makeLinksClickable(holder.mTargetBody);
                                     }
                                 } else {
-                                    Logger.e(TAG, "Position " + position + ": ID: " + holder.currentTargetTaskId + ": Render failed after delay: task.isCanceled()=" + task.isCanceled() + ", (data==null)=" + (data == null) + ", (item!=holder.currentItem)=" + (item != holder.currentItem));
+                                    Logger.e(TAG, "Position " + position + ": ID: " + item.currentTargetTaskId + ": Render failed after delay: task.isCanceled()=" + task.isCanceled() + ", (data==null)=" + (data == null) + ", (item!=holder.currentItem)=" + (item != holder.currentItem));
                                 }
-                                TaskManager.clearTask(task);
                             }
                         });
-                    } else {
-                        Logger.e(TAG, "Position " + position + ": ID: " + holder.currentTargetTaskId + ": Render failed no delay: task.isCanceled()=" + task.isCanceled() + ", (data==null)=" + (data == null) + ", (item!=holder.currentItem)=" + (item != holder.currentItem));
-                        TaskManager.clearTask(task);
                     }
                 }
             });
-            holder.currentTargetTaskId = TaskManager.addTask(task);
-            Logger.i(TAG, "Position " + position + ": Starting task ID: " + holder.currentTargetTaskId);
+            item.currentTargetTaskId = TaskManager.addTask(task);
+            Logger.i(TAG, "Position " + position + ": Adding task ID: " + item.currentTargetTaskId);
+
+            ManagedTask verifiedTask = TaskManager.getTask(item.currentTargetTaskId); // verify task in queue
+            if((verifiedTask == null) || (verifiedTask != task) || (verifiedTask.interrupted())) {
+                if(verifiedTask == null) {
+                    Logger.e(TAG, "Position " + position + ": Add task failed, verify task null,  ID: " + item.currentTargetTaskId);
+                } else {
+                    Logger.e(TAG, "Position " + position + ": Add task failed ID: " + item.currentTargetTaskId + ": (verifiedTask != task)=" + (verifiedTask != task) + ", verifiedTask.interrupted()=" + verifiedTask.interrupted());
+                }
+
+                Logger.e(TAG, "Position " + position + ": Add task failed ID: " + item.currentTargetTaskId);
+            }
 
         } else if(item.isEditing) {
             // editing mode
@@ -864,6 +872,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 if( (results != null) && (results.foundLocation >= 0)) {
                     Logger.i(TAG, "Highlight at position: " + position + " : " + results.foundLocation);
                     selectPosition = results.foundLocation;
+                    checkIfAtSearchLimits();
                 } else {
                     Logger.i(TAG, "Highlight failed for position: " + position + "; chunk position: " + mSearchSubPosition + "; chunk count: " + mSearchSubPositionItems);
                 }
@@ -882,7 +891,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         if((selectPosition >= 0)  && (text != null)) {
             CharSequence selected = text.subSequence(selectPosition, selectPosition + mSearchText.length());
             SpannableStringBuilder span = new SpannableStringBuilder(selected);
-            span.setSpan(new BackgroundColorSpan(Color.CYAN), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            span.setSpan(new BackgroundColorSpan(CURRENT_SEARCH_ITEM_COLOR), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
             CharSequence out = TextUtils.concat(text.subSequence(0, selectPosition), span, text.subSequence(selectPosition + mSearchText.length(), text.length()));
             view.setText(out);
@@ -895,10 +904,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
                 final int verticalOffset = baseline + ascent;
                 Logger.i(TAG, "set position for " + selectPosition + ", scroll to y=" + verticalOffset);
-
-                if(verticalOffset < 0) {
-                    Logger.i(TAG,"Negative");
-                }
 
                 Handler hand = new Handler(Looper.getMainLooper());
                 hand.post(new Runnable() {
@@ -1762,7 +1767,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         renderResources(holder, position, new ArrayList<TranslationHelp>(), new ArrayList<Link>(){}, new ArrayList<TranslationHelp>());
 
         // prepare task to load resources
-        ManagedTask oldTask = TaskManager.getTask(holder.currentResourceTaskId);
+        ManagedTask oldTask = TaskManager.getTask(item.currentResourceTaskId);
         TaskManager.cancelTask(oldTask);
         TaskManager.clearTask(oldTask);
         // TODO: 10/19/16 check for cached links
@@ -1942,7 +1947,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 });
             }
         });
-        holder.currentResourceTaskId = TaskManager.addTask(task);
+        item.currentResourceTaskId = TaskManager.addTask(task);
 
         // tap to open resources
         if(!mResourcesOpened) {
@@ -2335,9 +2340,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private CharSequence renderSourceText(String text, TranslationFormat format, final ViewHolder holder, final ReviewListItem item, final boolean editable) {
         RenderingGroup renderingGroup = new RenderingGroup();
         boolean enableSearch = mSearchText != null && filterSubject != null;
-        if(editable) { // if rendering of target card
+        if(editable) { // if rendering for target card
             enableSearch &= filterSubject == TranslationFilter.FilterSubject.TARGET; // make sure we are searching target
-        } else { // if rendering of source card
+        } else { // if rendering for source card
             enableSearch &= filterSubject == TranslationFilter.FilterSubject.SOURCE; // make sure we are searching source
         }
         if (Clickables.isClickableFormat(format)) {
@@ -2474,15 +2479,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public final TabLayout mTranslationTabs;
         public final ImageButton mNewTabButton;
         public TextView mSourceBody;
-        public int currentResourceTaskId = -1;
-        public int currentSourceTaskId = -1;
         public List<TextView> mMergeText;
         public final LinearLayout mMergeConflictLayout;
         public final TextView mConflictText;
         public final LinearLayout mButtonBar;
         public final Button mCancelButton;
         public final Button mConfirmButton;
-        public int currentTargetTaskId = -1;
 
         public ViewHolder(Context context, View v) {
             super(v);
@@ -2535,12 +2537,18 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public int selectItemNum = -1;
         public boolean refreshSearchHighlightSource = false;
         public boolean refreshSearchHighlightTarget = false;
+        public int currentTargetTaskId = -1;
+        public int currentResourceTaskId = -1;
+        public int currentSourceTaskId = -1;
 
         public ReviewListItem(String chapterSlug, String chunkSlug) {
             super(chapterSlug, chunkSlug);
         }
     }
 
+    /**
+     * for returning multiple values in the text search results
+     */
     private static class MatchResults {
         final private int foundLocation;
         final private int numberFound;
@@ -2554,33 +2562,122 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     * move to next (forward/previous) search item
-     * @param forward if true then find next instance, otherwise will find previous
+     * move to next (forward/previous) search item. If current position has matches, then it will first try to move to the next item within the chunk.  Otherwise it will find the next chunk with text.
+     * @param forward if true then find next instance (moving down the page), otherwise will find previous (moving up the page)
      */
     @Override
     public void onMoveSearch(boolean forward) {
         mLastSearchDirectionForward = forward;
         Logger.i(TAG, "onMoveSearch position " + mSearchPosition + " forward= " + forward);
 
-        int foundPos = -1;
-
         if(mSearchSubPositionItems > 0) { // try to find forward item within chunk
-            ReviewListItem item = (ReviewListItem) getItem(mSearchPosition);
-            if((item != null) && (item.hasSearchText)) {
-                if(forward) {
-                    if(++mSearchSubPosition < mSearchSubPositionItems) { // we are still inside chunk
-                        forceSearchRefresh(item);
-                        return;
-                    }
-                } else { // previous
-                    if(--mSearchSubPosition >= 0) { // we are still inside chunk
-                        forceSearchRefresh(item);
-                        return;
-                    }
-                }
+            if(isNextSearchHighlightPositionWithinChunk(forward, true)) { // move to next item and check
+                forceSearchRefresh();
+                checkIfAtSearchLimits();
+                return;
             }
         }
 
+        int foundPos = findNextMatchChunk(forward);
+        if(foundPos >= 0) {
+            Logger.i(TAG, "onMoveSearch foundPos= " + foundPos);
+            mSearchPosition = foundPos;
+            mSearchSubPosition = 0;
+            mSearchSubPositionItems = -1;
+            if(getListener() != null) {
+                getListener().onSetSelectedPosition(foundPos, 0); // coarse scrolling
+            }
+            onSearching(false, mNumberOfChunkMatches, false, false);
+
+            ReviewListItem item = (ReviewListItem) getItem(mSearchPosition);
+            if(item != null) {
+                findSearchItemInChunkAndPreselect(forward, item, mSearchingTarget);
+                triggerNotifyDataSetChanged();
+            }
+        } else { // not found, clear last selection
+            Logger.i(TAG, "onMoveSearch at end = " + mSearchPosition);
+            mSearchSubPosition = -1;
+            ReviewListItem item = (ReviewListItem) getItem(mSearchPosition);
+            if(item != null) {
+                forceSearchReRender(item);
+            }
+
+            showAtLimit(forward);
+            if(forward) {
+                mSearchPosition++;
+            } else {
+                mSearchPosition--;
+            }
+        }
+    }
+
+    /**
+     * check if current highlight is at either limit (forward or back)
+     */
+    private void checkIfAtSearchLimits() {
+        checkIfAtSearchLimit(true);
+        checkIfAtSearchLimit(false);
+    }
+
+    /**
+     * check if current highlight is at limit
+     * @param forward
+     */
+    private void checkIfAtSearchLimit(boolean forward) {
+        if(!isNextSearchHighlightPositionWithinChunk(forward, false)) { // would next item be inside chunk?
+            int nextPos = findNextMatchChunk(forward);
+            if(nextPos < 0) {
+                showAtLimit(forward);
+            }
+        }
+    }
+
+    /**
+     * indicate that we are at limit
+     * @param forward
+     */
+    private void showAtLimit(boolean forward) {
+        if(forward) {
+            onSearching(false, mNumberOfChunkMatches, true, mAtSearchStart);
+        } else {
+            onSearching(false, mNumberOfChunkMatches, mAtSearchEnd, true);
+        }
+    }
+
+    /**
+     * check to see if next highlight position is in current chunk.  Optionally update current position to next.
+     * @param forward
+     * @param updatePosition
+     * @return
+     */
+    private boolean isNextSearchHighlightPositionWithinChunk(boolean forward, boolean updatePosition) {
+        boolean withinChunk = false;
+        int currentPos = mSearchSubPosition;
+        ReviewListItem item = (ReviewListItem) getItem(mSearchPosition);
+        if ((item != null) && (item.hasSearchText)) {
+            if (forward) {
+                if (++currentPos < mSearchSubPositionItems) { // we are still inside chunk
+                    withinChunk = true;
+                }
+            } else { // previous
+                if (--currentPos >= 0) { // we are still inside chunk
+                    withinChunk = true;
+                }
+            }
+        }
+        if(updatePosition) {
+            mSearchSubPosition = currentPos;
+        }
+        return withinChunk;
+    }
+
+    /**
+     * get next match item
+     * @param forward
+     * @return
+     */
+    private int findNextMatchChunk(boolean forward) {
+        int foundPos = -1;
         if(forward) {
             int start = Math.max(mSearchPosition,-1);
             for(int i = start + 1; i < mFilteredItems.size(); i++) {
@@ -2600,40 +2697,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 }
             }
         }
-
-        if(foundPos >= 0) {
-            Logger.i(TAG, "onMoveSearch foundPos= " + foundPos);
-            mSearchPosition = foundPos;
-            mSearchSubPosition = 0;
-            mSearchSubPositionItems = -1;
-            OnEventListener listener = getListener();
-            if(listener != null) {
-                listener.onSetSelectedPosition(foundPos, 0); // coarse scrolling
-            }
-
-            ReviewListItem item = (ReviewListItem) getItem(mSearchPosition);
-            if(item != null) {
-                findSearchItemInChunkAndPreselect(forward, item, mSearchingTarget);
-                triggerNotifyDataSetChanged();
-            }
-        } else { // not found, clear last selection
-            Logger.i(TAG, "onMoveSearch at end = " + mSearchPosition);
-            mSearchSubPosition = -1;
-            ReviewListItem item = (ReviewListItem) getItem(mSearchPosition);
-            if(item != null) {
-                forceSearchReRender(item);
-            }
-
-            if(forward) {
-                mSearchPosition++;
-            } else {
-                mSearchPosition--;
-            }
-        }
+        return foundPos;
     }
 
     /**
-     * gets number of string matches within chunk and selects next item
+     * gets the number of string matches within chunk and selects next item if going forward, or the last item if going backward
      * @param forward
      * @param item
      * @param target - if true searching target card
@@ -2642,31 +2710,37 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         MatchResults results = getMatchItemN( item, mSearchText, 1000, target); // get item count
         mSearchSubPositionItems = results.numberFound;
         mSearchSubPosition = forward ? 0 : (mSearchSubPositionItems - 1);
-        boolean success = !results.needRender;
-        if(!success) {
-            mSearchSubPositionItems = -1; // this will flag to get count after render
+        if(results.needRender) {
+            mSearchSubPositionItems = -1; // this will flag to get count after render completes
         } else {
+            if(results.numberFound <= 0) {
+                item.hasSearchText = false;
+            }
             forceSearchReRender(item);
+            checkIfAtSearchLimits();
         }
         item.selectItemNum = mSearchSubPosition;
         return results;
     }
 
     /**
-     * cause highlighted search to be refreshed
-     * @param item
+     * cause highlighted search to be refreshed (not re-rendered) to show next item
      */
-    private void forceSearchRefresh(ReviewListItem item) {
-        if (mSearchingTarget) {
-            item.refreshSearchHighlightTarget = true;
-        } else {
-            item.refreshSearchHighlightSource = true;
+    private void forceSearchRefresh() {
+        ReviewListItem item = (ReviewListItem) getItem(mSearchPosition);
+        if((item != null) && (item.hasSearchText)) {
+            if (mSearchingTarget) {
+                item.refreshSearchHighlightTarget = true;
+            } else {
+                item.refreshSearchHighlightSource = true;
+            }
+            onSearching(false, mNumberOfChunkMatches, false, false);
+            triggerNotifyDataSetChanged();
         }
-        triggerNotifyDataSetChanged();
     }
 
     /**
-     * cause search to be redrawn
+     * cause search to be re-rendered to highlight search items
      * @param item
      */
     private void forceSearchReRender(ReviewListItem item) {
@@ -2681,20 +2755,22 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     /**
-     * search chunk to find the nth match string
+     * search text to find the nth item (matchNumb) of the search string
      * @param item
      * @param match
-     * @param matchNumb
+     * @param matchNumb - number of item to locate (0 based)
      * @param target - if true searching target card
-     * @return
+     * @return object containing position of match (-1 if not found), number of items actually found (if less), and a flag that indicates that text needs to be rendered
      */
     private MatchResults getMatchItemN(ReviewListItem item, CharSequence match, int matchNumb, boolean target) {
-        boolean needRender = false;
         String matcher = match.toString();
         int length = matcher.length();
 
+        CharSequence text = mSearchingTarget ? item.renderedTargetText : item.renderedSourceText;
+        boolean needRender = (text == null);
+
         boolean matcherEmpty = (matcher.length() == 0);
-        if(matcherEmpty || (item == null) || (matchNumb < 0)
+        if(matcherEmpty || needRender || (matchNumb < 0)
                 || (target != mSearchingTarget)) {
             return new MatchResults(-1, -1, needRender);
         }
@@ -2704,38 +2780,21 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         int searchStartLocation = 0;
         int count = 0;
         int pos = -1;
+        String textLowerCase = text.toString().toLowerCase();
 
         while (count <= matchNumb) {
-            pos = -1;
-
-            if (mSearchingTarget) {
-                if (item.renderedTargetText != null) {
-                    pos = item.renderedTargetText.toString().toLowerCase().indexOf(matcher, searchStartLocation);
-                } else {
-                    needRender = true;
-                    break;
-                }
-            }
-            if (!mSearchingTarget) {
-                if(item.renderedSourceText != null) {
-                    pos = item.renderedSourceText.toString().toLowerCase().indexOf(matcher, searchStartLocation);
-                } else {
-                    needRender = true;
-                    break;
-                }
-            }
-
-            if(pos >= 0) {
-                searchStartLocation = pos + length;
-                if(++count > matchNumb) {
-                    return new MatchResults(pos, count, needRender);
-                }
-            } else {
+            pos = textLowerCase.indexOf(matcher, searchStartLocation);
+            if(pos < 0) { // not found
                 break;
+            }
+
+            searchStartLocation = pos + length;
+            if(++count > matchNumb) {
+                return new MatchResults(pos, count, needRender);
             }
         }
 
-        return new MatchResults(-1, count, needRender);
+        return new MatchResults(-1, count, needRender); // failed, return number of items actually found
     }
 
     @Override
@@ -2747,12 +2806,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         filterSubject = subject;
 
         mSearchingTarget = subject == TranslationFilter.FilterSubject.TARGET || subject == TranslationFilter.FilterSubject.BOTH;
+        onSearching(true, 0, true, true);
 
-        if(getListener() != null) {
-            getListener().onSearching(true, 0);
-        }
-
-        ManagedTask oldTask = TaskManager.getTask(TASK_STRING_SEARCH);
+        ManagedTask oldTask = TaskManager.getTask(mStringSearchTaskID);
         TaskManager.cancelTask(oldTask);
         TaskManager.clearTask(oldTask);
 
@@ -2770,7 +2826,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
                 Logger.i(TAG, "Search started: " + matcher);
 
-                mChunkSearchMatches = 0;
+                mChunkSearchMatchesCounter = 0;
                 for (int i = 0; i < mFilteredItems.size(); i++) {
                     if(isCanceled()) {
                         return;
@@ -2793,15 +2849,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     }
 
                     if(item.hasSearchText && !match) { // check for search match cleared
-                        item.renderedTargetText = null;  // re-render
-                        item.renderedSourceText = null;  // re-render
+                        item.renderedTargetText = null;  // re-render target
+                        item.renderedSourceText = null;  // re-render source
                     }
 
                     item.hasSearchText = match;
                     if(match) {
-                        item.renderedTargetText = null;  // re-render
-                        item.renderedSourceText = null;  // re-render
-                        mChunkSearchMatches++;
+                        item.renderedTargetText = null;  // re-render target
+                        item.renderedSourceText = null;  // re-render source
+                        mChunkSearchMatchesCounter++;
                     }
                 }
             }
@@ -2810,7 +2866,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             @Override
             public void onTaskFinished(final ManagedTask task) {
                 if(!task.isCanceled()) {
-                    Logger.i(TAG, "Search finished: '" + matcher + "', count: " + mChunkSearchMatches);
+                    Logger.i(TAG, "Search finished: '" + matcher + "', count: " + mChunkSearchMatchesCounter);
 
                     Handler hand = new Handler(Looper.getMainLooper());
                     hand.post(new Runnable() {
@@ -2819,17 +2875,36 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             mSearchPosition = initialPosition;
                             mSearchSubPosition = 0;
                             triggerNotifyDataSetChanged();
-                            if(getListener() != null) {
-                                getListener().onSearching(false, mChunkSearchMatches);
+                            boolean zeroItemsFound = ReviewModeAdapter.this.mChunkSearchMatchesCounter <= 0;
+                            onSearching(false, ReviewModeAdapter.this.mChunkSearchMatchesCounter, zeroItemsFound, zeroItemsFound);
+                            if(!zeroItemsFound) {
+                                checkIfAtSearchLimits();
                             }
                         }
                     });
                 } else {
                     Logger.i(TAG, "Search cancelled: '" + matcher + "'");
+                    onSearching(false, 0, true, true);
                 }
             }
         });
-        TaskManager.addTask(task, TASK_STRING_SEARCH);
+        mStringSearchTaskID = TaskManager.addTask(task);
+    }
+
+    /**
+     * notify listener of search state changes
+     * @param doingSearch - search is currently processing
+     * @param numberOfChunkMatches - number of chunks that have the search string
+     * @param atEnd - we are at last search item highlighted
+     * @param atStart - we are at first search item highlighted
+     */
+    private void onSearching(boolean doingSearch, int numberOfChunkMatches, boolean atEnd, boolean atStart) {
+        if(getListener() != null) {
+            getListener().onSearching(doingSearch, numberOfChunkMatches, atEnd, atStart);
+            this.mNumberOfChunkMatches = numberOfChunkMatches;
+            this.mAtSearchEnd = atEnd;
+            this.mAtSearchStart = atStart;
+        }
     }
 
     @Override

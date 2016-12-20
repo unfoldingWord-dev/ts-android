@@ -524,7 +524,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             if(show) {
                 visibility = View.VISIBLE;
             } else {
-                setSearchSpinner(false, 0);
+                setSearchSpinner(false, 0, true, true);
             }
 
             searchPane.setVisibility(visibility);
@@ -631,20 +631,23 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     /**
-     * sets the visible state of the search spinner
-     * @param isSearching
-     * @param foundCount - number of matches found
+     * notify listener of search state changes
+     * @param doingSearch - search is currently processing
+     * @param numberOfChunkMatches - number of chunks that have the search string
+     * @param atEnd - we are at last search item highlighted
+     * @param atStart - we are at first search item highlighted
      */
-    private void setSearchSpinner(boolean isSearching, int foundCount) {
+    private void setSearchSpinner(boolean doingSearch, int numberOfChunkMatches, boolean atEnd, boolean atStart) {
         if(mSearchingSpinner != null) {
-            mSearchingSpinner.setVisibility(isSearching ? View.VISIBLE : View.GONE);
+            mSearchingSpinner.setVisibility(doingSearch ? View.VISIBLE : View.GONE);
 
-            boolean showSearchNavigation = !isSearching && (foundCount > 0);
-            mDownSearch.setVisibility( showSearchNavigation ? View.VISIBLE : View.GONE);
-            mUpSearch.setVisibility( showSearchNavigation ? View.VISIBLE : View.GONE);
+            boolean showSearchNavigation = !doingSearch && (numberOfChunkMatches > 0);
+            int searchVisibility = showSearchNavigation ? View.VISIBLE : View.INVISIBLE;
+            mDownSearch.setVisibility(atEnd ? View.INVISIBLE : searchVisibility);
+            mUpSearch.setVisibility(atStart ? View.INVISIBLE : searchVisibility);
 
-            String msg = getResources().getString(mFoundTextFormat, foundCount);
-            mFoundText.setVisibility( !isSearching ? View.VISIBLE : View.GONE);
+            String msg = getResources().getString(mFoundTextFormat, numberOfChunkMatches);
+            mFoundText.setVisibility( !doingSearch ? View.VISIBLE : View.INVISIBLE);
             mFoundText.setText(msg);
         }
     }
@@ -1091,9 +1094,16 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         }, COMMIT_INTERVAL, COMMIT_INTERVAL);
     }
 
+    /**
+     * notify listener of search state changes
+     * @param doingSearch - search is currently processing
+     * @param numberOfChunkMatches - number of chunks that have the search string
+     * @param atEnd - we are at last search item highlighted
+     * @param atStart - we are at first search item highlighted
+     */
     @Override
-    public void onSearching(boolean isSearching, int foundCount) {
-        setSearchSpinner(isSearching, foundCount);
+    public void onSearching(boolean doingSearch, int numberOfChunkMatches, boolean atEnd, boolean atStart) {
+        setSearchSpinner(doingSearch, numberOfChunkMatches, atEnd, atStart);
     }
 
     @Override
