@@ -27,6 +27,7 @@ import android.text.TextWatcher;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.DragEvent;
 import android.view.GestureDetector;
@@ -199,7 +200,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     }
                 }
             } else {
-                Logger.w("ReviewModeAdapter", "Expected a List for the TOC but found something else in " + mSourceContainer.slug);
+                Logger.w(TAG, "Expected a List for the TOC but found something else in " + mSourceContainer.slug);
 
             }
         }
@@ -625,7 +626,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         // render target body
         ManagedTask oldtask = TaskManager.getTask(item.currentTargetTaskId);
-        Logger.i(TAG, "Position " + position + ": Cancelling ID: " + item.currentTargetTaskId);
+        Log.i(TAG, "renderTargetCard(): Position " + position + ": Cancelling ID: " + item.currentTargetTaskId);
         TaskManager.cancelTask(oldtask);
         TaskManager.clearTask(oldtask);
         if(item.renderedTargetText == null) {
@@ -638,10 +639,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 public void start() {
                     setThreadPriority(Thread.MIN_PRIORITY);
                     if(isCanceled()) {
-                        Logger.e(TAG, "Position " + position + ": Render cancelled ID: " + item.currentTargetTaskId);
+                        Log.i(TAG, "renderTargetCard(): Position " + position + ": Render cancelled ID: " + item.currentTargetTaskId);
                         return;
                     }
-                    Logger.i(TAG, "Position " + position + ": Render started ID: " + item.currentTargetTaskId);
+                    Log.i(TAG, "renderTargetCard(): Position " + position + ": Render started ID: " + item.currentTargetTaskId);
                     CharSequence text;
                     if(item.isComplete || item.isEditing) {
                         text = renderSourceText(item.targetText, item.targetTranslationFormat, holder, item, true);
@@ -662,7 +663,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         hand.post(new Runnable() {
                             @Override
                             public void run() {
-                                Logger.i(TAG, "Position " + position + ": Render finished ID: " + item.currentTargetTaskId);
+                                Log.i(TAG, "renderTargetCard(): Position " + position + ": Render finished ID: " + item.currentTargetTaskId);
                                 if (!task.isCanceled() && data != null && item == holder.currentItem) {
                                     item.renderedTargetText = data;
 
@@ -690,27 +691,26 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                         ViewUtil.makeLinksClickable(holder.mTargetBody);
                                     }
                                 } else {
-                                    Logger.e(TAG, "Position " + position + ": ID: " + item.currentTargetTaskId + ": Render failed after delay: task.isCanceled()=" + task.isCanceled() + ", (data==null)=" + (data == null) + ", (item!=holder.currentItem)=" + (item != holder.currentItem));
+                                    Log.i(TAG, "renderTargetCard(): Position " + position + ": ID: " + item.currentTargetTaskId + ": Render failed after delay: task.isCanceled()=" + task.isCanceled() + ", (data==null)=" + (data == null) + ", (item!=holder.currentItem)=" + (item != holder.currentItem));
                                 }
                             }
                         });
+                    }  else {
+                        Log.i(TAG, "renderTargetCard(): Position " + position + ": ID: " + item.currentTargetTaskId + ": Render failed  no delay: task.isCanceled()=" + task.isCanceled() + ", (data==null)=" + (data == null) + ", (item!=holder.currentItem)=" + (item != holder.currentItem));
                     }
                 }
             });
             item.currentTargetTaskId = TaskManager.addTask(task);
-            Logger.i(TAG, "Position " + position + ": Adding task ID: " + item.currentTargetTaskId);
+            Log.i(TAG, "renderTargetCard(): Position " + position + ": Adding task ID: " + item.currentTargetTaskId);
 
             ManagedTask verifiedTask = TaskManager.getTask(item.currentTargetTaskId); // verify task in queue
             if((verifiedTask == null) || (verifiedTask != task) || (verifiedTask.interrupted())) {
                 if(verifiedTask == null) {
-                    Logger.e(TAG, "Position " + position + ": Add task failed, verify task null,  ID: " + item.currentTargetTaskId);
+                    Logger.e(TAG, "renderTargetCard(): Position " + position + ": Add task failed, verify task null,  ID: " + item.currentTargetTaskId);
                 } else {
-                    Logger.e(TAG, "Position " + position + ": Add task failed ID: " + item.currentTargetTaskId + ": (verifiedTask != task)=" + (verifiedTask != task) + ", verifiedTask.interrupted()=" + verifiedTask.interrupted());
+                    Logger.e(TAG, "renderTargetCard(): Position " + position + ": Add task failed ID: " + item.currentTargetTaskId + ": (verifiedTask != task)=" + (verifiedTask != task) + ", verifiedTask.interrupted()=" + verifiedTask.interrupted());
                 }
-
-                Logger.e(TAG, "Position " + position + ": Add task failed ID: " + item.currentTargetTaskId);
             }
-
         } else if(item.isEditing) {
             // editing mode
             holder.mTargetEditableBody.setText(item.renderedTargetText);
@@ -866,14 +866,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         if(item.hasSearchText && (position == mSearchPosition)) {
             if (mSearchSubPositionItems < 0) { // if we haven't counted items yet
                 findSearchItemInChunkAndPreselect(mLastSearchDirectionForward, item, target);
-                Logger.i(TAG, "Rerendering, Found search items in chunk " + position + ": " + mSearchSubPositionItems);
+                Log.i(TAG, "Rerendering, Found search items in chunk " + position + ": " + mSearchSubPositionItems);
             } else if (mSearchSubPositionItems > 0) { // if we have counted items then find the number selected
                 MatchResults results = getMatchItemN( item, mSearchText, mSearchSubPosition, target);
                 if( (results != null) && (results.foundLocation >= 0)) {
-                    Logger.i(TAG, "Highlight at position: " + position + " : " + results.foundLocation);
+                    Log.i(TAG, "Highlight at position: " + position + " : " + results.foundLocation);
                     selectPosition = results.foundLocation;
                 } else {
-                    Logger.i(TAG, "Highlight failed for position: " + position + "; chunk position: " + mSearchSubPosition + "; chunk count: " + mSearchSubPositionItems);
+                    Log.i(TAG, "Highlight failed for position: " + position + "; chunk position: " + mSearchSubPosition + "; chunk count: " + mSearchSubPositionItems);
                 }
                 checkIfAtSearchLimits();
             }
@@ -903,7 +903,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 int ascent = layout.getLineAscent(lineNumberForLocation);
 
                 final int verticalOffset = baseline + ascent;
-                Logger.i(TAG, "set position for " + selectPosition + ", scroll to y=" + verticalOffset);
+                Log.i(TAG, "set position for " + selectPosition + ", scroll to y=" + verticalOffset);
 
                 Handler hand = new Handler(Looper.getMainLooper());
                 hand.post(new Runnable() {
@@ -2568,7 +2568,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     @Override
     public void onMoveSearch(boolean forward) {
         mLastSearchDirectionForward = forward;
-        Logger.i(TAG, "onMoveSearch position " + mSearchPosition + " forward= " + forward);
+        Log.i(TAG, "onMoveSearch position " + mSearchPosition + " forward= " + forward);
 
         if(mSearchSubPositionItems > 0) { // try to find forward item within chunk
             if(isNextSearchHighlightPositionWithinChunk(forward, true)) { // move to next item and check
@@ -2580,7 +2580,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         int foundPos = findNextMatchChunk(forward);
         if(foundPos >= 0) {
-            Logger.i(TAG, "onMoveSearch foundPos= " + foundPos);
+            Log.i(TAG, "onMoveSearch foundPos= " + foundPos);
             mSearchPosition = foundPos;
             mSearchSubPosition = 0;
             mSearchSubPositionItems = -1;
@@ -2595,7 +2595,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 triggerNotifyDataSetChanged();
             }
         } else { // not found, clear last selection
-            Logger.i(TAG, "onMoveSearch at end = " + mSearchPosition);
+            Log.i(TAG, "onMoveSearch at end = " + mSearchPosition);
             mSearchSubPosition = -1;
             ReviewListItem item = (ReviewListItem) getItem(mSearchPosition);
             if(item != null) {
@@ -2775,7 +2775,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             return new MatchResults(-1, -1, needRender);
         }
 
-        Logger.i(TAG, "Search started: " + matcher);
+        Log.i(TAG, "getMatchItemN() Search started: " + matcher);
 
         int searchStartLocation = 0;
         int count = 0;
@@ -2824,7 +2824,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
                 boolean matcherEmpty = (matcher == null) || (matcher.isEmpty());
 
-                Logger.i(TAG, "Search started: " + matcher);
+                Log.i(TAG, "filter(): Search started: " + matcher);
 
                 mChunkSearchMatchesCounter = 0;
                 for (int i = 0; i < mFilteredItems.size(); i++) {
@@ -2866,7 +2866,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             @Override
             public void onTaskFinished(final ManagedTask task) {
                 if(!task.isCanceled()) {
-                    Logger.i(TAG, "Search finished: '" + matcher + "', count: " + mChunkSearchMatchesCounter);
+                    Log.i(TAG, "filter(): Search finished: '" + matcher + "', count: " + mChunkSearchMatchesCounter);
 
                     Handler hand = new Handler(Looper.getMainLooper());
                     hand.post(new Runnable() {
@@ -2883,7 +2883,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         }
                     });
                 } else {
-                    Logger.i(TAG, "Search cancelled: '" + matcher + "'");
+                    Log.i(TAG, "filter(): Search cancelled: '" + matcher + "'");
                     onSearching(false, 0, true, true);
                 }
             }
