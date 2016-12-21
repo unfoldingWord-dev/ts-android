@@ -82,8 +82,6 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
                 openSplash();
             }
         });
-
-
     }
 
     public void onRestoreInstanceState(Bundle savedInstanceState) {
@@ -202,6 +200,7 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
             }
         } else if(task instanceof UploadCrashReportTask) {
             boolean success = ((UploadCrashReportTask) task).isSuccess();
+            Logger.i(this.getClass().getSimpleName(),"UploadCrashReportTask success:" + success);
             if(success) {
               openSplash();
             } else { // upload failed
