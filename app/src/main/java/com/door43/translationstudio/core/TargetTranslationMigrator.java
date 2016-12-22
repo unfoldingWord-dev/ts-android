@@ -125,7 +125,7 @@ public class TargetTranslationMigrator {
                         TargetLanguage originalTargetLanguage = tt.getTargetLanguage();
                         tt.changeTargetLanguage(approvedTargetLanguage);
                         if(App.getTranslator().normalizePath(tt)) {
-                            Logger.i(TAG, "Migrated target langauge of target translation " + tt.getId() + " to " + approvedTargetLanguage.slug);
+                            Logger.i(TAG, "Migrated target language of target translation " + tt.getId() + " to " + approvedTargetLanguage.slug);
                         } else {
                             // revert if normalization failed
                             tt.changeTargetLanguage(originalTargetLanguage);
@@ -153,6 +153,12 @@ public class TargetTranslationMigrator {
                                 // TODO: 6/15/16 technically we need to look through all the existing target translations and update ones using this language.
                                 // if we don't then they should get updated the next time the restart the app.
                             }
+                        }
+                        // store the temp language in the index so we can use it
+                        try {
+                            App.getLibrary().index.addTempTargetLanguage(existingRequest.getTempTargetLanguage());
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
                     }
                 } else {

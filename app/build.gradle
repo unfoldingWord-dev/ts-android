@@ -29,7 +29,7 @@ android {
         applicationId "com.translationstudio.androidapp"
         minSdkVersion 15
         targetSdkVersion 23
-        versionCode 151
+        versionCode 152
         versionName "11.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     } 
@@ -122,7 +122,7 @@ dependencies {
 
     compile 'org.unfoldingword.tools:gogs-client:1.6.1'
     compile 'org.unfoldingword.tools:task-manager:1.5.0'
-    compile 'org.unfoldingword.tools:door43-client:0.9.3'
+    compile 'org.unfoldingword.tools:door43-client:0.9.5'
     compile 'org.unfoldingword.tools:http:2.4.1'
     compile 'org.unfoldingword.tools:logger:2.0.0'
 
