@@ -292,7 +292,7 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
     private void showPdfFilenamePrompt() {
         mAlertShown = DialogShown.FILENAME_PROMPT;
         LayoutInflater inflater = LayoutInflater.from(getActivity());
-        final View filenameFragment = inflater.inflate(R.layout.fragment_pdf_output_filename, null);
+        final View filenameFragment = inflater.inflate(R.layout.fragment_output_filename, null);
         if(filenameFragment != null) {
             final EditText filenameText = (EditText) filenameFragment.findViewById(R.id.filename_text);
             if ((filenameText != null)) {

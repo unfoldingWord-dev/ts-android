@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 
 import org.unfoldingword.tools.logger.Logger;
@@ -295,16 +296,46 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
      * display confirmation prompt before USFM export
      */
     private void showExportToUsfmPrompt() {
-        mDialogShown = eDialogShown.EXPORT_TO_USFM_PROMPT;
-        ExportUsfm.saveToUsfmWithPrompt(getActivity(), targetTranslation, new ExportUsfm.OnResultsListener() {
-            @Override
-            public void onFinished(ExportUsfm.eResults result, String outputFilePath, String defaultMessage) {
-                mDialogShown = eDialogShown.NONE;
-                if(result != ExportUsfm.eResults.CANCELLED) {
-                    showUsfmExportResults(defaultMessage);
-                }
+        LayoutInflater inflater = LayoutInflater.from(getActivity());
+        final View filenameFragment = inflater.inflate(R.layout.fragment_output_filename, null);
+        if(filenameFragment != null) {
+            ExportUsfm.BookData bookData = ExportUsfm.BookData.generate(targetTranslation);
+            final EditText filenameText = (EditText) filenameFragment.findViewById(R.id.filename_text);
+            filenameText.setText( bookData.getDefaultUsfmFileName());
+            if ((filenameText != null)) {
+                new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                        .setTitle(R.string.usfm_output_filename_title_prompt)
+                        .setPositiveButton(R.string.label_continue, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                String destinationFilename = filenameText.getText().toString();
+                                saveToUsfmWithSuccessIndication(targetTranslation, null, destinationFilename);
+                            }
+                        })
+                        .setNeutralButton(R.string.dismiss, null)
+                        .setView(filenameFragment)
+                        .show();
             }
-        });
+        }
+    }
+
+    /**
+     * save to usfm file and give success notification
+     * @param targetTranslation
+     */
+    private void saveToUsfmWithSuccessIndication(TargetTranslation targetTranslation, File destinationFolder, String fileName) {
+        File exportFile = ExportUsfm.saveToUSFM( targetTranslation, destinationFolder, fileName);
+        boolean success = (exportFile != null);
+
+        String message;
+        if(success) {
+            String format = getResources().getString(R.string.export_success);
+            message = String.format(format, exportFile.toString());
+        } else {
+            message = getResources().getString(R.string.export_failed);
+        }
+
+        showUsfmExportResults( message);
     }
 
     /**
@@ -315,12 +346,16 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         mDialogShown = eDialogShown.EXPORT_TO_USFM_RESULTS;
         mDialogMessage = message;
 
-        ExportUsfm.showResults(getActivity(), message, new ExportUsfm.OnFinishedListener() {
-            @Override
-            public void onFinished() {
-                mDialogShown = eDialogShown.NONE;
-            }
-        });
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                .setTitle(R.string.title_export_usfm)
+                .setMessage(message)
+                .setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                    }
+                })
+                .show();
     }
 
     private void showDoor43LoginDialog() {

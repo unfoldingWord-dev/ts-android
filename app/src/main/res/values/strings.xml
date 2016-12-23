@@ -945,4 +945,5 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="sort_progress_then_project">Progress then Project</string>
     <string name="sort_bible_order">Bible Order</string>
     <string name="sort_alphabetical_order">Alphabetical Order</string>
+    <string name="usfm_output_filename_title_prompt">Enter USFM output file name:</string>
 </resources>
