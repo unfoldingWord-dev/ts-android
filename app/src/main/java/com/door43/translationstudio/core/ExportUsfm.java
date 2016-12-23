@@ -1,12 +1,19 @@
 package com.door43.translationstudio.core;
 
+import android.net.Uri;
+import android.support.v4.provider.DocumentFile;
+
 import com.door43.translationstudio.App;
 import com.door43.util.FileUtilities;
+import com.door43.util.SdUtils;
 
 import org.unfoldingword.tools.logger.Logger;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,20 +37,22 @@ public class ExportUsfm {
      * @param targetTranslation
      * @param destinationFolder
      * @param fileName
+     * @param outputToDocumentFile
      * * @return target zipFileName or null if error
      */
-    static public File saveToUSFM(TargetTranslation targetTranslation, File destinationFolder, String fileName) {
+    static public Uri saveToUSFM(TargetTranslation targetTranslation, Uri destinationFolder, String fileName, boolean outputToDocumentFile) {
         if(destinationFolder == null) {
-            destinationFolder = App.getPublicDownloadsDirectory();
+            outputToDocumentFile = false;
+            destinationFolder = Uri.fromFile(App.getPublicDownloadsDirectory());
         }
 
-        File exportFile = null;
+        Uri exportFile = null;
         try {
-            exportFile = exportAsUSFM(targetTranslation, destinationFolder, fileName);
+            exportFile = exportAsUSFM(targetTranslation, destinationFolder, fileName, outputToDocumentFile);
         } catch (Exception e) {
             Logger.e(TAG, "Failed to export the target translation " + targetTranslation.getId(), e);
         }
-        if( (exportFile == null) || !exportFile.exists()) {
+        if(exportFile == null) {
             return null;
         }
 
@@ -55,15 +64,16 @@ public class ExportUsfm {
      * @param targetTranslation
      * @param destinationFolder
      * @param fileName
+     * @param outputToDocumentFile
      * @return output file
      */
-    static private File exportAsUSFM(TargetTranslation targetTranslation, File destinationFolder, String fileName) throws IOException {
+    static private Uri exportAsUSFM(TargetTranslation targetTranslation, Uri destinationFolder, String fileName, boolean outputToDocumentFile) throws IOException {
         File tempDir = new File(App.context().getCacheDir(), System.currentTimeMillis() + "");
         tempDir.mkdirs();
         ChapterTranslation[] chapters = targetTranslation.getChapterTranslations();
         PrintStream ps = null;
         String outputFileName = null;
-        File chapterFile = null;
+        File tempFile = null;
         for(ChapterTranslation chapter:chapters) {
             // TRICKY: the translation format doesn't matter for exporting
             FrameTranslation[] frames = targetTranslation.getFrameTranslations(chapter.getId(), TranslationFormat.DEFAULT);
@@ -84,13 +94,13 @@ public class ExportUsfm {
                     outputFileName = bookData.getDefaultUsfmFileName();
                 }
 
-                chapterFile = new File(tempDir, outputFileName);
-                chapterFile.createNewFile();
+                tempFile = new File(tempDir, outputFileName);
+                tempFile.createNewFile();
 
                 if(ps != null) {
                     ps.close();
                 }
-                ps = new PrintStream(chapterFile);
+                ps = new PrintStream(tempFile);
 
                 String id = "\\id " + bookCode + " " + bookTitle + ", " + bookName + ", " + (languageId + ", " + languageName);
                 ps.println(id);
@@ -142,16 +152,33 @@ public class ExportUsfm {
 
         ps.close();
 
-        File destFile = null;
-        if( (chapterFile != null) && (outputFileName != null) ) {
-            File outputFile = new File(destinationFolder, outputFileName);
-            boolean success = FileUtilities.moveOrCopyQuietly(chapterFile, outputFile);
-            if(success) {
-                destFile = outputFile;
+        Uri pdfOutputUri = null;
+        if( (tempFile != null) && (outputFileName != null) ) {
+            if(outputToDocumentFile) {
+                try {
+                    DocumentFile sdCardFile = SdUtils.documentFileCreate(destinationFolder, outputFileName);
+                    OutputStream outputStream = SdUtils.createOutputStream(sdCardFile);
+                    BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);
+
+                    FileInputStream fis = new FileInputStream(tempFile);
+                    int bytes = FileUtilities.copy(fis, bufferedOutputStream);
+                    bufferedOutputStream.close();
+                    fis.close();
+                    pdfOutputUri = sdCardFile.getUri();
+                } catch (Exception e) {
+                    Logger.e(TAG, "Failed to copy the USFM file to: " + pdfOutputUri, e);
+                    pdfOutputUri = null;
+                }
+            } else {
+                File pdfOutputPath = new File(destinationFolder.getPath(), outputFileName);
+                boolean success = FileUtilities.moveOrCopyQuietly(tempFile, pdfOutputPath);
+                if (success) {
+                    pdfOutputUri = Uri.fromFile(pdfOutputPath);
+                }
             }
         }
         FileUtilities.deleteQuietly(tempDir);
-        return destFile;
+        return pdfOutputUri;
     }
 
     /**
@@ -224,7 +251,7 @@ public class ExportUsfm {
             }
 
             // generate file name
-            defaultUsfmFileName = System.currentTimeMillis() + "_" + languageId + "_" + bookCode + "_" + bookName + ".usfm";
+            defaultUsfmFileName = languageId + "_" + bookCode + "_" + bookName + ".usfm";
         }
 
         public String getDefaultUsfmFileName() {

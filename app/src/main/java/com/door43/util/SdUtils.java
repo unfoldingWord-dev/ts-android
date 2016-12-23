@@ -16,6 +16,7 @@ import com.door43.translationstudio.ui.SettingsActivity;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -35,6 +36,9 @@ public class SdUtils {
     private static boolean alreadyReadSdCardDirectory = false;
     private static String verifiedSdCardPath = "";
     public static final int REQUEST_CODE_STORAGE_ACCESS = 42;
+    private static final String FILE_TYPE = "file://";
+    private static final String CONTENT_TYPE = "content://";
+    private static final String CONTENT_DIVIDER = "%3A";
 
     /**
      * combines string array into single string
@@ -73,31 +77,25 @@ public class SdUtils {
      * @return
      */
     public static String getPathString(final String dir) {
-        final String FILE = "file://";
-        final String CONTENT = "content://";
-        final String CONTENT_DIVIDER = "%3A";
-        final String FOLDER_MARKER = "%2F";
-
         if(null == dir) {
             return "<null>";
         }
 
         String uriStr = dir;
 
-        int pos = uriStr.indexOf(FILE);
+        int pos = uriStr.indexOf(FILE_TYPE);
         if(pos >= 0) {
-            String showPath = uriStr.substring(pos + FILE.length());
+            String showPath = uriStr.substring(pos + FILE_TYPE.length());
             Logger.i(SdUtils.class.getName(), "converting File path from '" + dir + "' to '" + showPath + "'");
             return showPath;
         }
 
-        pos = uriStr.indexOf(CONTENT);
+        pos = uriStr.indexOf(CONTENT_TYPE);
         if(pos >= 0) {
             pos = uriStr.lastIndexOf(CONTENT_DIVIDER);
             if(pos >= 0) {
                 String subPath =  uriStr.substring(pos + CONTENT_DIVIDER.length());
-                String[] parts = subPath.split(FOLDER_MARKER);
-                String showPath = "SD_CARD/" + joinString(parts, "/");
+                String showPath = "SD_CARD/" + Uri.decode(subPath);
                 Logger.i(SdUtils.class.getName(), "converting SD card path from '" + dir + "' to '" + showPath + "'");
                 return showPath;
             }
@@ -516,6 +514,61 @@ public class SdUtils {
         }
 
         return null;
+    }
+
+    /**
+     * creates a OutputStream for a DocumentFile.  throws exception on error.
+     * @param outputFile -
+     * @return
+     */
+    public static OutputStream createOutputStream(DocumentFile outputFile) throws FileNotFoundException {
+        return App.context().getContentResolver().openOutputStream(outputFile.getUri());
+    }
+
+    /**
+     * creates a DocumentFile in Uri.  throws exception on error.
+     * @param baseUri - base folder
+     * @param fileName - name of subfolder to move to
+     * @return
+     */
+    public static DocumentFile documentFileCreate(final Uri baseUri, final String fileName) {
+        DocumentFile documentFileFolder = getDocumentFileFolder(baseUri);
+        DocumentFile documentFile = documentFileCreate(documentFileFolder, fileName);
+        return documentFile;
+    }
+
+    /**
+     * traverse URL to get DocumentFile for folder
+     * @param baseUri
+     * @return
+     */
+    private static DocumentFile getDocumentFileFolder(Uri baseUri) {
+        DocumentFile sdCardFolder = DocumentFile.fromTreeUri(App.context(), baseUri); // get base for path
+        String baseUrlStr = baseUri.toString();
+        String sdCardFolderUriStr = sdCardFolder.getUri().toString();
+
+        if(sdCardFolderUriStr != null) {
+            int location = baseUrlStr.indexOf(sdCardFolderUriStr); // get subfolders from base
+            if(location >= 0) {
+                String subFolderStr = baseUrlStr.substring(location + sdCardFolderUriStr.length());
+                subFolderStr = Uri.decode(subFolderStr);
+                DocumentFile subFolder = documentFileMkdirs(sdCardFolder, subFolderStr); // travers subfolders
+                if(subFolder != null) {
+                    sdCardFolder = subFolder;
+                }
+            }
+        }
+        return sdCardFolder;
+    }
+
+    /**
+     * creates a DocumentFile in basefolder.  throws exception on error.
+     * @param baseFolder - base folder
+     * @param subFolderName - name of subfolder to move to
+     * @return
+     */
+    public static DocumentFile documentFileCreate(final DocumentFile baseFolder, final String subFolderName) {
+        return baseFolder.createFile("image", subFolderName);
     }
 
     /**
