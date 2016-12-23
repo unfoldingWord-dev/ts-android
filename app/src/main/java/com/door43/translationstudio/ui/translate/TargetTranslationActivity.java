@@ -634,8 +634,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
      * notify listener of search state changes
      * @param doingSearch - search is currently processing
      * @param numberOfChunkMatches - number of chunks that have the search string
-     * @param atEnd - we are at last search item highlighted
-     * @param atStart - we are at first search item highlighted
+     * @param atEnd - we are at last search item
+     * @param atStart - we are at first search item
      */
     private void setSearchSpinner(boolean doingSearch, int numberOfChunkMatches, boolean atEnd, boolean atStart) {
         if(mSearchingSpinner != null) {
@@ -1095,7 +1095,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     /**
-     * notify listener of search state changes
+     * callback on search state changes
      * @param doingSearch - search is currently processing
      * @param numberOfChunkMatches - number of chunks that have the search string
      * @param atEnd - we are at last search item highlighted
