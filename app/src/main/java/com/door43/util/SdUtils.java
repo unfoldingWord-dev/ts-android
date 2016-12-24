@@ -472,7 +472,6 @@ public class SdUtils {
      * @return
      */
     public static boolean documentFolderWrite(final DocumentFile document, final String data, final boolean append) {
-
         boolean success = true;
         OutputStream fout = null;
 
@@ -496,11 +495,10 @@ public class SdUtils {
 
     /**
      * creates and returns the selected subfolder on SD card.  Returns null if error.
-     * @param subFolderName - name of subfolder to move to
+     * @param subFolder - path of subfolder of SD card to move to
      * @return
      */
-    public static DocumentFile sdCardMkdirs(final String subFolderName) {
-
+    public static DocumentFile sdCardMkdirs(final String subFolder) {
         String sdCardFolderUriStr = getSdCardAccessUriStr();
         if(null == sdCardFolderUriStr) {
             return null;
@@ -508,7 +506,7 @@ public class SdUtils {
 
         Uri sdCardFolderUri = Uri.parse(sdCardFolderUriStr);
         DocumentFile document = DocumentFile.fromTreeUri(App.context(), sdCardFolderUri);
-        DocumentFile subDocument = documentFileMkdirs(document, subFolderName);
+        DocumentFile subDocument = documentFileMkdirs(document, subFolder);
         if ( (subDocument != null) && subDocument.isDirectory() && subDocument.canWrite() ) {
             return subDocument;
         }
@@ -538,27 +536,26 @@ public class SdUtils {
     }
 
     /**
-     * traverse URL to get DocumentFile for folder
+     * traverse URI to get the DocumentFile for a folder
      * @param baseUri
      * @return
      */
     private static DocumentFile getDocumentFileFolder(Uri baseUri) {
-        DocumentFile sdCardFolder = DocumentFile.fromTreeUri(App.context(), baseUri); // get base for path
-        String baseUrlStr = baseUri.toString();
-        String sdCardFolderUriStr = sdCardFolder.getUri().toString();
-
-        if(sdCardFolderUriStr != null) {
-            int location = baseUrlStr.indexOf(sdCardFolderUriStr); // get subfolders from base
+        DocumentFile folder = DocumentFile.fromTreeUri(App.context(), baseUri); // get base for path
+        String treeUriStr = folder.getUri().toString(); // see how much of the uri is covered by tree
+        if(treeUriStr != null) {
+            String baseUriStr = baseUri.toString();
+            int location = baseUriStr.indexOf(treeUriStr); // get subfolders from base Uri
             if(location >= 0) {
-                String subFolderStr = baseUrlStr.substring(location + sdCardFolderUriStr.length());
+                String subFolderStr = baseUriStr.substring(location + treeUriStr.length());
                 subFolderStr = Uri.decode(subFolderStr);
-                DocumentFile subFolder = documentFileMkdirs(sdCardFolder, subFolderStr); // travers subfolders
+                DocumentFile subFolder = documentFileMkdirs(folder, subFolderStr); // traverse subfolders
                 if(subFolder != null) {
-                    sdCardFolder = subFolder;
+                    folder = subFolder;
                 }
             }
         }
-        return sdCardFolder;
+        return folder;
     }
 
     /**
