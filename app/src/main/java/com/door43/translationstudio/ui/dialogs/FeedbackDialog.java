@@ -156,9 +156,7 @@ public class FeedbackDialog extends DialogFragment implements ManagedTask.OnFini
                 });
             } else {
                 if(!mMessage.isEmpty()) {
-                    UploadBugReportTask newTask = new UploadBugReportTask(mMessage);
-                    newTask.addOnFinishedListener(FeedbackDialog.this);
-                    TaskManager.addTask(newTask, UploadBugReportTask.TASK_ID);
+                    doUploadBugReportTask();
                 } else {
                     notifyInputRequired();
                     FeedbackDialog.this.dismiss();
@@ -172,20 +170,38 @@ public class FeedbackDialog extends DialogFragment implements ManagedTask.OnFini
                 snack.show();
                 FeedbackDialog.this.dismiss();
             } else { // upload failed
+                final boolean networkAvailable = App.isNetworkAvailable();
+
                 Handler hand = new Handler(Looper.getMainLooper());
                 hand.post(new Runnable() {
                     @Override
                     public void run() {
                         hideLoadingUI();
+                        int messageId = networkAvailable ? R.string.upload_feedback_failed : R.string.internet_not_available;
                         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
                                 .setTitle(R.string.upload_failed)
-                                .setMessage(R.string.upload_feedback_failed)
-                                .setPositiveButton(R.string.label_ok, null)
+                                .setMessage(messageId)
+                                .setPositiveButton(R.string.retry_label, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        doUploadBugReportTask();
+                                    }
+                                })
+                                .setNegativeButton(R.string.label_close, null)
                                 .show();
                     }
                 });
             }
         }
+    }
+
+    /**
+     * start the UploadBugReportTask
+     */
+    private void doUploadBugReportTask() {
+        UploadBugReportTask newTask = new UploadBugReportTask(mMessage);
+        newTask.addOnFinishedListener(FeedbackDialog.this);
+        TaskManager.addTask(newTask, UploadBugReportTask.TASK_ID);
     }
 
     /**
@@ -228,9 +244,7 @@ public class FeedbackDialog extends DialogFragment implements ManagedTask.OnFini
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if (!mMessage.isEmpty()) {
-                            UploadBugReportTask newTask = new UploadBugReportTask(mMessage);
-                            newTask.addOnFinishedListener(FeedbackDialog.this);
-                            TaskManager.addTask(newTask, UploadBugReportTask.TASK_ID);
+                            doUploadBugReportTask();
                         } else {
                             notifyInputRequired();
                             FeedbackDialog.this.dismiss();
