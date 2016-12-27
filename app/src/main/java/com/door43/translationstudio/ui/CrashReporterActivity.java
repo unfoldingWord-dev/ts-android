@@ -50,12 +50,28 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
             public void onClick(View view) {
                 mNotes = mCrashReportText.getText().toString().trim();
 
-                mLoadingDialog.setMessage(getResources().getString(R.string.loading));
-                mLoadingDialog.show();
+                new AlertDialog.Builder(CrashReporterActivity.this, R.style.AppTheme_Dialog)
+                        .setTitle(R.string.title_upload)
+                        .setMessage(R.string.use_internet_confirmation)
+                        .setPositiveButton(R.string.label_continue, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                mLoadingDialog.setMessage(getResources().getString(R.string.loading));
+                                mLoadingDialog.show();
 
-                CheckForLatestReleaseTask task = new CheckForLatestReleaseTask();
-                task.addOnFinishedListener(CrashReporterActivity.this);
-                TaskManager.addTask(task, CheckForLatestReleaseTask.TASK_ID);
+                                CheckForLatestReleaseTask task = new CheckForLatestReleaseTask();
+                                task.addOnFinishedListener(CrashReporterActivity.this);
+                                TaskManager.addTask(task, CheckForLatestReleaseTask.TASK_ID);
+                            }
+                        })
+                        .setNegativeButton(R.string.label_close, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Logger.flush();
+                                openSplash();
+                            }
+                        })
+                        .show();
             }
         });
 
@@ -66,8 +82,6 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
                 openSplash();
             }
         });
-
-
     }
 
     public void onRestoreInstanceState(Bundle savedInstanceState) {
@@ -186,15 +200,19 @@ public class CrashReporterActivity extends BaseActivity implements ManagedTask.O
             }
         } else if(task instanceof UploadCrashReportTask) {
             boolean success = ((UploadCrashReportTask) task).isSuccess();
+            Logger.i(this.getClass().getSimpleName(),"UploadCrashReportTask success:" + success);
             if(success) {
               openSplash();
             } else { // upload failed
+                final boolean networkAvailable = App.isNetworkAvailable();
+
                 hand.post(new Runnable() {
                     @Override
                     public void run() {
+                        int messageId = networkAvailable ? R.string.upload_crash_report_failed : R.string.internet_not_available;
                         new AlertDialog.Builder(CrashReporterActivity.this, R.style.AppTheme_Dialog)
                                 .setTitle(R.string.upload_failed)
-                                .setMessage(R.string.upload_crash_report_failed)
+                                .setMessage(messageId)
                                 .setPositiveButton(R.string.label_ok, null)
                                 .show();
                     }

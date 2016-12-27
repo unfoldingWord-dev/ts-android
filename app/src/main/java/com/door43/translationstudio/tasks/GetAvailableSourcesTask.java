@@ -1,6 +1,7 @@
 package com.door43.translationstudio.tasks;
 
 import com.door43.translationstudio.App;
+import com.door43.translationstudio.core.BibleCodes;
 
 import org.unfoldingword.door43client.Door43Client;
 import org.unfoldingword.door43client.models.Translation;
@@ -30,17 +31,10 @@ public class GetAvailableSourcesTask extends ManagedTask {
     private Map<String,List<Integer>> ntBooks;
     private Map<String,List<Integer>> taBooks;
     private Map<String,List<Integer>> otherBooks;
-
-    private static String[] ntBookList = { "mat" , "mrk", "luk", "jhn", "act", "rom", "1co", "2co",
-                                            "gal", "eph", "php", "col", "1th", "2th", "1ti", "2ti",
-                                            "tit", "phm", "heb", "jas", "1pe", "2pe", "1jn", "2jn",
-                                            "3jn", "jud", "rev"};
-    private static String[] otBookList = { "gen" , "exo", "lev", "num", "deu", "jos", "jdg", "rut",
-                                            "1sa", "2sa", "1ki", "2ki", "1ch", "2ch", "ezr", "neh",
-                                            "est", "job", "psa", "pro", "ecc", "sng", "isa", "jer",
-                                            "lam", "ezk", "dan", "hos", "jol", "amo", "oba", "jon",
-                                            "mic", "nam", "hab", "zep", "hag", "zec", "mal"};
     private String prefix;
+
+    private static final String[] ntBookList = BibleCodes.getNtBooks();
+    private static final String[] otBookList = BibleCodes.getOtBooks();
 
     @Override
     public void start() {
