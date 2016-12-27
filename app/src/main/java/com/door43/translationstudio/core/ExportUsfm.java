@@ -1,31 +1,24 @@
 package com.door43.translationstudio.core;
 
-import android.app.Activity;
-import android.content.DialogInterface;
-import android.support.v7.app.AlertDialog;
-import android.util.Log;
+import android.net.Uri;
+import android.support.v4.provider.DocumentFile;
 
 import com.door43.translationstudio.App;
-import com.door43.translationstudio.R;
 import com.door43.util.FileUtilities;
-import com.door43.util.StringUtilities;
-import com.door43.util.Zip;
+import com.door43.util.SdUtils;
 
-import org.eclipse.jgit.util.StringUtils;
-import org.unfoldingword.door43client.Door43Client;
-import org.unfoldingword.door43client.models.Translation;
-import org.unfoldingword.resourcecontainer.ResourceContainer;
 import org.unfoldingword.tools.logger.Logger;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
 
 import org.unfoldingword.resourcecontainer.Project;
 
@@ -38,120 +31,28 @@ public class ExportUsfm {
 
     public static final String TAG = ExportUsfm.class.getName();
 
-    /**
-     * save target translation as USFM file
-     * @param activity
-     * @param targetTranslation
-     * @param listener
-     */
-    static public void saveToUsfmWithPrompt(final Activity activity, final TargetTranslation targetTranslation, final OnResultsListener listener) {
-        new AlertDialog.Builder(activity, R.style.AppTheme_Dialog)
-                .setTitle(R.string.title_export_usfm)
-                .setMessage(R.string.export_usfm_by_chapter)
-                .setPositiveButton(R.string.label_separate, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        saveToUsfmWithSuccessIndication(activity, targetTranslation, true, true, listener);
-                    }
-                })
-                .setNeutralButton(R.string.dismiss, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if(listener != null) {
-                            listener.onFinished(eResults.CANCELLED, null, null);
-                        }
-                    }
-                })
-                .setNegativeButton(R.string.label_whole, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        saveToUsfmWithSuccessIndication(activity, targetTranslation, false, false, listener);
-                    }
-                })
-                .show();
-    }
-
-    /**
-     * save to usfm file and give success notification
-     *
-     * @param activity
-     * @param targetTranslation
-     * @param separateChapters
-     * @param zipFiles
-     * @param listener
-     */
-    static private void saveToUsfmWithSuccessIndication(Activity activity, TargetTranslation targetTranslation, boolean separateChapters, boolean zipFiles, final OnResultsListener listener) {
-        String zipFileName = null;
-        if(zipFiles) {
-            zipFileName = targetTranslation.getId() + ".zip";
-        }
-
-        File exportFile = saveToUSFM( targetTranslation, null, zipFileName, separateChapters);
-        boolean success = (exportFile != null);
-        eResults results = success ? eResults.SUCCESS : eResults.FAILED;
-
-        String defaultResultsMessage;
-        String format;
-        switch (results) {
-            case SUCCESS:
-                format = activity.getResources().getString(R.string.export_success);
-                defaultResultsMessage = String.format(format, exportFile.toString());
-                break;
-
-            default:
-                defaultResultsMessage = activity.getResources().getString(R.string.export_failed);
-                break;
-        }
-
-        if(listener == null) {
-            showResults(activity, defaultResultsMessage, null);
-        } else {
-            listener.onFinished(results, exportFile.toString(), defaultResultsMessage);
-        }
-    }
-
-    /**
-     * show results of USFM export
-     *
-     * @param activity
-     * @param message
-     * @param listener
-     */
-    public static void showResults(Activity activity, String message, final OnFinishedListener listener) {
-        new AlertDialog.Builder(activity, R.style.AppTheme_Dialog)
-                .setTitle(R.string.title_export_usfm)
-                .setMessage(message)
-                .setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if(listener != null) {
-                            listener.onFinished();
-                        }
-                    }
-                })
-                .show();
-    }
 
     /**
      * output target translation to USFM file, returns file name to check for success
      * @param targetTranslation
-     * @param destinationFolder - if null then public downloads folder on SD card will be used
-     * @param zipFileName - this is the filename to be used if files are to be zipped, if null then files are not zipped and default file name is used.
-     * @param separateChapters - if true then chapters will be separated
-     * @return target zipFileName or null if error
+     * @param destinationFolder
+     * @param fileName
+     * @param outputToDocumentFile
+     * * @return target zipFileName or null if error
      */
-    static public File saveToUSFM(TargetTranslation targetTranslation, File destinationFolder, String zipFileName, boolean separateChapters) {
+    static public Uri saveToUSFM(TargetTranslation targetTranslation, Uri destinationFolder, String fileName, boolean outputToDocumentFile) {
         if(destinationFolder == null) {
-            destinationFolder = App.getPublicDownloadsDirectory();
+            outputToDocumentFile = false;
+            destinationFolder = Uri.fromFile(App.getPublicDownloadsDirectory());
         }
 
-        File exportFile = null;
+        Uri exportFile = null;
         try {
-            exportFile = exportAsUSFM(targetTranslation, destinationFolder, zipFileName, separateChapters);
+            exportFile = exportAsUSFM(targetTranslation, destinationFolder, fileName, outputToDocumentFile);
         } catch (Exception e) {
             Logger.e(TAG, "Failed to export the target translation " + targetTranslation.getId(), e);
         }
-        if( (exportFile == null) || !exportFile.exists()) {
+        if(exportFile == null) {
             return null;
         }
 
@@ -161,61 +62,45 @@ public class ExportUsfm {
     /**
      * Exports a target translation as a USFM file
      * @param targetTranslation
-     * @param outputFolder - folder for output file
-     * @param zipFileName - this is the filename to be used if files are to be zipped, if null then files are not zipped and default file name is used.
-     * @param separateChapters - if true then each chapter will be in a different file
+     * @param destinationFolder
+     * @param fileName
+     * @param outputToDocumentFile
      * @return output file
      */
-    static private File exportAsUSFM(TargetTranslation targetTranslation, File outputFolder, String zipFileName, boolean separateChapters) throws IOException {
+    static private Uri exportAsUSFM(TargetTranslation targetTranslation, Uri destinationFolder, String fileName, boolean outputToDocumentFile) throws IOException {
         File tempDir = new File(App.context().getCacheDir(), System.currentTimeMillis() + "");
         tempDir.mkdirs();
         ChapterTranslation[] chapters = targetTranslation.getChapterTranslations();
         PrintStream ps = null;
         String outputFileName = null;
-        File chapterFile = null;
+        File tempFile = null;
         for(ChapterTranslation chapter:chapters) {
             // TRICKY: the translation format doesn't matter for exporting
             FrameTranslation[] frames = targetTranslation.getFrameTranslations(chapter.getId(), TranslationFormat.DEFAULT);
             if(frames.length == 0) continue;
 
-            boolean needNewFile = (ps == null) || (separateChapters);
+            boolean needNewFile = (ps == null);
             if(needNewFile) {
-                // chapter id
-                String bookCode = targetTranslation.getProjectId().toUpperCase();
-                String languageId = targetTranslation.getTargetLanguageId();
-                String languageName = targetTranslation.getTargetLanguageName();
-                ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
-                Project project = App.getLibrary().index.getProject(languageId, targetTranslation.getProjectId(), true);
+                BookData bookData = BookData.generate(targetTranslation);
+                String bookCode = bookData.getBookCode();
+                String bookTitle = bookData.getBookTitle();
+                String bookName = bookData.getBookName();
+                String languageId = bookData.getLanguageId();
+                String languageName = bookData.getLanguageName();
 
-                String bookName = bookCode; // default name
-                if( (project != null) && (project.name != null)) {
-                    bookName = project.name;
-                }
-
-                String bookTitle = "";
-                if(projectTranslation != null) {
-                    String title = projectTranslation.getTitle();
-                    if( title != null ) {
-                        bookTitle = title.trim();
-                    }
-                }
-                if(bookTitle.isEmpty()) {
-                    bookTitle = bookCode;
-                }
-
-                // generate file name
-                if(separateChapters) {
-                    outputFileName = "chapter_" + chapter.getId() + ".usfm";
+                if((fileName != null) && (!fileName.isEmpty())) {
+                    outputFileName = fileName;
                 } else {
-                    outputFileName = System.currentTimeMillis() + "_" + languageId + "_" + bookCode + "_" + bookName + ".usfm";
+                    outputFileName = bookData.getDefaultUsfmFileName();
                 }
-                chapterFile = new File(tempDir, outputFileName);
-                chapterFile.createNewFile();
+
+                tempFile = new File(tempDir, outputFileName);
+                tempFile.createNewFile();
 
                 if(ps != null) {
                     ps.close();
                 }
-                ps = new PrintStream(chapterFile);
+                ps = new PrintStream(tempFile);
 
                 String id = "\\id " + bookCode + " " + bookTitle + ", " + bookName + ", " + (languageId + ", " + languageName);
                 ps.println(id);
@@ -267,28 +152,33 @@ public class ExportUsfm {
 
         ps.close();
 
-        File destFile = null;
-        if(zipFileName != null) { // zip them together
-            File[] chapterFiles = tempDir.listFiles();
-            if (chapterFiles != null && chapterFiles.length > 0) {
+        Uri pdfOutputUri = null;
+        if( (tempFile != null) && (outputFileName != null) ) {
+            if(outputToDocumentFile) {
                 try {
-                    File zipFile = new File(outputFolder, zipFileName);
-                    Zip.zip(chapterFiles, zipFile);
-                    destFile = zipFile;
-                } catch (IOException e) {
-                    FileUtilities.deleteQuietly(tempDir);
-                    throw (e);
+                    DocumentFile sdCardFile = SdUtils.documentFileCreate(destinationFolder, outputFileName);
+                    OutputStream outputStream = SdUtils.createOutputStream(sdCardFile);
+                    BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);
+
+                    FileInputStream fis = new FileInputStream(tempFile);
+                    int bytes = FileUtilities.copy(fis, bufferedOutputStream);
+                    bufferedOutputStream.close();
+                    fis.close();
+                    pdfOutputUri = sdCardFile.getUri();
+                } catch (Exception e) {
+                    Logger.e(TAG, "Failed to copy the USFM file to: " + pdfOutputUri, e);
+                    pdfOutputUri = null;
                 }
-            }
-        } else if( (chapterFile != null) && (outputFileName != null) ) {
-            File outputFile = new File(outputFolder, outputFileName);
-            boolean success = FileUtilities.moveOrCopyQuietly(chapterFile, outputFile);
-            if(success) {
-                destFile = outputFile;
+            } else {
+                File pdfOutputPath = new File(destinationFolder.getPath(), outputFileName);
+                boolean success = FileUtilities.moveOrCopyQuietly(tempFile, pdfOutputPath);
+                if (success) {
+                    pdfOutputUri = Uri.fromFile(pdfOutputPath);
+                }
             }
         }
         FileUtilities.deleteQuietly(tempDir);
-        return destFile;
+        return pdfOutputUri;
     }
 
     /**
@@ -325,27 +215,71 @@ public class ExportUsfm {
         return Util.strToInt(chunkID, -1); // if not numeric, then will move to top of list and leave order unchanged
     }
 
-    public interface OnResultsListener {
+    /**
+     * class to extract book data as well as default USFM output file name
+     */
+    public static class BookData {
+        private String defaultUsfmFileName;
+        private String bookCode;
+        private String languageId;
+        private String languageName;
+        private String bookName;
+        private String bookTitle;
 
-        /**
-         * report the results from export
-         * @param result
-         * @param outputFilePath
-         */
-        public void onFinished(eResults result, String outputFilePath, String defaultMessage);
-    }
+        public BookData(TargetTranslation targetTranslation) {
 
-    public interface OnFinishedListener {
+            bookCode = targetTranslation.getProjectId().toUpperCase();
+            languageId = targetTranslation.getTargetLanguageId();
+            languageName = targetTranslation.getTargetLanguageName();
+            ProjectTranslation projectTranslation = targetTranslation.getProjectTranslation();
+            Project project = App.getLibrary().index.getProject(languageId, targetTranslation.getProjectId(), true);
 
-        /**
-         * results dialog finished
-         */
-        public void onFinished();
-    }
+            bookName = bookCode;
+            if( (project != null) && (project.name != null)) {
+                bookName = project.name;
+            }
 
-    public enum eResults {
-        CANCELLED,
-        SUCCESS,
-        FAILED
+            bookTitle = "";
+            if(projectTranslation != null) {
+                String title = projectTranslation.getTitle();
+                if( title != null ) {
+                    bookTitle = title.trim();
+                }
+            }
+            if(bookTitle.isEmpty()) {
+                bookTitle = bookCode;
+            }
+
+            // generate file name
+            defaultUsfmFileName = languageId + "_" + bookCode + "_" + bookName + ".usfm";
+        }
+
+        public String getDefaultUsfmFileName() {
+            return defaultUsfmFileName;
+        }
+
+        public String getBookCode() {
+            return bookCode;
+        }
+
+        public String getLanguageId() {
+            return languageId;
+        }
+
+        public String getLanguageName() {
+            return languageName;
+        }
+
+        public String getBookName() {
+            return bookName;
+        }
+
+        public String getBookTitle() {
+            return bookTitle;
+        }
+
+        public static BookData generate(TargetTranslation targetTranslation) {
+           return new BookData( targetTranslation);
+        }
     }
 }
