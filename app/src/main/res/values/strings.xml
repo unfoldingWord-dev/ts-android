@@ -331,7 +331,7 @@
     <string name="publish">Publish</string>
     <string name="backup">Upload</string>
     <string name="attached_files">Attached files</string>
-    <string name="requires_internet">Requires internet access</string>
+    <string name="requires_internet">This will use your Internet Connection</string>
     <string name="input_required">Input cannot be empty</string>
     <string name="dismiss">Dismiss</string>
     <string name="done">Done</string>
@@ -946,4 +946,6 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="sort_bible_order">Bible Order</string>
     <string name="sort_alphabetical_order">Alphabetical Order</string>
     <string name="usfm_output_filename_title_prompt">Enter USFM output file name:</string>
+    <string name="found_in_chunks">Found in <xliff:g example="6" id="found_count">%1$d</xliff:g> chunks</string>
+    <string name="retry_label">Retry</string>
 </resources>

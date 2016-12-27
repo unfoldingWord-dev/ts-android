@@ -123,7 +123,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
         loadTabInfo();
 
-        filter(filterConstraint, filterSubject);
+        filter(filterConstraint, filterSubject, 0);
 
         triggerNotifyDataSetChanged();
     }

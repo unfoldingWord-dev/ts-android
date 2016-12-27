@@ -135,8 +135,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
             mAdapter.setOnClickListener(this);
 
             if(savedInstanceState == null) {
-                mLayoutManager.scrollToPosition(mAdapter.getListStartPosition());
-                if(mListener != null) mListener.onScrollProgress(mAdapter.getListStartPosition());
+                doScrollToPosition(mAdapter.getListStartPosition(), 0);
             }
         }
 
@@ -184,6 +183,17 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     /**
+     * scroll panes to go to specific position with vertical offset
+     * @param position
+     * @param offset
+     */
+    public void doScrollToPosition(int position, int offset) {
+        mLayoutManager.scrollToPositionWithOffset(position, offset);
+        Logger.i(TAG, "doScrollToPosition: position=" + position + ", offset=" + offset);
+        if(mListener != null) mListener.onScrollProgress(position);
+    }
+
+    /**
      * get the chapter slug for the position
      * @param position
      */
@@ -228,8 +238,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         closeKeyboard();
         int position = mAdapter.getItemPosition(chapterSlug, chunkSlug);
         if(position != -1) {
-            mLayoutManager.scrollToPosition(position);
-            if(mListener != null) mListener.onScrollProgress(position);
+            doScrollToPosition(position, 0);
         }
     }
 
@@ -365,8 +374,18 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      */
     public final void filter(CharSequence constraint, TranslationFilter.FilterSubject subject) {
         if(getAdapter() != null) {
-            getAdapter().filter(constraint, subject);
+            getAdapter().filter(constraint, subject, mLayoutManager.findFirstVisibleItemPosition());
             getAdapter().triggerNotifyDataSetChanged();
+        }
+    }
+
+    /**
+     * move to next/previous search item
+     * @param next if true then find next, otherwise will find previous
+     */
+    public void onMoveSearch(boolean next) {
+        if(getAdapter() != null) {
+            getAdapter().onMoveSearch(next);
         }
     }
 
@@ -595,11 +614,14 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     /**
-     * enable/disable the busy indiciator
-     * @param isSearching
+     * notify listener of search state changes
+     * @param doingSearch - search is currently processing
+     * @param numberOfChunkMatches - number of chunks that have the search string
+     * @param atEnd - we are at last search item highlighted
+     * @param atStart - we are at first search item highlighted
      */
-    public void onSearching(boolean isSearching) {
-        if(mListener != null) mListener.onSearching(isSearching);
+    public void onSearching(boolean doingSearch, int numberOfChunkMatches, boolean atEnd, boolean atStart) {
+        if(mListener != null) mListener.onSearching(doingSearch, numberOfChunkMatches, atEnd, atStart);
     }
 
     /**
@@ -648,6 +670,15 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     /**
+     * called to set new selected position
+     * @param position
+     * @param offset - if greater than or equal to 0, then set specific offset
+     */
+    public void onSetSelectedPosition(int position, int offset) {
+        doScrollToPosition(position, offset);
+    }
+
+    /**
      * Allows child classes to perform operations that dependon the source container
      * @param sourceContainer
      */
@@ -685,10 +716,13 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         void restartAutoCommitTimer();
 
         /**
-         * enable/disable busy spinner
-         * @param enable
+         * notify listener of search state changes
+         * @param doingSearch - search is currently processing
+         * @param numberOfChunkMatches - number of chunks that have the search string
+         * @param atEnd - we are at last search item highlighted
+         * @param atStart - we are at first search item highlighted
          */
-        void onSearching(boolean enable);
+        void onSearching(boolean doingSearch, int numberOfChunkMatches, boolean atEnd, boolean atStart);
 
         /**
          * enable/disable merge conflict indicator

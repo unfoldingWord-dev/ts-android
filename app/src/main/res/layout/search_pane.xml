@@ -29,12 +29,47 @@
         android:id="@+id/search_progress" />
 
     <EditText
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/search_text"
         android:layout_marginRight="@dimen/dialog_controls_margin"
         android:hint="@string/search_hint"
-        android:layout_weight="1" />
+        android:layout_weight="0.5" />
+
+    <ImageButton
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:id="@+id/down_search"
+        android:src="@drawable/ic_arrow_downward_black_24dp"
+        android:layout_marginLeft="@dimen/dialog_controls_margin"
+        android:layout_marginRight="@dimen/dialog_controls_margin"
+        android:layout_gravity="center_vertical"
+        android:focusableInTouchMode="false"
+        android:visibility="visible" />
+
+    <ImageButton
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:id="@+id/up_search"
+        android:src="@drawable/ic_arrow_upward_black_24dp"
+        android:layout_marginLeft="@dimen/dialog_controls_margin"
+        android:layout_marginRight="@dimen/dialog_controls_margin"
+        android:layout_gravity="center_vertical"
+        android:focusableInTouchMode="false"
+        android:visibility="visible" />
+
+    <TextView
+        android:text="Found"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/found"
+        android:layout_weight="0.5"
+        android:visibility="visible"
+        android:textColor="@color/dark_primary_text"
+        android:textAlignment="center"
+        android:textSize="@dimen/body"
+        android:layout_gravity="center"
+        android:gravity="right" />
 
     <ImageButton
         android:layout_width="24dp"

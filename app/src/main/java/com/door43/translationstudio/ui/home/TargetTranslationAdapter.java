@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.BibleCodes;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.tasks.CalculateTargetTranslationProgressTask;
 
@@ -50,16 +51,7 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
     private SortProjectColumnType mSortProjectColumn = SortProjectColumnType.bibleOrder;
     private SortByColumnType mSortByColumn = SortByColumnType.projectThenLanguage;;
 
-    private static List<String> bookList = Arrays.asList(
-            "gen" , "exo", "lev", "num", "deu", "jos", "jdg", "rut",
-            "1sa", "2sa", "1ki", "2ki", "1ch", "2ch", "ezr", "neh",
-            "est", "job", "psa", "pro", "ecc", "sng", "isa", "jer",
-            "lam", "ezk", "dan", "hos", "jol", "amo", "oba", "jon",
-            "mic", "nam", "hab", "zep", "hag", "zec", "mal",
-            "mat" , "mrk", "luk", "jhn", "act", "rom", "1co", "2co",
-            "gal", "eph", "php", "col", "1th", "2th", "1ti", "2ti",
-            "tit", "phm", "heb", "jas", "1pe", "2pe", "1jn", "2jn",
-            "3jn", "jud", "rev");
+    private static List<String> bookList = Arrays.asList(BibleCodes.getBibleBooks());
 
 
     public TargetTranslationAdapter(Context context) {
