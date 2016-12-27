@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.content.FileProvider;
+import android.support.v4.provider.DocumentFile;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -292,7 +293,7 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
     private void showPdfFilenamePrompt() {
         mAlertShown = DialogShown.FILENAME_PROMPT;
         LayoutInflater inflater = LayoutInflater.from(getActivity());
-        final View filenameFragment = inflater.inflate(R.layout.fragment_pdf_output_filename, null);
+        final View filenameFragment = inflater.inflate(R.layout.fragment_output_filename, null);
         if(filenameFragment != null) {
             final EditText filenameText = (EditText) filenameFragment.findViewById(R.id.filename_text);
             if ((filenameText != null)) {
@@ -378,18 +379,20 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
             if(((PrintPDFTask)task).isSuccess()) {
                 File pdfOutputFolder = null;
                 Uri pdfOutputUri = null;
+                boolean success = false;
 
                 // copy PDF to location the user selected
                 if (isPdfOutputToDocumentFile) {
                     try {
-                        pdfOutputUri = Uri.withAppendedPath(mDestinationFolderUri, mDestinationFilename);
-                        OutputStream outputStream = App.context().getContentResolver().openOutputStream(pdfOutputUri);
+                        DocumentFile sdCardFile = SdUtils.documentFileCreate(mDestinationFolderUri, mDestinationFilename);
+                        OutputStream outputStream = SdUtils.createOutputStream(sdCardFile);
                         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);
 
                         FileInputStream fis = new FileInputStream(mExportFile);
                         int bytes = FileUtilities.copy(fis, bufferedOutputStream);
                         bufferedOutputStream.close();
                         fis.close();
+                        success = true;
                     } catch (Exception e) {
                         Logger.e(TAG, "Failed to copy the PDF file to: " + pdfOutputUri, e);
                     }
@@ -398,24 +401,28 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
                     try {
                         pdfOutputFolder = new File(mDestinationFolderUri.getPath(), mDestinationFilename);
                         FileUtilities.copyFile(mExportFile, pdfOutputFolder);
+                        success = true;
                     } catch (IOException e) {
                         Logger.e(TAG, "Failed to copy the PDF file to: " + pdfOutputFolder, e);
                     }
                 }
 
-                // send to print provider
-                Uri u = FileProvider.getUriForFile(App.context(), "com.door43.translationstudio.fileprovider", mExportFile);
-                Intent i = new Intent(Intent.ACTION_SEND);
-                i.setType("application/pdf");
-                i.putExtra(Intent.EXTRA_STREAM, u);
-                startActivity(Intent.createChooser(i, "Print:"));
-            } else {
-                new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
-                        .setTitle(R.string.error)
-                        .setMessage(R.string.print_failed)
-                        .setPositiveButton(R.string.dismiss, null)
-                        .show();
+                if(success) {
+                    // send to print provider
+                    Uri u = FileProvider.getUriForFile(App.context(), "com.door43.translationstudio.fileprovider", mExportFile);
+                    Intent i = new Intent(Intent.ACTION_SEND);
+                    i.setType("application/pdf");
+                    i.putExtra(Intent.EXTRA_STREAM, u);
+                    startActivity(Intent.createChooser(i, "Print:"));
+                    return;
+                }
             }
+
+            new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                    .setTitle(R.string.error)
+                    .setMessage(R.string.print_failed)
+                    .setPositiveButton(R.string.dismiss, null)
+                    .show();
         }
     }
 

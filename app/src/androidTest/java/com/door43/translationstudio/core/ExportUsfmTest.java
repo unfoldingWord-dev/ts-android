@@ -78,27 +78,13 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         importTestTranslation(source);
 
         //when
-        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, zipFileName, separateChapters);
+        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, null);
 
         //then
         verifyExportedUsfmFile(zipFileName, separateChapters, source, usfmOutput);
     }
 
-    public void test02ValidExportMarkZip() throws Exception {
-        //given
-        String zipFileName = "test_usfm.zip";
-        boolean separateChapters = true;
-        String source = "mrk.usfm";
-        importTestTranslation(source);
-
-        //when
-        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, zipFileName, separateChapters);
-
-        //then
-        verifyExportedUsfmFile(zipFileName, separateChapters, source, usfmOutput);
-    }
-
-    public void test03ValidExportPsalmSingle() throws Exception {
+    public void test02ValidExportPsalmSingle() throws Exception {
         //given
         String zipFileName = null;
         boolean separateChapters = false;
@@ -106,27 +92,13 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         importTestTranslation(source);
 
         //when
-        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, zipFileName, separateChapters);
+        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, null);
 
         //then
         verifyExportedUsfmFile(zipFileName, separateChapters, source, usfmOutput);
     }
 
-    public void test04ValidExportPsalmZip() throws Exception {
-        //given
-        String zipFileName = "test_usfm.zip";
-        boolean separateChapters = true;
-        String source = "19-PSA.usfm";
-        importTestTranslation(source);
-
-        //when
-        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, zipFileName, separateChapters);
-
-        //then
-        verifyExportedUsfmFile(zipFileName, separateChapters, source, usfmOutput);
-    }
-
-    public void test05ValidExportJudeSingle() throws Exception {
+    public void test03ValidExportJudeSingle() throws Exception {
         //given
         String zipFileName = null;
         boolean separateChapters = false;
@@ -134,27 +106,13 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         importTestTranslation(source);
 
         //when
-        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, zipFileName, separateChapters);
+        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, null);
 
         //then
         verifyExportedUsfmFile(zipFileName, separateChapters, source, usfmOutput);
     }
 
-    public void test06ValidExportJudeZip() throws Exception {
-        //given
-        String zipFileName = "test_usfm.zip";
-        boolean separateChapters = true;
-        String source = "66-JUD.usfm";
-        importTestTranslation(source);
-
-        //when
-        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, zipFileName, separateChapters);
-
-        //then
-        verifyExportedUsfmFile(zipFileName, separateChapters, source, usfmOutput);
-    }
-
-    public void test07ValidExportJobSingle() throws Exception {
+    public void test04ValidExportJobSingle() throws Exception {
         //given
         String zipFileName = null;
         boolean separateChapters = false;
@@ -162,7 +120,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         importTestTranslation(source);
 
         //when
-        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, zipFileName, separateChapters);
+        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, null);
 
         //then
         verifyExportedUsfmFile(zipFileName, separateChapters, source, usfmOutput);
