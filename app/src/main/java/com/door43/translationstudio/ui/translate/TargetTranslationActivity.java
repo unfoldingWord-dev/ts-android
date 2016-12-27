@@ -93,6 +93,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private ImageButton mMergeConflict;
     private boolean mHaveMergeConflict = false;
     private boolean mMergeConflictFilterEnabled = false;
+    private ImageButton mDownSearch;
+    private ImageButton mUpSearch;
+    private TextView mFoundText;
+    private int mFoundTextFormat;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -149,6 +154,24 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mChunkButton = (ImageButton) findViewById(R.id.action_chunk);
         mReviewButton = (ImageButton) findViewById(R.id.action_review);
         mMergeConflict = (ImageButton) findViewById(R.id.warn_merge_conflict);
+
+        mDownSearch = (ImageButton) findViewById(R.id.down_search);
+        mDownSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                moveSearch(true);
+            }
+        });
+        mUpSearch = (ImageButton) findViewById(R.id.up_search);
+        mUpSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                moveSearch(false);
+            }
+        });
+
+        mFoundText = (TextView) findViewById(R.id.found);
+        mFoundTextFormat = R.string.found_in_chunks;
 
         setupSidebarModeIcons();
 
@@ -501,7 +524,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             if(show) {
                 visibility = View.VISIBLE;
             } else {
-                setSearchSpinner(false);
+                setSearchSpinner(false, 0, true, true);
             }
 
             searchPane.setVisibility(visibility);
@@ -608,12 +631,24 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     /**
-     * sets the visible state of the search spinner
-     * @param displayed
+     * notify listener of search state changes
+     * @param doingSearch - search is currently processing
+     * @param numberOfChunkMatches - number of chunks that have the search string
+     * @param atEnd - we are at last search item
+     * @param atStart - we are at first search item
      */
-    private void setSearchSpinner(boolean displayed) {
+    private void setSearchSpinner(boolean doingSearch, int numberOfChunkMatches, boolean atEnd, boolean atStart) {
         if(mSearchingSpinner != null) {
-            mSearchingSpinner.setVisibility(displayed ?  View.VISIBLE : View.GONE);
+            mSearchingSpinner.setVisibility(doingSearch ? View.VISIBLE : View.GONE);
+
+            boolean showSearchNavigation = !doingSearch && (numberOfChunkMatches > 0);
+            int searchVisibility = showSearchNavigation ? View.VISIBLE : View.INVISIBLE;
+            mDownSearch.setVisibility(atEnd ? View.INVISIBLE : searchVisibility);
+            mUpSearch.setVisibility(atStart ? View.INVISIBLE : searchVisibility);
+
+            String msg = getResources().getString(mFoundTextFormat, numberOfChunkMatches);
+            mFoundText.setVisibility( !doingSearch ? View.VISIBLE : View.INVISIBLE);
+            mFoundText.setText(msg);
         }
     }
 
@@ -648,7 +683,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             Spinner type = (Spinner) searchPane.findViewById(R.id.search_type);
             if(type != null) {
                 int pos = type.getSelectedItemPosition();
-                if(pos >= 0) {
+                if(pos == 0) {
                     return TranslationFilter.FilterSubject.SOURCE;
                 }
             }
@@ -706,6 +741,22 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                     ((ViewModeFragment)mFragment).filter(constraint, getFilterSubject());
                 }
              }
+        });
+    }
+
+    /**
+     * move to next/previous search item
+     * @param next if true then find next, otherwise will find previous
+     */
+    public void moveSearch(final boolean next) {
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                if((mFragment != null) && (mFragment instanceof ViewModeFragment)) {
+                    ((ViewModeFragment)mFragment).onMoveSearch(next);
+                }
+            }
         });
     }
 
@@ -1043,9 +1094,16 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         }, COMMIT_INTERVAL, COMMIT_INTERVAL);
     }
 
+    /**
+     * callback on search state changes
+     * @param doingSearch - search is currently processing
+     * @param numberOfChunkMatches - number of chunks that have the search string
+     * @param atEnd - we are at last search item highlighted
+     * @param atStart - we are at first search item highlighted
+     */
     @Override
-    public void onSearching(boolean isSearching) {
-        setSearchSpinner(isSearching);
+    public void onSearching(boolean doingSearch, int numberOfChunkMatches, boolean atEnd, boolean atStart) {
+        setSearchSpinner(doingSearch, numberOfChunkMatches, atEnd, atStart);
     }
 
     @Override
