@@ -161,9 +161,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
 
                     doPullTargetTranslationTask(targetTranslation, MergeStrategy.RECURSIVE);
                 } else {
-                    Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.internet_not_available, Snackbar.LENGTH_LONG);
-                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                    snack.show();
+                    showNoInternetDialog(); // replaced snack popup which could be hidden behind dialog
                 }
             }
         });
@@ -771,7 +769,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
      * @param targetTranslation
      */
     private void notifyBackupFailed(final TargetTranslation targetTranslation) {
-        if (App.isNetworkAvailable()) {
+        if (!App.isNetworkAvailable()) {
             showNoInternetDialog();
         } else {
             showUploadFailedDialog(targetTranslation);
