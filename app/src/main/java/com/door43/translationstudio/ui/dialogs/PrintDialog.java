@@ -383,6 +383,9 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
                 Uri pdfOutputUri = null;
                 boolean success = false;
 
+                String scheme = mDestinationFolderUri.getScheme();
+                isPdfOutputToDocumentFile = !"file".equalsIgnoreCase(scheme);
+
                 // copy PDF to location the user selected
                 if (isPdfOutputToDocumentFile) {
                     try {

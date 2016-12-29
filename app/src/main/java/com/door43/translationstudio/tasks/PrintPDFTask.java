@@ -47,7 +47,6 @@ public class PrintPDFTask extends ManagedTask {
             try {
                 Project p = App.getLibrary().index().getProject("en", mTargetTranslation.getProjectId(), true);
                 List<Resource> resources = App.getLibrary().index().getResources(p.languageSlug, p.slug);
-                ResourceContainer resourceContainer = App.getLibrary().open(p.languageSlug, p.slug, resources.get(0).slug);
                 translator.exportPdf(library, mTargetTranslation, mTargetTranslation.getFormat(), Typography.getAssetPath(App.context(), TranslationType.TARGET), imagesDir, includeImages, includeIncompleteFrames, mDestFile);
                 if (mDestFile.exists()) {
                     success = true;
