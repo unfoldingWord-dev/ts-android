@@ -324,6 +324,8 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         if (requestCode == SELECT_EXPORT_FOLDER_REQUEST) {
             if (resultCode == Activity.RESULT_OK && data != null) {
                 mDestinationFolderUri = data.getData();
+                String scheme = mDestinationFolderUri.getScheme();
+                isUsfmOutputToDocumentFile = !"file".equalsIgnoreCase(scheme);
                 showExportToUsfmPrompt();
             }
         }
