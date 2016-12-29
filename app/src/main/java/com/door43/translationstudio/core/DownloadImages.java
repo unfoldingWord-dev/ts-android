@@ -126,7 +126,7 @@ public class DownloadImages {
             return false;
         }
 
-        boolean success = requestToFile(url, fullPath, IMAGES_CATALOG_SIZE, listener);
+        boolean success = requestToFile(url, fullPath, (int) (IMAGES_CATALOG_SIZE * 1.05f), listener);
         if (success) {
             try {
                 File tempDir = new File(mImagesDir, "temp");
