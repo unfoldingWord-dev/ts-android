@@ -27,12 +27,14 @@ public class PrintPDFTask extends ManagedTask {
     private final File mDestFile;
     private final boolean includeImages;
     private final boolean includeIncompleteFrames;
+    private final File imagesDir;
     private boolean success;
 
-    public PrintPDFTask(String targetTranslationId, File destFile, boolean includeImages, boolean includeIncompleteFrames) {
+    public PrintPDFTask(String targetTranslationId, File destFile, boolean includeImages, boolean includeIncompleteFrames, File imagesDir) {
         mDestFile = destFile;
         this.includeImages = includeImages;
         this.includeIncompleteFrames = includeIncompleteFrames;
+        this.imagesDir = imagesDir;
         mTargetTranslation = App.getTranslator().getTargetTranslation(targetTranslationId);
     }
 
@@ -46,7 +48,6 @@ public class PrintPDFTask extends ManagedTask {
                 Project p = App.getLibrary().index().getProject("en", mTargetTranslation.getProjectId(), true);
                 List<Resource> resources = App.getLibrary().index().getResources(p.languageSlug, p.slug);
                 ResourceContainer resourceContainer = App.getLibrary().open(p.languageSlug, p.slug, resources.get(0).slug);
-                File imagesDir = App.getImagesDir();
                 translator.exportPdf(library, mTargetTranslation, mTargetTranslation.getFormat(), Typography.getAssetPath(App.context(), TranslationType.TARGET), imagesDir, includeImages, includeIncompleteFrames, mDestFile);
                 if (mDestFile.exists()) {
                     success = true;

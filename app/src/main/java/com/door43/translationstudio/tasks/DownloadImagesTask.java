@@ -7,6 +7,8 @@ import com.door43.translationstudio.core.DownloadImages;
 import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
+import java.io.File;
+
 /**
  * Created by jshuma on 1/11/16.
  */
@@ -16,9 +18,11 @@ public class DownloadImagesTask extends ManagedTask {
 
     private int mMaxProgress = 100;
     private boolean mSuccess;
+    private File mImagesDir;
 
     public DownloadImagesTask() {
         mSuccess = false;
+        mImagesDir = null;
     }
 
     @Override
@@ -46,6 +50,7 @@ public class DownloadImagesTask extends ManagedTask {
                     return !isCanceled();
                 }
             });
+            mImagesDir = downloadImages.getImagesDir();
         } catch (Exception e) {
             Logger.e(this.getClass().getSimpleName(),"Download Failed", e);
         }
@@ -64,5 +69,9 @@ public class DownloadImagesTask extends ManagedTask {
      */
     public boolean getSuccess() {
         return mSuccess;
+    }
+
+    public File getImagesDir() {
+        return mImagesDir;
     }
 }

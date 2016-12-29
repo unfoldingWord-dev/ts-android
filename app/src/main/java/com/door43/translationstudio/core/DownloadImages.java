@@ -1,7 +1,6 @@
 package com.door43.translationstudio.core;
 
 import com.door43.translationstudio.App;
-import com.door43.translationstudio.R;
 import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
@@ -26,6 +25,7 @@ public class DownloadImages {
     public static final String TAG = DownloadImages.class.getName();
     private static final String IMAGES_URL = "https://cdn.unfoldingword.org/obs/jpg/obs-images-360px.zip";
     public static final int IMAGES_CATALOG_SIZE = 37620940;
+    private File mImagesDir;
 
     /**
      * Downloads content from a url and returns it as a string
@@ -112,24 +112,24 @@ public class DownloadImages {
         String url = IMAGES_URL;
         String filename = url.replaceAll(".*/", "");
         File basePath = App.publicDir();
-        File imagesDir = new File(basePath, "assets/images");
-        File fullPath = new File(String.format("%s/%s", imagesDir, filename));
-        if (imagesDir == null) {
+        mImagesDir = new File(basePath, "assets/images");
+        File fullPath = new File(String.format("%s/%s", mImagesDir, filename));
+        if (mImagesDir == null) {
             return false;
         }
 
-        if(!imagesDir.isDirectory()) { // make sure folder exists
-            imagesDir.mkdirs();
+        if(!mImagesDir.isDirectory()) { // make sure folder exists
+            mImagesDir.mkdirs();
         }
 
-        if (!imagesDir.isDirectory()) {
+        if (!mImagesDir.isDirectory()) {
             return false;
         }
 
         boolean success = requestToFile(url, fullPath, IMAGES_CATALOG_SIZE, listener);
         if (success) {
             try {
-                File tempDir = new File(imagesDir, "temp");
+                File tempDir = new File(mImagesDir, "temp");
                 tempDir.mkdirs();
                 Zip.unzip(fullPath, tempDir);
                 success = true;
@@ -140,7 +140,7 @@ public class DownloadImages {
                     for (File dir:extractedFiles) {
                         if(dir.isDirectory()) {
                             for(File f:dir.listFiles()) {
-                                FileUtilities.moveOrCopyQuietly(f, new File(imagesDir, f.getName()));
+                                FileUtilities.moveOrCopyQuietly(f, new File(mImagesDir, f.getName()));
                             }
                         }
                     }
@@ -167,5 +167,9 @@ public class DownloadImages {
          * @return the process should stop if returns false
          */
         boolean onIndeterminate();
+    }
+
+    public File getImagesDir() {
+        return mImagesDir;
     }
 }

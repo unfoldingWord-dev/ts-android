@@ -79,7 +79,7 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
     private String mDestinationFilename;
     private DialogShown mAlertShown = DialogShown.NONE;
     private AlertDialog mPrompt;
-
+    private File mImagesDir;
 
     @Override
     public void onDestroyView() {
@@ -244,7 +244,7 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
         if(includeImages && !App.hasImages()) {
             showInternetUsePrompt();
         } else {
-            PrintPDFTask task = new PrintPDFTask(mTargetTranslation.getId(), mExportFile, includeImages, includeIncompleteFrames);
+            PrintPDFTask task = new PrintPDFTask(mTargetTranslation.getId(), mExportFile, includeImages, includeIncompleteFrames, mImagesDir);
             taskWatcher.watch(task);
             TaskManager.addTask(task, PrintPDFTask.TASK_ID);
         }
@@ -352,8 +352,10 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
         TaskManager.clearTask(task);
 
         if(task instanceof DownloadImagesTask) {
-            if (((DownloadImagesTask) task).getSuccess()) {
-                final PrintPDFTask printTask = new PrintPDFTask(mTargetTranslation.getId(), mExportFile, includeImages, includeIncompleteFrames);
+            DownloadImagesTask downloadImagesTask = (DownloadImagesTask) task;
+            if (downloadImagesTask.getSuccess()) {
+                mImagesDir = downloadImagesTask.getImagesDir();
+                final PrintPDFTask printTask = new PrintPDFTask(mTargetTranslation.getId(), mExportFile, includeImages, includeIncompleteFrames, mImagesDir);
                 Handler hand = new Handler(Looper.getMainLooper());
                 hand.post(new Runnable() {
                     @Override
