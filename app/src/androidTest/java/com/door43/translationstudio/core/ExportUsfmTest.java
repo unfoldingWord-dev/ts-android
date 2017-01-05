@@ -1,6 +1,7 @@
 package com.door43.translationstudio.core;
 
 import android.content.Context;
+import android.net.Uri;
 import android.test.InstrumentationTestCase;
 import android.util.Log;
 
@@ -78,7 +79,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         importTestTranslation(source);
 
         //when
-        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, null);
+        Uri usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, Uri.fromFile(mOutputFolder), null, false);
 
         //then
         verifyExportedUsfmFile(zipFileName, separateChapters, source, usfmOutput);
@@ -92,7 +93,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         importTestTranslation(source);
 
         //when
-        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, null);
+        Uri usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, Uri.fromFile(mOutputFolder), null, false);
 
         //then
         verifyExportedUsfmFile(zipFileName, separateChapters, source, usfmOutput);
@@ -106,7 +107,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         importTestTranslation(source);
 
         //when
-        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, null);
+        Uri usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, Uri.fromFile(mOutputFolder), null, false);
 
         //then
         verifyExportedUsfmFile(zipFileName, separateChapters, source, usfmOutput);
@@ -120,7 +121,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
         importTestTranslation(source);
 
         //when
-        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, null);
+        Uri usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, Uri.fromFile(mOutputFolder), null, false);
 
         //then
         verifyExportedUsfmFile(zipFileName, separateChapters, source, usfmOutput);
@@ -134,7 +135,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
 //        importTestTranslation(source);
 //
 //        //when
-//        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, zipFileName, separateChapters);
+//        Uri usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, Uri.fromFile(mOutputFolder), null, false);
 //
 //        //then
 //        verifyExportedUsfmFile(zipFileName, separateChapters, source, usfmOutput);
@@ -148,7 +149,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
 //        importTestTranslation(source);
 //
 //        //when
-//        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, zipFileName, separateChapters);
+//        Uri usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, Uri.fromFile(mOutputFolder), null, false);
 //
 //        //then
 //        verifyExportedUsfmFile(zipFileName, separateChapters, source, usfmOutput);
@@ -162,7 +163,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
 //        importTestTranslation(source);
 //
 //        //when
-//        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, zipFileName, separateChapters);
+//        Uri usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, Uri.fromFile(mOutputFolder), null, false);
 //
 //        //then
 //        verifyExportedUsfmFile(zipFileName, separateChapters, source, usfmOutput);
@@ -176,7 +177,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
 //        importTestTranslation(source);
 //
 //        //when
-//        File usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, mOutputFolder, zipFileName, separateChapters);
+//        Uri usfmOutput = ExportUsfm.saveToUSFM(mTargetTranslation, Uri.fromFile(mOutputFolder), null, false);
 //
 //        //then
 //        verifyExportedUsfmFile(zipFileName, separateChapters, source, usfmOutput);
@@ -186,13 +187,13 @@ public class ExportUsfmTest extends InstrumentationTestCase {
     public void test12VerifyBookChunkMarkersAgainstSourceTOC() throws Exception {
         //given
         String[] books = {
-                            "gen", "exo", "lev", "num", "deu", "jos", "jud", "rut", "1sa", "2sa",
-                            "1ki", "2ki", "1ch", "2ch", "ezr", "neh", "est", "job", "psa", "pro",
-                            "ecc", "sng", "isa", "jer", "lam", "ezk", "dan", "hos", "jol", "amo",
-                            "oba", "jon", "mic", "nam", "hab", "zep", "hag", "zec", "mal",
-                            "mat", "mrk", "luk", "jhn", "act", "rom", "1co", "2co", "gal", "eph",
-                            "php", "col", "1th", "2th", "1ti", "2ti", "tit", "phm", "heb", "jas",
-                            "1pe", "2pe", "1jn", "2jn", "3jn", "jud", "rev"
+                "gen", "exo", "lev", "num", "deu", "jos", "jud", "rut", "1sa", "2sa",
+                "1ki", "2ki", "1ch", "2ch", "ezr", "neh", "est", "job", "psa", "pro",
+                "ecc", "sng", "isa", "jer", "lam", "ezk", "dan", "hos", "jol", "amo",
+                "oba", "jon", "mic", "nam", "hab", "zep", "hag", "zec", "mal",
+                "mat", "mrk", "luk", "jhn", "act", "rom", "1co", "2co", "gal", "eph",
+                "php", "col", "1th", "2th", "1ti", "2ti", "tit", "phm", "heb", "jas",
+                "1pe", "2pe", "1jn", "2jn", "3jn", "jud", "rev"
         };
 
         //when
@@ -282,22 +283,24 @@ public class ExportUsfmTest extends InstrumentationTestCase {
      * @param usfmOutput - actual output file
      * @throws IOException
      */
-    private void verifyExportedUsfmFile(String zipFileName, boolean separateChapters, String source, File usfmOutput) throws IOException {
+    private void verifyExportedUsfmFile(String zipFileName, boolean separateChapters, String source, Uri usfmOutput) throws IOException {
         assertNotNull("exported file", usfmOutput);
         mErrorLog = "";
         List<Map> sourceToc = getResourceTOC(mTargetTranslation, mLibrary);
         String projectSlug = mTargetTranslation.getProjectId();
         verifyChunking(sourceToc, projectSlug);
+        String usfmOutputPath = usfmOutput.getPath();
+        File usfmOutputFile = new File(usfmOutputPath);
 
         if (zipFileName == null) {
             if (!separateChapters) {
-                verifySingleUsfmFile(source, usfmOutput);
+                verifySingleUsfmFile(source, usfmOutputFile);
             } else {
                 fail("separate chapters without zip is not supported");
             }
         } else {
             if (separateChapters) {
-                verifyUsfmZipFile(source, usfmOutput);
+                verifyUsfmZipFile(source, usfmOutputFile);
             } else {
                 fail("single book with zip is not supported");
             }
@@ -340,7 +343,7 @@ public class ExportUsfmTest extends InstrumentationTestCase {
                 addErrorMsg("chapter count " + usfmFiles.length + "' should be greater than or equal to chapter number '" + chapterInInt + "'\n");
             }
 
-           if (chapterInInt > 1) {
+            if (chapterInInt > 1) {
                 // verify verses in last chapter
                 String inputChapter = usfmInputText.substring(lastInputChapterStart, inputMatcher.start());
                 String outputChapter = FileUtilities.readFileToString(usfmFiles[chapterInInt-1]);
