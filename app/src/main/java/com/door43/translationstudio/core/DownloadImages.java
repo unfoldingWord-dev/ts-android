@@ -5,6 +5,8 @@ import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
 
+import org.unfoldingword.tools.http.GetRequest;
+import org.unfoldingword.tools.http.Request;
 import org.unfoldingword.tools.logger.Logger;
 
 import java.io.BufferedInputStream;
@@ -19,41 +21,17 @@ import java.net.URLConnection;
 
 /**
  * Created by blm on 12/28/16.  Revived from pre-resource container code.
+ * This is a temporary solution to downloading images until a resource container solution
+ * is ready.
  */
-
 public class DownloadImages {
     public static final String TAG = DownloadImages.class.getName();
     private static final String IMAGES_URL = "https://cdn.unfoldingword.org/obs/jpg/obs-images-360px.zip";
     public static final int IMAGES_CATALOG_SIZE = 37620940;
     private File mImagesDir;
 
-    /**
-     * Downloads content from a url and returns it as a string
-     * @param apiUrl the url from which the content will be downloaded
-     * @return
-     */
-    private String request(String apiUrl) {
-        HttpURLConnection urlConnection = null;
-        try {
-            URL url = new URL(apiUrl);
-            urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setReadTimeout(5000);
-            urlConnection.setReadTimeout(5000);
-            InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-            String response = FileUtilities.readStreamToString(in);
-            urlConnection.disconnect();
-            return response;
-        } catch (IOException e) {
-            Logger.e(TAG, "Failed to download file " + apiUrl, e);
-            return null;
-        } finally {
-            if(urlConnection != null) {
-                urlConnection.disconnect();
-            }
-        }
-    }
 
-    private boolean requestToFile(String apiUrl, File outputFile, long expectedSize, OnProgressListener listener) {
+    private boolean requestToFile(String apiUrl, File outputFile, final long expectedSize, final OnProgressListener listener) {
         if(apiUrl.trim().isEmpty()) {
             return false;
         }
@@ -65,34 +43,27 @@ public class DownloadImages {
             return false;
         }
 
-        try {
-            URLConnection conn = url.openConnection();
-            conn.setReadTimeout(5000);
-            conn.setConnectTimeout(5000);
-
-            FileOutputStream fos = new FileOutputStream(outputFile);
-
-            int updateInterval = 1048 * 50; // send an update each time some bytes have been downloaded
-            int updateQueue = 0;
-            int bytesRead = 0;
-
-            InputStream is = new BufferedInputStream(conn.getInputStream());
-            byte[] buffer = new byte[4096];
-            int n = 0;
-            while((n = is.read(buffer)) != -1) {
-                bytesRead += n;
-                updateQueue += n;
-                fos.write(buffer, 0, n);
-
-                // send updates
-                if(updateQueue >= updateInterval) {
-                    updateQueue = 0;
-                    listener.onProgress(bytesRead, (int) expectedSize);
+        GetRequest r = new GetRequest(url);
+        r.setTimeout(5000);
+        r.setProgressListener(new Request.OnProgressListener() {
+            @Override
+            public void onProgress(long max, long progress) {
+                if(listener != null) {
+                    if(max == 0) max = expectedSize;
+                    listener.onProgress((int)progress, (int)max);
                 }
             }
 
-            listener.onProgress(bytesRead, (int) expectedSize);
+            @Override
+            public void onIndeterminate() {
+                if(listener != null) {
+                    listener.onIndeterminate();
+                }
+            }
+        });
 
+        try {
+            r.download(outputFile);
             return true;
         } catch (IOException e) {
             e.printStackTrace();
