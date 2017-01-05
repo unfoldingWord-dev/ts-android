@@ -161,9 +161,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
 
                     doPullTargetTranslationTask(targetTranslation, MergeStrategy.RECURSIVE);
                 } else {
-                    Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.internet_not_available, Snackbar.LENGTH_LONG);
-                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                    snack.show();
+                    showNoInternetDialog(); // replaced snack popup which could be hidden behind dialog
                 }
             }
         });
@@ -263,7 +261,11 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
                         break;
 
                     case BACKUP_FAILED:
-                        notifyBackupFailed(targetTranslation);
+                        showUploadFailedDialog(targetTranslation);
+                        break;
+
+                    case NO_INTERNET:
+                        showNoInternetDialog();
                         break;
 
                     case ACCESS_REQUEST:
@@ -767,9 +769,38 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
      * @param targetTranslation
      */
     private void notifyBackupFailed(final TargetTranslation targetTranslation) {
+        if (!App.isNetworkAvailable()) {
+            showNoInternetDialog();
+        } else {
+            showUploadFailedDialog(targetTranslation);
+        }
+    }
+
+    /**
+     * show internet not available dialog
+     */
+    private void showNoInternetDialog() {
+        mDialogShown = eDialogShown.NO_INTERNET;
+        new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                .setTitle(R.string.upload_failed)
+                .setMessage(R.string.internet_not_available)
+                .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDialogShown = eDialogShown.NONE;
+                    }
+                })
+                .show();
+    }
+
+    /**
+     * show general upload failed dialog
+     * @param targetTranslation
+     */
+    private void showUploadFailedDialog(final TargetTranslation targetTranslation) {
         mDialogShown = eDialogShown.BACKUP_FAILED;
         new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
-        .setTitle(R.string.backup)
+                .setTitle(R.string.backup)
                 .setMessage(R.string.upload_failed)
                 .setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
                     @Override
@@ -904,7 +935,8 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         SHOW_PUSH_SUCCESS(6),
         MERGE_CONFLICT(7),
         EXPORT_TO_USFM_PROMPT(8),
-        EXPORT_TO_USFM_RESULTS(9);
+        EXPORT_TO_USFM_RESULTS(9),
+        NO_INTERNET(10);
 
         private int value;
 
