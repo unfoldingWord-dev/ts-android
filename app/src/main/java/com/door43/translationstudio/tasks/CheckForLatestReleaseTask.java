@@ -5,8 +5,8 @@ import android.content.pm.PackageManager;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
-import com.door43.util.http.GetRequest;
 
+import org.unfoldingword.tools.http.GetRequest;
 import org.unfoldingword.tools.logger.Logger;
 import org.unfoldingword.tools.taskmanager.ManagedTask;
 
@@ -16,6 +16,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URL;
 
 /**
  * This task will look for the latest release available that is greater than the version currently installed on the device.
@@ -32,8 +33,8 @@ public class CheckForLatestReleaseTask extends ManagedTask {
         String url = githubApiUrl + "/releases/latest";
         String latestRelease;
         try {
-            GetRequest request = GetRequest.newInstance(url);
-            latestRelease = request.submit();
+            GetRequest request = new GetRequest(new URL(url));
+            latestRelease = request.read();
         } catch (IOException e) {
             Logger.e(CheckForLatestReleaseTask.class.getName(), "Failed to check for the latest release", e);
             latestRelease = null;
