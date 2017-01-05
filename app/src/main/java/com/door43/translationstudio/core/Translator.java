@@ -484,8 +484,11 @@ public class Translator {
         printer.includeIncomplete(includeIncompleteFrames);
         File pdf = printer.print();
         if(pdf.exists()) {
-            outputFile.delete();
-            FileUtilities.moveOrCopyQuietly(pdf, outputFile);
+            boolean success = outputFile.delete();
+            success = FileUtilities.moveOrCopyQuietly(pdf, outputFile);
+            if(!outputFile.exists()) {
+                Logger.e(TAG, "Could not move '" + pdf.toString() + "' to '" + outputFile.toString() + "'");
+            }
         }
 
 //        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {

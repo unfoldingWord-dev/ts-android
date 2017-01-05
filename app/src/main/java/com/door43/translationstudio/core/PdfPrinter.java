@@ -265,7 +265,7 @@ public class PdfPrinter extends PdfPageEventHelper {
             ArrayList<FrameTranslation> frameList = ExportUsfm.sortFrameTranslations(frames);
             for(FrameTranslation f: frameList) {
                 if(includeIncomplete || f.isFinished()) {
-                    if(includeMedia && this.format == TranslationFormat.DEFAULT) {
+                    if(includeMedia && this.format == TranslationFormat.MARKDOWN) {
                         // TODO: 11/13/2015 insert frame images if we have them.
                         // TODO: 11/13/2015 eventually we need to provide the directory where to find these images which will be downloaded not in assets
                         try {
