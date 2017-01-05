@@ -30,7 +30,7 @@
             android:textColor="@color/dark_primary_text" />
     </LinearLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
@@ -42,7 +42,10 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
             android:textColor="@color/dark_secondary_text"
-            android:text="this is some text" />
+            android:text="this is some text"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@+id/instruments" />
 
         <LinearLayout
             android:orientation="horizontal"
@@ -51,7 +54,10 @@
             android:layout_marginLeft="16dp"
             android:layout_weight="1"
             android:animateLayoutChanges="true"
-            android:gravity="right|center_vertical">
+            android:gravity="right|center_vertical"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:id="@+id/instruments">
 
             <com.filippudak.ProgressPieView.ProgressPieView
                 android:layout_margin="@dimen/fab_margin"
@@ -70,7 +76,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/ic_info_black_36dp"/>
         </LinearLayout>
-    </LinearLayout>
+    </RelativeLayout>
 
 
 </LinearLayout>
