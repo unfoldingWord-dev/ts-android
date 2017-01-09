@@ -22,8 +22,10 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
+import android.widget.TextView;
 
 import org.eclipse.jgit.merge.MergeStrategy;
 import org.unfoldingword.door43client.Door43Client;
@@ -122,6 +124,18 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             }
         }
 
+        TextView currentUser = (TextView) findViewById(R.id.current_user);
+        String userText = getResources().getString(R.string.current_user, ProfileActivity.getCurrentUser());
+        currentUser.setText(userText);
+
+        Button logout = (Button) findViewById(R.id.logout_button);
+        logout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                doLogout();
+            }
+        });
+
         ImageButton moreButton = (ImageButton)findViewById(R.id.action_more);
         moreButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -164,10 +178,7 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
                                 }
                                 return true;
                             case R.id.action_log_out:
-                                App.setProfile(null);
-                                Intent logoutIntent = new Intent(HomeActivity.this, ProfileActivity.class);
-                                startActivity(logoutIntent);
-                                finish();
+                                doLogout();
                                 return true;
                             case R.id.action_settings:
                                 Intent intent = new Intent(HomeActivity.this, SettingsActivity.class);
@@ -214,6 +225,15 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
         }
     }
 
+    /**
+     * do logout activitity
+     */
+    private void doLogout() {
+        App.setProfile(null);
+        Intent logoutIntent = new Intent(HomeActivity.this, ProfileActivity.class);
+        startActivity(logoutIntent);
+        finish();
+    }
 
     @Override
     public void onResume() {
