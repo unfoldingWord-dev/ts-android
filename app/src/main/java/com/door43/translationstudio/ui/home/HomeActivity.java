@@ -124,10 +124,6 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
             }
         }
 
-        TextView currentUser = (TextView) findViewById(R.id.current_user);
-        String userText = getResources().getString(R.string.current_user, ProfileActivity.getCurrentUser());
-        currentUser.setText(userText);
-
         Button logout = (Button) findViewById(R.id.logout_button);
         logout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -239,6 +235,10 @@ public class HomeActivity extends BaseActivity implements SimpleTaskWatcher.OnFi
     public void onResume() {
         super.onResume();
         App.setLastFocusTargetTranslation(null);
+
+        TextView currentUser = (TextView) findViewById(R.id.current_user);
+        String userText = getResources().getString(R.string.current_user, ProfileActivity.getCurrentUser());
+        currentUser.setText(userText);
 
         int numTranslations = mTranslator.getTargetTranslationIDs().length;
         if(numTranslations > 0 && mFragment instanceof WelcomeFragment) {

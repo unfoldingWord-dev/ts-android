@@ -23,6 +23,7 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.unfoldingword.tools.logger.Logger;
 
@@ -33,6 +34,7 @@ import com.door43.translationstudio.core.MergeConflictsHandler;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.ui.ProfileActivity;
 import com.door43.translationstudio.ui.filechooser.FileChooserActivity;
 import com.door43.translationstudio.ui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.tasks.CreateRepositoryTask;
@@ -83,6 +85,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
     private String mRemoteURL;
     private boolean isUsfmOutputToDocumentFile;
     private Uri mDestinationFolderUri;
+    private View v;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -93,7 +96,7 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
-        View v = inflater.inflate(R.layout.dialog_backup, container, false);
+        v = inflater.inflate(R.layout.dialog_backup, container, false);
 
         // get target translation to backup
         Bundle args = getArguments();
@@ -115,6 +118,16 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
         Button backupToDeviceButton = (Button)v.findViewById(R.id.backup_to_device);
         LinearLayout exportToPDFButton = (LinearLayout)v.findViewById(R.id.export_to_pdf);
         LinearLayout exportToUsfmButton = (LinearLayout)v.findViewById(R.id.export_to_usfm);
+
+        Button logout = (Button) v.findViewById(R.id.logout_button);
+        logout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                App.setProfile(null);
+                Intent logoutIntent = new Intent(getActivity(), ProfileActivity.class);
+                startActivity(logoutIntent);
+            }
+        });
 
         final String filename = targetTranslation.getId() + "." + Translator.ARCHIVE_EXTENSION;
 
@@ -536,6 +549,11 @@ public class BackupDialog extends DialogFragment implements SimpleTaskWatcher.On
             settingDeviceAlias = false;
             showP2PDialog();
         }
+
+        TextView currentUser = (TextView) v.findViewById(R.id.current_user);
+        String userText = getResources().getString(R.string.current_user, ProfileActivity.getCurrentUser());
+        currentUser.setText(userText);
+
         super.onResume();
     }
 
