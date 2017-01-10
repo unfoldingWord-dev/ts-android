@@ -583,8 +583,7 @@ public class TargetTranslationMigrator {
             manifest.put("package_version", 4);
             FileUtilities.writeStringToFile(manifestFile, manifest.toString(2));
         }
-        String projectSlug = manifest.getString("project_id");
-        migrateChunkChanges(path, projectSlug);
+        migrateChunkChanges(path);
         return path;
     }
 
@@ -669,22 +668,14 @@ public class TargetTranslationMigrator {
      * @param targetTranslationDir
      * @return
      */
-    private static boolean migrateChunkChanges(File targetTranslationDir, String projectSlug)  {
+    private static boolean migrateChunkChanges(File targetTranslationDir)  {
         // TRICKY: calling the App here is bad practice, but we'll deprecate this soon anyway.
         final Door43Client library = App.getLibrary();
-        Project p = library.index().getProject("en", projectSlug, true);
+        Project p =  library.index().getProject("en", targetTranslationDir.getName(), true);
         List<Resource> resources = library.index().getResources(p.languageSlug, p.slug);
         final ResourceContainer resourceContainer;
         try {
-            Resource resource = resources.get(0);
-            for (int i = 1; i < resources.size(); i++) {
-                Resource r = resources.get(i);
-                if("book".equalsIgnoreCase(r.type)) {
-                    resource = r;
-                    break;
-                }
-            }
-            resourceContainer = library.open(p.languageSlug, p.slug, resource.slug);
+            resourceContainer = library.open(p.languageSlug, p.slug, resources.get(0).slug);
         } catch (Exception e) {
             e.printStackTrace();
             return true;
