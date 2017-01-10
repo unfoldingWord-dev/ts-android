@@ -690,6 +690,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                         setFinishedMode(item, holder);
                                         ViewUtil.makeLinksClickable(holder.mTargetBody);
                                     }
+
+                                    if(item.hasMissingVerses) {
+                                        if ((item.targetText != null) && !item.targetText.isEmpty()) {
+                                            String translation = applyChangedText(item.renderedTargetText, holder, item);
+                                            item.hasMissingVerses = false;
+                                        }
+                                    }
                                 } else {
                                     Log.i(TAG, "renderTargetCard(): Position " + position + ": ID: " + item.currentTargetTaskId + ": Render failed after delay: task.isCanceled()=" + task.isCanceled() + ", (data==null)=" + (data == null) + ", (item!=holder.currentItem)=" + (item != holder.currentItem));
                                 }
@@ -2184,7 +2191,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
         if(!text.trim().isEmpty()) {
             renderingGroup.init(text);
-            return renderingGroup.start();
+            CharSequence results = renderingGroup.start();
+            item.hasMissingVerses = renderingGroup.isAddedMissingVerse();
+            return results;
         } else {
             return "";
         }
@@ -2380,7 +2389,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         }
         renderingGroup.init(text);
-        return renderingGroup.start();
+        CharSequence results = renderingGroup.start();
+        item.hasMissingVerses = renderingGroup.isAddedMissingVerse();
+        return results;
     }
 
     @Override
@@ -2540,6 +2551,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public int currentTargetTaskId = -1;
         public int currentResourceTaskId = -1;
         public int currentSourceTaskId = -1;
+        public boolean hasMissingVerses = false;
 
         public ReviewListItem(String chapterSlug, String chunkSlug) {
             super(chapterSlug, chunkSlug);
