@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -728,11 +729,14 @@ public class TargetTranslationMigrator {
                 return !pathname.getName().equals("title.txt") && !pathname.getName().equals("reference.txt");
             }
         });
+        Arrays.sort(frameFiles);
         String invalidChunks = "";
         File lastValidFrameFile = null;
         String chapterId = chapterDir.getName();
         for(File frameFile:frameFiles) {
-            String frameId = frameFile.getName();
+            String frameFileName = frameFile.getName();
+            String[] parts = frameFileName.split(".txt");
+            String frameId = parts[0];
             String chunkText = resourceContainer.readChunk(chapterId, frameId);
             String frameBody = "";
             try {
