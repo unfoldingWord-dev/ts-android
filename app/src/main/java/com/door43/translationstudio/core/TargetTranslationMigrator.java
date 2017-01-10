@@ -583,7 +583,8 @@ public class TargetTranslationMigrator {
             manifest.put("package_version", 4);
             FileUtilities.writeStringToFile(manifestFile, manifest.toString(2));
         }
-        migrateChunkChanges(path);
+        String projectSlug = manifest.getString("project_id");
+        migrateChunkChanges(path, projectSlug);
         return path;
     }
 
@@ -666,16 +667,25 @@ public class TargetTranslationMigrator {
      * Merges chunks found in a target translation Project that do not exist in the source translation
      * to a sibling chunk so that no data is lost.
      * @param targetTranslationDir
+     * @param projectSlug
      * @return
      */
-    private static boolean migrateChunkChanges(File targetTranslationDir)  {
+    private static boolean migrateChunkChanges(File targetTranslationDir, String projectSlug)  {
         // TRICKY: calling the App here is bad practice, but we'll deprecate this soon anyway.
         final Door43Client library = App.getLibrary();
-        Project p =  library.index().getProject("en", targetTranslationDir.getName(), true);
+        Project p = library.index().getProject("en", projectSlug, true);
         List<Resource> resources = library.index().getResources(p.languageSlug, p.slug);
         final ResourceContainer resourceContainer;
         try {
-            resourceContainer = library.open(p.languageSlug, p.slug, resources.get(0).slug);
+            Resource resource = null;
+            for (int i = 0; i < resources.size(); i++) {
+                Resource r = resources.get(i);
+                if("book".equalsIgnoreCase(r.type)) {
+                    resource = r;
+                    break;
+                }
+            }
+            resourceContainer = library.open(p.languageSlug, p.slug, resource.slug);
         } catch (Exception e) {
             e.printStackTrace();
             return true;
