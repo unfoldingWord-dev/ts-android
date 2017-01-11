@@ -39,20 +39,50 @@
                 android:layout_marginBottom="@dimen/dialog_controls_margin">
 
 
-                <TextView
+                <LinearLayout
+                    android:orientation="horizontal"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/backup_to_door43"
-                    android:drawableLeft="@drawable/ic_backup_secondary_24dp"
-                    android:drawableStart="@drawable/ic_backup_secondary_24dp"
-                    android:drawablePadding="10dp"
-                    android:textColor="@color/dark_primary_text"
-                    android:textAllCaps="false"
-                    style="@style/Widget.Button.Secondary"
-                    android:focusable="false"
-                    android:clickable="false"
-                    android:duplicateParentState="true"
-                    android:gravity="left|center_vertical" />
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/backup_to_door43"
+                        android:drawableLeft="@drawable/ic_backup_secondary_24dp"
+                        android:drawableStart="@drawable/ic_backup_secondary_24dp"
+                        android:drawablePadding="10dp"
+                        android:textColor="@color/dark_primary_text"
+                        android:textAllCaps="false"
+                        style="@style/Widget.Button.Secondary"
+                        android:focusable="false"
+                        android:clickable="false"
+                        android:duplicateParentState="true"
+                        android:gravity="left|center_vertical"
+                        android:layout_weight="1" />
+
+
+                    <TextView
+                        android:text="Current User: tester"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:id="@+id/current_user"
+                        android:textColor="@color/dark_primary_text"
+                        android:layout_weight="1"
+                        android:gravity="right|center_vertical"
+                        android:textSize="14sp" />
+
+                    <Button
+                        android:text="@string/logout_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/logout_button"
+                        android:textColor="@color/accent"
+                        android:layout_marginLeft="@dimen/dialog_controls_margin"
+                        android:gravity="center"
+                        android:textSize="@dimen/button"
+                        android:textAllCaps="false" />
+
+                </LinearLayout>
 
                 <TextView
                     android:layout_width="match_parent"
