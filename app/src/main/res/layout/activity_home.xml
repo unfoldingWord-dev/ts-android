@@ -26,17 +26,49 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <TextView
-                    android:text="@string/title_activity_target_translations"
+                <LinearLayout
+                    android:orientation="horizontal"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="@dimen/title"
-                    android:textColor="@color/dark_primary_text"
-                    android:background="@color/shadow"
-                    android:paddingLeft="@dimen/activity_horizontal_margin"
-                    android:paddingRight="@dimen/activity_horizontal_margin"
-                    android:paddingTop="@dimen/activity_vertical_margin"
-                    android:paddingBottom="@dimen/activity_vertical_margin"/>
+                    android:layout_height="match_parent"
+                    android:paddingRight="@dimen/stacked_card_margin"
+                    android:background="@color/shadow">
+
+                    <TextView
+                        android:text="@string/title_activity_target_translations"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/title"
+                        android:textColor="@color/dark_primary_text"
+                        android:background="@color/shadow"
+                        android:paddingLeft="@dimen/activity_horizontal_margin"
+                        android:paddingRight="@dimen/activity_horizontal_margin"
+                        android:paddingTop="@dimen/activity_vertical_margin"
+                        android:paddingBottom="@dimen/activity_vertical_margin"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:text="Current User: tester"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:id="@+id/current_user"
+                        android:textColor="@color/dark_primary_text"
+                        android:background="@color/shadow"
+                        android:layout_weight="1"
+                        android:textSize="@dimen/sub_title"
+                        android:gravity="right|center_vertical" />
+
+                    <Button
+                        android:text="@string/log_out"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/logout_button"
+                        android:layout_marginRight="@dimen/dialog_content_margin"
+                        android:textColor="@color/accent"
+                        android:layout_marginLeft="@dimen/dialog_controls_margin"
+                        android:gravity="right|center_vertical"
+                        android:textSize="@dimen/sub_title"
+                        android:textAllCaps="false" />
+                </LinearLayout>
 
                 <LinearLayout
                     android:orientation="vertical"
