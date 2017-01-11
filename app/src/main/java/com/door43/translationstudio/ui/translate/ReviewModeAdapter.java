@@ -866,8 +866,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      */
     private boolean addMissingVerses(ReviewListItem item, ViewHolder holder) {
         if(item.hasMissingVerses && !item.isComplete) {
+            Log.i(TAG, "Adding Missing verses to: " + item.targetText);
             if ((item.targetText != null) && !item.targetText.isEmpty()) {
                 String translation = applyChangedText(item.renderedTargetText, holder, item);
+                Log.i(TAG, "Added Missing verses: " + translation);
                 item.hasMissingVerses = false;
                 item.renderedTargetText = null; // force rerendering of target text
                 triggerNotifyDataSetChanged();
