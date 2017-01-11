@@ -862,14 +862,19 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * if missing verses were found during render, then add them
      * @param item
      * @param holder
+     * @return - returns true if missing verses were applied
      */
-    private void addMissingVerses(ReviewListItem item, ViewHolder holder) {
+    private boolean addMissingVerses(ReviewListItem item, ViewHolder holder) {
         if(item.hasMissingVerses && !item.isComplete) {
             if ((item.targetText != null) && !item.targetText.isEmpty()) {
                 String translation = applyChangedText(item.renderedTargetText, holder, item);
                 item.hasMissingVerses = false;
+                item.renderedTargetText = null; // force rerendering of target text
+                triggerNotifyDataSetChanged();
+                return true;
             }
         }
+        return false;
     }
 
     /**
