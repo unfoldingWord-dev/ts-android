@@ -948,6 +948,5 @@ Attribution of artwork: All images used in these stories are © Sweet Publishing
     <string name="usfm_output_filename_title_prompt">Enter USFM output file name:</string>
     <string name="found_in_chunks">Found in <xliff:g example="6" id="found_count">%1$d</xliff:g> chunks</string>
     <string name="retry_label">Retry</string>
-    <string name="logout_button">(Logout)</string>
     <string name="current_user">Current User: <xliff:g example="tester" id="user_name">%1$s</xliff:g></string>
 </resources>

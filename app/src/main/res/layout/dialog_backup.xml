@@ -72,7 +72,7 @@
                         android:textSize="14sp" />
 
                     <Button
-                        android:text="@string/logout_button"
+                        android:text="@string/log_out"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/logout_button"
