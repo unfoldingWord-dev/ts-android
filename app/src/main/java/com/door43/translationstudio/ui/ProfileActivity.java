@@ -9,6 +9,7 @@ import android.view.View;
 
 import com.door43.translationstudio.App;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.Profile;
 
 public class ProfileActivity extends BaseActivity {
 
@@ -78,5 +79,21 @@ public class ProfileActivity extends BaseActivity {
             privacy.setPositiveButton(R.string.dismiss, null);
         }
         privacy.show();
+    }
+
+    public static String getCurrentUser() {
+        Profile currentUserProfile = App.getProfile();
+        String userName = null;
+        if(currentUserProfile.gogsUser != null) {
+            userName = currentUserProfile.gogsUser.getUsername();
+        }
+        if(userName == null) {
+            userName = currentUserProfile.getFullName();
+        }
+
+        if(userName == null) {
+            userName = "";
+        }
+        return userName;
     }
 }
