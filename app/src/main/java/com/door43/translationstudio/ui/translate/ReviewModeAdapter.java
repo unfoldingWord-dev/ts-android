@@ -1366,30 +1366,36 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             @Override
             public void onPostExecute() {
-                try {
-                    if(commit != null) {
-                        String text = history.read(commit);
-                        // save and update ui
-                        if (text != null) {
-                            // TRICKY: prevent history from getting rolled back soon after the user views it
-                            restartAutoCommitTimer();
-                            applyChangedText(text, holder, item);
+                if(commit != null) {
+                    String text = null;
+                    try {
+                        text = history.read(commit);
+                    } catch (IllegalStateException e) {
+                        Logger.w(TAG,"Undo is past end of history for specific file", e);
+                        text = ""; // graceful recovery
+                    }catch (Exception e) {
+                        Logger.w(TAG,"Undo Read Exception", e);
+                    }
 
-                            App.closeKeyboard(mContext);
-                            item.hasMergeConflicts = MergeConflictsHandler.isMergeConflicted(text);
-                            triggerNotifyDataSetChanged();
-                            updateMergeConflict();
+                    // save and update ui
+                    if (text != null) {
+                        // TRICKY: prevent history from getting rolled back soon after the user views it
+                        restartAutoCommitTimer();
+                        applyChangedText(text, holder, item);
 
-                            if(holder.mTargetEditableBody != null) {
-                                holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
-                                holder.mTargetEditableBody.setText(item.renderedTargetText);
-                                holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
-                            }
+                        App.closeKeyboard(mContext);
+                        item.hasMergeConflicts = MergeConflictsHandler.isMergeConflicted(text);
+                        triggerNotifyDataSetChanged();
+                        updateMergeConflict();
+
+                        if(holder.mTargetEditableBody != null) {
+                            holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
+                            holder.mTargetEditableBody.setText(item.renderedTargetText);
+                            holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
                         }
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
+
                 if(history.hasNext()) {
                     holder.mRedoButton.setVisibility(View.VISIBLE);
                 } else {
@@ -1429,30 +1435,36 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             @Override
             public void onPostExecute() {
-                try {
-                    if(commit != null) {
-                        String text = history.read(commit);
-                        // save and update ui
-                        if (text != null) {
-                            // TRICKY: prevent history from getting rolled back soon after the user views it
-                            restartAutoCommitTimer();
-                            applyChangedText(text, holder, item);
+                if(commit != null) {
+                    String text = null;
+                    try {
+                        text = history.read(commit);
+                    } catch (IllegalStateException e) {
+                        Logger.w(TAG,"Redo is past end of history for specific file", e);
+                        text = ""; // graceful recovery
+                    }catch (Exception e) {
+                        Logger.w(TAG,"Redo Read Exception", e);
+                    }
 
-                            App.closeKeyboard(mContext);
-                            item.hasMergeConflicts = MergeConflictsHandler.isMergeConflicted(text);
-                            triggerNotifyDataSetChanged();
-                            updateMergeConflict();
+                    // save and update ui
+                    if (text != null) {
+                        // TRICKY: prevent history from getting rolled back soon after the user views it
+                        restartAutoCommitTimer();
+                        applyChangedText(text, holder, item);
 
-                            if(holder.mTargetEditableBody != null) {
-                                holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
-                                holder.mTargetEditableBody.setText(item.renderedTargetText);
-                                holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
-                            }
+                        App.closeKeyboard(mContext);
+                        item.hasMergeConflicts = MergeConflictsHandler.isMergeConflicted(text);
+                        triggerNotifyDataSetChanged();
+                        updateMergeConflict();
+
+                        if(holder.mTargetEditableBody != null) {
+                            holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
+                            holder.mTargetEditableBody.setText(item.renderedTargetText);
+                            holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
                         }
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
+
                 if(history.hasNext()) {
                     holder.mRedoButton.setVisibility(View.VISIBLE);
                 } else {
