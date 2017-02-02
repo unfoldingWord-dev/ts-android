@@ -88,9 +88,45 @@ public class TranslationFilter extends Filter {
      * Indicates which text should be searched
      */
     public enum FilterSubject {
-        SOURCE,
-        TARGET,
-        BOTH
+        SOURCE(0),
+        TARGET(1),
+        BOTH(2);
+
+        private int _value;
+
+        FilterSubject(int Value) {
+            this._value = Value;
+        }
+
+        public int getValue() {
+            return _value;
+        }
+
+        public static FilterSubject fromString(String value, FilterSubject defaultValue ) {
+            Integer returnValue = null;
+            if(value != null) {
+                try {
+                    returnValue = Integer.valueOf(value);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if(returnValue == null) {
+                return defaultValue;
+            }
+
+            return fromInt(returnValue);
+        }
+
+        public static FilterSubject fromInt(int i) {
+            for (FilterSubject b : FilterSubject.values()) {
+                if (b.getValue() == i) {
+                    return b;
+                }
+            }
+            return null;
+        }
     }
 
     interface OnMatchListener {
