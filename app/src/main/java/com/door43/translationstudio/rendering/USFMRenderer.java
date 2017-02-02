@@ -37,6 +37,7 @@ public class USFMRenderer extends ClickableRenderingEngine {
     private int mHighlightColor = 0;
     private int[] mExpectedVerseRange = new int[0];
     private boolean mSuppressLeadingMajorSectionHeadings = false;
+    private boolean mAddedMissingVerse = false;
 
     /**
      * Creates a new USFM rendering engine without any listeners
@@ -356,6 +357,7 @@ public class USFMRenderer extends ClickableRenderingEngine {
      * @return
      */
     public CharSequence renderVerse(CharSequence in) {
+        mAddedMissingVerse = false;
         CharSequence out = "";
 
         CharSequence insert = "";
@@ -452,6 +454,7 @@ public class USFMRenderer extends ClickableRenderingEngine {
                     }
                     verse.setOnClickListener(mVerseListener);
                     out = TextUtils.concat(verse.toCharSequence(), out);
+                    mAddedMissingVerse = true;
                 }
             } else if (mExpectedVerseRange.length == 2) {
                 for (int i = mExpectedVerseRange[1]; i >= mExpectedVerseRange[0]; i--) {
@@ -465,6 +468,7 @@ public class USFMRenderer extends ClickableRenderingEngine {
                         }
                         verse.setOnClickListener(mVerseListener);
                         out = TextUtils.concat(verse.toCharSequence(), out);
+                        mAddedMissingVerse = true;
                     }
                 }
             }
@@ -651,6 +655,13 @@ public class USFMRenderer extends ClickableRenderingEngine {
      */
     private static Pattern paraShortPattern(String style) {
         return Pattern.compile("<para\\s+style=\""+style+"\"\\s*/>", Pattern.DOTALL); // TODO: 3/1/16 need to upgrade to USFM
+    }
+
+    /**
+     * see if missing verse was added
+     */
+    public boolean isAddedMissingVerse() {
+        return mAddedMissingVerse;
     }
 }
 

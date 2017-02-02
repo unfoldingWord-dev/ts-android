@@ -41,7 +41,7 @@ public class USXRenderer extends ClickableRenderingEngine {
     public static Pattern beginParagraphPattern =  Pattern.compile(beginParagraphStyle);
     public static String endParagraphStyle = "<\\/para>";
     public static Pattern endParagraphPattern =  Pattern.compile(endParagraphStyle);
-
+    private boolean mAddedMissingVerse = false;
 
     /**
      * Creates a new usx rendering engine without any listeners
@@ -342,6 +342,7 @@ public class USXRenderer extends ClickableRenderingEngine {
      * @return
      */
     public CharSequence renderVerse(CharSequence in) {
+        mAddedMissingVerse = false;
         CharSequence out = "";
 
         CharSequence insert = "";
@@ -436,6 +437,7 @@ public class USXRenderer extends ClickableRenderingEngine {
                     }
                     verse.setOnClickListener(mVerseListener);
                     out = TextUtils.concat(verse.toCharSequence(), out);
+                    mAddedMissingVerse = true;
                 }
             } else if (mExpectedVerseRange.length == 2) {
                 for (int i = mExpectedVerseRange[1]; i >= mExpectedVerseRange[0]; i--) {
@@ -449,6 +451,7 @@ public class USXRenderer extends ClickableRenderingEngine {
                         }
                         verse.setOnClickListener(mVerseListener);
                         out = TextUtils.concat(verse.toCharSequence(), out);
+                        mAddedMissingVerse = true;
                     }
                 }
             }
@@ -666,5 +669,12 @@ public class USXRenderer extends ClickableRenderingEngine {
      */
     private static Pattern paraShortPattern(String style) {
         return Pattern.compile("<para\\s+style=\""+style+"\"\\s*/>", Pattern.DOTALL);
+    }
+
+    /**
+     * see if missing verse was added
+     */
+    public boolean isAddedMissingVerse() {
+        return mAddedMissingVerse;
     }
 }
