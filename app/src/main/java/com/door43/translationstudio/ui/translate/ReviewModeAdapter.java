@@ -142,7 +142,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private boolean mMergeConflictFilterOn = false;
     private int mChunkSearchMatchesCounter = 0;
     private int mSearchPosition = 0;
-    private int mSearchSubPosition = 0;
     private int mSearchSubPositionItems = 0;
     private boolean mSearchingTarget = true;
     private boolean mLastSearchDirectionForward = true;
@@ -893,12 +892,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 findSearchItemInChunkAndPreselect(mLastSearchDirectionForward, item, target);
                 Log.i(TAG, "Rerendering, Found search items in chunk " + position + ": " + mSearchSubPositionItems);
             } else if (mSearchSubPositionItems > 0) { // if we have counted items then find the number selected
-                MatchResults results = getMatchItemN( item, mSearchText, mSearchSubPosition, target);
+                int searchSubPosition = 0;
+                MatchResults results = getMatchItemN( item, mSearchText, searchSubPosition, target);
                 if( (results != null) && (results.foundLocation >= 0)) {
                     Log.i(TAG, "Highlight at position: " + position + " : " + results.foundLocation);
                     selectPosition = results.foundLocation;
                 } else {
-                    Log.i(TAG, "Highlight failed for position: " + position + "; chunk position: " + mSearchSubPosition + "; chunk count: " + mSearchSubPositionItems);
+                    Log.i(TAG, "Highlight failed for position: " + position + "; chunk position: " + searchSubPosition + "; chunk count: " + mSearchSubPositionItems);
                 }
                 checkIfAtSearchLimits();
             }
@@ -1293,7 +1293,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      */
     private String applyChangedText(CharSequence s, ViewHolder holder, ReviewListItem item) {
         String translation;
-        if(s instanceof Editable) {
+        if (s == null) {
+            return null;
+        } else if(s instanceof Editable) {
             translation = Translator.compileTranslation((Editable) s);
         } else if(s instanceof SpannedString) {
             translation = Translator.compileTranslationSpanned((SpannedString) s);
@@ -2614,19 +2616,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         mLastSearchDirectionForward = forward;
         Log.i(TAG, "onMoveSearch position " + mSearchPosition + " forward= " + forward);
 
-        if(mSearchSubPositionItems > 0) { // try to find forward item within chunk
-            if(isNextSearchHighlightPositionWithinChunk(forward, true)) { // move to next item and check
-                forceSearchRefresh();
-                checkIfAtSearchLimits();
-                return;
-            }
-        }
-
         int foundPos = findNextMatchChunk(forward);
         if(foundPos >= 0) {
             Log.i(TAG, "onMoveSearch foundPos= " + foundPos);
             mSearchPosition = foundPos;
-            mSearchSubPosition = 0;
             mSearchSubPositionItems = -1;
             if(getListener() != null) {
                 getListener().onSetSelectedPosition(foundPos, 0); // coarse scrolling
@@ -2640,7 +2633,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         } else { // not found, clear last selection
             Log.i(TAG, "onMoveSearch at end = " + mSearchPosition);
-            mSearchSubPosition = -1;
             ReviewListItem item = (ReviewListItem) getItem(mSearchPosition);
             if(item != null) {
                 forceSearchReRender(item);
@@ -2668,11 +2660,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
      * @param forward
      */
     private void checkIfAtSearchLimit(boolean forward) {
-        if(!isNextSearchHighlightPositionWithinChunk(forward, false)) { // would next item be inside chunk?
-            int nextPos = findNextMatchChunk(forward);
-            if(nextPos < 0) {
-                showAtLimit(forward);
-            }
+        int nextPos = findNextMatchChunk(forward);
+        if(nextPos < 0) {
+            showAtLimit(forward);
         }
     }
 
@@ -2686,33 +2676,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         } else {
             onSearching(false, mNumberOfChunkMatches, mAtSearchEnd, true);
         }
-    }
-
-    /**
-     * check to see if next highlight position is in current chunk.  Optionally update current position to next.
-     * @param forward
-     * @param updatePosition
-     * @return
-     */
-    private boolean isNextSearchHighlightPositionWithinChunk(boolean forward, boolean updatePosition) {
-        boolean withinChunk = false;
-        int currentPos = mSearchSubPosition;
-        ReviewListItem item = (ReviewListItem) getItem(mSearchPosition);
-        if ((item != null) && (item.hasSearchText)) {
-            if (forward) {
-                if (++currentPos < mSearchSubPositionItems) { // we are still inside chunk
-                    withinChunk = true;
-                }
-            } else { // previous
-                if (--currentPos >= 0) { // we are still inside chunk
-                    withinChunk = true;
-                }
-            }
-        }
-        if(updatePosition) {
-            mSearchSubPosition = currentPos;
-        }
-        return withinChunk;
     }
 
     /**
@@ -2753,7 +2716,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private MatchResults findSearchItemInChunkAndPreselect(boolean forward, ReviewListItem item, boolean target) {
         MatchResults results = getMatchItemN( item, mSearchText, 1000, target); // get item count
         mSearchSubPositionItems = results.numberFound;
-        mSearchSubPosition = forward ? 0 : (mSearchSubPositionItems - 1);
+        int searchSubPosition = 0;
         if(results.needRender) {
             mSearchSubPositionItems = -1; // this will flag to get count after render completes
         } else {
@@ -2763,7 +2726,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             forceSearchReRender(item);
             checkIfAtSearchLimits();
         }
-        item.selectItemNum = mSearchSubPosition;
+        item.selectItemNum = searchSubPosition;
         return results;
     }
 
@@ -2917,7 +2880,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         @Override
                         public void run() {
                             mSearchPosition = initialPosition;
-                            mSearchSubPosition = 0;
                             triggerNotifyDataSetChanged();
                             boolean zeroItemsFound = ReviewModeAdapter.this.mChunkSearchMatchesCounter <= 0;
                             onSearching(false, ReviewModeAdapter.this.mChunkSearchMatchesCounter, zeroItemsFound, zeroItemsFound);
