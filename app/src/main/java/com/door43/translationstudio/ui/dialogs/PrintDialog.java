@@ -382,6 +382,7 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
                 File pdfOutputFolder = null;
                 Uri pdfOutputUri = null;
                 boolean success = false;
+                String pdfDestination = "";
 
                 String scheme = mDestinationFolderUri.getScheme();
                 isPdfOutputToDocumentFile = !"file".equalsIgnoreCase(scheme);
@@ -397,6 +398,7 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
                         int bytes = FileUtilities.copy(fis, bufferedOutputStream);
                         bufferedOutputStream.close();
                         fis.close();
+                        pdfDestination = SdUtils.getPathString(sdCardFile);
                         success = true;
                     } catch (Exception e) {
                         Logger.e(TAG, "Failed to copy the PDF file to: " + pdfOutputUri, e);
@@ -406,6 +408,7 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
                     try {
                         pdfOutputFolder = new File(mDestinationFolderUri.getPath(), mDestinationFilename);
                         FileUtilities.copyFile(mExportFile, pdfOutputFolder);
+                        pdfDestination = pdfOutputFolder.toString();
                         success = true;
                     } catch (IOException e) {
                         Logger.e(TAG, "Failed to copy the PDF file to: " + pdfOutputFolder, e);
@@ -413,12 +416,12 @@ public class PrintDialog extends DialogFragment implements SimpleTaskWatcher.OnF
                 }
 
                 if(success) {
-                    // send to print provider
-                    Uri u = FileProvider.getUriForFile(App.context(), "com.door43.translationstudio.fileprovider", mExportFile);
-                    Intent i = new Intent(Intent.ACTION_SEND);
-                    i.setType("application/pdf");
-                    i.putExtra(Intent.EXTRA_STREAM, u);
-                    startActivity(Intent.createChooser(i, "Print:"));
+                    String message = getActivity().getResources().getString(R.string.print_success, pdfDestination);
+                    new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog)
+                            .setTitle(R.string.success)
+                            .setMessage(message)
+                            .setPositiveButton(R.string.dismiss, null)
+                            .show();
                     return;
                 }
             }
