@@ -79,7 +79,7 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
         if(savedInstanceState != null) {
             mSortByColumn = TargetTranslationAdapter.SortByColumnType.fromInt(savedInstanceState.getInt(STATE_SORT_BY_COLUMN, mSortByColumn.getValue()));
             mSortProjectColumn = TargetTranslationAdapter.SortProjectColumnType.fromInt(savedInstanceState.getInt(STATE_SORT_PROJECT_COLUMN, mSortProjectColumn.getValue()));
-        } else { // if not restoring states, get default
+        } else { // if not restoring states, get last values
             mSortByColumn = TargetTranslationAdapter.SortByColumnType.fromString(App.getUserString(SORT_BY_COLUMN_ITEM, null), TargetTranslationAdapter.SortByColumnType.projectThenLanguage);
             mSortProjectColumn = TargetTranslationAdapter.SortProjectColumnType.fromString(App.getUserString(SORT_PROJECT_ITEM, null), TargetTranslationAdapter.SortProjectColumnType.bibleOrder);
         }
