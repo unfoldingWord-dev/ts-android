@@ -312,6 +312,23 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
             return _value;
         }
 
+        public static SortByColumnType fromString(String value, SortByColumnType defaultValue ) {
+            Integer returnValue = null;
+            if(value != null) {
+                try {
+                    returnValue = Integer.valueOf(value);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if(returnValue == null) {
+                return defaultValue;
+            }
+
+            return fromInt(returnValue);
+        }
+
         public static SortByColumnType fromInt(int i) {
             for (SortByColumnType b : SortByColumnType.values()) {
                 if (b.getValue() == i) {
@@ -337,6 +354,23 @@ public class TargetTranslationAdapter extends BaseAdapter implements ManagedTask
 
         public int getValue() {
             return _value;
+        }
+
+        public static SortProjectColumnType fromString(String value, SortProjectColumnType defaultValue ) {
+            Integer returnValue = null;
+            if(value != null) {
+                try {
+                    returnValue = Integer.valueOf(value);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if(returnValue == null) {
+                return defaultValue;
+            }
+
+            return fromInt(returnValue);
         }
 
         public static SortProjectColumnType fromInt(int i) {
