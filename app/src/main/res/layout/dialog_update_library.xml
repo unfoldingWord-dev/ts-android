@@ -97,16 +97,6 @@
                     android:duplicateParentState="true"
                     style="@style/Widget.Alert.Button.Secondary"/>
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/time_fast"
-                    android:textColor="@color/dark_secondary_text"
-                    android:focusable="false"
-                    android:clickable="false"
-                    android:duplicateParentState="true"
-                    android:textSize="@dimen/caption"
-                    android:layout_marginLeft="@dimen/dialog_content_margin" />
             </LinearLayout>
 
             <LinearLayout
@@ -169,16 +159,6 @@
                     android:duplicateParentState="true"
                     style="@style/Widget.Alert.Button.Secondary"/>
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/time_fast"
-                    android:textColor="@color/dark_secondary_text"
-                    android:focusable="false"
-                    android:clickable="false"
-                    android:duplicateParentState="true"
-                    android:layout_marginLeft="@dimen/dialog_content_margin"
-                    android:textSize="@dimen/caption"/>
             </LinearLayout>
 
             <LinearLayout
