@@ -30,6 +30,8 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
     public static final String TAG = TargetTranslationListFragment.class.getSimpleName();
     public static final String STATE_SORT_BY_COLUMN = "state_sort_by_column";
     public static final String STATE_SORT_PROJECT_COLUMN = "state_sort_project_column";
+    public static final String SORT_PROJECT_ITEM = "sort_project_item";
+    public static final String SORT_BY_COLUMN_ITEM = "sort_by_column_item";
     private TargetTranslationAdapter mAdapter;
     private OnItemClickListener mListener;
     private TargetTranslationAdapter.SortProjectColumnType mSortProjectColumn = TargetTranslationAdapter.SortProjectColumnType.bibleOrder;
@@ -77,6 +79,9 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
         if(savedInstanceState != null) {
             mSortByColumn = TargetTranslationAdapter.SortByColumnType.fromInt(savedInstanceState.getInt(STATE_SORT_BY_COLUMN, mSortByColumn.getValue()));
             mSortProjectColumn = TargetTranslationAdapter.SortProjectColumnType.fromInt(savedInstanceState.getInt(STATE_SORT_PROJECT_COLUMN, mSortProjectColumn.getValue()));
+        } else { // if not restoring states, get last values
+            mSortByColumn = TargetTranslationAdapter.SortByColumnType.fromString(App.getUserString(SORT_BY_COLUMN_ITEM, null), TargetTranslationAdapter.SortByColumnType.projectThenLanguage);
+            mSortProjectColumn = TargetTranslationAdapter.SortProjectColumnType.fromString(App.getUserString(SORT_PROJECT_ITEM, null), TargetTranslationAdapter.SortProjectColumnType.bibleOrder);
         }
         mAdapter.sort(mSortByColumn, mSortProjectColumn);
 
@@ -95,6 +100,7 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                     Logger.i(TAG, "Sort column item selected: " + position);
                     mSortByColumn = TargetTranslationAdapter.SortByColumnType.fromInt(position);
+                    App.setUserString(SORT_BY_COLUMN_ITEM, String.valueOf(mSortByColumn.getValue()));
                     if(mAdapter != null) {
                         mAdapter.sort(mSortByColumn, mSortProjectColumn);
                     }
@@ -120,6 +126,7 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                     Logger.i(TAG, "Sort project column item selected: " + position);
                     mSortProjectColumn = TargetTranslationAdapter.SortProjectColumnType.fromInt(position);
+                    App.setUserString(SORT_PROJECT_ITEM, String.valueOf(mSortProjectColumn.getValue()));
                     if(mAdapter != null) {
                         mAdapter.sort(mSortByColumn, mSortProjectColumn);
                     }
