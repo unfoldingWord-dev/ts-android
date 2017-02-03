@@ -70,6 +70,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     public static final String STATE_HAVE_MERGE_CONFLICT = "state_have_merge_conflict";
     public static final String STATE_MERGE_CONFLICT_FILTER_ENABLED = "state_merge_conflict_filter_enabled";
     public static final int RESULT_DO_UPDATE = 42;
+    public static final String SEARCH_SOURCE = "search_source";
     private Fragment mFragment;
     private SeekBar mSeekBar;
     private ViewGroup mGraduations;
@@ -589,16 +590,21 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 });
             }
 
-            Spinner type = (Spinner) searchPane.findViewById(R.id.search_type);
-            if(type != null) {
+            Spinner searchType = (Spinner) searchPane.findViewById(R.id.search_type);
+            if(searchType != null) {
                 List<String> types = new ArrayList<String>();
                 types.add(this.getResources().getString(R.string.search_source));
                 types.add(this.getResources().getString(R.string.search_translation));
                 ArrayAdapter<String> typesAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, types);
                 typesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                type.setAdapter(typesAdapter);
+                searchType.setAdapter(typesAdapter);
 
-                type.setOnItemSelectedListener(this);
+                // restore last search type
+                String lastSearchSourceStr = App.getUserString(SEARCH_SOURCE, null);
+                TranslationFilter.FilterSubject lastSearchSource = TranslationFilter.FilterSubject.fromString(lastSearchSourceStr, TranslationFilter.FilterSubject.SOURCE);
+                searchType.setSelection(lastSearchSource.getValue());
+
+                searchType.setOnItemSelectedListener(this);
             }
         }
     }
@@ -738,7 +744,12 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             @Override
             public void run() {
                 if((mFragment != null) && (mFragment instanceof ViewModeFragment)) {
-                    ((ViewModeFragment)mFragment).filter(constraint, getFilterSubject());
+
+                    // preserve current search type
+                    TranslationFilter.FilterSubject subject = getFilterSubject();
+                    App.setUserString(SEARCH_SOURCE, String.valueOf(subject.getValue()));
+
+                    ((ViewModeFragment)mFragment).filter(constraint, subject);
                 }
              }
         });
